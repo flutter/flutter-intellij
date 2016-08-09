@@ -9,8 +9,8 @@ import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
-import org.jetbrains.annotations.NotNull;
 import io.flutter.FlutterBundle;
+import org.jetbrains.annotations.NotNull;
 
 public class FlutterRunConfigurationType extends ConfigurationTypeBase {
 
