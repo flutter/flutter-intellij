@@ -16,4 +16,8 @@
     <programRunner implementation="io.flutter.run.FlutterRunner"/>
   </extensions>
 
+  <extensions defaultExtensionNs="com.intellij">
+    <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
+  </extensions>
+
 </idea-plugin>
