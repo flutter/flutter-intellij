@@ -59,32 +59,6 @@ public class FlutterRunner extends DartRunner {
             (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)));
   }
 
-  @Override
-  protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    GeneralCommandLine line = createCommandLine(((FlutterRunningState)state).params(), env.getExecutor().getActionName());
-    ProcessOutput output = ExecUtil.execAndGetOutput(line);
-    return output.checkSuccess(LOG) ? super.doExecute(state, env) : null;
-  }
-
-  private static GeneralCommandLine createCommandLine(FlutterRunnerParameters params, String actionName) throws ExecutionException {
-    String flutterSdkPath = params.getFlutterSdkPath();
-    flutterSdkPath = verifyFlutterSdk(flutterSdkPath);
-    VirtualFile projectDir = flutterProjectDir(params.getFilePath());
-    String workingDir = projectDir.getCanonicalPath();
-    String flutterExec = pathToFlutter(flutterSdkPath);
-
-    GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workingDir);
-    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
-    commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.addParameter("start");
-    commandLine.addParameter("--checked");
-    if ("Debug".equals(actionName)) {
-      commandLine.addParameter("--start-paused");
-    }
-
-    return commandLine;
-  }
-
   protected DartUrlResolver getDartUrlResolver(@NotNull final Project project, @NotNull final VirtualFile contextFileOrDir) {
     return new FlutterUrlResolver(project, contextFileOrDir);
   }

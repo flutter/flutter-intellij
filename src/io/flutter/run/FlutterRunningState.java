@@ -73,8 +73,13 @@ public class FlutterRunningState extends DartCommandLineRunningState {
     commandLine.withParentEnvironmentType(myRunnerParameters.isIncludeParentEnvs()
                                           ? GeneralCommandLine.ParentEnvironmentType.CONSOLE
                                           : GeneralCommandLine.ParentEnvironmentType.NONE);
-    commandLine.addParameter("logs");
-    commandLine.addParameter("--clear");
+    commandLine.addParameter("run");
+    commandLine.addParameter("--resident");
+    if ("Debug".equals(getEnvironment().getExecutor().getActionName())) {
+      commandLine.addParameter("--start-paused");
+      commandLine.addParameter("--debug-port");
+      commandLine.addParameter(String.valueOf(myObservatoryPort));
+    }
 
     return commandLine;
   }
