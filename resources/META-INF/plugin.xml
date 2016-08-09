@@ -1,7 +1,7 @@
 <idea-plugin version="2">
-  <id>org.dartlang.plugin.flutter</id>
+  <id>io.flutter</id>
   <name>flutter-intellij</name>
-  <vendor>dartlang.org</vendor>
+  <vendor>flutter.io</vendor>
 
   <depends>Dart</depends>
 
