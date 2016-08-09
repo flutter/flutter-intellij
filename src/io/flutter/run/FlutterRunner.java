@@ -40,6 +40,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.URI;
 
+import static io.flutter.run.FlutterRunningState.flutterProjectDir;
+import static io.flutter.run.FlutterRunningState.pathToFlutter;
+import static io.flutter.run.FlutterRunningState.verifyFlutterSdk;
+
 public class FlutterRunner extends DartRunner {
   private static final Logger LOG = Logger.getInstance(FlutterRunner.class);
 
