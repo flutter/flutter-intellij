@@ -20,7 +20,7 @@ public class FlutterModuleType extends ModuleType<FlutterModuleBuilder> {
   }
 
   public static FlutterModuleType getInstance() {
-    return (FlutterModuleType) ModuleTypeManager.getInstance().findByID(ID);
+    return (FlutterModuleType)ModuleTypeManager.getInstance().findByID(ID);
   }
 
   @NotNull
@@ -53,7 +53,9 @@ public class FlutterModuleType extends ModuleType<FlutterModuleBuilder> {
 
   @NotNull
   @Override
-  public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull FlutterModuleBuilder moduleBuilder, @NotNull ModulesProvider modulesProvider) {
+  public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext,
+                                              @NotNull FlutterModuleBuilder moduleBuilder,
+                                              @NotNull ModulesProvider modulesProvider) {
     return super.createWizardSteps(wizardContext, moduleBuilder, modulesProvider);
   }
 }
