@@ -38,19 +38,6 @@ public class FlutterSdk {
     myVersion = version;
   }
 
-  @NotNull
-  public String getHomePath() {
-    return myHomePath;
-  }
-
-  /**
-   * @return presentable version with revision, like ea7d5bf291
-   */
-  @NotNull
-  public String getVersion() {
-    return myVersion;
-  }
-
   /**
    * Returns the same as {@link #getGlobalFlutterSdk()} but much faster
    */
@@ -99,12 +86,39 @@ public class FlutterSdk {
   @Nullable
   static FlutterSdk getSdkByLibrary(@NotNull final Library library) {
     final VirtualFile[] roots = library.getFiles(OrderRootType.CLASSES);
-    if (roots.length == 1 && FlutterSdkUtil.isFlutterSdkLibRoot(roots[0])) {
-      final String homePath = roots[0].getParent().getPath();
-      final String version = StringUtil.notNullize(FlutterSdkUtil.getSdkVersion(homePath), UNKNOWN_VERSION);
-      return new FlutterSdk(homePath, version);
+    if (roots.length == 1) {
+      final VirtualFile flutterSdkRoot = findFlutterSdkRoot(roots[0]);
+      if (flutterSdkRoot != null) {
+        final String homePath = flutterSdkRoot.getPath();
+        final String version = StringUtil.notNullize(FlutterSdkUtil.getSdkVersion(homePath), UNKNOWN_VERSION);
+        return new FlutterSdk(homePath, version);
+      }
     }
 
     return null;
+  }
+
+  private static VirtualFile findFlutterSdkRoot(VirtualFile dartSdkLibDir) {
+    // Navigating up from `bin/cache/dart-sdk/lib/`
+    int count = 4;
+    VirtualFile parent = dartSdkLibDir;
+    do {
+      parent = parent.getParent();
+    }
+    while (parent != null && --count > 0);
+    return parent != null && parent.getName().equals("flutter") ? parent : null;
+  }
+
+  @NotNull
+  public String getHomePath() {
+    return myHomePath;
+  }
+
+  /**
+   * @return presentable version with revision, like ea7d5bf291
+   */
+  @NotNull
+  public String getVersion() {
+    return myVersion;
   }
 }
