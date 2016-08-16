@@ -26,7 +26,7 @@ import java.util.Map;
 
 public class FlutterSdkUtil {
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
-  private static final String FLUTTER_SDK_KNOWN_PATHS = "DART_SDK_KNOWN_PATHS";
+  private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
 
 
   private FlutterSdkUtil() {
