@@ -14,10 +14,11 @@
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
     <programRunner implementation="io.flutter.run.FlutterRunner"/>
-  </extensions>
-
-  <extensions defaultExtensionNs="com.intellij">
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
+
+    <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
+                         id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
+
   </extensions>
 
 </idea-plugin>
