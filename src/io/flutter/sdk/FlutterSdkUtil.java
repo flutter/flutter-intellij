@@ -7,12 +7,15 @@ package io.flutter.sdk;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
+import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
@@ -154,5 +157,9 @@ public class FlutterSdkUtil {
     if (!isFlutterSdkHome(sdkRootPath)) return FlutterBundle.message("error.sdk.not.found.in.specified.location");
 
     return null;
+  }
+
+  public static void enableDartSupport(Module module) {
+    ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
   }
 }
