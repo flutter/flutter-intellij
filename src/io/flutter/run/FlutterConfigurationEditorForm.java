@@ -45,7 +45,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
   }
 
   @Override
-  protected void resetEditorFrom(final FlutterRunConfiguration configuration) {
+  protected void resetEditorFrom(@NotNull final FlutterRunConfiguration configuration) {
     final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getFilePath())));
     myArguments.setText(StringUtil.notNullize(parameters.getArguments()));
@@ -58,7 +58,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
   }
 
   @Override
-  protected void applyEditorTo(final FlutterRunConfiguration configuration) throws ConfigurationException {
+  protected void applyEditorTo(@NotNull final FlutterRunConfiguration configuration) throws ConfigurationException {
     final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
     parameters.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     parameters.setArguments(StringUtil.nullize(myArguments.getText(), true));
