@@ -57,22 +57,17 @@ public class FlutterTestUtils {
       FlutterSdkGlobalLibUtil.enableDartSdk(module);
     });
 
-    Disposer.register(disposable, new Disposable() {
-      @Override
-      public void dispose() {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-          if (!module.isDisposed()) {
-            FlutterSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
-          }
-
-          ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
-          final Library library = libraryTable.getLibraryByName(FlutterSdk.FLUTTER_SDK_GLOBAL_LIB_NAME);
-          if (library != null) {
-            libraryTable.removeLibrary(library);
-          }
-        });
+    Disposer.register(disposable, () -> ApplicationManager.getApplication().runWriteAction(() -> {
+      if (!module.isDisposed()) {
+        FlutterSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
       }
-    });
+
+      ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
+      final Library library = libraryTable.getLibraryByName(FlutterSdk.FLUTTER_SDK_GLOBAL_LIB_NAME);
+      if (library != null) {
+        libraryTable.removeLibrary(library);
+      }
+    }));
   }
 
   private static String findTestDataPath() {

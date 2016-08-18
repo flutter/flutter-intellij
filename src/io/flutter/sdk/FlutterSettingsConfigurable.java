@@ -79,10 +79,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
 
     final ComponentWithBrowseButton.BrowseFolderActionListener<JComboBox> browseFolderListener =
-      new ComponentWithBrowseButton.BrowseFolderActionListener<JComboBox>("Select Flutter SDK Path", null, sdkCombo,
-                                                                          null,
-                                                                          FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                                          textComponentAccessor);
+      new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Flutter SDK Path", null, sdkCombo,
+                                                                 null,
+                                                                 FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                                                                 textComponentAccessor);
     sdkCombo.addBrowseFolderListener(null, browseFolderListener);
   }
 
