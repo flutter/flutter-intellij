@@ -86,6 +86,8 @@ public class FlutterSdk {
 
   @Nullable
   public static FlutterSdk getGlobalFlutterSdk() {
+    // TODO Delete DEBUG code.
+    if (true) return new FlutterSdk("/Users/messick/src/flutter/flutter", "0.0.1");
     return findFlutterSdkAmongGlobalLibs(ApplicationLibraryTable.getApplicationTable().getLibraries());
   }
 
