@@ -148,7 +148,8 @@ public class FlutterSdk {
           }
         });
         if (cmd.attachToConsole()) {
-          FlutterConsole.attach(module.getProject(), handler, cmd.title);
+          final String commandPrefix = "[" + module.getName() + "] ";
+          FlutterConsole.attach(module.getProject(), handler, commandPrefix + cmd.title);
         }
 
         handler.startNotify();
@@ -177,7 +178,7 @@ public class FlutterSdk {
 
   public enum Command {
 
-    CREATE("create", "Flutter Create") {
+    CREATE("create", "Flutter: Create") {
       @Override
       void onTerminate(@NotNull Module module,
                        @NotNull VirtualFile workingDir,
