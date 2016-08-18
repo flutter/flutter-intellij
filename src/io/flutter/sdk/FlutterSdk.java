@@ -32,6 +32,7 @@ import com.intellij.util.ArrayUtil;
 import com.intellij.util.containers.ContainerUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterProjectComponent;
+import io.flutter.console.FlutterConsole;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -146,8 +147,11 @@ public class FlutterSdk {
             cmd.onTerminate(module, workingDir, args);
           }
         });
+        if (cmd.attachToConsole()) {
+          FlutterConsole.attach(module.getProject(), handler, cmd.title);
+        }
+
         handler.startNotify();
-        //TODO(pq): consider attaching a console to the process
       }
     }
     catch (ExecutionException e) {
@@ -204,6 +208,12 @@ public class FlutterSdk {
       this.title = title;
     }
 
+    /**
+     * Whether to attach to a console view (defaults to true).
+     */
+    boolean attachToConsole() {
+      return true;
+    }
 
     /**
      * Invoked after the command terminates.
