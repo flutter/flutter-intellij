@@ -26,8 +26,6 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-
 public class FlutterRunningState extends DartCommandLineRunningState {
   private int myObservatoryPort;
 
