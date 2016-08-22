@@ -40,6 +40,11 @@ public class FlutterRunner extends DartRunner {
     return new FlutterUrlResolver(project, contextFileOrDir);
   }
 
+  @Override
+  protected int getTimeout() {
+    return 30000; // Allow 30 seconds to connect to the observatory.
+  }
+
   private static class FlutterUrlResolver extends DartUrlResolverImpl {
     private static final String PACKAGE_PREFIX = "package:";
     //private static final String PACKAGES_PREFIX = "packages/";

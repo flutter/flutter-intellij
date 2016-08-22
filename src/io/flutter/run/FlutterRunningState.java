@@ -7,7 +7,7 @@ package io.flutter.run;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.ColoredProcessHandler;
+import com.intellij.execution.process.KillableColoredProcessHandler;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessTerminatedListener;
@@ -16,16 +16,18 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.net.NetUtils;
 import com.jetbrains.lang.dart.DartBundle;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import io.flutter.FlutterBundle;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-
 public class FlutterRunningState extends DartCommandLineRunningState {
-  private int myObservatoryPort = 8181; // TODO Make this a parameter.
+  private int myObservatoryPort;
 
   public FlutterRunningState(@NotNull ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
@@ -37,7 +39,7 @@ public class FlutterRunningState extends DartCommandLineRunningState {
 
   protected ProcessHandler doStartProcess(final @Nullable String overriddenMainFilePath) throws ExecutionException {
     final GeneralCommandLine commandLine = createCommandLine(overriddenMainFilePath);
-    final OSProcessHandler processHandler = new ColoredProcessHandler(commandLine);
+    final OSProcessHandler processHandler = new KillableColoredProcessHandler(commandLine);
     ProcessTerminatedListener.attach(processHandler, getEnvironment().getProject());
     return processHandler;
   }
@@ -49,12 +51,16 @@ public class FlutterRunningState extends DartCommandLineRunningState {
     }
 
     FlutterRunnerParameters params = (FlutterRunnerParameters)myRunnerParameters;
-    String flutterSdkPath = params.getFlutterSdkPath();
-    flutterSdkPath = verifyFlutterSdk(flutterSdkPath);
+    FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(getEnvironment().getProject());
+    if (flutterSdk == null) {
+      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
+    }
+
+    String flutterSdkPath = flutterSdk.getHomePath();
     VirtualFile projectDir = flutterProjectDir(params.getFilePath());
 
     String workingDir = projectDir.getCanonicalPath();
-    String flutterExec = pathToFlutter(flutterSdkPath);
+    String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workingDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
@@ -65,6 +71,10 @@ public class FlutterRunningState extends DartCommandLineRunningState {
                                           : GeneralCommandLine.ParentEnvironmentType.NONE);
     commandLine.addParameter("run");
     if ("Debug".equals(getEnvironment().getExecutor().getActionName())) {
+      myObservatoryPort = NetUtils.tryToFindAvailableSocketPort();
+      if (myObservatoryPort < 0) {
+        throw new ExecutionException(FlutterBundle.message("no.socket.for.debugging"));
+      }
       commandLine.addParameter("--start-paused");
       commandLine.addParameter("--debug-port");
       commandLine.addParameter(String.valueOf(myObservatoryPort));
@@ -74,36 +84,8 @@ public class FlutterRunningState extends DartCommandLineRunningState {
   }
 
   @NotNull
-  public static String verifyFlutterSdk(@Nullable String path) throws ExecutionException {
-    if (path == null || path.isEmpty()) {
-      throw new ExecutionException("No flutter sdk given"); // TODO Externalize strings
-    }
-    File flutterSdk = new File(path);
-    File bin = new File(flutterSdk, "bin");
-    if (!bin.isDirectory()) {
-      throw new ExecutionException("No flutter sdk given"); // TODO Externalize strings
-    }
-    if (!(new File(bin, "flutter").exists())) {
-      throw new ExecutionException("No flutter sdk given"); // TODO Externalize strings
-    }
-    return path;
-  }
-
-  @NotNull
-  public static String pathToFlutter(@NotNull String sdkPath) throws ExecutionException {
-    // The exception is not thrown if this follows the call to verifyFlutterSdk().
-    VirtualFile sdk = LocalFileSystem.getInstance().findFileByPath(sdkPath);
-    if (sdk == null) throw new ExecutionException("No flutter sdk given"); // TODO Externalize strings
-    VirtualFile bin = sdk.findChild("bin");
-    if (bin == null) throw new ExecutionException("No flutter sdk given"); // TODO Externalize strings
-    VirtualFile exec = bin.findChild("flutter"); // TODO Use flutter.bat on Windows
-    if (exec == null) throw new ExecutionException("No flutter sdk given"); // TODO Externalize strings
-    return exec.getPath();
-  }
-
-  @NotNull
   public static VirtualFile flutterProjectDir(@Nullable String projectPath) throws ExecutionException {
-    if (projectPath == null) throw new ExecutionException("Project directory not given"); // TODO Externalize strings
+    if (projectPath == null) throw new ExecutionException(FlutterBundle.message("no.project.dir"));
     VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(projectPath);
     while (projectDir != null) {
       if (projectDir.isDirectory() && projectDir.findChild("pubspec.yaml") != null) {
@@ -111,7 +93,7 @@ public class FlutterRunningState extends DartCommandLineRunningState {
       }
       projectDir = projectDir.getParent();
     }
-    throw new ExecutionException("Project directory not given"); // TODO Externalize strings
+    throw new ExecutionException(FlutterBundle.message("no.project.dir"));
   }
 
   public int getObservatoryPort() {

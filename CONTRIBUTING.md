@@ -32,5 +32,5 @@ file in the Dart plugin.
   - Click Debug button (to the right of that drop-down).
   - In the new IntelliJ process that spawns, open the hello_world example.
   - Choose Edit Configuration in the Run Configuration drop-down list.
-  - Example Defaults and verify that Flutter is present.
+  - Expand Defaults and verify that Flutter is present.
   - Click [+] and verify that Flutter is present.

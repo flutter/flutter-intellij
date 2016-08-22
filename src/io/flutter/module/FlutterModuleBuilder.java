@@ -93,7 +93,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   void setupProject(@NotNull final ModifiableRootModel model,
                     @NotNull final VirtualFile baseDir) {
-    
+
     final FlutterSdk sdk = getFlutterSdk();
     if (sdk == null) {
       //TODO(pq): prompt to configure SDK.
