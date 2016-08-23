@@ -197,7 +197,7 @@ public class FlutterSdk {
               manager.openFile(main, true);
             }
             else {
-              LOG.warn("Unable to find (and open) created `main` file.")
+              LOG.warn("Unable to find (and open) created `main` file.");
             }
           }
         });
