@@ -16,9 +16,11 @@
     <programRunner implementation="io.flutter.run.FlutterRunner"/>
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
 
+    <!-- SDK type support WIP; see: #55 /-->
+    <!--sdkType implementation="io.flutter.sdk.FlutterSdkType"/-->
+
     <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
-
   </extensions>
 
 </idea-plugin>
