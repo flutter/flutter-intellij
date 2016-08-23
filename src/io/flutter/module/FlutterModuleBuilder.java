@@ -9,6 +9,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
@@ -20,11 +21,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
+
+  private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
   @Override
   public String getName() {
@@ -55,6 +59,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
   }
 
+  @SuppressWarnings("EmptyMethod")
   @Override
   public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
     //TODO(pq): replace with new custom wizard (or suppress useless frameworks page)
@@ -63,8 +68,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public boolean isSuitableSdkType(SdkTypeId sdkType) {
-    // TODO(pq): add FlutterSdkType and implement
-    return super.isSuitableSdkType(sdkType);
+    return sdkType == FlutterSdkType.getInstance();
   }
 
   @Override
@@ -79,6 +83,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return super.validate(current, dest);
   }
 
+  @SuppressWarnings("EmptyMethod")
   @Override
   public String getParentGroup() {
     //TODO(pq): find an appropriate parent group
@@ -105,8 +110,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, baseDir.getPath());
     }
     catch (ExecutionException e) {
-      //TODO(pq): handle exceptions
-      e.printStackTrace();
+      LOG.warn(e);
     }
   }
 
