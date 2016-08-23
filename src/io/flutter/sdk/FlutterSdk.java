@@ -14,6 +14,7 @@ import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
@@ -43,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FlutterSdk {
 
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
+  private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final String GROUP_DISPLAY_ID = "Flutter Command Invocation";
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
   private static final String UNKNOWN_VERSION = "unknown";
@@ -86,6 +88,7 @@ public class FlutterSdk {
 
   @Nullable
   public static FlutterSdk getGlobalFlutterSdk() {
+    //TODO(pq): update to use proper SDK and migrate from app lib.
     return findFlutterSdkAmongGlobalLibs(ApplicationLibraryTable.getApplicationTable().getLibraries());
   }
 
@@ -194,7 +197,7 @@ public class FlutterSdk {
               manager.openFile(main, true);
             }
             else {
-              //TODO(pq): log error
+              LOG.warn("Unable to find (and open) created `main` file.")
             }
           }
         });
@@ -212,6 +215,7 @@ public class FlutterSdk {
     /**
      * Whether to attach to a console view (defaults to true).
      */
+    @SuppressWarnings("SameReturnValue")
     boolean attachToConsole() {
       return true;
     }
