@@ -8,6 +8,7 @@ package io.flutter.sdk;
 import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
@@ -30,7 +31,7 @@ import java.util.Map;
 public class FlutterSdkUtil {
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
-
+  private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
 
   private FlutterSdkUtil() {
   }
@@ -128,6 +129,7 @@ public class FlutterSdkUtil {
       return version;
     }
 
+    LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
     return null;
   }
 
