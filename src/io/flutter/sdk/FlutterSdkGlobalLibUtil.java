@@ -84,16 +84,8 @@ public class FlutterSdkGlobalLibUtil {
     }
   }
 
-  public static void ensureDartSdkConfigured(@NotNull final String sdkHomePath) {
-    // TODO Implement or remove.
-  }
-
-  public static void enableDartSdk(Module module) {
-    // TODO Implement enableDartSdk()
-  }
-
-  public static void disableDartSdk(List<Module> modules) {
-    // TODO Implement disableDartSdk()
+  public static void disableFlutterSdk(List<Module> modules) {
+    // TODO Implement disableFlutterSdk()
   }
 
   public static void enableFlutterSdk(@NotNull final Module module) {
