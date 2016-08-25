@@ -64,17 +64,29 @@ public class FlutterSdkUtil {
     }
   }
 
-
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    VirtualFile sdk = LocalFileSystem.getInstance().findFileByPath(sdkPath);
-    if (sdk == null) throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    VirtualFile bin = sdk.findChild("bin");
-    if (bin == null) throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    VirtualFile exec = bin.findChild("flutter"); // TODO Use flutter.bat on Windows
-    if (exec == null) throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    return exec.getPath();
+    return sdkRelativePathTo(sdkPath, "bin", "flutter"); // TODO Use flutter.bat on Windows
   }
+
+  @NotNull
+  public static String pathToDartSdk(@NotNull String sdkPath) throws ExecutionException {
+    return sdkRelativePathTo(sdkPath, "bin", "cache", "dart-sdk");
+  }
+
+  @NotNull
+  private static String sdkRelativePathTo(@NotNull String sdkPath, @NotNull String... segments) throws ExecutionException {
+    VirtualFile child = LocalFileSystem.getInstance().findFileByPath(sdkPath);
+    if (child == null) throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
+    for (String segment : segments) {
+      child = child.findChild(segment);
+      if (child == null) {
+        throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
+      }
+    }
+    return child.getPath();
+  }
+
 
   public static boolean isFlutterSdkLibRoot(@Nullable VirtualFile sdk) {
     if (sdk == null) return false;
