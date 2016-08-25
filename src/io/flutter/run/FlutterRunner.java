@@ -41,7 +41,7 @@ public class FlutterRunner extends DartRunner {
     return new FlutterUrlResolver(project, contextFileOrDir);
   }
 
-  @Override
+  //@Override --- TODO: not valid in Dart-plugin v.162.1469.
   protected int getTimeout() {
     return 30000; // Allow 30 seconds to connect to the observatory.
   }
