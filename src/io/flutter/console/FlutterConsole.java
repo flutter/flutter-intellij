@@ -23,8 +23,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterConsole {
 
-  private static ConsoleView console;
-
   /**
    * Attach the flutter console to the process managed by the given processHandler.
    */
@@ -53,11 +51,9 @@ public class FlutterConsole {
   }
 
   private static ConsoleView getConsole(@NotNull Project project) {
-    if (console == null) {
-      final TextConsoleBuilder consoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(project);
-      consoleBuilder.setViewer(true);
-      console = consoleBuilder.getConsole();
-    }
-    return console;
+    final TextConsoleBuilder consoleBuilder =
+      TextConsoleBuilderFactory.getInstance().createBuilder(project);
+    consoleBuilder.setViewer(true);
+    return consoleBuilder.getConsole();
   }
 }
