@@ -34,7 +34,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
-  private static final String FLUTTER_SETTTINGS_HELP_TOPIC = "flutter.settings.help";
+  private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
   boolean isModified;
   private JPanel mainPanel;
   private JPanel sdkSettings;
@@ -154,7 +154,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Nullable
   @Override
   public String getHelpTopic() {
-    return FLUTTER_SETTTINGS_HELP_TOPIC;
+    return FLUTTER_SETTINGS_HELP_TOPIC;
   }
 
   private void updateErrorLabel() {

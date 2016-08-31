@@ -36,6 +36,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
 
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
+    //noinspection DialogTitleCapitalization
     myWorkingDirectory.addBrowseFolderListener(ExecutionBundle.message("select.working.directory.message"), null, project,
                                                FileChooserDescriptorFactory.createSingleFolderDescriptor());
     myVMOptions.setDialogCaption(DartBundle.message("config.vmoptions.caption"));
