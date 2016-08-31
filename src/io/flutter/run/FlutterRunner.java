@@ -36,6 +36,7 @@ public class FlutterRunner extends DartRunner {
             (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)));
   }
 
+  @Override
   protected DartUrlResolver getDartUrlResolver(@NotNull final Project project, @NotNull final VirtualFile contextFileOrDir) {
     return new FlutterUrlResolver(project, contextFileOrDir);
   }

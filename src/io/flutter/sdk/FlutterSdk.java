@@ -179,6 +179,11 @@ public class FlutterSdk {
     return myVersion;
   }
 
+  @NotNull
+  public String getDartSdkPath() throws ExecutionException {
+    return FlutterSdkUtil.pathToDartSdk(getHomePath());
+  }
+
   public enum Command {
 
     CREATE("create", "Flutter: Create") {

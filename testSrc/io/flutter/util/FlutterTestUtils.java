@@ -30,7 +30,7 @@ public class FlutterTestUtils {
   public static final String BASE_TEST_DATA_PATH = findTestDataPath();
   public static final String SDK_HOME_PATH = BASE_TEST_DATA_PATH + "/sdk";
 
-  public static void configureDartSdk(@NotNull final Module module, @NotNull final Disposable disposable, final boolean realSdk) {
+  public static void configureFlutterSdk(@NotNull final Module module, @NotNull final Disposable disposable, final boolean realSdk) {
     final String sdkHome;
     if (realSdk) {
       sdkHome = System.getProperty("flutter.sdk");
@@ -43,23 +43,19 @@ public class FlutterTestUtils {
                     "the corresponding JUnit run configuration (Run | Edit Configurations)");
       }
       VfsRootAccess.allowRootAccess(disposable, sdkHome);
-      // Flutter execution threads
-      ThreadTracker.longRunningThreadCreated(ApplicationManager.getApplication(),
-                                             "ByteRequestSink.LinesWriterThread",
-                                             "ByteResponseStream.LinesReaderThread");
     }
     else {
       sdkHome = SDK_HOME_PATH;
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-      FlutterSdkGlobalLibUtil.ensureDartSdkConfigured(sdkHome);
-      FlutterSdkGlobalLibUtil.enableDartSdk(module);
+      FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHome);
+      FlutterSdkGlobalLibUtil.enableFlutterSdk(module);
     });
 
     Disposer.register(disposable, () -> ApplicationManager.getApplication().runWriteAction(() -> {
       if (!module.isDisposed()) {
-        FlutterSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
+        FlutterSdkGlobalLibUtil.disableFlutterSdk(Collections.singletonList(module));
       }
 
       ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
@@ -78,19 +74,19 @@ public class FlutterTestUtils {
 
     final File f = new File("testData");
     if (f.isDirectory()) {
-      // started from 'Dart-plugin' project
+      // started from flutter plugin project
       return FileUtil.toSystemIndependentName(f.getAbsolutePath());
     }
 
     final String parentPath = PathUtil.getParentPath(PathManager.getHomePath());
 
     if (new File(parentPath + "/intellij-plugins").isDirectory()) {
-      // started from IntelliJ IDEA Community Edition + Dart Plugin project
+      // started from IntelliJ IDEA Community Edition + flutter plugin project
       return FileUtil.toSystemIndependentName(parentPath + "/intellij-plugins/flutter-intellij/testData");
     }
 
     if (new File(parentPath + "/contrib").isDirectory()) {
-      // started from IntelliJ IDEA Community + Dart Plugin project
+      // started from IntelliJ IDEA Community + flutter plugin project
       return FileUtil.toSystemIndependentName(parentPath + "/contrib/flutter-intellij/testData");
     }
 
