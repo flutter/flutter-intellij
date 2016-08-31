@@ -10,7 +10,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * A service to coordinate SDK configuration with specific IDEA and SmallIDE
@@ -29,5 +28,5 @@ public abstract class FlutterSdkService {
     return ServiceManager.getService(project, FlutterSdkService.class);
   }
 
-  public abstract void configureDartSdk(@Nullable Module module);
+  public abstract void configureDartSdk(@NotNull Module module);
 }

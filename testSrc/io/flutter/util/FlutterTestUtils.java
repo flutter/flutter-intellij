@@ -14,7 +14,6 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
-import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.PathUtil;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkGlobalLibUtil;

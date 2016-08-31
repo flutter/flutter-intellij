@@ -21,7 +21,6 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
-import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdk;
@@ -40,11 +39,12 @@ public class WrongDartSdkConfigurationNotificationProvider extends EditorNotific
     this.project = project;
   }
 
-  @NotNull
+  @Nullable
   private static EditorNotificationPanel createWrongSdkPanel(@NotNull Project project, @Nullable Module module) {
+    if (module == null) return null;
 
     final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings.ignoreMismatchedDartSdks()) return null;
+    if (settings == null || settings.ignoreMismatchedDartSdks()) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.wrong.dart.sdk.warning"));
@@ -79,16 +79,25 @@ public class WrongDartSdkConfigurationNotificationProvider extends EditorNotific
     if (!ModuleType.is(module, FlutterModuleType.getInstance())) return null;
 
     try {
-      final String flutterDartSdkPath = FlutterSdk.getFlutterSdk(project).getDartSdkPath();
-      final String dartSdkPath = DartSdk.getDartSdk(project).getHomePath();
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      if (sdk == null) {
+        return createNoSdkPanel();
+      }
+      final String flutterDartSdkPath = sdk.getDartSdkPath();
+      final String dartSdkPath = sdk.getHomePath();
       if (!StringUtil.equals(flutterDartSdkPath, dartSdkPath)) {
         return createWrongSdkPanel(project, module);
       }
     }
     catch (ExecutionException e) {
-      //TODO(pq): add panel for unconfigured Flutter SDK.
+      return createNoSdkPanel();
     }
 
+    return null;
+  }
+
+  private static EditorNotificationPanel createNoSdkPanel() {
+    //TODO(pq): add panel for unconfigured Flutter SDK.
     return null;
   }
 }
