@@ -9,18 +9,20 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -57,23 +59,17 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
   }
 
-  @SuppressWarnings("EmptyMethod")
-  @Override
-  public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext, @NotNull ModulesProvider modulesProvider) {
-    //TODO(pq): replace with new custom wizard (or suppress useless frameworks page)
-    return super.createWizardSteps(wizardContext, modulesProvider);
-  }
-
   @Override
   public boolean validate(Project current, Project dest) {
+    return FlutterSdk.getGlobalFlutterSdk() != null;
+  }
 
-    if (FlutterSdk.getGlobalFlutterSdk() == null) {
-      //TODO(pq): prompt to configure SDK.
-      return false;
-    }
-
-    //TODO(pq): add validation
-    return super.validate(current, dest);
+  @Nullable
+  @Override
+  public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
+    final FlutterModuleWizardStep step = new FlutterModuleWizardStep();
+    Disposer.register(parentDisposable, step);
+    return step;
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -94,7 +90,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     final FlutterSdk sdk = getFlutterSdk();
     if (sdk == null) {
-      //TODO(pq): prompt to configure SDK.
+      // Validation happens in generator peer.
       return;
     }
 
@@ -109,5 +105,35 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   FlutterSdk getFlutterSdk() {
     return FlutterSdk.getGlobalFlutterSdk();
+  }
+
+  private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
+    private final FlutterGeneratorPeer peer;
+
+    public FlutterModuleWizardStep() {
+      this.peer = new FlutterGeneratorPeer();
+    }
+
+    @Override
+    public JComponent getComponent() {
+      return peer.getComponent();
+    }
+
+    @Override
+    public void updateDataModel() {
+    }
+
+    @Override
+    public boolean validate() throws ConfigurationException {
+      final boolean valid = peer.validate();
+      if (valid) {
+        peer.apply();
+      }
+      return valid;
+    }
+
+    @Override
+    public void dispose() {
+    }
   }
 }
