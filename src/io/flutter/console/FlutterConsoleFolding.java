@@ -21,11 +21,9 @@ public class FlutterConsoleFolding extends ConsoleFolding {
     if (!line.contains("flutter run")) return false;
 
     try {
-      final String homePath = FlutterSdk.getGlobalFlutterSdk().getHomePath();
-      if (homePath == null) {
-        return false;
-      }
-      final String flutterPath = FlutterSdkUtil.pathToFlutterTool(homePath);
+      FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+      if (sdk == null) return false;
+      final String flutterPath = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
       return line.startsWith(flutterPath + " run");
     }
     catch (ExecutionException e) {
