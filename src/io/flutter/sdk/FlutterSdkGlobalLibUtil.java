@@ -54,7 +54,10 @@ public class FlutterSdkGlobalLibUtil {
   @SuppressWarnings("Duplicates")
   private static void setupFlutterSdkRoots(@NotNull final Library library, @NotNull final String sdkHomePath) {
     final VirtualFile libRoot = LocalFileSystem.getInstance().refreshAndFindFileByPath(sdkHomePath + "/bin/cache/dart-sdk/lib");
-    if (libRoot != null && libRoot.isDirectory()) {
+    if (libRoot == null || !libRoot.isDirectory()) {
+      LOG.warn("No Dart SDK found in Flutter install, Flutter SDK library root setup skipped");
+    }
+    else {
       final LibraryEx.ModifiableModelEx libModifiableModel = (LibraryEx.ModifiableModelEx)library.getModifiableModel();
       try {
         // remove old

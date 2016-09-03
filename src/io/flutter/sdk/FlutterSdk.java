@@ -129,7 +129,10 @@ public class FlutterSdk {
     return parent != null && parent.getName().equals("flutter") ? parent : null;
   }
 
-  public void run(@NotNull Command cmd, @NotNull Module module, @NotNull VirtualFile workingDir, @NotNull String... args)
+  public void run(@NotNull Command cmd,
+                  @NotNull Module module,
+                  @NotNull VirtualFile workingDir,
+                  @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
     final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(workingDir.getPath());
