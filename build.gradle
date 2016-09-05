@@ -11,3 +11,28 @@ buildscript {
 plugins {
   id "org.jetbrains.intellij" version "0.1.10"
 }
+
+allprojects {
+  sourceSets {
+    main {
+      java.srcDirs 'src', 'gen'
+      resources.srcDir 'resources'
+    }
+    test {
+      java.srcDir 'testSrc'
+    }
+  }
+
+  apply plugin: 'org.jetbrains.intellij'
+
+  // IntelliJ IDEA 2016.2.3
+  // Build #IC-162.1812.17, built on August 30, 2016
+
+  // Dart 162.1469
+
+  intellij {
+    version = '2016.2.3'
+    pluginName = 'Flutter'
+    plugins = ['Dart:162.1469']
+  }
+}
