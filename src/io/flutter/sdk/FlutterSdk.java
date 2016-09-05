@@ -126,7 +126,7 @@ public class FlutterSdk {
       parent = parent.getParent();
     }
     while (parent != null && --count > 0);
-    return parent != null && parent.getName().equals("flutter") ? parent : null;
+    return parent;
   }
 
   public void run(@NotNull Command cmd,
