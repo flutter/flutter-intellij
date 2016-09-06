@@ -9,6 +9,7 @@ import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderFactory;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
@@ -26,18 +27,20 @@ public class FlutterConsole {
   /**
    * Attach the flutter console to the process managed by the given processHandler.
    */
-  public static void attach(@NotNull Project project, @NotNull OSProcessHandler processHandler, @NotNull String processTitle) {
-    final ConsoleView console = getConsole(project);
+  public static void attach(@NotNull Module module, @NotNull OSProcessHandler processHandler, @NotNull String processTitle) {
+    final ConsoleView console = getConsole(module);
     console.attachToProcess(processHandler);
-    show(project, console, processTitle);
+    show(module, console, processTitle);
   }
 
-  private static void show(@NotNull Project project, @NotNull ConsoleView console, String processTitle) {
+  private static void show(@NotNull Module module, @NotNull ConsoleView console, String processTitle) {
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(false, true);
     toolWindowPanel.setContent(console.getComponent());
 
     final Content content = ContentFactory.SERVICE.getInstance().createContent(toolWindowPanel.getComponent(), processTitle, true);
     Disposer.register(content, console);
+
+    final Project project = module.getProject();
 
     final MessageView messageView = MessageView.SERVICE.getInstance(project);
     messageView.runWhenInitialized(() -> {
@@ -50,10 +53,11 @@ public class FlutterConsole {
     });
   }
 
-  private static ConsoleView getConsole(@NotNull Project project) {
+  private static ConsoleView getConsole(@NotNull Module module) {
     final TextConsoleBuilder consoleBuilder =
-      TextConsoleBuilderFactory.getInstance().createBuilder(project);
+      TextConsoleBuilderFactory.getInstance().createBuilder(module.getProject());
     consoleBuilder.setViewer(true);
+    consoleBuilder.addFilter(new FlutterConsoleFilter(module));
     return consoleBuilder.getConsole();
   }
 }
