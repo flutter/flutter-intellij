@@ -4,12 +4,7 @@ jdk:
   - oraclejdk8
 
 # execution
-script:
-  - git clone https://github.com/flutter/flutter.git --depth 1
-  - export PATH="$PATH":flutter
-  - flutter precache
-  - export FLUTTER_SDK=flutter
-  - gradle build --info
+script: ./tool/travis.sh
 
 # caching
 before_cache:
