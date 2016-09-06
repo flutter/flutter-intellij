@@ -4,9 +4,12 @@ jdk:
   - oraclejdk8
 
 # execution
-# TODO(devoncarew): Call `build` instead of `assemble` when we fix the tests on travis.
 script:
-  - gradle assemble --info
+  - git clone https://github.com/flutter/flutter.git --depth 1
+  - export PATH="$PATH":flutter
+  - flutter precache
+  - export FLUTTER_SDK=flutter
+  - gradle build --info
 
 # caching
 before_cache:
