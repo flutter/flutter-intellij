@@ -53,9 +53,9 @@ public class FlutterSdk {
   private final @NotNull String myHomePath;
   private final @NotNull String myVersion;
 
-  private FlutterSdk(@NotNull final String homePath, @NotNull final String version) {
+  private FlutterSdk(@NotNull final String homePath, @Nullable final String version) {
     myHomePath = homePath;
-    myVersion = version;
+    myVersion = version != null ? version : UNKNOWN_VERSION;
   }
 
   private FlutterSdk(String homePath) {
@@ -167,9 +167,9 @@ public class FlutterSdk {
             cmd.onTerminate(module, workingDir, args);
           }
         });
-        if (cmd.attachToConsole()) {
+        if (cmd.attachToConsole() && module != null) {
           final String commandPrefix = "[" + module.getName() + "] ";
-          FlutterConsole.attach(module.getProject(), handler, commandPrefix + cmd.title);
+          FlutterConsole.attach(module, handler, commandPrefix + cmd.title);
         }
 
         handler.startNotify();
@@ -225,6 +225,7 @@ public class FlutterSdk {
         });
       }
     },
+    DOCTOR("doctor", "Flutter: Doctor"),
     VERSION("--version", "Flutter: Version") {
       @Override
       boolean attachToConsole() {
