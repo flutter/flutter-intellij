@@ -11,6 +11,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
@@ -163,10 +164,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           public void processTerminated(@NotNull ProcessEvent event) {
             final ProcessOutput output = getOutput();
             final String stdout = output.getStdout();
-            SwingUtilities.invokeLater(() -> {
+            ApplicationManager.getApplication().invokeLater(() -> {
               versionDetails.setText(stdout);
               versionDetails.setVisible(true);
-            });
+            }, ModalityState.current());
           }
         });
       }
