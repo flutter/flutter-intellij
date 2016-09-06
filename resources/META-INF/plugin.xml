@@ -28,6 +28,8 @@
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService" serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
                     overrides="false"/>
 
+    <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
+
     <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                              id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
   </extensions>

@@ -5,15 +5,20 @@
  */
 package io.flutter.run;
 
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.RunProfile;
+import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartRunner;
+import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
 import org.jetbrains.annotations.NotNull;
@@ -23,6 +28,9 @@ import java.net.URI;
 
 public class FlutterRunner extends DartRunner {
   private static final Logger LOG = Logger.getInstance(FlutterRunner.class);
+
+  @Nullable
+  private ObservatoryConnector myConnector;
 
   @NotNull
   @Override
@@ -37,6 +45,25 @@ public class FlutterRunner extends DartRunner {
   }
 
   @Override
+  protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
+    if (state instanceof FlutterDaemonRunState) {
+      final FlutterDaemonRunState daemonState = (FlutterDaemonRunState)state;
+      myConnector = new ObservatoryConnector() {
+        @Override
+        public boolean isConnectionReady() {
+          return daemonState.isConnectionReady();
+        }
+
+        @Override
+        public int getPort() {
+          return daemonState.getObservatoryPort();
+        }
+      };
+    }
+    return super.doExecute(state, env);
+  }
+
+  @Override
   protected DartUrlResolver getDartUrlResolver(@NotNull final Project project, @NotNull final VirtualFile contextFileOrDir) {
     return new FlutterUrlResolver(project, contextFileOrDir);
   }
@@ -44,6 +71,11 @@ public class FlutterRunner extends DartRunner {
   @Override
   protected int getTimeout() {
     return 30000; // Allow 30 seconds to connect to the observatory.
+  }
+
+  @Nullable
+  protected ObservatoryConnector getConnector() {
+    return myConnector;
   }
 
   private static class FlutterUrlResolver extends DartUrlResolverImpl {
