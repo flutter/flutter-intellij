@@ -28,7 +28,7 @@ allprojects {
       // resources.srcDir 'resources'
     }
     test {
-      java.srcDir 'testSrc'
+      java.srcDirs 'testSrc', 'third_party/intellij-plugins-dart/testSrc'
     }
   }
 
