@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(devoncarew): remove when intellij-plugin-service 0.2.0 is available. Update instructions
-// will be here: https://github.com/JetBrains/gradle-intellij-plugin/blob/master/README.md
+// TODO(devoncarew): Update when intellij-plugin-service 0.2.0 is available.
+// See: https://github.com/JetBrains/gradle-intellij-plugin/blob/master/README.md.
 buildscript {
   repositories {
     mavenCentral()
@@ -32,15 +32,13 @@ allprojects {
     }
   }
 
-  apply plugin: 'org.jetbrains.intellij'
-
-  // IntelliJ IDEA 2016.2.3 / Build #IC-162.1812.17
-
-  // Dart 162.1469 (https://plugins.jetbrains.com/plugin/6351)
-
   intellij {
+    // IntelliJ IDEA 2016.2.3 / Build #IC-162.1812.17
     version = '2016.2.3'
+
     pluginName = 'Flutter'
+
+    // Dart 162.1469 (https://plugins.jetbrains.com/plugin/6351)
     plugins = ['Dart:162.1469']
   }
 }
