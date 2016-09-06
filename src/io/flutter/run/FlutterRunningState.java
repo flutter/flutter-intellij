@@ -31,6 +31,7 @@ public class FlutterRunningState extends DartCommandLineRunningState {
 
   public FlutterRunningState(@NotNull ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
+    //((TextConsoleBuilderImpl)getConsoleBuilder()).setUsePredefinedMessageFilter(true);
   }
 
   public FlutterRunnerParameters params() {
@@ -44,7 +45,7 @@ public class FlutterRunningState extends DartCommandLineRunningState {
     return processHandler;
   }
 
-  private GeneralCommandLine createCommandLine(final @Nullable String overriddenMainFilePath) throws ExecutionException {
+  GeneralCommandLine createCommandLine(final @Nullable String overriddenMainFilePath) throws ExecutionException {
     DartSdk sdk = DartSdk.getDartSdk(getEnvironment().getProject());
     if (sdk == null) {
       throw new ExecutionException(DartBundle.message("dart.sdk.is.not.configured"));
@@ -69,18 +70,24 @@ public class FlutterRunningState extends DartCommandLineRunningState {
     commandLine.withParentEnvironmentType(myRunnerParameters.isIncludeParentEnvs()
                                           ? GeneralCommandLine.ParentEnvironmentType.CONSOLE
                                           : GeneralCommandLine.ParentEnvironmentType.NONE);
-    commandLine.addParameter("run");
+    commandLine.addParameter(startUpCommand());
     if ("Debug".equals(getEnvironment().getExecutor().getActionName())) {
       myObservatoryPort = NetUtils.tryToFindAvailableSocketPort();
       if (myObservatoryPort < 0) {
         throw new ExecutionException(FlutterBundle.message("no.socket.for.debugging"));
       }
-      commandLine.addParameter("--start-paused");
-      commandLine.addParameter("--debug-port");
-      commandLine.addParameter(String.valueOf(myObservatoryPort));
+      if (startUpCommand().equals("run")) {
+        commandLine.addParameter("--start-paused");
+        commandLine.addParameter("--debug-port");
+        commandLine.addParameter(String.valueOf(myObservatoryPort));
+      }
     }
 
     return commandLine;
+  }
+
+  String startUpCommand() {
+    return "run";
   }
 
   @NotNull
