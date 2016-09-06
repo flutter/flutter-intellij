@@ -7,7 +7,7 @@ package io.flutter;
 
 import com.intellij.testFramework.fixtures.LightPlatformCodeInsightFixtureTestCase;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.util.DartTestUtils;
+import com.jetbrains.lang.dart.util.DartTestUtils;
 import io.flutter.util.FlutterTestUtils;
 
 abstract public class FlutterCodeInsightFixtureTestCase extends LightPlatformCodeInsightFixtureTestCase {
