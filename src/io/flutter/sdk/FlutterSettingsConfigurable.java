@@ -5,8 +5,13 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.process.CapturingProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
@@ -32,6 +37,8 @@ import javax.swing.text.JTextComponent;
 
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
+  private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class.getName());
+
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
@@ -40,6 +47,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JPanel sdkSettings;
   private ComboboxWithBrowseButton sdkCombo;
   private JBLabel errorLabel;
+  private JTextArea versionDetails;
 
   FlutterSettingsConfigurable() {
     init();
@@ -53,6 +61,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       protected void textChanged(final DocumentEvent e) {
         updateErrorLabel();
+        updateVersionText();
       }
     });
 
@@ -137,7 +146,34 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final String path = sdk != null ? FileUtilRt.toSystemDependentName(sdk.getHomePath()) : "";
     sdkCombo.getComboBox().getEditor().setItem(path);
 
+    updateVersionText();
     updateErrorLabel();
+  }
+
+  private void updateVersionText() {
+
+    final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
+    if (sdk == null) {
+      versionDetails.setVisible(false);
+    }
+    else {
+      try {
+        sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
+          @Override
+          public void processTerminated(@NotNull ProcessEvent event) {
+            final ProcessOutput output = getOutput();
+            final String stdout = output.getStdout();
+            SwingUtilities.invokeLater(() -> {
+              versionDetails.setText(stdout);
+              versionDetails.setVisible(true);
+            });
+          }
+        });
+      }
+      catch (ExecutionException e) {
+        LOG.warn(e);
+      }
+    }
   }
 
   @Override

@@ -96,7 +96,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     // Create files.
     try {
-      sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, baseDir.getPath());
+      sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, null, baseDir.getPath());
     }
     catch (ExecutionException e) {
       LOG.warn(e);
