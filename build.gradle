@@ -25,7 +25,7 @@ allprojects {
   sourceSets {
     main {
       java.srcDirs 'src', 'gen'
-      resources.srcDir 'resources'
+      // resources.srcDir 'resources'
     }
     test {
       java.srcDir 'testSrc'
@@ -38,7 +38,7 @@ allprojects {
 
     pluginName = 'Flutter'
 
-    // Dart 162.1469 (https://plugins.jetbrains.com/plugin/6351)
-    plugins = ['Dart:162.1469']
+    // Dart 162.2017 (https://plugins.jetbrains.com/plugin/6351)
+    plugins = ['Dart:162.2017']
   }
 }

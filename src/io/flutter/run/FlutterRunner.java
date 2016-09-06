@@ -41,9 +41,7 @@ public class FlutterRunner extends DartRunner {
     return new FlutterUrlResolver(project, contextFileOrDir);
   }
 
-  // TODO(devoncarew): This override is commented out until the next stable rev.
-  // of the Dart plugin.
-  // @Override
+  @Override
   protected int getTimeout() {
     return 30000; // Allow 30 seconds to connect to the observatory.
   }
