@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -55,6 +56,10 @@ public class FlutterSdk {
   private FlutterSdk(@NotNull final String homePath, @NotNull final String version) {
     myHomePath = homePath;
     myVersion = version;
+  }
+
+  private FlutterSdk(String homePath) {
+    this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
   }
 
   /**
@@ -129,13 +134,19 @@ public class FlutterSdk {
     return parent;
   }
 
+  public static FlutterSdk forPath(String path) {
+    return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
+  }
+
   public void run(@NotNull Command cmd,
-                  @NotNull Module module,
-                  @NotNull VirtualFile workingDir,
+                  @Nullable Module module,
+                  @Nullable VirtualFile workingDir,
+                  @Nullable ProcessListener listener,
                   @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
-    final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(workingDir.getPath());
+    final String dirPath = workingDir == null ? null : workingDir.getPath();
+    final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
     String[] toolArgs = ArrayUtil.prepend(cmd.command, args);
@@ -146,6 +157,9 @@ public class FlutterSdk {
     try {
       if (inProgress.compareAndSet(false, true)) {
         final OSProcessHandler handler = new OSProcessHandler(command);
+        if (listener != null) {
+          handler.addProcessListener(listener);
+        }
         handler.addProcessListener(new ProcessAdapter() {
           @Override
           public void processTerminated(final ProcessEvent event) {
@@ -191,11 +205,11 @@ public class FlutterSdk {
 
     CREATE("create", "Flutter: Create") {
       @Override
-      void onTerminate(@NotNull Module module,
-                       @NotNull VirtualFile workingDir,
+      void onTerminate(@Nullable Module module,
+                       @Nullable VirtualFile workingDir,
                        @SuppressWarnings("UnusedParameters") @NotNull String... args) {
         ApplicationManager.getApplication().invokeLater(() -> {
-          if (!module.isDisposed()) {
+          if (workingDir != null && module != null && !module.isDisposed()) {
             // Enable Dart.
             FlutterSdkUtil.enableDartSupport(module);
             final FileEditorManager manager = FileEditorManager.getInstance(module.getProject());
@@ -209,6 +223,12 @@ public class FlutterSdk {
             }
           }
         });
+      }
+    },
+    VERSION("--version", "Flutter: Version") {
+      @Override
+      boolean attachToConsole() {
+        return false;
       }
     };
 
@@ -236,7 +256,7 @@ public class FlutterSdk {
      * @param args       any arguments passed into the command
      */
     @SuppressWarnings("UnusedParameters")
-    void onTerminate(@NotNull Module module, @NotNull VirtualFile workingDir, @NotNull String... args) {
+    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
       // Default is a no-op.
     }
 
