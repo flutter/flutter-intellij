@@ -2,12 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(devoncarew): Update when intellij-plugin-service 0.2.0 is available.
+// See: https://github.com/JetBrains/gradle-intellij-plugin/blob/master/README.md.
 buildscript {
   repositories {
-    maven { url 'http://dl.bintray.com/jetbrains/intellij-plugin-service' }
+    mavenCentral()
+    maven {
+      url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    maven {
+      url 'http://dl.bintray.com/jetbrains/intellij-plugin-service'
+    }
+  }
+  dependencies {
+    classpath "org.jetbrains.intellij.plugins:gradle-intellij-plugin:0.2.0-SNAPSHOT"
   }
 }
 
-plugins {
-  id "org.jetbrains.intellij" version "0.1.10"
+apply plugin: 'org.jetbrains.intellij'
+
+allprojects {
+  sourceSets {
+    main {
+      java.srcDirs 'src', 'gen', 'third_party/intellij-plugins-dart/src'
+      // resources.srcDir 'resources'
+    }
+    test {
+      java.srcDir 'testSrc'
+    }
+  }
+
+  intellij {
+    // IntelliJ IDEA 2016.2.3 / Build #IC-162.1812.17
+    version = '2016.2.3'
+
+    pluginName = 'Flutter'
+
+    // Dart 162.2017 (https://plugins.jetbrains.com/plugin/6351)
+    plugins = ['Dart:162.2017']
+  }
 }

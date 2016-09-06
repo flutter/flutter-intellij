@@ -13,7 +13,7 @@ public class FlutterSdkUtilTest extends FlutterCodeInsightFixtureTestCase {
 
   public void testSetup() throws ExecutionException {
     // All of FlutterTestUtils is exercised before getting here.
-    assertNull("Test jig setup failed", null);
+    assertTrue("Test jig setup failed", true);
 
     // Verify Flutter SDK is installed correctly.
     FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myFixture.getProject());
