@@ -100,7 +100,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     myConnector = connector;
 
     myIsolatesInfo = new IsolatesInfo();
-    final DartVmServiceBreakpointHandler breakpointHandler = new DartVmServiceBreakpointHandler(this);
+    final DartVmServiceBreakpointHandler breakpointHandler = new DartVmServiceBreakpointHandlerZ(this);
     myBreakpointHandlers = new XBreakpointHandler[]{breakpointHandler};
 
     setLogger();
