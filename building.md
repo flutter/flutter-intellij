@@ -11,12 +11,13 @@ gradle build
 Artifacts are written into the `build/` directory. For example:
 
 ```
-build/libs/flutter-intellij-0.0.1.jar
+build/distributions/Flutter-0.0.1.zip
 ```
 
 ## More information
 
-Gradle can be installed via `brew` on the Mac (`brew install gradle`), or via `SDKMAN` as described on the gradle [web site](http://www.gradle.org/downloads).
+Gradle can be installed via `brew` on the Mac (`brew install gradle`), or via `SDKMAN` as
+described on the gradle [web site](http://www.gradle.org/downloads).
 
 Documentation for the options in `gradle.properties` is available at
 [github.com/JetBrains/gradle-intellij-plugin](https://github.com/JetBrains/gradle-intellij-plugin).
