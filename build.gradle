@@ -42,3 +42,5 @@ allprojects {
     plugins = ['Dart:162.2017']
   }
 }
+
+intellij.systemProperty('flutter.sdk', System.getenv('FLUTTER_SDK'))

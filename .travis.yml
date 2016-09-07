@@ -3,10 +3,18 @@ language: java
 jdk:
   - oraclejdk8
 
+before_script:
+  - git clone https://github.com/flutter/flutter.git --depth 1
+  - export PATH="$PATH":flutter/bin
+  - flutter config --no-analytics
+  - flutter precache
+  - export FLUTTER_SDK=`pwd`/flutter
+
 # execution
-# TODO(devoncarew): Call `build` instead of `assemble` when we fix the tests on travis.
 script:
-  - gradle assemble --info
+  - echo $FLUTTER_SDK
+  - flutter --version
+  - gradle build --info
 
 # caching
 before_cache:
