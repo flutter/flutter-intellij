@@ -35,15 +35,18 @@ file in the Dart plugin.
   - Expand Defaults and verify that Flutter is present.
   - Click [+] and verify that Flutter is present.
 
+## Running plugin tests
+
 In order to run unit tests you need to create a run configuration. The easiest way is to copy the
 one named 'Dart tests' defined for the Dart plugin. It can be found in the intellij-community
-repository under .idea/runConfigurations/Dart_tests.xml but it should already be in the run
+repository under `.idea/runConfigurations/Dart_tests.xml` but it should already be in the run
 configuration editor dialog. Name your copy 'Flutter tests' and modify the VM settings,
 adding '-Dflutter.sdk=/path/to/flutter/sdk'.
 
 Important! In order to be able to run a single test class or test method you need to do the following:
 
-* Open Run | Edit Configurations, select 'Flutter tests' run configuration, copy its VM Options to clipboard
+* Open Run | Edit Configurations, select 'Flutter tests' run configuration, copy its VM Options
+  to clipboard
 * In the same dialog (Run/Debug Configurations) expand Defaults node, find JUnit under it and paste
   VM Options to the corresponding field
 * Repeat the same with Working directory field - it must point to intellij-community/bin
