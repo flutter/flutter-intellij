@@ -1,0 +1,6 @@
+<plugins>
+  <plugin
+      id="io.flutter"
+      url="https://github.com/flutter/flutter-intellij/files/460171/Flutter-0.0.1.zip"
+      version="0.0.1"/>
+</plugins>
