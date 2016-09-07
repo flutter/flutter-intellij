@@ -50,8 +50,8 @@ import java.io.IOException;
 import java.util.*;
 
 @SuppressWarnings("Duplicates")
-public class DartVmServiceDebugProcess extends XDebugProcess {
-  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
+public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
+  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcessZ.class.getName());
 
   @Nullable private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
@@ -79,17 +79,17 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   @Nullable String myRemoteProjectRootUri;
   @Nullable private ObservatoryConnector myConnector;
 
-  public DartVmServiceDebugProcess(@NotNull final XDebugSession session,
-                                   @NotNull final String debuggingHost,
-                                   final int observatoryPort,
-                                   @Nullable final ExecutionResult executionResult,
-                                   @NotNull final DartUrlResolver dartUrlResolver,
-                                   @Nullable final String dasExecutionContextId,
-                                   final boolean remoteDebug,
-                                   final boolean entryPointInLibFolder,
-                                   final int timeout,
-                                   final ObservatoryConnector connector) {
-    super(session);
+  public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
+                                    @NotNull final String debuggingHost,
+                                    final int observatoryPort,
+                                    @Nullable final ExecutionResult executionResult,
+                                    @NotNull final DartUrlResolver dartUrlResolver,
+                                    @Nullable final String dasExecutionContextId,
+                                    final boolean remoteDebug,
+                                    final boolean entryPointInLibFolder,
+                                    final int timeout,
+                                    @Nullable final ObservatoryConnector connector) {
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, entryPointInLibFolder, timeout);
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
