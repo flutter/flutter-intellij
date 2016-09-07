@@ -26,7 +26,7 @@ import com.jetbrains.lang.dart.ide.runner.base.DartRunConfigurationBase;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunConfiguration;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.ide.runner.server.DartRemoteDebugConfiguration;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.ide.runner.test.DartTestRunnerParameters;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
@@ -152,16 +152,16 @@ public class DartRunner extends DefaultProgramRunner {
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         final DartUrlResolver dartUrlResolver = getDartUrlResolver(env.getProject(), contextFileOrDir);
-        return new DartVmServiceDebugProcess(session,
-                                             StringUtil.notNullize(debuggingHost, "localhost"),
-                                             observatoryPort,
-                                             executionResult,
-                                             dartUrlResolver,
-                                             dasExecutionContextId,
-                                             runConfiguration instanceof DartRemoteDebugConfiguration,
-                                             entryPointInLibFolder,
-                                             getTimeout(),
-                                             getConnector());
+        return new DartVmServiceDebugProcessZ(session,
+                                              StringUtil.notNullize(debuggingHost, "localhost"),
+                                              observatoryPort,
+                                              executionResult,
+                                              dartUrlResolver,
+                                              dasExecutionContextId,
+                                              runConfiguration instanceof DartRemoteDebugConfiguration,
+                                              entryPointInLibFolder,
+                                              getTimeout(),
+                                              getConnector());
       }
     });
 
