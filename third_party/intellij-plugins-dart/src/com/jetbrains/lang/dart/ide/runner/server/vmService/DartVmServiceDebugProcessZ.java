@@ -33,6 +33,7 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceStackFrame;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSuspendContext;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
@@ -320,7 +321,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
     if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
-      myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, StepOption.Over);
+      DartVmServiceSuspendContext suspendContext = (DartVmServiceSuspendContext)context;
+      myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId,
+                                       suspendContext.getAtAsyncSuspension() ? StepOption.OverAsyncSuspension : StepOption.Over);
     }
   }
 
