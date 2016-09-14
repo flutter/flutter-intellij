@@ -1,5 +1,4 @@
-out/**
-.gitignore
+out/
 .idea/
 .gradle/
 build/
