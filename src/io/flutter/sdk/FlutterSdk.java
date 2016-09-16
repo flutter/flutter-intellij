@@ -150,6 +150,7 @@ public class FlutterSdk {
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
     String[] toolArgs = ArrayUtil.prepend(cmd.command, args);
+    toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
     command.addParameters(toolArgs);
 
     FileDocumentManager.getInstance().saveAllDocuments();
