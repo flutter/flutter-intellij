@@ -10,16 +10,15 @@ file.
 
 ## Flutter plugin development
 
-First, set up Dart plugin development as described in the
-[ReadMe.txt](https://github.com/JetBrains/intellij-plugins/blob/master/Dart/ReadMe.txt)
-file in the Dart plugin.
-
-* Open intellij-community project in IntelliJ, compile it.
-  - Open File | Project Structure | Modules | [+] | Import Module, select
-    flutter-intellij/flutter-intellij-community.iml (from same dir as this README).
-  - In the same Project Structure dialog open the Dependencies tab of the community-main module,
-    click [+] at the bottom (Mac) or right (Win/Linux) to add a module dependency on the
-    flutter-intellij-community module.
+* Download and install the latest stable version of IntelliJ
+  - https://www.jetbrains.com/idea/download/
+  - either the community edition (free) or Ultimate will work
+* Start IntelliJ
+* In the project structure dialog, configure an IntelliJ platform SDK
+  - point it to the just downloaded copy of IntelliJ Community Edition
+  - name it `IntelliJ IDEA Community Edition`
+* Open flutter-intellij project in IntelliJ. Build it using `Build` > `Make Project`
+* Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
 * Install Flutter from [github](https://github.com/flutter/flutter) and set it up according
   to its instructions.
 * Verify installation from the command line:
@@ -35,7 +34,7 @@ file in the Dart plugin.
   - Expand Defaults and verify that Flutter is present.
   - Click [+] and verify that Flutter is present.
 
-## Running plugin tests
+## Running plugin tests (TODO: this needs to be updated)
 
 In order to run unit tests you need to create a run configuration. The easiest way is to copy the
 one named 'Dart tests' defined for the Dart plugin. It can be found in the intellij-community

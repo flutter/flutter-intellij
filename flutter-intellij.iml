@@ -11,7 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
     </content>
-    <orderEntry type="jdk" jdkName="IntelliJ IDEA Community Edition" jdkType="IDEA JDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Dart" />
     <orderEntry type="module" module-name="platform-api" />
