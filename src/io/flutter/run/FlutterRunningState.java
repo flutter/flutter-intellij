@@ -127,7 +127,7 @@ public class FlutterRunningState extends DartCommandLineRunningState {
         handler.addProcessListener(new ProcessAdapter() {
           @Override
           public void processTerminated(final ProcessEvent event) {
-            //TODO: schedule a re-run or notify user to try again.
+            //TODO: open a toast (https://github.com/flutter/flutter-intellij/issues/127).
           }
         });
         handler.startNotify();
