@@ -45,8 +45,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class FlutterSdk {
 
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
+  public static final String GROUP_DISPLAY_ID = "Flutter Command Invocation";
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
-  private static final String GROUP_DISPLAY_ID = "Flutter Command Invocation";
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
   private static final String UNKNOWN_VERSION = "unknown";
   private static final Key<CachedValue<FlutterSdk>> CACHED_FLUTTER_SDK_KEY = Key.create("CACHED_FLUTTER_SDK_KEY");
