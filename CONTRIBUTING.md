@@ -15,10 +15,11 @@ file.
   - either the community edition (free) or Ultimate will work
 * Start IntelliJ
 * In the project structure dialog, configure an IntelliJ platform SDK
-  - point it to the just downloaded copy of IntelliJ Community Edition
+  - point it to the `Contents` directory in your just downloaded copy of IntelliJ Community Edition (e.g, `IntelliJ IDEA CE.app/Contents`)
   - name it `IntelliJ IDEA Community Edition`
 * Open flutter-intellij project in IntelliJ. Build it using `Build` > `Make Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
+* If the Flutter Plugin doesn't load, check to see if the Dart Plugin is installed in your runtime workbench; if it's not, install it (`Preferences > Plugins`) and re-launch.
 * Install Flutter from [github](https://github.com/flutter/flutter) and set it up according
   to its instructions.
 * Verify installation from the command line:
