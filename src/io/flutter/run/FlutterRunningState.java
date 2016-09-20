@@ -7,11 +7,14 @@ package io.flutter.run;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.KillableColoredProcessHandler;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessHandler;
-import com.intellij.execution.process.ProcessTerminatedListener;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.execution.process.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -32,6 +35,14 @@ public class FlutterRunningState extends DartCommandLineRunningState {
   public FlutterRunningState(@NotNull ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
     //((TextConsoleBuilderImpl)getConsoleBuilder()).setUsePredefinedMessageFilter(true);
+    getConsoleBuilder().addFilter((line, entireLength) -> {
+      if (line.trim().equals("open -a Simulator.app")) {
+        final int startOffset = entireLength - line.length();
+        final int endOffset = startOffset + line.length();
+        return new Filter.Result(entireLength - line.length(), endOffset, new OpenIOSSimulatorLink());
+      }
+      return null;
+    });
   }
 
   public FlutterRunnerParameters params() {
@@ -105,5 +116,26 @@ public class FlutterRunningState extends DartCommandLineRunningState {
 
   public int getObservatoryPort() {
     return myObservatoryPort;
+  }
+
+  private class OpenIOSSimulatorLink implements HyperlinkInfo {
+    @Override
+    public void navigate(Project project) {
+      final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", "Simulator.app");
+      try {
+        final OSProcessHandler handler = new OSProcessHandler(cmd);
+        handler.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void processTerminated(final ProcessEvent event) {
+            //TODO: open a toast (https://github.com/flutter/flutter-intellij/issues/127).
+          }
+        });
+        handler.startNotify();
+      } catch (ExecutionException e) {
+        Notifications.Bus.notify(
+                new Notification(FlutterSdk.GROUP_DISPLAY_ID, "Open Simulator", FlutterBundle.message("flutter.command.exception", e.getMessage()),
+                        NotificationType.ERROR));
+      }
+    }
   }
 }
