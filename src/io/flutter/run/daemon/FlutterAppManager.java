@@ -5,11 +5,10 @@
  */
 package io.flutter.run.daemon;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.google.gson.*;
+import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,10 +25,16 @@ import java.util.Map;
 public class FlutterAppManager {
   private static final Logger LOG = Logger.getInstance("#io.flutter.run.daemon.FlutterAppManager");
 
+  private static final String CMD_APP_START = "app.start";
+  private static final String CMD_APP_STOP = "app.stop";
+  private static final String CMD_APP_RESTART = "app.restart";
+  private static final String CMD_DEVICE_ENABLE = "device.enable";
+
   private static final Gson GSON = new Gson();
 
   private List<FlutterApp> myApps = new ArrayList<>();
   private Map<Integer, List<Command>> myPendingCommands = new THashMap<>();
+  private int myCommandId = 0;
 
   public FlutterApp startApp(@NotNull FlutterDaemonService service,
                              @NotNull FlutterDaemonController controller,
@@ -43,6 +48,34 @@ public class FlutterAppManager {
     // TODO start app on controller, wait for response, set AppStarted to app.setApp()
     myApps.add(app);
     return app;
+  }
+
+  public void startDevicePoller(FlutterDaemonController pollster) {
+    final Project project = null;
+    try {
+      pollster.forkProcess(project);
+    }
+    catch (ExecutionException e) {
+      LOG.error(e);
+    }
+  }
+
+  void processInput(String string, FlutterDaemonController controller) {
+    try {
+      JsonParser jp = new JsonParser();
+      JsonElement elem = jp.parse(string);
+      JsonObject obj = elem.getAsJsonObject();
+      JsonPrimitive primId = obj.getAsJsonPrimitive("id");
+      if (primId == null) {
+        handleEvent(obj, controller, string);
+      }
+      else {
+        handleResponse(primId.getAsInt(), obj, controller);
+      }
+    }
+    catch (JsonSyntaxException ex) {
+      LOG.error(ex);
+    }
   }
 
   void handleResponse(int cmdId, JsonObject obj, FlutterDaemonController controller) {
@@ -76,6 +109,20 @@ public class FlutterAppManager {
 
   void restartApp(RunningFlutterApp app, boolean isFullRestart) {
     // TODO send app.restart command
+  }
+
+  void enableDevicePolling(FlutterDaemonController controller) {
+    Method method = makeMethod(CMD_DEVICE_ENABLE, null);
+    sendCommand(controller, method);
+  }
+
+  private Method makeMethod(String methodName, Params params) {
+    return new Method(methodName, params, myCommandId++);
+  }
+
+  private void sendCommand(FlutterDaemonController controller, Method method) {
+    controller.sendCommand(GSON.toJson(method), this);
+    addPendingCmd(method.id, new Command(method, controller));
   }
 
   @NotNull
@@ -133,6 +180,9 @@ public class FlutterAppManager {
   }
 
   private void eventDeviceAdded(DeviceAdded added, FlutterDaemonController controller) {
+    FlutterDaemonService service = FlutterDaemonService.getInstance();
+    assert (service != null);
+    service.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform));
   }
 
   private void eventDeviceRemoved(DeviceRemoved removed, FlutterDaemonController controller) {
@@ -150,6 +200,7 @@ public class FlutterAppManager {
   private static class Command {
     Method method;
     FlutterDaemonController controller;
+
     Command(Method method, FlutterDaemonController controller) {
       this.method = method;
       this.controller = controller;

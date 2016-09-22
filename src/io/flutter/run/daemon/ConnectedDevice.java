@@ -13,3 +13,31 @@ public interface ConnectedDevice {
 
   String platform();
 }
+
+class FlutterDevice implements ConnectedDevice {
+
+  private final String myDeviceName;
+  private final String myDeviceId;
+  private final String myPlatform;
+
+  FlutterDevice(String deviceName, String deviceId, String platform) {
+    myDeviceName = deviceName;
+    myDeviceId = deviceId;
+    myPlatform = platform;
+  }
+
+  @Override
+  public String deviceName() {
+    return myDeviceName;
+  }
+
+  @Override
+  public String deviceId() {
+    return myDeviceId;
+  }
+
+  @Override
+  public String platform() {
+    return myPlatform;
+  }
+}

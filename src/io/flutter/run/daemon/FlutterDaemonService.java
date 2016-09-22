@@ -9,16 +9,14 @@ import com.google.gson.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Long lived singleton that communicates with controllers attached to external Flutter processes.
@@ -29,27 +27,27 @@ public class FlutterDaemonService {
   private static final String TARGET_DEFAULT = null;
   private static final String ROUTE_DEFAULT = null;
 
-  private final Object myLock = new Object(); // TODO Determine if synchronization is really needed
+  private final Object myLock = new Object();
   private List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
   private Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
   private FlutterAppManager myManager = new FlutterAppManager();
 
-  private DaemonListener myListener = (json, controller) -> {
-    try {
-      JsonParser jp = new JsonParser();
-      JsonElement elem = jp.parse(json);
-      JsonObject obj = elem.getAsJsonObject();
-      JsonPrimitive primId = obj.getAsJsonPrimitive("id");
-      if (primId == null) {
-        myManager.handleEvent(obj, controller, json);
-      }
-      else {
-        myManager.handleResponse(primId.getAsInt(), obj, controller);
+  static {
+    getInstance();
+  }
+
+  private DaemonListener myListener = new DaemonListener() {
+    public void daemonInput(String string, FlutterDaemonController controller) {
+      synchronized (myLock) {
+        // Only one external process controller can process input at a time.
+        myManager.processInput(string, controller);
       }
     }
-    catch (JsonSyntaxException ex) {
-      LOG.error(ex);
+    public void enableDevicePolling(FlutterDaemonController controller) {
+      synchronized (myLock) {
+        myManager.enableDevicePolling(controller);
+      }
     }
   };
 
@@ -58,7 +56,7 @@ public class FlutterDaemonService {
     return ServiceManager.getService(FlutterDaemonService.class);
   }
 
-  public FlutterDaemonService() {
+  private FlutterDaemonService() {
     Disposer.register(ApplicationManager.getApplication(), this::stopControllers);
     schedulePolling();
   }
@@ -70,12 +68,12 @@ public class FlutterDaemonService {
    * @return List of ConnectedDevice
    */
   public Collection<ConnectedDevice> getConnectedDevices() {
-    SortedList<ConnectedDevice> list = new SortedList<>((o1, o2) -> o1.deviceName().compareTo(o2.deviceName()));
+    SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
     list.addAll(myConnectedDevices);
     return list;
   }
 
-  public void addConnectedDevice(ConnectedDevice device) {
+  void addConnectedDevice(ConnectedDevice device) {
     myConnectedDevices.add(device);
   }
 
@@ -89,7 +87,9 @@ public class FlutterDaemonService {
   public FlutterApp startApp(@NotNull String projectDir, @NotNull String deviceId, @NotNull RunMode mode) {
     boolean isPaused = mode.isDebug();
     FlutterDaemonController controller = controllerFor(projectDir, deviceId);
-    return myManager.startApp(this, controller, deviceId, mode, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
+    synchronized (myLock) {
+      return myManager.startApp(this, controller, deviceId, mode, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
+    }
   }
 
   /**
@@ -107,11 +107,13 @@ public class FlutterDaemonService {
       for (FlutterDaemonController controller : myControllers) {
         if (controller.isForProject(projectDir)) {
           controller.setProjectAndDevice(projectDir, deviceId);
+          controller.addListener(myListener);
           return controller;
         }
       }
       FlutterDaemonController newController = new FlutterDaemonController(projectDir);
       myControllers.add(newController);
+      newController.addListener(myListener);
       return newController;
     }
   }
@@ -120,8 +122,9 @@ public class FlutterDaemonService {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {
         myPollster = new FlutterDaemonController(null);
+        myPollster.addListener(myListener);
         myControllers.add(myPollster);
-        // TODO enable polling in myPollster
+        myManager.startDevicePoller(myPollster);
       }
     });
   }

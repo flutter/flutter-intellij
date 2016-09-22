@@ -28,6 +28,7 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO Delete this class
 public class FlutterRunningState extends DartCommandLineRunningState {
   private int myObservatoryPort;
 

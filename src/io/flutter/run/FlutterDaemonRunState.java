@@ -11,8 +11,8 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO Delete this class
 public class FlutterDaemonRunState extends FlutterRunningState {
-  // TODO Remove FlutterRunningState
   private DaemonManager daemon;
 
   public FlutterDaemonRunState(@NotNull ExecutionEnvironment environment) throws ExecutionException {

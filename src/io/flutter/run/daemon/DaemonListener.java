@@ -6,6 +6,6 @@
 package io.flutter.run.daemon;
 
 public interface DaemonListener {
-
   void daemonInput(String json, FlutterDaemonController controller);
+  void enableDevicePolling(FlutterDaemonController controller);
 }
