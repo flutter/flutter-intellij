@@ -15,7 +15,21 @@
   <!-- Everything following should be SmallIDE-friendly.-->
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
+  <actions>
+    <group id="Flutter.MainToolbarActions">
+      <separator/>
+
+      <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction" text="devices"
+              description="Select a device to connect"
+              icon="FlutterIcons.Flutter_16"/>
+    <separator/>
+      <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
+      <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
+    </group>
+  </actions>
+
   <extensions defaultExtensionNs="com.intellij">
+
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
     <programRunner implementation="io.flutter.run.FlutterRunner"/>

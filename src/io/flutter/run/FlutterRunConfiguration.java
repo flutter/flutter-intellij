@@ -39,7 +39,8 @@ public class FlutterRunConfiguration extends DartRunConfigurationBase {
   @Nullable
   @Override
   public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException {
-    return new FlutterDaemonRunState(environment);
+    return new FlutterRunningState(environment);
+    //return new FlutterDaemonRunState(environment);
   }
 
   @Nullable
