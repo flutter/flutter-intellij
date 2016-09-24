@@ -33,13 +33,17 @@ allprojects {
   }
 
   intellij {
-    // IntelliJ IDEA 2016.2.3 / Build #IC-162.1812.17
-    version = '2016.2.3'
-
     pluginName = 'Flutter'
 
-    // Dart 162.2017 (https://plugins.jetbrains.com/plugin/6351)
+    // IntelliJ IDEA 2016.2.3 / IC-162.1812.17
+    // Dart 162.2017
+    version = '2016.2.3'
     plugins = ['Dart:162.2017']
+
+    // IntelliJ IDEA 2016.1.4 (~Android Studio 2.2) / IC-145.2070.6
+    // Dart 145.971.7
+    // version = '145.2070.6'
+    // plugins = ['Dart:145.971.7']
   }
 }
 

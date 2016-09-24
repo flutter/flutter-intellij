@@ -21,7 +21,7 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/lib/Dart.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/162.2017/Dart.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

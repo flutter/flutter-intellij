@@ -20,7 +20,6 @@ import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.DartBundle;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
@@ -59,7 +58,7 @@ public class FlutterRunningState extends DartCommandLineRunningState {
   GeneralCommandLine createCommandLine(final @Nullable String overriddenMainFilePath) throws ExecutionException {
     DartSdk sdk = DartSdk.getDartSdk(getEnvironment().getProject());
     if (sdk == null) {
-      throw new ExecutionException(DartBundle.message("dart.sdk.is.not.configured"));
+      throw new ExecutionException(FlutterBundle.message("dart.sdk.is.not.configured"));
     }
 
     FlutterRunnerParameters params = (FlutterRunnerParameters)myRunnerParameters;
