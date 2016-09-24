@@ -1,3 +1,8 @@
+/*
+ * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
@@ -13,17 +18,11 @@ import javax.swing.*;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-        //TODO: fill in.
-    }
-
     @NotNull
     @Override
     protected DefaultActionGroup createPopupActionGroup(JComponent button) {
         DefaultActionGroup group = new DefaultActionGroup();
-        group.add(new SelectDeviceAction("iPhone 6"));
-        group.add(new SelectDeviceAction("Nexus 5"));
+        //TODO: fill in from DaemonManager.
         return group;
     }
 
