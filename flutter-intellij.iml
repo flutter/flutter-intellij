@@ -13,15 +13,10 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="Dart" />
-    <orderEntry type="module" module-name="platform-api" />
-    <orderEntry type="module" module-name="lang-api" />
-    <orderEntry type="module" module-name="lang-impl" />
-    <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/lib/Dart.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/162.2017/Dart.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
