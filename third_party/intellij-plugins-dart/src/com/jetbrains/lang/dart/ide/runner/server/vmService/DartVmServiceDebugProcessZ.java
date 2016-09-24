@@ -26,7 +26,6 @@ import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
-import com.jetbrains.lang.dart.DartBundle;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
@@ -404,7 +403,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
            ? XDebuggerBundle.message("debugger.state.message.disconnected")
            : myVmConnected
              ? XDebuggerBundle.message("debugger.state.message.connected")
-             : DartBundle.message("debugger.trying.to.connect.vm.at.0", getObservatoryUrl("ws", "/ws"));
+             : "Connecting to Dart VM at " + getObservatoryUrl("ws", "/ws");
   }
 
   @Override
