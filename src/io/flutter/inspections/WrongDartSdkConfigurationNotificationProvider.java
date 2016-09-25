@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class WrongDartSdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
   implements DumbAware {
-  private static final Key<EditorNotificationPanel> KEY = Key.create("Setup Dart SDK");
+  private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
 
   private static final Logger LOG = Logger.getInstance(WrongDartSdkConfigurationNotificationProvider.class);
 
