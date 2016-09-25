@@ -42,12 +42,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public Icon getBigIcon() {
-    return FlutterIcons.Flutter_16;
+    return FlutterIcons.Flutter_2x;
   }
 
   @Override
   public Icon getNodeIcon() {
-    return FlutterIcons.Flutter_16;
+    return FlutterIcons.Flutter;
   }
 
   @Override

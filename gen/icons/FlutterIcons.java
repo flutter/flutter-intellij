@@ -13,5 +13,8 @@ public class FlutterIcons {
     return IconLoader.getIcon(path, FlutterIcons.class);
   }
 
-  public static final Icon Flutter_16 = load("/icons/flutter_16.png"); // 16x16
+  public static final Icon Flutter = load("/icons/flutter.png");
+  public static final Icon Flutter_2x = load("/icons/flutter@2x.png");
+
+  public static final Icon Phone = load("/icons/phone.png");
 }

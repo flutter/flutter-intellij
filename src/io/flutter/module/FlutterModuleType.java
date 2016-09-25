@@ -47,12 +47,12 @@ public class FlutterModuleType extends ModuleType<FlutterModuleBuilder> {
 
   @Override
   public Icon getBigIcon() {
-    return FlutterIcons.Flutter_16;
+    return FlutterIcons.Flutter_2x;
   }
 
   @Override
   public Icon getNodeIcon(@Deprecated boolean b) {
-    return getBigIcon();
+    return FlutterIcons.Flutter;
   }
 
   @NotNull
