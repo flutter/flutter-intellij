@@ -6,6 +6,7 @@
 package io.flutter.inspections;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
@@ -21,6 +22,7 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
+import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdk;
@@ -31,11 +33,13 @@ import org.jetbrains.annotations.Nullable;
 
 public class WrongDartSdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
   implements DumbAware {
-  private static final Key<EditorNotificationPanel> KEY = Key.create("Setup Dart SDK");
+  private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
+
+  private static final Logger LOG = Logger.getInstance(WrongDartSdkConfigurationNotificationProvider.class);
 
   private final Project project;
 
-  public WrongDartSdkConfigurationNotificationProvider(@NotNull Project project, @NotNull EditorNotifications notifications) {
+  public WrongDartSdkConfigurationNotificationProvider(@NotNull Project project) {
     this.project = project;
   }
 
@@ -79,25 +83,34 @@ public class WrongDartSdkConfigurationNotificationProvider extends EditorNotific
     if (!ModuleType.is(module, FlutterModuleType.getInstance())) return null;
 
     try {
-      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (sdk == null) {
-        return createNoSdkPanel();
+      final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+      if (flutterSdk == null) {
+        return createNoFlutterSdkPanel();
       }
-      final String flutterDartSdkPath = sdk.getDartSdkPath();
-      final String dartSdkPath = sdk.getHomePath();
+
+      DartSdk dartSdk = DartSdk.getDartSdk(project);
+      if (dartSdk == null) {
+        // TODO(devoncarew): Recommend to set up with Flutter's dart sdk.
+
+        return null;
+      }
+
+      final String flutterDartSdkPath = flutterSdk.getDartSdkPath();
+      final String dartSdkPath = dartSdk.getHomePath();
       if (!StringUtil.equals(flutterDartSdkPath, dartSdkPath)) {
         return createWrongSdkPanel(project, module);
       }
     }
     catch (ExecutionException e) {
-      return createNoSdkPanel();
+      LOG.error(e);
     }
 
     return null;
   }
 
-  private static EditorNotificationPanel createNoSdkPanel() {
-    //TODO(pq): add panel for unconfigured Flutter SDK.
+  private static EditorNotificationPanel createNoFlutterSdkPanel() {
+    // TODO(pq): add panel for unconfigured Flutter SDK.
+
     return null;
   }
 }
