@@ -47,6 +47,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
         final CommandLineTokenizer tok = new CommandLineTokenizer(fullText);
         if (!tok.hasMoreTokens()) return fullText;
 
+        @SuppressWarnings("unused")
         final String filePath = tok.nextToken(); // eat flutter binary name
         final StringBuilder builder = new StringBuilder();
         builder.append("flutter create");
