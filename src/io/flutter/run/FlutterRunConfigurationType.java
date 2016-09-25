@@ -21,7 +21,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
 
   public FlutterRunConfigurationType() {
     super("FlutterRunConfigurationType", FlutterBundle.message("runner.flutter.configuration.name"),
-          FlutterBundle.message("runner.flutter.configuration.description"), FlutterIcons.Flutter_16);
+          FlutterBundle.message("runner.flutter.configuration.description"), FlutterIcons.Flutter);
     addFactory(new FlutterConfigurationFactory(this));
   }
 

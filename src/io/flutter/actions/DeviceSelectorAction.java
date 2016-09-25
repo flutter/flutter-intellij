@@ -35,7 +35,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     private static class SelectDeviceAction extends AnAction {
 
         SelectDeviceAction(String deviceName) {
-            super(deviceName, null, FlutterIcons.Flutter_16);
+            super(deviceName, null, FlutterIcons.Flutter);
         }
 
         @Override
