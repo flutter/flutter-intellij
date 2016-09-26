@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 public class FlutterAppState extends DartCommandLineRunningState {
@@ -48,7 +49,13 @@ public class FlutterAppState extends DartCommandLineRunningState {
     Project project = getEnvironment().getProject();
     String workingDir = project.getBasePath();
     assert workingDir != null;
-    ConnectedDevice device = service.getConnectedDevices().iterator().next();
+
+    Collection<ConnectedDevice> devices = service.getConnectedDevices();
+    if (devices.isEmpty()) {
+      throw new ExecutionException("No connected device");
+    }
+
+    ConnectedDevice device = devices.iterator().next();
     myApp = service.startApp(project, workingDir, device.deviceId(), RunMode.DEBUG); // TODO Select run mode based on launch.
     return myApp.getController().getProcessHandler();
   }
