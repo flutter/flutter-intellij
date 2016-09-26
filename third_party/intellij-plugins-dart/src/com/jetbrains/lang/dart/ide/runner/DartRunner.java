@@ -30,7 +30,6 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugPro
 import com.jetbrains.lang.dart.ide.runner.test.DartTestRunnerParameters;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -161,7 +160,7 @@ public class DartRunner extends DefaultProgramRunner {
                                               dartUrlResolver,
                                               dasExecutionContextId,
                                               runConfiguration instanceof DartRemoteDebugConfiguration,
-                                               getTimeout(),
+                                              getTimeout(),
                                               currentWorkingDirectory,
                                               getConnector());
       }

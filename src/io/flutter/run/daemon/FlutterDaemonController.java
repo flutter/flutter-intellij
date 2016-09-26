@@ -11,7 +11,6 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -33,8 +32,8 @@ import java.util.List;
  * Control an external Flutter process, including reading events and responsesmfrom its stdout and
  * writing commands to its stdin.
  */
-@SuppressWarnings("Duplicates") // TODO remove after deleting DaemonManager
 public class FlutterDaemonController extends ProcessAdapter {
+
   private static final Logger LOG = Logger.getInstance(FlutterDaemonController.class.getName());
   private static final String STARTING_DAEMON = "Starting device daemon...";
   private static final String STDOUT_KEY = "stdout";
@@ -115,17 +114,17 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   public void forkProcess(Project project) throws ExecutionException {
     //ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      try {
-        GeneralCommandLine commandLine = createCommandLine(project);
-        myHandler = new OSProcessHandler(commandLine);
-        myHandler.addProcessListener(this);
-        myHandler.startNotify();
-      }
-      catch (ExecutionException ex) {
-        LOG.error(ex);
-      }
+    try {
+      GeneralCommandLine commandLine = createCommandLine(project);
+      myHandler = new OSProcessHandler(commandLine);
+      myHandler.addProcessListener(this);
+      myHandler.startNotify();
+    }
+    catch (ExecutionException ex) {
+      LOG.error(ex);
+    }
     //});
-}
+  }
 
   public void sendCommand(String commandJson, FlutterAppManager manager) {
     OutputStream input = myHandler.getProcessInput();
@@ -204,16 +203,16 @@ public class FlutterDaemonController extends ProcessAdapter {
     return commandLine;
   }
 
-private static class FlutterStream extends PrintStream {
+  private static class FlutterStream extends PrintStream {
 
-  public FlutterStream(@NotNull OutputStream out) {
-    super(out);
-  }
+    public FlutterStream(@NotNull OutputStream out) {
+      super(out);
+    }
 
-  @Override
-  public void close() {
-    // Closing the stream terminates the process, so don't do it.
-    flush();
+    @Override
+    public void close() {
+      // Closing the stream terminates the process, so don't do it.
+      flush();
+    }
   }
-}
 }

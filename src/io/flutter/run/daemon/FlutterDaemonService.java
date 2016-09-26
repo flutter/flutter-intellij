@@ -22,6 +22,7 @@ import java.util.*;
  * Long lived singleton that communicates with controllers attached to external Flutter processes.
  */
 public class FlutterDaemonService {
+
   private static final Logger LOG = Logger.getInstance("#io.flutter.run.daemon.FlutterDaemonService");
   private static final boolean HOT_MODE_DEFAULT = false;
   private static final String TARGET_DEFAULT = null;

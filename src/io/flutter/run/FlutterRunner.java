@@ -28,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
 import java.net.URI;
 
 public class FlutterRunner extends DartRunner {
+
   private static final Logger LOG = Logger.getInstance(FlutterRunner.class);
 
   @Nullable
@@ -49,20 +50,6 @@ public class FlutterRunner extends DartRunner {
 
   @Override
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    if (state instanceof FlutterDaemonRunState) {
-      final FlutterDaemonRunState daemonState = (FlutterDaemonRunState)state;
-      myConnector = new ObservatoryConnector() {
-        @Override
-        public boolean isConnectionReady() {
-          return daemonState.isConnectionReady();
-        }
-
-        @Override
-        public int getPort() {
-          return daemonState.getObservatoryPort();
-        }
-      };
-    }
     if (state instanceof FlutterAppState) {
       final FlutterAppState appState = (FlutterAppState)state;
       myConnector = new ObservatoryConnector() {

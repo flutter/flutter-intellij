@@ -8,7 +8,6 @@ package io.flutter.run.daemon;
 import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.Application;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.TimeoutUtil;
@@ -26,7 +25,6 @@ import java.util.stream.Stream;
 /**
  * Keeper of running Flutter apps.
  */
-@SuppressWarnings("Duplicates") // TODO remove after deleting DaemonManager
 public class FlutterAppManager {
 
   private static final String CMD_APP_START = "app.start";

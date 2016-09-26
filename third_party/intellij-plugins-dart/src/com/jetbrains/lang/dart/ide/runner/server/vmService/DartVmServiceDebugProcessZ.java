@@ -21,7 +21,6 @@ import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PathUtil;
 import com.intellij.util.TimeoutUtil;
-import com.intellij.util.containers.HashSet;
 import com.intellij.xdebugger.*;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
@@ -50,6 +49,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * TODO(messick) Add OvservatoryConnector parameter to superclass then delete this class.
+ */
 public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
@@ -81,16 +83,17 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private boolean scheduled = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
-                                   @NotNull final String debuggingHost,
-                                   final int observatoryPort,
-                                   @Nullable final ExecutionResult executionResult,
-                                   @NotNull final DartUrlResolver dartUrlResolver,
-                                   @Nullable final String dasExecutionContextId,
-                                   final boolean remoteDebug,
-                                   final int timeout,
-                                   @Nullable final VirtualFile currentWorkingDirectory,
-                                   @Nullable final ObservatoryConnector connector) {
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout, currentWorkingDirectory);
+                                    @NotNull final String debuggingHost,
+                                    final int observatoryPort,
+                                    @Nullable final ExecutionResult executionResult,
+                                    @NotNull final DartUrlResolver dartUrlResolver,
+                                    @Nullable final String dasExecutionContextId,
+                                    final boolean remoteDebug,
+                                    final int timeout,
+                                    @Nullable final VirtualFile currentWorkingDirectory,
+                                    @Nullable final ObservatoryConnector connector) {
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
+          currentWorkingDirectory);
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
@@ -177,7 +180,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
   }
 
-  public void scheduleConnect(){}
+  public void scheduleConnect() {
+  }
 
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
