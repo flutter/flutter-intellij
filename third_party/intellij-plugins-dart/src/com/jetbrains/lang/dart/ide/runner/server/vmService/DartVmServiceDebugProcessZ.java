@@ -38,6 +38,7 @@ import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
+import io.flutter.FlutterBundle;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -403,7 +404,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
            ? XDebuggerBundle.message("debugger.state.message.disconnected")
            : myVmConnected
              ? XDebuggerBundle.message("debugger.state.message.connected")
-             : "Connecting to Dart VM at " + getObservatoryUrl("ws", "/ws");
+             : FlutterBundle.message("debugger.trying.to.connect.vm.at.0", getObservatoryUrl("ws", "/ws"));
   }
 
   @Override
