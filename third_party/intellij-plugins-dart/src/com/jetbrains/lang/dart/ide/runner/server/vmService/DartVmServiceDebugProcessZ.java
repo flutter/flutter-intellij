@@ -92,8 +92,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
-          currentWorkingDirectory);
+    // TODO Delete <code>true</code>, add <code>currentWorkingDirectory</code> to work with EAP version
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, true, timeout);
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
@@ -246,7 +246,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     vmService.addVmServiceListener(vmServiceListener);
 
     myVmServiceWrapper =
-      new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+      new VmServiceWrapper(this, vmService, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     myVmServiceWrapper.handleDebuggerConnected();
 
     myVmConnected = true;
@@ -323,12 +323,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
-      DartVmServiceSuspendContext suspendContext = (DartVmServiceSuspendContext)context;
-      final StepOption stepOption = suspendContext != null && suspendContext.getAtAsyncSuspension() ? StepOption.OverAsyncSuspension
-                                                                                                    : StepOption.Over;
-      myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, stepOption);
+    if(this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
+      this.myVmServiceWrapper.resumeIsolate(this.myLatestCurrentIsolateId, StepOption.Over);
     }
+
   }
 
   @Override
@@ -362,24 +360,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   public void resume(@Nullable XSuspendContext context) {
     for (String isolateId : new ArrayList<>(mySuspendedIsolateIds)) {
       myVmServiceWrapper.resumeIsolate(isolateId, null);
-    }
-  }
-
-  @Override
-  public void startPausing() {
-    for (IsolatesInfo.IsolateInfo info : getIsolateInfos()) {
-      if (!mySuspendedIsolateIds.contains(info.getIsolateId())) {
-        myVmServiceWrapper.pauseIsolate(info.getIsolateId());
-      }
-    }
-  }
-
-  @Override
-  public void runToPosition(@NotNull XSourcePosition position, @Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
-      // Set a temporary breakpoint and resume.
-      myVmServiceWrapper.addTemporaryBreakpoint(position, myLatestCurrentIsolateId);
-      myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, null);
     }
   }
 
