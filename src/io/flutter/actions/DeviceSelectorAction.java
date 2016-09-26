@@ -22,7 +22,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     @Override
     protected DefaultActionGroup createPopupActionGroup(JComponent button) {
         DefaultActionGroup group = new DefaultActionGroup();
-        //TODO: fill in from DaemonManager.
+        //TODO: fill in from FlutterDaemonService.getInstance().getConnectedDevices().
         return group;
     }
 

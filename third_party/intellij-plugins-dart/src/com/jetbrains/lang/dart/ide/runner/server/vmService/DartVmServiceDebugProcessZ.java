@@ -1,5 +1,6 @@
 package com.jetbrains.lang.dart.ide.runner.server.vmService;
 
+import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -19,7 +20,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PathUtil;
-import com.intellij.util.SmartList;
 import com.intellij.util.TimeoutUtil;
 import com.intellij.xdebugger.*;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
@@ -32,9 +32,9 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceStackFrame;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSuspendContext;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
@@ -49,9 +49,11 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-@SuppressWarnings("Duplicates")
+/**
+ * TODO(messick) Add OvservatoryConnector parameter to superclass then delete this class.
+ */
 public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
-  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcessZ.class.getName());
+  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
   @Nullable private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
@@ -73,11 +75,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Nullable private final String myDASExecutionContextId;
   private final boolean myRemoteDebug;
-  private final boolean myEntryPointInLibFolder;
   private final int myTimeout;
+  @Nullable private final VirtualFile myCurrentWorkingDirectory;
+  @Nullable private ObservatoryConnector myConnector;
 
   @Nullable String myRemoteProjectRootUri;
-  @Nullable private ObservatoryConnector myConnector;
+  private boolean scheduled = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                     @NotNull final String debuggingHost,
@@ -86,17 +89,18 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     @NotNull final DartUrlResolver dartUrlResolver,
                                     @Nullable final String dasExecutionContextId,
                                     final boolean remoteDebug,
-                                    final boolean entryPointInLibFolder,
                                     final int timeout,
+                                    @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, entryPointInLibFolder, timeout);
+    // TODO Delete <code>true</code>, add <code>currentWorkingDirectory</code> to work with EAP version
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, true, timeout);
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
     myDartUrlResolver = dartUrlResolver;
     myRemoteDebug = remoteDebug;
-    myEntryPointInLibFolder = entryPointInLibFolder;
     myTimeout = timeout;
+    myCurrentWorkingDirectory = currentWorkingDirectory;
     myConnector = connector;
 
     myIsolatesInfo = new IsolatesInfo();
@@ -121,7 +125,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     myDASExecutionContextId = dasExecutionContextId;
 
-    scheduleConnect();
+    scheduleConnectNew();
 
     if (remoteDebug) {
       LOG.assertTrue(myExecutionResult == null && myDASExecutionContextId == null, myDASExecutionContextId + myExecutionResult);
@@ -147,12 +151,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           return;
         }
 
-        if (myEntryPointInLibFolder && message.contains("\"code\":-32602,")) { // That's expected because we set one breakpoint twice
+        if (message.contains("\"method\":\"removeBreakpoint\"")) { // That's expected because we set one breakpoint twice
           return;
         }
 
         getSession().getConsoleView().print("Error: " + message + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-        LOG.warn(message);
+        LOG.error(message);
       }
 
       @Override
@@ -167,11 +171,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           message = message.substring(0, 300) + "..." + message.substring(message.length() - 200);
         }
         LOG.debug(message);
-
-        // TODO: We should find a more reliable way to notify on connection close.
-        if (myRemoteDebug && message.equals("VM connection closed: " + getObservatoryUrl("ws", "/ws"))) {
-          getSession().stop();
-        }
       }
 
       @Override
@@ -182,6 +181,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   public void scheduleConnect() {
+  }
+
+  public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       if (myConnector != null) {
         long timeout = (long)myTimeout;
@@ -238,9 +240,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   private void connect() throws IOException {
     final VmService vmService = VmService.connect(getObservatoryUrl("ws", "/ws"));
-    vmService.addVmServiceListener(new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]));
+    final DartVmServiceListener vmServiceListener =
+      new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
 
-    myVmServiceWrapper = new VmServiceWrapper(this, vmService, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+    vmService.addVmServiceListener(vmServiceListener);
+
+    myVmServiceWrapper =
+      new VmServiceWrapper(this, vmService, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     myVmServiceWrapper.handleDebuggerConnected();
 
     myVmConnected = true;
@@ -286,15 +292,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     for (LibraryRef library : libraries) {
       final String remoteUri = library.getUri();
-      if (!remoteUri.startsWith(DartUrlResolver.FILE_PREFIX)) continue;
+      if (remoteUri.startsWith(DartUrlResolver.DART_PREFIX)) continue;
+      if (remoteUri.startsWith(DartUrlResolver.PACKAGE_PREFIX)) continue;
 
-      final PsiFile[] localFilesWithSameName = ApplicationManager.getApplication().runReadAction(new Computable<PsiFile[]>() {
-        @Override
-        public PsiFile[] compute() {
-          final String remoteFileName = PathUtil.getFileName(remoteUri);
-          final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(getSession().getProject(), localProjectRoot, true);
-          return FilenameIndex.getFilesByName(getSession().getProject(), remoteFileName, scope);
-        }
+      final PsiFile[] localFilesWithSameName = ApplicationManager.getApplication().runReadAction((Computable<PsiFile[]>)() -> {
+        final String remoteFileName = PathUtil.getFileName(remoteUri);
+        final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(getSession().getProject(), localProjectRoot, true);
+        return FilenameIndex.getFilesByName(getSession().getProject(), remoteFileName, scope);
       });
 
       int howManyFilesMatch = 0;
@@ -305,7 +309,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
         LOG.assertTrue(file.getPath().startsWith(localProjectRoot.getPath() + "/"), file.getPath() + "," + localProjectRoot.getPath());
         final String relPath = file.getPath().substring(localProjectRoot.getPath().length()); // starts with slash
-        if (!relPath.startsWith("/lib/") && remoteUri.endsWith(relPath)) {
+        if (remoteUri.endsWith(relPath)) {
           howManyFilesMatch++;
           myRemoteProjectRootUri = remoteUri.substring(0, remoteUri.length() - relPath.length());
         }
@@ -319,9 +323,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
-      myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, StepOption.Over);
+    if(this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
+      this.myVmServiceWrapper.resumeIsolate(this.myLatestCurrentIsolateId, StepOption.Over);
     }
+
   }
 
   @Override
@@ -358,16 +363,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
   }
 
-  @Override
-  public void startPausing() {
-  }
-
-  @Override
-  public void runToPosition(@NotNull XSourcePosition position, @Nullable XSuspendContext context) {
-    // todo implement
-    resume(context);
-  }
-
   public void isolateSuspended(@NotNull final IsolateRef isolateRef) {
     mySuspendedIsolateIds.add(isolateRef.getId());
   }
@@ -398,6 +393,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
   }
 
+  public void handleWriteEvent(String base64Data) {
+    String message = new String(Base64.getDecoder().decode(base64Data), Charsets.UTF_8);
+    getSession().getConsoleView().print(message, ConsoleViewContentType.NORMAL_OUTPUT);
+  }
+
   @Override
   public String getCurrentStateMessage() {
     return getSession().isStopped()
@@ -422,39 +422,53 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
+    final Set<String> result = new com.intellij.util.containers.HashSet<>();
     String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
 
-    if (myDartUrlResolver.mayNeedDynamicUpdate()) {
-      // DAS from SDK 1.13 is not returning dart:xxx URIs correctly
-      if (myDASExecutionContextId != null && !uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
-        final String uriByServer = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, file.getPath(), null);
-        if (uriByServer != null) {
-          return mayBeAppendOneMoreUri(file, uriByServer);
-        }
+    // If dart:, short circut the results.
+    if (uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
+      result.add(uriByIde);
+      return result;
+    }
+
+    // file:
+    if (uriByIde.startsWith(DartUrlResolver.FILE_PREFIX)) {
+      result.add(threeSlashize(uriByIde));
+    }
+    else {
+      result.add(uriByIde);
+      result.add(threeSlashize(new File(file.getPath()).toURI().toString()));
+    }
+
+    // straight path - used by some VM embedders
+    result.add(file.getPath());
+
+    // package: (if applicable)
+    if (myDASExecutionContextId != null) {
+      final String uriByServer = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, file.getPath(), null);
+      if (uriByServer != null) {
+        result.add(uriByServer);
       }
     }
 
-    final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-    if (myRemoteDebug && uriByIde.startsWith(DartUrlResolver.FILE_PREFIX) && myRemoteProjectRootUri != null && pubspec != null) {
-      final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(pubspec.getParent()), '/');
-      LOG.assertTrue(uriByIde.startsWith(localRootUri), uriByIde + "," + localRootUri);
-
-      uriByIde = myRemoteProjectRootUri + uriByIde.substring(localRootUri.length());
-    }
-
-    // fallback
-    return mayBeAppendOneMoreUri(file, threeslashize(uriByIde));
-  }
-
-  @NotNull
-  private Collection<String> mayBeAppendOneMoreUri(@NotNull final VirtualFile file, @NotNull final String uri) {
-    final SmartList<String> result = new SmartList<>(uri);
-
-    final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-    if (myEntryPointInLibFolder &&
-        pubspec != null &&
-        uri.startsWith(DartUrlResolver.PACKAGE_PREFIX + PubspecYamlUtil.getDartProjectName(pubspec))) {
-      result.add(threeslashize(new File(file.getPath()).toURI().toString()));
+    // remote prefix (if applicable)
+    if (myRemoteDebug && myRemoteProjectRootUri != null) {
+      final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
+      if (pubspec != null) {
+        final String projectPath = pubspec.getParent().getPath();
+        final String filePath = file.getPath();
+        if (filePath.startsWith(projectPath)) {
+          result.add(myRemoteProjectRootUri + filePath.substring(projectPath.length()));
+        }
+      }
+      else if (myCurrentWorkingDirectory != null) {
+        // Handle projects with no pubspecs.
+        final String projectPath = myCurrentWorkingDirectory.getPath();
+        final String filePath = file.getPath();
+        if (filePath.startsWith(projectPath)) {
+          result.add(myRemoteProjectRootUri + filePath.substring(projectPath.length()));
+        }
+      }
     }
 
     return result;
@@ -462,28 +476,25 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Nullable
   public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
-    VirtualFile file = ApplicationManager.getApplication().runReadAction(new Computable<VirtualFile>() {
-      @Override
-      public VirtualFile compute() {
-        String uri = scriptRef.getUri();
+    VirtualFile file = ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
+      String uri = scriptRef.getUri();
 
-        if (myDASExecutionContextId != null && !isDartPatchUri(uri)) {
-          final String path = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, null, uri);
-          if (path != null) {
-            return LocalFileSystem.getInstance().findFileByPath(path);
-          }
+      if (myDASExecutionContextId != null && !isDartPatchUri(uri)) {
+        final String path = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, null, uri);
+        if (path != null) {
+          return LocalFileSystem.getInstance().findFileByPath(path);
         }
-
-        final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-        if (myRemoteDebug && myRemoteProjectRootUri != null && uri.startsWith(myRemoteProjectRootUri) && pubspec != null) {
-          final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(pubspec.getParent()), '/');
-          LOG.assertTrue(localRootUri.startsWith(DartUrlResolver.FILE_PREFIX), localRootUri);
-
-          uri = localRootUri + uri.substring(myRemoteProjectRootUri.length());
-        }
-
-        return myDartUrlResolver.findFileByDartUrl(uri);
       }
+
+      final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
+      if (myRemoteDebug && myRemoteProjectRootUri != null && uri.startsWith(myRemoteProjectRootUri) && pubspec != null) {
+        final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(pubspec.getParent()), '/');
+        LOG.assertTrue(localRootUri.startsWith(DartUrlResolver.FILE_PREFIX), localRootUri);
+
+        uri = localRootUri + uri.substring(myRemoteProjectRootUri.length());
+      }
+
+      return myDartUrlResolver.findFileByDartUrl(uri);
     });
 
     if (file == null) {
@@ -542,7 +553,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   @NotNull
-  private static String threeslashize(@NotNull final String uri) {
+  private static String threeSlashize(@NotNull final String uri) {
     if (!uri.startsWith("file:")) return uri;
     if (uri.startsWith("file:///")) return uri;
     if (uri.startsWith("file://")) return "file:///" + uri.substring("file://".length());
