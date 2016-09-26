@@ -1,11 +1,22 @@
 <idea-plugin version="2">
   <id>io.flutter</id>
   <name>Flutter</name>
-  <description><![CDATA[
-      Flutter-specific extensions for Dart.
-    ]]></description>
+  <description>Support for developing Flutter (flutter.io) applications.</description>
 
+  <version>0.0.2</version>
   <vendor>flutter.io</vendor>
+
+  <depends>Dart</depends>
+
+<!-- change-notes>
+<![CDATA[
+
+<ul>
+  <li>Improvements and bug fixes</li>
+</ul>
+
+ ]]>
+ </change-notes -->
 
   <depends>Dart</depends>
 
