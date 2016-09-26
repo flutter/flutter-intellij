@@ -30,15 +30,16 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
-import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
+import io.flutter.actions.OpenComputedUrlAction;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceStackFrame;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSuspendContext;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
+import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.RestartFlutterApp;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -93,7 +94,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
     // TODO Delete <code>true</code>, add <code>currentWorkingDirectory</code> to work with EAP version
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, true, timeout);
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
+          currentWorkingDirectory);
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
@@ -246,7 +248,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     vmService.addVmServiceListener(vmServiceListener);
 
     myVmServiceWrapper =
-      new VmServiceWrapper(this, vmService, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+      new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     myVmServiceWrapper.handleDebuggerConnected();
 
     myVmConnected = true;
@@ -323,10 +325,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
-    if(this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
+    if (this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
       this.myVmServiceWrapper.resumeIsolate(this.myLatestCurrentIsolateId, StepOption.Over);
     }
-
   }
 
   @Override
@@ -360,6 +361,24 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   public void resume(@Nullable XSuspendContext context) {
     for (String isolateId : new ArrayList<>(mySuspendedIsolateIds)) {
       myVmServiceWrapper.resumeIsolate(isolateId, null);
+    }
+  }
+
+  @Override
+  public void startPausing() {
+    for (IsolatesInfo.IsolateInfo info : getIsolateInfos()) {
+      if (!mySuspendedIsolateIds.contains(info.getIsolateId())) {
+        myVmServiceWrapper.pauseIsolate(info.getIsolateId());
+      }
+    }
+  }
+
+  @Override
+  public void runToPosition(@NotNull XSourcePosition position, @Nullable XSuspendContext context) {
+    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
+      // Set a temporary breakpoint and resume.
+      myVmServiceWrapper.addTemporaryBreakpoint(position, myLatestCurrentIsolateId);
+      myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, null);
     }
   }
 
@@ -414,10 +433,16 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
 
-    if (myObservatoryPort > 0) {
-      topToolbar.addAction(new OpenDartObservatoryUrlAction(getObservatoryUrl("http", null),
-                                                            () -> myVmConnected && !getSession().isStopped()));
-    }
+    topToolbar.addAction(new OpenComputedUrlAction(() -> computeObservatoryUrl(),
+                                                   () -> myConnector.isConnectionReady() && myVmConnected && !getSession().isStopped()));
+    topToolbar.addAction(new RestartFlutterApp(myConnector));
+    topToolbar.addAction(new ReloadFlutterApp(myConnector));
+  }
+
+  private String computeObservatoryUrl() {
+    assert myConnector != null;
+    myObservatoryPort = myConnector.getPort();
+    return getObservatoryUrl("http", null);
   }
 
   @NotNull

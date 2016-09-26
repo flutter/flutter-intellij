@@ -24,7 +24,7 @@ import java.util.*;
 public class FlutterDaemonService {
 
   private static final Logger LOG = Logger.getInstance("#io.flutter.run.daemon.FlutterDaemonService");
-  private static final boolean HOT_MODE_DEFAULT = false;
+  private static final boolean HOT_MODE_DEFAULT = true;
   private static final String TARGET_DEFAULT = null;
   private static final String ROUTE_DEFAULT = null;
 

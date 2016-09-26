@@ -194,7 +194,9 @@ public class FlutterAppManager {
   }
 
   void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart) {
-    // TODO send app.restart command
+    AppRestart appStart = new AppRestart(app.appId(), isFullRestart);
+    Method cmd = makeMethod(CMD_APP_RESTART, appStart);
+    sendCommand(app.getController(), cmd);
   }
 
   void enableDevicePolling(@NotNull FlutterDaemonController controller) {
@@ -403,6 +405,20 @@ public class FlutterAppManager {
       app.directory = result.getAsJsonPrimitive("directory").getAsString();
       app.supportsRestart = result.getAsJsonPrimitive("supportsRestart").getAsBoolean();
       manager.eventAppStarted(app, controller);
+    }
+  }
+
+  private static class AppRestart extends Params {
+    // "method":"app.restart"
+    AppRestart(String appId, boolean fullRestart) {
+      this.appId = appId;
+      this.fullRestart = fullRestart;
+    }
+
+    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private boolean fullRestart;
+
+    void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
     }
   }
 
