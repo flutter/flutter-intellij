@@ -7,10 +7,21 @@ package io.flutter.run.daemon;
 
 public interface ConnectedDevice {
 
+  /**
+   * The name of the device, which can be shown to the user.
+   *
+   * @return The device name returned by the device
+   */
   String deviceName();
 
+  /**
+   * @return The deviceId for a device or simulator
+   */
   String deviceId();
 
+  /**
+   * @return The name of the platform of the device
+   */
   String platform();
 }
 

@@ -16,38 +16,93 @@ import static io.flutter.run.daemon.FlutterAppManager.AppStarted;
  */
 public interface FlutterApp {
 
+  /**
+   * @return The FlutterDaemonService used to communicate with the Flutter app.
+   */
   FlutterDaemonService getService();
 
+  /**
+   * @return The FlutterDaemonController that controls the process running the daemon.
+   */
   FlutterDaemonController getController();
 
+  /**
+   * @return <code>true</code> if the appId has been set. This is set asynchronously after the app is launched.
+   */
   boolean hasAppId();
 
+  /**
+   * @return The appId for the running app.
+   */
   String appId();
 
+  /**
+   * @return The Flutter project directory.
+   */
   String projectDirectory();
 
+  /**
+   * @return The deviceId the app is running on.
+   */
   String deviceId();
 
+  /**
+   * @return <code>true</code> if the app can be restarted.
+   */
   boolean isRestartable();
 
+  /**
+   * @return <code>true</code> if the app is in hot-restart mode.
+   */
   boolean isHot();
 
+  /**
+   * @return The mode the app is running in.
+   */
   RunMode mode();
 
+  /**
+   * @return The route parameter.
+   */
   String route();
 
+  /**
+   * @return The target parameter.
+   */
   String target();
 
+  /**
+   * @return The debug port used to talk to the observatory.
+   */
   int port();
 
+  /**
+   * Stop the app.
+   */
   void performStop();
 
+  /**
+   * Restart the app.
+   */
   void performRestart();
 
+  /**
+   * Refresh the app.
+   */
   void performRefresh();
 
+  /**
+   * Fetch the widget hierarchy.
+   *
+   * @return Unknown
+   */
   Object fetchWidgetHierarchy();
 
+  /**
+   * Fetch the render tree
+   *
+   * @return Unknown
+   */
   Object fetchRenderTree();
 }
 
