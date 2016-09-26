@@ -16,7 +16,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.jetbrains.lang.dart.DartBundle;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
@@ -178,7 +177,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
       DartSdk sdk = DartSdk.getDartSdk(project);
       if (sdk == null) {
-        throw new ExecutionException(DartBundle.message("dart.sdk.is.not.configured"));
+        throw new ExecutionException(FlutterBundle.message("dart.sdk.is.not.configured"));
       }
 
       FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
