@@ -77,11 +77,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private final int myTimeout;
 
   @Nullable String myRemoteProjectRootUri;
-<<<<<<< Updated upstream
   @Nullable private ObservatoryConnector myConnector;
-=======
-  private boolean scheduled = false;
->>>>>>> Stashed changes
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                     @NotNull final String debuggingHost,
@@ -125,7 +121,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     myDASExecutionContextId = dasExecutionContextId;
 
-    scheduleConnectNew();
+    scheduleConnect();
 
     if (remoteDebug) {
       LOG.assertTrue(myExecutionResult == null && myDASExecutionContextId == null, myDASExecutionContextId + myExecutionResult);
@@ -185,12 +181,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
   }
 
-  public void scheduleConnect(){}
-
-  public void scheduleConnectNew() {
-    System.out.println("In scheduleConnectNew() -- main thread " + Thread.currentThread().toString());
+  public void scheduleConnect() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      System.out.println("In scheduleConnectNew() -- pool thread " + Thread.currentThread().toString());
       if (myConnector != null) {
         long timeout = (long)myTimeout;
         long startTime = System.currentTimeMillis();
@@ -206,7 +198,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           }
         }
         myObservatoryPort = myConnector.getPort();
-        System.out.println("In scheduleConnectNew() -- got port " + String.valueOf(myObservatoryPort));
       }
 
       long timeout = (long)myTimeout;
@@ -246,7 +237,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   private void connect() throws IOException {
-    System.out.println("Connecting to " + getObservatoryUrl("ws", "/ws"));
     final VmService vmService = VmService.connect(getObservatoryUrl("ws", "/ws"));
     vmService.addVmServiceListener(new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]));
 
