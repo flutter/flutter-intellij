@@ -21,6 +21,7 @@ import com.jetbrains.lang.dart.ide.runner.DartRunner;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
+import io.flutter.run.daemon.FlutterDaemonService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,8 +41,10 @@ public class FlutterRunner extends DartRunner {
 
   @Override
   public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
+    FlutterDaemonService service = FlutterDaemonService.getInstance();
     return (profile instanceof FlutterRunConfiguration &&
-            (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)));
+            (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId))) &&
+           (service != null && !service.getConnectedDevices().isEmpty());
   }
 
   @Override
@@ -57,6 +60,20 @@ public class FlutterRunner extends DartRunner {
         @Override
         public int getPort() {
           return daemonState.getObservatoryPort();
+        }
+      };
+    }
+    if (state instanceof FlutterAppState) {
+      final FlutterAppState appState = (FlutterAppState)state;
+      myConnector = new ObservatoryConnector() {
+        @Override
+        public boolean isConnectionReady() {
+          return appState.isConnectionReady();
+        }
+
+        @Override
+        public int getPort() {
+          return appState.getObservatoryPort();
         }
       };
     }

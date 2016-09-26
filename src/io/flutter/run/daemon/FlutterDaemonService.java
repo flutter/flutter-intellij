@@ -5,7 +5,7 @@
  */
 package io.flutter.run.daemon;
 
-import com.google.gson.*;
+import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -31,7 +31,7 @@ public class FlutterDaemonService {
   private List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
   private Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
-  private FlutterAppManager myManager = new FlutterAppManager();
+  private FlutterAppManager myManager = new FlutterAppManager(this);
 
   static {
     getInstance();
@@ -44,6 +44,7 @@ public class FlutterDaemonService {
         myManager.processInput(string, controller);
       }
     }
+
     public void enableDevicePolling(FlutterDaemonController controller) {
       synchronized (myLock) {
         myManager.enableDevicePolling(controller);
@@ -77,18 +78,27 @@ public class FlutterDaemonService {
     myConnectedDevices.add(device);
   }
 
+  void removeConnectedDevice(ConnectedDevice device) {
+    myConnectedDevices.remove(device);
+  }
+
   /**
    * Start a Flutter app.
    *
+   * @param project    The Project
    * @param projectDir The path to the root directory of the Flutter project
    * @param deviceId   The device id as reported by the Flutter daemon
    * @param mode       The RunMode to use (release, debug, profile)
    */
-  public FlutterApp startApp(@NotNull String projectDir, @NotNull String deviceId, @NotNull RunMode mode) {
+  public FlutterApp startApp(@NotNull Project project, @NotNull String projectDir, @NotNull String deviceId, @NotNull RunMode mode)
+    throws ExecutionException {
     boolean isPaused = mode.isDebug();
     FlutterDaemonController controller = controllerFor(projectDir, deviceId);
+    if (controller.getProcessHandler() == null || controller.getProcessHandler().isProcessTerminated()) {
+      controller.forkProcess(project);
+    }
     synchronized (myLock) {
-      return myManager.startApp(this, controller, deviceId, mode, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
+      return myManager.startApp(controller, deviceId, mode, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
     }
   }
 

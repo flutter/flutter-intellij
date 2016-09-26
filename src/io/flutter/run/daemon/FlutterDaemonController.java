@@ -7,23 +7,22 @@ package io.flutter.run.daemon;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.*;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessHandler;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.io.BaseOutputReader;
-import com.intellij.util.net.NetUtils;
 import com.jetbrains.lang.dart.DartBundle;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
-import io.flutter.run.FlutterRunnerParameters;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -52,6 +51,10 @@ public class FlutterDaemonController extends ProcessAdapter {
   public void addListener(DaemonListener listener) {
     removeListener(listener);
     myListeners.add(listener);
+  }
+
+  public ProcessHandler getProcessHandler() {
+    return myHandler;
   }
 
   public void removeListener(DaemonListener listener) {
@@ -85,7 +88,7 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   void setProjectAndDevice(String projectDir, String deviceId) {
-    if (myHandler != null) {
+    if (myHandler != null && (myProjectDirectory == null || !myProjectDirectory.equals(projectDir))) {
       // TODO Ensure no app are running
       forceExit();
     }
@@ -111,16 +114,18 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   public void forkProcess(Project project) throws ExecutionException {
-    GeneralCommandLine commandLine = createCommandLine(project);
-    try {
-      myHandler = new OSProcessHandler(commandLine);
-      myHandler.addProcessListener(this);
-      myHandler.startNotify();
-    } catch (ExecutionException ex) {
-      LOG.error(ex);
-      throw ex;
-    }
-  }
+    //ApplicationManager.getApplication().executeOnPooledThread(() -> {
+      try {
+        GeneralCommandLine commandLine = createCommandLine(project);
+        myHandler = new OSProcessHandler(commandLine);
+        myHandler.addProcessListener(this);
+        myHandler.startNotify();
+      }
+      catch (ExecutionException ex) {
+        LOG.error(ex);
+      }
+    //});
+}
 
   public void sendCommand(String commandJson, FlutterAppManager manager) {
     OutputStream input = myHandler.getProcessInput();
@@ -144,13 +149,13 @@ public class FlutterDaemonController extends ProcessAdapter {
         for (DaemonListener listener : myListeners) {
           listener.daemonInput(text, this);
         }
-      } else {
+      }
+      else {
         if (text.startsWith(STARTING_DAEMON)) {
           for (DaemonListener listener : myListeners) {
             listener.enableDevicePolling(this);
           }
         }
-
       }
     }
   }
@@ -169,7 +174,8 @@ public class FlutterDaemonController extends ProcessAdapter {
       if (flutterSdk != null) {
         flutterSdkPath = flutterSdk.getHomePath();
       }
-    } else {
+    }
+    else {
 
       DartSdk sdk = DartSdk.getDartSdk(project);
       if (sdk == null) {
@@ -198,16 +204,16 @@ public class FlutterDaemonController extends ProcessAdapter {
     return commandLine;
   }
 
-  private static class FlutterStream extends PrintStream {
+private static class FlutterStream extends PrintStream {
 
-    public FlutterStream(@NotNull OutputStream out) {
-      super(out);
-    }
-
-    @Override
-    public void close() {
-      // Closing the stream terminates the process, so don't do it.
-      flush();
-    }
+  public FlutterStream(@NotNull OutputStream out) {
+    super(out);
   }
+
+  @Override
+  public void close() {
+    // Closing the stream terminates the process, so don't do it.
+    flush();
+  }
+}
 }

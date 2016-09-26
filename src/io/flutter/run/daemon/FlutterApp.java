@@ -20,6 +20,8 @@ public interface FlutterApp {
 
   FlutterDaemonController getController();
 
+  boolean hasAppId();
+
   String appId();
 
   String projectDirectory();
@@ -35,6 +37,8 @@ public interface FlutterApp {
   String route();
 
   String target();
+
+  int port();
 
   void performStop();
 
@@ -57,6 +61,7 @@ class RunningFlutterApp implements FlutterApp {
   private boolean isHot;
   private String myRoute;
   private String myTarget;
+  private int myPort;
 
   public RunningFlutterApp(@NotNull FlutterDaemonService service,
                            @NotNull FlutterDaemonController controller,
@@ -86,6 +91,11 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public FlutterDaemonController getController() {
     return myController;
+  }
+
+  @Override
+  public boolean hasAppId() {
+    return myApp != null && myApp.appId != null;
   }
 
   @Override
@@ -126,6 +136,15 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public String target() {
     return myTarget;
+  }
+
+  @Override
+  public int port() {
+    return myPort;
+  }
+
+  void setPort(int port) {
+    myPort = port;
   }
 
   @Override

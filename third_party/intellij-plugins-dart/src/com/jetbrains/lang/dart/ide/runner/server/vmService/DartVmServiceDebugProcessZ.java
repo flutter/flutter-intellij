@@ -78,6 +78,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Nullable private ObservatoryConnector myConnector;
 
   @Nullable String myRemoteProjectRootUri;
+  private boolean scheduled = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                    @NotNull final String debuggingHost,
@@ -121,7 +122,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     myDASExecutionContextId = dasExecutionContextId;
 
-    scheduleConnect();
+    scheduleConnectNew();
 
     if (remoteDebug) {
       LOG.assertTrue(myExecutionResult == null && myDASExecutionContextId == null, myDASExecutionContextId + myExecutionResult);
@@ -176,7 +177,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
   }
 
-  public void scheduleConnect() {
+  public void scheduleConnect(){}
+
+  public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       if (myConnector != null) {
         long timeout = (long)myTimeout;

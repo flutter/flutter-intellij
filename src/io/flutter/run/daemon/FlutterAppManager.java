@@ -7,8 +7,11 @@ package io.flutter.run.daemon;
 
 import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,13 +20,14 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * Keeper of running Flutter apps.
  */
 @SuppressWarnings("Duplicates") // TODO remove after deleting DaemonManager
 public class FlutterAppManager {
-  private static final Logger LOG = Logger.getInstance("#io.flutter.run.daemon.FlutterAppManager");
 
   private static final String CMD_APP_START = "app.start";
   private static final String CMD_APP_STOP = "app.stop";
@@ -32,35 +36,115 @@ public class FlutterAppManager {
 
   private static final Gson GSON = new Gson();
 
+  private Logger myLogger = Logger.getInstance("#io.flutter.run.daemon.FlutterAppManager");
+  private FlutterDaemonService myService;
   private List<FlutterApp> myApps = new ArrayList<>();
   private Map<Integer, List<Command>> myPendingCommands = new THashMap<>();
   private int myCommandId = 0;
+  private final Object myLock = new Object();
+  private Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
 
-  public FlutterApp startApp(@NotNull FlutterDaemonService service,
-                             @NotNull FlutterDaemonController controller,
+  FlutterAppManager(@NotNull FlutterDaemonService service) {
+    this.myService = service;
+  }
+
+  @Nullable
+  public FlutterApp startApp(@NotNull FlutterDaemonController controller,
                              @NotNull String deviceId,
                              @NotNull RunMode mode,
                              boolean isPaused,
                              boolean isHot,
                              @Nullable String target,
                              @Nullable String route) {
-    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, isHot, target, route);
-    // TODO start app on controller, wait for response, set AppStarted to app.setApp()
+    if (!waitForDevice(deviceId)) {
+      return null;
+    }
+    RunningFlutterApp app = new RunningFlutterApp(myService, controller, this, mode, isHot, target, route);
+    AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), isPaused, route, mode.mode(), target, isHot);
+    Method cmd = makeMethod(CMD_APP_START, appStart);
+    Runnable x = () -> {
+      sendCommand(controller, cmd);
+      Thread.yield();
+      FlutterJsonObject response = waitForResponse(cmd);
+      if (!(response instanceof AppStarted)) {
+        return;
+      }
+      AppStarted appStarted = (AppStarted)response;
+      app.setApp(appStarted);
+    };
+    ApplicationManager.getApplication().executeOnPooledThread(x);
     myApps.add(app);
     return app;
   }
 
-  public void startDevicePoller(FlutterDaemonController pollster) {
+  private boolean waitForDevice(@NotNull String deviceId) {
+    long timeout = 5000L;
+    long startTime = System.currentTimeMillis();
+    while (true) {
+      synchronized (myLock) {
+        if (myService.getConnectedDevices().stream().anyMatch(d -> d.deviceId().equals(deviceId))) {
+          return true;
+        }
+      }
+      if (System.currentTimeMillis() > startTime + timeout) {
+        return false;
+      }
+      Thread.yield();
+      TimeoutUtil.sleep(100);
+      Thread.yield();
+    }
+  }
+
+  @Nullable
+  private RunningFlutterApp waitForApp(@NotNull FlutterDaemonController controller, @NotNull String appId) {
+    long timeout = 10000L;
+    long startTime = System.currentTimeMillis();
+    while (true) {
+      synchronized (myLock) {
+        RunningFlutterApp app = findApp(controller, appId);
+        if (app != null) {
+          return app;
+        }
+      }
+      if (System.currentTimeMillis() > startTime + timeout) {
+        return null;
+      }
+      Thread.yield();
+      TimeoutUtil.sleep(100);
+      Thread.yield();
+    }
+  }
+
+  @Nullable
+  private FlutterJsonObject waitForResponse(@NotNull Method cmd) {
+    Thread.yield();
+    long timeout = 10000L;
+    long startTime = System.currentTimeMillis();
+    while (true) {
+      synchronized (myLock) {
+        FlutterJsonObject resp = myResponses.get(cmd);
+        if (resp != null) return resp;
+      }
+      if (System.currentTimeMillis() > startTime + timeout) {
+        return null;
+      }
+      Thread.yield();
+      TimeoutUtil.sleep(100);
+      Thread.yield();
+    }
+  }
+
+  void startDevicePoller(@NotNull FlutterDaemonController pollster) {
     final Project project = null;
     try {
       pollster.forkProcess(project);
     }
     catch (ExecutionException e) {
-      LOG.error(e);
+      myLogger.error(e);
     }
   }
 
-  void processInput(String string, FlutterDaemonController controller) {
+  void processInput(@NotNull String string, @NotNull FlutterDaemonController controller) {
     try {
       JsonParser jp = new JsonParser();
       JsonElement elem = jp.parse(string);
@@ -74,26 +158,30 @@ public class FlutterAppManager {
       }
     }
     catch (JsonSyntaxException ex) {
-      LOG.error(ex);
+      myLogger.error(ex);
     }
   }
 
-  void handleResponse(int cmdId, JsonObject obj, FlutterDaemonController controller) {
+  void handleResponse(int cmdId, @NotNull JsonObject obj, @NotNull FlutterDaemonController controller) {
     Command cmd = findPendingCmd(cmdId, controller);
-    removePendingCmd(cmdId, cmd);
-    cmd.method.process(obj, this, controller);
+    try {
+      cmd.method.process(obj, this, controller);
+    }
+    finally {
+      removePendingCmd(cmdId, cmd);
+    }
   }
 
-  void handleEvent(JsonObject obj, FlutterDaemonController controller, String json) {
+  void handleEvent(@NotNull JsonObject obj, @NotNull FlutterDaemonController controller, @NotNull String json) {
     JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
     if (primEvent == null) {
-      LOG.error("Invalid JSON from flutter: " + json);
+      myLogger.error("Invalid JSON from flutter: " + json);
       return;
     }
     String eventName = primEvent.getAsString();
     JsonObject params = obj.getAsJsonObject("params");
     if (eventName == null || params == null) {
-      LOG.error("Bad event from flutter: " + json);
+      myLogger.error("Bad event from flutter: " + json);
       return;
     }
     Event eventHandler = eventHandler(eventName, json);
@@ -101,32 +189,44 @@ public class FlutterAppManager {
     eventHandler.from(params).process(this, controller);
   }
 
-  void stopApp(RunningFlutterApp app) {
+  void stopApp(@NotNull RunningFlutterApp app) {
     // TODO send app.stop command
     myApps.remove(app);
     app.getController().removeDeviceId(app.deviceId());
   }
 
-  void restartApp(RunningFlutterApp app, boolean isFullRestart) {
+  void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart) {
     // TODO send app.restart command
   }
 
-  void enableDevicePolling(FlutterDaemonController controller) {
+  void enableDevicePolling(@NotNull FlutterDaemonController controller) {
     Method method = makeMethod(CMD_DEVICE_ENABLE, null);
     sendCommand(controller, method);
   }
 
-  private Method makeMethod(String methodName, Params params) {
+  @NotNull
+  private Method makeMethod(@NotNull String methodName, @Nullable Params params) {
     return new Method(methodName, params, myCommandId++);
   }
 
-  private void sendCommand(FlutterDaemonController controller, Method method) {
+  private void sendCommand(@NotNull FlutterDaemonController controller, @NotNull Method method) {
     controller.sendCommand(GSON.toJson(method), this);
     addPendingCmd(method.id, new Command(method, controller));
   }
 
   @NotNull
-  private Command findPendingCmd(int id, FlutterDaemonController controller) {
+  private List<Command> findAllPendingCmds(@NotNull FlutterDaemonController controller) {
+    List<Command> result = new ArrayList<>();
+    for (List<Command> list : myPendingCommands.values()) {
+      for (Command cmd : list) {
+        if (cmd.controller == controller) result.add(cmd);
+      }
+    }
+    return result;
+  }
+
+  @NotNull
+  private Command findPendingCmd(int id, @NotNull FlutterDaemonController controller) {
     List<Command> list = myPendingCommands.get(id);
     for (Command cmd : list) {
       if (cmd.controller == controller) return cmd;
@@ -134,7 +234,7 @@ public class FlutterAppManager {
     throw new IllegalStateException("no matching pending command");
   }
 
-  private void removePendingCmd(int id, Command command) {
+  private void removePendingCmd(int id, @NotNull Command command) {
     List<Command> list = myPendingCommands.get(id);
     list.remove(command);
     if (list.isEmpty()) {
@@ -142,7 +242,7 @@ public class FlutterAppManager {
     }
   }
 
-  private void addPendingCmd(int id, Command command) {
+  private void addPendingCmd(int id, @NotNull Command command) {
     List<Command> list = myPendingCommands.get(id);
     if (list == null) {
       list = new ArrayList<>();
@@ -151,7 +251,8 @@ public class FlutterAppManager {
     list.add(command);
   }
 
-  private static Event eventHandler(String eventName, String json) {
+  @Nullable
+  private Event eventHandler(@NotNull String eventName, @Nullable String json) {
     switch (eventName) {
       case "device.added":
         return new DeviceAdded();
@@ -168,40 +269,77 @@ public class FlutterAppManager {
       case "device.removed":
         return new DeviceRemoved();
       default:
-        LOG.error("Unknown flutter event: " + eventName + " from json: " + json);
+        myLogger.error("Unknown flutter event: " + eventName + " from json: " + json);
         return null;
     }
   }
 
-  private void eventLogMessage(LogMessage message, FlutterDaemonController controller) {
+  private void eventLogMessage(@NotNull LogMessage message, @NotNull FlutterDaemonController controller) {
+    myLogger.info(message.message); // TODO(messick) Complete logging.
   }
 
-  private void eventLogMessage(AppLog message, FlutterDaemonController controller) {
+  private void eventLogMessage(@NotNull AppLog message, @NotNull FlutterDaemonController controller) {
+    myLogger.info(message.log); // TODO(messick) Complete logging.
   }
 
-  private void eventDeviceAdded(DeviceAdded added, FlutterDaemonController controller) {
-    FlutterDaemonService service = FlutterDaemonService.getInstance();
-    assert (service != null);
-    service.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform));
+  private void eventDeviceAdded(@NotNull DeviceAdded added, @NotNull FlutterDaemonController controller) {
+    myService.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform));
   }
 
-  private void eventDeviceRemoved(DeviceRemoved removed, FlutterDaemonController controller) {
+  private void eventDeviceRemoved(@NotNull DeviceRemoved removed, @NotNull FlutterDaemonController controller) {
+    for (ConnectedDevice device : myService.getConnectedDevices()) {
+      if (device.deviceName().equals(removed.name) && device.deviceId().equals(removed.id) && device.platform().equals(removed.platform)) {
+        myService.removeConnectedDevice(device);
+      }
+    }
   }
 
-  private void eventAppStarted(AppStarted started, FlutterDaemonController controller) {
+  private void eventAppStarted(@NotNull AppStarted started, @NotNull FlutterDaemonController controller) {
+    assert started.directory.equals(controller.getProjectDirectory());
+    Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
+      Params p = c.method.params;
+      if (p instanceof AppStart) {
+        AppStart a = (AppStart)p;
+        if (a.deviceId.equals(started.deviceId)) return true;
+      }
+      return false;
+    });
+    Optional<Command> opt = starts.findFirst();
+    assert (opt.isPresent());
+    Command cmd = opt.get();
+    synchronized (myLock) {
+      myResponses.put(cmd.method, started);
+    }
   }
 
-  private void eventAppStopped(AppStopped stopped, FlutterDaemonController controller) {
+  private void eventAppStopped(@NotNull AppStopped stopped, @NotNull FlutterDaemonController controller) {
   }
 
-  private void eventDebugPort(AppDebugPort port, FlutterDaemonController controller) {
+  private void eventDebugPort(@NotNull AppDebugPort port, @NotNull FlutterDaemonController controller) {
+    RunningFlutterApp app = waitForApp(controller, port.appId);
+    if (app != null) {
+      app.setPort(port.port);
+    }
+  }
+
+  private void error(JsonObject json) {
+    System.out.println(json.toString()); // TODO error handling
+  }
+
+  private RunningFlutterApp findApp(FlutterDaemonController controller, String appId) {
+    for (FlutterApp app : myApps) {
+      if (app.getController() == controller && app.hasAppId() && app.appId().equals(appId)) {
+        return (RunningFlutterApp)app;
+      }
+    }
+    return null;
   }
 
   private static class Command {
-    Method method;
-    FlutterDaemonController controller;
+    @NotNull Method method;
+    @NotNull FlutterDaemonController controller;
 
-    Command(Method method, FlutterDaemonController controller) {
+    Command(@NotNull Method method, @NotNull FlutterDaemonController controller) {
       this.method = method;
       this.controller = controller;
     }
@@ -257,6 +395,10 @@ public class FlutterAppManager {
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
       JsonObject result = obj.getAsJsonObject("result");
+      if (result == null) {
+        manager.error(obj);
+        return;
+      }
       AppStarted app = new AppStarted();
       app.appId = result.getAsJsonPrimitive("appId").getAsString();
       app.deviceId = result.getAsJsonPrimitive("deviceId").getAsString();

@@ -14,17 +14,23 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
-import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
+import com.intellij.openapi.project.Project;
+import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
+import io.flutter.run.daemon.ConnectedDevice;
+import io.flutter.run.daemon.FlutterApp;
+import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class FlutterAppState extends CommandLineState {
+public class FlutterAppState extends DartCommandLineRunningState {
 
-  protected FlutterAppState(ExecutionEnvironment environment) {
+  private FlutterApp myApp;
+
+  protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
   }
 
@@ -38,7 +44,14 @@ public class FlutterAppState extends CommandLineState {
    */
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
-    return null; // Start the flutter app; return the ProcessHandler from the daemon controller
+    FlutterDaemonService service = FlutterDaemonService.getInstance();
+    assert service != null;
+    Project project = getEnvironment().getProject();
+    String workingDir = project.getBasePath();
+    assert workingDir != null;
+    ConnectedDevice device = service.getConnectedDevices().iterator().next();
+    myApp = service.startApp(project, workingDir, device.deviceId(), RunMode.DEBUG); // TODO Select run mode based on launch.
+    return myApp.getController().getProcessHandler();
   }
 
   @Override
@@ -54,5 +67,13 @@ public class FlutterAppState extends CommandLineState {
     //actions.add(new OpenDartObservatoryUrlAction(
     //  "http://" + NetUtils.getLocalHostString() + ":" + myObservatoryPort,
     //  () -> !processHandler.isProcessTerminated()));
+  }
+
+  public boolean isConnectionReady() {
+    return myApp != null && myApp.port() > 0;
+  }
+
+  public int getObservatoryPort() {
+    return myApp.port();
   }
 }
