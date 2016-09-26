@@ -55,7 +55,11 @@ public class FlutterAppState extends DartCommandLineRunningState {
       throw new ExecutionException("No connected device");
     }
 
-    ConnectedDevice device = devices.iterator().next();
+    ConnectedDevice device = service.getSelectedDevice();
+    if (device == null){
+      throw new ExecutionException("No selected device");
+    }
+
     myApp = service.startApp(project, workingDir, device.deviceId(), RunMode.DEBUG); // TODO Select run mode based on launch.
     return myApp.getController().getProcessHandler();
   }

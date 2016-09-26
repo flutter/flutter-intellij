@@ -32,6 +32,7 @@ public class FlutterDaemonService {
   private List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
   private Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
+  private ConnectedDevice mySelectedDevice;
   private FlutterAppManager myManager = new FlutterAppManager(this);
 
   static {
@@ -65,7 +66,6 @@ public class FlutterDaemonService {
 
   /**
    * Return the list of currently connected devices. The list is sorted by device name.
-   * TODO(pq,messick) Extend the debugger UI to allow selecting a device from this list.
    *
    * @return List of ConnectedDevice
    */
@@ -73,6 +73,20 @@ public class FlutterDaemonService {
     SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
     list.addAll(myConnectedDevices);
     return list;
+  }
+
+  /**
+   * @return the currently selected device
+   */
+  public @Nullable ConnectedDevice getSelectedDevice() {
+    return mySelectedDevice;
+  }
+
+  /**
+   * Set the current selected device.
+   */
+  public void setSelectedDevice(@Nullable ConnectedDevice device) {
+    mySelectedDevice = device;
   }
 
   void addConnectedDevice(ConnectedDevice device) {
