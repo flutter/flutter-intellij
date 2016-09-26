@@ -86,21 +86,16 @@ public class DartTestUtils {
       DartSdkGlobalLibUtil.enableDartSdk(module);
     });
 
-    Disposer.register(disposable, new Disposable() {
-      @Override
-      public void dispose() {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-          if (!module.isDisposed()) {
-            DartSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
-          }
-
-          ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
-          final Library library = libraryTable.getLibraryByName(DartSdk.DART_SDK_GLOBAL_LIB_NAME);
-          if (library != null) {
-            libraryTable.removeLibrary(library);
-          }
-        });
+    Disposer.register(disposable, () -> ApplicationManager.getApplication().runWriteAction(() -> {
+      if (!module.isDisposed()) {
+        DartSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
       }
-    });
+
+      ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
+      final Library library = libraryTable.getLibraryByName(DartSdk.DART_SDK_GLOBAL_LIB_NAME);
+      if (library != null) {
+        libraryTable.removeLibrary(library);
+      }
+    }));
   }
 }
