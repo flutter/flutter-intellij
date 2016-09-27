@@ -38,8 +38,8 @@
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-
-    <ApplicationLoadListener implementation="io.flutter.FlutterInitializer" />
+    
+    <postStartupActivity implementation="io.flutter.FlutterInitializer"></postStartupActivity>
     <applicationService serviceInterface="io.flutter.run.daemon.FlutterDaemonService"
                         serviceImplementation="io.flutter.run.daemon.FlutterDaemonService"/>
 
