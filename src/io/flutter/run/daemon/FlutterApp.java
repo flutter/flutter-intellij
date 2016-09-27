@@ -89,8 +89,7 @@ public interface FlutterApp {
   /**
    * Refresh the app.
    */
-  void performRefresh();
-
+  void performReload();
   /**
    * Fetch the widget hierarchy.
    *
@@ -209,16 +208,12 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public void performRestart() {
-    myManager.restartApp(this, false);
-  }
-
-  void fullRestartApp() {
     myManager.restartApp(this, true);
   }
 
   @Override
-  public void performRefresh() {
-    throw new NotImplementedException();
+  public void performReload() {
+    myManager.restartApp(this, true);
   }
 
   @Override
