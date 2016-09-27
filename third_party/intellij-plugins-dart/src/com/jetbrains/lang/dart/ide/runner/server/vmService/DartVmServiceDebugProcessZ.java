@@ -30,9 +30,7 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
-import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceStackFrame;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSuspendContext;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
@@ -326,10 +324,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
-    if(this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
+    if (this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
       this.myVmServiceWrapper.resumeIsolate(this.myLatestCurrentIsolateId, StepOption.Over);
     }
-
   }
 
   @Override
@@ -417,8 +414,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
 
-    topToolbar.addAction(new OpenComputedUrlAction(() -> computeObservatoryUrl(),
-                                                   () -> myConnector.isConnectionReady() && myVmConnected && !getSession().isStopped()));
+    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl,
+                                                   () -> (myConnector != null && myConnector.isConnectionReady()) &&
+                                                         myVmConnected &&
+                                                         !getSession().isStopped()));
     topToolbar.addAction(new RestartFlutterApp(myConnector));
     topToolbar.addAction(new ReloadFlutterApp(myConnector));
   }
