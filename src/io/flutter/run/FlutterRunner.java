@@ -30,7 +30,7 @@ import java.net.URI;
 
 /**
  * This class could be independent of DartRunner; just copy down the code that is not implemented here.
- * Not that we have redefined DartRunner in third_party, which is a slightly modified version of the original.
+ * Note that we have redefined DartRunner in third_party, which is a slightly modified version of the original.
  */
 public class FlutterRunner extends DartRunner {
 
