@@ -5,19 +5,15 @@
  */
 package io.flutter;
 
-import com.intellij.ide.ApplicationLoadListener;
-import com.intellij.openapi.application.Application;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.run.daemon.FlutterDaemonService;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterInitializer implements ApplicationLoadListener {
+public class FlutterInitializer implements StartupActivity {
 
-  public void beforeComponentsCreated() {
-    FlutterDaemonService.getInstance();
-  }
-
-  @Override // TODO Delete this method after moving to next stable release
-  public void beforeApplicationLoaded(@NotNull Application application, @NotNull String s) {
+  @Override
+  public void runActivity(@NotNull Project project) {
     FlutterDaemonService.getInstance();
   }
 }
