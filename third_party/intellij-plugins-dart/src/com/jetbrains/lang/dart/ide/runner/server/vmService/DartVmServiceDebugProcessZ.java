@@ -39,6 +39,9 @@ import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
+import io.flutter.actions.OpenComputedUrlAction;
+import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.RestartFlutterApp;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -414,10 +417,16 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
 
-    if (myObservatoryPort > 0) {
-      topToolbar.addAction(new OpenDartObservatoryUrlAction(getObservatoryUrl("http", null),
-                                                            () -> myVmConnected && !getSession().isStopped()));
-    }
+    topToolbar.addAction(new OpenComputedUrlAction(() -> computeObservatoryUrl(),
+                                                   () -> myConnector.isConnectionReady() && myVmConnected && !getSession().isStopped()));
+    topToolbar.addAction(new RestartFlutterApp(myConnector));
+    topToolbar.addAction(new ReloadFlutterApp(myConnector));
+  }
+
+  private String computeObservatoryUrl() {
+    assert myConnector != null;
+    myObservatoryPort = myConnector.getPort();
+    return getObservatoryUrl("http", null);
   }
 
   @NotNull
