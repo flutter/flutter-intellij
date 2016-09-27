@@ -96,6 +96,7 @@ public class FlutterGeneratorPeer {
         FileUtilRt.toSystemIndependentName(getSdkComboPath());
       if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
         FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHomePath);
+        FlutterSdkUtil.setDartSdkPathIfUnset(sdkHomePath);
       }
     };
 
