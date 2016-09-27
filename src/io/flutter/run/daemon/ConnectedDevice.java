@@ -5,6 +5,8 @@
  */
 package io.flutter.run.daemon;
 
+import com.google.common.base.Objects;
+
 public interface ConnectedDevice {
 
   /**
@@ -50,5 +52,21 @@ class FlutterDevice implements ConnectedDevice {
   @Override
   public String platform() {
     return myPlatform;
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other instanceof FlutterDevice) {
+      return Objects.equal(myDeviceName, ((FlutterDevice)other).deviceName()) &&
+             Objects.equal(myDeviceId, ((FlutterDevice)other).deviceId()) &&
+             Objects.equal(myPlatform, ((FlutterDevice)other).platform());
+    } else {
+      return false;
+    }
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hashCode(myDeviceName, myDeviceId, myPlatform);
   }
 }
