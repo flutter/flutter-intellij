@@ -21,6 +21,7 @@ import com.jetbrains.lang.dart.ide.runner.DartRunner;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -61,6 +62,11 @@ public class FlutterRunner extends DartRunner {
         @Override
         public int getPort() {
           return appState.getObservatoryPort();
+        }
+
+        @Override
+        public FlutterApp getApp() {
+          return appState.getApp();
         }
       };
     }

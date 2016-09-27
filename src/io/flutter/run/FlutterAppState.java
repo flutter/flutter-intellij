@@ -14,7 +14,9 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.net.NetUtils;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
+import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
@@ -74,9 +76,9 @@ public class FlutterAppState extends DartCommandLineRunningState {
 
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {
     actions.add(new Separator());
-    //actions.add(new OpenDartObservatoryUrlAction(
-    //  "http://" + NetUtils.getLocalHostString() + ":" + myObservatoryPort,
-    //  () -> !processHandler.isProcessTerminated()));
+    actions.add(new OpenDartObservatoryUrlAction(
+      "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(),
+      () -> !processHandler.isProcessTerminated()));
   }
 
   public boolean isConnectionReady() {
@@ -85,5 +87,9 @@ public class FlutterAppState extends DartCommandLineRunningState {
 
   public int getObservatoryPort() {
     return myApp.port();
+  }
+
+  public FlutterApp getApp() {
+    return myApp;
   }
 }
