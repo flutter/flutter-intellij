@@ -33,6 +33,10 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * This class is copied from the Dart plugin and modified to use DartVmServiceDebugProcessZ
+ * to control the debugger, and to define the ObservatoryConnector.
+ */
 @SuppressWarnings("Duplicates")
 public class DartRunner extends DefaultProgramRunner {
 
