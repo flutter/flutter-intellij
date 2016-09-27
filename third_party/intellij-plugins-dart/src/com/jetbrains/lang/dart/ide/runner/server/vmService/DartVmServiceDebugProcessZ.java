@@ -324,10 +324,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
-    if(this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
+    if (this.myLatestCurrentIsolateId != null && this.mySuspendedIsolateIds.contains(this.myLatestCurrentIsolateId)) {
       this.myVmServiceWrapper.resumeIsolate(this.myLatestCurrentIsolateId, StepOption.Over);
     }
-
   }
 
   @Override
@@ -415,8 +414,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
 
-    topToolbar.addAction(new OpenComputedUrlAction(() -> computeObservatoryUrl(),
-                                                   () -> myConnector.isConnectionReady() && myVmConnected && !getSession().isStopped()));
+    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl,
+                                                   () -> (myConnector != null && myConnector.isConnectionReady()) &&
+                                                         myVmConnected &&
+                                                         !getSession().isStopped()));
     topToolbar.addAction(new RestartFlutterApp(myConnector));
     topToolbar.addAction(new ReloadFlutterApp(myConnector));
   }
