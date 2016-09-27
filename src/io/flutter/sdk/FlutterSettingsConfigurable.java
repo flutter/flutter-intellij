@@ -26,6 +26,8 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.xml.util.XmlStringUtil;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -131,6 +133,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         FileUtilRt.toSystemIndependentName(getSdkPathText());
       if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
         FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHomePath);
+        FlutterSdkUtil.setDartSdkPathIfUnset(sdkHomePath);
       }
     };
 

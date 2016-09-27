@@ -16,7 +16,9 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
+import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
+import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
@@ -175,5 +177,26 @@ public class FlutterSdkUtil {
 
   public static void enableDartSupport(Module module) {
     ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
+  }
+
+  /**
+   * If there is no configured Dart SDK, update it to the one relative to the given Flutter SDK.
+   *
+   * @param flutterSdkPath the Flutter SDK path
+   */
+  public static void setDartSdkPathIfUnset(@NotNull String flutterSdkPath) {
+    final DartSdk globalDartSdk = DartSdk.getGlobalDartSdk();
+    if (globalDartSdk != null) {
+      return;
+    }
+    try {
+      final String dartSdk = FlutterSdkUtil.pathToDartSdk(flutterSdkPath);
+      DartSdkGlobalLibUtil.ensureDartSdkConfigured(dartSdk);
+      // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
+      DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);
+    }
+    catch (ExecutionException e) {
+      LOG.error(e);
+    }
   }
 }
