@@ -61,7 +61,9 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   public void forceExit() {
     // TODO Stop all apps and terminate the external process
-    myHandler.destroyProcess();
+    if (myHandler != null) {
+      myHandler.destroyProcess();
+    }
     myDeviceIds.clear();
     myListeners.clear();
     myProjectDirectory = null;
