@@ -39,7 +39,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     
-    <postStartupActivity implementation="io.flutter.FlutterInitializer"></postStartupActivity>
+    <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <applicationService serviceInterface="io.flutter.run.daemon.FlutterDaemonService"
                         serviceImplementation="io.flutter.run.daemon.FlutterDaemonService"/>
 
