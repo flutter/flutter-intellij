@@ -284,6 +284,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   public boolean isRemoteDebug() {
     // TODO(devoncarew): This is a hack for now - we want to instead look for prefix matches
     // if remote debugging, or running a Flutter app.
+    // We're depending on the remote debugging's functionality of scanning for prefixes
+    // in use by the VM in order to generate correct paths for the debugger. We could
+    // instead try using the prefix returned over the daemon protocol.
     return true; //myRemoteDebug;
   }
 
