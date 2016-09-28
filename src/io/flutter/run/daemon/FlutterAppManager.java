@@ -7,6 +7,7 @@ package io.flutter.run.daemon;
 
 import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -24,6 +25,7 @@ import java.util.stream.Stream;
 
 /**
  * Keeper of running Flutter apps.
+ * TODO(messick) Clean up myApps, myResponses as things change
  */
 public class FlutterAppManager {
 
@@ -275,11 +277,14 @@ public class FlutterAppManager {
   }
 
   private void eventLogMessage(@NotNull LogMessage message, @NotNull FlutterDaemonController controller) {
-    myLogger.info(message.message); // TODO(messick) Complete logging.
+    myLogger.info(message.message);
   }
 
   private void eventLogMessage(@NotNull AppLog message, @NotNull FlutterDaemonController controller) {
-    myLogger.info(message.log); // TODO(messick) Complete logging.
+    RunningFlutterApp app = findApp(controller, message.appId);
+    if (app != null && message.log != null) {
+      app.getConsole().print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+    }
   }
 
   private void eventDeviceAdded(@NotNull DeviceAdded added, @NotNull FlutterDaemonController controller) {

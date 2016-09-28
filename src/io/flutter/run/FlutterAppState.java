@@ -8,6 +8,11 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.filters.TextConsoleBuilder;
+import com.intellij.execution.filters.TextConsoleBuilderImpl;
+import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
@@ -15,6 +20,8 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.net.NetUtils;
+import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import io.flutter.run.daemon.ConnectedDevice;
@@ -22,6 +29,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +39,7 @@ import java.util.List;
 public class FlutterAppState extends DartCommandLineRunningState {
 
   private FlutterApp myApp;
+  private ConsoleView myConsole;
 
   protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
@@ -74,6 +83,12 @@ public class FlutterAppState extends DartCommandLineRunningState {
     return actions.toArray(new AnAction[actions.size()]);
   }
 
+  protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
+    myConsole = super.createConsole(executor);
+    myApp.setConsole(myConsole);
+    return myConsole;
+  }
+
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {
     actions.add(new Separator());
     actions.add(new OpenDartObservatoryUrlAction(
@@ -91,5 +106,16 @@ public class FlutterAppState extends DartCommandLineRunningState {
 
   public FlutterApp getApp() {
     return myApp;
+  }
+
+  private static class JsonStringFilter implements Filter {
+
+    @Nullable
+    @Override
+    public Result applyFilter(String line, int entireLength) {
+      if (line.startsWith("[{") && line.endsWith("}]\n"))
+        return new Result(0, entireLength, null);
+      return null;
+    }
   }
 }
