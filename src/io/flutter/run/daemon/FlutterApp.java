@@ -208,7 +208,7 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public void performRestart() {
-    myManager.restartApp(this, true);
+    myManager.restartApp(this);
   }
 
   @Override

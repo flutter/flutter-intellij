@@ -6,6 +6,7 @@
 package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -19,6 +20,9 @@ public class RestartFlutterApp extends FlutterAppAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    ifReadyThen(() -> getApp().performRestart());
+    ifReadyThen(() -> {
+      FileDocumentManager.getInstance().saveAllDocuments();
+      getApp().performRestart();
+    });
   }
 }
