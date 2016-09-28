@@ -43,9 +43,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
-  boolean isModified;
+  private boolean isModified;
   private JPanel mainPanel;
-  private JPanel sdkSettings;
+  @SuppressWarnings("unused") private JPanel sdkSettings;
   private ComboboxWithBrowseButton sdkCombo;
   private JBLabel errorLabel;
   private JTextArea versionDetails;
