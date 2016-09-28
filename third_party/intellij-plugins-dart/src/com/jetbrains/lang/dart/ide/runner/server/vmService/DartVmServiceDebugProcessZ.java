@@ -135,6 +135,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
   }
 
+  public ObservatoryConnector getConnector() { return myConnector; }
+
   public VmServiceWrapper getVmServiceWrapper() {
     return myVmServiceWrapper;
   }
