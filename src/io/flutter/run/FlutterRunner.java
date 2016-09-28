@@ -77,14 +77,15 @@ public class FlutterRunner extends DartRunner {
     return super.doExecute(state, env);
   }
 
-  @Override
-  protected DartUrlResolver getDartUrlResolver(@NotNull final Project project, @NotNull final VirtualFile contextFileOrDir) {
-    return new FlutterUrlResolver(project, contextFileOrDir);
-  }
+  // TODO(devoncarew): This may not be necessary with the latest debugger code from the Dart plugin.
+  //@Override
+  //protected DartUrlResolver getDartUrlResolver(@NotNull final Project project, @NotNull final VirtualFile contextFileOrDir) {
+  //  return new FlutterUrlResolver(project, contextFileOrDir);
+  //}
 
   @Override
   protected int getTimeout() {
-    return 30000; // Allow 30 seconds to connect to the observatory.
+    return 60000; // Allow 60 seconds to connect to the observatory.
   }
 
   @Nullable

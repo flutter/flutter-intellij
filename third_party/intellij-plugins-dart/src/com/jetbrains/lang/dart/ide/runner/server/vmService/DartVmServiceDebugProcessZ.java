@@ -81,7 +81,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Nullable private ObservatoryConnector myConnector;
 
   @Nullable String myRemoteProjectRootUri;
-  private boolean scheduled = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                     @NotNull final String debuggingHost,
@@ -93,8 +92,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
-    // TODO Delete <code>true</code>, add <code>currentWorkingDirectory</code> to work with EAP version
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, true, timeout);
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout, currentWorkingDirectory);
+
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
@@ -246,8 +245,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     vmService.addVmServiceListener(vmServiceListener);
 
-    myVmServiceWrapper =
-      new VmServiceWrapper(this, vmService, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+    final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
+
+    myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
     myVmServiceWrapper.handleDebuggerConnected();
 
     myVmConnected = true;
@@ -282,7 +282,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   public boolean isRemoteDebug() {
-    return myRemoteDebug;
+    // TODO(devoncarew): This is a hack for now - we want to instead look for prefix matches
+    // if remote debugging, or running a Flutter app.
+    // We're depending on the remote debugging's functionality of scanning for prefixes
+    // in use by the VM in order to generate correct paths for the debugger. We could
+    // instead try using the prefix returned over the daemon protocol.
+    return true; //myRemoteDebug;
   }
 
   public void guessRemoteProjectRoot(@NotNull final ElementList<LibraryRef> libraries) {
@@ -460,7 +465,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
 
     // remote prefix (if applicable)
-    if (myRemoteDebug && myRemoteProjectRootUri != null) {
+    if (myRemoteProjectRootUri != null) {
       final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
       if (pubspec != null) {
         final String projectPath = pubspec.getParent().getPath();
@@ -495,7 +500,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       }
 
       final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-      if (myRemoteDebug && myRemoteProjectRootUri != null && uri.startsWith(myRemoteProjectRootUri) && pubspec != null) {
+      if (myRemoteProjectRootUri != null && uri.startsWith(myRemoteProjectRootUri) && pubspec != null) {
         final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(pubspec.getParent()), '/');
         LOG.assertTrue(localRootUri.startsWith(DartUrlResolver.FILE_PREFIX), localRootUri);
 

@@ -7,7 +7,6 @@ package io.flutter.run.daemon;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static io.flutter.run.daemon.FlutterAppManager.AppStarted;
 
@@ -90,6 +89,7 @@ public interface FlutterApp {
    * Refresh the app.
    */
   void performReload();
+
   /**
    * Fetch the widget hierarchy.
    *
@@ -218,11 +218,11 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public Object fetchWidgetHierarchy() {
-    throw new NotImplementedException();
+    throw new NoSuchMethodError("fetchWidgetHierarchy");
   }
 
   @Override
   public Object fetchRenderTree() {
-    throw new NotImplementedException();
+    throw new NoSuchMethodError("fetchRenderTree");
   }
 }
