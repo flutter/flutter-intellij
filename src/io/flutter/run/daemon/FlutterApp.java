@@ -5,6 +5,7 @@
  */
 package io.flutter.run.daemon;
 
+import com.intellij.execution.ui.ConsoleView;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,6 +104,10 @@ public interface FlutterApp {
    * @return Unknown
    */
   Object fetchRenderTree();
+
+  void setConsole(ConsoleView console);
+
+  ConsoleView getConsole();
 }
 
 class RunningFlutterApp implements FlutterApp {
@@ -116,6 +121,7 @@ class RunningFlutterApp implements FlutterApp {
   private String myRoute;
   private String myTarget;
   private int myPort;
+  private ConsoleView myConsole;
 
   public RunningFlutterApp(@NotNull FlutterDaemonService service,
                            @NotNull FlutterDaemonController controller,
@@ -224,5 +230,15 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public Object fetchRenderTree() {
     throw new NoSuchMethodError("fetchRenderTree");
+  }
+
+  @Override
+  public void setConsole(ConsoleView console) {
+    myConsole = console;
+  }
+
+  @Override
+  public ConsoleView getConsole() {
+    return myConsole;
   }
 }
