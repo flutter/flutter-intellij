@@ -282,7 +282,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   public boolean isRemoteDebug() {
-    return myRemoteDebug;
+    // TODO(devoncarew): This is a hack for now - we want to instead look for prefix matches
+    // if remote debugging, or running a Flutter app.
+    return true; //myRemoteDebug;
   }
 
   public void guessRemoteProjectRoot(@NotNull final ElementList<LibraryRef> libraries) {
@@ -460,7 +462,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
 
     // remote prefix (if applicable)
-    if (myRemoteDebug && myRemoteProjectRootUri != null) {
+    if (myRemoteProjectRootUri != null) {
       final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
       if (pubspec != null) {
         final String projectPath = pubspec.getParent().getPath();
@@ -495,7 +497,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       }
 
       final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-      if (myRemoteDebug && myRemoteProjectRootUri != null && uri.startsWith(myRemoteProjectRootUri) && pubspec != null) {
+      if (myRemoteProjectRootUri != null && uri.startsWith(myRemoteProjectRootUri) && pubspec != null) {
         final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(pubspec.getParent()), '/');
         LOG.assertTrue(localRootUri.startsWith(DartUrlResolver.FILE_PREFIX), localRootUri);
 
