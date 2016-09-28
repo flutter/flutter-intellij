@@ -22,7 +22,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      getApp().performReload();
+      getApp().hotReload();
     });
   }
 }

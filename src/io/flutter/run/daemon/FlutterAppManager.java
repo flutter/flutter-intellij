@@ -193,10 +193,6 @@ public class FlutterAppManager {
     app.getController().removeDeviceId(app.deviceId());
   }
 
-  void restartApp(@NotNull RunningFlutterApp app) {
-    restartApp(app, false);
-  }
-
   void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart) {
     AppRestart appStart = new AppRestart(app.appId(), isFullRestart);
     Method cmd = makeMethod(CMD_APP_RESTART, appStart);
