@@ -5,10 +5,7 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
 import icons.FlutterIcons;
@@ -45,6 +42,14 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   @Override
   public void update(AnActionEvent e) {
+
+    // Suppress device actions in all but the toolbars.
+    final String place = e.getPlace();
+    if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
+      e.getPresentation().setVisible(false);
+      return;
+    }
+
     super.update(e);
     Presentation presentation = e.getPresentation();
 
