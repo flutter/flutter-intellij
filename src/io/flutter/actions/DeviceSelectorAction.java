@@ -34,7 +34,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       final Collection<ConnectedDevice> devices = service.getConnectedDevices();
       actions.clear();
       actions.addAll(devices.stream().map(SelectDeviceAction::new).collect(Collectors.toList()));
-      group.addAll(actions);
+      if (actions.isEmpty()) {
+        group.add(new NoDevicesAction());
+      }
+      else {
+        group.addAll(actions);
+      }
     }
     return group;
   }
@@ -74,6 +79,16 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
+  private static class NoDevicesAction extends AnAction {
+    NoDevicesAction() {
+      super("No devices", null, null);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      // No-op
+    }
+  }
 
   private static class SelectDeviceAction extends AnAction {
 
