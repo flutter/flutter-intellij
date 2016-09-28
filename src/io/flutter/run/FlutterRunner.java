@@ -84,14 +84,14 @@ public class FlutterRunner extends DartRunner {
 
   @Override
   protected int getTimeout() {
-    return 30000; // Allow 30 seconds to connect to the observatory.
+    return 60000; // Allow 60 seconds to connect to the observatory.
   }
 
   @Nullable
   protected ObservatoryConnector getConnector() {
     return myConnector;
   }
-
+  // TODO: Remove this?
   private static class FlutterUrlResolver extends DartUrlResolverImpl {
     private static final String PACKAGE_PREFIX = "package:";
     //private static final String PACKAGES_PREFIX = "packages/";

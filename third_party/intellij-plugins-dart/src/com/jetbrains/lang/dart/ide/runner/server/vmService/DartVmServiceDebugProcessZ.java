@@ -81,7 +81,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Nullable private ObservatoryConnector myConnector;
 
   @Nullable String myRemoteProjectRootUri;
-  private boolean scheduled = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                     @NotNull final String debuggingHost,
@@ -93,8 +92,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
-    // TODO Delete <code>true</code>, add <code>currentWorkingDirectory</code> to work with EAP version
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, true, timeout);
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout, currentWorkingDirectory);
+
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
@@ -246,8 +245,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     vmService.addVmServiceListener(vmServiceListener);
 
-    myVmServiceWrapper =
-      new VmServiceWrapper(this, vmService, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+    final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
+
+    myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
     myVmServiceWrapper.handleDebuggerConnected();
 
     myVmConnected = true;

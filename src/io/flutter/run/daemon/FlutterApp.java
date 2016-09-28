@@ -5,9 +5,9 @@
  */
 package io.flutter.run.daemon;
 
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static io.flutter.run.daemon.FlutterAppManager.AppStarted;
 
@@ -90,6 +90,7 @@ public interface FlutterApp {
    * Refresh the app.
    */
   void performReload();
+
   /**
    * Fetch the widget hierarchy.
    *
@@ -218,11 +219,28 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public Object fetchWidgetHierarchy() {
-    throw new NotImplementedException();
+    throw new NoSuchMethodError("fetchWidgetHierarchy");
   }
 
   @Override
   public Object fetchRenderTree() {
-    throw new NotImplementedException();
+    throw new NoSuchMethodError("fetchRenderTree");
+  }
+
+  @Override
+  public int hashCode() {
+    return appId().hashCode();
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (!(other instanceof FlutterApp)) {
+      return false;
+    }
+
+    FlutterApp flutterApp = (FlutterApp)other;
+    return
+      flutterApp.getController() == getController() &&
+      StringUtil.equals(appId(), ((FlutterApp)other).appId());
   }
 }
