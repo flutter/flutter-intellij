@@ -44,6 +44,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     return group;
   }
 
+  @Override
+  protected boolean shouldShowDisabledActions() {
+    return true;
+  }
 
   @Override
   public void update(AnActionEvent e) {
@@ -79,9 +83,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  private static class NoDevicesAction extends AnAction {
+  private static class NoDevicesAction extends AnAction implements TransparentUpdate {
     NoDevicesAction() {
       super("No devices", null, null);
+      getTemplatePresentation().setEnabled(false);
     }
 
     @Override
