@@ -10,7 +10,11 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
@@ -21,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 import java.util.stream.Stream;
 
 /**
@@ -43,6 +48,9 @@ public class FlutterAppManager {
   private int myCommandId = 0;
   private final Object myLock = new Object();
   private Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
+
+  private final Object latchSync = new Object();
+  private CountDownLatch progressLatch;
 
   FlutterAppManager(@NotNull FlutterDaemonService service) {
     this.myService = service;
@@ -191,6 +199,7 @@ public class FlutterAppManager {
 
   void stopApp(@NotNull RunningFlutterApp app) {
     // TODO send app.stop command
+    clearLatch();
     myApps.remove(app);
     app.getController().removeDeviceId(app.deviceId());
   }
@@ -282,8 +291,52 @@ public class FlutterAppManager {
 
   private void eventLogMessage(@NotNull AppLog message, @NotNull FlutterDaemonController controller) {
     RunningFlutterApp app = findApp(controller, message.appId);
-    if (app != null && message.log != null) {
-      app.getConsole().print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+    if (app != null) {
+      if (message.progress) {
+        if (message.finished) {
+          clearLatch();
+        } else {
+          // TODO: Is this the correct API to use to get the current project?
+          Project project = ProjectManager.getInstance().getDefaultProject();
+
+          clearLatch();
+
+          synchronized (latchSync) {
+            progressLatch = new CountDownLatch(1);
+          }
+
+          final Task.Backgroundable task = new Task.Backgroundable(project, message.log, false) {
+            @Override
+            public void run(@NotNull final ProgressIndicator indicator) {
+              indicator.setText(message.log);
+
+              CountDownLatch latch = null;
+
+              synchronized (latchSync) {
+                if (progressLatch != null) {
+                  latch = progressLatch;
+                }
+              }
+
+              try {
+                if (latch != null) {
+                  latch.await();
+                }
+              }
+              catch (InterruptedException e) {
+                // ignore
+              }
+            }
+          };
+
+          // TODO(devoncarew): Debounce this.
+          ApplicationManager.getApplication().invokeLater(() -> {
+            ProgressManager.getInstance().run(task);
+          });
+        }
+      } else if (message.log != null) {
+        app.getConsole().print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+      }
     }
   }
 
@@ -318,17 +371,30 @@ public class FlutterAppManager {
   }
 
   private void eventAppStopped(@NotNull AppStopped stopped, @NotNull FlutterDaemonController controller) {
+    // TODO(devoncarew): Terminate the debuger session.
+
+    clearLatch();
   }
 
   private void eventDebugPort(@NotNull AppDebugPort port, @NotNull FlutterDaemonController controller) {
     RunningFlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
       app.setPort(port.port);
+      app.setBaseUri(port.baseUri);
     }
   }
 
   private void error(JsonObject json) {
     System.out.println(json.toString()); // TODO error handling
+  }
+
+  private void clearLatch() {
+    synchronized (latchSync) {
+      if (progressLatch != null) {
+        progressLatch.countDown();
+        progressLatch = null;
+      }
+    }
   }
 
   private RunningFlutterApp findApp(FlutterDaemonController controller, String appId) {
@@ -451,6 +517,8 @@ public class FlutterAppManager {
     // "event":"app.log"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private String log;
+    @SuppressWarnings("unused") private boolean progress;
+    @SuppressWarnings("unused") private boolean finished;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventLogMessage(this, controller);
@@ -504,6 +572,7 @@ public class FlutterAppManager {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private int port;
+    @SuppressWarnings("unused") private String baseUri;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDebugPort(this, controller);
