@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -51,6 +52,20 @@ public class FlutterDaemonService {
       synchronized (myLock) {
         myManager.enableDevicePolling(controller);
       }
+    }
+
+    @Override
+    public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
+      assert handler == controller.getProcessHandler();
+      synchronized (myLock) {
+        myManager.aboutToTerminateAll(controller);
+      }
+    }
+
+    @Override
+    public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
+      assert handler == controller.getProcessHandler() || controller.getProcessHandler() == null;
+      discard(controller);
     }
   };
 

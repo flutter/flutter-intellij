@@ -5,6 +5,8 @@
  */
 package io.flutter.run.daemon;
 
+import com.intellij.execution.process.ProcessHandler;
+
 public interface DaemonListener {
 
   /**
@@ -21,4 +23,8 @@ public interface DaemonListener {
    * @param controller The FlutterDaemonController that controls the daemon
    */
   void enableDevicePolling(FlutterDaemonController controller);
+
+  void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller);
+
+  void processTerminated(ProcessHandler handler, FlutterDaemonController controller);
 }

@@ -141,6 +141,20 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   @Override
+  public void processTerminated(ProcessEvent event) {
+    for (DaemonListener listener : myListeners) {
+      listener.processTerminated(event.getProcessHandler(), this);
+    }
+  }
+
+  @Override
+  public void processWillTerminate(ProcessEvent event, boolean willBeDestroyed) {
+    for (DaemonListener listener : myListeners) {
+      listener.aboutToTerminate(event.getProcessHandler(), this);
+    }
+  }
+
+  @Override
   public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
     if (outputType.toString().equals(STDOUT_KEY)) {
       String text = event.getText().trim();

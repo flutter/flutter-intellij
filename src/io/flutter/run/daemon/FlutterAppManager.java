@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 /**
  * Keeper of running Flutter apps.
- * TODO(messick) Clean up myApps, myResponses as things change
+ * TODO(messick) Clean up myResponses as things change
  */
 public class FlutterAppManager {
 
@@ -189,8 +189,12 @@ public class FlutterAppManager {
     eventHandler.from(params).process(this, controller);
   }
 
-  void stopApp(@NotNull RunningFlutterApp app) {
-    // TODO send app.stop command
+  void stopApp(@NotNull FlutterApp app) {
+    AppStop appStop = new AppStop(app.appId());
+    Method cmd = makeMethod(CMD_APP_STOP, appStop);
+    sendCommand(app.getController(), cmd);
+    // stop.app does not get a response, so remove it now
+    removePendingCmd(cmd.id, findPendingCmd(cmd.id, app.getController()));
     myApps.remove(app);
     app.getController().removeDeviceId(app.deviceId());
   }
@@ -204,6 +208,14 @@ public class FlutterAppManager {
   void enableDevicePolling(@NotNull FlutterDaemonController controller) {
     Method method = makeMethod(CMD_DEVICE_ENABLE, null);
     sendCommand(controller, method);
+  }
+
+  void aboutToTerminateAll(FlutterDaemonController controller) {
+    for (FlutterApp app : myApps) {
+      if (app.getController() == controller) {
+        stopApp(app);
+      }
+    }
   }
 
   @NotNull
@@ -422,6 +434,18 @@ public class FlutterAppManager {
 
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private boolean fullRestart;
+
+    void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
+    }
+  }
+
+  private static class AppStop extends Params {
+    // "method":"app.stop"
+    AppStop(String appId) {
+      this.appId = appId;
+    }
+
+    @SuppressWarnings("unused") private String appId;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
     }
