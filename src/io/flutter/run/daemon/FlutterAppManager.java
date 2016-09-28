@@ -283,7 +283,7 @@ public class FlutterAppManager {
   }
 
   private void eventDeviceAdded(@NotNull DeviceAdded added, @NotNull FlutterDaemonController controller) {
-    myService.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform));
+    myService.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform, added.emulator));
   }
 
   private void eventDeviceRemoved(@NotNull DeviceRemoved removed, @NotNull FlutterDaemonController controller) {
@@ -313,6 +313,8 @@ public class FlutterAppManager {
   }
 
   private void eventAppStopped(@NotNull AppStopped stopped, @NotNull FlutterDaemonController controller) {
+    // TODO(devoncarew): Terminate the launch.
+
   }
 
   private void eventDebugPort(@NotNull AppDebugPort port, @NotNull FlutterDaemonController controller) {
@@ -457,6 +459,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") private String id;
     @SuppressWarnings("unused") private String name;
     @SuppressWarnings("unused") private String platform;
+    @SuppressWarnings("unused") private boolean emulator;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDeviceAdded(this, controller);
@@ -468,6 +471,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") private String id;
     @SuppressWarnings("unused") private String name;
     @SuppressWarnings("unused") private String platform;
+    @SuppressWarnings("unused") private boolean emulator;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDeviceRemoved(this, controller);
