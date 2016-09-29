@@ -423,8 +423,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                         @NotNull final DefaultActionGroup settings) {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
-
     topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
+    topToolbar.addSeparator();
     topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
     topToolbar.addAction(new HotReloadFlutterApp(myConnector, this::isSessionActive));
   }

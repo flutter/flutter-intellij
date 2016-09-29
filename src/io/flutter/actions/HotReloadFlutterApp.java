@@ -16,7 +16,7 @@ public class HotReloadFlutterApp extends FlutterAppAction {
 
   public HotReloadFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.reload.action.text"), FlutterBundle.message("app.reload.action.description"),
-          FlutterIcons.SocialForward, isApplicable);
+          FlutterIcons.Play2, isApplicable);
   }
 
   @Override

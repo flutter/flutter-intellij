@@ -16,7 +16,7 @@ public class RestartFlutterApp extends FlutterAppAction {
 
   public RestartFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.restart.action.text"), FlutterBundle.message("app.restart.action.description"),
-          FlutterIcons.ImagesRotateRight, isApplicable);
+          FlutterIcons.Restart, isApplicable);
   }
 
   @Override
