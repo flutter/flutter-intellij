@@ -28,7 +28,8 @@ public class DaemonJsonInputFilterProvider implements ConsoleInputFilterProvider
     @Nullable
     @Override
     public List<Pair<String, ConsoleViewContentType>> applyFilter(String text, ConsoleViewContentType contentType) {
-      if (text.startsWith("[{") && text.endsWith("}]\n")) {
+      final String trimmed = text.trim();
+      if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
         return Collections.singletonList(Pair.create(null, contentType));
       }
       return Collections.singletonList(Pair.create(text, contentType));
