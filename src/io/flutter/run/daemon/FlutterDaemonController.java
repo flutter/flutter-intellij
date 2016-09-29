@@ -143,7 +143,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   @Override
   public void processTerminated(ProcessEvent event) {
-    for (DaemonListener listener : myListeners) {
+    for (DaemonListener listener : myListeners.toArray(new DaemonListener[0])) {
       listener.processTerminated(event.getProcessHandler(), this);
     }
   }
