@@ -52,6 +52,7 @@ public class FlutterAppManager {
   public FlutterApp startApp(@NotNull FlutterDaemonController controller,
                              @NotNull String deviceId,
                              @NotNull RunMode mode,
+                             @NotNull Project project,
                              boolean isPaused,
                              boolean isHot,
                              @Nullable String target,
@@ -63,7 +64,7 @@ public class FlutterAppManager {
     synchronized (myLock) {
       service = myService;
     }
-    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, isHot, target, route);
+    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, route);
     AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), isPaused, route, mode.mode(), target, isHot);
     Method cmd = makeMethod(CMD_APP_START, appStart);
     Runnable x = () -> {
