@@ -64,8 +64,9 @@ public class FlutterDaemonService {
 
     @Override
     public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
-      assert handler == controller.getProcessHandler() || controller.getProcessHandler() == null;
-      discard(controller);
+      if (handler == controller.getProcessHandler()) {
+        discard(controller);
+      }
     }
   };
 

@@ -25,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,7 +40,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   private String myProjectDirectory;
   private List<String> myDeviceIds = new ArrayList<>();
-  private List<DaemonListener> myListeners = new ArrayList<>();
+  private List<DaemonListener> myListeners = Collections.synchronizedList(new ArrayList<>());
   private ProcessHandler myHandler;
 
   public FlutterDaemonController(String projectDir) {
@@ -65,7 +66,6 @@ public class FlutterDaemonController extends ProcessAdapter {
       myHandler.destroyProcess();
     }
     myDeviceIds.clear();
-    myListeners.clear();
     myProjectDirectory = null;
     myHandler = null;
   }
@@ -114,7 +114,6 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   public void forkProcess(Project project) throws ExecutionException {
-    //ApplicationManager.getApplication().executeOnPooledThread(() -> {
     try {
       GeneralCommandLine commandLine = createCommandLine(project);
       myHandler = new OSProcessHandler(commandLine);
@@ -124,10 +123,12 @@ public class FlutterDaemonController extends ProcessAdapter {
     catch (ExecutionException ex) {
       LOG.error(ex);
     }
-    //});
   }
 
   public void sendCommand(String commandJson, FlutterAppManager manager) {
+    if (myHandler == null) {
+      return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
+    }
     OutputStream input = myHandler.getProcessInput();
     if (input == null) {
       LOG.error("No process input");

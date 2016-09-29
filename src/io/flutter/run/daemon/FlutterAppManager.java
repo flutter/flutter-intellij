@@ -59,7 +59,11 @@ public class FlutterAppManager {
     if (!waitForDevice(deviceId)) {
       return null;
     }
-    RunningFlutterApp app = new RunningFlutterApp(myService, controller, this, mode, isHot, target, route);
+    FlutterDaemonService service;
+    synchronized (myLock) {
+      service = myService;
+    }
+    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, isHot, target, route);
     AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), isPaused, route, mode.mode(), target, isHot);
     Method cmd = makeMethod(CMD_APP_START, appStart);
     Runnable x = () -> {
@@ -73,7 +77,9 @@ public class FlutterAppManager {
       app.setApp(appStarted);
     };
     ApplicationManager.getApplication().executeOnPooledThread(x);
-    myApps.add(app);
+    synchronized (myLock) {
+      myApps.add(app);
+    }
     return app;
   }
 
@@ -100,11 +106,9 @@ public class FlutterAppManager {
     long timeout = 10000L;
     long startTime = System.currentTimeMillis();
     while (true) {
-      synchronized (myLock) {
-        RunningFlutterApp app = findApp(controller, appId);
-        if (app != null) {
-          return app;
-        }
+      RunningFlutterApp app = findApp(controller, appId);
+      if (app != null) {
+        return app;
       }
       if (System.currentTimeMillis() > startTime + timeout) {
         return null;
@@ -123,7 +127,10 @@ public class FlutterAppManager {
     while (true) {
       synchronized (myLock) {
         FlutterJsonObject resp = myResponses.get(cmd);
-        if (resp != null) return resp;
+        if (resp != null) {
+          myResponses.remove(cmd);
+          return resp;
+        }
       }
       if (System.currentTimeMillis() > startTime + timeout) {
         return null;
@@ -193,9 +200,10 @@ public class FlutterAppManager {
     AppStop appStop = new AppStop(app.appId());
     Method cmd = makeMethod(CMD_APP_STOP, appStop);
     sendCommand(app.getController(), cmd);
-    // stop.app does not get a response, so remove it now
-    removePendingCmd(cmd.id, findPendingCmd(cmd.id, app.getController()));
-    myApps.remove(app);
+    FlutterJsonObject obj = waitForResponse(cmd);
+    synchronized (myLock) {
+      myApps.remove(app);
+    }
     app.getController().removeDeviceId(app.deviceId());
   }
 
@@ -211,7 +219,11 @@ public class FlutterAppManager {
   }
 
   void aboutToTerminateAll(FlutterDaemonController controller) {
-    for (FlutterApp app : myApps) {
+    List<FlutterApp> apps;
+    synchronized (myLock) {
+      apps = new ArrayList<>(myApps);
+    }
+    for (FlutterApp app : apps) {
       if (app.getController() == controller) {
         stopApp(app);
       }
@@ -300,13 +312,19 @@ public class FlutterAppManager {
   }
 
   private void eventDeviceAdded(@NotNull DeviceAdded added, @NotNull FlutterDaemonController controller) {
-    myService.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform, added.emulator));
+    synchronized (myLock) {
+      myService.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform, added.emulator));
+    }
   }
 
   private void eventDeviceRemoved(@NotNull DeviceRemoved removed, @NotNull FlutterDaemonController controller) {
-    for (ConnectedDevice device : myService.getConnectedDevices()) {
-      if (device.deviceName().equals(removed.name) && device.deviceId().equals(removed.id) && device.platform().equals(removed.platform)) {
-        myService.removeConnectedDevice(device);
+    synchronized (myLock) {
+      for (ConnectedDevice device : myService.getConnectedDevices()) {
+        if (device.deviceName().equals(removed.name) &&
+            device.deviceId().equals(removed.id) &&
+            device.platform().equals(removed.platform)) {
+          myService.removeConnectedDevice(device);
+        }
       }
     }
   }
@@ -346,9 +364,11 @@ public class FlutterAppManager {
   }
 
   private RunningFlutterApp findApp(FlutterDaemonController controller, String appId) {
-    for (FlutterApp app : myApps) {
-      if (app.getController() == controller && app.hasAppId() && app.appId().equals(appId)) {
-        return (RunningFlutterApp)app;
+    synchronized (myLock) {
+      for (FlutterApp app : myApps) {
+        if (app.getController() == controller && app.hasAppId() && app.appId().equals(appId)) {
+          return (RunningFlutterApp)app;
+        }
       }
     }
     return null;
