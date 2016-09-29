@@ -421,12 +421,14 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
 
-    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl,
-                                                   () -> (myConnector != null && myConnector.isConnectionReady()) &&
-                                                         myVmConnected &&
-                                                         !getSession().isStopped()));
-    topToolbar.addAction(new RestartFlutterApp(myConnector));
-    topToolbar.addAction(new ReloadFlutterApp(myConnector));
+    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
+    topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
+    topToolbar.addAction(new ReloadFlutterApp(myConnector, this::isSessionActive));
+  }
+
+  private boolean isSessionActive() {
+    return (myConnector != null && myConnector.isConnectionReady()) &&
+           myVmConnected && !getSession().isStopped();
   }
 
   private String computeObservatoryUrl() {

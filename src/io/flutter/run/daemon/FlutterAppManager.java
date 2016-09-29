@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 
 /**
  * Keeper of running Flutter apps.
- * TODO(messick) Clean up myResponses as things change
+ * TODO(messick) synchronize access to myApps
  */
 public class FlutterAppManager {
 
@@ -211,7 +211,7 @@ public class FlutterAppManager {
   }
 
   void aboutToTerminateAll(FlutterDaemonController controller) {
-    for (FlutterApp app : myApps) {
+    for (FlutterApp app : myApps) { // async
       if (app.getController() == controller) {
         stopApp(app);
       }

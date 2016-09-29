@@ -17,7 +17,7 @@ public class ReloadFlutterAppKeyAction extends FlutterKeyAction {
   public void actionPerformed(AnActionEvent e) {
     final ObservatoryConnector connector = findConnector();
     if (connector != null) {
-      new ReloadFlutterApp(connector).actionPerformed(e);
+      new ReloadFlutterApp(connector, connector::isConnectionReady).actionPerformed(e);
     }
   }
 }

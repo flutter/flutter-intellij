@@ -6,22 +6,22 @@
 package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import org.jetbrains.annotations.NotNull;
 
 public class ReloadFlutterApp extends FlutterAppAction {
 
-  public ReloadFlutterApp(ObservatoryConnector connector) {
+  public ReloadFlutterApp(ObservatoryConnector connector, @NotNull Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.reload.action.text"), FlutterBundle.message("app.reload.action.description"),
-          FlutterIcons.Flutter);
+          FlutterIcons.Flutter, isApplicable);
   }
 
   @Override
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
-      FileDocumentManager.getInstance().saveAllDocuments();
       getApp().hotReload();
     });
   }

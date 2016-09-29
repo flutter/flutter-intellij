@@ -38,5 +38,4 @@ public abstract class FlutterKeyAction extends DumbAwareAction {
     }
     return null;
   }
-
 }
