@@ -38,7 +38,7 @@ import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.actions.OpenComputedUrlAction;
-import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.HotReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
@@ -426,7 +426,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                                          myVmConnected &&
                                                          !getSession().isStopped()));
     topToolbar.addAction(new RestartFlutterApp(myConnector));
-    topToolbar.addAction(new ReloadFlutterApp(myConnector));
+    topToolbar.addAction(new HotReloadFlutterApp(myConnector));
   }
 
   private String computeObservatoryUrl() {

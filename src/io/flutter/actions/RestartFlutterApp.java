@@ -22,7 +22,7 @@ public class RestartFlutterApp extends FlutterAppAction {
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      getApp().appRestart();
+      getApp().performRestartApp();
     });
   }
 }

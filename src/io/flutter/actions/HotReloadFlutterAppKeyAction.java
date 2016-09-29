@@ -13,15 +13,14 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterBundle;
 
 /**
- * A keystroke invoked {@link RestartFlutterApp} action.
+ * A keystroke invoked {@link HotReloadFlutterApp} action.
  */
-public class RestartFlutterAppKeyAction extends FlutterKeyAction {
-
+public class HotReloadFlutterAppKeyAction extends FlutterKeyAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     final ObservatoryConnector connector = findConnector();
     if (connector != null) {
-      new RestartFlutterApp(connector).actionPerformed(e);
+      new HotReloadFlutterApp(connector).actionPerformed(e);
     }
     else {
       Notifications.Bus.notify(

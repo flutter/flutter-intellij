@@ -16,6 +16,7 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugPro
 import org.jetbrains.annotations.Nullable;
 
 public abstract class FlutterKeyAction extends DumbAwareAction {
+  public static final String RELOAD_DISPLAY_ID = "Flutter Commands";
 
   /**
    * Find an active Dart VM debug process and get it's observatory connector.
