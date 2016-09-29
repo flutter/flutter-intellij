@@ -160,6 +160,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           return;
         }
 
+        if (message.contains("\"type\":\"Sentinel\"")) { // Ignore unwanted message
+          return;
+        }
+
         getSession().getConsoleView().print("Error: " + message + "\n", ConsoleViewContentType.ERROR_OUTPUT);
         LOG.error(message);
       }
