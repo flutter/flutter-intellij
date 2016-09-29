@@ -425,6 +425,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                                    () -> (myConnector != null && myConnector.isConnectionReady()) &&
                                                          myVmConnected &&
                                                          !getSession().isStopped()));
+
+    topToolbar.addSeparator();
+
     topToolbar.addAction(new RestartFlutterApp(myConnector));
     topToolbar.addAction(new HotReloadFlutterApp(myConnector));
   }
