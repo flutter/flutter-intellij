@@ -37,8 +37,8 @@ import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
-import io.flutter.actions.OpenComputedUrlAction;
 import io.flutter.actions.HotReloadFlutterApp;
+import io.flutter.actions.OpenComputedUrlAction;
 import io.flutter.actions.RestartFlutterApp;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
@@ -92,7 +92,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout, currentWorkingDirectory);
+    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
+          currentWorkingDirectory);
 
     myDebuggingHost = debuggingHost;
     myObservatoryPort = observatoryPort;
@@ -135,7 +136,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
   }
 
-  public ObservatoryConnector getConnector() { return myConnector; }
+  public ObservatoryConnector getConnector() {
+    return myConnector;
+  }
 
   public VmServiceWrapper getVmServiceWrapper() {
     return myVmServiceWrapper;
@@ -421,15 +424,14 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
 
-    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl,
-                                                   () -> (myConnector != null && myConnector.isConnectionReady()) &&
-                                                         myVmConnected &&
-                                                         !getSession().isStopped()));
+    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
+    topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
+    topToolbar.addAction(new HotReloadFlutterApp(myConnector, this::isSessionActive));
+  }
 
-    topToolbar.addSeparator();
-
-    topToolbar.addAction(new RestartFlutterApp(myConnector));
-    topToolbar.addAction(new HotReloadFlutterApp(myConnector));
+  private boolean isSessionActive() {
+    return (myConnector != null && myConnector.isConnectionReady()) &&
+           myVmConnected && !getSession().isStopped();
   }
 
   private String computeObservatoryUrl() {

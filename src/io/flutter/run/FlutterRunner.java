@@ -50,7 +50,7 @@ public class FlutterRunner extends DartRunner {
     FlutterDaemonService service = FlutterDaemonService.getInstance();
     return (profile instanceof FlutterRunConfiguration &&
             (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId))) &&
-           (service != null && !service.getConnectedDevices().isEmpty());
+           (service != null && service.getSelectedDevice() != null);
   }
 
   @Override

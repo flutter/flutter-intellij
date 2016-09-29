@@ -21,7 +21,7 @@ public class RestartFlutterAppKeyAction extends FlutterKeyAction {
   public void actionPerformed(AnActionEvent e) {
     final ObservatoryConnector connector = findConnector();
     if (connector != null) {
-      new RestartFlutterApp(connector).actionPerformed(e);
+      new RestartFlutterApp(connector, connector::isConnectionReady).actionPerformed(e);
     }
     else {
       Notifications.Bus.notify(

@@ -7,15 +7,16 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 
 public class RestartFlutterApp extends FlutterAppAction {
 
-  public RestartFlutterApp(ObservatoryConnector connector) {
+  public RestartFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.restart.action.text"), FlutterBundle.message("app.restart.action.description"),
-          FlutterIcons.ImagesRotateRight);
+          FlutterIcons.ImagesRotateRight, isApplicable);
   }
 
   @Override
