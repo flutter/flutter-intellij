@@ -356,6 +356,7 @@ public class FlutterAppManager {
     RunningFlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
       app.setPort(port.port);
+      app.setBaseUri(port.baseUri);
     }
   }
 
@@ -552,6 +553,7 @@ public class FlutterAppManager {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private int port;
+    @SuppressWarnings("unused") private String baseUri;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDebugPort(this, controller);
