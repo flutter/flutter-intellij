@@ -20,7 +20,7 @@ public class HotReloadFlutterAppKeyAction extends FlutterKeyAction {
   public void actionPerformed(AnActionEvent e) {
     final ObservatoryConnector connector = findConnector();
     if (connector != null) {
-      new HotReloadFlutterApp(connector).actionPerformed(e);
+      new HotReloadFlutterApp(connector, connector::isConnectionReady).actionPerformed(e);
     }
     else {
       Notifications.Bus.notify(

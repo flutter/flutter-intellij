@@ -7,6 +7,7 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -16,19 +17,17 @@ import javax.swing.*;
 abstract public class FlutterAppAction extends DumbAwareAction {
 
   private final ObservatoryConnector myConnector;
+  private Computable<Boolean> myIsApplicable;
 
-  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon) {
+  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon, Computable<Boolean> isApplicable) {
     super(text, description, icon);
     myConnector = connector;
+    myIsApplicable = isApplicable;
   }
 
   @Override
   public void update(@NotNull final AnActionEvent e) {
-    e.getPresentation().setEnabled(myConnector.isConnectionReady());
-  }
-
-  boolean isConnectionReady() {
-    return myConnector.isConnectionReady();
+    e.getPresentation().setEnabled(myIsApplicable.compute());
   }
 
   FlutterApp getApp() {
@@ -36,7 +35,7 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   }
 
   void ifReadyThen(Runnable x) {
-    if (isConnectionReady()) {
+    if (myConnector.isConnectionReady()) {
       x.run();
     }
   }
