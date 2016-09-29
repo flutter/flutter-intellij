@@ -17,4 +17,7 @@ public class FlutterIcons {
   public static final Icon Flutter_2x = load("/icons/flutter@2x.png");
 
   public static final Icon Phone = load("/icons/phone.png");
+
+  public static final Icon ImagesRotateRight = load("/icons/images-rotate-right.png");
+  public static final Icon SocialForward = load("/icons/social-forward.png");
 }
