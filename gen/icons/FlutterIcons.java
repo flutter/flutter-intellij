@@ -15,6 +15,6 @@ public class FlutterIcons {
 
   public static final Icon Flutter = load("/icons/flutter.png");
   public static final Icon Flutter_2x = load("/icons/flutter@2x.png");
-r
+
   public static final Icon Phone = load("/icons/phone.png");
 }
