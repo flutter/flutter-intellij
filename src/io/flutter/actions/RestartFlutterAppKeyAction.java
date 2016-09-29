@@ -13,7 +13,7 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterBundle;
 
 /**
- * A keystroke invoked {@link HotReloadFlutterApp} action.
+ * A keystroke invoked {@link RestartFlutterApp} action.
  */
 public class RestartFlutterAppKeyAction extends FlutterKeyAction {
 

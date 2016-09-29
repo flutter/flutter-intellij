@@ -82,12 +82,12 @@ public interface FlutterApp {
   void performStop();
 
   /**
-   * Restart the app.
+   * Perform a full restart of the the app.
    */
   void performRestartApp();
 
   /**
-   * Refresh the app.
+   * Perform a hot reload of the app.
    */
   void performHotReload();
 
