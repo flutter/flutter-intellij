@@ -18,6 +18,8 @@ public class FlutterIcons {
 
   public static final Icon Phone = load("/icons/phone.png");
 
-  public static final Icon ImagesRotateRight = load("/icons/images-rotate-right.png");
-  public static final Icon SocialForward = load("/icons/social-forward.png");
+  public static final Icon Debug2 = load("/icons/debug2.png");
+  public static final Icon Play2 = load("/icons/play2.png");
+  public static final Icon CleanRerun = load("/icons/clean_rerun.png");
+  public static final Icon Restart = load("/icons/restart.png");
 }
