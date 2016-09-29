@@ -200,7 +200,8 @@ public class FlutterAppManager {
     AppStop appStop = new AppStop(app.appId());
     Method cmd = makeMethod(CMD_APP_STOP, appStop);
     sendCommand(app.getController(), cmd);
-    FlutterJsonObject obj = waitForResponse(cmd);
+    // We don't wait for a response here; we'll get an app.stop event later as a notification.
+    //waitForResponse(cmd);
     synchronized (myLock) {
       myApps.remove(app);
     }
