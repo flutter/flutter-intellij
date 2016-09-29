@@ -43,6 +43,7 @@ public class FlutterAppManager {
   private int myCommandId = 0;
   private final Object myLock = new Object();
   private Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
+  private ProgressHandler myProgressHandler;
 
   FlutterAppManager(@NotNull FlutterDaemonService service) {
     this.myService = service;
@@ -57,6 +58,7 @@ public class FlutterAppManager {
                              boolean isHot,
                              @Nullable String target,
                              @Nullable String route) {
+    this.myProgressHandler = new ProgressHandler(project);
     if (!waitForDevice(deviceId)) {
       return null;
     }
@@ -198,6 +200,8 @@ public class FlutterAppManager {
   }
 
   void stopApp(@NotNull FlutterApp app) {
+    myProgressHandler.cancel();
+
     AppStop appStop = new AppStop(app.appId());
     Method cmd = makeMethod(CMD_APP_STOP, appStop);
     sendCommand(app.getController(), cmd);
@@ -307,7 +311,17 @@ public class FlutterAppManager {
 
   private void eventLogMessage(@NotNull AppLog message, @NotNull FlutterDaemonController controller) {
     RunningFlutterApp app = findApp(controller, message.appId);
-    if (app != null && message.log != null) {
+
+    if (app == null)
+      return;
+
+    if (message.progress) {
+      if (message.finished) {
+        myProgressHandler.done();
+      } else {
+        myProgressHandler.start(message.log);
+      }
+    } else {
       app.getConsole().print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
     }
   }
@@ -351,6 +365,7 @@ public class FlutterAppManager {
   private void eventAppStopped(@NotNull AppStopped stopped, @NotNull FlutterDaemonController controller) {
     // TODO(devoncarew): Terminate the launch.
 
+    myProgressHandler.cancel();
   }
 
   private void eventDebugPort(@NotNull AppDebugPort port, @NotNull FlutterDaemonController controller) {
@@ -499,6 +514,8 @@ public class FlutterAppManager {
     // "event":"app.log"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private String log;
+    @SuppressWarnings("unused") private boolean progress;
+    @SuppressWarnings("unused") private boolean finished;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventLogMessage(this, controller);
