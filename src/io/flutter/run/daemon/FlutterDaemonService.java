@@ -129,7 +129,7 @@ public class FlutterDaemonService {
       controller.forkProcess(project);
     }
     synchronized (myLock) {
-      return myManager.startApp(controller, deviceId, mode, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
+      return myManager.startApp(controller, deviceId, mode, project, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
     }
   }
 

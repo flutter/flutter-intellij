@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +61,11 @@ public interface FlutterApp {
    * @return The mode the app is running in.
    */
   RunMode mode();
+
+  /**
+   * @return The project associated with this app.
+   */
+  public Project project();
 
   /**
    * @return The route parameter.
@@ -122,6 +128,7 @@ class RunningFlutterApp implements FlutterApp {
   private FlutterAppManager myManager;
   private AppStarted myApp;
   private RunMode myMode;
+  private Project myProject;
   private boolean isHot;
   private String myRoute;
   private String myTarget;
@@ -133,6 +140,7 @@ class RunningFlutterApp implements FlutterApp {
                            @NotNull FlutterDaemonController controller,
                            @NotNull FlutterAppManager manager,
                            @NotNull RunMode mode,
+                           @NotNull Project project,
                            boolean hot,
                            @Nullable String target,
                            @Nullable String route) {
@@ -140,6 +148,7 @@ class RunningFlutterApp implements FlutterApp {
     myController = controller;
     myManager = manager;
     myMode = mode;
+    myProject = project;
     isHot = hot;
     myRoute = route;
     myTarget = target;
@@ -192,6 +201,11 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public RunMode mode() {
     return myMode;
+  }
+
+  @Override
+  public Project project() {
+    return myProject;
   }
 
   @Override
