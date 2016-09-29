@@ -32,11 +32,13 @@ class FlutterDevice implements ConnectedDevice {
   private final String myDeviceName;
   private final String myDeviceId;
   private final String myPlatform;
+  @SuppressWarnings("unused") private final boolean myEmulator;
 
-  FlutterDevice(String deviceName, String deviceId, String platform) {
+  FlutterDevice(String deviceName, String deviceId, String platform, boolean emulator) {
     myDeviceName = deviceName;
     myDeviceId = deviceId;
     myPlatform = platform;
+    myEmulator = emulator;
   }
 
   @Override
