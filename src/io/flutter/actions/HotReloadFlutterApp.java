@@ -11,9 +11,9 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 
-public class ReloadFlutterApp extends FlutterAppAction {
+public class HotReloadFlutterApp extends FlutterAppAction {
 
-  public ReloadFlutterApp(ObservatoryConnector connector) {
+  public HotReloadFlutterApp(ObservatoryConnector connector) {
     super(connector, FlutterBundle.message("app.reload.action.text"), FlutterBundle.message("app.reload.action.description"),
           FlutterIcons.Flutter);
   }
@@ -22,7 +22,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      getApp().hotReload();
+      getApp().performHotReload();
     });
   }
 }
