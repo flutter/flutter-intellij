@@ -83,6 +83,11 @@ public interface FlutterApp {
   int port();
 
   /**
+   * @return The (optional) baseUri to use for debugger paths.
+   */
+  String baseUri();
+
+  /**
    * Stop the app.
    */
   void performStop();
@@ -128,6 +133,7 @@ class RunningFlutterApp implements FlutterApp {
   private String myRoute;
   private String myTarget;
   private int myPort;
+  private String myBaseUri;
   private ConsoleView myConsole;
 
   public RunningFlutterApp(@NotNull FlutterDaemonService service,
@@ -219,6 +225,15 @@ class RunningFlutterApp implements FlutterApp {
 
   void setPort(int port) {
     myPort = port;
+  }
+
+  @Override
+  public String baseUri() {
+    return myBaseUri;
+  }
+
+  public void setBaseUri(String baseUri) {
+    myBaseUri = baseUri;
   }
 
   @Override
