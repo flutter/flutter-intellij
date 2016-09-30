@@ -16,7 +16,10 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Long lived singleton that communicates with controllers attached to external Flutter processes.
@@ -104,9 +107,8 @@ public class FlutterDaemonService {
   /**
    * @return the currently selected device
    */
-  public
   @Nullable
-  ConnectedDevice getSelectedDevice() {
+  public ConnectedDevice getSelectedDevice() {
     return mySelectedDevice;
   }
 

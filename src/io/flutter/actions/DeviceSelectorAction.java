@@ -134,7 +134,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     final boolean enabled;
 
     OpenSimulatorAction(boolean enabled) {
-      super("Open Simulator…");
+      super("Open iOS Simulator");
 
       this.enabled = enabled;
     }
