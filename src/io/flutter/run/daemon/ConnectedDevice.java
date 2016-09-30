@@ -25,6 +25,11 @@ public interface ConnectedDevice {
    * @return The name of the platform of the device
    */
   String platform();
+
+  /**
+   * @return Whether the device is an emulator
+   */
+  boolean emulator();
 }
 
 class FlutterDevice implements ConnectedDevice {
@@ -32,7 +37,7 @@ class FlutterDevice implements ConnectedDevice {
   private final String myDeviceName;
   private final String myDeviceId;
   private final String myPlatform;
-  @SuppressWarnings("unused") private final boolean myEmulator;
+  private final boolean myEmulator;
 
   FlutterDevice(String deviceName, String deviceId, String platform, boolean emulator) {
     myDeviceName = deviceName;
@@ -57,6 +62,11 @@ class FlutterDevice implements ConnectedDevice {
   }
 
   @Override
+  public boolean emulator() {
+    return myEmulator;
+  }
+
+  @Override
   public boolean equals(Object other) {
     if (other instanceof FlutterDevice) {
       return Objects.equal(myDeviceName, ((FlutterDevice)other).deviceName()) &&
@@ -70,5 +80,10 @@ class FlutterDevice implements ConnectedDevice {
   @Override
   public int hashCode() {
     return Objects.hashCode(myDeviceName, myDeviceId, myPlatform);
+  }
+
+  @Override
+  public String toString() {
+    return myDeviceName;
   }
 }
