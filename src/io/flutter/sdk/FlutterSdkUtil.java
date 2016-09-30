@@ -21,6 +21,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,7 +102,7 @@ public class FlutterSdkUtil {
 
   public static boolean isFlutterSdkHome(@Nullable String path) {
     try {
-      return verifyFlutterSdkPath(path) == path;
+      return StringUtils.equals(verifyFlutterSdkPath(path), path);
     }
     catch (ExecutionException ex) {
       return false;

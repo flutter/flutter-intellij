@@ -28,7 +28,7 @@ class ProgressHandler {
   /**
    * Start a progress task.
    *
-   * @param log
+   * @param log the title of the progress task
    */
   public void start(String log) {
     synchronized (myTasks) {

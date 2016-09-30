@@ -42,7 +42,6 @@ import java.util.List;
 public class FlutterAppState extends DartCommandLineRunningState {
 
   private FlutterApp myApp;
-  private ConsoleView myConsole;
 
   protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
@@ -78,7 +77,7 @@ public class FlutterAppState extends DartCommandLineRunningState {
     final String cwd = parameters.computeProcessWorkingDirectory(project);
 
     String relativePath = parameters.getFilePath();
-    if (relativePath.startsWith(cwd)) {
+    if (relativePath != null && relativePath.startsWith(cwd)) {
       relativePath = relativePath.substring(cwd.length());
       if (relativePath.startsWith(File.separator)) {
         relativePath = relativePath.substring(1);
@@ -98,9 +97,9 @@ public class FlutterAppState extends DartCommandLineRunningState {
   }
 
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
-    myConsole = super.createConsole(executor);
-    myApp.setConsole(myConsole);
-    return myConsole;
+    ConsoleView console = super.createConsole(executor);
+    myApp.setConsole(console);
+    return console;
   }
 
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {

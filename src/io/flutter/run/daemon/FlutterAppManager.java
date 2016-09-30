@@ -208,7 +208,7 @@ public class FlutterAppManager {
     AppStop appStop = new AppStop(app.appId());
     Method cmd = makeMethod(CMD_APP_STOP, appStop);
     sendCommand(app.getController(), cmd);
-    @SuppressWarnings("unused")
+    @SuppressWarnings({"unused", "UnusedAssignment"})
     FlutterJsonObject obj = waitForResponse(cmd, 1000L);
     synchronized (myLock) {
       myApps.remove(app);
