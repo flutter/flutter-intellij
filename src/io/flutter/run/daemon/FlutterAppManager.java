@@ -124,8 +124,12 @@ public class FlutterAppManager {
 
   @Nullable
   private FlutterJsonObject waitForResponse(@NotNull Method cmd) {
+    return waitForResponse(cmd, 10000L);
+  }
+
+  @Nullable
+  private FlutterJsonObject waitForResponse(@NotNull Method cmd, final long timeout) {
     Thread.yield();
-    long timeout = 10000L;
     long startTime = System.currentTimeMillis();
     while (true) {
       synchronized (myLock) {
@@ -205,7 +209,8 @@ public class FlutterAppManager {
     AppStop appStop = new AppStop(app.appId());
     Method cmd = makeMethod(CMD_APP_STOP, appStop);
     sendCommand(app.getController(), cmd);
-    FlutterJsonObject obj = waitForResponse(cmd);
+    @SuppressWarnings("unused")
+    FlutterJsonObject obj = waitForResponse(cmd, 1000L);
     synchronized (myLock) {
       myApps.remove(app);
     }
