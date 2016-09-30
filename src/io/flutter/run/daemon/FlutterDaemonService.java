@@ -26,8 +26,6 @@ import java.util.Set;
  */
 public class FlutterDaemonService {
   private static final boolean HOT_MODE_DEFAULT = true;
-  private static final String TARGET_DEFAULT = null;
-  private static final String ROUTE_DEFAULT = null;
 
   private final Object myLock = new Object();
   private List<FlutterDaemonController> myControllers = new ArrayList<>();
@@ -152,7 +150,7 @@ public class FlutterDaemonService {
    * @param deviceId   The device id as reported by the Flutter daemon
    * @param mode       The RunMode to use (release, debug, profile)
    */
-  public FlutterApp startApp(@NotNull Project project, @NotNull String projectDir, @NotNull String deviceId, @NotNull RunMode mode)
+  public FlutterApp startApp(@NotNull Project project, @NotNull String projectDir, @NotNull String deviceId, @NotNull RunMode mode, @Nullable String relativePath)
     throws ExecutionException {
     boolean isPaused = mode.isDebug();
     FlutterDaemonController controller = controllerFor(projectDir, deviceId);
@@ -160,7 +158,7 @@ public class FlutterDaemonService {
       controller.forkProcess(project);
     }
     synchronized (myLock) {
-      return myManager.startApp(controller, deviceId, mode, project, isPaused, HOT_MODE_DEFAULT, TARGET_DEFAULT, ROUTE_DEFAULT);
+      return myManager.startApp(controller, deviceId, mode, project, isPaused, HOT_MODE_DEFAULT, relativePath);
     }
   }
 

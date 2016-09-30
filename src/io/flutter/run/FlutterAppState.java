@@ -19,9 +19,11 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.PathUtil;
 import com.intellij.util.net.NetUtils;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
+import com.jetbrains.lang.dart.ide.runner.base.DartRunConfiguration;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import io.flutter.run.daemon.ConnectedDevice;
@@ -31,6 +33,7 @@ import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -71,7 +74,18 @@ public class FlutterAppState extends DartCommandLineRunningState {
       throw new ExecutionException("No selected device");
     }
 
-    myApp = service.startApp(project, workingDir, device.deviceId(), RunMode.DEBUG); // TODO Select run mode based on launch.
+    FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+    final String cwd = parameters.computeProcessWorkingDirectory(project);
+
+    String relativePath = parameters.getFilePath();
+    if (relativePath.startsWith(cwd)) {
+      relativePath = relativePath.substring(cwd.length());
+      if (relativePath.startsWith(File.separator)) {
+        relativePath = relativePath.substring(1);
+      }
+    }
+
+    myApp = service.startApp(project, cwd, device.deviceId(), RunMode.DEBUG, relativePath); // TODO Select run mode based on launch.
     return myApp.getController().getProcessHandler();
   }
 
