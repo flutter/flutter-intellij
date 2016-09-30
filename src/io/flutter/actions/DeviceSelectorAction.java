@@ -17,12 +17,12 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.sdk.FlutterSdk;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -53,7 +53,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     if (SystemInfo.isMac) {
       boolean simulatorOpen = false;
       for (SelectDeviceAction action : actions) {
-        if (StringUtils.equals(action.device.platform(), "ios") && action.device.emulator()) {
+        if (StringUtil.equals(action.device.platform(), "ios") && action.device.emulator()) {
           simulatorOpen = true;
         }
       }
