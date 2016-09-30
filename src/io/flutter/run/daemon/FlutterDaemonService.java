@@ -9,7 +9,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
@@ -17,14 +16,15 @@ import gnu.trove.THashSet;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Long lived singleton that communicates with controllers attached to external Flutter processes.
  */
 public class FlutterDaemonService {
-
-  private static final Logger LOG = Logger.getInstance("#io.flutter.run.daemon.FlutterDaemonService");
   private static final boolean HOT_MODE_DEFAULT = true;
   private static final String TARGET_DEFAULT = null;
   private static final String ROUTE_DEFAULT = null;
@@ -35,6 +35,7 @@ public class FlutterDaemonService {
   private Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
   private ConnectedDevice mySelectedDevice;
   private FlutterAppManager myManager = new FlutterAppManager(this);
+  private List<DeviceListener> myDeviceListeners = new ArrayList<>();
 
   static {
     getInstance();
@@ -70,6 +71,10 @@ public class FlutterDaemonService {
     }
   };
 
+  public interface DeviceListener {
+    void selectedDeviceChanged(ConnectedDevice device);
+  }
+
   @Nullable
   public static FlutterDaemonService getInstance() {
     return ServiceManager.getService(FlutterDaemonService.class);
@@ -80,12 +85,20 @@ public class FlutterDaemonService {
     schedulePolling();
   }
 
+  public void addDeviceListener(DeviceListener listener) {
+    myDeviceListeners.add(listener);
+  }
+
+  public void removeDeviceListener(DeviceListener listener) {
+    myDeviceListeners.remove(listener);
+  }
+
   /**
    * Return the list of currently connected devices. The list is sorted by device name.
    *
    * @return List of ConnectedDevice
    */
-  public Collection<ConnectedDevice> getConnectedDevices() {
+  public List<ConnectedDevice> getConnectedDevices() {
     SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
     list.addAll(myConnectedDevices);
     return list;
@@ -94,7 +107,8 @@ public class FlutterDaemonService {
   /**
    * @return the currently selected device
    */
-  public @Nullable ConnectedDevice getSelectedDevice() {
+  @Nullable
+  public ConnectedDevice getSelectedDevice() {
     return mySelectedDevice;
   }
 
@@ -103,14 +117,31 @@ public class FlutterDaemonService {
    */
   public void setSelectedDevice(@Nullable ConnectedDevice device) {
     mySelectedDevice = device;
+
+    for (DeviceListener listener : myDeviceListeners) {
+      listener.selectedDeviceChanged(device);
+    }
   }
 
   void addConnectedDevice(ConnectedDevice device) {
     myConnectedDevices.add(device);
+
+    if (mySelectedDevice == null) {
+      setSelectedDevice(device);
+    }
   }
 
   void removeConnectedDevice(ConnectedDevice device) {
     myConnectedDevices.remove(device);
+
+    if (mySelectedDevice == device) {
+      if (myConnectedDevices.isEmpty()) {
+        setSelectedDevice(null);
+      }
+      else {
+        setSelectedDevice(getConnectedDevices().get(0));
+      }
+    }
   }
 
   /**
