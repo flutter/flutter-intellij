@@ -61,6 +61,8 @@ public class FlutterAppState extends DartCommandLineRunningState {
     FlutterDaemonService service = FlutterDaemonService.getInstance();
     assert service != null;
     Project project = getEnvironment().getProject();
+    String workingDir = project.getBasePath();
+    assert workingDir != null;
 
     Collection<ConnectedDevice> devices = service.getConnectedDevices();
     if (devices.isEmpty()) {
