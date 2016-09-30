@@ -26,12 +26,10 @@
 
   <actions>
     <action id="Flutter.HotReloadFlutterAppKey" class="io.flutter.actions.HotReloadFlutterAppKeyAction" text="Flutter Hot Reload">
-      <!-- TODO: settle on a less conflicting binding -->
-      <keyboard-shortcut first-keystroke="ctrl shift r" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="ctrl F5" keymap="$default"/>
     </action>
     <action id="Flutter.RestartFlutterAppKey" class="io.flutter.actions.RestartFlutterAppKeyAction" text="Flutter Restart Application">
-      <!-- TODO: settle on a less conflicting binding -->
-      <keyboard-shortcut first-keystroke="alt shift r" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="ctrl shift F5" keymap="$default"/>
     </action>
     <group id="Flutter.MainToolbarActions">
       <separator/>
