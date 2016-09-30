@@ -35,7 +35,6 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Fl
     final VirtualFile dartFile = getRunnableFlutterFileFromContext(context);
     if (dartFile != null) {
       configuration.getRunnerParameters().setFilePath(dartFile.getPath());
-      configuration.getRunnerParameters().setFlutterSdkPath(configuration.getRunnerParameters().getFlutterSdkPath());
       configuration.getRunnerParameters()
         .setWorkingDirectory(DartCommandLineRunnerParameters.suggestDartWorkingDir(context.getProject(), dartFile));
       configuration.setGeneratedName();

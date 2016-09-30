@@ -56,8 +56,7 @@ public class FlutterAppManager {
                              @NotNull Project project,
                              boolean isPaused,
                              boolean isHot,
-                             @Nullable String target,
-                             @Nullable String route) {
+                             @Nullable String target) {
     this.myProgressHandler = new ProgressHandler(project);
     if (!waitForDevice(deviceId)) {
       return null;
@@ -66,8 +65,8 @@ public class FlutterAppManager {
     synchronized (myLock) {
       service = myService;
     }
-    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, route);
-    AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), isPaused, route, mode.mode(), target, isHot);
+    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, null);
+    AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), isPaused, null, mode.mode(), target, isHot);
     Method cmd = makeMethod(CMD_APP_START, appStart);
     Runnable x = () -> {
       sendCommand(controller, cmd);
