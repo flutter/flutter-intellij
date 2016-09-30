@@ -65,7 +65,7 @@ public interface FlutterApp {
   /**
    * @return The project associated with this app.
    */
-  public Project project();
+  Project project();
 
   /**
    * @return The route parameter.

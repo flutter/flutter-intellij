@@ -11,10 +11,7 @@ before_script:
   - export FLUTTER_SDK=`pwd`/flutter
 
 # execution
-script:
-  - echo $FLUTTER_SDK
-  - flutter --version
-  - gradle build --info
+script: ./tool/travis.sh
 
 # caching
 before_cache:

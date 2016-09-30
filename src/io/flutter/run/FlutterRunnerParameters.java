@@ -6,7 +6,6 @@
 package io.flutter.run;
 
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunnerParameters;
-import org.jetbrains.annotations.Nullable;
 
 public class FlutterRunnerParameters extends DartCommandLineRunnerParameters implements Cloneable {
   @Override
