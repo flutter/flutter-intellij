@@ -13,3 +13,7 @@ flutter --version
 
 # Run the gradle build.
 gradle build --info
+
+# Print a report for the API used from the Dart plugin
+pub get
+dart tool/grind.dart api
