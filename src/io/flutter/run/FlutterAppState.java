@@ -8,22 +8,13 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.execution.filters.Filter;
-import com.intellij.execution.filters.TextConsoleBuilder;
-import com.intellij.execution.filters.TextConsoleBuilderImpl;
-import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.PathUtil;
 import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
-import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
-import com.jetbrains.lang.dart.ide.runner.base.DartRunConfiguration;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import io.flutter.run.daemon.ConnectedDevice;
@@ -31,7 +22,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -119,16 +109,5 @@ public class FlutterAppState extends DartCommandLineRunningState {
 
   public FlutterApp getApp() {
     return myApp;
-  }
-
-  private static class JsonStringFilter implements Filter {
-
-    @Nullable
-    @Override
-    public Result applyFilter(String line, int entireLength) {
-      if (line.startsWith("[{") && line.endsWith("}]\n"))
-        return new Result(0, entireLength, null);
-      return null;
-    }
   }
 }

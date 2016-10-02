@@ -1,0 +1,4 @@
+name: flutter_intellij
+version: 0.1.0
+dev_dependencies:
+  grinder: ^0.8.0

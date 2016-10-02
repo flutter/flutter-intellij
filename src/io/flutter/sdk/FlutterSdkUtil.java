@@ -90,7 +90,6 @@ public class FlutterSdkUtil {
     return child.getPath();
   }
 
-
   public static boolean isFlutterSdkLibRoot(@Nullable VirtualFile sdk) {
     if (sdk == null) return false;
     VirtualFile bin = sdk.findChild("bin");
