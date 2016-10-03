@@ -5,7 +5,7 @@ jdk:
 
 before_script:
   - git clone https://github.com/flutter/flutter.git --depth 1
-  - export PATH="$PATH":flutter/bin
+  - export PATH="$PATH":flutter/bin:flutter/bin/cache/dart-sdk/bin
   - flutter config --no-analytics
   - flutter precache
   - export FLUTTER_SDK=`pwd`/flutter
