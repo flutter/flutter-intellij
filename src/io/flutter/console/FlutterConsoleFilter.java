@@ -41,7 +41,7 @@ public class FlutterConsoleFilter implements Filter {
 
     final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
     if (!trimmedLine.isEmpty() && file != null && file.exists()) {
-      int lineStart = entireLength - line.length() + line.indexOf(trimmedLine);
+      final int lineStart = entireLength - line.length() + line.indexOf(trimmedLine);
       return new Result(lineStart, lineStart + trimmedLine.length(), new OpenFileHyperlinkInfo(project, file, 0, 0));
     }
 
