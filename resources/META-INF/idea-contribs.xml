@@ -4,5 +4,6 @@
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService" serviceImplementation="io.flutter.sdk.FlutterIdeaSdkService"
                     overrides="true"/>
     <editorNotificationProvider implementation="io.flutter.inspections.WrongDartSdkConfigurationNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.IncompatibleDartPluginNotificationProvider"/>
   </extensions>
 </idea-plugin>
