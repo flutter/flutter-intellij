@@ -13,10 +13,11 @@ before_script:
 # execution
 script: ./tool/travis.sh
 
-# caching
-before_cache:
-  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-cache:
-  directories:
-    - $HOME/.gradle/caches/
-    - $HOME/.gradle/wrapper/
+# disabled: https://github.com/flutter/flutter-intellij/issues/222
+## caching
+#before_cache:
+#  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+#cache:
+#  directories:
+#    - $HOME/.gradle/caches/
+#    - $HOME/.gradle/wrapper/
