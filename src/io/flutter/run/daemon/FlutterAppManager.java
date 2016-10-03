@@ -195,13 +195,8 @@ public class FlutterAppManager {
     myProgressHandler.cancel();
     AppStop appStop = new AppStop(app.appId());
     Method cmd = makeMethod(CMD_APP_STOP, appStop);
-    //sendCommand(app.getController(), cmd);
-    //@SuppressWarnings({"unused", "UnusedAssignment"})
-    //FlutterJsonObject obj = waitForResponse(cmd);
-    //synchronized (myLock) {
-    //  myApps.remove(app);
-    //}
-    //app.getController().removeDeviceId(app.deviceId());
+    // This needs to run synchronously. The next thing that happens is the process
+    // streams are closed which immediately terminates the process.
     CompletableFuture
       .completedFuture(sendCommand(app.getController(), cmd))
       .thenApply(this::waitForResponse)
