@@ -41,24 +41,29 @@ public class FlutterDaemonService {
 
   private DaemonListener myListener = new DaemonListener() {
     public void daemonInput(String string, FlutterDaemonController controller) {
+      FlutterAppManager mgr;
       synchronized (myLock) {
-        // Only one external process controller can process input at a time.
-        myManager.processInput(string, controller);
+        mgr = myManager;
       }
+      mgr.processInput(string, controller);
     }
 
     public void enableDevicePolling(FlutterDaemonController controller) {
+      FlutterAppManager mgr;
       synchronized (myLock) {
-        myManager.enableDevicePolling(controller);
+        mgr = myManager;
       }
+      mgr.enableDevicePolling(controller);
     }
 
     @Override
     public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
       assert handler == controller.getProcessHandler();
+      FlutterAppManager mgr;
       synchronized (myLock) {
-        myManager.aboutToTerminateAll(controller);
+        mgr = myManager;
       }
+      mgr.aboutToTerminateAll(controller);
     }
 
     @Override
@@ -150,16 +155,22 @@ public class FlutterDaemonService {
    * @param deviceId   The device id as reported by the Flutter daemon
    * @param mode       The RunMode to use (release, debug, profile)
    */
-  public FlutterApp startApp(@NotNull Project project, @NotNull String projectDir, @NotNull String deviceId, @NotNull RunMode mode, @Nullable String relativePath)
+  public FlutterApp startApp(@NotNull Project project,
+                             @NotNull String projectDir,
+                             @NotNull String deviceId,
+                             @NotNull RunMode mode,
+                             @Nullable String relativePath)
     throws ExecutionException {
     boolean isPaused = mode.isDebug();
     FlutterDaemonController controller = controllerFor(projectDir, deviceId);
     if (controller.getProcessHandler() == null || controller.getProcessHandler().isProcessTerminated()) {
       controller.forkProcess(project);
     }
+    FlutterAppManager mgr;
     synchronized (myLock) {
-      return myManager.startApp(controller, deviceId, mode, project, isPaused, HOT_MODE_DEFAULT, relativePath);
+      mgr = myManager;
     }
+    return mgr.startApp(controller, deviceId, mode, project, isPaused, HOT_MODE_DEFAULT, relativePath);
   }
 
   /**
