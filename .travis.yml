@@ -3,6 +3,9 @@ language: java
 jdk:
   - oraclejdk8
 
+# Skip the gradle install: https://github.com/flutter/flutter-intellij/issues/222
+install: true
+
 before_script:
   - git clone https://github.com/flutter/flutter.git --depth 1
   - export PATH="$PATH":flutter/bin:flutter/bin/cache/dart-sdk/bin
