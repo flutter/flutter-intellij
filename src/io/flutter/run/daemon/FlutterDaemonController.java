@@ -101,7 +101,7 @@ public class FlutterDaemonController extends ProcessAdapter {
     }
   }
 
-  private boolean hasDeviceId(String id) {
+  boolean hasDeviceId(String id) {
     return myDeviceIds.contains(id);
   }
 

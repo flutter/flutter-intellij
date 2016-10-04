@@ -9,6 +9,7 @@ import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
@@ -57,6 +58,9 @@ public class FlutterAppManager {
                              boolean isPaused,
                              boolean isHot,
                              @Nullable String target) {
+    if (isAppRunning(deviceId, controller)) {
+      throw new ProcessCanceledException();
+    }
     this.myProgressHandler = new ProgressHandler(project);
     if (!waitForDevice(deviceId)) {
       return null;
@@ -81,6 +85,10 @@ public class FlutterAppManager {
       myApps.add(app);
     }
     return app;
+  }
+
+  private boolean isAppRunning(String deviceId, FlutterDaemonController controller) {
+    return myApps.stream().anyMatch((app) -> app.getController() == controller && app.deviceId().equals(deviceId));
   }
 
   private boolean waitForDevice(@NotNull String deviceId) {
@@ -193,19 +201,21 @@ public class FlutterAppManager {
 
   void stopApp(@NotNull FlutterApp app) {
     myProgressHandler.cancel();
-    AppStop appStop = new AppStop(app.appId());
-    Method cmd = makeMethod(CMD_APP_STOP, appStop);
-    // This needs to run synchronously. The next thing that happens is the process
-    // streams are closed which immediately terminates the process.
-    CompletableFuture
-      .completedFuture(sendCommand(app.getController(), cmd))
-      .thenApply(this::waitForResponse)
-      .thenAccept((stopped) -> {
-        synchronized (myLock) {
-          myApps.remove(app);
-        }
-        app.getController().removeDeviceId(app.deviceId());
-      });
+    if (app.hasAppId()) {
+      AppStop appStop = new AppStop(app.appId());
+      Method cmd = makeMethod(CMD_APP_STOP, appStop);
+      // This needs to run synchronously. The next thing that happens is the process
+      // streams are closed which immediately terminates the process.
+      CompletableFuture
+        .completedFuture(sendCommand(app.getController(), cmd))
+        .thenApply(this::waitForResponse)
+        .thenAccept((stopped) -> {
+          synchronized (myLock) {
+            myApps.remove(app);
+          }
+          app.getController().removeDeviceId(app.deviceId());
+        });
+    }
   }
 
   void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart) {
@@ -228,6 +238,7 @@ public class FlutterAppManager {
     Command cmd = opt.get();
     synchronized (myLock) {
       myResponses.put(cmd.method, started);
+      myService.schedulePolling();
     }
   }
 

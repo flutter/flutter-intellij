@@ -200,6 +200,9 @@ public class FlutterDaemonService {
   }
 
   void schedulePolling() {
+    if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
+      return;
+    }
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {
         myPollster = new FlutterDaemonController(null);
