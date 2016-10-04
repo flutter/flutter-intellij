@@ -8,6 +8,8 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
@@ -31,10 +33,22 @@ import java.util.List;
 
 public class FlutterAppState extends DartCommandLineRunningState {
 
+  private static final String RUN = DefaultRunExecutor.EXECUTOR_ID;
   private FlutterApp myApp;
+  private RunMode myMode;
 
   protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
+    String mode = environment.getExecutor().getId();
+    if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
+      myMode = RunMode.RELEASE;
+    }
+    else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
+      myMode = RunMode.DEBUG;
+    }
+    else {
+      myMode = RunMode.PROFILE;
+    }
   }
 
   /**
@@ -59,7 +73,7 @@ public class FlutterAppState extends DartCommandLineRunningState {
     }
 
     ConnectedDevice device = service.getSelectedDevice();
-    if (device == null){
+    if (device == null) {
       throw new ExecutionException("No selected device");
     }
 
@@ -74,7 +88,7 @@ public class FlutterAppState extends DartCommandLineRunningState {
       }
     }
 
-    myApp = service.startApp(project, cwd, device.deviceId(), RunMode.DEBUG, relativePath); // TODO Select run mode based on launch.
+    myApp = service.startApp(project, cwd, device.deviceId(), myMode, relativePath);
     return myApp.getController().getProcessHandler();
   }
 
