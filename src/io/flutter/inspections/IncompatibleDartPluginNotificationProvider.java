@@ -5,11 +5,12 @@
  */
 package io.flutter.inspections;
 
-import com.intellij.ide.actions.ShowSettingsUtilImpl;
+import com.intellij.ide.plugins.PluginManagerConfigurable;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -46,7 +47,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.incompatible.dart.plugin.warning", getPrintableRequiredDartVersion(), currentVersion));
     panel.createActionLabel(FlutterBundle.message("dart.plugin.update.action.label"),
-                            () -> ShowSettingsUtilImpl.showSettingsDialog(project, "preferences.plugins", ""));
+                            () -> ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginManagerConfigurable.class));
 
     return panel;
   }
