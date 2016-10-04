@@ -12,7 +12,8 @@ main(List<String> args) => grind(args);
 api() {
   String imports = run(
       'git',
-      arguments: ['grep', 'import com.jetbrains.lang.dart.'],
+      // Note: extra quotes added so grep doesn't match this file.
+      arguments: ['grep', 'import com.jetbrains.''lang.dart.'],
       quiet: true
   );
 
@@ -36,7 +37,7 @@ api() {
   List<String> keys = usages.keys.toList();
   keys.sort();
 
-  log('${keys.length} separate Dart plugin APIs used');
+  log('${keys.length} separate Dart plugin APIs used:');
   log('');
 
   for (String import in keys) {
