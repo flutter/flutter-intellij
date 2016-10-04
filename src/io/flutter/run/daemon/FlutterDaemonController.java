@@ -135,7 +135,6 @@ public class FlutterDaemonController extends ProcessAdapter {
       return;
     }
     try (FlutterStream str = new FlutterStream(input)) {
-      System.out.println("["+commandJson+"]");
       str.print("[");
       str.print(commandJson);
       str.println("]");
