@@ -7,10 +7,8 @@ package io.flutter.dart;
 
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.util.Version;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * Provides access to the Dart Plugin.
@@ -31,11 +29,6 @@ public class DartPlugin {
     return INSTANCE;
   }
 
-  private IdeaPluginDescriptor getIdeaPluginDescriptor() {
-    final IdeaPluginDescriptor[] plugins = PluginManager.getPlugins();
-    return Arrays.asList(plugins).stream().filter(p -> Objects.equals(p.getName(), "Dart")).findFirst().get();
-  }
-
   /**
    * @return the minimum required version of the Dart Plugin
    */
@@ -48,7 +41,8 @@ public class DartPlugin {
    */
   public Version getVersion() {
     if (myVersion == null) {
-      IdeaPluginDescriptor descriptor = getIdeaPluginDescriptor();
+      IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("Dart"));
+      assert (descriptor != null);
       myVersion = Version.parseVersion(descriptor.getVersion());
     }
     return myVersion;
