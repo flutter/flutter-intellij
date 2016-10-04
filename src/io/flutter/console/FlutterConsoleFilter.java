@@ -8,9 +8,12 @@ package io.flutter.console;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,6 +33,18 @@ public class FlutterConsoleFilter implements Filter {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
+    final Project project = module.getProject();
+    final VirtualFile baseDir = project.getBaseDir();
+    final String baseDirPath = baseDir.getPath();
+    final String trimmedLine = line.trim();
+    final String path = baseDirPath + "/" + trimmedLine;
+
+    final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+    if (!trimmedLine.isEmpty() && file != null && file.exists()) {
+      final int lineStart = entireLength - line.length() + line.indexOf(trimmedLine);
+      return new Result(lineStart, lineStart + trimmedLine.length(), new OpenFileHyperlinkInfo(project, file, 0, 0));
+    }
+
     return null;
   }
 
@@ -39,7 +54,6 @@ public class FlutterConsoleFilter implements Filter {
     final int commandLength = "flutter doctor".length();
     return new Result(startOffset, startOffset + commandLength, new FlutteryHyperlinkInfo());
   }
-
 
   private class FlutteryHyperlinkInfo implements HyperlinkInfo {
     @Override
