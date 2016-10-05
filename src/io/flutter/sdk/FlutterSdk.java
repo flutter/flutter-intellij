@@ -224,8 +224,7 @@ public class FlutterSdk {
             // Enable Dart.
             FlutterSdkUtil.enableDartSupport(module);
             final FileEditorManager manager = FileEditorManager.getInstance(project);
-
-
+            
             // Create a basic run configuration.
             final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
             final Optional<ConfigurationFactory> factory =
