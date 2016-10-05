@@ -61,7 +61,7 @@ public class FlutterAppManager {
     if (isAppRunning(deviceId, controller)) {
       throw new ProcessCanceledException();
     }
-    this.myProgressHandler = new ProgressHandler(project);
+    myProgressHandler = new ProgressHandler(project);
     if (!waitForDevice(deviceId)) {
       return null;
     }

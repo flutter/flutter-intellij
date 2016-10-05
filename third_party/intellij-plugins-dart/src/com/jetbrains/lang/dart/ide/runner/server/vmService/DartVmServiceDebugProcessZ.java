@@ -358,6 +358,15 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   @Override
+  public void startPausing() {
+    for (IsolatesInfo.IsolateInfo info : getIsolateInfos()) {
+      if (!mySuspendedIsolateIds.contains(info.getIsolateId())) {
+        myVmServiceWrapper.pauseIsolate(info.getIsolateId());
+      }
+    }
+  }
+
+  @Override
   public void stop() {
     myVmConnected = false;
 
