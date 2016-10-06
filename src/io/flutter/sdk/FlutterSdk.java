@@ -106,7 +106,7 @@ public class FlutterSdk {
   }
 
   @Nullable
-  public static FlutterSdk findFlutterSdkAmongGlobalLibs(final Library[] globalLibraries) {
+  private static FlutterSdk findFlutterSdkAmongGlobalLibs(final Library[] globalLibraries) {
     for (final Library library : globalLibraries) {
       if (FLUTTER_SDK_GLOBAL_LIB_NAME.equals(library.getName())) {
         return getSdkByLibrary(library);
@@ -142,7 +142,7 @@ public class FlutterSdk {
     return parent;
   }
 
-  public static FlutterSdk forPath(String path) {
+  static FlutterSdk forPath(String path) {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
 
@@ -181,6 +181,8 @@ public class FlutterSdk {
           FlutterConsole.attach(module, handler, commandPrefix + cmd.title);
         }
 
+        cmd.onStart(module, workingDir, args);
+
         handler.startNotify();
       }
     }
@@ -214,17 +216,20 @@ public class FlutterSdk {
 
     CREATE("create", "Flutter: Create") {
       @Override
+      void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
+        //// Enable Dart.
+        ApplicationManager.getApplication().invokeLater(() -> FlutterSdkUtil.enableDartSupport(module));
+      }
+
+      @Override
       void onTerminate(@Nullable Module module,
                        @Nullable VirtualFile workingDir,
                        @SuppressWarnings("UnusedParameters") @NotNull String... args) {
         ApplicationManager.getApplication().invokeLater(() -> {
           if (workingDir != null && module != null && !module.isDisposed()) {
             final Project project = module.getProject();
-
-            // Enable Dart.
-            FlutterSdkUtil.enableDartSupport(module);
             final FileEditorManager manager = FileEditorManager.getInstance(project);
-            
+
             // Create a basic run configuration.
             final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
             final Optional<ConfigurationFactory> factory =
@@ -292,6 +297,19 @@ public class FlutterSdk {
     @SuppressWarnings("SameReturnValue")
     boolean attachToConsole() {
       return true;
+    }
+
+
+    /**
+     * Invoked on command start (before process spawning).
+     *
+     * @param module     the target module
+     * @param workingDir the working directory for the command
+     * @param args       any arguments passed into the command
+     */
+    @SuppressWarnings("UnusedParameters")
+    void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
+      // Default is a no-op.
     }
 
     /**
