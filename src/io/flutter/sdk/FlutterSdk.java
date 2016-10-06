@@ -10,6 +10,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
@@ -217,7 +218,7 @@ public class FlutterSdk {
     CREATE("create", "Flutter: Create") {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-        //// Enable Dart.
+        // Enable Dart.
         ApplicationManager.getApplication().invokeLater(() -> FlutterSdkUtil.enableDartSupport(module));
       }
 
@@ -230,6 +231,9 @@ public class FlutterSdk {
             final Project project = module.getProject();
             final FileEditorManager manager = FileEditorManager.getInstance(project);
 
+            // Find main.
+            final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/lib/main.dart");
+
             // Create a basic run configuration.
             final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
             final Optional<ConfigurationFactory> factory =
@@ -238,31 +242,35 @@ public class FlutterSdk {
             final ConfigurationFactory configurationFactory = factory.get();
 
             final RunManager runManager = RunManager.getInstance(project);
-            final RunnerAndConfigurationSettings settings =
-              runManager.createRunConfiguration(project.getName(), configurationFactory);
-            final FlutterRunConfiguration configuration = (FlutterRunConfiguration)settings.getConfiguration();
+            final List<RunConfiguration> configurations = runManager.getConfigurationsList(FlutterRunConfigurationType.getInstance());
 
-            // Set config name.
-            String name = configuration.suggestedName();
-            if (name == null) {
-              name = project.getName();
+            // If the target project has no flutter run configurations, create one.
+            if (configurations.isEmpty()) {
+              final RunnerAndConfigurationSettings settings =
+                runManager.createRunConfiguration(project.getName(), configurationFactory);
+              final FlutterRunConfiguration configuration = (FlutterRunConfiguration)settings.getConfiguration();
+
+              // Set config name.
+              String name = configuration.suggestedName();
+              if (name == null) {
+                name = project.getName();
+              }
+              configuration.setName(name);
+
+              // Setup parameters.
+              final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
+
+              // Add main if appropriate.
+              if (main != null && main.exists()) {
+                parameters.setFilePath(main.getPath());
+              }
+
+              parameters.setWorkingDirectory(workingDir.getPath());
+              parameters.setCheckedMode(false);
+
+              runManager.addConfiguration(settings, false);
+              runManager.setSelectedConfiguration(settings);
             }
-            configuration.setName(name);
-
-            // Setup parameters.
-            final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
-
-            // Find main.
-            final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/lib/main.dart");
-            if (main != null && main.exists()) {
-              parameters.setFilePath(main.getPath());
-            }
-
-            parameters.setWorkingDirectory(workingDir.getPath());
-            parameters.setCheckedMode(false);
-
-            runManager.addConfiguration(settings, false);
-            runManager.setSelectedConfiguration(settings);
 
             // Open main for editing.
             if (main != null && main.exists()) {
