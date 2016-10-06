@@ -6,6 +6,9 @@
 package io.flutter.sdk;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -35,11 +38,16 @@ import com.intellij.util.containers.ContainerUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterProjectComponent;
 import io.flutter.console.FlutterConsole;
+import io.flutter.run.FlutterRunConfiguration;
+import io.flutter.run.FlutterRunConfigurationType;
+import io.flutter.run.FlutterRunnerParameters;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterSdk {
@@ -211,11 +219,47 @@ public class FlutterSdk {
                        @SuppressWarnings("UnusedParameters") @NotNull String... args) {
         ApplicationManager.getApplication().invokeLater(() -> {
           if (workingDir != null && module != null && !module.isDisposed()) {
+            final Project project = module.getProject();
+
             // Enable Dart.
             FlutterSdkUtil.enableDartSupport(module);
-            final FileEditorManager manager = FileEditorManager.getInstance(module.getProject());
-            // Open main.
-            final VirtualFile main = workingDir.findFileByRelativePath("lib/main.dart");
+            final FileEditorManager manager = FileEditorManager.getInstance(project);
+            
+            // Create a basic run configuration.
+            final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
+            final Optional<ConfigurationFactory> factory =
+              Arrays.stream(factories).filter((f) -> f instanceof FlutterRunConfigurationType.FlutterConfigurationFactory).findFirst();
+            assert (factory.isPresent());
+            final ConfigurationFactory configurationFactory = factory.get();
+
+            final RunManager runManager = RunManager.getInstance(project);
+            final RunnerAndConfigurationSettings settings =
+              runManager.createRunConfiguration(project.getName(), configurationFactory);
+            final FlutterRunConfiguration configuration = (FlutterRunConfiguration)settings.getConfiguration();
+
+            // Set config name.
+            String name = configuration.suggestedName();
+            if (name == null) {
+              name = project.getName();
+            }
+            configuration.setName(name);
+
+            // Setup parameters.
+            final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
+
+            // Find main.
+            final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/lib/main.dart");
+            if (main != null && main.exists()) {
+              parameters.setFilePath(main.getPath());
+            }
+
+            parameters.setWorkingDirectory(workingDir.getPath());
+            parameters.setCheckedMode(false);
+
+            runManager.addConfiguration(settings, false);
+            runManager.setSelectedConfiguration(settings);
+
+            // Open main for editing.
             if (main != null && main.exists()) {
               manager.openFile(main, true);
             }
