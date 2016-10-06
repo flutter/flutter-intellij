@@ -218,7 +218,7 @@ public class FlutterSdk {
     CREATE("create", "Flutter: Create") {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-        //// Enable Dart.
+        // Enable Dart.
         ApplicationManager.getApplication().invokeLater(() -> FlutterSdkUtil.enableDartSupport(module));
       }
 
@@ -242,9 +242,8 @@ public class FlutterSdk {
             final ConfigurationFactory configurationFactory = factory.get();
 
             final RunManager runManager = RunManager.getInstance(project);
-
-
             final List<RunConfiguration> configurations = runManager.getConfigurationsList(FlutterRunConfigurationType.getInstance());
+
             // If the target project has no flutter run configurations, create one.
             if (configurations.isEmpty()) {
               final RunnerAndConfigurationSettings settings =
@@ -260,6 +259,7 @@ public class FlutterSdk {
 
               // Setup parameters.
               final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
+
               // Add main if appropriate.
               if (main != null && main.exists()) {
                 parameters.setFilePath(main.getPath());
