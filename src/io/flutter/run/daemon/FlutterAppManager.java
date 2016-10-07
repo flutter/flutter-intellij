@@ -88,7 +88,11 @@ public class FlutterAppManager {
   }
 
   private boolean isAppRunning(String deviceId, FlutterDaemonController controller) {
-    return myApps.stream().anyMatch((app) -> app.getController() == controller && app.deviceId().equals(deviceId));
+    Stream<FlutterApp> apps;
+    synchronized (myLock) {
+      apps = myApps.stream();
+    }
+    return apps.anyMatch((app) -> app.getController() == controller && app.deviceId().equals(deviceId));
   }
 
   private boolean waitForDevice(@NotNull String deviceId) {
@@ -202,6 +206,9 @@ public class FlutterAppManager {
   void stopApp(@NotNull FlutterApp app) {
     myProgressHandler.cancel();
     if (app.hasAppId()) {
+      if (app.isSessionPaused()) {
+        app.forceResume();
+      }
       AppStop appStop = new AppStop(app.appId());
       Method cmd = makeMethod(CMD_APP_STOP, appStop);
       // This needs to run synchronously. The next thing that happens is the process

@@ -72,7 +72,8 @@ class FlutterDevice implements ConnectedDevice {
       return Objects.equal(myDeviceName, ((FlutterDevice)other).deviceName()) &&
              Objects.equal(myDeviceId, ((FlutterDevice)other).deviceId()) &&
              Objects.equal(myPlatform, ((FlutterDevice)other).platform());
-    } else {
+    }
+    else {
       return false;
     }
   }

@@ -115,6 +115,16 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       @Override
       public void sessionPaused() {
         stackFrameChanged();
+        if (connector != null) {
+          connector.sessionPaused(session);
+        }
+      }
+
+      @Override
+      public void sessionResumed() {
+        if (connector != null) {
+          connector.sessionResumed();
+        }
       }
 
       @Override
@@ -137,6 +147,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
   }
 
+  @Nullable
   public ObservatoryConnector getConnector() {
     return myConnector;
   }
@@ -469,7 +480,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
-    final Set<String> result = new com.intellij.util.containers.HashSet<>();
+    final Set<String> result = new HashSet<>();
     String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
 
     // If dart:, short circut the results.
