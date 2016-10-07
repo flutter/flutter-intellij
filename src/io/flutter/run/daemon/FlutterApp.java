@@ -7,6 +7,7 @@ package io.flutter.run.daemon;
 
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
+import com.intellij.xdebugger.XDebugSession;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -119,6 +120,14 @@ public interface FlutterApp {
   void setConsole(ConsoleView console);
 
   ConsoleView getConsole();
+
+  boolean isSessionPaused();
+
+  void sessionPaused(XDebugSession sessionHook);
+
+  void sessionResumed();
+
+  void forceResume();
 }
 
 class RunningFlutterApp implements FlutterApp {
@@ -135,6 +144,7 @@ class RunningFlutterApp implements FlutterApp {
   private int myPort;
   private String myBaseUri;
   private ConsoleView myConsole;
+  private XDebugSession mySesionHook;
 
   public RunningFlutterApp(@NotNull FlutterDaemonService service,
                            @NotNull FlutterDaemonController controller,
@@ -269,5 +279,27 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public ConsoleView getConsole() {
     return myConsole;
+  }
+
+  @Override
+  public boolean isSessionPaused() {
+    return mySesionHook != null;
+  }
+
+  @Override
+  public void sessionPaused(XDebugSession sessionHook) {
+    mySesionHook = sessionHook;
+  }
+
+  @Override
+  public void sessionResumed() {
+    mySesionHook = null;
+  }
+
+  @Override
+  public void forceResume() {
+    if (mySesionHook != null && mySesionHook.isPaused()) {
+      mySesionHook.resume();
+    }
   }
 }

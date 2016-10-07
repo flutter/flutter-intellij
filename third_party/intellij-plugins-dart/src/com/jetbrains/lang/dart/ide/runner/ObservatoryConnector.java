@@ -1,5 +1,6 @@
 package com.jetbrains.lang.dart.ide.runner;
 
+import com.intellij.xdebugger.XDebugSession;
 import io.flutter.run.daemon.FlutterApp;
 
 public interface ObservatoryConnector {
@@ -18,4 +19,14 @@ public interface ObservatoryConnector {
    * Return the FlutterApp used to control the running app.
    */
   FlutterApp getApp();
+
+  /**
+   * The debug session has been paused.
+   */
+  void sessionPaused(XDebugSession sessionHook);
+
+  /**
+   * The debug session has been resumed.
+   */
+  void sessionResumed();
 }
