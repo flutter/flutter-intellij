@@ -26,6 +26,7 @@ import java.util.Set;
  */
 public class FlutterDaemonService {
   private static final boolean HOT_MODE_DEFAULT = true;
+  private static final boolean HOT_MODE_RELEASE = false;
 
   private final Object myLock = new Object();
   private List<FlutterDaemonController> myControllers = new ArrayList<>();
@@ -162,6 +163,7 @@ public class FlutterDaemonService {
                              @Nullable String relativePath)
     throws ExecutionException {
     boolean isPaused = mode.isDebug();
+    boolean isHot = mode.isDebug() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
     FlutterDaemonController controller = controllerFor(projectDir, deviceId);
     if (controller.getProcessHandler() == null || controller.getProcessHandler().isProcessTerminated()) {
       controller.forkProcess(project);
@@ -170,7 +172,7 @@ public class FlutterDaemonService {
     synchronized (myLock) {
       mgr = myManager;
     }
-    return mgr.startApp(controller, deviceId, mode, project, isPaused, HOT_MODE_DEFAULT, relativePath);
+    return mgr.startApp(controller, deviceId, mode, project, isPaused, isHot, relativePath);
   }
 
   /**
