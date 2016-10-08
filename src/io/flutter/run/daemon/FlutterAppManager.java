@@ -92,7 +92,7 @@ public class FlutterAppManager {
     synchronized (myLock) {
       apps = myApps.stream();
     }
-    return apps.anyMatch((app) -> app.getController() == controller && app.deviceId().equals(deviceId));
+    return apps.anyMatch((app) -> app.getController() == controller && app.hasAppId() && app.deviceId().equals(deviceId));
   }
 
   private boolean waitForDevice(@NotNull String deviceId) {
