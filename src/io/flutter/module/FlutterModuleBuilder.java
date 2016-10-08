@@ -30,6 +30,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
+  private static final String DART_GROUP_NAME = "Static Web";
+
   @Override
   public String getName() {
     return getPresentableName();
@@ -72,11 +74,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return step;
   }
 
-  @SuppressWarnings("EmptyMethod")
   @Override
   public String getParentGroup() {
-    //TODO(pq): find an appropriate parent group
-    return super.getParentGroup();
+    return DART_GROUP_NAME;
   }
 
   @Override
