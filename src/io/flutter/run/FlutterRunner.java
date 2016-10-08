@@ -79,7 +79,7 @@ public class FlutterRunner extends DartRunner {
 
   @Override
   protected int getTimeout() {
-    return 60000; // Allow 60 seconds to connect to the observatory.
+    return 90000; // Allow 90 seconds to connect to the observatory.
   }
 
   @Nullable
