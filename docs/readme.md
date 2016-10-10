@@ -11,7 +11,7 @@ The Flutter Plugin can be installed on following IntelliJ-based products:
 
 ### Installation
 
-The Flutter Plugin is hosted in our own plugin repository.  Before it can be installed, the repository needs to be added to the IDE.
+The Flutter plugin is hosted in our own plugin repository.  Before it can be installed, the repository needs to be added to the IDE.
 
 1. Open plugin preferences (**Preferences>Plugins**)
 1. Select **”Browse repositories…”**
