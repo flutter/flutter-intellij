@@ -154,7 +154,9 @@ public class FlutterAppManager {
       pollster.forkProcess(project);
     }
     catch (ExecutionException e) {
-      myLogger.error(e);
+      // User notification comes in the way of editor toasts.
+      // See: IncompatibleDartPluginNotification.
+      myLogger.warn(e);
     }
   }
 
