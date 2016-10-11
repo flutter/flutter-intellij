@@ -2,7 +2,7 @@
 
 ### Supported IDEs
 
-The Flutter Plugin can be installed on following IntelliJ-based products:
+The Flutter plugin can be installed on following IntelliJ-based products:
 
 * IntelliJ 2016.2+ ([Ultimate or Community](https://www.jetbrains.com/idea/download/))
 
