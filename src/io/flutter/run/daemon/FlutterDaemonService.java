@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
+import io.flutter.sdk.FlutterSdkManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,6 +33,7 @@ public class FlutterDaemonService {
   private List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
   private Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
+  private final SdkListener mySdkListener = new SdkListener();
   private ConnectedDevice mySelectedDevice;
   private FlutterAppManager myManager = new FlutterAppManager(this);
   private List<DeviceListener> myDeviceListeners = new ArrayList<>();
@@ -85,8 +87,30 @@ public class FlutterDaemonService {
   }
 
   private FlutterDaemonService() {
-    Disposer.register(ApplicationManager.getApplication(), this::stopControllers);
+    listenForSdkChanges();
     schedulePolling();
+    Disposer.register(ApplicationManager.getApplication(), this::stopControllers);
+    Disposer.register(ApplicationManager.getApplication(), this::stopListeningForSdkChanges);
+  }
+
+  private class SdkListener implements FlutterSdkManager.Listener {
+    @Override
+    public void flutterSdkAdded() {
+      schedulePolling();
+    }
+
+    @Override
+    public void flutterSdkRemoved() {
+      stopControllers();
+    }
+  }
+
+  private void listenForSdkChanges() {
+    FlutterSdkManager.getInstance().addListener(mySdkListener);
+  }
+
+  private void stopListeningForSdkChanges() {
+    FlutterSdkManager.getInstance().removeListener(mySdkListener);
   }
 
   public void addDeviceListener(DeviceListener listener) {

@@ -102,7 +102,6 @@ public class FlutterSdk {
 
   @Nullable
   public static FlutterSdk getGlobalFlutterSdk() {
-    //TODO(pq): update to use proper SDK and migrate from app lib.
     return findFlutterSdkAmongGlobalLibs(ApplicationLibraryTable.getApplicationTable().getLibraries());
   }
 
@@ -146,7 +145,7 @@ public class FlutterSdk {
   static FlutterSdk forPath(String path) {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
-
+  
   public void run(@NotNull Command cmd,
                   @Nullable Module module,
                   @Nullable VirtualFile workingDir,

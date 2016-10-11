@@ -121,7 +121,9 @@ public class FlutterDaemonController extends ProcessAdapter {
       myHandler.startNotify();
     }
     catch (ExecutionException ex) {
-      LOG.error(ex);
+      // User notification comes in the way of editor toasts.
+      // See: IncompatibleDartPluginNotification.
+      LOG.warn(ex);
     }
   }
 
