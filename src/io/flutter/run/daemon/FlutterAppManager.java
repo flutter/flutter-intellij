@@ -129,22 +129,22 @@ public class FlutterAppManager {
 
   @Nullable
   private FlutterJsonObject waitForResponse(@NotNull Method cmd) {
-    return waitForResponse(cmd, 10000L);
-  }
-
-  @Nullable
-  private FlutterJsonObject waitForResponse(@NotNull Method cmd, final long timeout) {
+    final long timeout = 10000L;
     FlutterJsonObject[] resp = {null};
-    TimeoutUtil.executeWithTimeout(timeout, () -> {
-      while (resp[0] == null) {
-        synchronized (myLock) {
-          resp[0] = myResponses.get(cmd);
-          if (resp[0] != null) {
-            myResponses.remove(cmd);
+    try {
+      TimeoutUtil.executeWithTimeout(timeout, () -> {
+        while (resp[0] == null) {
+          synchronized (myLock) {
+            resp[0] = myResponses.get(cmd);
+            if (resp[0] != null) {
+              myResponses.remove(cmd);
+            }
           }
         }
-      }
-    });
+      });
+    } catch (ThreadDeath ex) {
+      // Can happen if external process is killed, but we don't care.
+    }
     return resp[0];
   }
 
