@@ -5,6 +5,8 @@
 
   <version>0.0.6</version>
   <vendor>flutter.io</vendor>
+  <vendor url="https://github.com/flutter/flutter-intellij"/>
+  <category>Custom Languages</category>
 
 <!-- change-notes>
 <![CDATA[
