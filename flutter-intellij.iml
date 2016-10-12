@@ -11,6 +11,8 @@
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/packages" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

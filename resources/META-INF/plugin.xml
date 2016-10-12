@@ -1,22 +1,21 @@
 <idea-plugin version="2">
   <id>io.flutter</id>
   <name>Flutter</name>
-  <description>Support for developing Flutter (flutter.io) applications.</description>
+  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy cross-platform, high-performance mobile apps on both Android and iOS.</description>
+  <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
-  <version>0.0.7</version>
-  <vendor>flutter.io</vendor>
-  <vendor url="https://github.com/flutter/flutter-intellij"/>
   <category>Custom Languages</category>
 
-<!-- change-notes>
+  <version>0.1.0</version>
+
+<change-notes>
 <![CDATA[
-
+0.1.0:
 <ul>
-  <li>Improvements and bug fixes</li>
+  <li>initial alpha release</li>
 </ul>
-
  ]]>
- </change-notes -->
+ </change-notes>
 
   <depends>Dart</depends>
 
