@@ -6,25 +6,36 @@
 package io.flutter.sdk;
 
 
+import com.intellij.openapi.util.Version;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FlutterSdkVersion {
+public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
-  @NonNls public static final FlutterSdkVersion UNKNOWN = new FlutterSdkVersion("<unknown>");
-  private final String versionString;
+  @NonNls private static final FlutterSdkVersion UNKNOWN = new FlutterSdkVersion("0.0.0");
 
-  FlutterSdkVersion(String versionString) {
-    this.versionString = versionString;
+  private final Version myVersion;
+
+  private FlutterSdkVersion(@NotNull String versionString) {
+    myVersion = Version.parseVersion(versionString);
   }
 
   public static FlutterSdkVersion forVersionString(@Nullable String versionString) {
     return versionString == null ? UNKNOWN : new FlutterSdkVersion(versionString);
   }
 
-  @NotNull
-  public String getPresentableName() {
-    return versionString;
+  public boolean isLessThan(FlutterSdkVersion other) {
+    return compareTo(other) < 0;
+  }
+
+  @Override
+  public String toString() {
+    return myVersion.toCompactString();
+  }
+
+  @Override
+  public int compareTo(@NotNull FlutterSdkVersion other) {
+    return myVersion.compareTo(other.myVersion);
   }
 }

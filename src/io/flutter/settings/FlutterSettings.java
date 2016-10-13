@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterSettings implements PersistentStateComponent<FlutterSettings> {
 
   private boolean ignoreMismatchedDartSdks;
+  private boolean ignoreOutOfDateSdks;
 
   @Nullable
   public static FlutterSettings getInstance(Project project) {
@@ -42,11 +43,19 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
     XmlSerializerUtil.copyBean(settings, this);
   }
 
-  public boolean ignoreMismatchedDartSdks() {
+  public boolean shouldIgnoreMismatchedDartSdks() {
     return ignoreMismatchedDartSdks;
   }
 
   public void setIgnoreMismatchedDartSdks(boolean ignoreMismatchedDartSdks) {
     this.ignoreMismatchedDartSdks = ignoreMismatchedDartSdks;
+  }
+
+  public void setIgnoreOutOfDateSdks(boolean ignoreOutOfDateSdks) {
+    this.ignoreOutOfDateSdks = ignoreOutOfDateSdks;
+  }
+
+  public boolean shouldIgnoreOutOfDateSdks() {
+    return ignoreOutOfDateSdks;
   }
 }

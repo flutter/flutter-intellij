@@ -28,7 +28,6 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ApplicationLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.util.CachedValue;
@@ -57,17 +56,16 @@ public class FlutterSdk {
   public static final String GROUP_DISPLAY_ID = "Flutter Command Invocation";
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
-  private static final String UNKNOWN_VERSION = "unknown";
   private static final Key<CachedValue<FlutterSdk>> CACHED_FLUTTER_SDK_KEY = Key.create("CACHED_FLUTTER_SDK_KEY");
   private final @NotNull String myHomePath;
-  private final @NotNull String myVersion;
+  private final @NotNull FlutterSdkVersion myVersion;
 
   private FlutterSdk(@NotNull final String homePath, @Nullable final String version) {
     myHomePath = homePath;
-    myVersion = version != null ? version : UNKNOWN_VERSION;
+    myVersion = FlutterSdkVersion.forVersionString(version);
   }
 
-  private FlutterSdk(String homePath) {
+  private FlutterSdk(@NotNull final String homePath) {
     this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
   }
 
@@ -123,7 +121,7 @@ public class FlutterSdk {
       final VirtualFile flutterSdkRoot = findFlutterSdkRoot(roots[0]);
       if (flutterSdkRoot != null) {
         final String homePath = flutterSdkRoot.getPath();
-        final String version = StringUtil.notNullize(FlutterSdkUtil.getSdkVersion(homePath), UNKNOWN_VERSION);
+        final String version = FlutterSdkUtil.getSdkVersion(homePath);
         return new FlutterSdk(homePath, version);
       }
     }
@@ -204,7 +202,7 @@ public class FlutterSdk {
    * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
    */
   @NotNull
-  public String getVersion() {
+  public FlutterSdkVersion getVersion() {
     return myVersion;
   }
 

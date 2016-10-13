@@ -27,19 +27,24 @@ import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkService;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class WrongDartSdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
+public class SdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
   implements DumbAware {
+
+  // Minimum SDK known to support hot reload.
+  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.2");
+
   private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
 
-  private static final Logger LOG = Logger.getInstance(WrongDartSdkConfigurationNotificationProvider.class);
+  private static final Logger LOG = Logger.getInstance(SdkConfigurationNotificationProvider.class);
 
   private final Project project;
 
-  public WrongDartSdkConfigurationNotificationProvider(@NotNull Project project) {
+  public SdkConfigurationNotificationProvider(@NotNull Project project) {
     this.project = project;
   }
 
@@ -48,7 +53,7 @@ public class WrongDartSdkConfigurationNotificationProvider extends EditorNotific
     if (module == null) return null;
 
     final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings == null || settings.ignoreMismatchedDartSdks()) return null;
+    if (settings == null || settings.shouldIgnoreMismatchedDartSdks()) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.wrong.dart.sdk.warning"));
@@ -88,6 +93,10 @@ public class WrongDartSdkConfigurationNotificationProvider extends EditorNotific
         return createNoFlutterSdkPanel();
       }
 
+      if (flutterSdk.getVersion().isLessThan(MIN_SUPPORTED_SDK)) {
+        return createOutOfDateFlutterSdkPanel();
+      }
+
       DartSdk dartSdk = DartSdk.getDartSdk(project);
       if (dartSdk == null) {
         // TODO(devoncarew): Recommend to set up with Flutter's dart sdk.
@@ -106,6 +115,21 @@ public class WrongDartSdkConfigurationNotificationProvider extends EditorNotific
     }
 
     return null;
+  }
+
+  private EditorNotificationPanel createOutOfDateFlutterSdkPanel() {
+
+    final FlutterSettings settings = FlutterSettings.getInstance(project);
+    if (settings == null || settings.shouldIgnoreOutOfDateSdks()) return null;
+
+    EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
+    panel.createActionLabel("Dismiss", () -> {
+      settings.setIgnoreOutOfDateSdks(true);
+      panel.setVisible(false);
+    });
+
+    return panel;
   }
 
   private static EditorNotificationPanel createNoFlutterSdkPanel() {
