@@ -529,6 +529,12 @@ public class FlutterAppManager {
         if (prim.getAsBoolean()) {
           manager.appStopped(this, controller);
         }
+      } else {
+        prim = obj.getAsJsonPrimitive("error");
+        if (prim != null) {
+          // Apparently the daemon does not find apps started in release mode.
+          manager.appStopped(this, controller);
+        }
       }
     }
   }
