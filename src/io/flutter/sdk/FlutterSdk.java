@@ -200,7 +200,8 @@ public class FlutterSdk {
   }
 
   /**
-   * @return presentable version with revision, like ea7d5bf291
+   * Returns the Flutter Version as captured in the VERSION file.  This version is very coarse grained and not meant for presentation and
+   * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
    */
   @NotNull
   public String getVersion() {
