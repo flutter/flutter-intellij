@@ -219,6 +219,7 @@ public class FlutterDaemonService {
         }
       }
       FlutterDaemonController newController = new FlutterDaemonController(projectDir);
+      newController.setProjectAndDevice(projectDir, deviceId);
       myControllers.add(newController);
       newController.addListener(myListener);
       return newController;
@@ -226,8 +227,10 @@ public class FlutterDaemonService {
   }
 
   void schedulePolling() {
-    if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
-      return;
+    synchronized (myLock) {
+      if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
+        return;
+      }
     }
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {

@@ -7,10 +7,7 @@ package io.flutter.run.daemon;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
@@ -21,6 +18,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -116,7 +114,7 @@ public class FlutterDaemonController extends ProcessAdapter {
   public void forkProcess(Project project) throws ExecutionException {
     try {
       GeneralCommandLine commandLine = createCommandLine(project);
-      myHandler = new OSProcessHandler(commandLine);
+      myHandler = new DaemonProcessWrapper(new OSProcessHandler(commandLine));
       myHandler.addProcessListener(this);
       myHandler.startNotify();
     }
