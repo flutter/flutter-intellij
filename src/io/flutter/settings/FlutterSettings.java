@@ -43,7 +43,7 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
     XmlSerializerUtil.copyBean(settings, this);
   }
 
-  public boolean ignoreMismatchedDartSdks() {
+  public boolean shouldIgnoreMismatchedDartSdks() {
     return ignoreMismatchedDartSdks;
   }
 
@@ -55,7 +55,7 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
     this.ignoreOutOfDateSdks = ignoreOutOfDateSdks;
   }
 
-  public boolean ignoreOutOfDateSdks() {
+  public boolean shouldIgnoreOutOfDateSdks() {
     return ignoreOutOfDateSdks;
   }
 }

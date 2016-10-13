@@ -53,7 +53,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     if (module == null) return null;
 
     final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings == null || settings.ignoreMismatchedDartSdks()) return null;
+    if (settings == null || settings.shouldIgnoreMismatchedDartSdks()) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.wrong.dart.sdk.warning"));
@@ -120,7 +120,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   private EditorNotificationPanel createOutOfDateFlutterSdkPanel() {
 
     final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings == null || settings.ignoreOutOfDateSdks()) return null;
+    if (settings == null || settings.shouldIgnoreOutOfDateSdks()) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
