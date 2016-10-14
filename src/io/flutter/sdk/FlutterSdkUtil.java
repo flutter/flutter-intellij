@@ -196,7 +196,7 @@ public class FlutterSdkUtil {
       DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);
     }
     catch (ExecutionException e) {
-      LOG.error(e);
+      LOG.warn(e);
     }
   }
 }
