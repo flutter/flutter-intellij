@@ -6,3 +6,5 @@ packages
 .packages
 pubspec.lock
 .pub/
+.idea/workspace.xml
+.idea/shelf
