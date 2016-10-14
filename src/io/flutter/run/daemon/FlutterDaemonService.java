@@ -203,6 +203,7 @@ public class FlutterDaemonService {
    * Scan the list of controllers to see if an existing controller can be reused. If not, create a new one.
    * Controllers can be reused if the directory is the same. If a controller is found that matches directory
    * and device then terminate the app on that device and select that controller.
+   * NB: Currently controllers are not shared due to limitations of the debugger.
    *
    * @param projectDir The path to the project root directory
    * @param deviceId   The device id reported by the daemon
@@ -211,13 +212,13 @@ public class FlutterDaemonService {
   @NotNull
   private FlutterDaemonController controllerFor(String projectDir, String deviceId) {
     synchronized (myLock) {
-      for (FlutterDaemonController controller : myControllers) {
-        if (controller.isForProject(projectDir)) {
-          controller.setProjectAndDevice(projectDir, deviceId);
-          controller.addListener(myListener);
-          return controller;
-        }
-      }
+      //for (FlutterDaemonController controller : myControllers) {
+      //  if (controller.isForProject(projectDir)) {
+      //    controller.setProjectAndDevice(projectDir, deviceId);
+      //    controller.addListener(myListener);
+      //    return controller;
+      //  }
+      //}
       FlutterDaemonController newController = new FlutterDaemonController(projectDir);
       myControllers.add(newController);
       newController.addListener(myListener);
