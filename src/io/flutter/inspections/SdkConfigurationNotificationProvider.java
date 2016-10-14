@@ -111,7 +111,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
       }
     }
     catch (ExecutionException e) {
-      LOG.error(e);
+      LOG.warn(e);
     }
 
     return null;
