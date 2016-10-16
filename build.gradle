@@ -25,7 +25,7 @@ allprojects {
   sourceSets {
     main {
       java.srcDirs 'src', 'gen', 'third_party/intellij-plugins-dart/src'
-      resources.srcDirs 'resources', 'src'
+      resources.srcDir 'resources'
     }
     test {
       java.srcDirs 'testSrc', 'third_party/intellij-plugins-dart/testSrc'
