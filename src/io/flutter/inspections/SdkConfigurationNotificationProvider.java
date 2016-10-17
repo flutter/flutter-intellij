@@ -9,7 +9,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
@@ -24,9 +23,9 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
-import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkService;
+import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
@@ -85,7 +84,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
     if (module == null) return null;
 
-    if (!ModuleType.is(module, FlutterModuleType.getInstance())) return null;
+    if (!FlutterSdkUtil.isFlutterModule(module)) return null;
 
     try {
       final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);

@@ -8,7 +8,6 @@ package io.flutter.inspections;
 import com.intellij.ide.plugins.PluginManagerConfigurable;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.options.ShowSettingsUtil;
 import com.intellij.openapi.project.DumbAware;
@@ -24,7 +23,7 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
-import io.flutter.module.FlutterModuleType;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,7 +73,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
     Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
     if (module == null) return null;
 
-    if (!ModuleType.is(module, FlutterModuleType.getInstance())) return null;
+    if (!FlutterSdkUtil.isFlutterModule(module)) return null;
 
     Version minimumVersion = DartPlugin.getInstance().getMinimumVersion();
     Version dartVersion = DartPlugin.getInstance().getVersion();
