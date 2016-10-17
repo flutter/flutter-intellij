@@ -176,6 +176,7 @@ public class FlutterSdkUtil {
 
   /**
    * Checks the workspace for any open Flutter projects.
+   *
    * @return true if an open Flutter project is found
    */
   public static boolean isFlutterProjectOpen() {
