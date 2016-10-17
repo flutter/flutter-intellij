@@ -16,6 +16,7 @@ import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
@@ -81,7 +82,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
 
     // And only present in the context of a flutter project.
-    if (!FlutterSdkUtil.isFluttering()) {
+    final Project project = e.getProject();
+    if (project == null || !FlutterSdkUtil.hasFlutterModule(project)) {
       e.getPresentation().setVisible(false);
       return;
     }
