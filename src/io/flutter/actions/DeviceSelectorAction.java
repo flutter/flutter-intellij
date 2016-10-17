@@ -81,7 +81,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
 
     // And only present in the context of a flutter project.
-    if (!FlutterSdkUtil.isFlutterProjectOpen()) {
+    if (!FlutterSdkUtil.isFluttering()) {
       e.getPresentation().setVisible(false);
       return;
     }
