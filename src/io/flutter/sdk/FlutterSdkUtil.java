@@ -10,7 +10,10 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -22,6 +25,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
+import io.flutter.module.FlutterModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -95,8 +99,7 @@ public class FlutterSdkUtil {
     VirtualFile bin = sdk.findChild("bin");
     if (bin == null) return false;
     VirtualFile exec = bin.findChild("flutter");
-    if (exec == null) return false;
-    return true;
+    return exec != null;
   }
 
   public static boolean isFlutterSdkHome(@Nullable String path) {
@@ -161,6 +164,23 @@ public class FlutterSdkUtil {
       }
     }
     return null;
+  }
+
+  public static boolean isFlutterModule(@Nullable Module module) {
+    return module != null && ModuleType.is(module, FlutterModuleType.getInstance());
+  }
+
+  public static boolean hasFlutterModule(@NotNull Project project) {
+    return ModuleUtil.hasModulesOfType(project, FlutterModuleType.getInstance());
+  }
+
+  /**
+   * Checks the workspace for any open Flutter projects.
+   *
+   * @return true if an open Flutter project is found
+   */
+  public static boolean isFluttering() {
+    return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch((Project p) -> FlutterSdkUtil.hasFlutterModule(p));
   }
 
   @Nullable

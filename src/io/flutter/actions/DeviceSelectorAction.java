@@ -23,6 +23,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -75,6 +76,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     // Suppress device actions in all but the toolbars.
     final String place = e.getPlace();
     if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
+      e.getPresentation().setVisible(false);
+      return;
+    }
+
+    // And only present in the context of a flutter project.
+    if (!FlutterSdkUtil.isFluttering()) {
       e.getPresentation().setVisible(false);
       return;
     }

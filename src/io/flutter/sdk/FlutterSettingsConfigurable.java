@@ -204,11 +204,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Nullable
   private String getErrorMessage() {
-    final String message =
+    return
       FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
-    if (message != null) return message;
-
-    return null;
   }
 
   private String getSdkPathText() {
