@@ -92,14 +92,6 @@ public class FlutterAppState extends DartCommandLineRunningState {
     return myApp.getController().getProcessHandler();
   }
 
-  @Override
-  protected AnAction[] createActions(final ConsoleView console, final ProcessHandler processHandler, final Executor executor) {
-    // These actions are effectively added only to the Run tool window. For Debug see DartCommandLineDebugProcess.registerAdditionalActions()
-    final List<AnAction> actions = new ArrayList<>(Arrays.asList(super.createActions(console, processHandler, executor)));
-    addObservatoryActions(actions, processHandler);
-    return actions.toArray(new AnAction[actions.size()]);
-  }
-
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     ConsoleView console = super.createConsole(executor);
     myApp.setConsole(console);
