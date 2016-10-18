@@ -19,7 +19,7 @@ class ProgressHandler {
   final Project myProject;
   final List<String> myTasks = new ArrayList<>();
 
-  Task.Backgroundable myTask;
+  private Task.Backgroundable myTask;
 
   ProgressHandler(@NotNull Project project) {
     this.myProject = project;
@@ -33,7 +33,7 @@ class ProgressHandler {
   public void start(String log) {
     synchronized (myTasks) {
       myTasks.add(log);
-      myTasks.notify();
+      myTasks.notifyAll();
 
       if (myTask == null) {
         myTask = new Task.Backgroundable(myProject, log, false) {
@@ -52,16 +52,18 @@ class ProgressHandler {
                   // ignore
 
                 }
+                myTask = null;
               }
 
-              myTask = null;
             }
           }
         };
 
         // TODO(devoncarew): Debounce this.
         ApplicationManager.getApplication().invokeLater(() -> {
-          ProgressManager.getInstance().run(myTask);
+          synchronized(myTasks) {
+            ProgressManager.getInstance().run(myTask);
+          }
         });
       }
     }
@@ -73,7 +75,7 @@ class ProgressHandler {
   public void done() {
     synchronized (myTasks) {
       myTasks.remove(myTasks.size() - 1);
-      myTasks.notify();
+      myTasks.notifyAll();
     }
   }
 
