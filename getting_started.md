@@ -15,7 +15,7 @@ The Flutter plugin can be installed on following IntelliJ-based products:
 
 The Flutter plugin uses functionality from the Dart plugin. To install the Dart plugin:
 
-1. Open plugin preferences (**Preferences>Plugins** on OS X, **File>Settings>Plugins** on Windows and Linux)
+1. Open plugin preferences (**Preferences>Plugins** on macOS, **File>Settings>Plugins** on Linux)
 1. Select **"Browse repositories…"**
 1. search for `'Dart'`; install and restart IntelliJ
 
@@ -24,7 +24,7 @@ The Flutter plugin uses functionality from the Dart plugin. To install the Dart 
 During `alpha` development, the Flutter plugin is hosted in its own plugin repository. Before it
 can be installed, the repository needs to be added to the IDE.
 
-1. Open plugin preferences (**Preferences>Plugins** on OS X, **File>Settings>Plugins** on Windows and Linux)
+1. Open plugin preferences (**Preferences>Plugins** on macOS, **File>Settings>Plugins** on Linux)
 1. Select **"Browse repositories…"**
 1. In the **Browse Repositories** dialog, click **"Manage repositories…"**
 1. In the resulting **Custom Plugin Repositories** pop-up, click the **+** button and paste
@@ -38,7 +38,7 @@ can be installed, the repository needs to be added to the IDE.
 
 ### Flutter plugin configuration
 
-1. Open  preferences (**Preferences** on OS X, **File>Settings** on Windows and Linux)
+1. Open  preferences (**Preferences** on macOS, **File>Settings** on Linux)
 1. Select **Languages & Frameworks>Flutter**
 1. Set the path to the root of your flutter repo
 1. Click OK
