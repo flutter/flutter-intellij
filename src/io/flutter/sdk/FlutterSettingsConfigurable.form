@@ -49,11 +49,9 @@
         </constraints>
         <properties>
           <alignmentX value="1.0"/>
-          <background color="-12828863"/>
           <editable value="false"/>
           <enabled value="false"/>
           <margin top="8" left="8" bottom="8" right="8"/>
-          <text value=""/>
         </properties>
       </component>
       <component id="a59e7" class="javax.swing.JLabel">

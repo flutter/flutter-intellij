@@ -25,6 +25,7 @@ import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.Nls;
@@ -93,6 +94,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                                                  FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                                                  textComponentAccessor);
     sdkCombo.addBrowseFolderListener(null, browseFolderListener);
+
+    versionDetails.setBackground(UIUtil.getPanelBackground());
   }
 
   private void createUIComponents() {
