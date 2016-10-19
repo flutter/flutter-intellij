@@ -155,13 +155,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void updateVersionText() {
-
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       versionDetails.setVisible(false);
     }
     else {
       try {
+        final ModalityState modalityState = ModalityState.current();
         sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
           @Override
           public void processTerminated(@NotNull ProcessEvent event) {
@@ -170,7 +170,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             ApplicationManager.getApplication().invokeLater(() -> {
               versionDetails.setText(stdout);
               versionDetails.setVisible(true);
-            }, ModalityState.current());
+            }, modalityState);
           }
         });
       }
