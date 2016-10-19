@@ -83,13 +83,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Nullable
   @Override
-  public Runnable enableSearch(String option) {
-    //TODO(pq): enable search
-    return null;
-  }
-
-  @Nullable
-  @Override
   public JComponent createComponent() {
     return mainPanel;
   }
