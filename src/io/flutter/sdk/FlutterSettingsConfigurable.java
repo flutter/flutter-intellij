@@ -129,8 +129,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Override
   public void apply() throws ConfigurationException {
     final Runnable runnable = () -> {
-      final String sdkHomePath =
-        FileUtilRt.toSystemIndependentName(getSdkPathText());
+      final String sdkHomePath = getSdkPathText();
       if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
         FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHomePath);
         FlutterSdkUtil.setDartSdkPathIfUnset(sdkHomePath);
@@ -147,7 +146,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     isModified = false;
 
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
-    final String path = sdk != null ? FileUtilRt.toSystemDependentName(sdk.getHomePath()) : "";
+    final String path = sdk != null ? sdk.getHomePath() : "";
     sdkCombo.getComboBox().getEditor().setItem(path);
 
     updateVersionText();
@@ -211,6 +210,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private String getSdkPathText() {
-    return sdkCombo.getComboBox().getEditor().getItem().toString().trim();
+    return FileUtilRt.toSystemIndependentName(sdkCombo.getComboBox().getEditor().getItem().toString().trim());
   }
 }
