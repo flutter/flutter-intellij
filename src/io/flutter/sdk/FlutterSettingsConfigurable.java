@@ -17,7 +17,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ColorUtil;
@@ -55,7 +54,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     errorLabel.setIcon(AllIcons.Actions.Lightning);
   }
 
-  @SuppressWarnings("Duplicates")
   private void init() {
     sdkCombo.getComboBox().setEditable(true);
     final JTextComponent sdkEditor = (JTextComponent)sdkCombo.getComboBox().getEditor().getEditorComponent();
@@ -66,33 +64,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     });
 
-    final TextComponentAccessor<JComboBox> textComponentAccessor = new TextComponentAccessor<JComboBox>() {
-      @Override
-      public String getText(final JComboBox component) {
-        return component.getEditor().getItem().toString();
-      }
-
-      @Override
-      public void setText(@NotNull final JComboBox component, @NotNull final String text) {
-        if (!text.isEmpty() && !FlutterSdkUtil.isFlutterSdkHome(text)) {
-          final String probablySdkPath = text + "/dart-sdk";
-          if (FlutterSdkUtil.isFlutterSdkHome(probablySdkPath)) {
-            component.getEditor().setItem(FileUtilRt.toSystemDependentName(probablySdkPath));
-            return;
-          }
-        }
-
-        component.getEditor().setItem(FileUtilRt.toSystemDependentName(text));
-      }
-    };
-
-
-    final ComponentWithBrowseButton.BrowseFolderActionListener<JComboBox> browseFolderListener =
-      new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Flutter SDK Path", null, sdkCombo,
-                                                                 null,
-                                                                 FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                                 textComponentAccessor);
-    sdkCombo.addBrowseFolderListener(null, browseFolderListener);
+    sdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
+                                     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                                     TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
     versionDetails.setBackground(UIUtil.getPanelBackground());
   }
