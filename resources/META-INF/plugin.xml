@@ -6,10 +6,22 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.1</version>
+  <version>0.1.2</version>
 
 <change-notes>
 <![CDATA[
+0.1.2:
+<ul>
+  <li>fixed device selector filtering</li>
+</ul>
+
+0.1.1:
+<ul>
+  <li>removed second (redundant) "open observatory" button</li>
+  <li>filtering to ensure the Flutter device selector only appears for Flutter projects</li>
+  <li>fixed hangs on app re-runs</li>
+</ul>
+
 0.1.0:
 <ul>
   <li>initial alpha release</li>
