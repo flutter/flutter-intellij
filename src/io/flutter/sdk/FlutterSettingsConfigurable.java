@@ -44,7 +44,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
-  boolean isModified;
+
   private JPanel mainPanel;
   private ComboboxWithBrowseButton sdkCombo;
   private JBLabel errorLabel;
@@ -83,7 +83,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
         }
 
         component.getEditor().setItem(FileUtilRt.toSystemDependentName(text));
-        isModified = true;
       }
     };
 
@@ -123,7 +122,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public boolean isModified() {
-    return isModified;
+    final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+    final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
+    final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
+
+    return !sdkPathInModel.equals(sdkPathInUI);
   }
 
   @Override
@@ -143,8 +146,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    isModified = false;
-
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
     sdkCombo.getComboBox().getEditor().setItem(path);
