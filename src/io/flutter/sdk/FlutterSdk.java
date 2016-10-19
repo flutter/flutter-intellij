@@ -27,16 +27,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ApplicationLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.util.CachedValue;
-import com.intellij.psi.util.CachedValueProvider;
-import com.intellij.psi.util.CachedValuesManager;
 import com.intellij.util.ArrayUtil;
-import com.intellij.util.containers.ContainerUtil;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterProjectComponent;
 import io.flutter.console.FlutterConsole;
 import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
@@ -44,7 +38,6 @@ import io.flutter.run.FlutterRunnerParameters;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -56,7 +49,6 @@ public class FlutterSdk {
   public static final String GROUP_DISPLAY_ID = "Flutter Command Invocation";
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
-  private static final Key<CachedValue<FlutterSdk>> CACHED_FLUTTER_SDK_KEY = Key.create("CACHED_FLUTTER_SDK_KEY");
   private final @NotNull String myHomePath;
   private final @NotNull FlutterSdkVersion myVersion;
 
@@ -69,33 +61,9 @@ public class FlutterSdk {
     this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
   }
 
-  /**
-   * Returns the same as {@link #getGlobalFlutterSdk()} but much faster
-   */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
-    CachedValue<FlutterSdk> cachedValue = project.getUserData(CACHED_FLUTTER_SDK_KEY);
-
-    if (cachedValue == null) {
-      cachedValue = CachedValuesManager.getManager(project).createCachedValue(() -> {
-        final FlutterSdk sdk = getGlobalFlutterSdk();
-        if (sdk == null) {
-          return new CachedValueProvider.Result<>(null, FlutterProjectComponent.getProjectRootsModificationTracker(project));
-        }
-
-        List<Object> dependencies = new ArrayList<>(3);
-        dependencies.add(FlutterProjectComponent.getProjectRootsModificationTracker(project));
-        ContainerUtil
-          .addIfNotNull(dependencies, LocalFileSystem.getInstance().findFileByPath(FlutterSdkUtil.versionPath(sdk.getHomePath())));
-        ContainerUtil.addIfNotNull(dependencies, LocalFileSystem.getInstance().findFileByPath(sdk.getHomePath() + "/bin/flutter"));
-
-        return new CachedValueProvider.Result<>(sdk, ArrayUtil.toObjectArray(dependencies));
-      }, false);
-
-      project.putUserData(CACHED_FLUTTER_SDK_KEY, cachedValue);
-    }
-
-    return cachedValue.getValue();
+    return getGlobalFlutterSdk();
   }
 
   @Nullable
