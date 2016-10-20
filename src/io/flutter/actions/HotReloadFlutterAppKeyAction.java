@@ -18,7 +18,7 @@ import io.flutter.FlutterBundle;
 public class HotReloadFlutterAppKeyAction extends FlutterKeyAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
-    final ObservatoryConnector connector = findConnector();
+    final ObservatoryConnector connector = findConnector(e);
     if (connector != null) {
       new HotReloadFlutterApp(connector, connector::isConnectionReady).actionPerformed(e);
     }
