@@ -8,6 +8,8 @@
 
   <version>0.1.2</version>
 
+  <idea-version since-build="162.1" until-build="162.*"/>
+  
 <change-notes>
 <![CDATA[
 0.1.2:
