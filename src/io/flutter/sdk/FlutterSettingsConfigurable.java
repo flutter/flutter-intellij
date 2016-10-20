@@ -17,7 +17,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ColorUtil;
@@ -25,6 +24,7 @@ import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.Nls;
@@ -43,9 +43,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
-  boolean isModified;
+
   private JPanel mainPanel;
-  private JPanel sdkSettings;
   private ComboboxWithBrowseButton sdkCombo;
   private JBLabel errorLabel;
   private JTextArea versionDetails;
@@ -55,7 +54,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     errorLabel.setIcon(AllIcons.Actions.Lightning);
   }
 
-  @SuppressWarnings("Duplicates")
   private void init() {
     sdkCombo.getComboBox().setEditable(true);
     final JTextComponent sdkEditor = (JTextComponent)sdkCombo.getComboBox().getEditor().getEditorComponent();
@@ -66,34 +64,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     });
 
-    final TextComponentAccessor<JComboBox> textComponentAccessor = new TextComponentAccessor<JComboBox>() {
-      @Override
-      public String getText(final JComboBox component) {
-        return component.getEditor().getItem().toString();
-      }
+    sdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
+                                     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                                     TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-      @Override
-      public void setText(@NotNull final JComboBox component, @NotNull final String text) {
-        if (!text.isEmpty() && !FlutterSdkUtil.isFlutterSdkHome(text)) {
-          final String probablySdkPath = text + "/dart-sdk";
-          if (FlutterSdkUtil.isFlutterSdkHome(probablySdkPath)) {
-            component.getEditor().setItem(FileUtilRt.toSystemDependentName(probablySdkPath));
-            return;
-          }
-        }
-
-        component.getEditor().setItem(FileUtilRt.toSystemDependentName(text));
-        isModified = true;
-      }
-    };
-
-
-    final ComponentWithBrowseButton.BrowseFolderActionListener<JComboBox> browseFolderListener =
-      new ComponentWithBrowseButton.BrowseFolderActionListener<>("Select Flutter SDK Path", null, sdkCombo,
-                                                                 null,
-                                                                 FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                                 textComponentAccessor);
-    sdkCombo.addBrowseFolderListener(null, browseFolderListener);
+    versionDetails.setBackground(UIUtil.getPanelBackground());
   }
 
   private void createUIComponents() {
@@ -108,27 +83,23 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Nullable
   @Override
-  public Runnable enableSearch(String option) {
-    //TODO(pq): enable search
-    return null;
-  }
-
-  @Nullable
-  @Override
   public JComponent createComponent() {
     return mainPanel;
   }
 
   @Override
   public boolean isModified() {
-    return isModified;
+    final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+    final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
+    final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
+
+    return !sdkPathInModel.equals(sdkPathInUI);
   }
 
   @Override
   public void apply() throws ConfigurationException {
     final Runnable runnable = () -> {
-      final String sdkHomePath =
-        FileUtilRt.toSystemIndependentName(getSdkPathText());
+      final String sdkHomePath = getSdkPathText();
       if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
         FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHomePath);
         FlutterSdkUtil.setDartSdkPathIfUnset(sdkHomePath);
@@ -142,10 +113,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    isModified = false;
-
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
-    final String path = sdk != null ? FileUtilRt.toSystemDependentName(sdk.getHomePath()) : "";
+    final String path = sdk != null ? sdk.getHomePath() : "";
     sdkCombo.getComboBox().getEditor().setItem(path);
 
     updateVersionText();
@@ -153,13 +122,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private void updateVersionText() {
-
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       versionDetails.setVisible(false);
     }
     else {
       try {
+        final ModalityState modalityState = ModalityState.current();
         sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
           @Override
           public void processTerminated(@NotNull ProcessEvent event) {
@@ -168,7 +137,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             ApplicationManager.getApplication().invokeLater(() -> {
               versionDetails.setText(stdout);
               versionDetails.setVisible(true);
-            }, ModalityState.current());
+            }, modalityState);
           }
         });
       }
@@ -209,6 +178,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   }
 
   private String getSdkPathText() {
-    return sdkCombo.getComboBox().getEditor().getItem().toString().trim();
+    return FileUtilRt.toSystemIndependentName(sdkCombo.getComboBox().getEditor().getItem().toString().trim());
   }
 }
