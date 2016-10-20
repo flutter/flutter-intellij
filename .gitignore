@@ -3,6 +3,7 @@ out/
 build/
 flutter-intellij.jar
 packages
+.idea/
 .packages
 pubspec.lock
 .pub/

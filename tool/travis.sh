@@ -11,9 +11,9 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
-# disabled: https://github.com/flutter/flutter-intellij/issues/222
 # Run the gradle build.
-#gradle build --info
+# TODO: Tests are currently disabled (#222).
+gradle buildPlugin --info
 
 # Print a report for the API used from the Dart plugin
 pub get

@@ -3,7 +3,7 @@ language: java
 jdk:
   - oraclejdk8
 
-# Skip the gradle install: https://github.com/flutter/flutter-intellij/issues/222
+# Skip the default gradle install; this is run in tool/travis.sh.
 install: true
 
 before_script:
@@ -16,7 +16,7 @@ before_script:
 # execution
 script: ./tool/travis.sh
 
-# disabled: https://github.com/flutter/flutter-intellij/issues/222
+# Default gradle caching disabled.
 ## caching
 #before_cache:
 #  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
