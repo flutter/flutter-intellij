@@ -3,7 +3,8 @@
   <extensions defaultExtensionNs="com.intellij">
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService" serviceImplementation="io.flutter.sdk.FlutterIdeaSdkService"
                     overrides="true"/>
-    <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.IncompatibleDartPluginNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
   </extensions>
 </idea-plugin>
