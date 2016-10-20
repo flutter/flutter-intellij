@@ -54,7 +54,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   @NotNull
   private static EditorNotificationPanel createPanel(@NotNull Project project, @NotNull Module module) {
     EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.setText("'" + module.getName() + "' is not Flutter Module, device debugging is not fully supported.");
+    panel.setText("'" + module.getName() + "' is not a Flutter Module, device debugging is not fully supported.");
     panel.createActionLabel("Change module type to Flutter and reload project", () -> {
       int message = Messages.showOkCancelDialog(project, "Updating module type requires project reload. Proceed?", "Update Module Type",
                                                 "Reload project", "Cancel", null);
