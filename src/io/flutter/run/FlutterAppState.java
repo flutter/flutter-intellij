@@ -26,8 +26,6 @@ import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -101,7 +99,7 @@ public class FlutterAppState extends DartCommandLineRunningState {
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {
     actions.add(new Separator());
     actions.add(new OpenDartObservatoryUrlAction(
-      "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(),
+      "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(), //NON-NLS
       () -> !processHandler.isProcessTerminated()));
   }
 

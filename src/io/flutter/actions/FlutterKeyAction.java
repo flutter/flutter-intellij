@@ -5,9 +5,9 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
@@ -16,7 +16,7 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugPro
 import org.jetbrains.annotations.Nullable;
 
 public abstract class FlutterKeyAction extends DumbAwareAction {
-  public static final String RELOAD_DISPLAY_ID = "Flutter Commands";
+  public static final String RELOAD_DISPLAY_ID = "Flutter Commands"; //NON-NLS
 
   /**
    * Find an active Dart VM debug process and get it's observatory connector.
@@ -25,19 +25,17 @@ public abstract class FlutterKeyAction extends DumbAwareAction {
    */
   static
   @Nullable
-  ObservatoryConnector findConnector() {
-    final Project[] projects = ProjectManager.getInstance().getOpenProjects();
-    for (Project project : projects) {
-      final XDebuggerManager manager = XDebuggerManager.getInstance(project);
-      final XDebugSession session = manager.getCurrentSession();
-      if (session != null) {
-        final XDebugProcess debugProcess = session.getDebugProcess();
-        if (debugProcess instanceof DartVmServiceDebugProcessZ) {
-          return ((DartVmServiceDebugProcessZ)debugProcess).getConnector();
-        }
+  ObservatoryConnector findConnector(AnActionEvent e) {
+    final Project project = getEventProject(e);
+    if (project == null) return null;
+    final XDebuggerManager manager = XDebuggerManager.getInstance(project);
+    final XDebugSession session = manager.getCurrentSession();
+    if (session != null) {
+      final XDebugProcess debugProcess = session.getDebugProcess();
+      if (debugProcess instanceof DartVmServiceDebugProcessZ) {
+        return ((DartVmServiceDebugProcessZ)debugProcess).getConnector();
       }
     }
     return null;
   }
-
 }

@@ -19,7 +19,7 @@ public class RestartFlutterAppKeyAction extends FlutterKeyAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    final ObservatoryConnector connector = findConnector();
+    final ObservatoryConnector connector = findConnector(e);
     if (connector != null) {
       new RestartFlutterApp(connector, connector::isConnectionReady).actionPerformed(e);
     }
