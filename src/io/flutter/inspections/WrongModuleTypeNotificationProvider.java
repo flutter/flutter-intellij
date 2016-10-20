@@ -6,6 +6,7 @@
 package io.flutter.inspections;
 
 
+import com.intellij.CommonBundle;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
@@ -23,6 +24,7 @@ import com.intellij.ui.EditorNotifications;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
+import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdkGlobalLibUtil;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -33,8 +35,8 @@ import java.util.Set;
 
 public class WrongModuleTypeNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("Wrong module type");
-  private static final String DONT_ASK_TO_CHANGE_MODULE_TYPE_KEY = "do.not.ask.to.change.module.type";
-  private static final String FLUTTER_YAML_FILE = "flutter.yaml";
+  private static final String DONT_ASK_TO_CHANGE_MODULE_TYPE_KEY = "do.not.ask.to.change.module.type"; //NON-NLS
+  private static final String FLUTTER_YAML_FILE = "flutter.yaml"; //NON-NLS
 
   private final Project myProject;
 
@@ -54,10 +56,11 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   @NotNull
   private static EditorNotificationPanel createPanel(@NotNull Project project, @NotNull Module module) {
     EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.setText("'" + module.getName() + "' is not a Flutter Module, device debugging is not fully supported.");
-    panel.createActionLabel("Change module type to Flutter and reload project", () -> {
-      int message = Messages.showOkCancelDialog(project, "Updating module type requires project reload. Proceed?", "Update Module Type",
-                                                "Reload project", "Cancel", null);
+    panel.setText(FlutterBundle.message("not.flutter.bundle", module.getName()));
+    panel.createActionLabel(FlutterBundle.message("change.module.type.to.flutter.and.reload.project"), () -> {
+      int message = Messages.showOkCancelDialog(project, FlutterBundle.message("updating.module.type.requires.project.reload.proceed"),
+                                                FlutterBundle.message("update.module.type"),
+                                                FlutterBundle.message("reload.project"), CommonBundle.getCancelButtonText(), null);
       if (message == Messages.YES) {
         module.setOption(Module.ELEMENT_TYPE, FlutterModuleType.getInstance().getId());
         ApplicationManager.getApplication().runWriteAction(() -> {
@@ -70,7 +73,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
         });
       }
     });
-    panel.createActionLabel("Don't show again for this module", () -> {
+    panel.createActionLabel(FlutterBundle.message("don.t.show.again.for.this.module"), () -> {
       Set<String> ignoredModules = getIgnoredModules(project);
       ignoredModules.add(module.getName());
       PropertiesComponent.getInstance(project).setValue(DONT_ASK_TO_CHANGE_MODULE_TYPE_KEY, StringUtil.join(ignoredModules, ","));
