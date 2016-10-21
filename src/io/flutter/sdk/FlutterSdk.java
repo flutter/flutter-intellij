@@ -24,12 +24,11 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.OrderRootType;
-import com.intellij.openapi.roots.impl.libraries.ApplicationLibraryTable;
-import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.console.FlutterConsole;
 import io.flutter.run.FlutterRunConfiguration;
@@ -61,57 +60,32 @@ public class FlutterSdk {
     this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
   }
 
+  /**
+   * At the moment per-project SDK configuration is not supported, so this method returns the same as {@link #getGlobalFlutterSdk()}.
+   * Prefer using this method if you have Project in hands.
+   */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
-    return getGlobalFlutterSdk();
+    return getFlutterSdkByDartSdk(DartSdk.getDartSdk(project));
   }
 
   @Nullable
   public static FlutterSdk getGlobalFlutterSdk() {
-    return findFlutterSdkAmongGlobalLibs(ApplicationLibraryTable.getApplicationTable().getLibraries());
+    return getFlutterSdkByDartSdk(DartSdk.getGlobalDartSdk());
   }
 
   @Nullable
-  private static FlutterSdk findFlutterSdkAmongGlobalLibs(final Library[] globalLibraries) {
-    for (final Library library : globalLibraries) {
-      if (FLUTTER_SDK_GLOBAL_LIB_NAME.equals(library.getName())) {
-        return getSdkByLibrary(library);
-      }
-    }
-
-    return null;
-  }
-
-  @Nullable
-  static FlutterSdk getSdkByLibrary(@NotNull final Library library) {
-    final VirtualFile[] roots = library.getFiles(OrderRootType.CLASSES);
-    if (roots.length == 1) {
-      final VirtualFile flutterSdkRoot = findFlutterSdkRoot(roots[0]);
-      if (flutterSdkRoot != null) {
-        final String homePath = flutterSdkRoot.getPath();
-        final String version = FlutterSdkUtil.getSdkVersion(homePath);
-        return new FlutterSdk(homePath, version);
-      }
-    }
-
-    return null;
-  }
-
-  private static VirtualFile findFlutterSdkRoot(VirtualFile dartSdkLibDir) {
-    // Navigating up from `bin/cache/dart-sdk/lib/`
-    int count = 4;
-    VirtualFile parent = dartSdkLibDir;
-    do {
-      parent = parent.getParent();
-    }
-    while (parent != null && --count > 0);
-    return parent;
+  private static FlutterSdk getFlutterSdkByDartSdk(@Nullable final DartSdk dartSdk) {
+    final String suffix = "/bin/cache/dart-sdk";
+    final String dartPath = dartSdk == null ? null : dartSdk.getHomePath();
+    return dartPath != null && dartPath.endsWith(suffix) ? forPath(dartPath.substring(0, dartPath.length() - suffix.length()))
+                                                         : null;
   }
 
   static FlutterSdk forPath(String path) {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
-  
+
   public void run(@NotNull Command cmd,
                   @Nullable Module module,
                   @Nullable VirtualFile workingDir,
@@ -185,7 +159,10 @@ public class FlutterSdk {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
         // Enable Dart.
-        ApplicationManager.getApplication().invokeLater(() -> FlutterSdkUtil.enableDartSupport(module));
+        if (module != null) {
+          ApplicationManager.getApplication()
+            .invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module)));
+        }
       }
 
       @Override
