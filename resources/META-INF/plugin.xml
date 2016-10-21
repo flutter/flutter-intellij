@@ -6,12 +6,19 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.2</version>
+  <version>0.1.3</version>
 
   <idea-version since-build="162.1" until-build="162.*"/>
   
 <change-notes>
 <![CDATA[
+0.1.3:
+<ul>
+  <li>notifications for projects that look like Flutter apps but do not have Flutter enabled</li>
+  <li>improved Flutter preference UI and SDK configuration</li>
+  <li>IDEA version constraints to ensure that the plugin cannot be installed in incompatible IDEA versions</li>
+</ul>
+
 0.1.2:
 <ul>
   <li>fixed device selector filtering</li>
