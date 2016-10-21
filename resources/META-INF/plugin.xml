@@ -8,7 +8,7 @@
 
   <version>0.1.3</version>
 
-  <idea-version since-build="162.1" until-build="162.*"/>
+  <idea-version since-build="162.1" until-build="163.*"/>
   
 <change-notes>
 <![CDATA[
