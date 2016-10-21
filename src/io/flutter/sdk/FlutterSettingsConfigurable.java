@@ -19,12 +19,12 @@ import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtilRt;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.Nls;
@@ -46,11 +46,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private JPanel mainPanel;
   private ComboboxWithBrowseButton sdkCombo;
+  private JBLabel versionLabel;
   private JBLabel errorLabel;
-  private JTextArea versionDetails;
 
   FlutterSettingsConfigurable() {
     init();
+
+    versionLabel.setText("");
+    versionLabel.setCopyable(true);
+
     errorLabel.setIcon(AllIcons.Actions.Lightning);
   }
 
@@ -67,8 +71,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     sdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
                                      FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                      TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
-
-    versionDetails.setBackground(UIUtil.getPanelBackground());
   }
 
   private void createUIComponents() {
@@ -130,7 +132,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void updateVersionText() {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
-      versionDetails.setVisible(false);
+      versionLabel.setText("");
     }
     else {
       try {
@@ -141,8 +143,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             final ProcessOutput output = getOutput();
             final String stdout = output.getStdout();
             ApplicationManager.getApplication().invokeLater(() -> {
-              versionDetails.setText(stdout);
-              versionDetails.setVisible(true);
+              final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
+              versionLabel.setText(htmlText);
             }, modalityState);
           }
         });
