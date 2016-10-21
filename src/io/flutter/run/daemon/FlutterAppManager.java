@@ -205,6 +205,8 @@ public class FlutterAppManager {
     eventHandler.from(params).process(this, controller);
   }
 
+  // TODO(devoncarew): We should also listen for the app.stopped event and close down the connection.
+
   void stopApp(@NotNull FlutterApp app) {
     myProgressHandler.cancel();
     if (app.hasAppId()) {
@@ -512,6 +514,9 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") private boolean fullRestart;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
+      // TODO(devoncarew): This can return a boolean (for older versions) or a status object
+      // { code (int), message (string) }
+
     }
   }
 
