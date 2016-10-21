@@ -1,6 +1,6 @@
 <plugins>
   <plugin
       id="io.flutter"
-      url="https://github.com/flutter/flutter-intellij/releases/download/0.1.2/flutter-intellij.jar"
-      version="0.1.2"/>
+      url="https://github.com/flutter/flutter-intellij/releases/download/0.1.3/flutter-intellij.jar"
+      version="0.1.3"/>
 </plugins>
