@@ -23,7 +23,8 @@ public class HotReloadFlutterApp extends FlutterAppAction {
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      getApp().performHotReload();
+      // TODO(devoncarew): Update to pass in true for pauseAfterRestart.
+      getApp().performHotReload(false);
     });
   }
 }

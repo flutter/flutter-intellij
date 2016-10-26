@@ -101,7 +101,7 @@ public interface FlutterApp {
   /**
    * Perform a hot reload of the app.
    */
-  void performHotReload();
+  void performHotReload(boolean pauseAfterRestart);
 
   /**
    * Fetch the widget hierarchy.
@@ -253,12 +253,12 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public void performRestartApp() {
-    myManager.restartApp(this, true);
+    myManager.restartApp(this, true, false);
   }
 
   @Override
-  public void performHotReload() {
-    myManager.restartApp(this, false);
+  public void performHotReload(boolean pauseAfterRestart) {
+    myManager.restartApp(this, false, pauseAfterRestart);
   }
 
   @Override
