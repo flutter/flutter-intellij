@@ -14,7 +14,7 @@ To try the plugin, see the [setup](https://flutter.io/setup/#flutter-intellij-id
 
 Please note the following known issues:
 
-* [#316](https://github.com/flutter/flutter-intellij/issues/316): Opening existing flutter projects with the plugin can lead to confusing messages if you do not install the 'flutter' plugin first (see [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins)).
+* [#316](https://github.com/flutter/flutter-intellij/issues/316): Opening existing flutter projects with the plugin can lead to confusing messages if you do not install the 'Flutter' plugin first (see [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins)).
 
 * [#332](https://github.com/flutter/flutter-intellij/issues/332): The 'hot reload' and 'restart' buttons should not be pushed repeately prior to the operation completing. If pushed fast several times in a row, a crash may be experienced.
 
