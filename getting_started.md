@@ -1,8 +1,10 @@
 ## Getting Started
 
-### Set up the Flutter SDK
+### Set up the Flutter SDK and IntelliJ
 
 See [flutter.io/setup](https://flutter.io/setup/) for instructions about installing the Flutter SDK, configuring your machine for Flutter development, and installing and configuring the IntelliJ plugins.
+
+If you already have the SDK, skip ahead to the [IntelliJ setup instructions](https://flutter.io/setup/#flutter-intellij-ide-plugins).
 
 ### Supported IDEs
 
