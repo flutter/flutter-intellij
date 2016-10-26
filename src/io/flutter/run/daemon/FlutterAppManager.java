@@ -512,6 +512,8 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") private boolean fullRestart;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
+      // This can return a boolean (for older versions) or a status object { code (int), message (string) }.
+
     }
   }
 
