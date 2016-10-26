@@ -6,7 +6,7 @@ An IntelliJ plugin for [Flutter](https://flutter.io/) development.
 
 For information about contributing code to the plugin please see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-## Using the plugin
+## Getting started
 
 To try the plugin, see the [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins) and [how-to](https://flutter.io/intellij-ide/) instructions.
 
