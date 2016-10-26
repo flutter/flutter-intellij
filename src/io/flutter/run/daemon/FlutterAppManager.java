@@ -16,7 +16,10 @@ import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -227,8 +230,8 @@ public class FlutterAppManager {
     }
   }
 
-  void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart) {
-    AppRestart appStart = new AppRestart(app.appId(), isFullRestart);
+  void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart, boolean pauseAfterRestart) {
+    AppRestart appStart = new AppRestart(app.appId(), isFullRestart, pauseAfterRestart);
     Method cmd = makeMethod(CMD_APP_RESTART, appStart);
     sendCommand(app.getController(), cmd);
   }
@@ -409,7 +412,20 @@ public class FlutterAppManager {
     RunningFlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
       app.setPort(port.port);
-      app.setBaseUri(port.baseUri);
+
+      String uri = port.baseUri;
+      if (uri != null) {
+        if (uri.startsWith("file:")) {
+          // Convert the file: url to a path.
+          try {
+            uri = new URL(uri).getPath();
+            if (uri.endsWith(File.separator))
+              uri = uri.substring(0, uri.length() - 1);
+          }
+          catch (MalformedURLException e) { }
+        }
+        app.setBaseUri(uri);
+      }
     }
   }
 
@@ -503,13 +519,15 @@ public class FlutterAppManager {
 
   private static class AppRestart extends Params {
     // "method":"app.restart"
-    AppRestart(String appId, boolean fullRestart) {
+    AppRestart(String appId, boolean fullRestart, boolean pause) {
       this.appId = appId;
       this.fullRestart = fullRestart;
+      this.pause = pause;
     }
 
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private boolean fullRestart;
+    @SuppressWarnings("unused") private boolean pause;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
       // This can return a boolean (for older versions) or a status object { code (int), message (string) }.
