@@ -12,7 +12,7 @@ For the full getting started docs, see the [setup](https://flutter.io/setup/#flu
 
 ### Quick-start
 
-- install the Flutter SDK (see flutter.io/setup)
+- install the Flutter SDK (see [flutter.io/setup](https://flutter.io/setup/))
 - ensure you have a supported IntelliJ development environment (IntelliJ 2016.2+, Ultimate or Community)
 - open the plugin preferences (Preferences>Plugins on macOS, File>Settings>Plugins on Linux, select "Browse repositories…")
 - search for and install the 'Dart' plugin
