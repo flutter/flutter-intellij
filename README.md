@@ -4,11 +4,21 @@ An IntelliJ plugin for [Flutter](https://flutter.io/) development.
 
 [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
 
-For information about contributing code to the plugin please see [CONTRIBUTING.md](CONTRIBUTING.md).
-
 ## Getting started
 
-To try the plugin, see the [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins) and [how-to](https://flutter.io/intellij-ide/) instructions.
+### Full getting started docs
+
+For the full getting started docs, see the [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins) and [how-to](https://flutter.io/intellij-ide/) instructions.
+
+### Quick-start
+
+- install the Flutter SDK (see [flutter.io/setup](https://flutter.io/setup/))
+- ensure you have a supported IntelliJ development environment (IntelliJ 2016.2+, Ultimate or Community)
+- open the plugin preferences (Preferences>Plugins on macOS, File>Settings>Plugins on Linux, select "Browse repositories…")
+- search for and install the 'Dart' plugin
+- search for and install the 'Flutter' plugin
+- choose the option to restart IntelliJ
+- configure the Flutter SDK setting (Preferences on macOS, File>Settings on Linux, select Languages & Frameworks>Flutter, and set the path to the root of your flutter repo)
 
 ## Known issues
 
