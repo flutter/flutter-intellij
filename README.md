@@ -6,11 +6,11 @@ An IntelliJ plugin for [Flutter](https://flutter.io/) development.
 
 ## Getting started
 
-For the full getting started docs, see the [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins) and [how-to](https://flutter.io/intellij-ide/) instructions.
+See [flutter.io/setup](https://flutter.io/setup/) for instructions about installing the Flutter SDK, configuring your machine for Flutter development, and installing and configuring the IntelliJ plugins.
 
 ## Quick-start
 
-A very brief summary of the above docs:
+A very brief summary of the getting started guide linked from above:
 
 - install the Flutter SDK (see [flutter.io/setup](https://flutter.io/setup/))
 - ensure you have a supported IntelliJ development environment (IntelliJ 2016.2+, Ultimate or Community)
