@@ -422,7 +422,9 @@ public class FlutterAppManager {
             if (uri.endsWith(File.separator))
               uri = uri.substring(0, uri.length() - 1);
           }
-          catch (MalformedURLException e) { }
+          catch (MalformedURLException e) {
+            // ignore
+          }
         }
         app.setBaseUri(uri);
       }

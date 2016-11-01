@@ -39,10 +39,6 @@ public class FlutterDaemonService {
   private FlutterAppManager myManager = new FlutterAppManager(this);
   private List<DeviceListener> myDeviceListeners = new ArrayList<>();
 
-  static {
-    getInstance();
-  }
-
   private DaemonListener myListener = new DaemonListener() {
     public void daemonInput(String string, FlutterDaemonController controller) {
       FlutterAppManager mgr;
@@ -229,8 +225,10 @@ public class FlutterDaemonService {
 
   void schedulePolling() {
     if (!FlutterSdkUtil.isFluttering()) return;
-    if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
-      return;
+    synchronized (myLock) {
+      if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
+        return;
+      }
     }
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {

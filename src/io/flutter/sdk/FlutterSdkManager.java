@@ -45,12 +45,12 @@ public class FlutterSdkManager {
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {
-        if (FlutterSdkUtil.isFluttering()) return;
+        if (!FlutterSdkUtil.isFluttering()) return;
         checkForFlutterSdkAddition();
       }
       @Override
       public void projectClosed(@NotNull Project project) {
-        if (!FlutterSdkUtil.isFluttering()) return;
+        if (FlutterSdkUtil.isFluttering()) return;
         checkForFlutterSdkRemoval();
       }
     });
