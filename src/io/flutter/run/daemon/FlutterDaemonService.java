@@ -14,6 +14,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
 import io.flutter.sdk.FlutterSdkManager;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -227,6 +228,7 @@ public class FlutterDaemonService {
   }
 
   void schedulePolling() {
+    if (!FlutterSdkUtil.isFluttering()) return;
     if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
       return;
     }
