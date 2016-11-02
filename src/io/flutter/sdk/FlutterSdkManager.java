@@ -5,7 +5,6 @@
  */
 package io.flutter.sdk;
 
-
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerAdapter;
@@ -30,7 +29,7 @@ public class FlutterSdkManager {
   private FlutterSdkManager() {
     listenForSdkChanges();
     // Cache initial state.
-    isFlutterConfigured = isGlobalFlutterSdkSet();
+    isFlutterConfigured = isGlobalFlutterSdkSetAndNeeded();
   }
 
   public static FlutterSdkManager getInstance() {
@@ -45,26 +44,24 @@ public class FlutterSdkManager {
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {
-        if (!FlutterSdkUtil.isFluttering()) return;
         checkForFlutterSdkAddition();
       }
       @Override
       public void projectClosed(@NotNull Project project) {
-        if (FlutterSdkUtil.isFluttering()) return;
         checkForFlutterSdkRemoval();
       }
     });
   }
 
   private void checkForFlutterSdkAddition() {
-    if (!isFlutterConfigured && isGlobalFlutterSdkSet()) {
+    if (!isFlutterConfigured && isGlobalFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = true;
       myDispatcher.getMulticaster().flutterSdkAdded();
     }
   }
 
   private void checkForFlutterSdkRemoval() {
-    if (isFlutterConfigured && !isGlobalFlutterSdkSet()) {
+    if (isFlutterConfigured && !isGlobalFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = false;
       myDispatcher.getMulticaster().flutterSdkRemoved();
     }
@@ -78,7 +75,7 @@ public class FlutterSdkManager {
     myDispatcher.removeListener(listener);
   }
 
-  private static boolean isGlobalFlutterSdkSet() {
+  private static boolean isGlobalFlutterSdkSetAndNeeded() {
     return FlutterSdk.getGlobalFlutterSdk() != null && FlutterSdkUtil.isFluttering();
   }
 
@@ -103,10 +100,7 @@ public class FlutterSdkManager {
 
     @Override
     public void afterLibraryAdded(Library newLibrary) {
-      if (!isFlutterConfigured && isGlobalFlutterSdkSet()) {
-          isFlutterConfigured = true;
-          myDispatcher.getMulticaster().flutterSdkAdded();
-      }
+      checkForFlutterSdkAddition();
     }
 
     @Override
