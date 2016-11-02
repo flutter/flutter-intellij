@@ -54,14 +54,13 @@ class ProgressHandler {
                 }
                 myTask = null;
               }
-
             }
           }
         };
 
         // TODO(devoncarew): Debounce this.
         ApplicationManager.getApplication().invokeLater(() -> {
-          synchronized(myTasks) {
+          synchronized (myTasks) {
             ProgressManager.getInstance().run(myTask);
           }
         });

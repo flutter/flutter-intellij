@@ -145,7 +145,8 @@ public class FlutterAppManager {
           }
         }
       });
-    } catch (ThreadDeath ex) {
+    }
+    catch (ThreadDeath ex) {
       // Can happen if external process is killed, but we don't care.
     }
     return resp[0];
@@ -419,10 +420,13 @@ public class FlutterAppManager {
           // Convert the file: url to a path.
           try {
             uri = new URL(uri).getPath();
-            if (uri.endsWith(File.separator))
+            if (uri.endsWith(File.separator)) {
               uri = uri.substring(0, uri.length() - 1);
+            }
           }
-          catch (MalformedURLException e) { }
+          catch (MalformedURLException e) {
+            // ignore
+          }
         }
         app.setBaseUri(uri);
       }
@@ -549,7 +553,8 @@ public class FlutterAppManager {
         if (prim.getAsBoolean()) {
           manager.appStopped(this, controller);
         }
-      } else {
+      }
+      else {
         prim = obj.getAsJsonPrimitive("error");
         if (prim != null) {
           // Apparently the daemon does not find apps started in release mode.

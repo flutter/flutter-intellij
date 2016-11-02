@@ -5,7 +5,9 @@
  */
 package io.flutter.sdk;
 
-
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.project.ProjectManagerAdapter;
 import com.intellij.openapi.roots.impl.libraries.ApplicationLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -27,7 +29,7 @@ public class FlutterSdkManager {
   private FlutterSdkManager() {
     listenForSdkChanges();
     // Cache initial state.
-    isFlutterConfigured = isGlobalFlutterSdkSet();
+    isFlutterConfigured = isGlobalFlutterSdkSetAndNeeded();
   }
 
   public static FlutterSdkManager getInstance() {
@@ -39,6 +41,30 @@ public class FlutterSdkManager {
 
   private void listenForSdkChanges() {
     ApplicationLibraryTable.getApplicationTable().addListener(myLibraryTableListener);
+    ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
+      @Override
+      public void projectOpened(@NotNull Project project) {
+        checkForFlutterSdkAddition();
+      }
+      @Override
+      public void projectClosed(@NotNull Project project) {
+        checkForFlutterSdkRemoval();
+      }
+    });
+  }
+
+  private void checkForFlutterSdkAddition() {
+    if (!isFlutterConfigured && isGlobalFlutterSdkSetAndNeeded()) {
+      isFlutterConfigured = true;
+      myDispatcher.getMulticaster().flutterSdkAdded();
+    }
+  }
+
+  private void checkForFlutterSdkRemoval() {
+    if (isFlutterConfigured && !isGlobalFlutterSdkSetAndNeeded()) {
+      isFlutterConfigured = false;
+      myDispatcher.getMulticaster().flutterSdkRemoved();
+    }
   }
 
   public void addListener(@NotNull Listener listener) {
@@ -49,8 +75,8 @@ public class FlutterSdkManager {
     myDispatcher.removeListener(listener);
   }
 
-  private static boolean isGlobalFlutterSdkSet() {
-    return FlutterSdk.getGlobalFlutterSdk() != null;
+  private static boolean isGlobalFlutterSdkSetAndNeeded() {
+    return FlutterSdk.getGlobalFlutterSdk() != null && FlutterSdkUtil.isFluttering();
   }
 
   /**
@@ -74,23 +100,13 @@ public class FlutterSdkManager {
 
     @Override
     public void afterLibraryAdded(Library newLibrary) {
-      if (!isFlutterConfigured && isGlobalFlutterSdkSet()) {
-          isFlutterConfigured = true;
-          myDispatcher.getMulticaster().flutterSdkAdded();
-      }
+      checkForFlutterSdkAddition();
     }
 
     @Override
     public void afterLibraryRenamed(Library library) {
       // Since we key off name, test to be safe.
       checkForFlutterSdkRemoval();
-    }
-
-    private void checkForFlutterSdkRemoval() {
-      if (isFlutterConfigured && !isGlobalFlutterSdkSet()) {
-          isFlutterConfigured = false;
-          myDispatcher.getMulticaster().flutterSdkRemoved();
-      }
     }
 
     @Override
