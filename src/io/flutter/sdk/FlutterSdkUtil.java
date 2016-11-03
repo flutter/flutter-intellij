@@ -13,6 +13,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -100,6 +101,15 @@ public class FlutterSdkUtil {
   @NotNull
   public static String versionPath(@NotNull String sdkHomePath) {
     return sdkHomePath + "/VERSION";
+  }
+
+  /**
+   * Checks the workspace for any open Flutter projects.
+   *
+   * @return true if an open Flutter project is found
+   */
+  public static boolean isFluttering() {
+    return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch((Project p) -> FlutterSdkUtil.hasFlutterModule(p));
   }
 
   @Nullable
