@@ -41,6 +41,13 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     }
 
     @Override
+    @NotNull
+    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
+      // Override the default name which is always "Unnamed".
+      return super.createConfiguration(template.getProject().getName(), template);
+    }
+
+    @Override
     public boolean isApplicable(@NotNull Project project) {
       return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project));
     }
