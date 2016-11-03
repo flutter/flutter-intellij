@@ -13,14 +13,11 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
-import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
@@ -94,37 +91,10 @@ public class FlutterSdkUtil {
     return child.getPath();
   }
 
-  public static boolean isFlutterSdkLibRoot(@Nullable VirtualFile sdk) {
-    if (sdk == null) return false;
-    VirtualFile bin = sdk.findChild("bin");
-    if (bin == null) return false;
-    VirtualFile exec = bin.findChild("flutter");
-    return exec != null;
-  }
-
   public static boolean isFlutterSdkHome(@Nullable String path) {
-    try {
-      return StringUtil.equals(verifyFlutterSdkPath(path), path);
-    }
-    catch (ExecutionException ex) {
-      return false;
-    }
-  }
-
-  @NotNull
-  public static String verifyFlutterSdkPath(@Nullable String path) throws ExecutionException {
-    if (path == null || path.isEmpty()) {
-      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    }
-    File flutterSdk = new File(path);
-    File bin = new File(flutterSdk, "bin");
-    if (!bin.isDirectory()) {
-      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    }
-    if (!(new File(bin, "flutter").exists())) {
-      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    }
-    return path;
+    final File flutterToolFile = new File(path + "/bin/flutter");
+    final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
+    return flutterToolFile.isFile() && dartLibFolder.isDirectory();
   }
 
   @NotNull
@@ -174,15 +144,6 @@ public class FlutterSdkUtil {
     return ModuleUtil.hasModulesOfType(project, FlutterModuleType.getInstance());
   }
 
-  /**
-   * Checks the workspace for any open Flutter projects.
-   *
-   * @return true if an open Flutter project is found
-   */
-  public static boolean isFluttering() {
-    return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch((Project p) -> FlutterSdkUtil.hasFlutterModule(p));
-  }
-
   @Nullable
   public static String getErrorMessageIfWrongSdkRootPath(final @NotNull String sdkRootPath) {
     if (sdkRootPath.isEmpty()) return FlutterBundle.message("error.path.to.sdk.not.specified");
@@ -195,28 +156,12 @@ public class FlutterSdkUtil {
     return null;
   }
 
-  public static void enableDartSupport(Module module) {
-    ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
-  }
+  public static void setFlutterSdkPath(@NotNull final String flutterSdkPath) {
+    // In reality this method sets Dart SDK, that is inside the Flutter SDK;
+    final String dartSdk = flutterSdkPath + "/bin/cache/dart-sdk";
+    ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.ensureDartSdkConfigured(dartSdk));
 
-  /**
-   * If there is no configured Dart SDK, update it to the one relative to the given Flutter SDK.
-   *
-   * @param flutterSdkPath the Flutter SDK path
-   */
-  public static void setDartSdkPathIfUnset(@NotNull String flutterSdkPath) {
-    final DartSdk globalDartSdk = DartSdk.getGlobalDartSdk();
-    if (globalDartSdk != null) {
-      return;
-    }
-    try {
-      final String dartSdk = FlutterSdkUtil.pathToDartSdk(flutterSdkPath);
-      DartSdkGlobalLibUtil.ensureDartSdkConfigured(dartSdk);
-      // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
-      DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);
-    }
-    catch (ExecutionException e) {
-      LOG.warn(e);
-    }
+    // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
+    DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);
   }
 }

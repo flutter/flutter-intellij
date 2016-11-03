@@ -23,10 +23,11 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.lang.dart.DartFileType;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterModuleType;
-import io.flutter.sdk.FlutterSdkGlobalLibUtil;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,14 +64,15 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
                                                 FlutterBundle.message("reload.project"), CommonBundle.getCancelButtonText(), null);
       if (message == Messages.YES) {
         module.setOption(Module.ELEMENT_TYPE, FlutterModuleType.getInstance().getId());
-        ApplicationManager.getApplication().runWriteAction(() -> {
-          FlutterSdkUtil.enableDartSupport(module);
-          FlutterSdkGlobalLibUtil.enableFlutterSdk(module);
-          project.save();
 
-          EditorNotifications.getInstance(project).updateAllNotifications();
-          ProjectManager.getInstance().reloadProject(project);
-        });
+        if (DartSdk.getDartSdk(project) != null && !DartSdkGlobalLibUtil.isDartSdkEnabled(module)) {
+          ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
+        }
+
+        project.save();
+
+        EditorNotifications.getInstance(project).updateAllNotifications();
+        ProjectManager.getInstance().reloadProject(project);
       }
     });
     panel.createActionLabel(FlutterBundle.message("don.t.show.again.for.this.module"), () -> {

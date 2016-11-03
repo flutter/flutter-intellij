@@ -22,7 +22,6 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkGlobalLibUtil;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -91,19 +90,11 @@ public class FlutterGeneratorPeer {
   }
 
   void apply() {
-    final Runnable runnable = () -> {
-      final String sdkHomePath =
-        FileUtilRt.toSystemIndependentName(getSdkComboPath());
-      if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-        FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHomePath);
-        FlutterSdkUtil.setDartSdkPathIfUnset(sdkHomePath);
-      }
-    };
-
-    ApplicationManager.getApplication().runWriteAction(runnable);
+    final String sdkHomePath = getSdkComboPath();
+    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
+    }
   }
-
-
 
   @NotNull
   public JComponent getComponent() {
@@ -141,6 +132,6 @@ public class FlutterGeneratorPeer {
 
   @NotNull
   private String getSdkComboPath() {
-    return mySdkPathComboWithBrowse.getComboBox().getEditor().getItem().toString().trim();
+    return FileUtilRt.toSystemIndependentName(mySdkPathComboWithBrowse.getComboBox().getEditor().getItem().toString().trim());
   }
 }

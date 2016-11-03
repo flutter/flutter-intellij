@@ -106,15 +106,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void apply() throws ConfigurationException {
-    final Runnable runnable = () -> {
-      final String sdkHomePath = getSdkPathText();
-      if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-        FlutterSdkGlobalLibUtil.ensureFlutterSdkConfigured(sdkHomePath);
-        FlutterSdkUtil.setDartSdkPathIfUnset(sdkHomePath);
-      }
-    };
-
-    ApplicationManager.getApplication().runWriteAction(runnable);
+    final String sdkHomePath = getSdkPathText();
+    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
+    }
 
     reset(); // because we rely on remembering initial state
   }
