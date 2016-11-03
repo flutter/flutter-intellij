@@ -78,6 +78,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private final int myTimeout;
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @Nullable private ObservatoryConnector myConnector;
+  private boolean baseUriWasInited = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                     @NotNull final String debuggingHost,
@@ -608,19 +609,15 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     return uri;
   }
 
-  private boolean baseUriInited = false;
-
-  // We use reflection here to access a private field in the super class.
   private String getRemoteProjectRootUri() {
-    if (!baseUriInited) {
-      baseUriInited = true;
-
+    if (!baseUriWasInited) {
       if (myConnector.getApp().baseUri() != null) {
         setRemoteProjectRootUri(myConnector.getApp().baseUri());
       }
     }
 
     try {
+      // We use reflection here to access a private field in the super class.
       java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
       return field == null ? null : (String)field.get(this);
     }
@@ -631,9 +628,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   private void setRemoteProjectRootUri(String value) {
-    baseUriInited = true;
+    baseUriWasInited = true;
 
     try {
+      // We use reflection here to access a private field in the super class.
       java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
       if (field != null) {
         field.set(this, value);
