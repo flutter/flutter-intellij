@@ -14,7 +14,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.RawCommandLineEditor;
-import com.intellij.ui.components.JBCheckBox;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,7 +25,6 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
   private JPanel myMainPanel;
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
-  private JBCheckBox myCheckedModeCheckBox;
   private RawCommandLineEditor myArguments;
   private TextFieldWithBrowseButton myWorkingDirectory;
 
@@ -43,7 +41,6 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
     final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getFilePath())));
     myArguments.setText(StringUtil.notNullize(parameters.getArguments()));
-    myCheckedModeCheckBox.setSelected(parameters.isCheckedMode());
     myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getWorkingDirectory())));
   }
 
@@ -52,7 +49,6 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
     final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
     parameters.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     parameters.setArguments(StringUtil.nullize(myArguments.getText(), true));
-    parameters.setCheckedMode(myCheckedModeCheckBox.isSelected());
     parameters.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
   }
 
