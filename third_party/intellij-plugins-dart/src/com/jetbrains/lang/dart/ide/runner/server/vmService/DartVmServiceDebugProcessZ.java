@@ -610,16 +610,18 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   private boolean baseUriInited = false;
 
+  // We use reflection here to access a private field in the super class.
   private String getRemoteProjectRootUri() {
     if (!baseUriInited) {
       baseUriInited = true;
 
-      if (myConnector.getApp().baseUri() != null)
+      if (myConnector.getApp().baseUri() != null) {
         setRemoteProjectRootUri(myConnector.getApp().baseUri());
+      }
     }
 
     try {
-      java.lang.reflect.Field field = getRemoteProjectRootUriField();
+      java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
       return field == null ? null : (String)field.get(this);
     }
     catch (IllegalAccessException ex) {
@@ -632,23 +634,34 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     baseUriInited = true;
 
     try {
-      java.lang.reflect.Field field = getRemoteProjectRootUriField();
-      if (field != null)
+      java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
+      if (field != null) {
         field.set(this, value);
-    } catch (IllegalAccessException ex) {
+      }
+    }
+    catch (IllegalAccessException ex) {
       LOG.warn("error accessing myRemoteProjectRootUri", ex);
     }
   }
 
-  private java.lang.reflect.Field getRemoteProjectRootUriField() {
-    // TODO: cache this
+  private java.lang.reflect.Field getDeclaredField(String name) {
+    return getDeclaredField(getClass(), name);
+  }
+
+  private java.lang.reflect.Field getDeclaredField(Class clazz, String name) {
     try {
-      java.lang.reflect.Field field = this.getClass().getSuperclass().getDeclaredField("myRemoteProjectRootUri");
+      java.lang.reflect.Field field = clazz.getDeclaredField(name);
       field.setAccessible(true);
       return field;
-    } catch (NoSuchFieldException ex) {
-      LOG.warn("error accessing myRemoteProjectRootUri", ex);
-      return null;
+
+    }
+    catch (NoSuchFieldException ex) {
+      if (clazz.getSuperclass() != null) {
+        return getDeclaredField(clazz.getSuperclass(), name);
+      }
+      else {
+        return null;
+      }
     }
   }
 }
