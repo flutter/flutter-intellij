@@ -10,7 +10,11 @@
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
-<change-notes>
+  <!-- supported in CE and UE -->
+  <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
+  <depends>com.intellij.modules.java</depends>
+  
+  <change-notes>
 <![CDATA[
 0.1.4:
 <ul>
