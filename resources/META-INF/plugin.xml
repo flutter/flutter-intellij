@@ -6,12 +6,17 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.3</version>
+  <version>0.1.4</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
-  
+
 <change-notes>
 <![CDATA[
+0.1.4:
+<ul>
+  <li>first public release</li>
+</ul>
+
 0.1.3:
 <ul>
   <li>notifications for projects that look like Flutter apps but do not have Flutter enabled</li>

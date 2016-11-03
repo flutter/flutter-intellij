@@ -17,6 +17,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class DaemonJsonInputFilterProvider implements ConsoleInputFilterProvider {
+  private static final boolean VERBOSE = false;
 
   @NotNull
   @Override
@@ -28,10 +29,13 @@ public class DaemonJsonInputFilterProvider implements ConsoleInputFilterProvider
     @Nullable
     @Override
     public List<Pair<String, ConsoleViewContentType>> applyFilter(String text, ConsoleViewContentType contentType) {
-      final String trimmed = text.trim();
-      if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
-        return Collections.singletonList(Pair.create(null, contentType));
+      if (!VERBOSE) {
+        final String trimmed = text.trim();
+        if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
+          return Collections.singletonList(Pair.create(null, contentType));
+        }
       }
+
       return Collections.singletonList(Pair.create(text, contentType));
     }
   }

@@ -14,6 +14,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
 import io.flutter.sdk.FlutterSdkManager;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,10 +38,6 @@ public class FlutterDaemonService {
   private ConnectedDevice mySelectedDevice;
   private FlutterAppManager myManager = new FlutterAppManager(this);
   private List<DeviceListener> myDeviceListeners = new ArrayList<>();
-
-  static {
-    getInstance();
-  }
 
   private DaemonListener myListener = new DaemonListener() {
     public void daemonInput(String string, FlutterDaemonController controller) {
@@ -227,8 +224,11 @@ public class FlutterDaemonService {
   }
 
   void schedulePolling() {
-    if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
-      return;
+    if (!FlutterSdkUtil.isFluttering()) return;
+    synchronized (myLock) {
+      if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
+        return;
+      }
     }
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {

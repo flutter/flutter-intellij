@@ -38,7 +38,7 @@ allprojects {
     // IntelliJ IDEA 2016.2.3 / IC-162.1812.17
     // Dart 162.2233
     version = '2016.2.3'
-    plugins = ['Dart:162.2233']
+    plugins = ['Dart:162.2485']
 
     // IntelliJ IDEA 2016.1.4 (~Android Studio 2.2) / IC-145.2070.6
     // Dart 145.971.7
