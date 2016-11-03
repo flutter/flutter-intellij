@@ -11,7 +11,7 @@ import com.intellij.xdebugger.XDebugSession;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static io.flutter.run.daemon.FlutterAppManager.AppStarted;
+import static io.flutter.run.daemon.FlutterAppManager.AppStartEvent;
 
 /**
  * Handle for a running Flutter app.
@@ -135,7 +135,7 @@ class RunningFlutterApp implements FlutterApp {
   private FlutterDaemonService myService;
   private FlutterDaemonController myController;
   private FlutterAppManager myManager;
-  private AppStarted myApp;
+  private AppStartEvent myApp;
   private RunMode myMode;
   private Project myProject;
   private boolean isHot;
@@ -164,7 +164,7 @@ class RunningFlutterApp implements FlutterApp {
     myTarget = target;
   }
 
-  void setApp(AppStarted app) {
+  void setApp(AppStartEvent app) {
     myApp = app;
   }
 

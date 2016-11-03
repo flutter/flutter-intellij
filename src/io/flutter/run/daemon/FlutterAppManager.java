@@ -79,8 +79,8 @@ public class FlutterAppManager {
       .supplyAsync(() -> sendCommand(controller, cmd))
       .thenApplyAsync(this::waitForResponse)
       .thenAcceptAsync((started) -> {
-        if (started instanceof AppStarted) {
-          AppStarted appStarted = (AppStarted)started;
+        if (started instanceof AppStartEvent) {
+          AppStartEvent appStarted = (AppStartEvent)started;
           app.setApp(appStarted);
         }
       });
@@ -324,30 +324,31 @@ public class FlutterAppManager {
   private Event eventHandler(@NotNull String eventName, @Nullable String json) {
     switch (eventName) {
       case "device.added":
-        return new DeviceAdded();
-      case "app.start":
-        return new AppStarted();
-      case "app.debugPort":
-        return new AppDebugPort();
-      case "app.log":
-        return new AppLog();
-      case "daemon.logMessage":
-        return new LogMessage();
-      case "app.stop":
-        return new AppStopped();
+        return new DeviceAddedEvent();
       case "device.removed":
-        return new DeviceRemoved();
+        return new DeviceRemovedEvent();
+      case "app.start":
+        return new AppStartEvent();
+      case "app.started":
+        return new AppStartedEvent();
+      case "app.debugPort":
+        return new AppDebugPortEvent();
+      case "app.log":
+        return new AppLogEvent();
+      case "app.stop":
+        return new AppStoppedEvent();
+      case "daemon.logMessage":
+        return new LogMessageEvent();
       default:
-        myLogger.error("Unknown flutter event: " + eventName + " from json: " + json);
         return null;
     }
   }
 
-  private void eventLogMessage(@NotNull LogMessage message, @NotNull FlutterDaemonController controller) {
+  private void eventLogMessage(@NotNull LogMessageEvent message, @NotNull FlutterDaemonController controller) {
     myLogger.info(message.message);
   }
 
-  private void eventLogMessage(@NotNull AppLog message, @NotNull FlutterDaemonController controller) {
+  private void eventLogMessage(@NotNull AppLogEvent message, @NotNull FlutterDaemonController controller) {
     RunningFlutterApp app = findApp(controller, message.appId);
 
     if (app == null) {
@@ -367,13 +368,13 @@ public class FlutterAppManager {
     }
   }
 
-  private void eventDeviceAdded(@NotNull DeviceAdded added, @NotNull FlutterDaemonController controller) {
+  private void eventDeviceAdded(@NotNull DeviceAddedEvent added, @NotNull FlutterDaemonController controller) {
     synchronized (myLock) {
       myService.addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform, added.emulator));
     }
   }
 
-  private void eventDeviceRemoved(@NotNull DeviceRemoved removed, @NotNull FlutterDaemonController controller) {
+  private void eventDeviceRemoved(@NotNull DeviceRemovedEvent removed, @NotNull FlutterDaemonController controller) {
     synchronized (myLock) {
       for (ConnectedDevice device : myService.getConnectedDevices()) {
         if (device.deviceName().equals(removed.name) &&
@@ -385,7 +386,7 @@ public class FlutterAppManager {
     }
   }
 
-  private void eventAppStarted(@NotNull AppStarted started, @NotNull FlutterDaemonController controller) {
+  private void eventAppStarted(@NotNull AppStartEvent started, @NotNull FlutterDaemonController controller) {
     assert started.directory.equals(controller.getProjectDirectory());
     Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
       Params p = c.method.params;
@@ -403,13 +404,13 @@ public class FlutterAppManager {
     }
   }
 
-  private void eventAppStopped(@NotNull AppStopped stopped, @NotNull FlutterDaemonController controller) {
+  private void eventAppStopped(@NotNull AppStoppedEvent stopped, @NotNull FlutterDaemonController controller) {
     // TODO(devoncarew): Terminate the launch.
 
     myProgressHandler.cancel();
   }
 
-  private void eventDebugPort(@NotNull AppDebugPort port, @NotNull FlutterDaemonController controller) {
+  private void eventDebugPort(@NotNull AppDebugPortEvent port, @NotNull FlutterDaemonController controller) {
     RunningFlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
       app.setPort(port.port);
@@ -512,7 +513,7 @@ public class FlutterAppManager {
         manager.error(obj);
         return;
       }
-      AppStarted app = new AppStarted();
+      AppStartEvent app = new AppStartEvent();
       app.appId = result.getAsJsonPrimitive("appId").getAsString();
       app.deviceId = result.getAsJsonPrimitive("deviceId").getAsString();
       app.directory = result.getAsJsonPrimitive("directory").getAsString();
@@ -573,7 +574,7 @@ public class FlutterAppManager {
     abstract void process(FlutterAppManager manager, FlutterDaemonController controller);
   }
 
-  private static class LogMessage extends Event {
+  private static class LogMessageEvent extends Event {
     // "event":"daemon.eventLogMessage"
     @SuppressWarnings("unused") private String level;
     @SuppressWarnings("unused") private String message;
@@ -584,7 +585,7 @@ public class FlutterAppManager {
     }
   }
 
-  private static class AppLog extends Event {
+  private static class AppLogEvent extends Event {
     // "event":"app.log"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private String log;
@@ -596,7 +597,7 @@ public class FlutterAppManager {
     }
   }
 
-  private static class DeviceAdded extends Event {
+  private static class DeviceAddedEvent extends Event {
     // "event":"device.added"
     @SuppressWarnings("unused") private String id;
     @SuppressWarnings("unused") private String name;
@@ -608,7 +609,7 @@ public class FlutterAppManager {
     }
   }
 
-  private static class DeviceRemoved extends Event {
+  private static class DeviceRemovedEvent extends Event {
     // "event":"device.removed"
     @SuppressWarnings("unused") private String id;
     @SuppressWarnings("unused") private String name;
@@ -620,7 +621,7 @@ public class FlutterAppManager {
     }
   }
 
-  static class AppStarted extends Event {
+  static class AppStartEvent extends Event {
     // "event":"app.start"
     @SuppressWarnings("unused") String appId;
     @SuppressWarnings("unused") String deviceId;
@@ -632,7 +633,16 @@ public class FlutterAppManager {
     }
   }
 
-  private static class AppStopped extends Event {
+  static class AppStartedEvent extends Event {
+    // "event":"app.started"
+    @SuppressWarnings("unused") String appId;
+
+    void process(FlutterAppManager manager, FlutterDaemonController controller) {
+
+    }
+  }
+
+  private static class AppStoppedEvent extends Event {
     // "event":"app.stop"
     @SuppressWarnings("unused") private String appId;
 
@@ -641,7 +651,7 @@ public class FlutterAppManager {
     }
   }
 
-  private static class AppDebugPort extends Event {
+  private static class AppDebugPortEvent extends Event {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private int port;
