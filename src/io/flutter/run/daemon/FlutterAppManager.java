@@ -638,7 +638,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") String appId;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
-      // This event is ignored. The app.start command response is used instead.
+
     }
   }
 
