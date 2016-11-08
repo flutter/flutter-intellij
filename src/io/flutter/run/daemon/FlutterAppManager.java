@@ -335,6 +335,8 @@ public class FlutterAppManager {
         return new AppDebugPortEvent();
       case "app.log":
         return new AppLogEvent();
+      case "app.progress":
+        return new AppProgressEvent();
       case "app.stop":
         return new AppStoppedEvent();
       case "daemon.logMessage":
@@ -355,16 +357,21 @@ public class FlutterAppManager {
       return;
     }
 
-    if (message.progress) {
-      if (message.finished) {
-        myProgressHandler.done();
-      }
-      else {
-        myProgressHandler.start(message.log);
-      }
+    app.getConsole().print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+  }
+
+  private void eventProgressMessage(@NotNull AppProgressEvent message, @NotNull FlutterDaemonController controller) {
+    RunningFlutterApp app = findApp(controller, message.appId);
+
+    if (app == null) {
+      return;
+    }
+
+    if (message.finished) {
+      myProgressHandler.done();
     }
     else {
-      app.getConsole().print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+      myProgressHandler.start(message.message);
     }
   }
 
@@ -589,11 +596,20 @@ public class FlutterAppManager {
     // "event":"app.log"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private String log;
-    @SuppressWarnings("unused") private boolean progress;
-    @SuppressWarnings("unused") private boolean finished;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventLogMessage(this, controller);
+    }
+  }
+
+  private static class AppProgressEvent extends Event {
+    // "event":"app.progress"
+    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private String message;
+    @SuppressWarnings("unused") private boolean finished;
+
+    void process(FlutterAppManager manager, FlutterDaemonController controller) {
+      manager.eventProgressMessage(this, controller);
     }
   }
 
