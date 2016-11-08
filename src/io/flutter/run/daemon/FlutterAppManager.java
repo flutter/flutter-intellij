@@ -603,7 +603,7 @@ public class FlutterAppManager {
   }
 
   private static class AppProgressEvent extends Event {
-    // "event":"app.log"
+    // "event":"app.progress"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private String message;
     @SuppressWarnings("unused") private boolean finished;
