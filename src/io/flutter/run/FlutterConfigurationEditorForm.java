@@ -24,6 +24,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
   private TextFieldWithBrowseButton myWorkingDirectory;
+  private JCheckBox myEnableHotReloadSupportCheckBox;
 
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
@@ -37,6 +38,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
     final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getFilePath())));
     myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getWorkingDirectory())));
+    myEnableHotReloadSupportCheckBox.setSelected(parameters.isHotMode());
   }
 
   @Override
@@ -44,6 +46,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
     final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
     parameters.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     parameters.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
+    parameters.setHotMode(myEnableHotReloadSupportCheckBox.isSelected());
   }
 
   @NotNull
