@@ -181,10 +181,10 @@ public class FlutterDaemonService {
                              @NotNull String projectDir,
                              @NotNull String deviceId,
                              @NotNull RunMode mode,
+                             boolean isHot,
                              @Nullable String relativePath)
     throws ExecutionException {
     boolean isPaused = mode.isDebug();
-    boolean isHot = mode.isDebug() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
     FlutterDaemonController controller = controllerFor(projectDir, deviceId);
     if (controller.getProcessHandler() == null || controller.getProcessHandler().isProcessTerminated()) {
       controller.forkProcess(project);

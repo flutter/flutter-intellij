@@ -86,7 +86,7 @@ public class FlutterAppState extends DartCommandLineRunningState {
       }
     }
 
-    myApp = service.startApp(project, cwd, device.deviceId(), myMode, relativePath);
+    myApp = service.startApp(project, cwd, device.deviceId(), myMode, parameters.isHotMode(), relativePath);
     return myApp.getController().getProcessHandler();
   }
 
