@@ -20,6 +20,7 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.util.ModuleUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.OutputStream;
@@ -205,7 +206,7 @@ public class FlutterDaemonController extends ProcessAdapter {
       }
 
       flutterSdkPath = flutterSdk.getHomePath();
-      workingDir = project.getBasePath();
+      workingDir = ModuleUtil.getProjectBasePath(project);
     }
 
     if (flutterSdkPath == null) {
