@@ -18,6 +18,7 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextComponentAccessor;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ColorUtil;
@@ -118,7 +119,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   public void reset() {
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
-    sdkCombo.getComboBox().getEditor().setItem(path);
+    sdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
 
     updateVersionText();
     updateErrorLabel();
@@ -180,6 +181,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
   }
 
+  @NotNull
   private String getSdkPathText() {
     return FileUtilRt.toSystemIndependentName(sdkCombo.getComboBox().getEditor().getItem().toString().trim());
   }

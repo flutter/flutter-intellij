@@ -9,7 +9,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.ComponentWithBrowseButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
@@ -58,27 +57,9 @@ public class FlutterGeneratorPeer {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
     mySdkPathComboWithBrowse.getComboBox().getEditor().setItem(sdkPathInitial);
 
-    final TextComponentAccessor<JComboBox> textComponentAccessor = new TextComponentAccessor<JComboBox>() {
-      @Override
-      public String getText(final JComboBox component) {
-        return component.getEditor().getItem().toString();
-      }
-
-      @Override
-      public void setText(@NotNull final JComboBox component, @NotNull final String text) {
-        if (text.isEmpty() || FlutterSdkUtil.isFlutterSdkHome(text)) {
-          component.getEditor().setItem(FileUtilRt.toSystemDependentName(text));
-        }
-        validate();
-      }
-    };
-
-    final ComponentWithBrowseButton.BrowseFolderActionListener<JComboBox> browseFolderListener =
-      new ComponentWithBrowseButton.BrowseFolderActionListener<>(FlutterBundle.message("flutter.sdk.browse.path.label"), null,
-                                                                 mySdkPathComboWithBrowse, null,
-                                                                 FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                                 textComponentAccessor);
-    mySdkPathComboWithBrowse.addBrowseFolderListener(null, browseFolderListener);
+    mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
+                                                     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                                                     TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
     final JTextComponent editorComponent = (JTextComponent)mySdkPathComboWithBrowse.getComboBox().getEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -91,7 +72,8 @@ public class FlutterGeneratorPeer {
 
   void apply() {
     final String sdkHomePath = getSdkComboPath();
-    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
+    final FlutterSdk currentSdk = FlutterSdk.getGlobalFlutterSdk();
+    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath) && (currentSdk == null || !currentSdk.getHomePath().equals(sdkHomePath))) {
       ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
     }
   }
