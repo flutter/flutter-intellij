@@ -35,7 +35,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   implements DumbAware {
 
   // Minimum SDK known to support hot reload.
-  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.2");
+  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.3");
 
   private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
 
