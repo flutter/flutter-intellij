@@ -66,6 +66,12 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     return panel;
   }
 
+  private static EditorNotificationPanel createNoFlutterSdkPanel() {
+    // TODO(pq): add panel for unconfigured Flutter SDK.
+
+    return null;
+  }
+
   @NotNull
   @Override
   public Key<EditorNotificationPanel> getKey() {
@@ -93,7 +99,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
       }
 
       if (flutterSdk.getVersion().isLessThan(MIN_SUPPORTED_SDK)) {
-        return createOutOfDateFlutterSdkPanel();
+        return createOutOfDateFlutterSdkPanel(flutterSdk);
       }
 
       DartSdk dartSdk = DartSdk.getDartSdk(project);
@@ -116,24 +122,19 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     return null;
   }
 
-  private EditorNotificationPanel createOutOfDateFlutterSdkPanel() {
+  private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
 
     final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings == null || settings.shouldIgnoreOutOfDateSdks()) return null;
+    FlutterSdkVersion sdkVersion = sdk.getVersion();
+    if (settings == null || settings.shouldIgnoreOutOfDateSdks(sdkVersion)) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> {
-      settings.setIgnoreOutOfDateSdks(true);
+      settings.setIgnoreOutOfDateSdks(sdkVersion);
       panel.setVisible(false);
     });
 
     return panel;
-  }
-
-  private static EditorNotificationPanel createNoFlutterSdkPanel() {
-    // TODO(pq): add panel for unconfigured Flutter SDK.
-
-    return null;
   }
 }

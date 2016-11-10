@@ -11,6 +11,8 @@ import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import io.flutter.sdk.FlutterSdkVersion;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 
@@ -24,8 +26,9 @@ import org.jetbrains.annotations.Nullable;
 )
 public class FlutterSettings implements PersistentStateComponent<FlutterSettings> {
 
+  // Cached version number corresponding to when a Flutter SDK version check was dismissed.
+  public String ignoreOutOfDateSdkVersionNumber;
   private boolean ignoreMismatchedDartSdks;
-  private boolean ignoreOutOfDateSdks;
 
   @Nullable
   public static FlutterSettings getInstance(Project project) {
@@ -51,11 +54,12 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
     this.ignoreMismatchedDartSdks = ignoreMismatchedDartSdks;
   }
 
-  public void setIgnoreOutOfDateSdks(boolean ignoreOutOfDateSdks) {
-    this.ignoreOutOfDateSdks = ignoreOutOfDateSdks;
+  public boolean shouldIgnoreOutOfDateSdks(@NotNull FlutterSdkVersion version) {
+    return ignoreOutOfDateSdkVersionNumber != null &&
+           !FlutterSdkVersion.forVersionString(ignoreOutOfDateSdkVersionNumber).isLessThan(version);
   }
 
-  public boolean shouldIgnoreOutOfDateSdks() {
-    return ignoreOutOfDateSdks;
+  public void setIgnoreOutOfDateSdks(@NotNull FlutterSdkVersion version) {
+    ignoreOutOfDateSdkVersionNumber = version.toString();
   }
 }
