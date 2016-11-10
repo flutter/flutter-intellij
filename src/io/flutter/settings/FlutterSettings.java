@@ -5,57 +5,35 @@
  */
 package io.flutter.settings;
 
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.Project;
-import com.intellij.util.xmlb.XmlSerializerUtil;
-import org.jetbrains.annotations.Nullable;
-
-
 /**
- * Persists Flutter settings.
+ * Persists Flutter settings for a session.
  */
-@State(
-  name = "FlutterSettings",
-  storages = {
-    @Storage("FlutterSettings.xml")}
-)
-public class FlutterSettings implements PersistentStateComponent<FlutterSettings> {
+public class FlutterSettings {
+
+  private static final FlutterSettings INSTANCE = new FlutterSettings();
 
   private boolean ignoreMismatchedDartSdks;
-  private boolean ignoreOutOfDateSdks;
+  private boolean ignoreOutOfDateFlutterSdks;
 
-  @Nullable
-  public static FlutterSettings getInstance(Project project) {
-    return ServiceManager.getService(project, FlutterSettings.class);
-  }
+  private FlutterSettings() {}
 
-  @Nullable
-  @Override
-  public FlutterSettings getState() {
-    return this;
-  }
-
-  @Override
-  public void loadState(FlutterSettings settings) {
-    XmlSerializerUtil.copyBean(settings, this);
+  public static FlutterSettings getInstance() {
+    return INSTANCE;
   }
 
   public boolean shouldIgnoreMismatchedDartSdks() {
     return ignoreMismatchedDartSdks;
   }
 
-  public void setIgnoreMismatchedDartSdks(boolean ignoreMismatchedDartSdks) {
-    this.ignoreMismatchedDartSdks = ignoreMismatchedDartSdks;
+  public void setIgnoreMismatchedDartSdks() {
+    this.ignoreMismatchedDartSdks = true;
   }
 
-  public void setIgnoreOutOfDateSdks(boolean ignoreOutOfDateSdks) {
-    this.ignoreOutOfDateSdks = ignoreOutOfDateSdks;
+  public boolean shouldIgnoreOutOfDateFlutterSdks() {
+    return ignoreOutOfDateFlutterSdks;
   }
 
-  public boolean shouldIgnoreOutOfDateSdks() {
-    return ignoreOutOfDateSdks;
+  public void setIgnoreOutOfDateFlutterSdks() {
+    ignoreOutOfDateFlutterSdks = true;
   }
 }
