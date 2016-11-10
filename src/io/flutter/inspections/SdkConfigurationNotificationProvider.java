@@ -35,7 +35,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   implements DumbAware {
 
   // Minimum SDK known to support hot reload.
-  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.3");
+  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.5");
 
   private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
 
@@ -51,15 +51,15 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   private static EditorNotificationPanel createWrongSdkPanel(@NotNull Project project, @Nullable Module module) {
     if (module == null) return null;
 
-    final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings == null || settings.shouldIgnoreMismatchedDartSdks()) return null;
+    final FlutterSettings settings = FlutterSettings.getInstance();
+    if (settings.shouldIgnoreMismatchedDartSdks()) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.wrong.dart.sdk.warning"));
     panel.createActionLabel(FlutterBundle.message("dart.sdk.configuration.action.label"),
                             () -> FlutterSdkService.getInstance(project).configureDartSdk(module));
     panel.createActionLabel("Dismiss", () -> {
-      settings.setIgnoreMismatchedDartSdks(true);
+      settings.setIgnoreMismatchedDartSdks();
       panel.setVisible(false);
     });
 
@@ -124,14 +124,13 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
   private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
 
-    final FlutterSettings settings = FlutterSettings.getInstance(project);
-    FlutterSdkVersion sdkVersion = sdk.getVersion();
-    if (settings == null || settings.shouldIgnoreOutOfDateSdks(sdkVersion)) return null;
+    final FlutterSettings settings = FlutterSettings.getInstance();
+    if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
 
     EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> {
-      settings.setIgnoreOutOfDateSdks(sdkVersion);
+      settings.setIgnoreOutOfDateFlutterSdks();
       panel.setVisible(false);
     });
 

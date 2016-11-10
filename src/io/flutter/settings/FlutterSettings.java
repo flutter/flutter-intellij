@@ -5,61 +5,35 @@
  */
 package io.flutter.settings;
 
-import com.intellij.openapi.components.PersistentStateComponent;
-import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.components.State;
-import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.Project;
-import com.intellij.util.xmlb.XmlSerializerUtil;
-import io.flutter.sdk.FlutterSdkVersion;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-
 /**
- * Persists Flutter settings.
+ * Persists Flutter settings for a session.
  */
-@State(
-  name = "FlutterSettings",
-  storages = {
-    @Storage("FlutterSettings.xml")}
-)
-public class FlutterSettings implements PersistentStateComponent<FlutterSettings> {
+public class FlutterSettings {
 
-  // Cached version number corresponding to when a Flutter SDK version check was dismissed.
-  public String ignoreOutOfDateSdkVersionNumber;
+  private static final FlutterSettings INSTANCE = new FlutterSettings();
+
   private boolean ignoreMismatchedDartSdks;
+  private boolean ignoreOutOfDateFlutterSdks;
 
-  @Nullable
-  public static FlutterSettings getInstance(Project project) {
-    return ServiceManager.getService(project, FlutterSettings.class);
-  }
+  private FlutterSettings() {}
 
-  @Nullable
-  @Override
-  public FlutterSettings getState() {
-    return this;
-  }
-
-  @Override
-  public void loadState(FlutterSettings settings) {
-    XmlSerializerUtil.copyBean(settings, this);
+  public static FlutterSettings getInstance() {
+    return INSTANCE;
   }
 
   public boolean shouldIgnoreMismatchedDartSdks() {
     return ignoreMismatchedDartSdks;
   }
 
-  public void setIgnoreMismatchedDartSdks(boolean ignoreMismatchedDartSdks) {
-    this.ignoreMismatchedDartSdks = ignoreMismatchedDartSdks;
+  public void setIgnoreMismatchedDartSdks() {
+    this.ignoreMismatchedDartSdks = true;
   }
 
-  public boolean shouldIgnoreOutOfDateSdks(@NotNull FlutterSdkVersion version) {
-    return ignoreOutOfDateSdkVersionNumber != null &&
-           !FlutterSdkVersion.forVersionString(ignoreOutOfDateSdkVersionNumber).isLessThan(version);
+  public boolean shouldIgnoreOutOfDateFlutterSdks() {
+    return ignoreOutOfDateFlutterSdks;
   }
 
-  public void setIgnoreOutOfDateSdks(@NotNull FlutterSdkVersion version) {
-    ignoreOutOfDateSdkVersionNumber = version.toString();
+  public void setIgnoreOutOfDateFlutterSdks() {
+    ignoreOutOfDateFlutterSdks = true;
   }
 }
