@@ -15,6 +15,7 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -45,11 +46,13 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
     myProject = project;
   }
 
-  private static boolean hasFlutterYaml(Module module) {
-    VirtualFile baseDir = module.getProject().getBaseDir();
-    if (baseDir != null) {
-      VirtualFile flutterYaml = baseDir.findFileByRelativePath(FLUTTER_YAML_FILE);
-      return flutterYaml != null && flutterYaml.exists();
+  private static boolean hasFlutterYaml(@NotNull Module module) {
+    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    for (VirtualFile baseDir : roots) {
+      final VirtualFile flutterYaml = baseDir.findChild(FLUTTER_YAML_FILE);
+      if (flutterYaml != null && flutterYaml.exists()) {
+        return true;
+      }
     }
     return false;
   }

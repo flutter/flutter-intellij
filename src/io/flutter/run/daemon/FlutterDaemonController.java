@@ -185,7 +185,6 @@ public class FlutterDaemonController extends ProcessAdapter {
    */
   private static GeneralCommandLine createCommandLine(Project project) throws ExecutionException {
     String flutterSdkPath = null;
-    String workingDir = null;
     if (project == null) {
       FlutterSdk flutterSdk = FlutterSdk.getGlobalFlutterSdk();
       if (flutterSdk != null) {
@@ -205,7 +204,6 @@ public class FlutterDaemonController extends ProcessAdapter {
       }
 
       flutterSdkPath = flutterSdk.getHomePath();
-      workingDir = project.getBasePath();
     }
 
     if (flutterSdkPath == null) {
@@ -213,7 +211,8 @@ public class FlutterDaemonController extends ProcessAdapter {
     }
     String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workingDir);
+    // While not strictly required, we set the working directory to the flutter root for consistency.
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(flutterSdkPath);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
     commandLine.addParameter("daemon");

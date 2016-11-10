@@ -12,6 +12,7 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.sdk.FlutterSdk;
@@ -33,16 +34,17 @@ public class FlutterConsoleFilter implements Filter {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
-    final Project project = module.getProject();
-    final VirtualFile baseDir = project.getBaseDir();
-    final String baseDirPath = baseDir.getPath();
-    final String trimmedLine = line.trim();
-    final String path = baseDirPath + "/" + trimmedLine;
+    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    for (VirtualFile root : roots) {
+      final String baseDirPath = root.getPath();
+      final String trimmedLine = line.trim();
+      final String path = baseDirPath + "/" + trimmedLine;
 
-    final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
-    if (!trimmedLine.isEmpty() && file != null && file.exists()) {
-      final int lineStart = entireLength - line.length() + line.indexOf(trimmedLine);
-      return new Result(lineStart, lineStart + trimmedLine.length(), new OpenFileHyperlinkInfo(project, file, 0, 0));
+      final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+      if (!trimmedLine.isEmpty() && file != null && file.exists()) {
+        final int lineStart = entireLength - line.length() + line.indexOf(trimmedLine);
+        return new Result(lineStart, lineStart + trimmedLine.length(), new OpenFileHyperlinkInfo(module.getProject(), file, 0, 0));
+      }
     }
 
     return null;
@@ -61,7 +63,11 @@ public class FlutterConsoleFilter implements Filter {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk != null) {
         try {
-          sdk.run(FlutterSdk.Command.DOCTOR, module, project.getBaseDir(), null);
+
+          final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+          // Prefer the content root if there is exactly one, otherwise fall-back to Flutter home for the working dir.
+          final VirtualFile workingDir = roots.length == 1 ? roots[0] : LocalFileSystem.getInstance().findFileByPath(sdk.getHomePath());
+          sdk.run(FlutterSdk.Command.DOCTOR, module, workingDir, null);
         }
         catch (ExecutionException e) {
           LOG.warn(e);
