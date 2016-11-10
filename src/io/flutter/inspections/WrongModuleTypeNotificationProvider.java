@@ -49,7 +49,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   private static boolean hasFlutterYaml(@NotNull Module module) {
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile baseDir : roots) {
-      VirtualFile flutterYaml = baseDir.findFileByRelativePath(FLUTTER_YAML_FILE);
+      final VirtualFile flutterYaml = baseDir.findChild(FLUTTER_YAML_FILE);
       if (flutterYaml != null && flutterYaml.exists()) {
         return true;
       }

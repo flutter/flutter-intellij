@@ -16,7 +16,6 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.util.ModuleUtil;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterConsoleFilter implements Filter {
@@ -64,9 +63,11 @@ public class FlutterConsoleFilter implements Filter {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk != null) {
         try {
-          final VirtualFile contentRoot = ModuleUtil.getProjectContentRoot(module);
-          assert contentRoot != null;
-          sdk.run(FlutterSdk.Command.DOCTOR, module, contentRoot, null);
+
+          final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+          // Prefer the content root if there is exactly one, otherwise fall-back to Flutter home for the working dir.
+          final VirtualFile workingDir = roots.length == 1 ? roots[0] : LocalFileSystem.getInstance().findFileByPath(sdk.getHomePath());
+          sdk.run(FlutterSdk.Command.DOCTOR, module, workingDir, null);
         }
         catch (ExecutionException e) {
           LOG.warn(e);
