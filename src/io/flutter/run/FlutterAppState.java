@@ -17,7 +17,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
@@ -29,8 +28,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.List;
 
-public class FlutterAppState extends DartCommandLineRunningState {
-
+public class FlutterAppState extends FlutterAppStateBase {
   private static final String RUN = DefaultRunExecutor.EXECUTOR_ID;
   private FlutterApp myApp;
   private RunMode myMode;

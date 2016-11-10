@@ -1,4 +1,10 @@
-package com.jetbrains.lang.dart.ide.runner;
+/*
+ * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.run;
+
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
@@ -13,7 +19,6 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,25 +27,19 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import com.jetbrains.lang.dart.ide.runner.base.DartRunConfigurationBase;
-import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunConfiguration;
-import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunningState;
-import com.jetbrains.lang.dart.ide.runner.server.DartRemoteDebugConfiguration;
+import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
-import com.jetbrains.lang.dart.ide.runner.test.DartTestRunnerParameters;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * This class is copied from the Dart plugin and modified to use DartVmServiceDebugProcessZ
- * to control the debugger, and to define the ObservatoryConnector.
+ * This class is copied from the Dart plugin and modified to use DartVmServiceDebugProcessZ to control the debugger, and to define
+ * ObservatoryConnector.
  */
-@SuppressWarnings("Duplicates")
-public class DartRunner extends DefaultProgramRunner {
-
-  private static final Logger LOG = Logger.getInstance(DartRunner.class.getName());
+public class FlutterRunnerBase extends DefaultProgramRunner {
+  private static final Logger LOG = Logger.getInstance(FlutterRunnerBase.class.getName());
 
   @NotNull
   @Override
@@ -50,12 +49,8 @@ public class DartRunner extends DefaultProgramRunner {
 
   @Override
   public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
-    return (profile instanceof DartCommandLineRunConfiguration && (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) ||
-                                                                   DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)))
-           ||
-           (profile instanceof DartTestRunnerParameters && DefaultRunExecutor.EXECUTOR_ID.equals(executorId))
-           ||
-           (profile instanceof DartRemoteDebugConfiguration && DefaultDebugExecutor.EXECUTOR_ID.equals(executorId));
+    return (profile instanceof FlutterRunConfiguration && (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) ||
+                                                                   DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)));
   }
 
   @Override
@@ -71,9 +66,9 @@ public class DartRunner extends DefaultProgramRunner {
         final String dasExecutionContextId;
 
         final RunProfile runConfig = env.getRunProfile();
-        if (runConfig instanceof DartRunConfigurationBase &&
+        if (runConfig instanceof FlutterRunConfigurationBase &&
             DartAnalysisServerService.getInstance().serverReadyForRequest(env.getProject())) {
-          final String path = ((DartRunConfigurationBase)runConfig).getRunnerParameters().getFilePath();
+          final String path = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getFilePath();
           assert path != null; // already checked
           dasExecutionContextId = DartAnalysisServerService.getInstance().execution_createContext(path);
         }
@@ -115,11 +110,11 @@ public class DartRunner extends DefaultProgramRunner {
     final String debuggingHost;
     final int observatoryPort;
 
-    if (runConfiguration instanceof DartRunConfigurationBase) {
-      contextFileOrDir = ((DartRunConfigurationBase)runConfiguration).getRunnerParameters().getDartFile();
+    if (runConfiguration instanceof FlutterRunConfigurationBase) {
+      contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getDartFile();
 
       final String cwd =
-        ((DartRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
+        ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
       currentWorkingDirectory = LocalFileSystem.getInstance().findFileByPath((cwd));
 
       executionResult = state.execute(env.getExecutor(), this);
@@ -128,21 +123,7 @@ public class DartRunner extends DefaultProgramRunner {
       }
 
       debuggingHost = null;
-      observatoryPort = ((DartCommandLineRunningState)state).getObservatoryPort();
-    }
-    else if (runConfiguration instanceof DartRemoteDebugConfiguration) {
-      final String path = ((DartRemoteDebugConfiguration)runConfiguration).getParameters().getDartProjectPath();
-      contextFileOrDir = LocalFileSystem.getInstance().findFileByPath(path);
-      if (contextFileOrDir == null) {
-        throw new RuntimeConfigurationError("Folder not found: " + FileUtil.toSystemDependentName(path));
-      }
-
-      currentWorkingDirectory = contextFileOrDir;
-
-      executionResult = null;
-
-      debuggingHost = ((DartRemoteDebugConfiguration)runConfiguration).getParameters().getHost();
-      observatoryPort = ((DartRemoteDebugConfiguration)runConfiguration).getParameters().getPort();
+      observatoryPort = ((FlutterAppState)state).getObservatoryPort();
     }
     else {
       LOG.error("Unexpected run configuration: " + runConfiguration.getClass().getName());
@@ -163,7 +144,7 @@ public class DartRunner extends DefaultProgramRunner {
                                               executionResult,
                                               dartUrlResolver,
                                               dasExecutionContextId,
-                                              runConfiguration instanceof DartRemoteDebugConfiguration,
+                                              false,
                                               getTimeout(),
                                               currentWorkingDirectory,
                                               getConnector());
