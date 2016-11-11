@@ -92,10 +92,18 @@ public class FlutterSdkUtil {
     return child.getPath();
   }
 
-  public static boolean isFlutterSdkHome(@Nullable String path) {
+  public static boolean isFlutterSdkHome(@NotNull final String path) {
+    final File flutterVersionFile = new File(path + "/VERSION");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterToolFile.isFile() && dartLibFolder.isDirectory();
+    return flutterVersionFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
+  }
+
+  private static boolean isFlutterSdkHomeWithoutDartSdk(@NotNull final String path) {
+    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterToolFile = new File(path + "/bin/flutter");
+    final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
+    return flutterVersionFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
 
   @NotNull
@@ -161,6 +169,7 @@ public class FlutterSdkUtil {
     final File sdkRoot = new File(sdkRootPath);
     if (!sdkRoot.isDirectory()) return FlutterBundle.message("error.folder.specified.as.sdk.not.exists");
 
+    if (isFlutterSdkHomeWithoutDartSdk(sdkRootPath)) return FlutterBundle.message("error.flutter.sdk.without.dart.sdk");
     if (!isFlutterSdkHome(sdkRootPath)) return FlutterBundle.message("error.sdk.not.found.in.specified.location");
 
     return null;

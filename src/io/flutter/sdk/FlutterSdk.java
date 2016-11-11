@@ -82,7 +82,7 @@ public class FlutterSdk {
                                                          : null;
   }
 
-  static FlutterSdk forPath(String path) {
+  static FlutterSdk forPath(@NotNull final String path) {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
 
