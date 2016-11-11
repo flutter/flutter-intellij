@@ -17,14 +17,13 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
@@ -48,7 +47,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JPanel mainPanel;
   private ComboboxWithBrowseButton sdkCombo;
   private JBLabel versionLabel;
-  private JBLabel errorLabel;
+  private JLabel errorIcon;
+  private JTextPane errorText;
 
   FlutterSettingsConfigurable() {
     init();
@@ -56,7 +56,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     versionLabel.setText("");
     versionLabel.setCopyable(true);
 
-    errorLabel.setIcon(AllIcons.Actions.Lightning);
+    errorIcon.setText("");
+    errorIcon.setIcon(AllIcons.Actions.Lightning);
+    Messages.installHyperlinkSupport(errorText);
   }
 
   private void init() {
@@ -170,9 +172,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private void updateErrorLabel() {
     final String message = getErrorMessage();
-    errorLabel
-      .setText(XmlStringUtil.wrapInHtml("<font color='#" + ColorUtil.toHex(JBColor.RED) + "'><left>" + message + "</left></font>"));
-    errorLabel.setVisible(message != null);
+    if (message != null) {
+      errorText.setText(XmlStringUtil.wrapInHtml(message));
+    }
+    errorIcon.setVisible(message != null);
+    errorText.setVisible(message != null);
   }
 
   @Nullable

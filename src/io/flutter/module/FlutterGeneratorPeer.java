@@ -9,14 +9,13 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
@@ -35,11 +34,13 @@ public class FlutterGeneratorPeer {
   private ComboboxWithBrowseButton mySdkPathComboWithBrowse;
   private JBLabel myVersionLabel;
   private JBLabel myVersionContent;
-  private JBLabel myErrorLabel; // shown in IntelliJ IDEA only
+  private JLabel errorIcon;
+  private JTextPane errorText;
 
   public FlutterGeneratorPeer() {
-    myErrorLabel.setIcon(AllIcons.Actions.Lightning);
-    myErrorLabel.setVisible(false);
+    errorIcon.setText("");
+    errorIcon.setIcon(AllIcons.Actions.Lightning);
+    Messages.installHyperlinkSupport(errorText);
 
     // Hide pending real content -- TODO: #83.
     myVersionLabel.setVisible(false);
@@ -89,16 +90,13 @@ public class FlutterGeneratorPeer {
 
   public boolean validate() {
     final ValidationInfo info = validateSdk();
-    if (info == null) {
-      myErrorLabel.setVisible(false);
-      return true;
+    if (info != null) {
+      errorText.setText(XmlStringUtil.wrapInHtml(info.message));
     }
-    else {
-      myErrorLabel.setVisible(true);
-      myErrorLabel
-        .setText(XmlStringUtil.wrapInHtml("<font color='#" + ColorUtil.toHex(JBColor.RED) + "'><left>" + info.message + "</left></font>"));
-      return false;
-    }
+    errorIcon.setVisible(info != null);
+    errorText.setVisible(info != null);
+
+    return info == null;
   }
 
   @Nullable
