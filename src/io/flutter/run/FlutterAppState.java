@@ -15,9 +15,13 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.net.NetUtils;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
+import io.flutter.console.FlutterConsoleFilter;
+import io.flutter.module.FlutterModuleType;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
@@ -91,6 +95,14 @@ public class FlutterAppState extends FlutterAppStateBase {
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     ConsoleView console = super.createConsole(executor);
     myApp.setConsole(console);
+    if (console != null) {
+      // In the (common) case where there is a single Flutter module, attach a console filter.
+      final Project project = getEnvironment().getProject();
+      final Collection<Module> modules = ModuleUtil.getModulesOfType(project, FlutterModuleType.getInstance());
+      if (modules.size() == 1) {
+        console.addMessageFilter(new FlutterConsoleFilter(modules.iterator().next()));
+      }
+    }
     return console;
   }
 
