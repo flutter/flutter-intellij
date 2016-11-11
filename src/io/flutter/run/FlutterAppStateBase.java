@@ -29,7 +29,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.coverage.DartCoverageProgramRunner;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.client.DartiumUtil;
@@ -177,10 +176,6 @@ public abstract class FlutterAppStateBase extends CommandLineState {
       }
 
       commandLine.addParameter("--enable-vm-service:" + myObservatoryPort);
-
-      if (getEnvironment().getRunner() instanceof DartCoverageProgramRunner) {
-        commandLine.addParameter("--pause-isolates-on-exit");
-      }
     }
 
     commandLine.addParameter(FileUtil.toSystemDependentName(overriddenMainFilePath == null ? dartFile.getPath() : overriddenMainFilePath));
