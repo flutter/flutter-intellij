@@ -34,16 +34,25 @@ public class FlutterConsoleFilter implements Filter {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
+    String pathPart = line.trim();
+
+    // Check for, e.g., "Running lib/main.dart"
+    if (line.startsWith("Running")) {
+      String[] parts = line.split(" ");
+      if (parts.length > 1) {
+        pathPart = parts[1];
+      }
+    }
+
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile root : roots) {
       final String baseDirPath = root.getPath();
-      final String trimmedLine = line.trim();
-      final String path = baseDirPath + "/" + trimmedLine;
+      final String path = baseDirPath + "/" + pathPart;
 
       final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
-      if (!trimmedLine.isEmpty() && file != null && file.exists()) {
-        final int lineStart = entireLength - line.length() + line.indexOf(trimmedLine);
-        return new Result(lineStart, lineStart + trimmedLine.length(), new OpenFileHyperlinkInfo(module.getProject(), file, 0, 0));
+      if (!pathPart.isEmpty() && file != null && file.exists()) {
+        final int lineStart = entireLength - line.length() + line.indexOf(pathPart);
+        return new Result(lineStart, lineStart + pathPart.length(), new OpenFileHyperlinkInfo(module.getProject(), file, 0, 0));
       }
     }
 
