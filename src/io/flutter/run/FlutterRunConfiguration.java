@@ -14,11 +14,10 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
-import com.jetbrains.lang.dart.ide.runner.base.DartRunConfigurationBase;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FlutterRunConfiguration extends DartRunConfigurationBase {
+public class FlutterRunConfiguration extends FlutterRunConfigurationBase {
   private @NotNull FlutterRunnerParameters myRunnerParameters = new FlutterRunnerParameters();
 
   public FlutterRunConfiguration(final Project project, final ConfigurationFactory factory, final String name) {

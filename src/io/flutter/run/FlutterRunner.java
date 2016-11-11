@@ -13,18 +13,13 @@ import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.xdebugger.XDebugSession;
-import com.jetbrains.lang.dart.ide.runner.DartRunner;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-/**
- * This class could be independent of DartRunner; just copy down the code that is not implemented here.
- * Note that we have redefined DartRunner in third_party, which is a slightly modified version of the original.
- */
-public class FlutterRunner extends DartRunner {
+public class FlutterRunner extends FlutterRunnerBase {
 
   @Nullable
   private ObservatoryConnector myConnector;
