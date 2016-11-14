@@ -6,7 +6,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.4</version>
+  <version>0.1.5</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -16,6 +16,17 @@
   
   <change-notes>
 <![CDATA[
+0.1.5:
+<ul>
+  <li>console filtering for flutter run output</li>
+  <li>improved messaging for incomplete Flutter SDK configirations</li>
+  <li>support for new application events produced by Flutter tools</li>
+  <li>fixed duplicate service protocol console logging</li>
+  <li>Flutter run configuration cleanup</li>
+  <li>fixed NPE in showing progress from Flutter tools tasks</li>
+  <li>migration away from storing Flutter SDK location in an application library</li>
+</ul>
+
 0.1.4:
 <ul>
   <li>first public release</li>
