@@ -34,6 +34,7 @@ Validate that an externally created project can be imported.
 * browse to and select `<flutter-root>/examples/flutter_gallery`
 * ensure there are no analysis errors or warnings
 * ensure that the `flutter_gallery` launch configuration shows up and is selected
+* verify that the `flutter_gallery` launch configuration runs without errors
 
 ## Run / Debug
 
@@ -69,6 +70,6 @@ Verify installation and configuration in a fresh IDEA installation.
 * (If not running in a "runtime workbench", [install the plugins](https://flutter.io/setup/#install-the-plugins).)
 * Open "Languages & Frameworks>Flutter" in Preferences and verify that there is no Flutter SDK set.
 * Set the Flutter SDK path to a valid SDK location.
-  * (TODO: add error cases for invalid locations and incomplete installs.)
+  * Verify that invalid locations are rejected (and cannot be applied).
 * Verify project creation, run/debug.  
 
