@@ -6,7 +6,7 @@ Manual tests to execute before plugin releases.
 
 Validate basic project creation.
 
-* Follow the instructions to [create a simple project](https://flutter.io/intellij-ide/#creating-a-new-project).
+* Create a simple project (`File > New > Project…`).
 * Confirm that:
   * Project contents are created.
     * Verify that a run configuration (sharing the project name) is enabled in the run/debug selector.
@@ -28,11 +28,38 @@ Validate device selection.
 
 ## Project Import
 
-Validate that an externally created project can be imported. (TODO.)
+Validate that an externally created project can be imported.
+
+* choose `File > Open...`
+* browse to and select `<flutter-root>/examples/flutter_gallery`
+* ensure there are no analysis errors or warnings
+* ensure that the `flutter_gallery` launch configuration shows up and is selected
 
 ## Run / Debug
 
-(TODO.)
+Validate basic application running and debugging.
+
+In the newly created hello_world app:
+* plugin in an Android device (or open the iOS Simulator)
+* set a breakpoint on the `_counter++` line
+* hit the `'debug'` icon to start the app running
+* verify the app appears on the device
+* tap the `'+'` icon on the app
+* verify that the IDE pauses at the breakpoint
+* hit resume in the debugger
+
+## Hot Reload
+
+Validate basic hot reload functionality.
+
+Assuming the app state from above:
+* change the `Button tapped ... times.` line to end in an exclamation point
+* hit the hot reload button in the debugger UI
+* validate that 1) the state persisted (the same number of clicks in the UI),
+  and 2) the text changed to end in an exclamation point
+* change the text back
+* hit the `Full Application Restart` button
+* validate that the text and state resets
 
 ## Fresh Install Configuration
 
