@@ -30,9 +30,19 @@ Validate device selection.
 
 Validate that an externally created project can be imported. (TODO.)
 
-## Run / Debug
+## Run / Debug (Simulator)
 
-(TODO.)
+* Start a debugging session with the ios Simulator connected.
+* Verify that tapping in the sample app updates as expected.
+* Modify text "Button tapped" and Save.
+* Click "Restart" and verify that the text is updated.
+  * Verify that while app is restarting, the restart icon is disabled.
+* Modify text "Button tapped" again and Save.
+* Click "Reload" and verify that the text is updated.
+  * Verify that while app is reloading, the reload icon is disabled.
+* Set a breakpoint in teh creation of the `Text` object in the `build` method.
+* Click the `+` in the simulator and verify that the breakpoint is hit. 
+
 
 ## Fresh Install Configuration
 
