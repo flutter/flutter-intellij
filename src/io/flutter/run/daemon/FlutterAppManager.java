@@ -13,6 +13,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
+import org.apache.commons.lang.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,6 +50,7 @@ public class FlutterAppManager {
   private final Object myLock = new Object();
   private Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
   private ProgressHandler myProgressHandler;
+  private StopWatch myProgressStopWatch;
 
   FlutterAppManager(@NotNull FlutterDaemonService service) {
     this.myService = service;
@@ -371,9 +373,29 @@ public class FlutterAppManager {
 
     if (message.finished) {
       myProgressHandler.done();
+
+      if (myProgressStopWatch != null) {
+        myProgressStopWatch.stop();
+
+        if (message.progressId != null && message.progressId.startsWith("hot.")) {
+          if (message.progressId.equals("hot.reload")) {
+            app.getConsole().print("\nReloaded in " + myProgressStopWatch.getTime() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+          }
+          else if (message.progressId.equals("hot.restart")) {
+            app.getConsole().print("\nRestarted in " + myProgressStopWatch.getTime() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+          }
+        }
+
+        myProgressStopWatch = null;
+      }
     }
     else {
       myProgressHandler.start(message.message);
+
+      if (message.progressId != null && message.progressId.startsWith("hot.")) {
+        myProgressStopWatch = new StopWatch();
+        myProgressStopWatch.start();
+      }
     }
   }
 
@@ -605,6 +627,8 @@ public class FlutterAppManager {
   private static class AppProgressEvent extends Event {
     // "event":"app.progress"
     @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private String id;
+    @SuppressWarnings("unused") private String progressId;
     @SuppressWarnings("unused") private String message;
     @SuppressWarnings("unused") private boolean finished;
 
