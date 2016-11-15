@@ -44,6 +44,11 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   private void registerAction(@NotNull String actionId) {
     final ActionManager actionManager = ActionManager.getInstance();
     final AnAction action = actionManager.getAction(actionId);
+    // New debug sessions create new actions, requiring us to overwrite existing ones in the registry.
+    // TODO(pq): consider moving actions to our own registry for lookup.
+    if (action != null) {
+      actionManager.unregisterAction(actionId);
+    }
     actionManager.registerAction(actionId, this);
   }
 
