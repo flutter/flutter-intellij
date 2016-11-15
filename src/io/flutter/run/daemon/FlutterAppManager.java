@@ -372,7 +372,6 @@ public class FlutterAppManager {
     }
 
     if (message.finished) {
-      System.out.println(message.progressId);
       myProgressHandler.done();
 
       if (myProgressStopWatch != null) {
