@@ -5,7 +5,10 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
@@ -16,22 +19,37 @@ import javax.swing.*;
 
 abstract public class FlutterAppAction extends DumbAwareAction {
 
+
+  private static final Logger LOG = Logger.getInstance(FlutterAppAction.class);
+
   private final ObservatoryConnector myConnector;
-  private Computable<Boolean> myIsApplicable;
+  private final Computable<Boolean> myIsApplicable;
   private FlutterApp.State myAppState;
-  private boolean myIsListening = false;
-  private FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
+  private final FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
       myAppState = newState;
       getTemplatePresentation().setEnabled(myIsApplicable.compute() && isRunning());
     }
   };
+  private boolean myIsListening = false;
 
-  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon, Computable<Boolean> isApplicable) {
+  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon, Computable<Boolean> isApplicable, @NotNull String actionId) {
     super(text, description, icon);
     myConnector = connector;
     myIsApplicable = isApplicable;
+    registerAction(actionId);
+  }
+
+  private void registerAction(@NotNull String actionId) {
+    final ActionManager actionManager = ActionManager.getInstance();
+    final AnAction action = actionManager.getAction(actionId);
+    if (action != null) {
+      // Will only happen if we accidentally create multiple action instances.
+      LOG.info("Skipped duplicate registration of action: " + actionId);
+    } else {
+      actionManager.registerAction(actionId, this);
+    }
   }
 
   @Override

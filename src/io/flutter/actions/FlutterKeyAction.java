@@ -5,37 +5,26 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
-import com.intellij.openapi.project.Project;
-import com.intellij.xdebugger.XDebugProcess;
-import com.intellij.xdebugger.XDebugSession;
-import com.intellij.xdebugger.XDebuggerManager;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class FlutterKeyAction extends DumbAwareAction {
   public static final String RELOAD_DISPLAY_ID = "Flutter Commands"; //NON-NLS
 
-  /**
-   * Find an active Dart VM debug process and get it's observatory connector.
-   * <p>
-   * TODO: make this more robust in the face of multiple concurrent debug sessions.
-   */
-  static
-  @Nullable
-  ObservatoryConnector findConnector(AnActionEvent e) {
-    final Project project = getEventProject(e);
-    if (project == null) return null;
-    final XDebuggerManager manager = XDebuggerManager.getInstance(project);
-    final XDebugSession session = manager.getCurrentSession();
-    if (session != null) {
-      final XDebugProcess debugProcess = session.getDebugProcess();
-      if (debugProcess instanceof DartVmServiceDebugProcessZ) {
-        return ((DartVmServiceDebugProcessZ)debugProcess).getConnector();
-      }
-    }
-    return null;
+  @NotNull
+  private final String myActionId;
+
+  FlutterKeyAction(@NotNull String actionId) {
+    myActionId = actionId;
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    AnAction action = ActionManager.getInstance().getAction(myActionId);
+    assert action != null;
+    action.actionPerformed(e);
   }
 }
