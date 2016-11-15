@@ -44,12 +44,7 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   private void registerAction(@NotNull String actionId) {
     final ActionManager actionManager = ActionManager.getInstance();
     final AnAction action = actionManager.getAction(actionId);
-    if (action != null) {
-      // Will only happen if we accidentally create multiple action instances.
-      LOG.info("Skipped duplicate registration of action: " + actionId);
-    } else {
-      actionManager.registerAction(actionId, this);
-    }
+    actionManager.registerAction(actionId, this);
   }
 
   @Override
