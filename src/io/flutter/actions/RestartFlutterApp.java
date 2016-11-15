@@ -14,9 +14,11 @@ import io.flutter.FlutterBundle;
 
 public class RestartFlutterApp extends FlutterAppAction {
 
+  public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
+
   public RestartFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.restart.action.text"), FlutterBundle.message("app.restart.action.description"),
-          FlutterIcons.Restart, isApplicable);
+          FlutterIcons.Restart, isApplicable, ID);
   }
 
   @Override

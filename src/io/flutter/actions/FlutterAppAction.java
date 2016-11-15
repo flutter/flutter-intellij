@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
@@ -17,10 +18,10 @@ import javax.swing.*;
 abstract public class FlutterAppAction extends DumbAwareAction {
 
   private final ObservatoryConnector myConnector;
-  private Computable<Boolean> myIsApplicable;
+  private final Computable<Boolean> myIsApplicable;
   private FlutterApp.State myAppState;
   private boolean myIsListening = false;
-  private FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
+  private final FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
       myAppState = newState;
@@ -28,10 +29,11 @@ abstract public class FlutterAppAction extends DumbAwareAction {
     }
   };
 
-  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon, Computable<Boolean> isApplicable) {
+  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon, Computable<Boolean> isApplicable, @NotNull String actionId) {
     super(text, description, icon);
     myConnector = connector;
     myIsApplicable = isApplicable;
+    ActionManager.getInstance().registerAction(actionId, this);
   }
 
   @Override

@@ -14,9 +14,11 @@ import io.flutter.FlutterBundle;
 
 public class HotReloadFlutterApp extends FlutterAppAction {
 
+  public static final String ID = "Flutter.HotReloadFlutterApp"; //NON-NLS
+
   public HotReloadFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.reload.action.text"), FlutterBundle.message("app.reload.action.description"),
-          FlutterIcons.Play2, isApplicable);
+          FlutterIcons.Play2, isApplicable, ID);
   }
 
   @Override
