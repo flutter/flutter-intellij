@@ -27,6 +27,11 @@
   <li>migration away from storing Flutter SDK location in an application library</li>
 </ul>
 
+0.1.4.1:
+<ul>
+  <li>removed an exception notification when we receive unknown events from the flutter tools</li>
+</ul>
+
 0.1.4:
 <ul>
   <li>first public release</li>
