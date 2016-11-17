@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="Dart">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/dart-plugin/lib/Dart.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
