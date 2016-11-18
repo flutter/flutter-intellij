@@ -13,7 +13,6 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
-import org.apache.commons.lang.time.StopWatch;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -702,5 +701,26 @@ public class FlutterAppManager {
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDebugPort(this, controller);
     }
+  }
+}
+
+class StopWatch {
+  private long startTime;
+  private long stopTime;
+
+  StopWatch() {
+
+  }
+
+  public void start() {
+    startTime = System.currentTimeMillis();
+  }
+
+  public void stop() {
+    stopTime = System.currentTimeMillis();
+  }
+
+  public long getTime() {
+    return stopTime - startTime;
   }
 }

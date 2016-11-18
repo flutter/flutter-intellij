@@ -12,6 +12,8 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 
+import java.lang.reflect.Method;
+
 public class HotReloadFlutterApp extends FlutterAppAction {
 
   public static final String ID = "Flutter.HotReloadFlutterApp"; //NON-NLS
@@ -25,8 +27,22 @@ public class HotReloadFlutterApp extends FlutterAppAction {
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      // TODO(devoncarew): Update to pass in true for pauseAfterRestart.
-      getApp().performHotReload(false);
+      boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
+      getApp().performHotReload(pauseAfterRestart);
     });
+  }
+
+  private static boolean hasCapability(String featureId) {
+    // return DartPluginCapabilities.isSupported(featureId);
+
+    try {
+      Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
+      Method method = clazz.getMethod("isSupported", String.class);
+      Object result = method.invoke(null, featureId);
+      return result instanceof Boolean && ((Boolean)result).booleanValue();
+    }
+    catch (Throwable t) {
+      return false;
+    }
   }
 }
