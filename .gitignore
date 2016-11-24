@@ -8,3 +8,4 @@ pubspec.lock
 .pub/
 .idea/workspace.xml
 .idea/shelf
+.idea/emacs.xml
