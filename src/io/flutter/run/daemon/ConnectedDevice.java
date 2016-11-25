@@ -5,7 +5,7 @@
  */
 package io.flutter.run.daemon;
 
-import com.google.common.base.Objects;
+import java.util.Objects;
 
 public interface ConnectedDevice {
 
@@ -69,9 +69,9 @@ class FlutterDevice implements ConnectedDevice {
   @Override
   public boolean equals(Object other) {
     if (other instanceof FlutterDevice) {
-      return Objects.equal(myDeviceName, ((FlutterDevice)other).deviceName()) &&
-             Objects.equal(myDeviceId, ((FlutterDevice)other).deviceId()) &&
-             Objects.equal(myPlatform, ((FlutterDevice)other).platform());
+      return Objects.equals(myDeviceName, ((FlutterDevice)other).deviceName()) &&
+             Objects.equals(myDeviceId, ((FlutterDevice)other).deviceId()) &&
+             Objects.equals(myPlatform, ((FlutterDevice)other).platform());
     }
     else {
       return false;
@@ -80,7 +80,7 @@ class FlutterDevice implements ConnectedDevice {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(myDeviceName, myDeviceId, myPlatform);
+    return Objects.hash(myDeviceName, myDeviceId, myPlatform);
   }
 
   @Override
