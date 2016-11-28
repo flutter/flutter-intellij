@@ -13,7 +13,7 @@
   <!-- supported in CE and UE -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
   <depends>com.intellij.modules.java</depends>
-  
+
   <change-notes>
 <![CDATA[
 0.1.5:
@@ -73,10 +73,10 @@
 
   <actions>
     <action id="Flutter.HotReloadFlutterAppKey" class="io.flutter.actions.HotReloadFlutterAppKeyAction" text="Flutter Hot Reload">
-      <keyboard-shortcut first-keystroke="ctrl F5" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="control BACK_SLASH" keymap="$default"/>
     </action>
     <action id="Flutter.RestartFlutterAppKey" class="io.flutter.actions.RestartFlutterAppKeyAction" text="Flutter Restart Application">
-      <keyboard-shortcut first-keystroke="ctrl shift F5" keymap="$default"/>
+      <keyboard-shortcut first-keystroke="control shift BACK_SLASH" keymap="$default"/>
     </action>
     <group id="Flutter.MainToolbarActions">
       <separator/>
