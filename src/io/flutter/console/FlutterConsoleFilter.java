@@ -16,15 +16,16 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterConsoleFilter implements Filter {
 
   private static final Logger LOG = Logger.getInstance(FlutterConsoleFilter.class);
 
-  private final Module module;
+  private final @NotNull Module module;
 
-  public FlutterConsoleFilter(Module module) {
+  public FlutterConsoleFilter(@NotNull Module module) {
     this.module = module;
   }
 
@@ -79,6 +80,8 @@ public class FlutterConsoleFilter implements Filter {
           sdk.run(FlutterSdk.Command.DOCTOR, module, workingDir, null);
         }
         catch (ExecutionException e) {
+          // TODO: display to the user
+
           LOG.warn(e);
         }
       }
