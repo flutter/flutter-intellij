@@ -99,7 +99,7 @@ public class FlutterRunner extends FlutterRunnerBase {
     }
 
     try {
-      if (state instanceof FlutterAppState && ((FlutterAppState)state).getMode().isDebug()) {
+      if (state instanceof FlutterAppState && ((FlutterAppState)state).getMode().isReloadEnabled()) {
         return doExecuteDartDebug(state, env, dasExecutionContextId);
       }
     }

@@ -13,11 +13,8 @@ import org.jetbrains.annotations.NonNls;
 public enum RunMode {
 
   @NonNls
-  RELEASE("release"),
-
-  @NonNls
   DEBUG("debug") {
-    public boolean isDebug() {
+    public boolean isReloadEnabled() {
       return true;
     }
   },
@@ -27,7 +24,7 @@ public enum RunMode {
 
   @NonNls
   RUN("run") {
-    public boolean isDebug() {
+    public boolean isReloadEnabled() {
       return true;
     }
   };
@@ -45,7 +42,7 @@ public enum RunMode {
   /**
    * Returns true if this is a reload/restart enabled mode (run|debug).
    */
-  public boolean isDebug() {
+  public boolean isReloadEnabled() {
     return false;
   }
 }

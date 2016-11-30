@@ -77,7 +77,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
         .asList("com.intellij.execution.actions.StopAction", "com.intellij.ui.content.tabs.PinToolwindowTabAction",
                 "com.intellij.execution.ui.actions.CloseAction", "com.intellij.ide.actions.ContextHelpAction");
       for (AnAction a : leftActions) {
-        System.out.println(a.getClass().getName());
         if (!actionClassNames.contains(a.getClass().getName())) {
           leftToolbar.remove(a);
         }
