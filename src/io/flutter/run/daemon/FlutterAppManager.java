@@ -60,7 +60,7 @@ public class FlutterAppManager {
                              @NotNull String deviceId,
                              @NotNull RunMode mode,
                              @NotNull Project project,
-                             boolean isPaused,
+                             boolean startPaused,
                              boolean isHot,
                              @Nullable String target) {
     if (isAppRunning(deviceId, controller)) {
@@ -76,7 +76,7 @@ public class FlutterAppManager {
     }
     RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, null);
     app.changeState(FlutterApp.State.STARTING);
-    AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), isPaused, null, mode.mode(), target, isHot);
+    AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), startPaused, null, mode.mode(), target, isHot);
     Method cmd = makeMethod(CMD_APP_START, appStart);
     CompletableFuture
       .supplyAsync(() -> sendCommand(controller, cmd))
