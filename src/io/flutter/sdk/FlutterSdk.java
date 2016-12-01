@@ -118,7 +118,7 @@ public class FlutterSdk {
 
         if (cmd.attachToConsole() && module != null) {
           final String commandPrefix = "[" + module.getName() + "] ";
-          FlutterConsoleHelper.attach(module, handler, commandPrefix + cmd.title);
+          FlutterConsoleHelper.attach(module, handler);
         }
 
         cmd.onStart(module, workingDir, args);
@@ -158,7 +158,7 @@ public class FlutterSdk {
           }
         });
 
-        FlutterConsoleHelper.attach(project, handler, title);
+        FlutterConsoleHelper.attach(project, handler);
         handler.startNotify();
       }
     }
