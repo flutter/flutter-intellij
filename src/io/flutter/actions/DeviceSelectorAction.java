@@ -85,7 +85,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     final Project project = e.getProject();
     if (project != null && FlutterSdkUtil.hasFlutterModule(project)) {
       e.getPresentation().setVisible(true);
-    } else {
+    }
+    else {
       e.getPresentation().setVisible(false);
       return;
     }
@@ -178,7 +179,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         Notifications.Bus.notify(
           new Notification(FlutterSdk.GROUP_DISPLAY_ID,
                            "Error Opening Simulator",
-                           FlutterBundle.message("flutter.command.exception", e.getMessage()),
+                           FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
                            NotificationType.ERROR));
       }
     }

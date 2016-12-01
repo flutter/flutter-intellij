@@ -25,7 +25,7 @@ import org.jetbrains.annotations.NotNull;
 // TODO(devoncarew): These pile up - how to close or recycle an existing one?
 // See: https://github.com/JetBrains/intellij-plugins/blob/8573cd83bb6826e339d60be7b9cdb97add1af2a2/Dart/src/com/jetbrains/lang/dart/ide/actions/DartPubActionBase.java#L203
 
-public class FlutterConsole {
+public class FlutterConsoleHelper {
 
   /**
    * Attach the flutter console to the process managed by the given processHandler.

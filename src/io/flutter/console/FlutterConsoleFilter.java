@@ -9,12 +9,16 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -73,15 +77,14 @@ public class FlutterConsoleFilter implements Filter {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk != null) {
         try {
-
-          final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
-          // Prefer the content root if there is exactly one, otherwise fall-back to Flutter home for the working dir.
-          final VirtualFile workingDir = roots.length == 1 ? roots[0] : LocalFileSystem.getInstance().findFileByPath(sdk.getHomePath());
-          sdk.run(FlutterSdk.Command.DOCTOR, module, workingDir, null);
+          sdk.runProject(project, "Flutter doctor", null, "doctor");
         }
         catch (ExecutionException e) {
-          // TODO: display to the user
-
+          Notifications.Bus.notify(
+            new Notification(FlutterSdk.GROUP_DISPLAY_ID,
+                             FlutterBundle.message("flutter.command.exception.title"),
+                             FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
+                             NotificationType.ERROR));
           LOG.warn(e);
         }
       }

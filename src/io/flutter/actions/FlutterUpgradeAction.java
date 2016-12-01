@@ -6,6 +6,9 @@
 package io.flutter.actions;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -16,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import io.flutter.FlutterBundle;
 import io.flutter.inspections.FlutterYamlNotificationProvider;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.Nullable;
@@ -34,13 +38,20 @@ public class FlutterUpgradeAction extends DumbAwareAction {
         sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
       }
       catch (ExecutionException e) {
-        // TODO: display to the user
-
+        Notifications.Bus.notify(
+          new Notification(FlutterSdk.GROUP_DISPLAY_ID,
+                           FlutterBundle.message("flutter.command.exception.title"),
+                           FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
+                           NotificationType.ERROR));
         LOG.warn(e);
       }
-    } else {
-      // TODO: Notification? Popup?
-      //JBPopupFactory.getInstance().
+    }
+    else {
+      Notifications.Bus.notify(
+        new Notification(FlutterSdk.GROUP_DISPLAY_ID,
+                         FlutterBundle.message("flutter.sdk.notAvailable.title"),
+                         FlutterBundle.message("flutter.sdk.notAvailable.message"),
+                         NotificationType.ERROR));
     }
   }
 

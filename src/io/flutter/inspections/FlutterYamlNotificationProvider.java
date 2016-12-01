@@ -9,10 +9,13 @@ import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectLocator;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -36,7 +39,15 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
-    // TODO: check for flutter sdk and such
+    // Check for a flutter sdk.
+    Project project = ProjectLocator.getInstance().guessProjectForFile(file);
+
+    if (project != null) {
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      if (sdk == null) {
+        return null;
+      }
+    }
 
     if (FLUTTER_YAML_NAME.equalsIgnoreCase(file.getName())) {
       return new FlutterYamlActionsPanel(file);
