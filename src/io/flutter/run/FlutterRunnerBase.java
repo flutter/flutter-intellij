@@ -117,6 +117,8 @@ public class FlutterRunnerBase extends DefaultProgramRunner {
         ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
       currentWorkingDirectory = LocalFileSystem.getInstance().findFileByPath((cwd));
 
+      // TODO: insert one-shot mode here
+
       executionResult = state.execute(env.getExecutor(), this);
       if (executionResult == null) {
         return null;
