@@ -64,7 +64,7 @@ Assuming the app state from above:
 * validate that the text and state resets
 
 Keybindings:
-* verify that the hot reload keybinding works (on a mac: `cmd-\`)
+* verify that the hot reload keybinding works (on a mac: `cmd-option-;` or `cmd-\`)
 
 ## Debugging Sessions
 
