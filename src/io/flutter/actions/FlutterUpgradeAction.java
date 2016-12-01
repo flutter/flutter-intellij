@@ -25,9 +25,9 @@ public class FlutterUpgradeAction extends DumbAwareAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    Project project = DumbAwareAction.getEventProject(event);
+    final Project project = DumbAwareAction.getEventProject(event);
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    Pair<Module, VirtualFile> pair = this.getModuleAndPubspecYamlFile(event);
+    final Pair<Module, VirtualFile> pair = this.getModuleAndPubspecYamlFile(event);
 
     if (sdk != null) {
       try {
