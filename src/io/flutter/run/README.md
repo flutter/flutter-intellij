@@ -11,7 +11,9 @@
   * `FlutterRunnerParameters`
   * `FlutterConfigurationEditorForm`
   * `FlutterAppState`
-* `FlutterRunConfigurationBase` - abstract base class for `FlutterRunConfiguration` (appears to be 
+* `FlutterDebugProcess` -  subclass of `DartVmServiceDebugProcessZ` that registers UI actions corresponding
+  to the current launch configuration (run vs. debug).
+* `FlutterRunConfigurationBase` - abstract base class for `FlutterRunConfiguration` (appears to be
 copied from `DartRunConfigurationBase` -- TODO: consider consolidating into `FlutterRunConfiguration`).
 * `FlutterRunConfigurationProducer` - creates `FlutterRunConfiguration` based on context (e.g., 
 active file).

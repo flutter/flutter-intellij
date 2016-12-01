@@ -183,9 +183,9 @@ public class FlutterDaemonService {
                              @NotNull RunMode mode,
                              @Nullable String relativePath)
     throws ExecutionException {
-    boolean isPaused = mode.isDebug();
-    boolean isHot = mode.isDebug() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
-    FlutterDaemonController controller = controllerFor(projectDir, deviceId);
+    final boolean startPaused = mode == RunMode.DEBUG;
+    final boolean isHot = mode.isReloadEnabled() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
+    final FlutterDaemonController controller = controllerFor(projectDir, deviceId);
     if (controller.getProcessHandler() == null || controller.getProcessHandler().isProcessTerminated()) {
       controller.forkProcess(project);
     }
@@ -193,7 +193,7 @@ public class FlutterDaemonService {
     synchronized (myLock) {
       mgr = myManager;
     }
-    return mgr.startApp(controller, deviceId, mode, project, isPaused, isHot, relativePath);
+    return mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
   }
 
   /**
