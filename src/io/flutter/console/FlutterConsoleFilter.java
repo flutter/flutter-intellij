@@ -9,9 +9,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -19,6 +16,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterErrors;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,11 +78,9 @@ public class FlutterConsoleFilter implements Filter {
           sdk.runProject(project, "Flutter doctor", null, "doctor");
         }
         catch (ExecutionException e) {
-          Notifications.Bus.notify(
-            new Notification(FlutterSdk.GROUP_DISPLAY_ID,
-                             FlutterBundle.message("flutter.command.exception.title"),
-                             FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
-                             NotificationType.ERROR));
+          FlutterErrors.showError(
+            FlutterBundle.message("flutter.command.exception.title"),
+            FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
           LOG.warn(e);
         }
       }
