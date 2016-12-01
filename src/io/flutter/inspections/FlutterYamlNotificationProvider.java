@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,21 +40,26 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
+    if (!FLUTTER_YAML_NAME.equalsIgnoreCase(file.getName())) {
+      return null;
+    }
+
     // Check for a flutter sdk.
-    Project project = ProjectLocator.getInstance().guessProjectForFile(file);
-
-    if (project != null) {
-      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (sdk == null) {
-        return null;
-      }
+    final Project project = ProjectLocator.getInstance().guessProjectForFile(file);
+    if (project == null) {
+      return null;
     }
 
-    if (FLUTTER_YAML_NAME.equalsIgnoreCase(file.getName())) {
-      return new FlutterYamlActionsPanel(file);
+    if (!FlutterSdkUtil.hasFlutterModule(project)) {
+      return null;
     }
 
-    return null;
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) {
+      return null;
+    }
+
+    return new FlutterYamlActionsPanel(file);
   }
 }
 
