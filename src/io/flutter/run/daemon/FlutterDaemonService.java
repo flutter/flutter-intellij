@@ -183,9 +183,9 @@ public class FlutterDaemonService {
                              @NotNull RunMode mode,
                              @Nullable String relativePath)
     throws ExecutionException {
-    boolean startPaused = mode.isDebug();
-    boolean isHot = mode.isDebug() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
-    FlutterDaemonController controller = createDaemonController(projectDir);
+    final boolean startPaused = mode == RunMode.DEBUG;
+    final boolean isHot = mode.isReloadEnabled() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
+    final FlutterDaemonController controller = createController(projectDir);
     controller.startRunnerDaemon(project, deviceId, mode, startPaused, isHot, relativePath);
     FlutterAppManager mgr;
     synchronized (myLock) {
@@ -205,7 +205,7 @@ public class FlutterDaemonService {
    * @return A FlutterDaemonController that can be used to start the app in the project directory
    */
   @NotNull
-  private FlutterDaemonController createDaemonController(String projectDir) {
+  private FlutterDaemonController createController(String projectDir) {
     synchronized (myLock) {
       FlutterDaemonController newController = new FlutterDaemonController(projectDir);
       myControllers.add(newController);

@@ -13,7 +13,7 @@
   <!-- supported in CE and UE -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
   <depends>com.intellij.modules.java</depends>
-  
+
   <change-notes>
 <![CDATA[
 0.1.5:
@@ -88,6 +88,10 @@
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
+    <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter: Upgrade"
+            description="Run 'flutter upgrade'"/>
+    <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter: Doctor"
+            description="Run 'flutter doctor'"/>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

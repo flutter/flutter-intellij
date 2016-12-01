@@ -30,7 +30,7 @@ import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
-import io.flutter.console.FlutterConsole;
+import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
 import io.flutter.run.FlutterRunnerParameters;
@@ -43,9 +43,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterSdk {
-
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
-  public static final String GROUP_DISPLAY_ID = "Flutter Command Invocation";
+  public static final String GROUP_DISPLAY_ID = "Flutter Commands";
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
   private final @NotNull String myHomePath;
@@ -116,20 +115,57 @@ public class FlutterSdk {
             cmd.onTerminate(module, workingDir, args);
           }
         });
+
         if (cmd.attachToConsole() && module != null) {
           final String commandPrefix = "[" + module.getName() + "] ";
-          FlutterConsole.attach(module, handler, commandPrefix + cmd.title);
+          FlutterConsoleHelper.attach(module, handler, commandPrefix + cmd.title);
         }
 
         cmd.onStart(module, workingDir, args);
-
         handler.startNotify();
       }
     }
     catch (ExecutionException e) {
       inProgress.set(false);
       Notifications.Bus.notify(
-        new Notification(GROUP_DISPLAY_ID, cmd.title, FlutterBundle.message("flutter.command.exception", e.getMessage()),
+        new Notification(GROUP_DISPLAY_ID, cmd.title, FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
+                         NotificationType.ERROR));
+    }
+  }
+
+  public void runProject(@NotNull Project project,
+                         @NotNull String title,
+                         @Nullable ProcessListener listener,
+                         @NotNull String... args)
+    throws ExecutionException {
+    final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
+    final GeneralCommandLine command = new GeneralCommandLine();
+    command.setExePath(flutterPath);
+    // Example: [create, foo_bar]
+    String[] toolArgs = ArrayUtil.prepend("--no-color", args);
+    command.addParameters(toolArgs);
+
+    try {
+      if (inProgress.compareAndSet(false, true)) {
+        final OSProcessHandler handler = new OSProcessHandler(command);
+        if (listener != null) {
+          handler.addProcessListener(listener);
+        }
+        handler.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void processTerminated(final ProcessEvent event) {
+            inProgress.set(false);
+          }
+        });
+
+        FlutterConsoleHelper.attach(project, handler, title);
+        handler.startNotify();
+      }
+    }
+    catch (ExecutionException e) {
+      inProgress.set(false);
+      Notifications.Bus.notify(
+        new Notification(GROUP_DISPLAY_ID, title, FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
                          NotificationType.ERROR));
     }
   }
@@ -155,7 +191,7 @@ public class FlutterSdk {
 
   public enum Command {
 
-    CREATE("create", "Flutter: Create") {
+    CREATE("create", "Flutter create") {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
         // Enable Dart.
@@ -226,8 +262,9 @@ public class FlutterSdk {
         });
       }
     },
-    DOCTOR("doctor", "Flutter: Doctor"),
-    VERSION("--version", "Flutter: Version") {
+    DOCTOR("doctor", "Flutter doctor"),
+    UPGRADE("upgrade", "Flutter upgrade"),
+    VERSION("--version", "Flutter version") {
       @Override
       boolean attachToConsole() {
         return false;

@@ -41,7 +41,7 @@ public class FlutterAppState extends FlutterAppStateBase {
     super(environment);
     String mode = environment.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
-      myMode = RunMode.RELEASE;
+      myMode = RunMode.RUN;
     }
     else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.DEBUG;
@@ -49,6 +49,11 @@ public class FlutterAppState extends FlutterAppStateBase {
     else {
       myMode = RunMode.PROFILE;
     }
+  }
+
+  @NotNull
+  public RunMode getMode() {
+    return myMode;
   }
 
   /**
