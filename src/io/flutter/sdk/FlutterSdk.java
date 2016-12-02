@@ -15,9 +15,6 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -30,6 +27,7 @@ import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterErrors;
 import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
@@ -44,7 +42,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
-  public static final String GROUP_DISPLAY_ID = "Flutter Commands";
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
   private final @NotNull String myHomePath;
@@ -127,9 +124,9 @@ public class FlutterSdk {
     }
     catch (ExecutionException e) {
       inProgress.set(false);
-      Notifications.Bus.notify(
-        new Notification(GROUP_DISPLAY_ID, cmd.title, FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
-                         NotificationType.ERROR));
+      FlutterErrors.showError(
+        cmd.title,
+        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
     }
   }
 
@@ -164,9 +161,9 @@ public class FlutterSdk {
     }
     catch (ExecutionException e) {
       inProgress.set(false);
-      Notifications.Bus.notify(
-        new Notification(GROUP_DISPLAY_ID, title, FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
-                         NotificationType.ERROR));
+      FlutterErrors.showError(
+        title,
+        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
     }
   }
 
