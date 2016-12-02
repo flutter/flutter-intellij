@@ -1,24 +1,26 @@
-# Debugger Package Overiew
+# Debugger Architecture Overiew
 
-## `flutter-intellij/src`
+## Packages:
 
 ### `io.flutter.run`
 
 * `FlutterAppState` - a `RunProfileState` that puts together and starts Flutter command-line processes.
 * `FlutterAppStateBase` - abstract base class for `FlutterAppState` (appears to be copied from
-`DartCommandLineRunningState` -- TODO: consider consolidating into `FlutterAppState`).
-* `FlutterRunConfiguration` - creates 
+  `DartCommandLineRunningState`)
+   * TODO: consider consolidating into `FlutterAppState`
+* `FlutterRunConfiguration` - creates:
   * `FlutterRunnerParameters`
   * `FlutterConfigurationEditorForm`
   * `FlutterAppState`
 * `FlutterDebugProcess` -  subclass of `DartVmServiceDebugProcessZ` that registers UI actions corresponding
   to the current launch configuration (run vs. debug).
 * `FlutterRunConfigurationBase` - abstract base class for `FlutterRunConfiguration` (appears to be
-copied from `DartRunConfigurationBase` -- TODO: consider consolidating into `FlutterRunConfiguration`).
-* `FlutterRunConfigurationProducer` - creates `FlutterRunConfiguration` based on context (e.g., 
-active file).
-* `FlutterRunConfigurationType` - singleton that determines if Flutter run configurations are 
-appropriate for a given project and creates
+  copied from `DartRunConfigurationBase`).
+  * TODO: consider consolidating into `FlutterRunConfiguration`
+* `FlutterRunConfigurationProducer` - creates `FlutterRunConfiguration` based on context (e.g.,
+  active file).
+* `FlutterRunConfigurationType` - singleton that determines if Flutter run configurations are
+  appropriate for a given project and creates
   * `FlutterConfigurationFactory`
   * template `FlutterRunConfiguration`s
 * `FlutterRunner` -
@@ -26,7 +28,7 @@ appropriate for a given project and creates
   * determines if an executor (run or debug) can run based on device connection status
   * executes run (via current `FlutterAppState`)
 * `FlutterRunnerBase` - copied from the Dart plugin and modified to use `DartVmServiceDebugProcessZ`
- to control the debugger, and to define `ObservatoryConnector`.
+  to control the debugger, and to define `ObservatoryConnector`.
 * `FlutterRunnerParameters` - encapsulates configuration options for Flutter runs.
 * `FlutterConfigurationEditorForm` - form for editing run configuration settings.
 
@@ -43,8 +45,7 @@ appropriate for a given project and creates
 * `FlutterDaemonController`
   * starts a Flutter daemon process, as an external OS-level process.
   * reads from the process standard output and writes to the process standard input, using JSON
-  format to control the daemon.
+    format to control the daemon.
   * defines classes (instances of a base `FlutterJsonObject` that process JSON).
-
 * `RunningFlutterApp` - concrete implementation of `FlutterApp`.
 
