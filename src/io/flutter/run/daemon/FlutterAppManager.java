@@ -597,6 +597,7 @@ public class FlutterAppManager {
     abstract void process(FlutterAppManager manager, FlutterDaemonController controller);
   }
 
+  @SuppressWarnings("CanBeFinal")
   private static class LogMessageEvent extends Event {
     // "event":"daemon.eventLogMessage"
     @SuppressWarnings("unused") private String level;
@@ -608,6 +609,7 @@ public class FlutterAppManager {
     }
   }
 
+  @SuppressWarnings("CanBeFinal")
   private static class AppLogEvent extends Event {
     // "event":"app.log"
     @SuppressWarnings("unused") private String appId;
@@ -618,6 +620,7 @@ public class FlutterAppManager {
     }
   }
 
+  @SuppressWarnings("CanBeFinal")
   private static class AppProgressEvent extends Event {
     // "event":"app.progress"
     @SuppressWarnings("unused") private String appId;
@@ -631,6 +634,7 @@ public class FlutterAppManager {
     }
   }
 
+  @SuppressWarnings("CanBeFinal")
   private static class DeviceAddedEvent extends Event {
     // "event":"device.added"
     @SuppressWarnings("unused") private String id;
@@ -643,6 +647,7 @@ public class FlutterAppManager {
     }
   }
 
+  @SuppressWarnings("CanBeFinal")
   private static class DeviceRemovedEvent extends Event {
     // "event":"device.removed"
     @SuppressWarnings("unused") private String id;
@@ -667,6 +672,7 @@ public class FlutterAppManager {
     }
   }
 
+  @SuppressWarnings("CanBeFinal")
   static class AppStartedEvent extends Event {
     // "event":"app.started"
     @SuppressWarnings("unused") String appId;
@@ -687,6 +693,7 @@ public class FlutterAppManager {
     }
   }
 
+  @SuppressWarnings("CanBeFinal")
   private static class AppDebugPortEvent extends Event {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
