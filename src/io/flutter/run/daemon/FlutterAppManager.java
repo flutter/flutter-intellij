@@ -30,10 +30,10 @@ import java.util.stream.Stream;
 
 /**
  * Keeper of running Flutter apps.
+ *
  * TODO(messick) Clean up myResponses as things change
  */
 public class FlutterAppManager {
-
   private static final String CMD_APP_START = "app.start";
   private static final String CMD_APP_STOP = "app.stop";
   private static final String CMD_APP_RESTART = "app.restart";
@@ -67,6 +67,7 @@ public class FlutterAppManager {
       throw new ProcessCanceledException();
     }
     myProgressHandler = new ProgressHandler(project);
+    // TODO(devoncarew): We don't need this call.
     if (!waitForDevice(deviceId)) {
       return null;
     }
@@ -156,13 +157,11 @@ public class FlutterAppManager {
   }
 
   void startDevicePoller(@NotNull FlutterDaemonController pollster) {
-    final Project project = null;
     try {
-      pollster.forkProcess(project);
+      pollster.startDevicePoller();
     }
     catch (ExecutionException e) {
-      // User notification comes in the way of editor toasts.
-      // See: IncompatibleDartPluginNotification.
+      // User notification comes in the way of editor toasts (see IncompatibleDartPluginNotification).
       myLogger.warn(e);
     }
   }
@@ -315,11 +314,7 @@ public class FlutterAppManager {
   }
 
   private void addPendingCmd(int id, @NotNull Command command) {
-    List<Command> list = myPendingCommands.get(id);
-    if (list == null) {
-      list = new ArrayList<>();
-      myPendingCommands.put(id, list);
-    }
+    List<Command> list = myPendingCommands.computeIfAbsent(id, k -> new ArrayList<>());
     list.add(command);
   }
 

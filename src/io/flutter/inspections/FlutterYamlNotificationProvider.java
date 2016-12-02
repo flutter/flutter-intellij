@@ -70,7 +70,8 @@ class FlutterYamlActionsPanel extends EditorNotificationPanel {
     myFile = file;
 
     myLinksPanel.add(new JLabel("Flutter actions:"));
-    createActionLabel("Flutter upgrade...", "flutter.upgrade");
+    createActionLabel("Flutter upgrade", "flutter.upgrade");
+    myLinksPanel.add(new JLabel("        "));
     createActionLabel("Flutter doctor", "flutter.doctor");
 
     // TODO: Add for 2017.1.

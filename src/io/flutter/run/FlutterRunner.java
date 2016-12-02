@@ -141,6 +141,7 @@ public class FlutterRunner extends FlutterRunnerBase {
       ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
     currentWorkingDirectory = LocalFileSystem.getInstance().findFileByPath((cwd));
 
+    // TODO(devoncarew): Insert one-shot mode here.
     executionResult = appState.execute(env.getExecutor(), this);
 
     debuggingHost = null; //TODO: should this be set?

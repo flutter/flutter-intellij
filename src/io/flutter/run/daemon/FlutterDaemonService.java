@@ -185,14 +185,13 @@ public class FlutterDaemonService {
     throws ExecutionException {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
-    final FlutterDaemonController controller = controllerFor(projectDir, deviceId);
-    if (controller.getProcessHandler() == null || controller.getProcessHandler().isProcessTerminated()) {
-      controller.forkProcess(project);
-    }
+    final FlutterDaemonController controller = createController(projectDir);
+    controller.startRunnerDaemon(project, deviceId, mode, startPaused, isHot, relativePath);
     FlutterAppManager mgr;
     synchronized (myLock) {
       mgr = myManager;
     }
+    // TODO(devoncarew): Remove this call - inline what it does.
     return mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
   }
 
@@ -203,19 +202,11 @@ public class FlutterDaemonService {
    * NB: Currently controllers are not shared due to limitations of the debugger.
    *
    * @param projectDir The path to the project root directory
-   * @param deviceId   The device id reported by the daemon
    * @return A FlutterDaemonController that can be used to start the app in the project directory
    */
   @NotNull
-  private FlutterDaemonController controllerFor(String projectDir, String deviceId) {
+  private FlutterDaemonController createController(String projectDir) {
     synchronized (myLock) {
-      //for (FlutterDaemonController controller : myControllers) {
-      //  if (controller.isForProject(projectDir)) {
-      //    controller.setProjectAndDevice(projectDir, deviceId);
-      //    controller.addListener(myListener);
-      //    return controller;
-      //  }
-      //}
       FlutterDaemonController newController = new FlutterDaemonController(projectDir);
       myControllers.add(newController);
       newController.addListener(myListener);
@@ -224,15 +215,17 @@ public class FlutterDaemonService {
   }
 
   void schedulePolling() {
-    if (!FlutterSdkUtil.isFluttering()) return;
+    if (!FlutterSdkUtil.hasFlutterModules()) return;
+
     synchronized (myLock) {
       if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
         return;
       }
     }
+
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {
-        myPollster = new FlutterDaemonController(null);
+        myPollster = new FlutterDaemonController();
         myPollster.addListener(myListener);
         myControllers.add(myPollster);
         myManager.startDevicePoller(myPollster);
@@ -242,14 +235,9 @@ public class FlutterDaemonService {
 
   private void discard(FlutterDaemonController controller) {
     synchronized (myLock) {
-      if (controller == myPollster) {
-        controller.setProjectAndDevice(null, null);
-      }
-      else {
-        myControllers.remove(controller);
-        controller.removeListener(myListener);
-        controller.forceExit();
-      }
+      myControllers.remove(controller);
+      controller.removeListener(myListener);
+      controller.forceExit();
     }
   }
 

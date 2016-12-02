@@ -10,9 +10,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
@@ -21,9 +18,9 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterErrors;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
@@ -165,22 +162,18 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
           @Override
           public void processTerminated(final ProcessEvent event) {
             if (event.getExitCode() != 0) {
-              Notifications.Bus.notify(
-                new Notification(FlutterSdk.GROUP_DISPLAY_ID,
-                                 "Error Opening Simulator",
-                                 event.getText(),
-                                 NotificationType.ERROR));
+              FlutterErrors.showError(
+                "Error Opening Simulator",
+                event.getText());
             }
           }
         });
         handler.startNotify();
       }
       catch (ExecutionException e) {
-        Notifications.Bus.notify(
-          new Notification(FlutterSdk.GROUP_DISPLAY_ID,
-                           "Error Opening Simulator",
-                           FlutterBundle.message("flutter.command.exception.message", e.getMessage()),
-                           NotificationType.ERROR));
+        FlutterErrors.showError(
+          "Error Opening Simulator",
+          FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
       }
     }
   }

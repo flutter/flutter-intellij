@@ -76,7 +76,7 @@ public class FlutterSdkManager {
   }
 
   private static boolean isGlobalFlutterSdkSetAndNeeded() {
-    return FlutterSdk.getGlobalFlutterSdk() != null && FlutterSdkUtil.isFluttering();
+    return FlutterSdk.getGlobalFlutterSdk() != null && FlutterSdkUtil.hasFlutterModules();
   }
 
   /**
