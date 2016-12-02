@@ -53,6 +53,7 @@ public class FlutterConsoleHelper {
   private static void show(@NotNull Project project, @Nullable Module module, @NotNull OSProcessHandler processHandler) {
     if (findExistingInfoForCommand(project, module) != null) {
       final FlutterConsoleInfo info = findExistingInfoForCommand(project, module);
+      assert info != null;
       info.console.clear();
       info.console.attachToProcess(processHandler);
 

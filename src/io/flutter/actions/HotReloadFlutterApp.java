@@ -39,7 +39,7 @@ public class HotReloadFlutterApp extends FlutterAppAction {
       final Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
       final Method method = clazz.getMethod("isSupported", String.class);
       final Object result = method.invoke(null, featureId);
-      return result instanceof Boolean && ((Boolean)result).booleanValue();
+      return result instanceof Boolean && (Boolean)result;
     }
     catch (Throwable t) {
       return false;

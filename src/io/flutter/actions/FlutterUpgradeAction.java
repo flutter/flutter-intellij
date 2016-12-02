@@ -28,18 +28,25 @@ public class FlutterUpgradeAction extends DumbAwareAction {
   @Override
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    final Pair<Module, VirtualFile> pair = this.getModuleAndPubspecYamlFile(event);
+    final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
 
     if (sdk != null) {
-      try {
-        sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
+      final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(event);
+      if (pair != null) {
+        try {
+          sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
+        }
+        catch (ExecutionException e) {
+          FlutterErrors.showError(
+            FlutterBundle.message("flutter.command.exception.title"),
+            FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+          LOG.warn(e);
+        }
       }
-      catch (ExecutionException e) {
+      else {
         FlutterErrors.showError(
           FlutterBundle.message("flutter.command.exception.title"),
-          FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-        LOG.warn(e);
+          FlutterBundle.message("flutter.command.upgrade.missing.pubspec.message", project.getName()));
       }
     }
     else {

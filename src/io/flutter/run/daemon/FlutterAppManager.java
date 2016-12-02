@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 
 /**
  * Keeper of running Flutter apps.
- *
+ * <p>
  * TODO(messick) Clean up myResponses as things change
  */
 public class FlutterAppManager {
@@ -404,7 +404,7 @@ public class FlutterAppManager {
       myService.getConnectedDevices().stream().filter(device -> device.deviceName().equals(removed.name) &&
                                                                 device.deviceId().equals(removed.id) &&
                                                                 device.platform().equals(removed.platform))
-        .forEach(device -> myService.removeConnectedDevice(device));
+        .forEach(myService::removeConnectedDevice);
     }
   }
 
@@ -600,7 +600,7 @@ public class FlutterAppManager {
   private static class LogMessageEvent extends Event {
     // "event":"daemon.eventLogMessage"
     @SuppressWarnings("unused") private String level;
-    @SuppressWarnings("unused") private final String message;
+    @SuppressWarnings("unused") private String message;
     @SuppressWarnings("unused") private String stackTrace;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
@@ -610,8 +610,8 @@ public class FlutterAppManager {
 
   private static class AppLogEvent extends Event {
     // "event":"app.log"
-    @SuppressWarnings("unused") private final String appId;
-    @SuppressWarnings("unused") private final String log;
+    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private String log;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventLogMessage(this, controller);
@@ -620,11 +620,11 @@ public class FlutterAppManager {
 
   private static class AppProgressEvent extends Event {
     // "event":"app.progress"
-    @SuppressWarnings("unused") private final String appId;
+    @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private String id;
-    @SuppressWarnings("unused") private final String progressId;
-    @SuppressWarnings("unused") private final String message;
-    @SuppressWarnings("unused") private final boolean finished;
+    @SuppressWarnings("unused") private String progressId;
+    @SuppressWarnings("unused") private String message;
+    @SuppressWarnings("unused") private boolean finished;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventProgressMessage(this, controller);
@@ -633,10 +633,10 @@ public class FlutterAppManager {
 
   private static class DeviceAddedEvent extends Event {
     // "event":"device.added"
-    @SuppressWarnings("unused") private final String id;
-    @SuppressWarnings("unused") private final String name;
-    @SuppressWarnings("unused") private final String platform;
-    @SuppressWarnings("unused") private final boolean emulator;
+    @SuppressWarnings("unused") private String id;
+    @SuppressWarnings("unused") private String name;
+    @SuppressWarnings("unused") private String platform;
+    @SuppressWarnings("unused") private boolean emulator;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDeviceAdded(this, controller);
@@ -645,9 +645,9 @@ public class FlutterAppManager {
 
   private static class DeviceRemovedEvent extends Event {
     // "event":"device.removed"
-    @SuppressWarnings("unused") private final String id;
-    @SuppressWarnings("unused") private final String name;
-    @SuppressWarnings("unused") private final String platform;
+    @SuppressWarnings("unused") private String id;
+    @SuppressWarnings("unused") private String name;
+    @SuppressWarnings("unused") private String platform;
     @SuppressWarnings("unused") private boolean emulator;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
@@ -669,7 +669,7 @@ public class FlutterAppManager {
 
   static class AppStartedEvent extends Event {
     // "event":"app.started"
-    @SuppressWarnings("unused") final String appId;
+    @SuppressWarnings("unused") String appId;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       final RunningFlutterApp app = manager.findApp(controller, appId);
@@ -689,9 +689,9 @@ public class FlutterAppManager {
 
   private static class AppDebugPortEvent extends Event {
     // "event":"app.eventDebugPort"
-    @SuppressWarnings("unused") private final String appId;
-    @SuppressWarnings("unused") private final int port;
-    @SuppressWarnings("unused") private final String baseUri;
+    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private int port;
+    @SuppressWarnings("unused") private String baseUri;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDebugPort(this, controller);

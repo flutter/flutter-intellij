@@ -40,6 +40,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.actions.HotReloadFlutterApp;
 import io.flutter.actions.OpenComputedUrlAction;
 import io.flutter.actions.RestartFlutterApp;
+import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -611,8 +612,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   private String getRemoteProjectRootUri() {
     if (!baseUriWasInited) {
-      if (myConnector.getApp().baseUri() != null) {
-        setRemoteProjectRootUri(myConnector.getApp().baseUri());
+      final FlutterApp app = myConnector != null ? myConnector.getApp() : null;
+      if (app != null && app.baseUri() != null) {
+        setRemoteProjectRootUri(app.baseUri());
       }
     }
 

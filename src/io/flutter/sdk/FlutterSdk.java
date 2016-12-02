@@ -114,7 +114,6 @@ public class FlutterSdk {
         });
 
         if (cmd.attachToConsole() && module != null) {
-          final String commandPrefix = "[" + module.getName() + "] ";
           FlutterConsoleHelper.attach(module, handler);
         }
 

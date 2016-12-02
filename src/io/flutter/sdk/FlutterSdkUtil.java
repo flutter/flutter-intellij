@@ -117,7 +117,7 @@ public class FlutterSdkUtil {
    * @return true if an open Flutter project is found
    */
   public static boolean hasFlutterModules() {
-    return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch((Project p) -> FlutterSdkUtil.hasFlutterModule(p));
+    return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch(FlutterSdkUtil::hasFlutterModule);
   }
 
   @Nullable
