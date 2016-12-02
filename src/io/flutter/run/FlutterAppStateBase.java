@@ -182,7 +182,7 @@ public abstract class FlutterAppStateBase extends CommandLineState {
 
     final String arguments = myRunnerParameters.getArguments();
     if (arguments != null) {
-      StringTokenizer argumentsTokenizer = new CommandLineTokenizer(arguments);
+      final StringTokenizer argumentsTokenizer = new CommandLineTokenizer(arguments);
       while (argumentsTokenizer.hasMoreTokens()) {
         commandLine.addParameter(argumentsTokenizer.nextToken());
       }

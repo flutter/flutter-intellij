@@ -77,7 +77,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Nullable private final String myDASExecutionContextId;
   private final int myTimeout;
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
-  @Nullable private ObservatoryConnector myConnector;
+  @Nullable private final ObservatoryConnector myConnector;
   private boolean baseUriWasInited = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
@@ -203,11 +203,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       if (myConnector != null) {
-        long timeout = (long)myTimeout;
-        long startTime = System.currentTimeMillis();
+        final long timeout = (long)myTimeout;
+        final long startTime = System.currentTimeMillis();
         while (!myConnector.isConnectionReady()) {
           if (System.currentTimeMillis() > startTime + timeout) {
-            String message = "Observatory connection never became ready";
+            final String message = "Observatory connection never became ready";
             getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
             getSession().stop();
             return;
@@ -219,8 +219,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         myObservatoryPort = myConnector.getPort();
       }
 
-      long timeout = (long)myTimeout;
-      long startTime = System.currentTimeMillis();
+      final long timeout = (long)myTimeout;
+      final long startTime = System.currentTimeMillis();
 
       try {
         while (true) {
@@ -339,7 +339,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
     if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
-      DartVmServiceSuspendContext suspendContext = (DartVmServiceSuspendContext)context;
+      final DartVmServiceSuspendContext suspendContext = (DartVmServiceSuspendContext)context;
       final StepOption stepOption = suspendContext != null && suspendContext.getAtAsyncSuspension() ? StepOption.OverAsyncSuspension
                                                                                                     : StepOption.Over;
       myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, stepOption);
@@ -429,7 +429,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   public void handleWriteEvent(String base64Data) {
-    String message = new String(Base64.getDecoder().decode(base64Data), StandardCharsets.UTF_8);
+    final String message = new String(Base64.getDecoder().decode(base64Data), StandardCharsets.UTF_8);
     getSession().getConsoleView().print(message, ConsoleViewContentType.NORMAL_OUTPUT);
   }
 
@@ -468,7 +468,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
     final Set<String> result = new HashSet<>();
-    String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
+    final String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
 
     // If dart:, short circut the results.
     if (uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
@@ -526,7 +526,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
       if (myDASExecutionContextId != null && !isDartPatchUri(uri)) {
         if (getRemoteProjectRootUri() == null || !uri.contains(getRemoteProjectRootUri())) {
-          String path = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, null, uri);
+          final String path = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, null, uri);
           if (path != null) {
             return LocalFileSystem.getInstance().findFileByPath(path);
           }
@@ -588,7 +588,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     for (List<Integer> lineAndPairs : tokenPosTable) {
       final Iterator<Integer> iterator = lineAndPairs.iterator();
-      int line = Math.max(0, iterator.next() - 1);
+      final int line = Math.max(0, iterator.next() - 1);
       while (iterator.hasNext()) {
         final int tokenPos = iterator.next();
         final int column = Math.max(0, iterator.next() - 1);
@@ -618,7 +618,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     try {
       // We use reflection here to access a private field in the super class.
-      java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
+      final java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
       return field == null ? null : (String)field.get(this);
     }
     catch (IllegalAccessException ex) {
@@ -632,7 +632,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     try {
       // We use reflection here to access a private field in the super class.
-      java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
+      final java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
       if (field != null) {
         field.set(this, value);
       }
@@ -648,7 +648,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   private java.lang.reflect.Field getDeclaredField(Class clazz, String name) {
     try {
-      java.lang.reflect.Field field = clazz.getDeclaredField(name);
+      final java.lang.reflect.Field field = clazz.getDeclaredField(name);
       field.setAccessible(true);
       return field;
 

@@ -27,7 +27,7 @@ public class HotReloadFlutterApp extends FlutterAppAction {
   public void actionPerformed(AnActionEvent e) {
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
+      final boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
       getApp().performHotReload(pauseAfterRestart);
     });
   }
@@ -36,9 +36,9 @@ public class HotReloadFlutterApp extends FlutterAppAction {
     // return DartPluginCapabilities.isSupported(featureId);
 
     try {
-      Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
-      Method method = clazz.getMethod("isSupported", String.class);
-      Object result = method.invoke(null, featureId);
+      final Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
+      final Method method = clazz.getMethod("isSupported", String.class);
+      final Object result = method.invoke(null, featureId);
       return result instanceof Boolean && ((Boolean)result).booleanValue();
     }
     catch (Throwable t) {

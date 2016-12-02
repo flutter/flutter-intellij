@@ -31,17 +31,17 @@ public class FlutterDaemonService {
   private static final boolean HOT_MODE_RELEASE = false;
 
   private final Object myLock = new Object();
-  private List<FlutterDaemonController> myControllers = new ArrayList<>();
+  private final List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
-  private Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
+  private final Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
   private final SdkListener mySdkListener = new SdkListener();
   private ConnectedDevice mySelectedDevice;
-  private FlutterAppManager myManager = new FlutterAppManager(this);
-  private List<DeviceListener> myDeviceListeners = new ArrayList<>();
+  private final FlutterAppManager myManager = new FlutterAppManager(this);
+  private final List<DeviceListener> myDeviceListeners = new ArrayList<>();
 
-  private DaemonListener myListener = new DaemonListener() {
+  private final DaemonListener myListener = new DaemonListener() {
     public void daemonInput(String string, FlutterDaemonController controller) {
-      FlutterAppManager mgr;
+      final FlutterAppManager mgr;
       synchronized (myLock) {
         mgr = myManager;
       }
@@ -49,7 +49,7 @@ public class FlutterDaemonService {
     }
 
     public void enableDevicePolling(FlutterDaemonController controller) {
-      FlutterAppManager mgr;
+      final FlutterAppManager mgr;
       synchronized (myLock) {
         mgr = myManager;
       }
@@ -59,7 +59,7 @@ public class FlutterDaemonService {
     @Override
     public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
       assert handler == controller.getProcessHandler();
-      FlutterAppManager mgr;
+      final FlutterAppManager mgr;
       synchronized (myLock) {
         mgr = myManager;
       }
@@ -124,7 +124,7 @@ public class FlutterDaemonService {
    * @return List of ConnectedDevice
    */
   public List<ConnectedDevice> getConnectedDevices() {
-    SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
+    final SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
     list.addAll(myConnectedDevices);
     return list;
   }
@@ -187,7 +187,7 @@ public class FlutterDaemonService {
     final boolean isHot = mode.isReloadEnabled() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
     final FlutterDaemonController controller = createController(projectDir);
     controller.startRunnerDaemon(project, deviceId, mode, startPaused, isHot, relativePath);
-    FlutterAppManager mgr;
+    final FlutterAppManager mgr;
     synchronized (myLock) {
       mgr = myManager;
     }
@@ -207,7 +207,7 @@ public class FlutterDaemonService {
   @NotNull
   private FlutterDaemonController createController(String projectDir) {
     synchronized (myLock) {
-      FlutterDaemonController newController = new FlutterDaemonController(projectDir);
+      final FlutterDaemonController newController = new FlutterDaemonController(projectDir);
       myControllers.add(newController);
       newController.addListener(myListener);
       return newController;

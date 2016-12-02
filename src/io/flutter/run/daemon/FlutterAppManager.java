@@ -41,13 +41,13 @@ public class FlutterAppManager {
 
   private static final Gson GSON = new Gson();
 
-  private Logger myLogger = Logger.getInstance("#io.flutter.run.daemon.FlutterAppManager");
-  private FlutterDaemonService myService;
-  private List<FlutterApp> myApps = new ArrayList<>();
-  private Map<Integer, List<Command>> myPendingCommands = new THashMap<>();
+  private final Logger myLogger = Logger.getInstance("#io.flutter.run.daemon.FlutterAppManager");
+  private final FlutterDaemonService myService;
+  private final List<FlutterApp> myApps = new ArrayList<>();
+  private final Map<Integer, List<Command>> myPendingCommands = new THashMap<>();
   private int myCommandId = 0;
   private final Object myLock = new Object();
-  private Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
+  private final Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
   private ProgressHandler myProgressHandler;
   private StopWatch myProgressStopWatch;
 
@@ -71,20 +71,20 @@ public class FlutterAppManager {
     if (!waitForDevice(deviceId)) {
       return null;
     }
-    FlutterDaemonService service;
+    final FlutterDaemonService service;
     synchronized (myLock) {
       service = myService;
     }
-    RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, null);
+    final RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, null);
     app.changeState(FlutterApp.State.STARTING);
-    AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), startPaused, null, mode.mode(), target, isHot);
-    Method cmd = makeMethod(CMD_APP_START, appStart);
+    final AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), startPaused, null, mode.mode(), target, isHot);
+    final Method cmd = makeMethod(CMD_APP_START, appStart);
     CompletableFuture
       .supplyAsync(() -> sendCommand(controller, cmd))
       .thenApplyAsync(this::waitForResponse)
       .thenAcceptAsync((started) -> {
         if (started instanceof AppStartEvent) {
-          AppStartEvent appStarted = (AppStartEvent)started;
+          final AppStartEvent appStarted = (AppStartEvent)started;
           app.setApp(appStarted);
         }
       });
@@ -95,7 +95,7 @@ public class FlutterAppManager {
   }
 
   private boolean isAppRunning(String deviceId, FlutterDaemonController controller) {
-    Stream<FlutterApp> apps;
+    final Stream<FlutterApp> apps;
     synchronized (myLock) {
       apps = myApps.stream();
     }
@@ -103,11 +103,11 @@ public class FlutterAppManager {
   }
 
   private boolean waitForDevice(@NotNull String deviceId) {
-    long timeout = 5000L;
-    Boolean[] resp = {false};
+    final long timeout = 5000L;
+    final Boolean[] resp = {false};
     TimeoutUtil.executeWithTimeout(timeout, () -> {
       while (!resp[0]) {
-        Stream<ConnectedDevice> stream;
+        final Stream<ConnectedDevice> stream;
         synchronized (myLock) {
           stream = myService.getConnectedDevices().stream();
         }
@@ -121,11 +121,11 @@ public class FlutterAppManager {
 
   @Nullable
   private RunningFlutterApp waitForApp(@NotNull FlutterDaemonController controller, @NotNull String appId) {
-    long timeout = 10000L;
-    RunningFlutterApp[] resp = {null};
+    final long timeout = 10000L;
+    final RunningFlutterApp[] resp = {null};
     TimeoutUtil.executeWithTimeout(timeout, () -> {
       while (resp[0] == null) {
-        RunningFlutterApp app = findApp(controller, appId);
+        final RunningFlutterApp app = findApp(controller, appId);
         if (app != null) {
           resp[0] = app;
         }
@@ -137,7 +137,7 @@ public class FlutterAppManager {
   @Nullable
   private FlutterJsonObject waitForResponse(@NotNull Method cmd) {
     final long timeout = 10000L;
-    FlutterJsonObject[] resp = {null};
+    final FlutterJsonObject[] resp = {null};
     try {
       TimeoutUtil.executeWithTimeout(timeout, () -> {
         while (resp[0] == null) {
@@ -168,10 +168,10 @@ public class FlutterAppManager {
 
   void processInput(@NotNull String string, @NotNull FlutterDaemonController controller) {
     try {
-      JsonParser jp = new JsonParser();
-      JsonElement elem = jp.parse(string);
-      JsonObject obj = elem.getAsJsonObject();
-      JsonPrimitive primId = obj.getAsJsonPrimitive("id");
+      final JsonParser jp = new JsonParser();
+      final JsonElement elem = jp.parse(string);
+      final JsonObject obj = elem.getAsJsonObject();
+      final JsonPrimitive primId = obj.getAsJsonPrimitive("id");
       if (primId == null) {
         handleEvent(obj, controller, string);
       }
@@ -185,7 +185,7 @@ public class FlutterAppManager {
   }
 
   void handleResponse(int cmdId, @NotNull JsonObject obj, @NotNull FlutterDaemonController controller) {
-    Command cmd = findPendingCmd(cmdId, controller);
+    final Command cmd = findPendingCmd(cmdId, controller);
     try {
       cmd.method.process(obj, this, controller);
     }
@@ -195,18 +195,18 @@ public class FlutterAppManager {
   }
 
   void handleEvent(@NotNull JsonObject obj, @NotNull FlutterDaemonController controller, @NotNull String json) {
-    JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
+    final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
     if (primEvent == null) {
       myLogger.error("Invalid JSON from flutter: " + json);
       return;
     }
-    String eventName = primEvent.getAsString();
-    JsonObject params = obj.getAsJsonObject("params");
+    final String eventName = primEvent.getAsString();
+    final JsonObject params = obj.getAsJsonObject("params");
     if (eventName == null || params == null) {
       myLogger.error("Bad event from flutter: " + json);
       return;
     }
-    Event eventHandler = eventHandler(eventName, json);
+    final Event eventHandler = eventHandler(eventName, json);
     if (eventHandler == null) return;
     eventHandler.from(params).process(this, controller);
   }
@@ -218,8 +218,8 @@ public class FlutterAppManager {
       if (app.isSessionPaused()) {
         app.forceResume();
       }
-      AppStop appStop = new AppStop(app.appId());
-      Method cmd = makeMethod(CMD_APP_STOP, appStop);
+      final AppStop appStop = new AppStop(app.appId());
+      final Method cmd = makeMethod(CMD_APP_STOP, appStop);
       // This needs to run synchronously. The next thing that happens is the process
       // streams are closed which immediately terminates the process.
       CompletableFuture
@@ -235,28 +235,28 @@ public class FlutterAppManager {
   }
 
   void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart, boolean pauseAfterRestart) {
-    AppRestart appStart = new AppRestart(app.appId(), isFullRestart, pauseAfterRestart);
+    final AppRestart appStart = new AppRestart(app.appId(), isFullRestart, pauseAfterRestart);
     app.changeState(FlutterApp.State.STARTING);
-    Method cmd = makeMethod(CMD_APP_RESTART, appStart);
+    final Method cmd = makeMethod(CMD_APP_RESTART, appStart);
     sendCommand(app.getController(), cmd);
   }
 
   private void appStopped(AppStop stopped, FlutterDaemonController controller) {
-    Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
-      Params p = c.method.params;
+    final Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
+      final Params p = c.method.params;
       if (p instanceof AppStop) {
-        AppStop a = (AppStop)p;
+        final AppStop a = (AppStop)p;
         if (a.appId.equals(stopped.appId)) return true;
       }
       return false;
     });
-    Optional<Command> opt = starts.findFirst();
+    final Optional<Command> opt = starts.findFirst();
     assert (opt.isPresent());
-    RunningFlutterApp app = findApp(controller, stopped.appId);
+    final RunningFlutterApp app = findApp(controller, stopped.appId);
     if (app != null) {
       app.changeState(FlutterApp.State.TERMINATED);
     }
-    Command cmd = opt.get();
+    final Command cmd = opt.get();
     synchronized (myLock) {
       myResponses.put(cmd.method, stopped);
       myService.schedulePolling();
@@ -264,12 +264,12 @@ public class FlutterAppManager {
   }
 
   void enableDevicePolling(@NotNull FlutterDaemonController controller) {
-    Method method = makeMethod(CMD_DEVICE_ENABLE, null);
+    final Method method = makeMethod(CMD_DEVICE_ENABLE, null);
     sendCommand(controller, method);
   }
 
   void aboutToTerminateAll(FlutterDaemonController controller) {
-    List<FlutterApp> apps;
+    final List<FlutterApp> apps;
     synchronized (myLock) {
       apps = new ArrayList<>(myApps);
     }
@@ -289,7 +289,7 @@ public class FlutterAppManager {
 
   @NotNull
   private List<Command> findAllPendingCmds(@NotNull FlutterDaemonController controller) {
-    List<Command> result = new ArrayList<>();
+    final List<Command> result = new ArrayList<>();
     for (List<Command> list : myPendingCommands.values()) {
       result.addAll(list.stream().filter(cmd -> cmd.controller == controller).collect(Collectors.toList()));
     }
@@ -298,7 +298,7 @@ public class FlutterAppManager {
 
   @NotNull
   private Command findPendingCmd(int id, @NotNull FlutterDaemonController controller) {
-    List<Command> list = myPendingCommands.get(id);
+    final List<Command> list = myPendingCommands.get(id);
     for (Command cmd : list) {
       if (cmd.controller == controller) return cmd;
     }
@@ -306,7 +306,7 @@ public class FlutterAppManager {
   }
 
   private void removePendingCmd(int id, @NotNull Command command) {
-    List<Command> list = myPendingCommands.get(id);
+    final List<Command> list = myPendingCommands.get(id);
     list.remove(command);
     if (list.isEmpty()) {
       myPendingCommands.remove(id);
@@ -314,7 +314,7 @@ public class FlutterAppManager {
   }
 
   private void addPendingCmd(int id, @NotNull Command command) {
-    List<Command> list = myPendingCommands.computeIfAbsent(id, k -> new ArrayList<>());
+    final List<Command> list = myPendingCommands.computeIfAbsent(id, k -> new ArrayList<>());
     list.add(command);
   }
 
@@ -349,7 +349,7 @@ public class FlutterAppManager {
   }
 
   private void eventLogMessage(@NotNull AppLogEvent message, @NotNull FlutterDaemonController controller) {
-    RunningFlutterApp app = findApp(controller, message.appId);
+    final RunningFlutterApp app = findApp(controller, message.appId);
 
     if (app == null) {
       return;
@@ -359,7 +359,7 @@ public class FlutterAppManager {
   }
 
   private void eventProgressMessage(@NotNull AppProgressEvent message, @NotNull FlutterDaemonController controller) {
-    RunningFlutterApp app = findApp(controller, message.appId);
+    final RunningFlutterApp app = findApp(controller, message.appId);
 
     if (app == null) {
       return;
@@ -410,17 +410,17 @@ public class FlutterAppManager {
 
   private void eventAppStarted(@NotNull AppStartEvent started, @NotNull FlutterDaemonController controller) {
     assert started.directory.equals(controller.getProjectDirectory());
-    Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
-      Params p = c.method.params;
+    final Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
+      final Params p = c.method.params;
       if (p instanceof AppStart) {
-        AppStart a = (AppStart)p;
+        final AppStart a = (AppStart)p;
         if (a.deviceId.equals(started.deviceId)) return true;
       }
       return false;
     });
-    Optional<Command> opt = starts.findFirst();
+    final Optional<Command> opt = starts.findFirst();
     assert (opt.isPresent());
-    Command cmd = opt.get();
+    final Command cmd = opt.get();
     synchronized (myLock) {
       myResponses.put(cmd.method, started);
     }
@@ -433,7 +433,7 @@ public class FlutterAppManager {
   }
 
   private void eventDebugPort(@NotNull AppDebugPortEvent port, @NotNull FlutterDaemonController controller) {
-    RunningFlutterApp app = waitForApp(controller, port.appId);
+    final RunningFlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
       app.setPort(port.port);
 
@@ -472,8 +472,8 @@ public class FlutterAppManager {
   }
 
   private static class Command {
-    @NotNull Method method;
-    @NotNull FlutterDaemonController controller;
+    @NotNull final Method method;
+    @NotNull final FlutterDaemonController controller;
 
     Command(@NotNull Method method, @NotNull FlutterDaemonController controller) {
       this.method = method;
@@ -495,9 +495,9 @@ public class FlutterAppManager {
       this.id = cmdId;
     }
 
-    @SuppressWarnings("unused") private String method;
-    @SuppressWarnings("unused") private Params params;
-    @SuppressWarnings("unused") private int id;
+    @SuppressWarnings("unused") private final String method;
+    @SuppressWarnings("unused") private final Params params;
+    @SuppressWarnings("unused") private final int id;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
       if (params != null) params.process(obj, manager, controller);
@@ -521,21 +521,21 @@ public class FlutterAppManager {
       this.hot = hot;
     }
 
-    @SuppressWarnings("unused") private String deviceId;
-    @SuppressWarnings("unused") private String projectDirectory;
+    @SuppressWarnings("unused") private final String deviceId;
+    @SuppressWarnings("unused") private final String projectDirectory;
     @SuppressWarnings("unused") private boolean startPaused = true;
-    @SuppressWarnings("unused") private String route;
-    @SuppressWarnings("unused") private String mode;
-    @SuppressWarnings("unused") private String target;
-    @SuppressWarnings("unused") private boolean hot;
+    @SuppressWarnings("unused") private final String route;
+    @SuppressWarnings("unused") private final String mode;
+    @SuppressWarnings("unused") private final String target;
+    @SuppressWarnings("unused") private final boolean hot;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
-      JsonObject result = obj.getAsJsonObject("result");
+      final JsonObject result = obj.getAsJsonObject("result");
       if (result == null) {
         manager.error(obj);
         return;
       }
-      AppStartEvent app = new AppStartEvent();
+      final AppStartEvent app = new AppStartEvent();
       app.appId = result.getAsJsonPrimitive("appId").getAsString();
       app.deviceId = result.getAsJsonPrimitive("deviceId").getAsString();
       app.directory = result.getAsJsonPrimitive("directory").getAsString();
@@ -552,12 +552,12 @@ public class FlutterAppManager {
       this.pause = pause;
     }
 
-    @SuppressWarnings("unused") private String appId;
-    @SuppressWarnings("unused") private boolean fullRestart;
-    @SuppressWarnings("unused") private boolean pause;
+    @SuppressWarnings("unused") private final String appId;
+    @SuppressWarnings("unused") private final boolean fullRestart;
+    @SuppressWarnings("unused") private final boolean pause;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
-      RunningFlutterApp app = manager.findApp(controller, appId);
+      final RunningFlutterApp app = manager.findApp(controller, appId);
       assert app != null;
       app.changeState(FlutterApp.State.STARTED);
     }
@@ -569,7 +569,7 @@ public class FlutterAppManager {
       this.appId = appId;
     }
 
-    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private final String appId;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
       JsonPrimitive prim = obj.getAsJsonPrimitive("result");
@@ -600,7 +600,7 @@ public class FlutterAppManager {
   private static class LogMessageEvent extends Event {
     // "event":"daemon.eventLogMessage"
     @SuppressWarnings("unused") private String level;
-    @SuppressWarnings("unused") private String message;
+    @SuppressWarnings("unused") private final String message;
     @SuppressWarnings("unused") private String stackTrace;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
@@ -610,8 +610,8 @@ public class FlutterAppManager {
 
   private static class AppLogEvent extends Event {
     // "event":"app.log"
-    @SuppressWarnings("unused") private String appId;
-    @SuppressWarnings("unused") private String log;
+    @SuppressWarnings("unused") private final String appId;
+    @SuppressWarnings("unused") private final String log;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventLogMessage(this, controller);
@@ -620,11 +620,11 @@ public class FlutterAppManager {
 
   private static class AppProgressEvent extends Event {
     // "event":"app.progress"
-    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings("unused") private final String appId;
     @SuppressWarnings("unused") private String id;
-    @SuppressWarnings("unused") private String progressId;
-    @SuppressWarnings("unused") private String message;
-    @SuppressWarnings("unused") private boolean finished;
+    @SuppressWarnings("unused") private final String progressId;
+    @SuppressWarnings("unused") private final String message;
+    @SuppressWarnings("unused") private final boolean finished;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventProgressMessage(this, controller);
@@ -633,10 +633,10 @@ public class FlutterAppManager {
 
   private static class DeviceAddedEvent extends Event {
     // "event":"device.added"
-    @SuppressWarnings("unused") private String id;
-    @SuppressWarnings("unused") private String name;
-    @SuppressWarnings("unused") private String platform;
-    @SuppressWarnings("unused") private boolean emulator;
+    @SuppressWarnings("unused") private final String id;
+    @SuppressWarnings("unused") private final String name;
+    @SuppressWarnings("unused") private final String platform;
+    @SuppressWarnings("unused") private final boolean emulator;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDeviceAdded(this, controller);
@@ -645,9 +645,9 @@ public class FlutterAppManager {
 
   private static class DeviceRemovedEvent extends Event {
     // "event":"device.removed"
-    @SuppressWarnings("unused") private String id;
-    @SuppressWarnings("unused") private String name;
-    @SuppressWarnings("unused") private String platform;
+    @SuppressWarnings("unused") private final String id;
+    @SuppressWarnings("unused") private final String name;
+    @SuppressWarnings("unused") private final String platform;
     @SuppressWarnings("unused") private boolean emulator;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
@@ -669,10 +669,10 @@ public class FlutterAppManager {
 
   static class AppStartedEvent extends Event {
     // "event":"app.started"
-    @SuppressWarnings("unused") String appId;
+    @SuppressWarnings("unused") final String appId;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
-      RunningFlutterApp app = manager.findApp(controller, appId);
+      final RunningFlutterApp app = manager.findApp(controller, appId);
       assert app != null;
       app.changeState(FlutterApp.State.STARTED);
     }
@@ -689,9 +689,9 @@ public class FlutterAppManager {
 
   private static class AppDebugPortEvent extends Event {
     // "event":"app.eventDebugPort"
-    @SuppressWarnings("unused") private String appId;
-    @SuppressWarnings("unused") private int port;
-    @SuppressWarnings("unused") private String baseUri;
+    @SuppressWarnings("unused") private final String appId;
+    @SuppressWarnings("unused") private final int port;
+    @SuppressWarnings("unused") private final String baseUri;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
       manager.eventDebugPort(this, controller);

@@ -41,7 +41,7 @@ public class FlutterConsoleFilter implements Filter {
 
     // Check for, e.g., "Running lib/main.dart"
     if (line.startsWith("Running")) {
-      String[] parts = line.split(" ");
+      final String[] parts = line.split(" ");
       if (parts.length > 1) {
         pathPart = parts[1];
       }

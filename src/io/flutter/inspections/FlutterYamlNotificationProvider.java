@@ -64,7 +64,7 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
 }
 
 class FlutterYamlActionsPanel extends EditorNotificationPanel {
-  @NotNull VirtualFile myFile;
+  @NotNull final VirtualFile myFile;
 
   FlutterYamlActionsPanel(@NotNull VirtualFile file) {
     myFile = file;

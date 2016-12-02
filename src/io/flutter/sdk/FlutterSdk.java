@@ -139,7 +139,7 @@ public class FlutterSdk {
     final GeneralCommandLine command = new GeneralCommandLine();
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
-    String[] toolArgs = ArrayUtil.prepend("--no-color", args);
+    final String[] toolArgs = ArrayUtil.prepend("--no-color", args);
     command.addParameters(toolArgs);
 
     try {
