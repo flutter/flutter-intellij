@@ -16,7 +16,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -106,7 +105,7 @@ public class FlutterDaemonController extends ProcessAdapter {
   void startDevicePoller() throws ExecutionException {
     myIsPollingController = true;
 
-    GeneralCommandLine commandLine = createCommandLinePoller();
+    final GeneralCommandLine commandLine = createCommandLinePoller();
     myHandler = new OSProcessHandler(commandLine);
     myHandler.addProcessListener(this);
     myHandler.startNotify();
@@ -121,7 +120,7 @@ public class FlutterDaemonController extends ProcessAdapter {
     @Nullable String target) throws ExecutionException {
 
     // TODO(devoncarew): Use the deviceId / mode / startPaused / isHot / target params.
-    GeneralCommandLine commandLine = createCommandLineRunner(project);
+    final GeneralCommandLine commandLine = createCommandLineRunner(project);
     myHandler = new OSProcessHandler(commandLine);
     myHandler.addProcessListener(this);
     myHandler.startNotify();
@@ -131,7 +130,7 @@ public class FlutterDaemonController extends ProcessAdapter {
     if (myHandler == null) {
       return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
     }
-    OutputStream input = myHandler.getProcessInput();
+    final OutputStream input = myHandler.getProcessInput();
     if (input == null) {
       LOG.error("No process input");
       return;
@@ -183,7 +182,7 @@ public class FlutterDaemonController extends ProcessAdapter {
    */
   private static GeneralCommandLine createCommandLinePoller() throws ExecutionException {
     String flutterSdkPath = null;
-    FlutterSdk flutterSdk = FlutterSdk.getGlobalFlutterSdk();
+    final FlutterSdk flutterSdk = FlutterSdk.getGlobalFlutterSdk();
     if (flutterSdk != null) {
       flutterSdkPath = flutterSdk.getHomePath();
     }
@@ -192,7 +191,7 @@ public class FlutterDaemonController extends ProcessAdapter {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
     }
 
-    String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
+    final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
     // While not strictly required, we set the working directory to the flutter root for consistency.
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(flutterSdkPath);
@@ -207,17 +206,17 @@ public class FlutterDaemonController extends ProcessAdapter {
    * Create a command to start the Flutter daemon when used to launch apps.
    */
   private static GeneralCommandLine createCommandLineRunner(@NotNull Project project) throws ExecutionException {
-    FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
     }
-    String flutterSdkPath = flutterSdk.getHomePath();
+    final String flutterSdkPath = flutterSdk.getHomePath();
 
     if (flutterSdkPath == null) {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
     }
 
-    String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
+    final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
     // While not strictly required, we set the working directory to the flutter root for consistency.
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(flutterSdkPath);

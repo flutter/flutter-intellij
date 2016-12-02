@@ -90,7 +90,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     super.update(e);
 
-    FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance();
     if (service == null) {
       return;
     }
@@ -100,12 +100,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       service.addDeviceListener(device -> updateActions());
     }
 
-    ConnectedDevice selectedDevice = service.getSelectedDevice();
-    Presentation presentation = e.getPresentation();
+    final ConnectedDevice selectedDevice = service.getSelectedDevice();
+    final Presentation presentation = e.getPresentation();
 
     for (SelectDeviceAction action : actions) {
       if (Objects.equals(action.device, selectedDevice)) {
-        Presentation template = action.getTemplatePresentation();
+        final Presentation template = action.getTemplatePresentation();
         presentation.setIcon(template.getIcon());
         presentation.setText(template.getText());
         presentation.setEnabled(true);
@@ -119,7 +119,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private void updateActions() {
     actions.clear();
 
-    FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance();
 
     if (service != null) {
       final Collection<ConnectedDevice> devices = service.getConnectedDevices();
@@ -189,7 +189,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-      FlutterDaemonService service = FlutterDaemonService.getInstance();
+      final FlutterDaemonService service = FlutterDaemonService.getInstance();
       if (service != null) {
         service.setSelectedDevice(device);
       }

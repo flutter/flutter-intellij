@@ -147,21 +147,21 @@ public interface FlutterApp {
 
 class RunningFlutterApp implements FlutterApp {
 
-  private FlutterDaemonService myService;
-  private FlutterDaemonController myController;
-  private FlutterAppManager myManager;
+  private final FlutterDaemonService myService;
+  private final FlutterDaemonController myController;
+  private final FlutterAppManager myManager;
   private AppStartEvent myApp;
-  private RunMode myMode;
-  private Project myProject;
-  private boolean isHot;
-  private String myRoute;
-  private String myTarget;
+  private final RunMode myMode;
+  private final Project myProject;
+  private final boolean isHot;
+  private final String myRoute;
+  private final String myTarget;
   private int myPort;
   private String myBaseUri;
   private ConsoleView myConsole;
   private XDebugSession mySesionHook;
   private State myState;
-  private List<StateListener> myListeners = new ArrayList<>();
+  private final List<StateListener> myListeners = new ArrayList<>();
 
   public RunningFlutterApp(@NotNull FlutterDaemonService service,
                            @NotNull FlutterDaemonController controller,

@@ -22,7 +22,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
         if (!line.contains("flutter run") && !line.contains("flutter --no-color create")) return false;
 
         try {
-            FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+            final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
             if (sdk == null) return false;
             final String flutterPath = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
             return line.startsWith(flutterPath + " run") || line.startsWith(flutterPath + " --no-color create");
@@ -34,7 +34,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
     @Nullable
     @Override
     public String getPlaceholderText(List<String> lines) {
-        String fullText = StringUtil.join(lines, "\n");
+        final String fullText = StringUtil.join(lines, "\n");
         if (fullText.contains("flutter run")) {
             return flutterRunPlaceholder(fullText);
         }
@@ -53,7 +53,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
         builder.append("flutter create");
 
         while (tok.hasMoreTokens()) {
-            String token = tok.nextToken();
+            final String token = tok.nextToken();
 
             // strip off --no-color
             if (token.equals("--no-color")) continue;
@@ -61,7 +61,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
             // strip off create
             if (token.equals("create")) continue;
 
-            String projectName = PathUtil.getFileName(token);
+            final String projectName = PathUtil.getFileName(token);
 
             builder.append(" ").append(projectName);
         }
@@ -81,7 +81,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
         builder.append("flutter");
 
         while (tok.hasMoreTokens()) {
-            String token = tok.nextToken();
+            final String token = tok.nextToken();
 
             // strip off --start-paused
             if (token.equals("--start-paused")) continue;

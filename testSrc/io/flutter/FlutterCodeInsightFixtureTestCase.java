@@ -14,10 +14,10 @@ abstract public class FlutterCodeInsightFixtureTestCase extends LightPlatformCod
   protected void setUp() throws Exception {
     super.setUp();
     FlutterTestUtils.configureFlutterSdk(myModule, getTestRootDisposable(), true);
-    FlutterSdk sdk = FlutterSdk.getFlutterSdk(myModule.getProject());
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myModule.getProject());
     assert(sdk != null);
-    String path = sdk.getHomePath();
-    String dartSdkPath = path + "/bin/cache/dart-sdk";
+    final String path = sdk.getHomePath();
+    final String dartSdkPath = path + "/bin/cache/dart-sdk";
     System.setProperty("dart.sdk", dartSdkPath);
     DartTestUtils.configureDartSdk(myModule, getTestRootDisposable(), true);
   }

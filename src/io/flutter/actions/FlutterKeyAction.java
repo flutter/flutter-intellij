@@ -23,7 +23,7 @@ public abstract class FlutterKeyAction extends DumbAwareAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    AnAction action = ActionManager.getInstance().getAction(myActionId);
+    final AnAction action = ActionManager.getInstance().getAction(myActionId);
     if (action != null) {
       action.actionPerformed(e);
     }

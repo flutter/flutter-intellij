@@ -47,7 +47,7 @@ public class FlutterRunner extends FlutterRunnerBase {
 
   @Override
   public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
-    FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance();
     return (profile instanceof FlutterRunConfiguration &&
             (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId))) &&
            (service != null && service.getSelectedDevice() != null);
@@ -130,7 +130,7 @@ public class FlutterRunner extends FlutterRunnerBase {
     final FlutterAppState appState = (FlutterAppState)state;
 
     final VirtualFile contextFileOrDir;
-    VirtualFile currentWorkingDirectory;
+    final VirtualFile currentWorkingDirectory;
     final ExecutionResult executionResult;
     final String debuggingHost;
     final int observatoryPort;

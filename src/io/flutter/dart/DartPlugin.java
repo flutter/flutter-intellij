@@ -41,7 +41,7 @@ public class DartPlugin {
    */
   public Version getVersion() {
     if (myVersion == null) {
-      IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("Dart"));
+      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("Dart"));
       assert (descriptor != null);
       myVersion = Version.parseVersion(descriptor.getVersion());
     }

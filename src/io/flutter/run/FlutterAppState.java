@@ -35,11 +35,11 @@ import java.util.List;
 public class FlutterAppState extends FlutterAppStateBase {
   private static final String RUN = DefaultRunExecutor.EXECUTOR_ID;
   private FlutterApp myApp;
-  private RunMode myMode;
+  private final RunMode myMode;
 
   protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
-    String mode = environment.getExecutor().getId();
+    final String mode = environment.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.RUN;
     }
@@ -66,23 +66,23 @@ public class FlutterAppState extends FlutterAppStateBase {
    */
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
-    FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance();
     assert service != null;
-    Project project = getEnvironment().getProject();
-    String workingDir = project.getBasePath();
+    final Project project = getEnvironment().getProject();
+    final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    Collection<ConnectedDevice> devices = service.getConnectedDevices();
+    final Collection<ConnectedDevice> devices = service.getConnectedDevices();
     if (devices.isEmpty()) {
       throw new ExecutionException("No connected device");
     }
 
-    ConnectedDevice device = service.getSelectedDevice();
+    final ConnectedDevice device = service.getSelectedDevice();
     if (device == null) {
       throw new ExecutionException("No selected device");
     }
 
-    FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+    final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
     final String cwd = parameters.computeProcessWorkingDirectory(project);
 
     String relativePath = parameters.getFilePath();
@@ -98,7 +98,7 @@ public class FlutterAppState extends FlutterAppStateBase {
   }
 
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
-    ConsoleView console = super.createConsole(executor);
+    final ConsoleView console = super.createConsole(executor);
     myApp.setConsole(console);
     if (console != null) {
       // In the (common) case where there is a single Flutter module, attach a console filter.

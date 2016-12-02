@@ -57,7 +57,7 @@ public class FlutterTestUtils {
         DartSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
       }
 
-      ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
+      final ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
       final Library library = libraryTable.getLibraryByName(FlutterSdk.FLUTTER_SDK_GLOBAL_LIB_NAME);
       if (library != null) {
         libraryTable.removeLibrary(library);

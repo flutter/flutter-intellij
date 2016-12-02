@@ -54,7 +54,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     final FlutterSettings settings = FlutterSettings.getInstance();
     if (settings.shouldIgnoreMismatchedDartSdks()) return null;
 
-    EditorNotificationPanel panel = new EditorNotificationPanel();
+    final EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.wrong.dart.sdk.warning"));
     panel.createActionLabel(FlutterBundle.message("dart.sdk.configuration.action.label"),
                             () -> FlutterSdkService.getInstance(project).configureDartSdk(module));
@@ -82,12 +82,12 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
     if (file.getFileType() != DartFileType.INSTANCE) return null;
 
-    PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
+    final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
     if (psiFile == null) return null;
 
     if (psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
 
-    Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
+    final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
     if (module == null) return null;
 
     if (!FlutterSdkUtil.isFlutterModule(module)) return null;
@@ -102,7 +102,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
         return createOutOfDateFlutterSdkPanel(flutterSdk);
       }
 
-      DartSdk dartSdk = DartSdk.getDartSdk(project);
+      final DartSdk dartSdk = DartSdk.getDartSdk(project);
       if (dartSdk == null) {
         // TODO(devoncarew): Recommend to set up with Flutter's dart sdk.
 
@@ -127,7 +127,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     final FlutterSettings settings = FlutterSettings.getInstance();
     if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
 
-    EditorNotificationPanel panel = new EditorNotificationPanel();
+    final EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> {
       settings.setIgnoreOutOfDateFlutterSdks();

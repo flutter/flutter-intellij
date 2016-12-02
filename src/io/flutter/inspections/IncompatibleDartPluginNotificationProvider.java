@@ -43,7 +43,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
                                                                @NotNull String currentVersion) {
     if (module == null) return null;
 
-    EditorNotificationPanel panel = new EditorNotificationPanel();
+    final EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.incompatible.dart.plugin.warning", getPrintableRequiredDartVersion(), currentVersion));
     panel.createActionLabel(FlutterBundle.message("dart.plugin.update.action.label"),
                             () -> ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginManagerConfigurable.class));
@@ -65,18 +65,18 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
     if (file.getFileType() != DartFileType.INSTANCE) return null;
 
-    PsiFile psiFile = PsiManager.getInstance(myProject).findFile(file);
+    final PsiFile psiFile = PsiManager.getInstance(myProject).findFile(file);
     if (psiFile == null) return null;
 
     if (psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
 
-    Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
+    final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
     if (module == null) return null;
 
     if (!FlutterSdkUtil.isFlutterModule(module)) return null;
 
-    Version minimumVersion = DartPlugin.getInstance().getMinimumVersion();
-    Version dartVersion = DartPlugin.getInstance().getVersion();
+    final Version minimumVersion = DartPlugin.getInstance().getMinimumVersion();
+    final Version dartVersion = DartPlugin.getInstance().getVersion();
     return dartVersion.compareTo(minimumVersion) < 0 ? createUpdateDartPanel(myProject, module, getPrintableRequiredDartVersion()) : null;
   }
 }

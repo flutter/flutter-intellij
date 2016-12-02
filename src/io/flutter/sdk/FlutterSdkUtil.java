@@ -42,7 +42,7 @@ public class FlutterSdkUtil {
   }
 
   public static void updateKnownSdkPaths(@NotNull final Project project, @NotNull final String newSdkPath) {
-    FlutterSdk old = FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk old = FlutterSdk.getFlutterSdk(project);
     updateKnownPaths(FLUTTER_SDK_KNOWN_PATHS, old == null ? null : old.getHomePath(), newSdkPath);
   }
 
@@ -122,13 +122,13 @@ public class FlutterSdkUtil {
 
   @Nullable
   public static String getSdkVersion(@NotNull String sdkHomePath) {
-    File versionFile = new File(versionPath(sdkHomePath));
+    final File versionFile = new File(versionPath(sdkHomePath));
     if (versionFile.isFile()) {
-      String cachedVersion = ourVersions.get(Pair.create(versionFile, versionFile.lastModified()));
+      final String cachedVersion = ourVersions.get(Pair.create(versionFile, versionFile.lastModified()));
       if (cachedVersion != null) return cachedVersion;
     }
 
-    String version = readVersionFile(sdkHomePath);
+    final String version = readVersionFile(sdkHomePath);
     if (version != null) {
       ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
       return version;
@@ -139,11 +139,11 @@ public class FlutterSdkUtil {
   }
 
   private static String readVersionFile(String sdkHomePath) {
-    File versionFile = new File(versionPath(sdkHomePath));
+    final File versionFile = new File(versionPath(sdkHomePath));
     if (versionFile.isFile() && versionFile.length() < 1000) {
       try {
-        String content = FileUtil.loadFile(versionFile).trim();
-        int index = content.lastIndexOf('\n');
+        final String content = FileUtil.loadFile(versionFile).trim();
+        final int index = content.lastIndexOf('\n');
         if (index < 0) return content;
         return content.substring(index + 1).trim();
       }

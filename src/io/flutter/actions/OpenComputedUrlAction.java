@@ -14,8 +14,8 @@ import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 
 public class OpenComputedUrlAction extends DumbAwareAction {
-  private Computable<String> myUrl;
-  private Computable<Boolean> myIsApplicable;
+  private final Computable<String> myUrl;
+  private final Computable<Boolean> myIsApplicable;
 
   public OpenComputedUrlAction(@NotNull final Computable<String> url, @NotNull final Computable<Boolean> isApplicable) {
     super(FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"), DartIcons.Dart_16);
