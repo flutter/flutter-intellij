@@ -10,12 +10,12 @@ Validate basic project creation.
 * Confirm that:
   * Project contents are created.
     * Verify that a run configuration (sharing the project name) is enabled in the run/debug selector.
-  * Navigation works. 
+  * Navigation works.
     * Open `lib/main.dart` and navigate to `ThemeData`.
   * There are no analysis errors or warnings.
   * Pub operations work.
     * Open `pubspec.yaml` and click the "Get" and "Update" actions.
-    
+
 ## Device Detection.
 
 Validate device selection.
@@ -64,7 +64,7 @@ Assuming the app state from above:
 * validate that the text and state resets
 
 Keybindings:
-* verify that the hot reload keybinding works (on a mac: `cmd-F5`)
+* verify that the hot reload keybinding works (on a mac: `cmd-option-;` or `cmd-\`)
 
 ## Debugging Sessions
 
@@ -83,5 +83,5 @@ Verify installation and configuration in a fresh IDEA installation.
 * Open "Languages & Frameworks>Flutter" in Preferences and verify that there is no Flutter SDK set.
 * Set the Flutter SDK path to a valid SDK location.
   * Verify that invalid locations are rejected (and cannot be applied).
-* Verify project creation, run/debug.  
+* Verify project creation, run/debug.
 
