@@ -13,6 +13,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -21,60 +22,106 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.MessageView;
 import org.jetbrains.annotations.NotNull;
-
-// TODO(devoncarew): These pile up - how to close or recycle an existing one?
-// See: https://github.com/JetBrains/intellij-plugins/blob/8573cd83bb6826e339d60be7b9cdb97add1af2a2/Dart/src/com/jetbrains/lang/dart/ide/actions/DartPubActionBase.java#L203
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterConsoleHelper {
+  private static final Key<FlutterConsoleInfo> FLUTTER_MESSAGES_KEY = Key.create("FLUTTER_MESSAGES_KEY");
 
   /**
    * Attach the flutter console to the process managed by the given processHandler.
    */
-  public static void attach(@NotNull Module module, @NotNull OSProcessHandler processHandler, @NotNull String processTitle) {
-    final ConsoleView console = getConsole(module);
-    console.attachToProcess(processHandler);
-    show(module.getProject(), console, processTitle);
+  public static void attach(@NotNull Project project, @NotNull OSProcessHandler processHandler) {
+    show(project, null, processHandler);
   }
 
   /**
    * Attach the flutter console to the process managed by the given processHandler.
    */
-  public static void attach(@NotNull Project project, @NotNull OSProcessHandler processHandler, @NotNull String processTitle) {
-    final ConsoleView console = getConsole(project);
-    console.attachToProcess(processHandler);
-    show(project, console, processTitle);
+  public static void attach(@NotNull Module module, @NotNull OSProcessHandler processHandler) {
+    show(module.getProject(), module, processHandler);
   }
 
-  private static void show(@NotNull Project project, @NotNull ConsoleView console, String processTitle) {
-    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(false, true);
-    toolWindowPanel.setContent(console.getComponent());
+  /**
+   * We share one Flutter console per Module, and have one global Flutter console (for tasks which don't
+   * take a module, like 'flutter doctor'). We could revisit to have one global, shared flutter console
+   * instance.
+   *
+   * @param project
+   * @param module
+   * @param processHandler
+   */
+  private static void show(@NotNull Project project, @Nullable Module module, @NotNull OSProcessHandler processHandler) {
+    if (findExistingInfoForCommand(project, module) != null) {
+      final FlutterConsoleInfo info = findExistingInfoForCommand(project, module);
+      info.console.clear();
+      info.console.attachToProcess(processHandler);
 
-    final Content content = ContentFactory.SERVICE.getInstance().createContent(toolWindowPanel.getComponent(), processTitle, true);
-    Disposer.register(content, console);
+      final MessageView messageView = MessageView.SERVICE.getInstance(project);
+      messageView.runWhenInitialized(() -> {
+        final ContentManager contentManager = messageView.getContentManager();
+        contentManager.setSelectedContent(info.content);
+      });
+    }
+    else {
+      final ConsoleView console = createConsole(project, module);
+      final FlutterConsoleInfo info = new FlutterConsoleInfo(console, module);
+      info.console.attachToProcess(processHandler);
+
+      String title = "Flutter";
+      if (module != null) {
+        title = "[" + module.getName() + "] " + title;
+      }
+
+      final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(false, true);
+      toolWindowPanel.setContent(info.console.getComponent());
+
+      info.content = ContentFactory.SERVICE.getInstance().createContent(toolWindowPanel.getComponent(), title, true);
+      info.content.putUserData(FLUTTER_MESSAGES_KEY, info);
+      Disposer.register(info.content, info.console);
+
+      final MessageView messageView = MessageView.SERVICE.getInstance(project);
+      messageView.runWhenInitialized(() -> {
+        final ContentManager contentManager = messageView.getContentManager();
+        contentManager.addContent(info.content);
+        contentManager.setSelectedContent(info.content);
+      });
+    }
 
     final MessageView messageView = MessageView.SERVICE.getInstance(project);
     messageView.runWhenInitialized(() -> {
-      final ContentManager contentManager = messageView.getContentManager();
-      contentManager.addContent(content);
-      contentManager.setSelectedContent(content);
-
       final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
       toolWindow.activate(null, true);
     });
   }
 
-  private static ConsoleView getConsole(@NotNull Module module) {
-    final TextConsoleBuilder consoleBuilder =
-      TextConsoleBuilderFactory.getInstance().createBuilder(module.getProject());
+  private static ConsoleView createConsole(@NotNull Project project, @Nullable Module module) {
+    final TextConsoleBuilder consoleBuilder = TextConsoleBuilderFactory.getInstance().createBuilder(project);
     consoleBuilder.setViewer(true);
-    consoleBuilder.addFilter(new FlutterConsoleFilter(module));
+    if (module != null) {
+      consoleBuilder.addFilter(new FlutterConsoleFilter(module));
+    }
     return consoleBuilder.getConsole();
   }
 
-  private static ConsoleView getConsole(@NotNull Project project) {
-    final TextConsoleBuilder consoleBuilder =
-      TextConsoleBuilderFactory.getInstance().createBuilder(project);
-    consoleBuilder.setViewer(true);
-    return consoleBuilder.getConsole();
+  @Nullable
+  private static FlutterConsoleInfo findExistingInfoForCommand(@NotNull Project project, @Nullable Module module) {
+    for (Content content : MessageView.SERVICE.getInstance(project).getContentManager().getContents()) {
+      final FlutterConsoleInfo info = content.getUserData(FLUTTER_MESSAGES_KEY);
+      if (info != null && info.module == module) {
+        return info;
+      }
+    }
+    return null;
+  }
+}
+
+class FlutterConsoleInfo {
+  @NotNull final ConsoleView console;
+  @Nullable final Module module;
+  Content content;
+
+  FlutterConsoleInfo(@NotNull ConsoleView console, @Nullable Module module) {
+    this.console = console;
+    this.module = module;
   }
 }
