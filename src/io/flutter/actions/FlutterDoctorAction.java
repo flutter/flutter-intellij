@@ -20,7 +20,7 @@ public class FlutterDoctorAction extends DumbAwareAction {
   @Override
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
 
     if (sdk != null) {
       try {

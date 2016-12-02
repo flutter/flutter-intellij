@@ -211,11 +211,6 @@ public class FlutterDaemonController extends ProcessAdapter {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
     }
     final String flutterSdkPath = flutterSdk.getHomePath();
-
-    if (flutterSdkPath == null) {
-      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    }
-
     final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
     // While not strictly required, we set the working directory to the flutter root for consistency.

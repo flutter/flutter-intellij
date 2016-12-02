@@ -77,7 +77,7 @@ public abstract class FlutterAppStateBase extends CommandLineState {
   @Override
   protected AnAction[] createActions(final ConsoleView console, final ProcessHandler processHandler, final Executor executor) {
     // These actions are effectively added only to the Run tool window. For Debug see DartCommandLineDebugProcess.registerAdditionalActions()
-    final List<AnAction> actions = new ArrayList(Arrays.asList(super.createActions(console, processHandler, executor)));
+    final List<AnAction> actions = new ArrayList<>(Arrays.asList(super.createActions(console, processHandler, executor)));
     addObservatoryActions(actions, processHandler);
     return actions.toArray(new AnAction[actions.size()]);
   }
