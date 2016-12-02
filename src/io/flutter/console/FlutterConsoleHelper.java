@@ -63,7 +63,7 @@ public class FlutterConsoleHelper {
       });
     }
     else {
-      ConsoleView console = createConsole(project, module);
+      final ConsoleView console = createConsole(project, module);
       final FlutterConsoleInfo info = new FlutterConsoleInfo(console, module);
       info.console.attachToProcess(processHandler);
 
