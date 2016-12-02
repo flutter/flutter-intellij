@@ -1,6 +1,6 @@
-# Debugger Package Overiew
+# Debugger Architecture Overiew
 
-## `flutter-intellij/src`
+## Packages:
 
 ### `io.flutter.run`
 
