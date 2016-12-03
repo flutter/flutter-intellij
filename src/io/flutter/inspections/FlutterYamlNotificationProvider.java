@@ -15,6 +15,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
+import icons.FlutterIcons;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -69,9 +70,11 @@ class FlutterYamlActionsPanel extends EditorNotificationPanel {
   FlutterYamlActionsPanel(@NotNull VirtualFile file) {
     myFile = file;
 
-    myLinksPanel.add(new JLabel("Flutter actions:"));
+    icon(FlutterIcons.Flutter);
+    text("Flutter commands");
+
     createActionLabel("Flutter upgrade", "flutter.upgrade");
-    myLinksPanel.add(new JLabel("        "));
+    myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
     createActionLabel("Flutter doctor", "flutter.doctor");
 
     // TODO: Add for 2017.1.
