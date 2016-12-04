@@ -14,7 +14,9 @@ Validate basic project creation.
     * Open `lib/main.dart` and navigate to `ThemeData`.
   * There are no analysis errors or warnings.
   * Pub operations work.
-    * Open `pubspec.yaml` and click the "Get" and "Update" actions.
+    * Open `pubspec.yaml` and click the "Get" and "Update" links.
+  * Flutter operations work.
+    * Open `flutter.yaml` and click the "Doctor" link.
 
 ## Device Detection.
 
