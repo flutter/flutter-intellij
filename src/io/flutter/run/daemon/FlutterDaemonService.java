@@ -87,11 +87,11 @@ public class FlutterDaemonService {
     return ServiceManager.getService(project, FlutterDaemonService.class);
   }
 
-  private FlutterDaemonService() {
+  private FlutterDaemonService(Project project) {
     listenForSdkChanges();
     schedulePolling();
-    Disposer.register(ApplicationManager.getApplication(), this::stopControllers);
-    Disposer.register(ApplicationManager.getApplication(), this::stopListeningForSdkChanges);
+    Disposer.register(project, this::stopControllers);
+    Disposer.register(project, this::stopListeningForSdkChanges);
   }
 
   private class SdkListener implements FlutterSdkManager.Listener {
@@ -114,11 +114,11 @@ public class FlutterDaemonService {
     FlutterSdkManager.getInstance().removeListener(mySdkListener);
   }
 
-  public void addDeviceListener(DeviceListener listener) {
+  public void addDeviceListener(@NotNull DeviceListener listener) {
     myDeviceListeners.add(listener);
   }
 
-  public void removeDeviceListener(DeviceListener listener) {
+  public void removeDeviceListener(@NotNull DeviceListener listener) {
     myDeviceListeners.remove(listener);
   }
 
@@ -152,7 +152,7 @@ public class FlutterDaemonService {
     }
   }
 
-  void addConnectedDevice(ConnectedDevice device) {
+  void addConnectedDevice(@NotNull ConnectedDevice device) {
     myConnectedDevices.add(device);
 
     if (mySelectedDevice == null) {
@@ -164,7 +164,7 @@ public class FlutterDaemonService {
     }
   }
 
-  void removeConnectedDevice(ConnectedDevice device) {
+  void removeConnectedDevice(@NotNull ConnectedDevice device) {
     myConnectedDevices.remove(device);
 
     if (mySelectedDevice == device) {
