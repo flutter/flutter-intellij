@@ -66,8 +66,9 @@ public class FlutterAppState extends FlutterAppStateBase {
    */
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
-    final FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
     assert service != null;
+
     final Project project = getEnvironment().getProject();
     final String workingDir = project.getBasePath();
     assert workingDir != null;

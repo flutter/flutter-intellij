@@ -32,35 +32,14 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
-  final private List<SelectDeviceAction> actions = new ArrayList<>();
+  final private List<AnAction> actions = new ArrayList<>();
   private boolean isListening = false;
 
   @NotNull
   @Override
   protected DefaultActionGroup createPopupActionGroup(JComponent button) {
     final DefaultActionGroup group = new DefaultActionGroup();
-
-    updateActions();
-
-    if (actions.isEmpty()) {
-      group.add(new NoDevicesAction());
-    }
-    else {
-      group.addAll(actions);
-    }
-
-    if (SystemInfo.isMac) {
-      boolean simulatorOpen = false;
-      for (SelectDeviceAction action : actions) {
-        if (StringUtil.equals(action.device.platform(), "ios") && action.device.emulator()) {
-          simulatorOpen = true;
-        }
-      }
-
-      group.add(new Separator());
-      group.add(new OpenSimulatorAction(!simulatorOpen));
-    }
-
+    group.addAll(actions);
     return group;
   }
 
@@ -90,40 +69,80 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     super.update(e);
 
-    final FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
     if (service == null) {
       return;
     }
 
     if (!isListening) {
       isListening = true;
-      service.addDeviceListener(device -> updateActions());
+
+      service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
+        @Override
+        public void deviceAdded(ConnectedDevice device) {
+          updateActions(project);
+        }
+
+        @Override
+        public void selectedDeviceChanged(ConnectedDevice device) {
+          updateActions(project);
+        }
+
+        @Override
+        public void deviceRemoved(ConnectedDevice device) {
+          updateActions(project);
+        }
+      });
     }
 
     final ConnectedDevice selectedDevice = service.getSelectedDevice();
     final Presentation presentation = e.getPresentation();
 
-    for (SelectDeviceAction action : actions) {
-      if (Objects.equals(action.device, selectedDevice)) {
-        final Presentation template = action.getTemplatePresentation();
-        presentation.setIcon(template.getIcon());
-        presentation.setText(template.getText());
-        presentation.setEnabled(true);
-        return;
+    for (AnAction action : actions) {
+      if (action instanceof SelectDeviceAction) {
+        final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+
+        if (Objects.equals(deviceAction.device, selectedDevice)) {
+          final Presentation template = action.getTemplatePresentation();
+          presentation.setIcon(template.getIcon());
+          presentation.setText(template.getText());
+          presentation.setEnabled(true);
+          return;
+        }
       }
     }
 
     presentation.setText(null);
   }
 
-  private void updateActions() {
+  private void updateActions(@NotNull Project project) {
     actions.clear();
 
-    final FlutterDaemonService service = FlutterDaemonService.getInstance();
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
 
     if (service != null) {
       final Collection<ConnectedDevice> devices = service.getConnectedDevices();
       actions.addAll(devices.stream().map(SelectDeviceAction::new).collect(Collectors.toList()));
+    }
+
+    if (actions.isEmpty()) {
+      actions.add(new NoDevicesAction());
+    }
+
+    if (SystemInfo.isMac) {
+      boolean simulatorOpen = false;
+      for (AnAction action : actions) {
+        if (action instanceof SelectDeviceAction) {
+          final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+          final ConnectedDevice device = deviceAction.device;
+          if (StringUtil.equals(device.platform(), "ios") && device.emulator()) {
+            simulatorOpen = true;
+          }
+        }
+      }
+
+      actions.add(new Separator());
+      actions.add(new OpenSimulatorAction(!simulatorOpen));
     }
   }
 
@@ -189,7 +208,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-      final FlutterDaemonService service = FlutterDaemonService.getInstance();
+      final FlutterDaemonService service = FlutterDaemonService.getInstance(e.getProject());
       if (service != null) {
         service.setSelectedDevice(device);
       }

@@ -32,6 +32,7 @@ public class FlutterSdkManager {
     isFlutterConfigured = isGlobalFlutterSdkSetAndNeeded();
   }
 
+  // TODO(devoncarew): Use an app service singleton (ServiceManager.getService(project, ...))?
   public static FlutterSdkManager getInstance() {
     if (INSTANCE == null) {
       INSTANCE = new FlutterSdkManager();
