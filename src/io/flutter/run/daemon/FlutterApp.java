@@ -14,8 +14,6 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.flutter.run.daemon.FlutterAppManager.AppStartEvent;
-
 /**
  * Handle for a running Flutter app.
  */
@@ -40,21 +38,6 @@ public interface FlutterApp {
    * @return The appId for the running app.
    */
   String appId();
-
-  /**
-   * @return The Flutter project directory.
-   */
-  String projectDirectory();
-
-  /**
-   * @return The deviceId the app is running on.
-   */
-  String deviceId();
-
-  /**
-   * @return <code>true</code> if the app can be restarted.
-   */
-  boolean isRestartable();
 
   /**
    * @return <code>true</code> if the app is in hot-restart mode.
@@ -150,7 +133,7 @@ class RunningFlutterApp implements FlutterApp {
   private final FlutterDaemonService myService;
   private final FlutterDaemonController myController;
   private final FlutterAppManager myManager;
-  private AppStartEvent myApp;
+  private String myAppId;
   private final RunMode myMode;
   private final Project myProject;
   private final boolean isHot;
@@ -181,7 +164,6 @@ class RunningFlutterApp implements FlutterApp {
     myTarget = target;
   }
 
-
   @Override
   public void changeState(State newState) {
     myState = newState;
@@ -199,8 +181,8 @@ class RunningFlutterApp implements FlutterApp {
     myListeners.remove(null);
   }
 
-  void setApp(AppStartEvent app) {
-    myApp = app;
+  void setAppId(String id) {
+    myAppId = id;
   }
 
   @Override
@@ -215,27 +197,12 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public boolean hasAppId() {
-    return myApp != null && myApp.appId != null;
+    return myAppId != null;
   }
 
   @Override
   public String appId() {
-    return myApp.appId;
-  }
-
-  @Override
-  public String projectDirectory() {
-    return myApp.directory;
-  }
-
-  @Override
-  public String deviceId() {
-    return myApp.deviceId;
-  }
-
-  @Override
-  public boolean isRestartable() {
-    return myApp.supportsRestart;
+    return myAppId;
   }
 
   @Override

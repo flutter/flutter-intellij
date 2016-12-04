@@ -37,9 +37,8 @@ public class FlutterDaemonController extends ProcessAdapter {
   private static final String STDOUT_KEY = "stdout";
 
   private final String myProjectDirectory;
-  private final List<String> myDeviceIds = new ArrayList<>();
   private final List<DaemonListener> myListeners = Collections.synchronizedList(new ArrayList<>());
-  private ProcessHandler myHandler;
+  private ProcessHandler myProcessHandler;
   private boolean myIsPollingController = false;
   private boolean myIsPollingStarted = false;
 
@@ -57,7 +56,7 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   public ProcessHandler getProcessHandler() {
-    return myHandler;
+    return myProcessHandler;
   }
 
   public void removeListener(DaemonListener listener) {
@@ -65,50 +64,23 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   public void forceExit() {
-    // TODO Stop all apps and terminate the external process
-    if (myHandler != null) {
-      myHandler.destroyProcess();
+    if (myProcessHandler != null) {
+      myProcessHandler.destroyProcess();
     }
-    myDeviceIds.clear();
-    myHandler = null;
+    myProcessHandler = null;
   }
 
   public String getProjectDirectory() {
     return myProjectDirectory;
   }
 
-  /**
-   * Return true if this controller can be used by the app in the projectDir.
-   * The very first controller that is created (to do device discovery) has
-   * no project directory so it can be reused. Always invoke #setProjectAndDevice
-   * after selecting a controller to ensure both directory and device id are set.
-   *
-   * @param projectDir The path to a project directory
-   * @return true if the instance can be used or reused
-   */
-  public boolean isForProject(String projectDir) {
-    return myProjectDirectory == null || myProjectDirectory.equals(projectDir);
-  }
-
-  boolean hasDeviceId(String id) {
-    return myDeviceIds.contains(id);
-  }
-
-  private void addDeviceId(String deviceId) {
-    myDeviceIds.add(deviceId);
-  }
-
-  void removeDeviceId(String deviceId) {
-    myDeviceIds.remove(deviceId);
-  }
-
   void startDevicePoller() throws ExecutionException {
     myIsPollingController = true;
 
     final GeneralCommandLine commandLine = createCommandLinePoller();
-    myHandler = new OSProcessHandler(commandLine);
-    myHandler.addProcessListener(this);
-    myHandler.startNotify();
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
   }
 
   public void startRunnerDaemon(
@@ -121,16 +93,16 @@ public class FlutterDaemonController extends ProcessAdapter {
 
     // TODO(devoncarew): Use the deviceId / mode / startPaused / isHot / target params.
     final GeneralCommandLine commandLine = createCommandLineRunner(project);
-    myHandler = new OSProcessHandler(commandLine);
-    myHandler.addProcessListener(this);
-    myHandler.startNotify();
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
   }
 
   public void sendCommand(String commandJson, FlutterAppManager manager) {
-    if (myHandler == null) {
+    if (myProcessHandler == null) {
       return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
     }
-    final OutputStream input = myHandler.getProcessInput();
+    final OutputStream input = myProcessHandler.getProcessInput();
     if (input == null) {
       LOG.error("No process input");
       return;
