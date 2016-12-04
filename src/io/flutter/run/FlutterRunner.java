@@ -47,10 +47,17 @@ public class FlutterRunner extends FlutterRunnerBase {
 
   @Override
   public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
-    final FlutterDaemonService service = FlutterDaemonService.getInstance();
-    return (profile instanceof FlutterRunConfiguration &&
-            (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId))) &&
-           (service != null && service.getSelectedDevice() != null);
+    if (!(profile instanceof FlutterRunConfiguration)) {
+      return false;
+    }
+
+    FlutterRunConfiguration runConfiguration = (FlutterRunConfiguration)profile;
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(runConfiguration.getProject());
+    if (service == null || service.getSelectedDevice() == null) {
+      return false;
+    }
+
+    return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
   }
 
   @Override
@@ -178,7 +185,7 @@ public class FlutterRunner extends FlutterRunnerBase {
 
   @Override
   protected int getTimeout() {
-    return 90000; // Allow 90 seconds to connect to the observatory.
+    return 2 * 60 * 1000; // Allow 2 minutes to connect to the observatory.
   }
 
   @Nullable
