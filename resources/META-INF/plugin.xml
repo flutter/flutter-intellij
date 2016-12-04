@@ -117,6 +117,9 @@
 
     <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                              id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
+    <toolWindow id="Flutter" anchor="right" icon="FlutterIcons.Flutter"
+                factoryClass="io.flutter.view.FlutterViewFactory"
+                conditionClass="io.flutter.view.FlutterViewCondition"/>
   </extensions>
 
 </idea-plugin>
