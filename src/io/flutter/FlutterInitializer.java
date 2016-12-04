@@ -14,6 +14,6 @@ public class FlutterInitializer implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
-    FlutterDaemonService.getInstance();
+    FlutterDaemonService.getInstance(project);
   }
 }

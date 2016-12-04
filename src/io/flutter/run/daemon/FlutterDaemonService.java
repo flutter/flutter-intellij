@@ -75,12 +75,16 @@ public class FlutterDaemonService {
   };
 
   public interface DeviceListener {
+    void deviceAdded(ConnectedDevice device);
+
     void selectedDeviceChanged(ConnectedDevice device);
+
+    void deviceRemoved(ConnectedDevice device);
   }
 
   @Nullable
-  public static FlutterDaemonService getInstance() {
-    return ServiceManager.getService(FlutterDaemonService.class);
+  public static FlutterDaemonService getInstance(@NotNull Project project) {
+    return ServiceManager.getService(project, FlutterDaemonService.class);
   }
 
   private FlutterDaemonService() {
@@ -154,6 +158,10 @@ public class FlutterDaemonService {
     if (mySelectedDevice == null) {
       setSelectedDevice(device);
     }
+
+    for (DeviceListener listener : myDeviceListeners) {
+      listener.deviceAdded(device);
+    }
   }
 
   void removeConnectedDevice(ConnectedDevice device) {
@@ -166,6 +174,10 @@ public class FlutterDaemonService {
       else {
         setSelectedDevice(getConnectedDevices().get(0));
       }
+    }
+
+    for (DeviceListener listener : myDeviceListeners) {
+      listener.deviceRemoved(device);
     }
   }
 
