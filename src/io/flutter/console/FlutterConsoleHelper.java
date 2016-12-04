@@ -50,48 +50,43 @@ public class FlutterConsoleHelper {
    * @param module
    * @param processHandler
    */
-  private static void show(@NotNull Project project, @Nullable Module module, @NotNull OSProcessHandler processHandler) {
-    if (findExistingInfoForCommand(project, module) != null) {
-      final FlutterConsoleInfo info = findExistingInfoForCommand(project, module);
-      assert info != null;
-      info.console.clear();
-      info.console.attachToProcess(processHandler);
-
-      final MessageView messageView = MessageView.SERVICE.getInstance(project);
-      messageView.runWhenInitialized(() -> {
-        final ContentManager contentManager = messageView.getContentManager();
-        contentManager.setSelectedContent(info.content);
-      });
-    }
-    else {
-      final ConsoleView console = createConsole(project, module);
-      final FlutterConsoleInfo info = new FlutterConsoleInfo(console, module);
-      info.console.attachToProcess(processHandler);
-
-      String title = "Flutter";
-      if (module != null) {
-        title = "[" + module.getName() + "] " + title;
-      }
-
-      final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(false, true);
-      toolWindowPanel.setContent(info.console.getComponent());
-
-      info.content = ContentFactory.SERVICE.getInstance().createContent(toolWindowPanel.getComponent(), title, true);
-      info.content.putUserData(FLUTTER_MESSAGES_KEY, info);
-      Disposer.register(info.content, info.console);
-
-      final MessageView messageView = MessageView.SERVICE.getInstance(project);
-      messageView.runWhenInitialized(() -> {
-        final ContentManager contentManager = messageView.getContentManager();
-        contentManager.addContent(info.content);
-        contentManager.setSelectedContent(info.content);
-      });
-    }
-
+  private static void show(@NotNull Project project,
+                           @Nullable Module module,
+                           @NotNull OSProcessHandler processHandler) {
     final MessageView messageView = MessageView.SERVICE.getInstance(project);
+
     messageView.runWhenInitialized(() -> {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(ToolWindowId.MESSAGES_WINDOW);
-      toolWindow.activate(null, true);
+      final ContentManager contentManager = messageView.getContentManager();
+      FlutterConsoleInfo info = findExistingInfoForCommand(project, module);
+
+      if (info != null) {
+        info.console.clear();
+        contentManager.setSelectedContent(info.content);
+
+        toolWindow.activate(null, true);
+        info.console.attachToProcess(processHandler);
+      }
+      else {
+        final ConsoleView console = createConsole(project, module);
+        info = new FlutterConsoleInfo(console, module);
+
+        final String title = module != null ? "[" + module.getName() + "] Flutter" : "Flutter";
+        final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(
+          false, true);
+        toolWindowPanel.setContent(info.console.getComponent());
+
+        info.content = ContentFactory.SERVICE.getInstance().createContent(
+          toolWindowPanel.getComponent(), title, true);
+        info.content.putUserData(FLUTTER_MESSAGES_KEY, info);
+        Disposer.register(info.content, info.console);
+
+        contentManager.addContent(info.content);
+        contentManager.setSelectedContent(info.content);
+
+        toolWindow.activate(null, true);
+        info.console.attachToProcess(processHandler);
+      }
     });
   }
 
