@@ -6,7 +6,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.5</version>
+  <version>0.1.6</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -16,6 +16,15 @@
 
   <change-notes>
 <![CDATA[
+0.1.6:
+<ul>
+  <li>reload and restart keybinding mapping fixes</li>
+  <li>new buttter bar with actions for flutter.yaml files</li>
+  <li>"run" behavior re-designed to support reload</li>
+  <li>improved console output for reloading and restarting</li>
+  <li>miscellaneous fixes and stability improvements</li>
+</ul>
+
 0.1.5:
 <ul>
   <li>console filtering for flutter run output</li>
