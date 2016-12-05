@@ -37,7 +37,7 @@ public class HotReloadFlutterApp extends FlutterAppAction {
 
     try {
       final Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
-      final Method method = clazz.getMethod("isSupported", String.class);
+      @SuppressWarnings("unchecked") final Method method = clazz.getMethod("isSupported", String.class);
       final Object result = method.invoke(null, featureId);
       return result instanceof Boolean && (Boolean)result;
     }

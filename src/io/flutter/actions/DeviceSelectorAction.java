@@ -208,7 +208,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-      final FlutterDaemonService service = FlutterDaemonService.getInstance(e.getProject());
+      final Project project = e.getProject();
+      final FlutterDaemonService service = project != null ? FlutterDaemonService.getInstance(project) : null;
       if (service != null) {
         service.setSelectedDevice(device);
       }

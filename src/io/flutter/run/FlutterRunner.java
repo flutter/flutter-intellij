@@ -51,7 +51,7 @@ public class FlutterRunner extends FlutterRunnerBase {
       return false;
     }
 
-    FlutterRunConfiguration runConfiguration = (FlutterRunConfiguration)profile;
+    final FlutterRunConfiguration runConfiguration = (FlutterRunConfiguration)profile;
     final FlutterDaemonService service = FlutterDaemonService.getInstance(runConfiguration.getProject());
     if (service == null || service.getSelectedDevice() == null) {
       return false;
