@@ -24,7 +24,7 @@ public class FlutterDoctorAction extends DumbAwareAction {
 
     if (sdk != null) {
       try {
-        sdk.runProject(project, "Flutter doctor", null, "doctor");
+        sdk.runProject(project, "Flutter doctor", "doctor");
       }
       catch (ExecutionException e) {
         FlutterErrors.showError(
