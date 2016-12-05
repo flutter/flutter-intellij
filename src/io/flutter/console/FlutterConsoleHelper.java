@@ -45,10 +45,6 @@ public class FlutterConsoleHelper {
    * We share one Flutter console per Module, and have one global Flutter console (for tasks which don't
    * take a module, like 'flutter doctor'). We could revisit to have one global, shared flutter console
    * instance.
-   *
-   * @param project
-   * @param module
-   * @param processHandler
    */
   private static void show(@NotNull Project project,
                            @Nullable Module module,
