@@ -86,4 +86,3 @@ Verify installation and configuration in a fresh IDEA installation.
 * Set the Flutter SDK path to a valid SDK location.
   * Verify that invalid locations are rejected (and cannot be applied).
 * Verify project creation, run/debug.
-
