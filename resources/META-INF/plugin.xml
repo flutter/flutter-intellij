@@ -21,7 +21,6 @@
   <li>reload and restart keybinding mapping fixes</li>
   <li>new buttter bar with actions for flutter.yaml files</li>
   <li>"run" behavior re-designed to support reload</li>
-  <li>fix to restore breakpoints across a reload</li>
   <li>improved console output for reloading and restarting</li>
   <li>miscellaneous fixes and stability improvements</li>
 </ul>
