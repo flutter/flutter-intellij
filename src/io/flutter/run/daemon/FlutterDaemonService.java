@@ -204,7 +204,13 @@ public class FlutterDaemonService {
       mgr = myManager;
     }
     // TODO(devoncarew): Remove this call - inline what it does.
-    return mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
+    FlutterApp app = mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
+    app.addStateListener(newState -> {
+      if (newState == FlutterApp.State.TERMINATED) {
+        controller.forceExit();
+      }
+    });
+    return app;
   }
 
   /**
