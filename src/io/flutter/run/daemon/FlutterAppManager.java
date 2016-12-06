@@ -375,6 +375,12 @@ public class FlutterAppManager {
     }
   }
 
+  private void eventAppStart(AppStartEvent event, FlutterDaemonController controller) {
+    // TODO:
+
+    System.out.println("eventAppStart: " + event);
+  }
+
   private void eventAppStarted(@NotNull AppStartEvent started, @NotNull FlutterDaemonController controller) {
     assert started.directory.equals(controller.getProjectDirectory());
     final Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
@@ -637,7 +643,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") boolean supportsRestart;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
-      // This event is ignored. The app.start command response is used instead.
+      manager.eventAppStart(this, controller);
     }
   }
 

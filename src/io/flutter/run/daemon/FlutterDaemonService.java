@@ -198,18 +198,23 @@ public class FlutterDaemonService {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
     final FlutterDaemonController controller = createController(projectDir);
-    controller.startRunnerDaemon(project, deviceId, mode, startPaused, isHot, relativePath);
+    controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
     final FlutterAppManager mgr;
     synchronized (myLock) {
       mgr = myManager;
     }
     // TODO(devoncarew): Remove this call - inline what it does.
-    FlutterApp app = mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
-    app.addStateListener(newState -> {
-      if (newState == FlutterApp.State.TERMINATED) {
-        controller.forceExit();
-      }
-    });
+    final FlutterApp app = mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
+    if (app == null) {
+      controller.forceExit();
+    }
+    else {
+      app.addStateListener(newState -> {
+        if (newState == FlutterApp.State.TERMINATED) {
+          controller.forceExit();
+        }
+      });
+    }
     return app;
   }
 
