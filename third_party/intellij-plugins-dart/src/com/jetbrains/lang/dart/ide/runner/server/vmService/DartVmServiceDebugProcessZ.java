@@ -527,6 +527,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
       if (myDASExecutionContextId != null && !isDartPatchUri(uri)) {
         if (getRemoteProjectRootUri() == null || !uri.contains(getRemoteProjectRootUri())) {
+          if (uri.startsWith("/")) {
+            // Convert a file path to a file: uri.
+            uri = new File(uri).toURI().toString();
+          }
           final String path = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, null, uri);
           if (path != null) {
             return LocalFileSystem.getInstance().findFileByPath(path);

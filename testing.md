@@ -36,7 +36,6 @@ Validate that an externally created project can be imported.
 * browse to and select `<flutter-root>/examples/flutter_gallery`
 * ensure there are no analysis errors or warnings
 * ensure that the `flutter_gallery` launch configuration shows up and is selected
-* verify that the `flutter_gallery` launch configuration runs without errors
 
 ## Run / Debug
 
@@ -59,8 +58,8 @@ Assuming the app state from above:
 * change the `Button tapped ... times.` line to end in an exclamation point
 * hit the hot reload button in the debugger UI
 * validate that
-  1) the state persisted (the same number of clicks in the UI), and
-  2) the text changed to end in an exclamation point
+  1. the state persisted (the same number of clicks in the UI), and
+  2. the text changed to end in an exclamation point
 * change the text back
 * hit the `Full Application Restart` button
 * validate that the text and state resets
