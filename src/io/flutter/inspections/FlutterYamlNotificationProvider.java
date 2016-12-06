@@ -5,12 +5,9 @@
  */
 package io.flutter.inspections;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectLocator;
@@ -18,11 +15,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
-import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import icons.FlutterIcons;
-import io.flutter.FlutterBundle;
-import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -59,14 +52,6 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
     }
 
     if (!FlutterSdkUtil.hasFlutterModule(project)) {
-      final Module module = ModuleUtil.findModuleForFile(file, project);
-      if (module != null) {
-        final String message = FlutterBundle.message("flutter.support.is.not.enabled.for.module.0", module.getName());
-        final EditorNotificationPanel panel = new EditorNotificationPanel().icon(FlutterIcons.Flutter).text(message);
-        panel.createActionLabel(FlutterBundle.message("enable.flutter.support"), new EnableFlutterSupportAction(module, project));
-        return panel;
-      }
-
       return null;
     }
 
@@ -76,28 +61,6 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
     }
 
     return new FlutterYamlActionsPanel(file);
-  }
-}
-
-class EnableFlutterSupportAction implements Runnable {
-  private final Module myModule;
-  private final Project myProject;
-
-  public EnableFlutterSupportAction(@NotNull final Module module, @NotNull Project project) {
-    myModule = module;
-    myProject = project;
-  }
-
-  @Override
-  public void run() {
-
-    myModule.setOption(Module.ELEMENT_TYPE, FlutterModuleType.getInstance().getId());
-
-    if (DartSdk.getDartSdk(myProject) != null && !DartSdkGlobalLibUtil.isDartSdkEnabled(myModule)) {
-      ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(myModule));
-    }
-
-    myProject.save();
   }
 }
 

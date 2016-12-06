@@ -27,6 +27,7 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -59,12 +60,13 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
 
   @NotNull
   private static EditorNotificationPanel createPanel(@NotNull Project project, @NotNull Module module) {
-    final EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.setText(FlutterBundle.message("not.flutter.bundle", module.getName()));
+    final EditorNotificationPanel panel = new EditorNotificationPanel().icon(FlutterIcons.Flutter);
+    panel.setText(FlutterBundle.message("flutter.support.is.not.enabled.for.module.0", module.getName()));
     panel.createActionLabel(FlutterBundle.message("change.module.type.to.flutter.and.reload.project"), () -> {
-      final int message = Messages.showOkCancelDialog(project, FlutterBundle.message("updating.module.type.requires.project.reload.proceed"),
-                                                      FlutterBundle.message("update.module.type"),
-                                                      FlutterBundle.message("reload.project"), CommonBundle.getCancelButtonText(), null);
+      final int message =
+        Messages.showOkCancelDialog(project, FlutterBundle.message("updating.module.type.requires.project.reload.proceed"),
+                                    FlutterBundle.message("update.module.type"),
+                                    FlutterBundle.message("reload.project"), CommonBundle.getCancelButtonText(), null);
       if (message == Messages.YES) {
         module.setOption(Module.ELEMENT_TYPE, FlutterModuleType.getInstance().getId());
 
