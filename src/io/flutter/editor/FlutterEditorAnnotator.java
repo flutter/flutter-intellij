@@ -5,126 +5,131 @@
  */
 package io.flutter.editor;
 
-import com.intellij.lang.ASTNode;
 import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.impl.source.tree.CompositeElement;
-import com.intellij.psi.impl.source.tree.TreeElement;
-import com.intellij.psi.tree.IElementType;
-import com.intellij.ui.ColorUtil;
 import com.intellij.util.ui.ColorIcon;
-import com.jetbrains.lang.dart.DartTokenTypes;
+import com.jetbrains.lang.dart.psi.DartArrayAccessExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
-import org.apache.velocity.runtime.parser.node.ASTNENode;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
+import java.util.Properties;
 
-// TODO: Look for flutter material icons (Icons.add)
-//   (https://github.com/flutter/flutter/wiki/Updating-Material-Design-Fonts)
-// TODO: support color swatches (Colors.white70, Colors.red[400])
-// TODO: also color definitions ( const Color(0x4DFFFFFF) )
+// Support Icons.add
+// Support Colors.white70
+// Support Colors.red[400]
 
-// TODO: We want to makde sure the 'Colors' or 'Icons' references resolves to a Flutter one.
-//    use the file imports?
+// TODO(devoncarew): Support const IconData(0xe145)
+// TODO(devoncarew): Support const Color(0x4DFFFFFF)
 
 public class FlutterEditorAnnotator implements Annotator {
-  private static final Map<String, String> kColorMap = new HashMap<>();
+  private static final Logger LOG = Logger.getInstance(FlutterEditorAnnotator.class);
+
+  private static final Properties colors;
+  private static final Properties icons;
 
   static {
-    kColorMap.put("transparent", "000000");
-    kColorMap.put("black", "000000");
-    kColorMap.put("black87", "000000");
-    kColorMap.put("black54", "000000");
-    kColorMap.put("black38", "000000");
-    kColorMap.put("black45", "000000");
-    kColorMap.put("black26", "000000");
-    kColorMap.put("black12", "000000");
-    kColorMap.put("white", "FFFFFF");
-    kColorMap.put("white70", "FFFFFF");
-    kColorMap.put("white30", "FFFFFF");
-    kColorMap.put("white12", "FFFFFF");
-    kColorMap.put("white10", "FFFFFF");
-    kColorMap.put("redAccent", "FF8A80");
+    colors = new Properties();
+    icons = new Properties();
+
+    try {
+      colors.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/colors.properties"));
+    }
+    catch (IOException e) {
+      LOG.warn(e);
+    }
+
+    try {
+      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons.properties"));
+    }
+    catch (IOException e) {
+      LOG.warn(e);
+    }
   }
 
   @Override
   public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
     if (holder.isBatchMode()) return;
 
-    // TODO: flutter module/project
+    // TODO: Don't try and annotate when indexing.
+    // TODO: What are the performance implications of element.getText()?
+    // TODO: Use a DartVisitor instead?
 
-    final PsiFile containingFile = element.getContainingFile();
+    if (element instanceof DartReferenceExpression || element instanceof DartArrayAccessExpression) {
+      if (!isInFlutterModule(element)) {
+        return;
+      }
 
-    if (element instanceof DartReferenceExpression) {
-      DartReferenceExpression refExpression = (DartReferenceExpression)element;
+      String text = element.getText();
 
-      if (isRef(refExpression.getTokenType())) {
-        ASTNode node = refExpression.getNode();
+      // TODO: Make this more efficient.
 
-        if (node instanceof CompositeElement) {
-          CompositeElement cNode = (CompositeElement)node;
-          TreeElement firstChild = cNode.getFirstChildNode();
-
-          if (isRef(firstChild) && isIdentifier(firstChild.getFirstChildNode(), "Colors")) {
-            if (isPeriod(firstChild.getTreeNext()) && isRef(firstChild.getTreeNext().getTreeNext())) {
-              if (firstChild.getTreeNext().getTreeNext() == cNode.getLastChildNode()) {
-                TreeElement idNode = cNode.getLastChildNode();
-
-                if (idNode.getFirstChildNode() == idNode.getLastChildNode() && isIdentifier(idNode.getFirstChildNode())) {
-                  String fullText = cNode.getText();
-                  String id = idNode.getText();
-
-                  String colorValue = kColorMap.get(id);
-
-                  if (colorValue != null) {
-                    attachColorIcon(element, holder, colorValue);
-                  }
-                }
-              }
-            }
+      if (text.startsWith("Colors.")) {
+        text = text.substring("Colors.".length());
+        if (colors.containsKey(text)) {
+          final Color color = getColor(text);
+          if (color != null) {
+            attachColorIcon(element, holder, color);
+          }
+        }
+      }
+      else if (text.startsWith("Icons.")) {
+        text = text.substring("Icons.".length());
+        if (icons.containsKey(text)) {
+          final Icon icon = getIcon(text);
+          if (icon != null) {
+            attachIcon(element, holder, icon);
           }
         }
       }
     }
   }
 
-  private boolean isRef(TreeElement element) {
-    return element != null && element.getElementType() == DartTokenTypes.REFERENCE_EXPRESSION;
+  private boolean isInFlutterModule(@NotNull PsiElement element) {
+    return FlutterSdkUtil.isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
   }
 
-  private boolean isRef(IElementType elementType) {
-    return elementType == DartTokenTypes.REFERENCE_EXPRESSION;
+  private Icon getIcon(String id) {
+    final String path = icons.getProperty(id);
+    if (path == null) {
+      return null;
+    }
+    return IconLoader.findIcon(path, FlutterEditorAnnotator.class);
   }
 
-  private boolean isPeriod(TreeElement element) {
-    return element != null && element.getElementType() == DartTokenTypes.DOT;
-  }
-
-  private boolean isIdentifier(IElementType elementType) {
-    return elementType == DartTokenTypes.IDENTIFIER;
-  }
-
-  private boolean isIdentifier(TreeElement element) {
-    return element != null && element.getElementType() == DartTokenTypes.ID;
-  }
-
-  private boolean isIdentifier(TreeElement element, String name) {
-    return element != null && element.getElementType() == DartTokenTypes.ID && name.equals(element.getText());
-  }
-
-  private static void attachColorIcon(final PsiElement element, AnnotationHolder holder, String valueText) {
+  private static Color getColor(String name) {
     try {
-      Color color = ColorUtil.fromHex(valueText);
-      // TODO: scaling?
-      final ColorIcon icon = new ColorIcon(8, color);
+      final String hexValue = colors.getProperty(name);
+      if (hexValue == null) {
+        return null;
+      }
+
+      // argb to r, g, b, a
+      final long value = Long.parseLong(hexValue, 16);
+      //noinspection UseJBColor
+      return new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
+    }
+    catch (IllegalArgumentException e) {
+      return null;
+    }
+  }
+
+  private static void attachColorIcon(final PsiElement element, AnnotationHolder holder, Color color) {
+    attachIcon(element, holder, new ColorIcon(10, color));
+  }
+
+  private static void attachIcon(final PsiElement element, AnnotationHolder holder, Icon icon) {
+    try {
       final Annotation annotation = holder.createInfoAnnotation(element, null);
-      annotation.setGutterIconRenderer(new FlutterColorIconRenderer(icon, element));
+      annotation.setGutterIconRenderer(new FlutterIconRenderer(icon, element));
     }
     catch (Exception ignored) {
     }

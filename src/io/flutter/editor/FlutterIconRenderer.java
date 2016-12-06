@@ -8,26 +8,21 @@ package io.flutter.editor;
 import com.intellij.openapi.editor.markup.GutterIconRenderer;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.psi.PsiElement;
-import com.intellij.util.ui.ColorIcon;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-// TODO: click actions?
+public class FlutterIconRenderer extends GutterIconRenderer implements DumbAware {
+  private final Icon myIcon;
+  private final String myId;
 
-// TODO: tooltips
-
-public class FlutterColorIconRenderer extends GutterIconRenderer implements DumbAware {
-  private final ColorIcon myIcon;
-  private final PsiElement myElement;
-
-  public FlutterColorIconRenderer(ColorIcon icon, PsiElement element) {
+  public FlutterIconRenderer(Icon icon, PsiElement element) {
     myIcon = icon;
-    myElement = element;
+    myId = element.getText();
   }
 
   public String getTooltipText() {
-    return myElement.getText();
+    return myId;
   }
 
   @NotNull
@@ -41,15 +36,12 @@ public class FlutterColorIconRenderer extends GutterIconRenderer implements Dumb
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    FlutterColorIconRenderer renderer = (FlutterColorIconRenderer)o;
-
-    if (myElement != null ? !myElement.equals(renderer.myElement) : renderer.myElement != null) return false;
-
-    return true;
+    FlutterIconRenderer renderer = (FlutterIconRenderer)o;
+    return myId != null ? myId.equals(renderer.myId) : renderer.myId == null;
   }
 
   @Override
   public int hashCode() {
-    return myElement.hashCode();
+    return myId.hashCode();
   }
 }

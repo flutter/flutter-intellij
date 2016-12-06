@@ -1,3 +1,6 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 import 'colors.dart';
 
@@ -5,6 +8,8 @@ void main() {
   // https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/material/colors.dart
 
   StringBuffer buf = new StringBuffer();
+  buf.writeln('# Generated file - do not edit.');
+  buf.writeln();
 
   // colors
   final Map<String, Color> colors = {

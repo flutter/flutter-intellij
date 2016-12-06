@@ -1,8 +1,6 @@
-/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 import 'dart:convert';
 import 'dart:io';
@@ -82,9 +80,16 @@ colors() async {
 }
 
 @Task('Generate Flutter icon information')
-icons() {
-  // TODO: print info about where to get material fonts? Or, download the fonts?
-  // TODO: parse codepoints, generate Java files
-  // TODO: copy over icons
+icons() async {
+  final String kUrl = 'https://raw.githubusercontent.com/flutter/flutter/'
+    'master/dev/tools/update_icons.dart';
+
+  // Get color file from flutter.
+  HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
+  HttpClientResponse response = await request.close();
+  List<String> data = await response.transform(UTF8.decoder).toList();
+  File file = new File('tool/icons/update_icons.dart');
+  file.writeAsStringSync(data.join(''));
+
 
 }
