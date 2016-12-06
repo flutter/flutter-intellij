@@ -75,7 +75,7 @@ public class FlutterConsoleFilter implements Filter {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk != null) {
         try {
-          sdk.runProject(project, "Flutter doctor", null, "doctor");
+          sdk.runProject(project, "Flutter doctor", "doctor");
         }
         catch (ExecutionException e) {
           FlutterErrors.showError(

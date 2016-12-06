@@ -131,7 +131,6 @@ public class FlutterSdk {
 
   public void runProject(@NotNull Project project,
                          @NotNull String title,
-                         @Nullable ProcessListener listener,
                          @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
@@ -144,9 +143,6 @@ public class FlutterSdk {
     try {
       if (inProgress.compareAndSet(false, true)) {
         final OSProcessHandler handler = new OSProcessHandler(command);
-        if (listener != null) {
-          handler.addProcessListener(listener);
-        }
         handler.addProcessListener(new ProcessAdapter() {
           @Override
           public void processTerminated(final ProcessEvent event) {
