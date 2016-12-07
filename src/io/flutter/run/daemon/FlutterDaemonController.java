@@ -192,24 +192,23 @@ public class FlutterDaemonController extends ProcessAdapter {
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.addParameters("daemon");
-    //commandLine.addParameters("run", "--machine");
-    //// TODO(devoncarew): Handle cases where device might be null.
-    //if (deviceId != null) {
-    //  commandLine.addParameter("--device-id=" + deviceId);
-    //}
-    //if (mode == RunMode.PROFILE) {
-    //  commandLine.addParameter("--profile");
-    //}
-    //if (startPaused) {
-    //  commandLine.addParameter("--start-paused");
-    //}
-    //if (!isHot) {
-    //  commandLine.addParameter("--no-hot");
-    //}
-    //if (target != null) {
-    //  commandLine.addParameter(target);
-    //}
+    commandLine.addParameters("run", "--machine");
+    // TODO(devoncarew): Handle cases where device might be null.
+    if (deviceId != null) {
+      commandLine.addParameter("--device-id=" + deviceId);
+    }
+    if (mode == RunMode.PROFILE) {
+      commandLine.addParameter("--profile");
+    }
+    if (startPaused) {
+      commandLine.addParameter("--start-paused");
+    }
+    if (!isHot) {
+      commandLine.addParameter("--no-hot");
+    }
+    if (target != null) {
+      commandLine.addParameter(target);
+    }
     return commandLine;
   }
 
