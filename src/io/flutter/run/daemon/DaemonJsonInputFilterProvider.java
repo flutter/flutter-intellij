@@ -31,7 +31,12 @@ public class DaemonJsonInputFilterProvider implements ConsoleInputFilterProvider
     public List<Pair<String, ConsoleViewContentType>> applyFilter(String text, ConsoleViewContentType contentType) {
       if (!VERBOSE) {
         final String trimmed = text.trim();
+
         if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
+          return Collections.singletonList(Pair.create(null, contentType));
+        }
+
+        if (trimmed.startsWith("Observatory listening on http") && !trimmed.contains("\n")) {
           return Collections.singletonList(Pair.create(null, contentType));
         }
       }

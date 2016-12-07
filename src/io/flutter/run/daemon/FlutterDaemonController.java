@@ -83,16 +83,14 @@ public class FlutterDaemonController extends ProcessAdapter {
     myProcessHandler.startNotify();
   }
 
-  public void startRunnerDaemon(
-    @NotNull Project project,
-    @NotNull String deviceId,
-    @NotNull RunMode mode,
-    boolean startPaused,
-    boolean isHot,
-    @Nullable String target) throws ExecutionException {
-
-    // TODO(devoncarew): Use the deviceId / mode / startPaused / isHot / target params.
-    final GeneralCommandLine commandLine = createCommandLineRunner(project);
+  public void startRunnerProcess(@NotNull Project project,
+                                 @NotNull String projectDir,
+                                 @NotNull String deviceId,
+                                 @NotNull RunMode mode,
+                                 boolean startPaused,
+                                 boolean isHot,
+                                 @Nullable String target) throws ExecutionException {
+    final GeneralCommandLine commandLine = createCommandLineRunner(project, projectDir, deviceId, mode, startPaused, isHot, target);
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
@@ -175,9 +173,15 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   /**
-   * Create a command to start the Flutter daemon when used to launch apps.
+   * Create a command to run 'flutter run --machine'.
    */
-  private static GeneralCommandLine createCommandLineRunner(@NotNull Project project) throws ExecutionException {
+  private static GeneralCommandLine createCommandLineRunner(@NotNull Project project,
+                                                            @NotNull String projectDir,
+                                                            @NotNull String deviceId,
+                                                            @NotNull RunMode mode,
+                                                            boolean startPaused,
+                                                            boolean isHot,
+                                                            @Nullable String target) throws ExecutionException {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
@@ -185,12 +189,26 @@ public class FlutterDaemonController extends ProcessAdapter {
     final String flutterSdkPath = flutterSdk.getHomePath();
     final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
-    // While not strictly required, we set the working directory to the flutter root for consistency.
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(flutterSdkPath);
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.addParameter("daemon");
-
+    commandLine.addParameters("run", "--machine");
+    // TODO(devoncarew): Handle cases where device might be null.
+    if (deviceId != null) {
+      commandLine.addParameter("--device-id=" + deviceId);
+    }
+    if (mode == RunMode.PROFILE) {
+      commandLine.addParameter("--profile");
+    }
+    if (startPaused) {
+      commandLine.addParameter("--start-paused");
+    }
+    if (!isHot) {
+      commandLine.addParameter("--no-hot");
+    }
+    if (target != null) {
+      commandLine.addParameter(target);
+    }
     return commandLine;
   }
 

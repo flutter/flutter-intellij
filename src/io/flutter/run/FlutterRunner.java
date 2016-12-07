@@ -16,7 +16,6 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
@@ -53,6 +52,7 @@ public class FlutterRunner extends FlutterRunnerBase {
 
     final FlutterRunConfiguration runConfiguration = (FlutterRunConfiguration)profile;
     final FlutterDaemonService service = FlutterDaemonService.getInstance(runConfiguration.getProject());
+    //noinspection SimplifiableIfStatement
     if (service == null || service.getSelectedDevice() == null) {
       return false;
     }
@@ -148,10 +148,8 @@ public class FlutterRunner extends FlutterRunnerBase {
       ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
     currentWorkingDirectory = LocalFileSystem.getInstance().findFileByPath((cwd));
 
-    // TODO(devoncarew): Insert one-shot mode here.
     executionResult = appState.execute(env.getExecutor(), this);
 
-    debuggingHost = null; //TODO: should this be set?
     observatoryPort = appState.getObservatoryPort();
 
     FileDocumentManager.getInstance().saveAllDocuments();
@@ -163,7 +161,7 @@ public class FlutterRunner extends FlutterRunnerBase {
       public XDebugProcess start(@NotNull final XDebugSession session) {
         final DartUrlResolver dartUrlResolver = getDartUrlResolver(env.getProject(), contextFileOrDir);
         return new FlutterDebugProcess(session,
-                                       StringUtil.notNullize(debuggingHost, "localhost"),
+                                       "localhost",
                                        observatoryPort,
                                        state,
                                        executionResult,
