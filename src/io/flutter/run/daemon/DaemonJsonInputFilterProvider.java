@@ -39,6 +39,10 @@ public class DaemonJsonInputFilterProvider implements ConsoleInputFilterProvider
         if (trimmed.startsWith("Observatory listening on http") && !trimmed.contains("\n")) {
           return Collections.singletonList(Pair.create(null, contentType));
         }
+
+        if (trimmed.startsWith("Diagnostic server listening on http") && !trimmed.contains("\n")) {
+          return Collections.singletonList(Pair.create(null, contentType));
+        }
       }
 
       return Collections.singletonList(Pair.create(text, contentType));
