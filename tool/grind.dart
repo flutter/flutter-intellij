@@ -91,5 +91,6 @@ icons() async {
   File file = new File('tool/icons/update_icons.dart');
   file.writeAsStringSync(data.join(''));
 
-
+  // Run tool/icons/icons_main.dart.
+  await Dart.runAsync('tool/icons/icons_main.dart');
 }

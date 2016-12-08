@@ -8,8 +8,6 @@ import 'package:path/path.dart' as path;
 
 import 'update_icons.dart' show kIdentifierRewrites;
 
-// TODO: Do we need both black and white images?
-
 void main() {
   // Check for the material-design-icons directory.
   Directory iconsDir = new Directory('material-design-icons');
@@ -44,7 +42,13 @@ void main() {
   for (FileSystemEntity entity in iconsDir.listSync(recursive: true, followLinks: false)) {
     String p = entity.path;
     if (!p.endsWith(suffix)) continue;
-    if (!p.contains('/1x_web/')) continue;
+    if (!p.contains('/2x_web/')) continue;
+
+    File blackFile = new File(p.replaceFirst('_black_', '_white_'));
+    if (!blackFile.existsSync()) {
+      print('  no cooresponding black file: ${p}');
+      continue;
+    }
 
     String name = path.basename(p);
     name = name.substring(prefix.length);
@@ -57,13 +61,19 @@ void main() {
     icon.category = path.basename(entity.parent.parent.path);
   }
 
+  for (Icon icon in icons.where((icon) => icon.fullPath == null)) {
+    print('  no image found for ${icon.name}');
+  }
+
   print('Parsed ${codepointsFile.path}.');
 
   // Generate properties file.
+  List<Icon> filteredIcons = icons.where((icon) => icon.fullPath != null).toList();
+
   StringBuffer buf = new StringBuffer();
   buf.writeln('# Generated file - do not edit.');
 
-  for (Icon icon in icons.where((icon) => icon.fullPath != null)) {
+  for (Icon icon in filteredIcons) {
     buf.writeln();
     buf.writeln('${icon.codepoint}.codepoint=${icon.identifier}');
     buf.writeln('${icon.identifier}=/flutter/icons/${icon.category}/${icon.identifier}.png');
@@ -74,35 +84,59 @@ void main() {
   print('Wrote ${propertiesFile.path}.');
 
   // Copy over icons.
-  print('Resizing images...');
-
   int count = 0;
 
-  for (Icon icon in icons.where((icon) => icon.fullPath != null)) {
+  print('Resizing normal 16x16 icons...');
+
+  for (Icon icon in filteredIcons) {
+    File dest = new File('resources/flutter/icons/${icon.category}/${icon.identifier}.png');
+    File source = new File(icon.fullPath);
+    count += _resize(source, dest, 16, black: false);
+  }
+
+  print('Resizing normal 32x32 icons...');
+
+  for (Icon icon in filteredIcons) {
     File dest = new File('resources/flutter/icons/${icon.category}/${icon.identifier}@2x.png');
     File source = new File(icon.fullPath);
+    count += _resize(source, dest, 32, black: false);
+  }
 
-    // 24x24
-    count++;
-    dest.parent.createSync();
-    dest.writeAsBytesSync(source.readAsBytesSync());
+  print('Resizing Darcula 16x16 icons...');
 
-    // 12x12
-    count++;
-    ProcessResult result = Process.runSync('convert', [
-      source.path,
-      '-resize',
-      '12x12',
-      'resources/flutter/icons/${icon.category}/${icon.identifier}.png'
-    ]);
+  for (Icon icon in filteredIcons) {
+    File dest = new File('resources/flutter/icons/${icon.category}/${icon.identifier}_dark.png');
+    File source = new File(icon.fullPath.replaceFirst('_black_', '_white_'));
+    count += _resize(source, dest, 16, black: true);
+  }
 
-    if (result.exitCode !=0 ) {
-      print('Error resizing image with imagemagick: ${result.stdout}\n${result.stderr}');
-      exit(1);
-    }
+  print('Resizing Darcula 32x32 icons...');
+
+  for (Icon icon in filteredIcons) {
+    File dest = new File('resources/flutter/icons/${icon.category}/${icon.identifier}@2x_dark.png');
+    File source = new File(icon.fullPath.replaceFirst('_black_', '_white_'));
+    count += _resize(source, dest, 32, black: true);
   }
 
   print('Copied ${count} icons.');
+}
+
+int _resize(File source, File dest, int size, { bool black: true}) {
+  dest.parent.createSync(recursive: true);
+
+  ProcessResult result = Process.runSync('convert', [
+    source.path,
+    '-resize', '${size}x${size}',
+    '-fill', black ? 'black' : 'white', '-colorize', black ? '50%' : '35%',
+    dest.path
+  ]);
+
+  if (result.exitCode !=0 ) {
+    print('Error resizing image with imagemagick: ${result.stdout}\n${result.stderr}');
+    exit(1);
+  }
+
+  return 1;
 }
 
 class Icon {

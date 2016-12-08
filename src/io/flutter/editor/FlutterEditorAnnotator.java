@@ -14,6 +14,7 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ui.ColorIcon;
 import com.jetbrains.lang.dart.psi.DartArrayAccessExpression;
+import com.jetbrains.lang.dart.psi.DartNewExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,9 +27,7 @@ import java.util.Properties;
 // Support Icons.add
 // Support Colors.white70
 // Support Colors.red[400]
-
-// TODO(devoncarew): Support const IconData(0xe145)
-// TODO(devoncarew): Support const Color(0x4DFFFFFF)
+// Support const IconData(0xe145)
 
 public class FlutterEditorAnnotator implements Annotator {
   private static final Logger LOG = Logger.getInstance(FlutterEditorAnnotator.class);
@@ -59,41 +58,66 @@ public class FlutterEditorAnnotator implements Annotator {
   public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
     if (holder.isBatchMode()) return;
 
-    // TODO: Don't try and annotate when indexing.
-    // TODO: What are the performance implications of element.getText()?
-    // TODO: Use a DartVisitor instead?
+    // TODO(devoncarew): Use a DartVisitor instead of calling element.getText()?
 
     if (element instanceof DartReferenceExpression || element instanceof DartArrayAccessExpression) {
       if (!isInFlutterModule(element)) {
         return;
       }
 
-      String text = element.getText();
-
-      // TODO: Make this more efficient.
+      final String text = element.getText();
 
       if (text.startsWith("Colors.")) {
-        text = text.substring("Colors.".length());
-        if (colors.containsKey(text)) {
-          final Color color = getColor(text);
+        final String key = text.substring("Colors.".length());
+        if (colors.containsKey(key)) {
+          final Color color = getColor(key);
           if (color != null) {
             attachColorIcon(element, holder, color);
           }
         }
       }
       else if (text.startsWith("Icons.")) {
-        text = text.substring("Icons.".length());
-        if (icons.containsKey(text)) {
-          final Icon icon = getIcon(text);
+        final String key = text.substring("Icons.".length());
+        if (icons.containsKey(key)) {
+          final Icon icon = getIcon(key);
           if (icon != null) {
             attachIcon(element, holder, icon);
           }
         }
       }
     }
+    else if (element instanceof DartNewExpression) {
+      // For IconData, we want to be able to show icons in the flutter package as well.
+      //if (!isInFlutterModule(element)) {
+      //  return;
+      //}
+
+      // const IconData(0xe914)
+      final String text = element.getText();
+
+      if (text.startsWith("const IconData(") && text.endsWith(")")) {
+        String val = text.substring("const IconData(".length());
+        val = val.substring(0, val.length() - 1);
+        try {
+          final int value = val.startsWith("0x")
+                      ? Integer.parseInt(val.substring(2), 16)
+                      : Integer.parseInt(val);
+          final String hex = Integer.toHexString(value);
+          final String iconName = icons.getProperty(hex + ".codepoint");
+          if (iconName != null) {
+            final Icon icon = getIcon(iconName);
+            if (icon != null) {
+              attachIcon(element, holder, icon);
+            }
+          }
+        }
+        catch (NumberFormatException ignored) {
+        }
+      }
+    }
   }
 
-  private boolean isInFlutterModule(@NotNull PsiElement element) {
+  private static boolean isInFlutterModule(@NotNull PsiElement element) {
     return FlutterSdkUtil.isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
   }
 
@@ -114,6 +138,7 @@ public class FlutterEditorAnnotator implements Annotator {
 
       // argb to r, g, b, a
       final long value = Long.parseLong(hexValue, 16);
+
       //noinspection UseJBColor
       return new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
     }
@@ -123,7 +148,7 @@ public class FlutterEditorAnnotator implements Annotator {
   }
 
   private static void attachColorIcon(final PsiElement element, AnnotationHolder holder, Color color) {
-    attachIcon(element, holder, new ColorIcon(10, color));
+    attachIcon(element, holder, new ColorIcon(16, 12, color, false));
   }
 
   private static void attachIcon(final PsiElement element, AnnotationHolder holder, Icon icon) {
