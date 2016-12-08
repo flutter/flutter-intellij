@@ -33,13 +33,18 @@ import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 
 public class WrongModuleTypeNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("Wrong module type");
   private static final String DONT_ASK_TO_CHANGE_MODULE_TYPE_KEY = "do.not.ask.to.change.module.type"; //NON-NLS
   private static final String FLUTTER_YAML_FILE = "flutter.yaml"; //NON-NLS
+  private static final String PUBSPEC_YAML_FILE = "pubspec.yaml"; //NON-NLS
+
+  private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*sdk:\\s*flutter"); //NON-NLS
 
   private final Project myProject;
 
@@ -47,13 +52,33 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
     myProject = project;
   }
 
-  private static boolean hasFlutterYaml(@NotNull Module module) {
+  private static boolean usesFlutter(@NotNull Module module) {
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile baseDir : roots) {
       final VirtualFile flutterYaml = baseDir.findChild(FLUTTER_YAML_FILE);
       if (flutterYaml != null && flutterYaml.exists()) {
         return true;
       }
+      final VirtualFile pubspec = baseDir.findChild(PUBSPEC_YAML_FILE);
+      if (declaresFlutterDependency(pubspec)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean declaresFlutterDependency(VirtualFile pubspec) {
+    if (pubspec == null || !pubspec.exists()) {
+      return false;
+    }
+    try {
+      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
+      if (FLUTTER_SDK_DEP.matcher(contents).find()) {
+        return true;
+      }
+    }
+    catch (IOException e) {
+      // Ignore IO exceptions.
     }
     return false;
   }
@@ -113,6 +138,6 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
     if (!isFlutteryFile(file)) return null;
     final Module module = ModuleUtilCore.findModuleForFile(file, myProject);
     if (module == null || FlutterSdkUtil.isFlutterModule(module) || getIgnoredModules(myProject).contains(module.getName())) return null;
-    return hasFlutterYaml(module) ? createPanel(myProject, module) : null;
+    return usesFlutter(module) ? createPanel(myProject, module) : null;
   }
 }
