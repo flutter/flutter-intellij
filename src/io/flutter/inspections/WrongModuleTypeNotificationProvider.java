@@ -44,7 +44,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   private static final String FLUTTER_YAML_FILE = "flutter.yaml"; //NON-NLS
   private static final String PUBSPEC_YAML_FILE = "pubspec.yaml"; //NON-NLS
 
-  private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*dependencies:\\s*flutter:\\s*sdk:\\s*flutter"); //NON-NLS
+  private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*sdk:\\s*flutter"); //NON-NLS
 
   private final Project myProject;
 
