@@ -9,7 +9,6 @@ import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
@@ -55,14 +54,14 @@ public class FlutterAppManager {
     this.myService = service;
   }
 
-  @Nullable
-  public FlutterApp startApp(@NotNull FlutterDaemonController controller,
-                             @NotNull String deviceId,
-                             @NotNull RunMode mode,
-                             @NotNull Project project,
-                             boolean startPaused,
-                             boolean isHot,
-                             @Nullable String target) {
+  @NotNull
+  public FlutterApp appStarting(@NotNull FlutterDaemonController controller,
+                                @NotNull String deviceId,
+                                @NotNull RunMode mode,
+                                @NotNull Project project,
+                                boolean startPaused,
+                                boolean isHot,
+                                @Nullable String target) {
     myProgressHandler = new ProgressHandler(project);
     final FlutterDaemonService service;
     synchronized (myLock) {
@@ -73,17 +72,6 @@ public class FlutterAppManager {
       myApps.add(app);
     }
     app.changeState(FlutterApp.State.STARTING);
-    final AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), startPaused, null, mode.mode(), target, isHot);
-    final Method cmd = makeMethod(CMD_APP_START, appStart);
-    CompletableFuture
-      .supplyAsync(() -> sendCommand(controller, cmd))
-      .thenApplyAsync(this::waitForResponse)
-      .thenAcceptAsync((started) -> {
-        if (started instanceof AppStartEvent) {
-          final AppStartEvent appStarted = (AppStartEvent)started;
-          app.setAppId(appStarted.appId);
-        }
-      });
     return app;
   }
 
@@ -375,6 +363,18 @@ public class FlutterAppManager {
     }
   }
 
+  private void eventAppStart(AppStartEvent event, FlutterDaemonController controller) {
+    for (FlutterApp app : myApps) {
+      if (app instanceof RunningFlutterApp) {
+        final RunningFlutterApp runningApp = (RunningFlutterApp)app;
+        if (!runningApp.hasAppId()) {
+          runningApp.setAppId(event.appId);
+          break;
+        }
+      }
+    }
+  }
+
   private void eventAppStarted(@NotNull AppStartEvent started, @NotNull FlutterDaemonController controller) {
     assert started.directory.equals(controller.getProjectDirectory());
     final Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
@@ -637,7 +637,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") boolean supportsRestart;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
-      // This event is ignored. The app.start command response is used instead.
+      manager.eventAppStart(this, controller);
     }
   }
 
