@@ -5,35 +5,57 @@
  */
 package io.flutter.settings;
 
-/**
- * Persists Flutter settings for a session.
- */
-public class FlutterSettings {
+import com.intellij.openapi.components.*;
+import com.intellij.openapi.project.Project;
+import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
 
-  private static final FlutterSettings INSTANCE = new FlutterSettings();
+import java.util.ArrayList;
+import java.util.List;
 
-  private boolean ignoreMismatchedDartSdks;
-  private boolean ignoreOutOfDateFlutterSdks;
+@State(
+  name = "FlutterSettings",
+  storages = @Storage(StoragePathMacros.WORKSPACE_FILE)
+)
+public class FlutterSettings implements PersistentStateComponent<FlutterSettings> {
 
-  private FlutterSettings() {}
-
-  public static FlutterSettings getInstance() {
-    return INSTANCE;
+  public static FlutterSettings getInstance(@NotNull Project project) {
+    return ServiceManager.getService(project, FlutterSettings.class);
   }
 
-  public boolean shouldIgnoreMismatchedDartSdks() {
-    return ignoreMismatchedDartSdks;
+  public interface Listener {
+    void settingsChanged();
   }
 
-  public void setIgnoreMismatchedDartSdks() {
-    this.ignoreMismatchedDartSdks = true;
+  private final List<Listener> listeners = new ArrayList<>();
+
+  public void addListener(Listener listener) {
+    listeners.add(listener);
   }
 
-  public boolean shouldIgnoreOutOfDateFlutterSdks() {
-    return ignoreOutOfDateFlutterSdks;
+  public void removeListener(Listener listener) {
+    listeners.remove(listener);
   }
 
-  public void setIgnoreOutOfDateFlutterSdks() {
-    ignoreOutOfDateFlutterSdks = true;
+  public boolean isShowDevices() {
+    return myShowDevices;
+  }
+
+  public void setShowDevices(boolean showDevices) {
+    myShowDevices = showDevices;
+
+    for (Listener listener : listeners) {
+      listener.settingsChanged();
+    }
+  }
+
+  public boolean myShowDevices = true;
+
+  public FlutterSettings getState() {
+    return this;
+  }
+
+  public void loadState(FlutterSettings state) {
+    XmlSerializerUtil.copyBean(state, this);
   }
 }

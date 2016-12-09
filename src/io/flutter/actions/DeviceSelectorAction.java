@@ -77,7 +77,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     if (!isListening) {
       isListening = true;
-      
+
       // Setup initial actions.
       updateActions(project);
 
