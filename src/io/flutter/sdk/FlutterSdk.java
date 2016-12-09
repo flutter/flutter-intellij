@@ -97,8 +97,6 @@ public class FlutterSdk {
     toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
     command.addParameters(toolArgs);
 
-    FileDocumentManager.getInstance().saveAllDocuments();
-
     try {
       if (inProgress.compareAndSet(false, true)) {
         final OSProcessHandler handler = new OSProcessHandler(command);

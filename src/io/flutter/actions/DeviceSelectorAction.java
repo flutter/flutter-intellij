@@ -22,6 +22,7 @@ import io.flutter.FlutterErrors;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -49,7 +50,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   @Override
-  public void update(AnActionEvent e) {
+  public void update(final AnActionEvent e) {
     // Suppress device actions in all but the toolbars.
     final String place = e.getPlace();
     if (!Objects.equals(place, ActionPlaces.NAVIGATION_BAR_TOOLBAR) && !Objects.equals(place, ActionPlaces.MAIN_TOOLBAR)) {
@@ -79,6 +80,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       
       // Setup initial actions.
       updateActions(project);
+
+      final FlutterSettings settings = FlutterSettings.getInstance(project);
+      settings.addListener(() -> e.getPresentation().setVisible(settings.isShowDevices()));
+      e.getPresentation().setVisible(settings.isShowDevices());
 
       service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
         @Override
