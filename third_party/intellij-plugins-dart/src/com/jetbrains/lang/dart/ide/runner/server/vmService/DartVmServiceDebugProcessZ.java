@@ -451,8 +451,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     topToolbar.addSeparator();
     topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
     topToolbar.addSeparator();
-    topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
     topToolbar.addAction(new HotReloadFlutterApp(myConnector, this::isSessionActive));
+    topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
   }
 
   private boolean isSessionActive() {
