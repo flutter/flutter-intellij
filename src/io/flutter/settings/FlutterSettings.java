@@ -8,16 +8,16 @@ package io.flutter.settings;
 /**
  * Persists Flutter settings for a session.
  */
-public class FlutterUISettings {
+public class FlutterSettings {
 
-  private static final FlutterUISettings INSTANCE = new FlutterUISettings();
+  private static final FlutterSettings INSTANCE = new FlutterSettings();
 
   private boolean ignoreMismatchedDartSdks;
   private boolean ignoreOutOfDateFlutterSdks;
 
-  private FlutterUISettings() {}
+  private FlutterSettings() {}
 
-  public static FlutterUISettings getInstance() {
+  public static FlutterSettings getInstance() {
     return INSTANCE;
   }
 
