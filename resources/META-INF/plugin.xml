@@ -1,7 +1,9 @@
 <idea-plugin version="2">
   <id>io.flutter</id>
   <name>Flutter</name>
-  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy cross-platform, high-performance mobile apps on both Android and iOS.</description>
+  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
+    cross-platform, high-performance mobile apps on both Android and iOS.
+  </description>
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
@@ -15,7 +17,7 @@
   <depends>com.intellij.modules.java</depends>
 
   <change-notes>
-<![CDATA[
+    <![CDATA[
 0.1.6:
 <ul>
   <li>reload and restart keybinding mapping fixes</li>
@@ -70,7 +72,7 @@
   <li>initial alpha release</li>
 </ul>
  ]]>
- </change-notes>
+  </change-notes>
 
   <depends>Dart</depends>
 
@@ -91,11 +93,10 @@
     </action>
     <group id="Flutter.MainToolbarActions">
       <separator/>
-
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
               icon="FlutterIcons.Phone"/>
-    <separator/>
+      <separator/>
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
@@ -103,17 +104,25 @@
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
            text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
-      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter Upgrade"
+      <action id="flutter.gettingStarted" class="io.flutter.actions.FlutterGettingStarted"
+              text="Getting Started"
+              description="View the online getting started documentation"/>
+      <separator/>
+      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction"
+              text="Flutter Upgrade"
               description="Run 'flutter upgrade'"/>
-      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter Doctor"
+      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction"
+              text="Flutter Doctor"
               description="Run 'flutter doctor'"/>
+      <separator/>
+      <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
+              text="Submit Feedback…"
+              description="Provie feedback for the Flutter plugin"/>
     </group>
-
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-
-    <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider" />?
+    <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.FlutterDaemonService"
                     serviceImplementation="io.flutter.run.daemon.FlutterDaemonService"/>
