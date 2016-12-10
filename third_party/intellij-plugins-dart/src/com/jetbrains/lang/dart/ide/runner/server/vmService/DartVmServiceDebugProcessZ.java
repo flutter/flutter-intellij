@@ -208,7 +208,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         final long startTime = System.currentTimeMillis();
         while (!myConnector.isConnectionReady()) {
           if (System.currentTimeMillis() > startTime + timeout) {
-            final String message = "Observatory connection never became ready";
+            final String message = "Observatory connection never became ready\n";
             getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
             getSession().stop();
             return;
