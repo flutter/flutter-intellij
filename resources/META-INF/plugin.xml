@@ -103,9 +103,9 @@
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
            text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
-      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter: Upgrade"
+      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter Upgrade"
               description="Run 'flutter upgrade'"/>
-      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter: Doctor"
+      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter Doctor"
               description="Run 'flutter doctor'"/>
     </group>
 
