@@ -99,10 +99,16 @@
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
-    <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter: Upgrade"
-            description="Run 'flutter upgrade'"/>
-    <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter: Doctor"
-            description="Run 'flutter doctor'"/>
+
+    <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
+           text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter Upgrade"
+              description="Run 'flutter upgrade'"/>
+      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter Doctor"
+              description="Run 'flutter doctor'"/>
+    </group>
+
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
