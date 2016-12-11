@@ -13,12 +13,14 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterErrors;
-import io.flutter.inspections.FlutterYamlNotificationProvider;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,22 +33,21 @@ public class FlutterUpgradeAction extends DumbAwareAction {
     final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
 
     if (sdk != null) {
-      final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(event);
-      if (pair != null) {
-        try {
+      final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
+
+      try {
+        if (pair != null) {
           sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
         }
-        catch (ExecutionException e) {
-          FlutterErrors.showError(
-            FlutterBundle.message("flutter.command.exception.title"),
-            FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-          LOG.warn(e);
+        else {
+          sdk.runProject(project, "Flutter upgrade", "upgrade");
         }
       }
-      else {
+      catch (ExecutionException e) {
         FlutterErrors.showError(
           FlutterBundle.message("flutter.command.exception.title"),
-          FlutterBundle.message("flutter.command.upgrade.missing.pubspec.message", project.getName()));
+          FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+        LOG.warn(e);
       }
     }
     else {
@@ -57,15 +58,42 @@ public class FlutterUpgradeAction extends DumbAwareAction {
   }
 
   @Nullable
-  private static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(final AnActionEvent e) {
-    final Module module = LangDataKeys.MODULE.getData(e.getDataContext());
+  private static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(final Project project, final AnActionEvent e) {
+    Module module = LangDataKeys.MODULE.getData(e.getDataContext());
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(e.getDataContext());
 
-    if (module != null && psiFile != null && psiFile.getName().equalsIgnoreCase(FlutterYamlNotificationProvider.FLUTTER_YAML_NAME)) {
-      final VirtualFile file = psiFile.getOriginalFile().getVirtualFile();
-      return file != null ? Pair.create(module, file) : null;
+    VirtualFile pubspec = findPubspecFrom(project, psiFile);
+    if (pubspec == null) {
+      pubspec = findPubspecFrom(module);
     }
 
+    if (module == null && pubspec != null) {
+      module = ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
+    }
+
+    return pubspec == null ? null : Pair.create(module, pubspec);
+  }
+
+  private static VirtualFile findPubspecFrom(Project project, PsiFile psiFile) {
+    if (psiFile == null) {
+      return null;
+    }
+    final VirtualFile file = psiFile.getVirtualFile();
+    final VirtualFile contentRoot = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file);
+    return contentRoot == null ? null : contentRoot.findChild(FlutterConstants.PUBSPEC_YAML);
+  }
+
+  private static VirtualFile findPubspecFrom(Module module) {
+    if (module == null) {
+      return null;
+    }
+    final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+    for (VirtualFile dir : moduleRootManager.getContentRoots()) {
+      final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
+      if (pubspec != null) {
+        return pubspec;
+      }
+    }
     return null;
   }
 }
