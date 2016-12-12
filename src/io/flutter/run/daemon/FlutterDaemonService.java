@@ -176,7 +176,7 @@ public class FlutterDaemonService {
    */
   public FlutterApp startApp(@NotNull Project project,
                              @NotNull String projectDir,
-                             @NotNull String deviceId,
+                             @Nullable String deviceId,
                              @NotNull RunMode mode,
                              @Nullable String relativePath)
     throws ExecutionException {

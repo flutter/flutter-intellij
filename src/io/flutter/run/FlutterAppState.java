@@ -26,6 +26,7 @@ import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -78,9 +79,11 @@ public class FlutterAppState extends FlutterAppStateBase {
       throw new ExecutionException("No connected device");
     }
 
-    final ConnectedDevice device = service.getSelectedDevice();
-    if (device == null) {
-      throw new ExecutionException("No selected device");
+    ConnectedDevice device = null;
+
+    FlutterSettings settings = FlutterSettings.getInstance(project);
+    if (settings.isShowDevices()) {
+      device = service.getSelectedDevice();
     }
 
     final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
@@ -94,7 +97,7 @@ public class FlutterAppState extends FlutterAppStateBase {
       }
     }
 
-    myApp = service.startApp(project, cwd, device.deviceId(), myMode, relativePath);
+    myApp = service.startApp(project, cwd, device == null ? null : device.deviceId(), myMode, relativePath);
     return myApp.getController().getProcessHandler();
   }
 

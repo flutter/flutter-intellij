@@ -60,10 +60,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     // And only present in the context of a flutter project.
     final Project project = e.getProject();
-    if (project != null && FlutterSdkUtil.hasFlutterModule(project)) {
-      e.getPresentation().setVisible(true);
-    }
-    else {
+    if (project == null || !FlutterSdkUtil.hasFlutterModule(project)) {
       e.getPresentation().setVisible(false);
       return;
     }
@@ -79,51 +76,42 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       isListening = true;
 
       // Setup initial actions.
-      updateActions(project);
+      updateActions(e.getPresentation(), project);
 
       final FlutterSettings settings = FlutterSettings.getInstance(project);
-      settings.addListener(() -> e.getPresentation().setVisible(settings.isShowDevices()));
-      e.getPresentation().setVisible(settings.isShowDevices());
+      updateVisibility(e.getPresentation(), settings);
+      settings.addListener(() -> updateVisibility(e.getPresentation(), settings));
 
       service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
         @Override
         public void deviceAdded(ConnectedDevice device) {
-          updateActions(project);
+          updateActions(e.getPresentation(), project);
         }
 
         @Override
         public void selectedDeviceChanged(ConnectedDevice device) {
-          updateActions(project);
+          updateActions(e.getPresentation(), project);
         }
 
         @Override
         public void deviceRemoved(ConnectedDevice device) {
-          updateActions(project);
+          updateActions(e.getPresentation(), project);
         }
       });
     }
-
-    final ConnectedDevice selectedDevice = service.getSelectedDevice();
-    final Presentation presentation = e.getPresentation();
-
-    for (AnAction action : actions) {
-      if (action instanceof SelectDeviceAction) {
-        final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
-
-        if (Objects.equals(deviceAction.device, selectedDevice)) {
-          final Presentation template = action.getTemplatePresentation();
-          presentation.setIcon(template.getIcon());
-          presentation.setText(template.getText());
-          presentation.setEnabled(true);
-          return;
-        }
-      }
-    }
-
-    presentation.setText(null);
   }
 
-  private void updateActions(@NotNull Project project) {
+  private void updateVisibility(final Presentation presentation, final FlutterSettings settings) {
+    presentation.setVisible(settings.isShowDevices());
+
+    final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
+    if (button != null) {
+      button.setVisible(settings.isShowDevices());
+      button.getParent().doLayout();
+    }
+  }
+
+  private void updateActions(Presentation presentation, @NotNull Project project) {
     actions.clear();
 
     final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
@@ -151,6 +139,26 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
       actions.add(new Separator());
       actions.add(new OpenSimulatorAction(!simulatorOpen));
+
+      if (service != null) {
+        final ConnectedDevice selectedDevice = service.getSelectedDevice();
+
+        for (AnAction action : actions) {
+          if (action instanceof SelectDeviceAction) {
+            final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+
+            if (Objects.equals(deviceAction.device, selectedDevice)) {
+              final Presentation template = action.getTemplatePresentation();
+              presentation.setIcon(template.getIcon());
+              presentation.setText(template.getText());
+              presentation.setEnabled(true);
+              return;
+            }
+          }
+        }
+      }
+
+      presentation.setText(null);
     }
   }
 

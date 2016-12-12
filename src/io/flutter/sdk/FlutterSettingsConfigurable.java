@@ -34,8 +34,6 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
-// TODO: hide and show the toolbar contribution depending on the setting
-// TODO: listen for setting changes?
 // TODO: if setting is false, don't pass device id
 // TODO: if setting is false, it doesn't matter if a device is selected
 

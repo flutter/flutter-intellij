@@ -56,7 +56,7 @@ public class FlutterAppManager {
 
   @NotNull
   public FlutterApp appStarting(@NotNull FlutterDaemonController controller,
-                                @NotNull String deviceId,
+                                @Nullable String deviceId,
                                 @NotNull RunMode mode,
                                 @NotNull Project project,
                                 boolean startPaused,
