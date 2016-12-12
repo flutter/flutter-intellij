@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -33,7 +34,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(FlutterSdkAction.class);
 
   @Nullable
-  public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(final Project project, final AnActionEvent e) {
+  public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(@NotNull final Project project, final AnActionEvent e) {
     Module module = LangDataKeys.MODULE.getData(e.getDataContext());
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(e.getDataContext());
 
@@ -49,13 +50,23 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     return pubspec == null ? null : Pair.create(module, pubspec);
   }
 
-  protected static VirtualFile findPubspecFrom(Project project, PsiFile psiFile) {
+  protected static VirtualFile findPubspecFrom(@NotNull Project project, PsiFile psiFile) {
     if (psiFile == null) {
-      return null;
+      return findPubspecFrom(ModuleManager.getInstance(project).getModules());
     }
     final VirtualFile file = psiFile.getVirtualFile();
     final VirtualFile contentRoot = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file);
     return contentRoot == null ? null : contentRoot.findChild(FlutterConstants.PUBSPEC_YAML);
+  }
+
+  private static VirtualFile findPubspecFrom(@NotNull Module[] modules) {
+    for (Module module : modules) {
+      final VirtualFile file = findPubspecFrom(module);
+      if (file != null) {
+        return file;
+      }
+    }
+    return null;
   }
 
   protected static VirtualFile findPubspecFrom(Module module) {
