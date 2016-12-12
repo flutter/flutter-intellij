@@ -142,6 +142,7 @@
     <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                              id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
+    <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
   </extensions>
 
 </idea-plugin>
