@@ -93,7 +93,7 @@ public class FlutterSdk {
     final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
-    String[] toolArgs = ArrayUtil.prepend(cmd.command, args);
+    String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
     toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
     command.addParameters(toolArgs);
 
@@ -183,7 +183,7 @@ public class FlutterSdk {
 
   public enum Command {
 
-    CREATE("create", "Flutter create") {
+    CREATE("Flutter create", "create") {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
         // Enable Dart.
@@ -254,21 +254,23 @@ public class FlutterSdk {
         });
       }
     },
-    DOCTOR("doctor", "Flutter doctor"),
-    UPGRADE("upgrade", "Flutter upgrade"),
-    VERSION("--version", "Flutter version") {
+    DOCTOR("Flutter doctor", "doctor"),
+    PACKAGES_GET("Flutter packages get", "packages", "get"),
+    PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    UPGRADE("Flutter upgrade", "upgrade"),
+    VERSION("Flutter version", "--version") {
       @Override
       boolean attachToConsole() {
         return false;
       }
     };
 
-    final String command;
-    final String title;
+    final String[] command;
+    final public String title;
 
-    Command(String command, String title) {
-      this.command = command;
+    Command(String title, String... command) {
       this.title = title;
+      this.command = command;
     }
 
     /**
