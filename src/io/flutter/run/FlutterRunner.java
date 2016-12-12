@@ -28,6 +28,7 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.profile.FlutterProfileExecutor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,7 +58,9 @@ public class FlutterRunner extends FlutterRunnerBase {
       return false;
     }
 
-    return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
+    return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) ||
+           DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) ||
+           FlutterProfileExecutor.EXECUTOR_ID.equals(executorId);
   }
 
   @Override
@@ -106,8 +109,11 @@ public class FlutterRunner extends FlutterRunnerBase {
     }
 
     try {
-      if (state instanceof FlutterAppState && ((FlutterAppState)state).getMode().isReloadEnabled()) {
-        return doExecuteDartDebug(state, env, dasExecutionContextId);
+      if (state instanceof FlutterAppState) {
+        FlutterAppState flutterAppState = (FlutterAppState)state;
+        if (flutterAppState.getMode().isReloadEnabled() || flutterAppState.getMode().isProfile()) {
+          return doExecuteDartDebug(state, env, dasExecutionContextId);
+        }
       }
     }
     catch (RuntimeConfigurationError e) {

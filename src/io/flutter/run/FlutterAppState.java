@@ -27,6 +27,7 @@ import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.run.profile.FlutterProfileExecutor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -40,6 +41,7 @@ public class FlutterAppState extends FlutterAppStateBase {
 
   protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
+
     final String mode = environment.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.RUN;
@@ -47,8 +49,11 @@ public class FlutterAppState extends FlutterAppStateBase {
     else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.DEBUG;
     }
-    else {
+    else if (FlutterProfileExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.PROFILE;
+    }
+    else {
+      throw new ExecutionException("unknown run mode: " + mode);
     }
   }
 
