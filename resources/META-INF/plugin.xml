@@ -115,6 +115,13 @@
               text="Flutter Doctor"
               description="Run 'flutter doctor'"/>
       <separator/>
+      <action id="flutter.packages.get" class="io.flutter.actions.FlutterPackagesGetAction"
+              text="Flutter Packages Get"
+              description="Run 'flutter packages get'"/>
+      <action id="flutter.packages.upgrade" class="io.flutter.actions.FlutterPackagesUpgradeAction"
+              text="Flutter Packages Upgrade"
+              description="Run 'flutter packages upgrade'"/>
+      <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
               text="Submit Feedback…"
               description="Provie feedback for the Flutter plugin"/>

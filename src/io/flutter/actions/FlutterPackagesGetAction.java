@@ -14,15 +14,17 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterUpgradeAction extends FlutterSdkAction {
+
+public class FlutterPackagesGetAction extends FlutterSdkAction {
+
   @Override
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
-      sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
+      sdk.run(FlutterSdk.Command.PACKAGES_GET, pair.first, pair.second.getParent(), null);
     }
     else {
-      sdk.runProject(project, "Flutter upgrade", "upgrade");
+      sdk.runProject(project, "Flutter packages get", "packages", "get");
     }
   }
 }
