@@ -20,7 +20,11 @@ public enum RunMode {
   },
 
   @NonNls
-  PROFILE("profile"),
+  PROFILE("profile") {
+    public boolean isProfile() {
+      return true;
+    }
+  },
 
   @NonNls
   RUN("run") {
@@ -43,6 +47,10 @@ public enum RunMode {
    * Returns true if this is a reload/restart enabled mode (run|debug).
    */
   public boolean isReloadEnabled() {
+    return false;
+  }
+
+  public boolean isProfile() {
     return false;
   }
 }

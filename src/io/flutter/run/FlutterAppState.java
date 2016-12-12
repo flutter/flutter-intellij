@@ -18,14 +18,16 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.net.NetUtils;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import io.flutter.console.FlutterConsoleFilter;
-import io.flutter.module.FlutterModuleType;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.run.profile.FlutterProfileExecutor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -39,6 +41,7 @@ public class FlutterAppState extends FlutterAppStateBase {
 
   protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
+
     final String mode = environment.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.RUN;
@@ -46,8 +49,11 @@ public class FlutterAppState extends FlutterAppStateBase {
     else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.DEBUG;
     }
-    else {
+    else if (FlutterProfileExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.PROFILE;
+    }
+    else {
+      throw new ExecutionException("unknown run mode: " + mode);
     }
   }
 
@@ -104,9 +110,16 @@ public class FlutterAppState extends FlutterAppStateBase {
     if (console != null) {
       // In the (common) case where there is a single Flutter module, attach a console filter.
       final Project project = getEnvironment().getProject();
-      final Collection<Module> modules = ModuleUtil.getModulesOfType(project, FlutterModuleType.getInstance());
-      if (modules.size() == 1) {
-        console.addMessageFilter(new FlutterConsoleFilter(modules.iterator().next()));
+      final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+      final String path = parameters.getFilePath();
+      if (path != null) {
+        final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+        if (file != null) {
+          final Module module = ModuleUtil.findModuleForFile(file, project);
+          if (module != null) {
+            console.addMessageFilter(new FlutterConsoleFilter(module));
+          }
+        }
       }
     }
     return console;
