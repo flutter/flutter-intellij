@@ -4,10 +4,6 @@ import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.*;
 
-/**
- * NOTE THIS FILE IS AUTO-GENERATED
- * DO NOT EDIT IT BY HAND, run build/scripts/icons.gant instead
- */
 public class FlutterIcons {
   private static Icon load(String path) {
     return IconLoader.getIcon(path, FlutterIcons.class);
@@ -18,8 +14,8 @@ public class FlutterIcons {
 
   public static final Icon Phone = load("/icons/phone.png");
 
-  public static final Icon Debug2 = load("/icons/debug2.png");
-  public static final Icon Play2 = load("/icons/play2.png");
-  public static final Icon CleanRerun = load("/icons/clean_rerun.png");
+  public static final Icon ReloadBoth = load("/icons/reload_both.png");
+  public static final Icon ReloadDebug = load("/icons/reload_debug.png");
+  public static final Icon ReloadRun = load("/icons/reload_run.png");
   public static final Icon Restart = load("/icons/restart.png");
 }

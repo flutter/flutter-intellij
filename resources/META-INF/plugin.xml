@@ -93,7 +93,6 @@
     </action>
     <group id="Flutter.MainToolbarActions">
       <separator/>
-
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
               icon="FlutterIcons.Phone"/>
@@ -101,14 +100,35 @@
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
-    <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter: Upgrade"
-            description="Run 'flutter upgrade'"/>
-    <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter: Doctor"
-            description="Run 'flutter doctor'"/>
+
+    <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
+           text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <action id="flutter.gettingStarted" class="io.flutter.actions.FlutterGettingStarted"
+              text="Getting Started"
+              description="View the online getting started documentation"/>
+      <separator/>
+      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction"
+              text="Flutter Upgrade"
+              description="Run 'flutter upgrade'"/>
+      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction"
+              text="Flutter Doctor"
+              description="Run 'flutter doctor'"/>
+      <separator/>
+      <action id="flutter.packages.get" class="io.flutter.actions.FlutterPackagesGetAction"
+              text="Flutter Packages Get"
+              description="Run 'flutter packages get'"/>
+      <action id="flutter.packages.upgrade" class="io.flutter.actions.FlutterPackagesUpgradeAction"
+              text="Flutter Packages Upgrade"
+              description="Run 'flutter packages upgrade'"/>
+      <separator/>
+      <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
+              text="Submit Feedback…"
+              description="Provie feedback for the Flutter plugin"/>
+    </group>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-
     <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.FlutterDaemonService"
@@ -133,6 +153,7 @@
     <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle"/>
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
+    <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
   </extensions>
 
 </idea-plugin>

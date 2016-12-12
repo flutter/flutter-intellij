@@ -11,18 +11,25 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterBundle;
+import io.flutter.FlutterErrors;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterUpgradeAction extends FlutterSdkAction {
+public class FlutterPackagesGetAction extends FlutterSdkAction {
+
+  private static final FlutterSdk.Command COMMAND = FlutterSdk.Command.PACKAGES_GET;
+
   @Override
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
-      sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
+      sdk.run(COMMAND, pair.first, pair.second.getParent(), null);
     }
     else {
-      sdk.runProject(project, "Flutter upgrade", "upgrade");
+      FlutterErrors.showError(
+        FlutterBundle.message("flutter.command.missing.pubspec"),
+        FlutterBundle.message("flutter.command.missing.pubspec.message", COMMAND.title));
     }
   }
 }
