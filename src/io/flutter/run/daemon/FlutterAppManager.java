@@ -92,7 +92,7 @@ public class FlutterAppManager {
     final long timeout = 10000L;
     final FlutterJsonObject[] resp = {null};
     try {
-      // TODO(devonarew): We get ThreadDeath exceptions from here.
+      // TODO(devoncarew): We get ThreadDeath exceptions from here.
       TimeoutUtil.executeWithTimeout(timeout, () -> {
         while (resp[0] == null) {
           synchronized (myLock) {
