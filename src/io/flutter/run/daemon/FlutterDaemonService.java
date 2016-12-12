@@ -53,6 +53,7 @@ public class FlutterDaemonService {
 
     @Override
     public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
+      myManager.terminateAllFor(controller);
       if (handler == controller.getProcessHandler()) {
         discard(controller);
       }
