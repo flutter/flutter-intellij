@@ -254,7 +254,7 @@ public class FlutterSdk {
         });
       }
     },
-    DOCTOR( "Flutter doctor", "doctor"),
+    DOCTOR("Flutter doctor", "doctor"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
     UPGRADE("Flutter upgrade", "upgrade"),
@@ -266,9 +266,9 @@ public class FlutterSdk {
     };
 
     final String[] command;
-    final String title;
+    final public String title;
 
-    Command(String title, String ... command) {
+    Command(String title, String... command) {
       this.title = title;
       this.command = command;
     }

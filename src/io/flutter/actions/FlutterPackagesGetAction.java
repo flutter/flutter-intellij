@@ -30,7 +30,7 @@ public class FlutterPackagesGetAction extends FlutterSdkAction {
     else {
       FlutterErrors.showError(
         FlutterBundle.message("flutter.command.missing.pubspec"),
-        FlutterBundle.message("flutter.command.missing.pubspec.message", COMMAND.name()));
+        FlutterBundle.message("flutter.command.missing.pubspec.message", COMMAND.title));
     }
   }
 }
