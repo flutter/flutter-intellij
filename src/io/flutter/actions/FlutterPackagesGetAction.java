@@ -16,7 +16,7 @@ import io.flutter.FlutterErrors;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterPackagesGetAction extends FlutterSdkAction {
+public class FlutterPackagesGetAction extends FlutterPackageAction {
 
   private static final FlutterSdk.Command COMMAND = FlutterSdk.Command.PACKAGES_GET;
 
