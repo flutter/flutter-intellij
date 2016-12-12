@@ -11,20 +11,26 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterBundle;
+import io.flutter.FlutterErrors;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
 
 public class FlutterPackagesGetAction extends FlutterSdkAction {
 
+  private static final FlutterSdk.Command COMMAND = FlutterSdk.Command.PACKAGES_GET;
+
   @Override
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
-      sdk.run(FlutterSdk.Command.PACKAGES_GET, pair.first, pair.second.getParent(), null);
+      sdk.run(COMMAND, pair.first, pair.second.getParent(), null);
     }
     else {
-      sdk.runProject(project, "Flutter packages get", "packages", "get");
+      FlutterErrors.showError(
+        FlutterBundle.message("flutter.command.missing.pubspec"),
+        FlutterBundle.message("flutter.command.missing.pubspec.message", COMMAND.name()));
     }
   }
 }
