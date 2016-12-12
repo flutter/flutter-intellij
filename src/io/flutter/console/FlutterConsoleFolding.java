@@ -7,94 +7,46 @@ package io.flutter.console;
 
 import com.intellij.execution.ConsoleFolding;
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.PathUtil;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.List;
 
+/**
+ * Fold lines like
+ * '/Users/.../projects/flutter/flutter/bin/flutter --no-color packages get'.
+ */
 public class FlutterConsoleFolding extends ConsoleFolding {
-    @Override
-    public boolean shouldFoldLine(String line) {
-        if (!line.contains("flutter run") && !line.contains("flutter --no-color create")) return false;
+  private static final String marker = File.separator + "flutter --no-color ";
 
-        try {
-            final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
-            if (sdk == null) return false;
-            final String flutterPath = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-            return line.startsWith(flutterPath + " run") || line.startsWith(flutterPath + " --no-color create");
-        } catch (ExecutionException e) {
-            return false;
-        }
+  @Override
+  public boolean shouldFoldLine(String line) {
+    if (!line.contains(marker)) return false;
+
+    try {
+      final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+      if (sdk == null) return false;
+      final String flutterPath = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
+      return line.startsWith(flutterPath);
     }
-
-    @Nullable
-    @Override
-    public String getPlaceholderText(List<String> lines) {
-        final String fullText = StringUtil.join(lines, "\n");
-        if (fullText.contains("flutter run")) {
-            return flutterRunPlaceholder(fullText);
-        }
-        return flutterCreatePlaceholder(fullText);
+    catch (ExecutionException e) {
+      return false;
     }
+  }
 
-    private String flutterCreatePlaceholder(String fullText) {
-        // /Users/.../flutter --no-color create /Users/.../projectName
-
-        final CommandLineTokenizer tok = new CommandLineTokenizer(fullText);
-        if (!tok.hasMoreTokens()) return fullText;
-
-        @SuppressWarnings({"unused", "UnusedAssignment"})
-        final String filePath = tok.nextToken(); // eat flutter binary name
-        final StringBuilder builder = new StringBuilder();
-        builder.append("flutter create");
-
-        while (tok.hasMoreTokens()) {
-            final String token = tok.nextToken();
-
-            // strip off --no-color
-            if (token.equals("--no-color")) continue;
-
-            // strip off create
-            if (token.equals("create")) continue;
-
-            final String projectName = PathUtil.getFileName(token);
-
-            builder.append(" ").append(projectName);
-        }
-
-        return builder.toString();
+  @Nullable
+  @Override
+  public String getPlaceholderText(List<String> lines) {
+    final String fullText = StringUtil.join(lines, "\n");
+    int index = fullText.indexOf(marker);
+    if (index == -1) {
+      return fullText;
     }
-
-    private String flutterRunPlaceholder(String fullText) {
-        // /Users/.../flutter/bin/flutter run --start-paused --debug-port 50354
-
-        final CommandLineTokenizer tok = new CommandLineTokenizer(fullText);
-        if (!tok.hasMoreTokens()) return fullText;
-
-        @SuppressWarnings({"unused", "UnusedAssignment"})
-        final String filePath = tok.nextToken(); // eat flutter binary name
-        final StringBuilder builder = new StringBuilder();
-        builder.append("flutter");
-
-        while (tok.hasMoreTokens()) {
-            final String token = tok.nextToken();
-
-            // strip off --start-paused
-            if (token.equals("--start-paused")) continue;
-
-            // strip off --debug-port 50354
-            if (token.equals("--debug-port")) {
-                if (tok.hasMoreTokens()) tok.nextToken();
-                continue;
-            }
-
-            builder.append(" ").append(token);
-        }
-
-        return builder.toString();
+    else {
+      return "flutter " + fullText.substring(index + marker.length());
     }
+  }
 }
