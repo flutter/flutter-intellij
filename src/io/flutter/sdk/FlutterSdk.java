@@ -15,6 +15,8 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -82,6 +84,14 @@ public class FlutterSdk {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
 
+  private static void printExitMessage(@Nullable Project project, @Nullable Module module, int exitCode) {
+    final ConsoleView console = FlutterConsoleHelper.findConsoleView(project, module);
+    if (console != null) {
+      console.print(
+        FlutterBundle.message("finished.with.exit.code.text.message", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
+    }
+  }
+
   public void run(@NotNull Command cmd,
                   @Nullable Module module,
                   @Nullable VirtualFile workingDir,
@@ -93,7 +103,7 @@ public class FlutterSdk {
     final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
-    String[] toolArgs = ArrayUtil.prepend(cmd.command, args);
+    String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
     toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
     command.addParameters(toolArgs);
 
@@ -109,7 +119,7 @@ public class FlutterSdk {
           @Override
           public void processTerminated(final ProcessEvent event) {
             inProgress.set(false);
-            cmd.onTerminate(module, workingDir, args);
+            cmd.onTerminate(module, workingDir, event.getExitCode(), args);
           }
         });
 
@@ -147,6 +157,7 @@ public class FlutterSdk {
           @Override
           public void processTerminated(final ProcessEvent event) {
             inProgress.set(false);
+            printExitMessage(project, null, event.getExitCode());
           }
         });
 
@@ -183,7 +194,7 @@ public class FlutterSdk {
 
   public enum Command {
 
-    CREATE("create", "Flutter create") {
+    CREATE("Flutter create", "create") {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
         // Enable Dart.
@@ -194,9 +205,11 @@ public class FlutterSdk {
       }
 
       @Override
+      @SuppressWarnings("UnusedParameters")
       void onTerminate(@Nullable Module module,
                        @Nullable VirtualFile workingDir,
-                       @SuppressWarnings("UnusedParameters") @NotNull String... args) {
+                       int exitCode,
+                       @NotNull String... args) {
         ApplicationManager.getApplication().invokeLater(() -> {
           if (workingDir != null && module != null && !module.isDisposed()) {
             final Project project = module.getProject();
@@ -243,6 +256,8 @@ public class FlutterSdk {
               runManager.setSelectedConfiguration(settings);
             }
 
+            super.onTerminate(module, workingDir, exitCode, args);
+
             // Open main for editing.
             if (main != null && main.exists()) {
               manager.openFile(main, true);
@@ -254,21 +269,23 @@ public class FlutterSdk {
         });
       }
     },
-    DOCTOR("doctor", "Flutter doctor"),
-    UPGRADE("upgrade", "Flutter upgrade"),
-    VERSION("--version", "Flutter version") {
+    DOCTOR("Flutter doctor", "doctor"),
+    PACKAGES_GET("Flutter packages get", "packages", "get"),
+    PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    UPGRADE("Flutter upgrade", "upgrade"),
+    VERSION("Flutter version", "--version") {
       @Override
       boolean attachToConsole() {
         return false;
       }
     };
 
-    final String command;
-    final String title;
+    final public String title;
+    final String[] command;
 
-    Command(String command, String title) {
-      this.command = command;
+    Command(String title, String... command) {
       this.title = title;
+      this.command = command;
     }
 
     /**
@@ -297,12 +314,12 @@ public class FlutterSdk {
      *
      * @param module     the target module
      * @param workingDir the working directory for the command
+     * @param exitCode   the command process's exit code
      * @param args       any arguments passed into the command
      */
     @SuppressWarnings("UnusedParameters")
-    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-      // Default is a no-op.
+    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, int exitCode, @NotNull String... args) {
+      printExitMessage(null, module, exitCode);
     }
-
   }
 }

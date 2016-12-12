@@ -108,7 +108,6 @@ public class FlutterAppState extends FlutterAppStateBase {
     final ConsoleView console = super.createConsole(executor);
     myApp.setConsole(console);
     if (console != null) {
-      // In the (common) case where there is a single Flutter module, attach a console filter.
       final Project project = getEnvironment().getProject();
       final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
       final String path = parameters.getFilePath();
