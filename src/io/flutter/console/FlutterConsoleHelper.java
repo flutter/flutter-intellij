@@ -105,6 +105,20 @@ public class FlutterConsoleHelper {
     }
     return null;
   }
+
+  @Nullable
+  public static ConsoleView findConsoleView(@Nullable Project project, @Nullable Module module) {
+    if (project == null && module != null) {
+      project = module.getProject();
+    }
+    if (project != null) {
+      final FlutterConsoleInfo info = findExistingInfoForCommand(project, module);
+      if (info != null) {
+        return info.console;
+      }
+    }
+    return null;
+  }
 }
 
 class FlutterConsoleInfo {
