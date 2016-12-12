@@ -26,6 +26,9 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Base class for Flutter commands.
  */
@@ -34,7 +37,8 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(FlutterSdkAction.class);
 
   @Nullable
-  public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(@NotNull final Project project, final AnActionEvent e) {
+  public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(@NotNull final Project project, final AnActionEvent e)
+    throws ExecutionException {
     Module module = LangDataKeys.MODULE.getData(e.getDataContext());
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(e.getDataContext());
 
@@ -50,23 +54,33 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     return pubspec == null ? null : Pair.create(module, pubspec);
   }
 
-  protected static VirtualFile findPubspecFrom(@NotNull Project project, PsiFile psiFile) {
+  protected static VirtualFile findPubspecFrom(@NotNull Project project, PsiFile psiFile) throws ExecutionException {
     if (psiFile == null) {
-      return findPubspecFrom(ModuleManager.getInstance(project).getModules());
+      final List<VirtualFile> pubspecs = findPubspecs(ModuleManager.getInstance(project).getModules());
+      if (pubspecs.size() == 0) {
+        return null;
+      }
+      else if (pubspecs.size() == 1) {
+        return pubspecs.get(0);
+      }
+      else {
+        throw new ExecutionException(FlutterBundle.message("multiple.pubspecs.error"));
+      }
     }
     final VirtualFile file = psiFile.getVirtualFile();
     final VirtualFile contentRoot = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file);
     return contentRoot == null ? null : contentRoot.findChild(FlutterConstants.PUBSPEC_YAML);
   }
 
-  private static VirtualFile findPubspecFrom(@NotNull Module[] modules) {
+  private static List<VirtualFile> findPubspecs(@NotNull Module[] modules) {
+    final List<VirtualFile> pubspecs = new ArrayList<>();
     for (Module module : modules) {
       final VirtualFile file = findPubspecFrom(module);
       if (file != null) {
-        return file;
+        pubspecs.add(file);
       }
     }
-    return null;
+    return pubspecs;
   }
 
   protected static VirtualFile findPubspecFrom(Module module) {
