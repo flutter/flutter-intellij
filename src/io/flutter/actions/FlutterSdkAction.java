@@ -32,32 +32,6 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
 
   private static final Logger LOG = Logger.getInstance(FlutterSdkAction.class);
 
-  @Override
-  public void actionPerformed(AnActionEvent event) {
-    final Project project = DumbAwareAction.getEventProject(event);
-    final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
-
-    if (sdk != null) {
-      try {
-        perform(sdk, project, event);
-      }
-      catch (ExecutionException e) {
-        FlutterErrors.showError(
-          FlutterBundle.message("flutter.command.exception.title"),
-          FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-        LOG.warn(e);
-      }
-    }
-    else {
-      FlutterErrors.showError(
-        FlutterBundle.message("flutter.sdk.notAvailable.title"),
-        FlutterBundle.message("flutter.sdk.notAvailable.message"));
-    }
-  }
-
-  public abstract void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException;
-
-
   @Nullable
   public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(final Project project, final AnActionEvent e) {
     Module module = LangDataKeys.MODULE.getData(e.getDataContext());
@@ -98,4 +72,28 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     return null;
   }
 
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    final Project project = DumbAwareAction.getEventProject(event);
+    final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
+
+    if (sdk != null) {
+      try {
+        perform(sdk, project, event);
+      }
+      catch (ExecutionException e) {
+        FlutterErrors.showError(
+          FlutterBundle.message("flutter.command.exception.title"),
+          FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+        LOG.warn(e);
+      }
+    }
+    else {
+      FlutterErrors.showError(
+        FlutterBundle.message("flutter.sdk.notAvailable.title"),
+        FlutterBundle.message("flutter.sdk.notAvailable.message"));
+    }
+  }
+
+  public abstract void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException;
 }
