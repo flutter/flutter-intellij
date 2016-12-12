@@ -24,12 +24,14 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import io.flutter.sdk.FlutterSdk;
-import org.apache.commons.compress.utils.Charsets;
-import org.apache.commons.compress.utils.IOUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
@@ -43,10 +45,10 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
 
   @SuppressWarnings("deprecation")
   @Override
-  public void submitAsync(IdeaLoggingEvent[] events,
-                          String additionalInfo,
-                          Component parentComponent,
-                          Consumer<SubmittedReportInfo> consumer) {
+  public void submitAsync(@NotNull IdeaLoggingEvent[] events,
+                          @Nullable String additionalInfo,
+                          @NotNull Component parentComponent,
+                          @NotNull Consumer<SubmittedReportInfo> consumer) {
     if (events.length == 0) {
       consumer.consume(new SubmittedReportInfo(
         null,
@@ -152,10 +154,21 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
       if (!process.waitFor(3, TimeUnit.SECONDS)) {
         return null;
       }
-      return new String(IOUtils.toByteArray(process.getInputStream()), Charsets.UTF_8);
+      return new String(readFully(process.getInputStream()), StandardCharsets.UTF_8);
     }
     catch (IOException | InterruptedException ioe) {
       return null;
     }
+  }
+
+  private static byte[] readFully(InputStream in) throws IOException {
+    final ByteArrayOutputStream out = new ByteArrayOutputStream();
+    final byte[] temp = new byte[4096];
+    int count = in.read(temp);
+    while (count > 0) {
+      out.write(temp, 0, count);
+      count = in.read(temp);
+    }
+    return out.toByteArray();
   }
 }
