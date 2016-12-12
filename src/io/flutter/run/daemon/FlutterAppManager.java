@@ -19,10 +19,7 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -95,6 +92,7 @@ public class FlutterAppManager {
     final long timeout = 10000L;
     final FlutterJsonObject[] resp = {null};
     try {
+      // TODO(devoncarew): We get ThreadDeath exceptions from here.
       TimeoutUtil.executeWithTimeout(timeout, () -> {
         while (resp[0] == null) {
           synchronized (myLock) {
@@ -229,6 +227,18 @@ public class FlutterAppManager {
       apps = new ArrayList<>(myApps);
     }
     apps.stream().filter(app -> app.getController() == controller).forEach(this::stopApp);
+  }
+
+  void terminateAllFor(FlutterDaemonController controller) {
+    synchronized (myLock) {
+      final ListIterator<FlutterApp> itor = myApps.listIterator();
+      while (itor.hasNext()) {
+        FlutterApp app = itor.next();
+        if (app.getController() == controller) {
+          itor.remove();
+        }
+      }
+    }
   }
 
   @NotNull
@@ -667,6 +677,7 @@ public class FlutterAppManager {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private int port;
+    @SuppressWarnings("unused") private String wsUri;
     @SuppressWarnings("unused") private String baseUri;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {

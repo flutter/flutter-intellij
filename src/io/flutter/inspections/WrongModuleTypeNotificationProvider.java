@@ -26,9 +26,9 @@ import com.intellij.util.containers.ContainerUtil;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
-import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -41,9 +41,6 @@ import java.util.regex.Pattern;
 public class WrongModuleTypeNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("Wrong module type");
   private static final String DONT_ASK_TO_CHANGE_MODULE_TYPE_KEY = "do.not.ask.to.change.module.type"; //NON-NLS
-  private static final String FLUTTER_YAML_FILE = "flutter.yaml"; //NON-NLS
-  private static final String PUBSPEC_YAML_FILE = "pubspec.yaml"; //NON-NLS
-
   private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*sdk:\\s*flutter"); //NON-NLS
 
   private final Project myProject;
@@ -55,11 +52,11 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   private static boolean usesFlutter(@NotNull Module module) {
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile baseDir : roots) {
-      final VirtualFile flutterYaml = baseDir.findChild(FLUTTER_YAML_FILE);
+      final VirtualFile flutterYaml = baseDir.findChild(FlutterConstants.FLUTTER_YAML);
       if (flutterYaml != null && flutterYaml.exists()) {
         return true;
       }
-      final VirtualFile pubspec = baseDir.findChild(PUBSPEC_YAML_FILE);
+      final VirtualFile pubspec = baseDir.findChild(FlutterConstants.PUBSPEC_YAML);
       if (declaresFlutterDependency(pubspec)) {
         return true;
       }
@@ -123,8 +120,8 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   private static boolean isFlutteryFile(@NotNull VirtualFile file) {
     final String fileName = file.getName();
     return file.getFileType() == DartFileType.INSTANCE ||
-           fileName.equals(FLUTTER_YAML_FILE) ||
-           fileName.equals(PubspecYamlUtil.PUBSPEC_YAML);
+           fileName.equals(FlutterConstants.FLUTTER_YAML) ||
+           fileName.equals(FlutterConstants.PUBSPEC_YAML);
   }
 
   @NotNull

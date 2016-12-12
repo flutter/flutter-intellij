@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
+import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -26,7 +27,6 @@ import java.awt.*;
 
 public class FlutterYamlNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.yaml");
-  public static final String FLUTTER_YAML_NAME = "flutter.yaml";
 
   @NotNull
   @Override
@@ -41,7 +41,7 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
-    if (!FLUTTER_YAML_NAME.equalsIgnoreCase(file.getName())) {
+    if (!FlutterConstants.FLUTTER_YAML.equalsIgnoreCase(file.getName())) {
       return null;
     }
 

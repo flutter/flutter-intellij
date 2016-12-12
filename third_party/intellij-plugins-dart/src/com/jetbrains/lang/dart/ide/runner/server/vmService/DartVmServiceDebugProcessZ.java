@@ -206,9 +206,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       if (myConnector != null) {
         final long timeout = (long)myTimeout;
         final long startTime = System.currentTimeMillis();
-        while (!myConnector.isConnectionReady()) {
+        while (!getSession().isStopped() && !myConnector.isConnectionReady()) {
           if (System.currentTimeMillis() > startTime + timeout) {
-            final String message = "Observatory connection never became ready\n";
+            final String message = "Observatory connection never became ready.\n";
             getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
             getSession().stop();
             return;
@@ -217,6 +217,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
             TimeoutUtil.sleep(50);
           }
         }
+
+        if (getSession().isStopped()) {
+          return;
+        }
+
         myObservatoryPort = myConnector.getPort();
       }
 
@@ -451,8 +456,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     topToolbar.addSeparator();
     topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
     topToolbar.addSeparator();
-    topToolbar.addAction(new HotReloadFlutterApp(myConnector, this::isSessionActive));
-    topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
+    topToolbar.addAction(new HotReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
+    topToolbar.addAction(new RestartFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
+  }
+
+  // Overridden by subclasses.
+  public boolean shouldEnableHotReload() {
+    return false;
   }
 
   private boolean isSessionActive() {
