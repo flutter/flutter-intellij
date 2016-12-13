@@ -10,7 +10,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.vfs.VirtualFile;
-import icons.FlutterIcons;
 import io.flutter.FlutterConstants;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,14 +38,6 @@ public abstract class FlutterPackageAction extends FlutterSdkAction {
     if (ActionPlaces.isMainMenuOrActionSearch(e.getPlace())) {
       presentation.setEnabled(true);
       presentation.setVisible(true);
-      return;
-    }
-
-    // And in flutter.yaml popups.
-    if (isFlutterYamlPopup(e)) {
-      presentation.setEnabled(true);
-      presentation.setVisible(true);
-      presentation.setIcon(FlutterIcons.Flutter); // With an added icon for pop.
       return;
     }
 

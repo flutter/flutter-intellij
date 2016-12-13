@@ -73,6 +73,9 @@ class FlutterYamlActionsPanel extends EditorNotificationPanel {
     icon(FlutterIcons.Flutter);
     text("Flutter commands");
 
+    createActionLabel("Packages get", "flutter.packages.get");
+    createActionLabel("Packages upgrade", "flutter.packages.upgrade");
+    myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
     createActionLabel("Flutter upgrade", "flutter.upgrade");
     myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
     createActionLabel("Flutter doctor", "flutter.doctor");

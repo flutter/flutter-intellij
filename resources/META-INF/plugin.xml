@@ -126,15 +126,6 @@
               text="Submit Feedback…"
               description="Provie feedback for the Flutter plugin"/>
     </group>
-
-    <!-- editor actions -->
-    <group>
-      <add-to-group group-id="EditorPopupMenu" anchor="first"/>
-      <reference ref="flutter.packages.get"/>
-      <reference ref="flutter.packages.upgrade"/>
-      <separator/>
-    </group>
-
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
