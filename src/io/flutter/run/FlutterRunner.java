@@ -16,6 +16,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
@@ -28,6 +29,7 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,10 +53,14 @@ public class FlutterRunner extends FlutterRunnerBase {
     }
 
     final FlutterRunConfiguration runConfiguration = (FlutterRunConfiguration)profile;
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(runConfiguration.getProject());
-    //noinspection SimplifiableIfStatement
-    if (service == null || service.getSelectedDevice() == null) {
-      return false;
+    final Project project = runConfiguration.getProject();
+    final FlutterSettings settings = FlutterSettings.getInstance(project);
+
+    if (settings.isShowDevices()) {
+      final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
+      if (service == null || !service.hasSelectedDevice()) {
+        return false;
+      }
     }
 
     return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);

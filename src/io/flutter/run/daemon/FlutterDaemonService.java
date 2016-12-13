@@ -127,6 +127,10 @@ public class FlutterDaemonService {
     return mySelectedDevice;
   }
 
+  public boolean hasSelectedDevice() {
+    return mySelectedDevice != null;
+  }
+
   /**
    * Set the current selected device.
    */
@@ -177,7 +181,7 @@ public class FlutterDaemonService {
    */
   public FlutterApp startApp(@NotNull Project project,
                              @NotNull String projectDir,
-                             @NotNull String deviceId,
+                             @Nullable String deviceId,
                              @NotNull RunMode mode,
                              @Nullable String relativePath)
     throws ExecutionException {

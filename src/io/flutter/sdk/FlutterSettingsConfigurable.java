@@ -9,15 +9,14 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.CapturingProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -25,8 +24,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,9 +34,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
-
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
-
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class.getName());
 
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
@@ -45,39 +42,36 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
   private JPanel mainPanel;
-  private ComboboxWithBrowseButton sdkCombo;
-  private JBLabel versionLabel;
-  private JLabel errorIcon;
-  private JTextPane errorText;
+  private ComboboxWithBrowseButton mySdkCombo;
+  private JBLabel myVersionLabel;
+  private JCheckBox myShowDevicesCheckBox;
+  private final Project myProject;
 
-  FlutterSettingsConfigurable() {
+  FlutterSettingsConfigurable(@NotNull Project project) {
+    myProject = project;
+
     init();
 
-    versionLabel.setText("");
-    versionLabel.setCopyable(true);
-
-    errorIcon.setText("");
-    errorIcon.setIcon(AllIcons.Actions.Lightning);
-    Messages.installHyperlinkSupport(errorText);
+    myVersionLabel.setText("");
+    myVersionLabel.setCopyable(true);
   }
 
   private void init() {
-    sdkCombo.getComboBox().setEditable(true);
-    final JTextComponent sdkEditor = (JTextComponent)sdkCombo.getComboBox().getEditor().getEditorComponent();
+    mySdkCombo.getComboBox().setEditable(true);
+    final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       protected void textChanged(final DocumentEvent e) {
-        updateErrorLabel();
         updateVersionText();
       }
     });
 
-    sdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
-                                     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                     TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+    mySdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
+                                       FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                                       TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
   }
 
   private void createUIComponents() {
-    sdkCombo = new ComboboxWithBrowseButton(new ComboBox<>());
+    mySdkCombo = new ComboboxWithBrowseButton(new ComboBox<>());
   }
 
   @Override
@@ -104,15 +98,31 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
-    return !sdkPathInModel.equals(sdkPathInUI);
+    if (!sdkPathInModel.equals(sdkPathInUI)) {
+      return true;
+    }
+
+    // noinspection RedundantIfStatement
+    if (FlutterSettings.getInstance(myProject).isShowDevices() != myShowDevicesCheckBox.isSelected()) {
+      return true;
+    }
+
+    return false;
   }
 
   @Override
   public void apply() throws ConfigurationException {
+    final String errorMessage = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
+    if (errorMessage != null) {
+      throw new ConfigurationException(errorMessage);
+    }
+
     final String sdkHomePath = getSdkPathText();
     if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
       ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
     }
+
+    FlutterSettings.getInstance(myProject).setShowDevices(myShowDevicesCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -121,16 +131,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   public void reset() {
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
-    sdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+    mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+
+    myShowDevicesCheckBox.setSelected(FlutterSettings.getInstance(myProject).isShowDevices());
 
     updateVersionText();
-    updateErrorLabel();
   }
 
   private void updateVersionText() {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
-      versionLabel.setText("");
+      myVersionLabel.setText("");
     }
     else {
       try {
@@ -142,7 +153,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
             final String stdout = output.getStdout();
             ApplicationManager.getApplication().invokeLater(() -> {
               final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
-              versionLabel.setText(htmlText);
+              myVersionLabel.setText(htmlText);
             }, modalityState);
           }
         });
@@ -170,23 +181,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     return FLUTTER_SETTINGS_HELP_TOPIC;
   }
 
-  private void updateErrorLabel() {
-    final String message = getErrorMessage();
-    if (message != null) {
-      errorText.setText(XmlStringUtil.wrapInHtml(message));
-    }
-    errorIcon.setVisible(message != null);
-    errorText.setVisible(message != null);
-  }
-
-  @Nullable
-  private String getErrorMessage() {
-    return
-      FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(getSdkPathText());
-  }
-
   @NotNull
   private String getSdkPathText() {
-    return FileUtilRt.toSystemIndependentName(sdkCombo.getComboBox().getEditor().getItem().toString().trim());
+    return FileUtilRt.toSystemIndependentName(mySdkCombo.getComboBox().getEditor().getItem().toString().trim());
   }
 }

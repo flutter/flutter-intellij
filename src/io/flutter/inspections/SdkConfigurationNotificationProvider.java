@@ -27,7 +27,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkService;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
-import io.flutter.settings.FlutterSettings;
+import io.flutter.settings.FlutterUIConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   private static EditorNotificationPanel createWrongSdkPanel(@NotNull Project project, @Nullable Module module) {
     if (module == null) return null;
 
-    final FlutterSettings settings = FlutterSettings.getInstance();
+    final FlutterUIConfig settings = FlutterUIConfig.getInstance();
     if (settings.shouldIgnoreMismatchedDartSdks()) return null;
 
     final EditorNotificationPanel panel = new EditorNotificationPanel();
@@ -124,7 +124,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
   private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
 
-    final FlutterSettings settings = FlutterSettings.getInstance();
+    final FlutterUIConfig settings = FlutterUIConfig.getInstance();
     if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
 
     final EditorNotificationPanel panel = new EditorNotificationPanel();

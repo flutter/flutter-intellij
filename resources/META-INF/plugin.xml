@@ -141,13 +141,17 @@
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
-    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService" serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
+    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
+                    serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
+                    overrides="false"/>
+    <projectService serviceInterface="io.flutter.settings.FlutterSettings"
+                    serviceImplementation="io.flutter.settings.FlutterSettings"
                     overrides="false"/>
 
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
 
-    <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
-                             id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
+    <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
+                         id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle"/>
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
   </extensions>

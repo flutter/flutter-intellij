@@ -85,7 +85,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   public void startRunnerProcess(@NotNull Project project,
                                  @NotNull String projectDir,
-                                 @NotNull String deviceId,
+                                 @Nullable String deviceId,
                                  @NotNull RunMode mode,
                                  boolean startPaused,
                                  boolean isHot,
@@ -177,7 +177,7 @@ public class FlutterDaemonController extends ProcessAdapter {
    */
   private static GeneralCommandLine createCommandLineRunner(@NotNull Project project,
                                                             @NotNull String projectDir,
-                                                            @NotNull String deviceId,
+                                                            @Nullable String deviceId,
                                                             @NotNull RunMode mode,
                                                             boolean startPaused,
                                                             boolean isHot,
@@ -193,7 +193,6 @@ public class FlutterDaemonController extends ProcessAdapter {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
     commandLine.addParameters("run", "--machine");
-    // TODO(devoncarew): Handle cases where device might be null.
     if (deviceId != null) {
       commandLine.addParameter("--device-id=" + deviceId);
     }

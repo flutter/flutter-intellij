@@ -10,7 +10,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -21,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,7 +53,7 @@ public class FlutterAppManager {
 
   @NotNull
   public FlutterApp appStarting(@NotNull FlutterDaemonController controller,
-                                @NotNull String deviceId,
+                                @Nullable String deviceId,
                                 @NotNull RunMode mode,
                                 @NotNull Project project,
                                 boolean startPaused,
@@ -90,9 +90,13 @@ public class FlutterAppManager {
   @Nullable
   private FlutterJsonObject waitForResponse(@NotNull Method cmd) {
     final long timeout = 10000L;
+    return waitForResponse(cmd, timeout);
+  }
+
+  @Nullable
+  private FlutterJsonObject waitForResponse(@NotNull Method cmd, final long timeout) {
     final FlutterJsonObject[] resp = {null};
     try {
-      // TODO(devoncarew): We get ThreadDeath exceptions from here.
       TimeoutUtil.executeWithTimeout(timeout, () -> {
         while (resp[0] == null) {
           synchronized (myLock) {
@@ -178,7 +182,7 @@ public class FlutterAppManager {
       // streams are closed which immediately terminates the process.
       CompletableFuture
         .completedFuture(sendCommand(app.getController(), cmd))
-        .thenApply(this::waitForResponse)
+        .thenApply((Method method) -> waitForResponse(method, 300))
         .thenAccept((stopped) -> {
           synchronized (myLock) {
             myApps.remove(app);
@@ -233,7 +237,7 @@ public class FlutterAppManager {
     synchronized (myLock) {
       final ListIterator<FlutterApp> itor = myApps.listIterator();
       while (itor.hasNext()) {
-        FlutterApp app = itor.next();
+        final FlutterApp app = itor.next();
         if (app.getController() == controller) {
           itor.remove();
         }
@@ -704,5 +708,57 @@ class StopWatch {
 
   public long getTime() {
     return stopTime - startTime;
+  }
+}
+
+class TimeoutUtil {
+  private TimeoutUtil() {
+  }
+
+  public static void executeWithTimeout(long timeout, @NotNull final Runnable run) {
+    final long sleep = 50;
+    final long start = System.currentTimeMillis();
+    final AtomicBoolean done = new AtomicBoolean(false);
+    final Thread thread = new Thread("Fast Function Thread@" + run.hashCode()) {
+      public void run() {
+        try {
+          run.run();
+        }
+        catch (ThreadDeath ignored) {
+
+        }
+        finally {
+          done.set(true);
+        }
+      }
+    };
+    thread.start();
+
+    while (!done.get() && System.currentTimeMillis() - start < timeout) {
+      try {
+        Thread.sleep(sleep);
+      }
+      catch (InterruptedException var10) {
+        break;
+      }
+    }
+
+    if (!thread.isInterrupted()) {
+      //noinspection deprecation
+      thread.stop();
+    }
+  }
+
+  public static void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    }
+    catch (InterruptedException ignored) {
+
+    }
+  }
+
+  public static long getDurationMillis(long startNanoTime) {
+    return (System.nanoTime() - startNanoTime) / 1000000L;
   }
 }

@@ -27,6 +27,7 @@ import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -68,20 +69,23 @@ public class FlutterAppState extends FlutterAppStateBase {
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
     final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
+    // TODO(devoncarew): We need to make the daemon service optional.
     assert service != null;
 
     final Project project = getEnvironment().getProject();
     final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    final Collection<ConnectedDevice> devices = service.getConnectedDevices();
-    if (devices.isEmpty()) {
-      throw new ExecutionException("No connected device");
-    }
+    ConnectedDevice device = null;
 
-    final ConnectedDevice device = service.getSelectedDevice();
-    if (device == null) {
-      throw new ExecutionException("No selected device");
+    // Only pass the current device in if we are showing the device selector.
+    final FlutterSettings settings = FlutterSettings.getInstance(project);
+    if (settings.isShowDevices()) {
+      final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+      if (devices.isEmpty()) {
+        throw new ExecutionException("No connected device");
+      }
+      device = service.getSelectedDevice();
     }
 
     final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
@@ -95,7 +99,7 @@ public class FlutterAppState extends FlutterAppStateBase {
       }
     }
 
-    myApp = service.startApp(project, cwd, device.deviceId(), myMode, relativePath);
+    myApp = service.startApp(project, cwd, device == null ? null : device.deviceId(), myMode, relativePath);
     return myApp.getController().getProcessHandler();
   }
 
