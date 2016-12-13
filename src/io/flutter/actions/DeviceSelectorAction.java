@@ -107,7 +107,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
     if (button != null) {
       button.setVisible(settings.isShowDevices());
-      button.getParent().doLayout();
+      if (button.getParent() != null) {
+        button.getParent().doLayout();
+      }
     }
   }
 

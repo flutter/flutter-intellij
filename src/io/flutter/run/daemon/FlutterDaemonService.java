@@ -127,6 +127,10 @@ public class FlutterDaemonService {
     return mySelectedDevice;
   }
 
+  public boolean hasSelectedDevice() {
+    return mySelectedDevice != null;
+  }
+
   /**
    * Set the current selected device.
    */

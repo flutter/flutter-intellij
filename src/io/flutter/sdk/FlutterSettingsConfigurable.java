@@ -34,11 +34,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
-// TODO: if setting is false, don't pass device id
-// TODO: if setting is false, it doesn't matter if a device is selected
-
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
-
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class.getName());
 
   private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";

@@ -69,21 +69,22 @@ public class FlutterAppState extends FlutterAppStateBase {
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
     final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
+    // TODO(devoncarew): We need to make the daemon service optional.
     assert service != null;
 
     final Project project = getEnvironment().getProject();
     final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    final Collection<ConnectedDevice> devices = service.getConnectedDevices();
-    if (devices.isEmpty()) {
-      throw new ExecutionException("No connected device");
-    }
-
     ConnectedDevice device = null;
 
-    FlutterSettings settings = FlutterSettings.getInstance(project);
+    // Only pass the current device in if we are showing the device selector.
+    final FlutterSettings settings = FlutterSettings.getInstance(project);
     if (settings.isShowDevices()) {
+      final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+      if (devices.isEmpty()) {
+        throw new ExecutionException("No connected device");
+      }
       device = service.getSelectedDevice();
     }
 
