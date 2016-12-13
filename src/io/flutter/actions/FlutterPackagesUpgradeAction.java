@@ -17,7 +17,7 @@ import io.flutter.FlutterErrors;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterPackagesUpgradeAction extends FlutterSdkAction {
+public class FlutterPackagesUpgradeAction extends FlutterPackageAction {
 
   private static final FlutterSdk.Command COMMAND = FlutterSdk.Command.PACKAGES_UPGRADE;
 
