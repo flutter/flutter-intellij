@@ -6,14 +6,12 @@
 package io.flutter.console;
 
 import com.intellij.execution.ConsoleFolding;
-import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.util.text.StringUtil;
-import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Fold lines like
@@ -22,28 +20,39 @@ import java.util.List;
 public class FlutterConsoleFolding extends ConsoleFolding {
   private static final String marker = File.separator + "flutter --no-color ";
 
+  private boolean isFolding = false;
+
+  // CoreSimulatorBridge: Requesting launch of ... with options: {
+  private static final Pattern iosPattern = Pattern.compile("^\\w+: .* \\{$");
+
   @Override
   public boolean shouldFoldLine(String line) {
-    if (!line.contains(marker)) return false;
-
-    try {
-      final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
-      if (sdk == null) return false;
-      final String flutterPath = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-      return line.startsWith(flutterPath);
+    if (line.contains(marker)) {
+      isFolding = false;
+      return true;
     }
-    catch (ExecutionException e) {
+
+    if (isFolding && line.startsWith(("\t"))) {
+      return true;
+    }
+
+    if (iosPattern.matcher(line).matches()) {
+      isFolding = true;
       return false;
     }
+
+    isFolding = false;
+
+    return false;
   }
 
   @Nullable
   @Override
   public String getPlaceholderText(List<String> lines) {
     final String fullText = StringUtil.join(lines, "\n");
-    int index = fullText.indexOf(marker);
+    final int index = fullText.indexOf(marker);
     if (index == -1) {
-      return fullText;
+      return " ... }";
     }
     else {
       return "flutter " + fullText.substring(index + marker.length());
