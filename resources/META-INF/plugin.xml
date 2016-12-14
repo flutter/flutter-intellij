@@ -126,7 +126,25 @@
               text="Submit Feedback…"
               description="Provie feedback for the Flutter plugin"/>
     </group>
+
+    <!-- project explorer actions -->
+    <group id="FlutterPackagesExplorerActionGroup" class="io.flutter.actions.FlutterPackagesExplorerActionGroup"> 
+      <separator/>
+      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
+        <separator/>
+        <reference ref="flutter.packages.get"/> 
+        <reference ref="flutter.packages.upgrade"/> 
+        <separator/>
+        <reference ref="flutter.upgrade"/> 
+        <reference ref="flutter.doctor"/> 
+      </group>
+      <separator/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+     </group>
+
+
   </actions>
+
 
   <extensions defaultExtensionNs="com.intellij">
     <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
