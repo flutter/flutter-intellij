@@ -173,14 +173,14 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           return;
         }
 
-        getSession().getConsoleView().print("Error: " + message + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-        LOG.error(message);
+        getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        LOG.warn(message);
       }
 
       @Override
       public void logError(final String message, final Throwable exception) {
-        getSession().getConsoleView().print("Error: " + message + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-        LOG.error(message, exception);
+        getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        LOG.warn(message, exception);
       }
 
       @Override
