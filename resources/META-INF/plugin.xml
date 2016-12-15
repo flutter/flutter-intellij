@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.6</version>
+  <version>0.1.7</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -18,6 +18,18 @@
 
   <change-notes>
     <![CDATA[
+
+0.1.7:
+<ul>
+  <li>improved console output folding when running iOS apps</li>
+  <li>actions for Flutter package get and package update</li>
+  <li>a new top level Flutter menu (Tools>Flutter) with common Flutter actions</li>
+  <li>updated hot reload and restart icons</li>
+  <li>editor annotations showing Flutter colors and icons in the editor ruler</li>
+  <li>better console filtering (less noise)</li>
+  <li>improved detection of Flutter projects missing a Flutter module type</li>
+</ul>
+
 0.1.6:
 <ul>
   <li>reload and restart keybinding mapping fixes</li>
