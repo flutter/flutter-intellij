@@ -22,7 +22,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
+import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
@@ -130,8 +130,8 @@ public class FlutterAppState extends FlutterAppStateBase {
 
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {
     actions.add(new Separator());
-    actions.add(new OpenDartObservatoryUrlAction(
-      "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(), //NON-NLS
+    actions.add(new OpenObservatoryAction(
+      () -> "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(), //NON-NLS
       () -> !processHandler.isProcessTerminated()));
   }
 

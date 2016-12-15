@@ -38,7 +38,7 @@ import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.actions.HotReloadFlutterApp;
-import io.flutter.actions.OpenComputedUrlAction;
+import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.VmService;
@@ -454,7 +454,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                         @NotNull final DefaultActionGroup settings) {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
+    topToolbar.addAction(new OpenObservatoryAction(this::computeObservatoryUrl, this::isSessionActive));
     topToolbar.addSeparator();
     topToolbar.addAction(new HotReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
     topToolbar.addAction(new RestartFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
