@@ -12,6 +12,8 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
@@ -142,25 +144,27 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.add(new OpenSimulatorAction(!simulatorOpen));
 
-      if (service != null) {
-        final ConnectedDevice selectedDevice = service.getSelectedDevice();
+      ApplicationManager.getApplication().invokeAndWait(() -> {
+        if (service != null) {
+          final ConnectedDevice selectedDevice = service.getSelectedDevice();
 
-        for (AnAction action : actions) {
-          if (action instanceof SelectDeviceAction) {
-            final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+          for (AnAction action : actions) {
+            if (action instanceof SelectDeviceAction) {
+              final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
 
-            if (Objects.equals(deviceAction.device, selectedDevice)) {
-              final Presentation template = action.getTemplatePresentation();
-              presentation.setIcon(template.getIcon());
-              presentation.setText(template.getText());
-              presentation.setEnabled(true);
-              return;
+              if (Objects.equals(deviceAction.device, selectedDevice)) {
+                final Presentation template = action.getTemplatePresentation();
+                presentation.setIcon(template.getIcon());
+                presentation.setText(template.getText());
+                presentation.setEnabled(true);
+                return;
+              }
             }
           }
         }
-      }
 
-      presentation.setText(null);
+        presentation.setText(null);
+      });
     }
   }
 
