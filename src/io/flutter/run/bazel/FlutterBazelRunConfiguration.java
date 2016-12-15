@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.run;
+package io.flutter.run.bazel;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
@@ -15,14 +15,15 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.PathUtil;
+import io.flutter.run.FlutterRunConfigurationBase;
+import io.flutter.run.FlutterRunnerParameters;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FlutterRunConfiguration extends FlutterRunConfigurationBase implements RunConfigurationWithSuppressedDefaultRunAction {
+public class FlutterBazelRunConfiguration extends FlutterRunConfigurationBase implements RunConfigurationWithSuppressedDefaultRunAction {
   private @NotNull FlutterRunnerParameters myRunnerParameters = new FlutterRunnerParameters();
 
-  public FlutterRunConfiguration(final Project project, final ConfigurationFactory factory, final String name) {
+  public FlutterBazelRunConfiguration(final Project project, final ConfigurationFactory factory, final String name) {
     super(project, factory, name);
   }
 
@@ -33,29 +34,28 @@ public class FlutterRunConfiguration extends FlutterRunConfigurationBase impleme
 
   @Override
   public void checkConfiguration() throws RuntimeConfigurationException {
-    getRunnerParameters().checkForFilesLaunch(getProject());
+    getRunnerParameters().checkForBazelLaunch(getProject());
   }
 
   @NotNull
   @Override
   public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
-    return new FlutterConfigurationEditorForm(getProject());
+    return new FlutterBazelConfigurationEditorForm(getProject());
   }
 
   @Nullable
   @Override
   public RunProfileState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException {
-    return new FlutterAppState(environment);
+    return new FlutterBazelAppState(environment);
   }
 
   @Nullable
   public String suggestedName() {
-    final String filePath = myRunnerParameters.getFilePath();
-    return filePath == null ? null : PathUtil.getFileName(filePath);
+    return myRunnerParameters.getBazelTarget();
   }
 
-  public FlutterRunConfiguration clone() {
-    final FlutterRunConfiguration clone = (FlutterRunConfiguration)super.clone();
+  public FlutterBazelRunConfiguration clone() {
+    final FlutterBazelRunConfiguration clone = (FlutterBazelRunConfiguration)super.clone();
     clone.myRunnerParameters = myRunnerParameters.clone();
     return clone;
   }

@@ -68,7 +68,7 @@ public class FlutterDaemonService {
     void deviceRemoved(ConnectedDevice device);
   }
 
-  @Nullable
+  @NotNull
   public static FlutterDaemonService getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, FlutterDaemonService.class);
   }
@@ -106,6 +106,13 @@ public class FlutterDaemonService {
 
   public void removeDeviceListener(@NotNull DeviceListener listener) {
     myDeviceListeners.remove(listener);
+  }
+
+  /**
+   * Return whether the daemon service is up and running.
+   */
+  public boolean isActive() {
+    return myPollster != null;
   }
 
   /**
@@ -191,7 +198,29 @@ public class FlutterDaemonService {
     final FlutterDaemonController controller = createController(projectDir);
     controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
 
-    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot, relativePath);
+    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
+    app.addStateListener(newState -> {
+      if (newState == FlutterApp.State.TERMINATED) {
+        controller.forceExit();
+      }
+    });
+    return app;
+  }
+
+  public FlutterApp startBazelApp(@NotNull Project project,
+                                  @NotNull String projectDir,
+                                  @NotNull String launchingScript,
+                                  @Nullable String deviceId,
+                                  @NotNull RunMode mode,
+                                  @NotNull String bazelTarget)
+    throws ExecutionException {
+    final boolean startPaused = mode == RunMode.DEBUG;
+    final boolean isHot = mode.isReloadEnabled();
+
+    final FlutterDaemonController controller = createController(projectDir);
+    controller.startBazelProcess(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget);
+
+    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
     app.addStateListener(newState -> {
       if (newState == FlutterApp.State.TERMINATED) {
         controller.forceExit();

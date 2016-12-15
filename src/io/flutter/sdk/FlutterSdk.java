@@ -19,7 +19,6 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -248,7 +247,6 @@ public class FlutterSdk {
               }
 
               parameters.setWorkingDirectory(workingDir.getPath());
-              parameters.setCheckedMode(false);
 
               runManager.addConfiguration(settings, false);
               runManager.setSelectedConfiguration(settings);

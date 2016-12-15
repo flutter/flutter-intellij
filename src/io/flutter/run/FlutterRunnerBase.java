@@ -7,8 +7,6 @@ package io.flutter.run;
 
 
 import com.intellij.execution.configurations.RunProfile;
-import com.intellij.execution.executors.DefaultDebugExecutor;
-import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.DefaultProgramRunner;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -30,10 +28,7 @@ abstract class FlutterRunnerBase extends DefaultProgramRunner {
   }
 
   @Override
-  public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
-    return (profile instanceof FlutterRunConfiguration && (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) ||
-                                                           DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)));
-  }
+  public abstract boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile);
 
   protected int getTimeout() {
     return 5000; // Allow 5 seconds to connect to the observatory.

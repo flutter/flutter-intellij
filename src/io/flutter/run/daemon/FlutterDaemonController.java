@@ -96,6 +96,21 @@ public class FlutterDaemonController extends ProcessAdapter {
     myProcessHandler.startNotify();
   }
 
+  public void startBazelProcess(@NotNull Project project,
+                                @NotNull String projectDir,
+                                @Nullable String deviceId,
+                                @NotNull RunMode mode,
+                                boolean startPaused,
+                                boolean isHot,
+                                @NotNull String launchingScript,
+                                @NotNull String bazelTarget) throws ExecutionException {
+    final GeneralCommandLine commandLine =
+      createBazelRunner(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget);
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
+  }
+
   public void sendCommand(String commandJson, FlutterAppManager manager) {
     if (myProcessHandler == null) {
       return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
@@ -208,6 +223,38 @@ public class FlutterDaemonController extends ProcessAdapter {
     if (target != null) {
       commandLine.addParameter(target);
     }
+    return commandLine;
+  }
+
+  private static GeneralCommandLine createBazelRunner(@NotNull Project project,
+                                                      @NotNull String projectDir,
+                                                      @Nullable String deviceId,
+                                                      @NotNull RunMode mode,
+                                                      boolean startPaused,
+                                                      boolean isHot,
+                                                      @NotNull String launchingScript,
+                                                      @NotNull String bazelTarget) throws ExecutionException {
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+    if (flutterSdk == null) {
+      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
+    }
+    final String flutterSdkPath = flutterSdk.getHomePath();
+    final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
+
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+    //commandLine.addParameters("--machine");
+    if (deviceId != null) {
+      commandLine.addParameter("--device-id=" + deviceId);
+    }
+    if (startPaused) {
+      commandLine.addParameter("--start-paused");
+    }
+    if (!isHot) {
+      commandLine.addParameter("--no-hot");
+    }
+    commandLine.addParameter(bazelTarget);
     return commandLine;
   }
 

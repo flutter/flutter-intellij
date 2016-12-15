@@ -25,7 +25,6 @@ import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import io.flutter.FlutterBundle;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,9 +41,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
   private JPanel mainPanel;
+  // TODO(devoncarew): We're not updating the history for this combo.
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
-  private JCheckBox myShowDevicesCheckBox;
   private final Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -98,12 +97,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
+    //noinspection RedundantIfStatement
     if (!sdkPathInModel.equals(sdkPathInUI)) {
-      return true;
-    }
-
-    // noinspection RedundantIfStatement
-    if (FlutterSettings.getInstance(myProject).isShowDevices() != myShowDevicesCheckBox.isSelected()) {
       return true;
     }
 
@@ -122,8 +117,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
     }
 
-    FlutterSettings.getInstance(myProject).setShowDevices(myShowDevicesCheckBox.isSelected());
-
     reset(); // because we rely on remembering initial state
   }
 
@@ -132,8 +125,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
     mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
-
-    myShowDevicesCheckBox.setSelected(FlutterSettings.getInstance(myProject).isShowDevices());
 
     updateVersionText();
   }

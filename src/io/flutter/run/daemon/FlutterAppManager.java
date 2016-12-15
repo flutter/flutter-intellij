@@ -57,14 +57,13 @@ public class FlutterAppManager {
                                 @NotNull RunMode mode,
                                 @NotNull Project project,
                                 boolean startPaused,
-                                boolean isHot,
-                                @Nullable String target) {
+                                boolean isHot) {
     myProgressHandler = new ProgressHandler(project);
     final FlutterDaemonService service;
     synchronized (myLock) {
       service = myService;
     }
-    final RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, null);
+    final RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot);
     synchronized (myLock) {
       myApps.add(app);
     }

@@ -21,8 +21,9 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -78,9 +79,18 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       // Setup initial actions.
       updateActions(e.getPresentation(), project);
 
-      final FlutterSettings settings = FlutterSettings.getInstance(project);
-      updateVisibility(e.getPresentation(), settings);
-      settings.addListener(() -> updateVisibility(e.getPresentation(), settings));
+      updateVisibility(project, e.getPresentation());
+      FlutterSdkManager.getInstance().addListener(new FlutterSdkManager.Listener() {
+        @Override
+        public void flutterSdkAdded() {
+          updateVisibility(project, e.getPresentation());
+        }
+
+        @Override
+        public void flutterSdkRemoved() {
+          updateVisibility(project, e.getPresentation());
+        }
+      });
 
       service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
         @Override
@@ -101,12 +111,13 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  private void updateVisibility(final Presentation presentation, final FlutterSettings settings) {
-    presentation.setVisible(settings.isShowDevices());
+  private void updateVisibility(final Project project, final Presentation presentation) {
+    final boolean visible = FlutterSdk.getFlutterSdk(project) != null;
+    presentation.setVisible(visible);
 
     final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
     if (button != null) {
-      button.setVisible(settings.isShowDevices());
+      button.setVisible(visible);
       if (button.getParent() != null) {
         button.getParent().doLayout();
       }
