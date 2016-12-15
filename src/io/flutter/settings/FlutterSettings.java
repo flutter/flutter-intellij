@@ -27,6 +27,7 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
     void settingsChanged();
   }
 
+  @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
   private final List<Listener> listeners = new ArrayList<>();
 
   public void addListener(Listener listener) {
@@ -36,20 +37,6 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
   public void removeListener(Listener listener) {
     listeners.remove(listener);
   }
-
-  public boolean isShowDevices() {
-    return myShowDevices;
-  }
-
-  public void setShowDevices(boolean showDevices) {
-    myShowDevices = showDevices;
-
-    for (Listener listener : listeners) {
-      listener.settingsChanged();
-    }
-  }
-
-  public boolean myShowDevices = true;
 
   public FlutterSettings getState() {
     return this;

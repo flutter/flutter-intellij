@@ -9,7 +9,6 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,16 +52,6 @@ public interface FlutterApp {
    * @return The project associated with this app.
    */
   Project project();
-
-  /**
-   * @return The route parameter.
-   */
-  String route();
-
-  /**
-   * @return The target parameter.
-   */
-  String target();
 
   /**
    * @return The debug port used to talk to the observatory.
@@ -137,8 +126,6 @@ class RunningFlutterApp implements FlutterApp {
   private final RunMode myMode;
   private final Project myProject;
   private final boolean isHot;
-  private final String myRoute;
-  private final String myTarget;
   private int myPort;
   private String myBaseUri;
   private ConsoleView myConsole;
@@ -151,17 +138,13 @@ class RunningFlutterApp implements FlutterApp {
                            @NotNull FlutterAppManager manager,
                            @NotNull RunMode mode,
                            @NotNull Project project,
-                           boolean hot,
-                           @Nullable String target,
-                           @Nullable String route) {
+                           boolean hot) {
     myService = service;
     myController = controller;
     myManager = manager;
     myMode = mode;
     myProject = project;
     isHot = hot;
-    myRoute = route;
-    myTarget = target;
   }
 
   @Override
@@ -218,16 +201,6 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public Project project() {
     return myProject;
-  }
-
-  @Override
-  public String route() {
-    return myRoute;
-  }
-
-  @Override
-  public String target() {
-    return myTarget;
   }
 
   @Override

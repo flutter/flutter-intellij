@@ -168,6 +168,10 @@
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
     <programRunner implementation="io.flutter.run.FlutterRunner"/>
 
+    <!-- TODO(devoncarew): Bazel launch is disabled; the implementation isn't complete. -->
+    <!-- configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
+    <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/ -->
+
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->

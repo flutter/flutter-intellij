@@ -13,7 +13,6 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
@@ -23,8 +22,9 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -70,9 +70,6 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     super.update(e);
 
     final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
-    if (service == null) {
-      return;
-    }
 
     if (!isListening) {
       isListening = true;
@@ -80,9 +77,18 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       // Setup initial actions.
       updateActions(e.getPresentation(), project);
 
-      final FlutterSettings settings = FlutterSettings.getInstance(project);
-      updateVisibility(e.getPresentation(), settings);
-      settings.addListener(() -> updateVisibility(e.getPresentation(), settings));
+      updateVisibility(project, e.getPresentation());
+      FlutterSdkManager.getInstance().addListener(new FlutterSdkManager.Listener() {
+        @Override
+        public void flutterSdkAdded() {
+          updateVisibility(project, e.getPresentation());
+        }
+
+        @Override
+        public void flutterSdkRemoved() {
+          updateVisibility(project, e.getPresentation());
+        }
+      });
 
       service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
         @Override
@@ -103,27 +109,27 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
   }
 
-  private void updateVisibility(final Presentation presentation, final FlutterSettings settings) {
-    presentation.setVisible(settings.isShowDevices());
+  private void updateVisibility(final Project project, final Presentation presentation) {
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      final boolean visible = FlutterSdk.getFlutterSdk(project) != null;
+      presentation.setVisible(visible);
 
-    final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
-    if (button != null) {
-      button.setVisible(settings.isShowDevices());
-      if (button.getParent() != null) {
-        button.getParent().doLayout();
+      final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
+      if (button != null) {
+        button.setVisible(visible);
+        if (button.getParent() != null) {
+          button.getParent().doLayout();
+        }
       }
-    }
+    });
   }
 
   private void updateActions(Presentation presentation, @NotNull Project project) {
     actions.clear();
 
     final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
-
-    if (service != null) {
-      final Collection<ConnectedDevice> devices = service.getConnectedDevices();
-      actions.addAll(devices.stream().map(SelectDeviceAction::new).collect(Collectors.toList()));
-    }
+    final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+    actions.addAll(devices.stream().map(SelectDeviceAction::new).collect(Collectors.toList()));
 
     if (actions.isEmpty()) {
       actions.add(new NoDevicesAction());
@@ -145,20 +151,18 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new OpenSimulatorAction(!simulatorOpen));
 
       ApplicationManager.getApplication().invokeAndWait(() -> {
-        if (service != null) {
-          final ConnectedDevice selectedDevice = service.getSelectedDevice();
+        final ConnectedDevice selectedDevice = service.getSelectedDevice();
 
-          for (AnAction action : actions) {
-            if (action instanceof SelectDeviceAction) {
-              final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+        for (AnAction action : actions) {
+          if (action instanceof SelectDeviceAction) {
+            final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
 
-              if (Objects.equals(deviceAction.device, selectedDevice)) {
-                final Presentation template = action.getTemplatePresentation();
-                presentation.setIcon(template.getIcon());
-                presentation.setText(template.getText());
-                presentation.setEnabled(true);
-                return;
-              }
+            if (Objects.equals(deviceAction.device, selectedDevice)) {
+              final Presentation template = action.getTemplatePresentation();
+              presentation.setIcon(template.getIcon());
+              presentation.setText(template.getText());
+              presentation.setEnabled(true);
+              return;
             }
           }
         }

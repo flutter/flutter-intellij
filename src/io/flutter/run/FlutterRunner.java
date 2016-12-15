@@ -29,7 +29,7 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
-import io.flutter.settings.FlutterSettings;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,15 +52,17 @@ public class FlutterRunner extends FlutterRunnerBase {
       return false;
     }
 
-    final FlutterRunConfiguration runConfiguration = (FlutterRunConfiguration)profile;
+    final FlutterRunConfigurationBase runConfiguration = (FlutterRunConfigurationBase)profile;
     final Project project = runConfiguration.getProject();
-    final FlutterSettings settings = FlutterSettings.getInstance(project);
 
-    if (settings.isShowDevices()) {
-      final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
-      if (service == null || !service.hasSelectedDevice()) {
-        return false;
-      }
+    if (FlutterSdk.getFlutterSdk(project) == null) {
+      return false;
+    }
+
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
+    //noinspection SimplifiableIfStatement
+    if (!service.isActive() || !service.hasSelectedDevice()) {
+      return false;
     }
 
     return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
@@ -98,17 +100,18 @@ public class FlutterRunner extends FlutterRunnerBase {
       };
     }
 
-    final String dasExecutionContextId;
+    String dasExecutionContextId = null;
     final RunProfile runConfig = env.getRunProfile();
 
     if (runConfig instanceof FlutterRunConfigurationBase &&
         DartAnalysisServerService.getInstance().serverReadyForRequest(env.getProject())) {
-      final String path = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getFilePath();
-      assert path != null; // already checked
-      dasExecutionContextId = DartAnalysisServerService.getInstance().execution_createContext(path);
-    }
-    else {
-      dasExecutionContextId = null; // remote debug or can't start DAS
+      try {
+        final VirtualFile file = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getBestContextFile();
+        final String path = file.getPath();
+        dasExecutionContextId = DartAnalysisServerService.getInstance().execution_createContext(path);
+      }
+      catch (RuntimeConfigurationError ignore) {
+      }
     }
 
     try {
@@ -140,15 +143,15 @@ public class FlutterRunner extends FlutterRunnerBase {
       LOG.error("Unexpected run profile state: " + state.getClass().getName());
       return null;
     }
-    final FlutterAppState appState = (FlutterAppState)state;
 
+    final FlutterAppState appState = (FlutterAppState)state;
     final VirtualFile contextFileOrDir;
     final VirtualFile currentWorkingDirectory;
     final ExecutionResult executionResult;
     final String debuggingHost;
     final int observatoryPort;
 
-    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getDartFile();
+    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getBestContextFile();
 
     final String cwd =
       ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());

@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -27,6 +28,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Control an external Flutter process, including reading events and responses from its stdout and
@@ -91,6 +93,22 @@ public class FlutterDaemonController extends ProcessAdapter {
                                  boolean isHot,
                                  @Nullable String target) throws ExecutionException {
     final GeneralCommandLine commandLine = createCommandLineRunner(project, projectDir, deviceId, mode, startPaused, isHot, target);
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
+  }
+
+  public void startBazelProcess(@NotNull Project project,
+                                @NotNull String projectDir,
+                                @Nullable String deviceId,
+                                @NotNull RunMode mode,
+                                boolean startPaused,
+                                boolean isHot,
+                                @NotNull String launchingScript,
+                                @NotNull String bazelTarget,
+                                @Nullable String additionalArguments) throws ExecutionException {
+    final GeneralCommandLine commandLine =
+      createBazelRunner(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
@@ -208,6 +226,57 @@ public class FlutterDaemonController extends ProcessAdapter {
     if (target != null) {
       commandLine.addParameter(target);
     }
+    return commandLine;
+  }
+
+  private static GeneralCommandLine createBazelRunner(@NotNull Project project,
+                                                      @NotNull String projectDir,
+                                                      @Nullable String deviceId,
+                                                      @NotNull RunMode mode,
+                                                      boolean startPaused,
+                                                      boolean isHot,
+                                                      @NotNull String launchingScript,
+                                                      @NotNull String bazelTarget,
+                                                      @Nullable String additionalArguments) throws ExecutionException {
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+
+    // TODO(devoncarew): Fix the launch script to accept more flags.
+    //commandLine.addParameters("--machine");
+
+    // TODO(devoncarew): Fix the launch script to accept more flags.
+    //if (deviceId != null) {
+    //  commandLine.addParameter("--device-id=" + deviceId);
+    //}
+
+    // TODO(devoncarew): Fix the launch script to accept more flags.
+    //if (startPaused) {
+    //  commandLine.addParameter("--start-paused");
+    //}
+
+    // Set the mode.
+    if (mode != RunMode.DEBUG) {
+      commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    }
+
+    // Additional arguments.
+    if (additionalArguments != null) {
+      final StringTokenizer argumentsTokenizer = new CommandLineTokenizer(additionalArguments);
+      while (argumentsTokenizer.hasMoreTokens()) {
+        commandLine.addParameter(argumentsTokenizer.nextToken());
+      }
+    }
+
+    // Append _run[_hot] to bazelTarget.
+    if (!bazelTarget.endsWith("_run") && !bazelTarget.endsWith(("_hot"))) {
+      bazelTarget += "_run";
+      if (isHot) {
+        bazelTarget += "_hot";
+      }
+    }
+    commandLine.addParameter(bazelTarget);
+
     return commandLine;
   }
 

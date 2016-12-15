@@ -19,4 +19,6 @@ public class FlutterIcons {
   public static final Icon ReloadDebug = load("/icons/reload_debug.png");
   public static final Icon ReloadRun = load("/icons/reload_run.png");
   public static final Icon Restart = load("/icons/restart.png");
+
+  public static final Icon BazelRun = load("/icons/bazel_run.png");
 }

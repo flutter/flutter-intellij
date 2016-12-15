@@ -11,7 +11,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.xmlb.annotations.MapAnnotation;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunnerParameters;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
@@ -20,17 +19,15 @@ import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 public class FlutterRunnerParameters implements Cloneable {
-  private @Nullable String myFilePath = null;
-  private @Nullable String myVMOptions = null;
-  private boolean myCheckedMode = true;
-  private @Nullable String myArguments = null;
-  private @Nullable String myWorkingDirectory = null;
-  private @NotNull Map<String, String> myEnvs = new LinkedHashMap<>();
-  private boolean myIncludeParentEnvs = true;
+  // Regular launch parameters.
+  private @Nullable String myFilePath;
+  private @Nullable String myWorkingDirectory;
+
+  // Bazel launch parameters.
+  private @Nullable String myLaunchingScript;
+  private @Nullable String myAdditionalArgs;
+  private @Nullable String myBazelTarget;
 
   @NotNull
   public String computeProcessWorkingDirectory(@NotNull final Project project) {
@@ -54,32 +51,6 @@ public class FlutterRunnerParameters implements Cloneable {
   }
 
   @Nullable
-  public String getVMOptions() {
-    return myVMOptions;
-  }
-
-  public void setVMOptions(final @Nullable String vmOptions) {
-    myVMOptions = vmOptions;
-  }
-
-  public boolean isCheckedMode() {
-    return myCheckedMode;
-  }
-
-  public void setCheckedMode(final boolean checkedMode) {
-    myCheckedMode = checkedMode;
-  }
-
-  @Nullable
-  public String getArguments() {
-    return myArguments;
-  }
-
-  public void setArguments(final @Nullable String arguments) {
-    myArguments = arguments;
-  }
-
-  @Nullable
   public String getWorkingDirectory() {
     return myWorkingDirectory;
   }
@@ -88,24 +59,31 @@ public class FlutterRunnerParameters implements Cloneable {
     myWorkingDirectory = workingDirectory;
   }
 
-  @NotNull
-  @MapAnnotation(surroundWithTag = false, surroundKeyWithTag = false, surroundValueWithTag = false)
-  public Map<String, String> getEnvs() {
-    return myEnvs;
+  @Nullable
+  public String getLaunchingScript() {
+    return myLaunchingScript;
   }
 
-  public void setEnvs(@SuppressWarnings("NullableProblems") final Map<String, String> envs) {
-    if (envs != null) { // null comes from old projects or if storage corrupted
-      myEnvs = envs;
-    }
+  public void setLaunchingScript(@Nullable String launchingScript) {
+    myLaunchingScript = launchingScript;
   }
 
-  public boolean isIncludeParentEnvs() {
-    return myIncludeParentEnvs;
+  @Nullable
+  public String getAdditionalArgs() {
+    return myAdditionalArgs;
   }
 
-  public void setIncludeParentEnvs(final boolean includeParentEnvs) {
-    myIncludeParentEnvs = includeParentEnvs;
+  public void setAdditionalArgs(@Nullable String additionalArgs) {
+    myAdditionalArgs = additionalArgs;
+  }
+
+  @Nullable
+  public String getBazelTarget() {
+    return myBazelTarget;
+  }
+
+  public void setBazelTarget(@Nullable String bazelTarget) {
+    myBazelTarget = bazelTarget;
   }
 
   @NotNull
@@ -116,6 +94,25 @@ public class FlutterRunnerParameters implements Cloneable {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.file.not.found", FileUtil.toSystemDependentName(myFilePath)));
     }
     return dartFile;
+  }
+
+  @NotNull
+  VirtualFile getBestContextFile() throws RuntimeConfigurationError {
+    if (!StringUtil.isEmptyOrSpaces(myFilePath)) {
+      return getDartFile();
+    }
+    else if (!StringUtil.isEmptyOrSpaces(myWorkingDirectory)) {
+      final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(myWorkingDirectory);
+      if (file == null) {
+        throw new RuntimeConfigurationError("unable to determine the working directory");
+      }
+      else {
+        return file;
+      }
+    }
+    else {
+      throw new RuntimeConfigurationError("unable to determine the working directory");
+    }
   }
 
   @NotNull
@@ -137,8 +134,57 @@ public class FlutterRunnerParameters implements Cloneable {
     return dartFile;
   }
 
-  // TODO(devoncarew): Open flutter settings.
-  public void check(final @NotNull Project project) throws RuntimeConfigurationError {
+  @Nullable
+  public VirtualFile getDartFileOrDirectoryNoThrow() {
+    if (StringUtil.isEmptyOrSpaces(myFilePath)) {
+      return null;
+    }
+
+    try {
+      return getDartFileOrDirectory();
+    }
+    catch (RuntimeConfigurationError ignore) {
+      return null;
+    }
+  }
+
+  public void checkForBazelLaunch(final @NotNull Project project) throws RuntimeConfigurationError {
+    // check sdk
+    final DartSdk sdk = DartSdk.getDartSdk(project);
+    if (sdk == null) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
+                                          () -> DartConfigurable.openDartSettings(project));
+    }
+
+    // check launcher script
+    if (StringUtil.isEmptyOrSpaces(myLaunchingScript)) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
+    }
+
+    final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(myLaunchingScript);
+    if (scriptFile == null) {
+      throw new RuntimeConfigurationError(
+        FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(myLaunchingScript)));
+    }
+
+    // check bazel target
+    if (StringUtil.isEmptyOrSpaces(myBazelTarget)) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
+    }
+
+    // check cwd param
+    if (StringUtil.isEmptyOrSpaces(myWorkingDirectory)) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noWorkingDirectorySet"));
+    }
+
+    final VirtualFile workDir = LocalFileSystem.getInstance().findFileByPath(myWorkingDirectory);
+    if (workDir == null || !workDir.isDirectory()) {
+      throw new RuntimeConfigurationError(
+        FlutterBundle.message("work.dir.does.not.exist", FileUtil.toSystemDependentName(myWorkingDirectory)));
+    }
+  }
+
+  public void checkForFilesLaunch(final @NotNull Project project) throws RuntimeConfigurationError {
     // check sdk
     final DartSdk sdk = DartSdk.getDartSdk(project);
     if (sdk == null) {
@@ -160,12 +206,9 @@ public class FlutterRunnerParameters implements Cloneable {
   }
 
   @Override
-  protected FlutterRunnerParameters clone() {
+  public FlutterRunnerParameters clone() {
     try {
-      final FlutterRunnerParameters clone = (FlutterRunnerParameters)super.clone();
-      clone.myEnvs = new LinkedHashMap<>();
-      clone.myEnvs.putAll(myEnvs);
-      return clone;
+      return (FlutterRunnerParameters)super.clone();
     }
     catch (CloneNotSupportedException e) {
       throw new RuntimeException(e);

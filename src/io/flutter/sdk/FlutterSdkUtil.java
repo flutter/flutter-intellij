@@ -164,7 +164,9 @@ public class FlutterSdkUtil {
 
   @Nullable
   public static String getErrorMessageIfWrongSdkRootPath(final @NotNull String sdkRootPath) {
-    if (sdkRootPath.isEmpty()) return FlutterBundle.message("error.path.to.sdk.not.specified");
+    if (sdkRootPath.isEmpty()) {
+      return null;
+    }
 
     final File sdkRoot = new File(sdkRootPath);
     if (!sdkRoot.isDirectory()) return FlutterBundle.message("error.folder.specified.as.sdk.not.exists");

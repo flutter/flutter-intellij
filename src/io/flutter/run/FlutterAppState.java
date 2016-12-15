@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.ProcessHandler;
@@ -27,7 +28,6 @@ import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.RunMode;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -36,11 +36,12 @@ import java.util.List;
 
 public class FlutterAppState extends FlutterAppStateBase {
   private static final String RUN = DefaultRunExecutor.EXECUTOR_ID;
-  private FlutterApp myApp;
-  private final RunMode myMode;
+  protected FlutterApp myApp;
+  protected final RunMode myMode;
 
-  protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
+  public FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
+
     final String mode = environment.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.RUN;
@@ -49,8 +50,13 @@ public class FlutterAppState extends FlutterAppStateBase {
       myMode = RunMode.DEBUG;
     }
     else {
-      myMode = RunMode.PROFILE;
+      throw new ExecutionException("unsupported run mode: " + mode);
     }
+  }
+
+  @Override
+  protected void checkConfiguration() throws RuntimeConfigurationError {
+    myRunnerParameters.checkForFilesLaunch(getEnvironment().getProject());
   }
 
   @NotNull
@@ -69,8 +75,6 @@ public class FlutterAppState extends FlutterAppStateBase {
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
     final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
-    // TODO(devoncarew): We need to make the daemon service optional.
-    assert service != null;
 
     final Project project = getEnvironment().getProject();
     final String workingDir = project.getBasePath();
@@ -79,8 +83,7 @@ public class FlutterAppState extends FlutterAppStateBase {
     ConnectedDevice device = null;
 
     // Only pass the current device in if we are showing the device selector.
-    final FlutterSettings settings = FlutterSettings.getInstance(project);
-    if (settings.isShowDevices()) {
+    if (service.isActive()) {
       final Collection<ConnectedDevice> devices = service.getConnectedDevices();
       if (devices.isEmpty()) {
         throw new ExecutionException("No connected device");
@@ -88,7 +91,8 @@ public class FlutterAppState extends FlutterAppStateBase {
       device = service.getSelectedDevice();
     }
 
-    final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+    final FlutterRunnerParameters parameters =
+      ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
     final String cwd = parameters.computeProcessWorkingDirectory(project);
 
     String relativePath = parameters.getFilePath();
@@ -108,7 +112,8 @@ public class FlutterAppState extends FlutterAppStateBase {
     myApp.setConsole(console);
     if (console != null) {
       final Project project = getEnvironment().getProject();
-      final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+      final FlutterRunnerParameters parameters =
+        ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
       final String path = parameters.getFilePath();
       if (path != null) {
         final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);

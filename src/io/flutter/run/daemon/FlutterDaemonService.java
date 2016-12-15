@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -68,14 +69,16 @@ public class FlutterDaemonService {
     void deviceRemoved(ConnectedDevice device);
   }
 
-  @Nullable
+  @NotNull
   public static FlutterDaemonService getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, FlutterDaemonService.class);
   }
 
   private FlutterDaemonService(Project project) {
     listenForSdkChanges();
-    schedulePolling();
+    if (FlutterSdk.getFlutterSdk(project) != null) {
+      schedulePolling();
+    }
     Disposer.register(project, this::stopControllers);
     Disposer.register(project, this::stopListeningForSdkChanges);
   }
@@ -106,6 +109,13 @@ public class FlutterDaemonService {
 
   public void removeDeviceListener(@NotNull DeviceListener listener) {
     myDeviceListeners.remove(listener);
+  }
+
+  /**
+   * Return whether the daemon service is up and running.
+   */
+  public boolean isActive() {
+    return myPollster != null;
   }
 
   /**
@@ -191,7 +201,31 @@ public class FlutterDaemonService {
     final FlutterDaemonController controller = createController(projectDir);
     controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
 
-    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot, relativePath);
+    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
+    app.addStateListener(newState -> {
+      if (newState == FlutterApp.State.TERMINATED) {
+        controller.forceExit();
+      }
+    });
+    return app;
+  }
+
+  public FlutterApp startBazelApp(@NotNull Project project,
+                                  @NotNull String projectDir,
+                                  @NotNull String launchingScript,
+                                  @Nullable String deviceId,
+                                  @NotNull RunMode mode,
+                                  @NotNull String bazelTarget,
+                                  @Nullable String additionalArguments)
+    throws ExecutionException {
+    final boolean startPaused = mode == RunMode.DEBUG;
+    final boolean isHot = mode.isReloadEnabled();
+
+    final FlutterDaemonController controller = createController(projectDir);
+    controller
+      .startBazelProcess(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+
+    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
     app.addStateListener(newState -> {
       if (newState == FlutterApp.State.TERMINATED) {
         controller.forceExit();
@@ -201,10 +235,7 @@ public class FlutterDaemonService {
   }
 
   /**
-   * Scan the list of controllers to see if an existing controller can be reused. If not, create a new one.
-   * Controllers can be reused if the directory is the same. If a controller is found that matches directory
-   * and device then terminate the app on that device and select that controller.
-   * NB: Currently controllers are not shared due to limitations of the debugger.
+   * Create a new FlutterDaemonController.
    *
    * @param projectDir The path to the project root directory
    * @return A FlutterDaemonController that can be used to start the app in the project directory

@@ -41,7 +41,9 @@ public class FlutterSdkManager {
   }
 
   private void listenForSdkChanges() {
+    // TODO(devoncarew): I don't believe this always fires when it should.
     ApplicationLibraryTable.getApplicationTable().addListener(myLibraryTableListener);
+
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {

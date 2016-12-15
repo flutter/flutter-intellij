@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.run;
+package io.flutter.run.bazel;
 
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
@@ -15,30 +15,29 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterRunConfigurationType extends ConfigurationTypeBase {
+public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
 
-  public FlutterRunConfigurationType() {
-    super("FlutterRunConfigurationType", FlutterBundle.message("runner.flutter.configuration.name"),
-          FlutterBundle.message("runner.flutter.configuration.description"), FlutterIcons.Flutter);
-    addFactory(new FlutterConfigurationFactory(this));
+  public FlutterBazelRunConfigurationType() {
+    super("FlutterBazelRunConfigurationType", FlutterBundle.message("runner.flutter.bazel.configuration.name"),
+          FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
+    addFactory(new FlutterBazelRunConfigurationType.FlutterBazelConfigurationFactory(this));
   }
 
-  public static FlutterRunConfigurationType getInstance() {
-    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterRunConfigurationType.class);
+  public static FlutterBazelRunConfigurationType getInstance() {
+    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterBazelRunConfigurationType.class);
   }
 
-  public static class FlutterConfigurationFactory extends ConfigurationFactory {
-    public FlutterConfigurationFactory(FlutterRunConfigurationType type) {
+  public static class FlutterBazelConfigurationFactory extends ConfigurationFactory {
+    public FlutterBazelConfigurationFactory(FlutterBazelRunConfigurationType type) {
       super(type);
     }
 
     @Override
     @NotNull
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-      return new FlutterRunConfiguration(project, this, "Flutter");
+      return new FlutterBazelRunConfiguration(project, this, "Flutter (Bazel)");
     }
 
     @Override
@@ -50,8 +49,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
-             FlutterSdkUtil.hasFlutterModule(project);
+      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project));
     }
   }
 }
