@@ -51,9 +51,9 @@ public class FlutterBazelAppState extends FlutterAppState {
     final String cwd = parameters.computeProcessWorkingDirectory(project);
 
     final String launchingScript = parameters.getLaunchingScript();
-    assert (launchingScript != null);
+    assert launchingScript != null;
     final String bazelTarget = parameters.getBazelTarget();
-    assert (bazelTarget != null);
+    assert bazelTarget != null;
 
     myApp = service.startBazelApp(
       project,

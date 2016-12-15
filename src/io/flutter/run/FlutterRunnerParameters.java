@@ -97,7 +97,7 @@ public class FlutterRunnerParameters implements Cloneable {
   }
 
   @NotNull
-  VirtualFile getBestContextFile(Project project) throws RuntimeConfigurationError {
+  VirtualFile getBestContextFile() throws RuntimeConfigurationError {
     if (!StringUtil.isEmptyOrSpaces(myFilePath)) {
       return getDartFile();
     }

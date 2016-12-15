@@ -91,7 +91,8 @@ public class FlutterAppState extends FlutterAppStateBase {
       device = service.getSelectedDevice();
     }
 
-    final FlutterRunnerParameters parameters = ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+    final FlutterRunnerParameters parameters =
+      ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
     final String cwd = parameters.computeProcessWorkingDirectory(project);
 
     String relativePath = parameters.getFilePath();

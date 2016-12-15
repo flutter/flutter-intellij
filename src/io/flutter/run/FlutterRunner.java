@@ -106,7 +106,7 @@ public class FlutterRunner extends FlutterRunnerBase {
     if (runConfig instanceof FlutterRunConfigurationBase &&
         DartAnalysisServerService.getInstance().serverReadyForRequest(env.getProject())) {
       try {
-        final VirtualFile file = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getBestContextFile(env.getProject());
+        final VirtualFile file = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getBestContextFile();
         final String path = file.getPath();
         dasExecutionContextId = DartAnalysisServerService.getInstance().execution_createContext(path);
       }
@@ -151,7 +151,7 @@ public class FlutterRunner extends FlutterRunnerBase {
     final String debuggingHost;
     final int observatoryPort;
 
-    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getBestContextFile(env.getProject());
+    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getBestContextFile();
 
     final String cwd =
       ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
