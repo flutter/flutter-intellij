@@ -144,12 +144,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.add(new OpenSimulatorAction(!simulatorOpen));
 
-      final boolean updatedPresentation[] = {false};
+      ApplicationManager.getApplication().invokeAndWait(() -> {
+        if (service != null) {
+          final ConnectedDevice selectedDevice = service.getSelectedDevice();
 
-      if (service != null) {
-        final ConnectedDevice selectedDevice = service.getSelectedDevice();
-        
-        ApplicationManager.getApplication().invokeAndWait(() -> {
           for (AnAction action : actions) {
             if (action instanceof SelectDeviceAction) {
               final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
@@ -159,18 +157,14 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
                 presentation.setIcon(template.getIcon());
                 presentation.setText(template.getText());
                 presentation.setEnabled(true);
-                updatedPresentation[0] = true;
                 return;
               }
             }
           }
-        }, ModalityState.NON_MODAL);
-      }
+        }
 
-      if (!updatedPresentation[0]) {
-        ApplicationManager.getApplication().invokeAndWait(() ->
-                                                            presentation.setText(null), ModalityState.NON_MODAL);
-      }
+        presentation.setText(null);
+      });
     }
   }
 
