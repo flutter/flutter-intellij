@@ -163,12 +163,14 @@ public class FlutterRunnerParameters implements Cloneable {
     }
 
     // check cwd param
-    if (!StringUtil.isEmptyOrSpaces(myWorkingDirectory)) {
-      final VirtualFile workDir = LocalFileSystem.getInstance().findFileByPath(myWorkingDirectory);
-      if (workDir == null || !workDir.isDirectory()) {
-        throw new RuntimeConfigurationError(
-          FlutterBundle.message("work.dir.does.not.exist", FileUtil.toSystemDependentName(myWorkingDirectory)));
-      }
+    if (StringUtil.isEmptyOrSpaces(myWorkingDirectory)) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noWorkingDirectorySet"));
+    }
+
+    final VirtualFile workDir = LocalFileSystem.getInstance().findFileByPath(myWorkingDirectory);
+    if (workDir == null || !workDir.isDirectory()) {
+      throw new RuntimeConfigurationError(
+        FlutterBundle.message("work.dir.does.not.exist", FileUtil.toSystemDependentName(myWorkingDirectory)));
     }
   }
 

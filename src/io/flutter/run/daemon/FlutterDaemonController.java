@@ -234,27 +234,29 @@ public class FlutterDaemonController extends ProcessAdapter {
                                                       boolean isHot,
                                                       @NotNull String launchingScript,
                                                       @NotNull String bazelTarget) throws ExecutionException {
-    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-    if (flutterSdk == null) {
-      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    }
-    final String flutterSdkPath = flutterSdk.getHomePath();
-    final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
-
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+    commandLine.addParameter(bazelTarget);
+
+    // TODO: Fix the launch script to accept more flags.
     //commandLine.addParameters("--machine");
+
     if (deviceId != null) {
       commandLine.addParameter("--device-id=" + deviceId);
     }
+
     if (startPaused) {
       commandLine.addParameter("--start-paused");
     }
+
+    // TODO: For hot/no-hot, append to the target name?
     if (!isHot) {
       commandLine.addParameter("--no-hot");
     }
-    commandLine.addParameter(bazelTarget);
+
+    // TODO: For the mode, append to the target name?
+
     return commandLine;
   }
 
