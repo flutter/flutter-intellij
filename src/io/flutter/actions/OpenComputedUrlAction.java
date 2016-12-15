@@ -9,7 +9,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
-import icons.DartIcons;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +18,8 @@ public class OpenComputedUrlAction extends DumbAwareAction {
   private final Computable<Boolean> myIsApplicable;
 
   public OpenComputedUrlAction(@NotNull final Computable<String> url, @NotNull final Computable<Boolean> isApplicable) {
-    super(FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"), DartIcons.Dart_16);
+    super(FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"),
+          FlutterIcons.OpenObservatory);
     myUrl = url;
     myIsApplicable = isApplicable;
   }
