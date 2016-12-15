@@ -61,7 +61,8 @@ public class FlutterBazelAppState extends FlutterAppState {
       launchingScript,
       device == null ? null : device.deviceId(),
       myMode,
-      bazelTarget);
+      bazelTarget,
+      parameters.getAdditionalArgs());
     return myApp.getController().getProcessHandler();
   }
 }

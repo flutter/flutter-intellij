@@ -26,6 +26,7 @@ public class FlutterRunnerParameters implements Cloneable {
 
   // Bazel launch parameters.
   private @Nullable String myLaunchingScript;
+  private @Nullable String myAdditionalArgs;
   private @Nullable String myBazelTarget;
 
   @NotNull
@@ -65,6 +66,15 @@ public class FlutterRunnerParameters implements Cloneable {
 
   public void setLaunchingScript(@Nullable String launchingScript) {
     myLaunchingScript = launchingScript;
+  }
+
+  @Nullable
+  public String getAdditionalArgs() {
+    return myAdditionalArgs;
+  }
+
+  public void setAdditionalArgs(@Nullable String additionalArgs) {
+    myAdditionalArgs = additionalArgs;
   }
 
   @Nullable

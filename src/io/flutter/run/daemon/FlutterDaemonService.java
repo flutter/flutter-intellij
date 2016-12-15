@@ -215,13 +215,15 @@ public class FlutterDaemonService {
                                   @NotNull String launchingScript,
                                   @Nullable String deviceId,
                                   @NotNull RunMode mode,
-                                  @NotNull String bazelTarget)
+                                  @NotNull String bazelTarget,
+                                  @Nullable String additionalArguments)
     throws ExecutionException {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled();
 
     final FlutterDaemonController controller = createController(projectDir);
-    controller.startBazelProcess(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget);
+    controller
+      .startBazelProcess(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
 
     final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
     app.addStateListener(newState -> {

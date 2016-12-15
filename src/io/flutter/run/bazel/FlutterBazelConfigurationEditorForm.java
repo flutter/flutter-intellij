@@ -26,17 +26,17 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<FlutterB
   private TextFieldWithBrowseButton myWorkingDirectory;
 
   private JLabel myLaunchingScriptLabel;
+  private TextFieldWithBrowseButton myLaunchingScript;
+  private JTextField myAdditionalArgs;
   private JTextField myBuildTarget;
 
-  private TextFieldWithBrowseButton myLaunchingScript;
-
   public FlutterBazelConfigurationEditorForm(final Project project) {
-    FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
+    final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
     myLaunchingScript.addBrowseFolderListener("Select Launching Script", "Choose launching script", project, descriptor);
 
     //noinspection DialogTitleCapitalization
     this.myWorkingDirectory
-      .addBrowseFolderListener(ExecutionBundle.message("select.working.directory.message", new Object[0]), null, project,
+      .addBrowseFolderListener(ExecutionBundle.message("select.working.directory.message"), null, project,
                                FileChooserDescriptorFactory.createSingleFolderDescriptor());
   }
 
@@ -46,6 +46,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<FlutterB
     myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getWorkingDirectory())));
     myBuildTarget.setText(StringUtil.notNullize(parameters.getBazelTarget()));
     myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getLaunchingScript())));
+    myAdditionalArgs.setText(StringUtil.notNullize(parameters.getAdditionalArgs()));
   }
 
   @Override
@@ -54,6 +55,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<FlutterB
     parameters.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
     parameters.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
     parameters.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
+    parameters.setAdditionalArgs(StringUtil.nullize(myAdditionalArgs.getText().trim(), true));
   }
 
   @NotNull
