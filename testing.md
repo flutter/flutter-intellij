@@ -22,7 +22,7 @@ Validate basic project creation.
   * Flutter operations work.
     * Open `flutter.yaml` and click the "Doctor" link.
   * Code completion works.
-    * Make sure analysis has completed. Then change `primarySwatch: Colors.` to some other color and validate that you get completions.
+    * Then change `primarySwatch: Colors.` to some other color and validate that you get completions.
 
 ## Project Import
 
