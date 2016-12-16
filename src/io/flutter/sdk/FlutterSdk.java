@@ -323,7 +323,9 @@ public class FlutterSdk {
      */
     @SuppressWarnings("UnusedParameters")
     void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, int exitCode, @NotNull String... args) {
-      printExitMessage(null, module, exitCode);
+      if (module != null) {
+        printExitMessage(null, module, exitCode);
+      }
     }
   }
 }
