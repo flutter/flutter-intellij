@@ -173,6 +173,7 @@
     <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/ -->
 
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
+    <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
