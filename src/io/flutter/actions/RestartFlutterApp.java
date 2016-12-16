@@ -12,6 +12,7 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 
+@SuppressWarnings("ComponentNotRegistered")
 public class RestartFlutterApp extends FlutterAppAction {
 
   public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS

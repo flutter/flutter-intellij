@@ -14,6 +14,7 @@ import io.flutter.FlutterBundle;
 
 import java.lang.reflect.Method;
 
+@SuppressWarnings("ComponentNotRegistered")
 public class HotReloadFlutterApp extends FlutterAppAction {
 
   public static final String ID = "Flutter.HotReloadFlutterApp"; //NON-NLS

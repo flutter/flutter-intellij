@@ -12,14 +12,26 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.DartFileType;
-import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunnerParameters;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterRunnerParameters implements Cloneable {
+  public static String suggestDartWorkingDir(@NotNull Project project, @NotNull VirtualFile dartFileOrFolder) {
+    final VirtualFile pubspec = PubspecYamlUtil.findPubspecYamlFile(project, dartFileOrFolder);
+    if (pubspec != null) {
+      final VirtualFile parent = pubspec.getParent();
+      if (parent != null) {
+        return parent.getPath();
+      }
+    }
+
+    return dartFileOrFolder.isDirectory() ? dartFileOrFolder.getPath() : dartFileOrFolder.getParent().getPath();
+  }
+
   // Regular launch parameters.
   private @Nullable String myFilePath;
   private @Nullable String myWorkingDirectory;
@@ -34,7 +46,7 @@ public class FlutterRunnerParameters implements Cloneable {
     if (!StringUtil.isEmptyOrSpaces(myWorkingDirectory)) return myWorkingDirectory;
 
     try {
-      return DartCommandLineRunnerParameters.suggestDartWorkingDir(project, getDartFileOrDirectory());
+      return suggestDartWorkingDir(project, getDartFileOrDirectory());
     }
     catch (RuntimeConfigurationError error) {
       return "";

@@ -36,7 +36,7 @@ public class FlutterIconRenderer extends GutterIconRenderer implements DumbAware
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
 
-    FlutterIconRenderer renderer = (FlutterIconRenderer)o;
+    final FlutterIconRenderer renderer = (FlutterIconRenderer)o;
     return myId != null ? myId.equals(renderer.myId) : renderer.myId == null;
   }
 
