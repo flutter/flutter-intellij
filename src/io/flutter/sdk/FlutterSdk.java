@@ -24,6 +24,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
@@ -84,11 +85,18 @@ public class FlutterSdk {
   }
 
   private static void printExitMessage(@Nullable Project project, @Nullable Module module, int exitCode) {
-    final ConsoleView console = FlutterConsoleHelper.findConsoleView(project, module);
-    if (console != null) {
-      console.print(
-        FlutterBundle.message("finished.with.exit.code.text.message", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
+    if (project == null && module == null) {
+      return;
     }
+
+    final Project p = project == null ? module.getProject() : project;
+    MessageView.SERVICE.getInstance(p).runWhenInitialized(() -> {
+      final ConsoleView console = FlutterConsoleHelper.findConsoleView(p, module);
+      if (console != null) {
+        console.print(
+          FlutterBundle.message("finished.with.exit.code.text.message", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
+      }
+    });
   }
 
   public void run(@NotNull Command cmd,
