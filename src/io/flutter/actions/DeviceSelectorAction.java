@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
@@ -28,15 +29,12 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   final private List<AnAction> actions = new ArrayList<>();
-  private boolean isListening = false;
+  private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
   @NotNull
   @Override
@@ -71,8 +69,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
 
-    if (!isListening) {
-      isListening = true;
+    if (!knownProjects.contains(project)) {
+      knownProjects.add(project);
+      Disposer.register(project, () -> knownProjects.remove(project));
 
       // Setup initial actions.
       updateActions(e.getPresentation(), project);
