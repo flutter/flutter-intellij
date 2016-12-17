@@ -9,12 +9,9 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static io.flutter.run.daemon.FlutterAppManager.AppStartEvent;
 
 /**
  * Handle for a running Flutter app.
@@ -42,21 +39,6 @@ public interface FlutterApp {
   String appId();
 
   /**
-   * @return The Flutter project directory.
-   */
-  String projectDirectory();
-
-  /**
-   * @return The deviceId the app is running on.
-   */
-  String deviceId();
-
-  /**
-   * @return <code>true</code> if the app can be restarted.
-   */
-  boolean isRestartable();
-
-  /**
    * @return <code>true</code> if the app is in hot-restart mode.
    */
   boolean isHot();
@@ -70,16 +52,6 @@ public interface FlutterApp {
    * @return The project associated with this app.
    */
   Project project();
-
-  /**
-   * @return The route parameter.
-   */
-  String route();
-
-  /**
-   * @return The target parameter.
-   */
-  String target();
 
   /**
    * @return The debug port used to talk to the observatory.
@@ -150,12 +122,10 @@ class RunningFlutterApp implements FlutterApp {
   private final FlutterDaemonService myService;
   private final FlutterDaemonController myController;
   private final FlutterAppManager myManager;
-  private AppStartEvent myApp;
+  private String myAppId;
   private final RunMode myMode;
   private final Project myProject;
   private final boolean isHot;
-  private final String myRoute;
-  private final String myTarget;
   private int myPort;
   private String myBaseUri;
   private ConsoleView myConsole;
@@ -168,19 +138,14 @@ class RunningFlutterApp implements FlutterApp {
                            @NotNull FlutterAppManager manager,
                            @NotNull RunMode mode,
                            @NotNull Project project,
-                           boolean hot,
-                           @Nullable String target,
-                           @Nullable String route) {
+                           boolean hot) {
     myService = service;
     myController = controller;
     myManager = manager;
     myMode = mode;
     myProject = project;
     isHot = hot;
-    myRoute = route;
-    myTarget = target;
   }
-
 
   @Override
   public void changeState(State newState) {
@@ -199,8 +164,8 @@ class RunningFlutterApp implements FlutterApp {
     myListeners.remove(null);
   }
 
-  void setApp(AppStartEvent app) {
-    myApp = app;
+  void setAppId(String id) {
+    myAppId = id;
   }
 
   @Override
@@ -215,27 +180,12 @@ class RunningFlutterApp implements FlutterApp {
 
   @Override
   public boolean hasAppId() {
-    return myApp != null && myApp.appId != null;
+    return myAppId != null;
   }
 
   @Override
   public String appId() {
-    return myApp.appId;
-  }
-
-  @Override
-  public String projectDirectory() {
-    return myApp.directory;
-  }
-
-  @Override
-  public String deviceId() {
-    return myApp.deviceId;
-  }
-
-  @Override
-  public boolean isRestartable() {
-    return myApp.supportsRestart;
+    return myAppId;
   }
 
   @Override
@@ -251,16 +201,6 @@ class RunningFlutterApp implements FlutterApp {
   @Override
   public Project project() {
     return myProject;
-  }
-
-  @Override
-  public String route() {
-    return myRoute;
-  }
-
-  @Override
-  public String target() {
-    return myTarget;
   }
 
   @Override

@@ -1,12 +1,14 @@
 <idea-plugin version="2">
   <id>io.flutter</id>
   <name>Flutter</name>
-  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy cross-platform, high-performance mobile apps on both Android and iOS.</description>
+  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
+    cross-platform, high-performance mobile apps on both Android and iOS.
+  </description>
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
 
-  <version>0.1.5</version>
+  <version>0.1.7</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -15,7 +17,28 @@
   <depends>com.intellij.modules.java</depends>
 
   <change-notes>
-<![CDATA[
+    <![CDATA[
+
+0.1.7:
+<ul>
+  <li>improved console output folding when running iOS apps</li>
+  <li>actions for Flutter package get and package update</li>
+  <li>a new top level Flutter menu (Tools>Flutter) with common Flutter actions</li>
+  <li>updated hot reload and restart icons</li>
+  <li>editor annotations showing Flutter colors and icons in the editor ruler</li>
+  <li>better console filtering (less noise)</li>
+  <li>improved detection of Flutter projects missing a Flutter module type</li>
+</ul>
+
+0.1.6:
+<ul>
+  <li>reload and restart keybinding mapping fixes</li>
+  <li>new buttter bar with actions for flutter.yaml files</li>
+  <li>"run" behavior re-designed to support reload</li>
+  <li>improved console output for reloading and restarting</li>
+  <li>miscellaneous fixes and stability improvements</li>
+</ul>
+
 0.1.5:
 <ul>
   <li>console filtering for flutter run output</li>
@@ -61,7 +84,7 @@
   <li>initial alpha release</li>
 </ul>
  ]]>
- </change-notes>
+  </change-notes>
 
   <depends>Dart</depends>
 
@@ -82,41 +105,90 @@
     </action>
     <group id="Flutter.MainToolbarActions">
       <separator/>
-
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
               description="Flutter Device Selection"
               icon="FlutterIcons.Phone"/>
-    <separator/>
+      <separator/>
       <add-to-group anchor="before" group-id="RunContextGroup" relative-to-action="RunConfiguration"/>
       <add-to-group anchor="before" group-id="ToolbarRunGroup" relative-to-action="RunConfiguration"/>
     </group>
-    <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction" text="Flutter: Upgrade"
-            description="Run 'flutter upgrade'"/>
-    <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction" text="Flutter: Doctor"
-            description="Run 'flutter doctor'"/>
+
+    <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
+           text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
+      <add-to-group group-id="ToolsMenu" anchor="last"/>
+      <action id="flutter.gettingStarted" class="io.flutter.actions.FlutterGettingStarted"
+              text="Getting Started"
+              description="View the online getting started documentation"/>
+      <separator/>
+      <action id="flutter.upgrade" class="io.flutter.actions.FlutterUpgradeAction"
+              text="Flutter Upgrade"
+              description="Run 'flutter upgrade'"/>
+      <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction"
+              text="Flutter Doctor"
+              description="Run 'flutter doctor'"/>
+      <separator/>
+      <action id="flutter.packages.get" class="io.flutter.actions.FlutterPackagesGetAction"
+              text="Flutter Packages Get"
+              description="Run 'flutter packages get'"/>
+      <action id="flutter.packages.upgrade" class="io.flutter.actions.FlutterPackagesUpgradeAction"
+              text="Flutter Packages Upgrade"
+              description="Run 'flutter packages upgrade'"/>
+      <separator/>
+      <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
+              text="Submit Feedback…"
+              description="Provie feedback for the Flutter plugin"/>
+    </group>
+
+    <!-- project explorer actions -->
+    <group id="FlutterPackagesExplorerActionGroup" class="io.flutter.actions.FlutterPackagesExplorerActionGroup"> 
+      <separator/>
+      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
+        <separator/>
+        <reference ref="flutter.packages.get"/> 
+        <reference ref="flutter.packages.upgrade"/> 
+        <separator/>
+        <reference ref="flutter.upgrade"/> 
+        <reference ref="flutter.doctor"/> 
+      </group>
+      <separator/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+     </group>
+
+
   </actions>
 
-  <extensions defaultExtensionNs="com.intellij">
 
-    <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider" />?
+  <extensions defaultExtensionNs="com.intellij">
+    <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
-    <applicationService serviceInterface="io.flutter.run.daemon.FlutterDaemonService"
-                        serviceImplementation="io.flutter.run.daemon.FlutterDaemonService"/>
+    <projectService serviceInterface="io.flutter.run.daemon.FlutterDaemonService"
+                    serviceImplementation="io.flutter.run.daemon.FlutterDaemonService"/>
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
     <programRunner implementation="io.flutter.run.FlutterRunner"/>
 
+    <!-- TODO(devoncarew): Bazel launch is disabled; the implementation isn't complete. -->
+    <!-- configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
+    <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/ -->
+
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
+    <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
-    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService" serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
+    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
+                    serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
+                    overrides="false"/>
+    <projectService serviceInterface="io.flutter.settings.FlutterSettings"
+                    serviceImplementation="io.flutter.settings.FlutterSettings"
                     overrides="false"/>
 
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
 
-    <applicationConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
-                             id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
+    <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
+                         id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle"/>
+    <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
+    <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
     <toolWindow id="Flutter" anchor="right" icon="FlutterIcons.Flutter"
                 factoryClass="io.flutter.view.FlutterViewFactory"
                 conditionClass="io.flutter.view.FlutterViewCondition"/>

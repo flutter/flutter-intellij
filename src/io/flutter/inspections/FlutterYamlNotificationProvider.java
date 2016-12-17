@@ -15,6 +15,8 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
+import icons.FlutterIcons;
+import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +27,6 @@ import java.awt.*;
 
 public class FlutterYamlNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.yaml");
-  public static final String FLUTTER_YAML_NAME = "flutter.yaml";
 
   @NotNull
   @Override
@@ -40,7 +41,7 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
-    if (!FLUTTER_YAML_NAME.equalsIgnoreCase(file.getName())) {
+    if (!FlutterConstants.FLUTTER_YAML.equalsIgnoreCase(file.getName())) {
       return null;
     }
 
@@ -69,9 +70,14 @@ class FlutterYamlActionsPanel extends EditorNotificationPanel {
   FlutterYamlActionsPanel(@NotNull VirtualFile file) {
     myFile = file;
 
-    myLinksPanel.add(new JLabel("Flutter actions:"));
+    icon(FlutterIcons.Flutter);
+    text("Flutter commands");
+
+    createActionLabel("Packages get", "flutter.packages.get");
+    createActionLabel("Packages upgrade", "flutter.packages.upgrade");
+    myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
     createActionLabel("Flutter upgrade", "flutter.upgrade");
-    myLinksPanel.add(new JLabel("        "));
+    myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
     createActionLabel("Flutter doctor", "flutter.doctor");
 
     // TODO: Add for 2017.1.

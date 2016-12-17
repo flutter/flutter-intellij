@@ -14,13 +14,14 @@ import io.flutter.FlutterBundle;
 
 import java.lang.reflect.Method;
 
+@SuppressWarnings("ComponentNotRegistered")
 public class HotReloadFlutterApp extends FlutterAppAction {
 
   public static final String ID = "Flutter.HotReloadFlutterApp"; //NON-NLS
 
   public HotReloadFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, FlutterBundle.message("app.reload.action.text"), FlutterBundle.message("app.reload.action.description"),
-          FlutterIcons.Play2, isApplicable, ID);
+          FlutterIcons.ReloadBoth, isApplicable, ID);
   }
 
   @Override
@@ -37,7 +38,7 @@ public class HotReloadFlutterApp extends FlutterAppAction {
 
     try {
       final Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
-      final Method method = clazz.getMethod("isSupported", String.class);
+      @SuppressWarnings("unchecked") final Method method = clazz.getMethod("isSupported", String.class);
       final Object result = method.invoke(null, featureId);
       return result instanceof Boolean && (Boolean)result;
     }

@@ -9,9 +9,7 @@ import com.google.gson.*;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.TimeoutUtil;
 import gnu.trove.THashMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,11 +18,9 @@ import java.io.File;
 import java.lang.reflect.Type;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,7 +37,7 @@ public class FlutterAppManager {
 
   private static final Gson GSON = new Gson();
 
-  private final Logger myLogger = Logger.getInstance("#io.flutter.run.daemon.FlutterAppManager");
+  private static final Logger LOG = Logger.getInstance(FlutterAppManager.class.getName());
   private final FlutterDaemonService myService;
   private final List<FlutterApp> myApps = new ArrayList<>();
   private final Map<Integer, List<Command>> myPendingCommands = new THashMap<>();
@@ -55,68 +51,24 @@ public class FlutterAppManager {
     this.myService = service;
   }
 
-  @Nullable
-  public FlutterApp startApp(@NotNull FlutterDaemonController controller,
-                             @NotNull String deviceId,
-                             @NotNull RunMode mode,
-                             @NotNull Project project,
-                             boolean startPaused,
-                             boolean isHot,
-                             @Nullable String target) {
-    if (isAppRunning(deviceId, controller)) {
-      throw new ProcessCanceledException();
-    }
+  @NotNull
+  public FlutterApp appStarting(@NotNull FlutterDaemonController controller,
+                                @Nullable String deviceId,
+                                @NotNull RunMode mode,
+                                @NotNull Project project,
+                                boolean startPaused,
+                                boolean isHot) {
     myProgressHandler = new ProgressHandler(project);
-    // TODO(devoncarew): We don't need this call.
-    if (!waitForDevice(deviceId)) {
-      return null;
-    }
     final FlutterDaemonService service;
     synchronized (myLock) {
       service = myService;
     }
-    final RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot, target, null);
-    app.changeState(FlutterApp.State.STARTING);
-    final AppStart appStart = new AppStart(deviceId, controller.getProjectDirectory(), startPaused, null, mode.mode(), target, isHot);
-    final Method cmd = makeMethod(CMD_APP_START, appStart);
-    CompletableFuture
-      .supplyAsync(() -> sendCommand(controller, cmd))
-      .thenApplyAsync(this::waitForResponse)
-      .thenAcceptAsync((started) -> {
-        if (started instanceof AppStartEvent) {
-          final AppStartEvent appStarted = (AppStartEvent)started;
-          app.setApp(appStarted);
-        }
-      });
+    final RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot);
     synchronized (myLock) {
       myApps.add(app);
     }
+    app.changeState(FlutterApp.State.STARTING);
     return app;
-  }
-
-  private boolean isAppRunning(String deviceId, FlutterDaemonController controller) {
-    final Stream<FlutterApp> apps;
-    synchronized (myLock) {
-      apps = myApps.stream();
-    }
-    return apps.anyMatch((app) -> app.getController() == controller && app.hasAppId() && app.deviceId().equals(deviceId));
-  }
-
-  private boolean waitForDevice(@NotNull String deviceId) {
-    final long timeout = 5000L;
-    final Boolean[] resp = {false};
-    TimeoutUtil.executeWithTimeout(timeout, () -> {
-      while (!resp[0]) {
-        final Stream<ConnectedDevice> stream;
-        synchronized (myLock) {
-          stream = myService.getConnectedDevices().stream();
-        }
-        if (stream.anyMatch(d -> d.deviceId().equals(deviceId))) {
-          resp[0] = true;
-        }
-      }
-    });
-    return resp[0];
   }
 
   @Nullable
@@ -137,6 +89,11 @@ public class FlutterAppManager {
   @Nullable
   private FlutterJsonObject waitForResponse(@NotNull Method cmd) {
     final long timeout = 10000L;
+    return waitForResponse(cmd, timeout);
+  }
+
+  @Nullable
+  private FlutterJsonObject waitForResponse(@NotNull Method cmd, final long timeout) {
     final FlutterJsonObject[] resp = {null};
     try {
       TimeoutUtil.executeWithTimeout(timeout, () -> {
@@ -162,7 +119,7 @@ public class FlutterAppManager {
     }
     catch (ExecutionException e) {
       // User notification comes in the way of editor toasts (see IncompatibleDartPluginNotification).
-      myLogger.warn(e);
+      LOG.warn(e);
     }
   }
 
@@ -180,7 +137,7 @@ public class FlutterAppManager {
       }
     }
     catch (JsonSyntaxException ex) {
-      myLogger.error(ex);
+      LOG.error(ex);
     }
   }
 
@@ -197,13 +154,13 @@ public class FlutterAppManager {
   void handleEvent(@NotNull JsonObject obj, @NotNull FlutterDaemonController controller, @NotNull String json) {
     final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
     if (primEvent == null) {
-      myLogger.error("Invalid JSON from flutter: " + json);
+      LOG.error("Invalid JSON from flutter: " + json);
       return;
     }
     final String eventName = primEvent.getAsString();
     final JsonObject params = obj.getAsJsonObject("params");
     if (eventName == null || params == null) {
-      myLogger.error("Bad event from flutter: " + json);
+      LOG.error("Bad event from flutter: " + json);
       return;
     }
     final Event eventHandler = eventHandler(eventName, json);
@@ -224,12 +181,11 @@ public class FlutterAppManager {
       // streams are closed which immediately terminates the process.
       CompletableFuture
         .completedFuture(sendCommand(app.getController(), cmd))
-        .thenApply(this::waitForResponse)
+        .thenApply((Method method) -> waitForResponse(method, 300))
         .thenAccept((stopped) -> {
           synchronized (myLock) {
             myApps.remove(app);
           }
-          app.getController().removeDeviceId(app.deviceId());
         });
     }
   }
@@ -274,6 +230,18 @@ public class FlutterAppManager {
       apps = new ArrayList<>(myApps);
     }
     apps.stream().filter(app -> app.getController() == controller).forEach(this::stopApp);
+  }
+
+  void terminateAllFor(FlutterDaemonController controller) {
+    synchronized (myLock) {
+      final ListIterator<FlutterApp> itor = myApps.listIterator();
+      while (itor.hasNext()) {
+        final FlutterApp app = itor.next();
+        if (app.getController() == controller) {
+          itor.remove();
+        }
+      }
+    }
   }
 
   @NotNull
@@ -345,7 +313,7 @@ public class FlutterAppManager {
   }
 
   private void eventLogMessage(@NotNull LogMessageEvent message, @NotNull FlutterDaemonController controller) {
-    myLogger.info(message.message);
+    LOG.info(message.message);
   }
 
   private void eventLogMessage(@NotNull AppLogEvent message, @NotNull FlutterDaemonController controller) {
@@ -408,6 +376,18 @@ public class FlutterAppManager {
     }
   }
 
+  private void eventAppStart(AppStartEvent event, FlutterDaemonController controller) {
+    for (FlutterApp app : myApps) {
+      if (app instanceof RunningFlutterApp) {
+        final RunningFlutterApp runningApp = (RunningFlutterApp)app;
+        if (!runningApp.hasAppId()) {
+          runningApp.setAppId(event.appId);
+          break;
+        }
+      }
+    }
+  }
+
   private void eventAppStarted(@NotNull AppStartEvent started, @NotNull FlutterDaemonController controller) {
     assert started.directory.equals(controller.getProjectDirectory());
     final Stream<Command> starts = findAllPendingCmds(controller).stream().filter(c -> {
@@ -427,9 +407,12 @@ public class FlutterAppManager {
   }
 
   private void eventAppStopped(@NotNull AppStoppedEvent stopped, @NotNull FlutterDaemonController controller) {
-    // TODO(devoncarew): Terminate the launch.
-
     myProgressHandler.cancel();
+
+    final RunningFlutterApp app = findApp(controller, stopped.appId);
+    if (app != null) {
+      app.changeState(FlutterApp.State.TERMINATED);
+    }
   }
 
   private void eventDebugPort(@NotNull AppDebugPortEvent port, @NotNull FlutterDaemonController controller) {
@@ -457,13 +440,13 @@ public class FlutterAppManager {
   }
 
   private void error(JsonObject json) {
-    System.out.println(json.toString()); // TODO error handling
+    LOG.warn(json.toString());
   }
 
   private RunningFlutterApp findApp(FlutterDaemonController controller, String appId) {
     synchronized (myLock) {
       for (FlutterApp app : myApps) {
-        if (app.getController() == controller && app.hasAppId() && app.appId().equals(appId)) {
+        if (app.hasAppId() && app.appId().equals(appId)) {
           return (RunningFlutterApp)app;
         }
       }
@@ -480,7 +463,6 @@ public class FlutterAppManager {
       this.controller = controller;
     }
   }
-
 
   private abstract static class FlutterJsonObject {
     // Placeholder for any abstractions applicable to all JSON to/from Flutter.
@@ -668,7 +650,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") boolean supportsRestart;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
-      // This event is ignored. The app.start command response is used instead.
+      manager.eventAppStart(this, controller);
     }
   }
 
@@ -698,6 +680,7 @@ public class FlutterAppManager {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
     @SuppressWarnings("unused") private int port;
+    @SuppressWarnings("unused") private String wsUri;
     @SuppressWarnings("unused") private String baseUri;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
@@ -724,5 +707,57 @@ class StopWatch {
 
   public long getTime() {
     return stopTime - startTime;
+  }
+}
+
+class TimeoutUtil {
+  private TimeoutUtil() {
+  }
+
+  public static void executeWithTimeout(long timeout, @NotNull final Runnable run) {
+    final long sleep = 50;
+    final long start = System.currentTimeMillis();
+    final AtomicBoolean done = new AtomicBoolean(false);
+    final Thread thread = new Thread("Fast Function Thread@" + run.hashCode()) {
+      public void run() {
+        try {
+          run.run();
+        }
+        catch (ThreadDeath ignored) {
+
+        }
+        finally {
+          done.set(true);
+        }
+      }
+    };
+    thread.start();
+
+    while (!done.get() && System.currentTimeMillis() - start < timeout) {
+      try {
+        Thread.sleep(sleep);
+      }
+      catch (InterruptedException var10) {
+        break;
+      }
+    }
+
+    if (!thread.isInterrupted()) {
+      //noinspection deprecation
+      thread.stop();
+    }
+  }
+
+  public static void sleep(long millis) {
+    try {
+      Thread.sleep(millis);
+    }
+    catch (InterruptedException ignored) {
+
+    }
+  }
+
+  public static long getDurationMillis(long startNanoTime) {
+    return (System.nanoTime() - startNanoTime) / 1000000L;
   }
 }

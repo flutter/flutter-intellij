@@ -84,7 +84,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterModuleType.getInstance();
   }
 
-
   void setupProject(@NotNull final ModifiableRootModel model,
                     @NotNull final VirtualFile baseDir) {
 

@@ -15,7 +15,6 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.ide.DartWritingAccessProvider;
-import com.jetbrains.lang.dart.ide.runner.server.DartCommandLineRunnerParameters;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
@@ -36,7 +35,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Fl
     if (dartFile != null) {
       configuration.getRunnerParameters().setFilePath(dartFile.getPath());
       configuration.getRunnerParameters()
-        .setWorkingDirectory(DartCommandLineRunnerParameters.suggestDartWorkingDir(context.getProject(), dartFile));
+        .setWorkingDirectory(FlutterRunnerParameters.suggestDartWorkingDir(context.getProject(), dartFile));
       configuration.setGeneratedName();
 
       sourceElement.set(sourceElement.isNull() ? null : sourceElement.get().getContainingFile());

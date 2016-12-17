@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -27,6 +28,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.StringTokenizer;
 
 /**
  * Control an external Flutter process, including reading events and responses from its stdout and
@@ -37,9 +39,8 @@ public class FlutterDaemonController extends ProcessAdapter {
   private static final String STDOUT_KEY = "stdout";
 
   private final String myProjectDirectory;
-  private final List<String> myDeviceIds = new ArrayList<>();
   private final List<DaemonListener> myListeners = Collections.synchronizedList(new ArrayList<>());
-  private ProcessHandler myHandler;
+  private ProcessHandler myProcessHandler;
   private boolean myIsPollingController = false;
   private boolean myIsPollingStarted = false;
 
@@ -57,7 +58,7 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   public ProcessHandler getProcessHandler() {
-    return myHandler;
+    return myProcessHandler;
   }
 
   public void removeListener(DaemonListener listener) {
@@ -65,72 +66,59 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   public void forceExit() {
-    // TODO Stop all apps and terminate the external process
-    if (myHandler != null) {
-      myHandler.destroyProcess();
+    if (myProcessHandler != null) {
+      myProcessHandler.destroyProcess();
     }
-    myDeviceIds.clear();
-    myHandler = null;
+    myProcessHandler = null;
   }
 
   public String getProjectDirectory() {
     return myProjectDirectory;
   }
 
-  /**
-   * Return true if this controller can be used by the app in the projectDir.
-   * The very first controller that is created (to do device discovery) has
-   * no project directory so it can be reused. Always invoke #setProjectAndDevice
-   * after selecting a controller to ensure both directory and device id are set.
-   *
-   * @param projectDir The path to a project directory
-   * @return true if the instance can be used or reused
-   */
-  public boolean isForProject(String projectDir) {
-    return myProjectDirectory == null || myProjectDirectory.equals(projectDir);
-  }
-
-  boolean hasDeviceId(String id) {
-    return myDeviceIds.contains(id);
-  }
-
-  private void addDeviceId(String deviceId) {
-    myDeviceIds.add(deviceId);
-  }
-
-  void removeDeviceId(String deviceId) {
-    myDeviceIds.remove(deviceId);
-  }
-
   void startDevicePoller() throws ExecutionException {
     myIsPollingController = true;
 
     final GeneralCommandLine commandLine = createCommandLinePoller();
-    myHandler = new OSProcessHandler(commandLine);
-    myHandler.addProcessListener(this);
-    myHandler.startNotify();
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
   }
 
-  public void startRunnerDaemon(
-    @NotNull Project project,
-    @NotNull String deviceId,
-    @NotNull RunMode mode,
-    boolean startPaused,
-    boolean isHot,
-    @Nullable String target) throws ExecutionException {
+  public void startRunnerProcess(@NotNull Project project,
+                                 @NotNull String projectDir,
+                                 @Nullable String deviceId,
+                                 @NotNull RunMode mode,
+                                 boolean startPaused,
+                                 boolean isHot,
+                                 @Nullable String target) throws ExecutionException {
+    final GeneralCommandLine commandLine = createCommandLineRunner(project, projectDir, deviceId, mode, startPaused, isHot, target);
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
+  }
 
-    // TODO(devoncarew): Use the deviceId / mode / startPaused / isHot / target params.
-    final GeneralCommandLine commandLine = createCommandLineRunner(project);
-    myHandler = new OSProcessHandler(commandLine);
-    myHandler.addProcessListener(this);
-    myHandler.startNotify();
+  public void startBazelProcess(@NotNull Project project,
+                                @NotNull String projectDir,
+                                @Nullable String deviceId,
+                                @NotNull RunMode mode,
+                                boolean startPaused,
+                                boolean isHot,
+                                @NotNull String launchingScript,
+                                @NotNull String bazelTarget,
+                                @Nullable String additionalArguments) throws ExecutionException {
+    final GeneralCommandLine commandLine =
+      createBazelRunner(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
   }
 
   public void sendCommand(String commandJson, FlutterAppManager manager) {
-    if (myHandler == null) {
+    if (myProcessHandler == null) {
       return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
     }
-    final OutputStream input = myHandler.getProcessInput();
+    final OutputStream input = myProcessHandler.getProcessInput();
     if (input == null) {
       LOG.error("No process input");
       return;
@@ -203,9 +191,15 @@ public class FlutterDaemonController extends ProcessAdapter {
   }
 
   /**
-   * Create a command to start the Flutter daemon when used to launch apps.
+   * Create a command to run 'flutter run --machine'.
    */
-  private static GeneralCommandLine createCommandLineRunner(@NotNull Project project) throws ExecutionException {
+  private static GeneralCommandLine createCommandLineRunner(@NotNull Project project,
+                                                            @NotNull String projectDir,
+                                                            @Nullable String deviceId,
+                                                            @NotNull RunMode mode,
+                                                            boolean startPaused,
+                                                            boolean isHot,
+                                                            @Nullable String target) throws ExecutionException {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
@@ -213,11 +207,75 @@ public class FlutterDaemonController extends ProcessAdapter {
     final String flutterSdkPath = flutterSdk.getHomePath();
     final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
-    // While not strictly required, we set the working directory to the flutter root for consistency.
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(flutterSdkPath);
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.addParameter("daemon");
+    commandLine.addParameters("run", "--machine");
+    if (deviceId != null) {
+      commandLine.addParameter("--device-id=" + deviceId);
+    }
+    if (mode == RunMode.PROFILE) {
+      commandLine.addParameter("--profile");
+    }
+    if (startPaused) {
+      commandLine.addParameter("--start-paused");
+    }
+    if (!isHot) {
+      commandLine.addParameter("--no-hot");
+    }
+    if (target != null) {
+      commandLine.addParameter(target);
+    }
+    return commandLine;
+  }
+
+  private static GeneralCommandLine createBazelRunner(@NotNull Project project,
+                                                      @NotNull String projectDir,
+                                                      @Nullable String deviceId,
+                                                      @NotNull RunMode mode,
+                                                      boolean startPaused,
+                                                      boolean isHot,
+                                                      @NotNull String launchingScript,
+                                                      @NotNull String bazelTarget,
+                                                      @Nullable String additionalArguments) throws ExecutionException {
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+
+    // TODO(devoncarew): Fix the launch script to accept more flags.
+    //commandLine.addParameters("--machine");
+
+    // TODO(devoncarew): Fix the launch script to accept more flags.
+    //if (deviceId != null) {
+    //  commandLine.addParameter("--device-id=" + deviceId);
+    //}
+
+    // TODO(devoncarew): Fix the launch script to accept more flags.
+    //if (startPaused) {
+    //  commandLine.addParameter("--start-paused");
+    //}
+
+    // Set the mode.
+    if (mode != RunMode.DEBUG) {
+      commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    }
+
+    // Additional arguments.
+    if (additionalArguments != null) {
+      final StringTokenizer argumentsTokenizer = new CommandLineTokenizer(additionalArguments);
+      while (argumentsTokenizer.hasMoreTokens()) {
+        commandLine.addParameter(argumentsTokenizer.nextToken());
+      }
+    }
+
+    // Append _run[_hot] to bazelTarget.
+    if (!bazelTarget.endsWith("_run") && !bazelTarget.endsWith(("_hot"))) {
+      bazelTarget += "_run";
+      if (isHot) {
+        bazelTarget += "_hot";
+      }
+    }
+    commandLine.addParameter(bazelTarget);
 
     return commandLine;
   }

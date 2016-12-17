@@ -15,14 +15,16 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
@@ -82,6 +84,21 @@ public class FlutterSdk {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
 
+  private static void printExitMessage(@Nullable Project project, @Nullable Module module, int exitCode) {
+    if (project == null && module == null) {
+      return;
+    }
+
+    final Project p = project == null ? module.getProject() : project;
+    MessageView.SERVICE.getInstance(p).runWhenInitialized(() -> {
+      final ConsoleView console = FlutterConsoleHelper.findConsoleView(p, module);
+      if (console != null) {
+        console.print(
+          FlutterBundle.message("finished.with.exit.code.text.message", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
+      }
+    });
+  }
+
   public void run(@NotNull Command cmd,
                   @Nullable Module module,
                   @Nullable VirtualFile workingDir,
@@ -93,11 +110,9 @@ public class FlutterSdk {
     final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
-    String[] toolArgs = ArrayUtil.prepend(cmd.command, args);
+    String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
     toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
     command.addParameters(toolArgs);
-
-    FileDocumentManager.getInstance().saveAllDocuments();
 
     try {
       if (inProgress.compareAndSet(false, true)) {
@@ -109,7 +124,7 @@ public class FlutterSdk {
           @Override
           public void processTerminated(final ProcessEvent event) {
             inProgress.set(false);
-            cmd.onTerminate(module, workingDir, args);
+            cmd.onTerminate(module, workingDir, event.getExitCode(), args);
           }
         });
 
@@ -131,7 +146,6 @@ public class FlutterSdk {
 
   public void runProject(@NotNull Project project,
                          @NotNull String title,
-                         @Nullable ProcessListener listener,
                          @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
@@ -144,13 +158,11 @@ public class FlutterSdk {
     try {
       if (inProgress.compareAndSet(false, true)) {
         final OSProcessHandler handler = new OSProcessHandler(command);
-        if (listener != null) {
-          handler.addProcessListener(listener);
-        }
         handler.addProcessListener(new ProcessAdapter() {
           @Override
           public void processTerminated(final ProcessEvent event) {
             inProgress.set(false);
+            printExitMessage(project, null, event.getExitCode());
           }
         });
 
@@ -187,7 +199,7 @@ public class FlutterSdk {
 
   public enum Command {
 
-    CREATE("create", "Flutter create") {
+    CREATE("Flutter create", "create") {
       @Override
       void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
         // Enable Dart.
@@ -198,9 +210,11 @@ public class FlutterSdk {
       }
 
       @Override
+      @SuppressWarnings("UnusedParameters")
       void onTerminate(@Nullable Module module,
                        @Nullable VirtualFile workingDir,
-                       @SuppressWarnings("UnusedParameters") @NotNull String... args) {
+                       int exitCode,
+                       @NotNull String... args) {
         ApplicationManager.getApplication().invokeLater(() -> {
           if (workingDir != null && module != null && !module.isDisposed()) {
             final Project project = module.getProject();
@@ -241,11 +255,12 @@ public class FlutterSdk {
               }
 
               parameters.setWorkingDirectory(workingDir.getPath());
-              parameters.setCheckedMode(false);
 
               runManager.addConfiguration(settings, false);
               runManager.setSelectedConfiguration(settings);
             }
+
+            super.onTerminate(module, workingDir, exitCode, args);
 
             // Open main for editing.
             if (main != null && main.exists()) {
@@ -258,21 +273,23 @@ public class FlutterSdk {
         });
       }
     },
-    DOCTOR("doctor", "Flutter doctor"),
-    UPGRADE("upgrade", "Flutter upgrade"),
-    VERSION("--version", "Flutter version") {
+    DOCTOR("Flutter doctor", "doctor"),
+    PACKAGES_GET("Flutter packages get", "packages", "get"),
+    PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    UPGRADE("Flutter upgrade", "upgrade"),
+    VERSION("Flutter version", "--version") {
       @Override
       boolean attachToConsole() {
         return false;
       }
     };
 
-    final String command;
-    final String title;
+    final public String title;
+    final String[] command;
 
-    Command(String command, String title) {
-      this.command = command;
+    Command(String title, String... command) {
       this.title = title;
+      this.command = command;
     }
 
     /**
@@ -301,12 +318,14 @@ public class FlutterSdk {
      *
      * @param module     the target module
      * @param workingDir the working directory for the command
+     * @param exitCode   the command process's exit code
      * @param args       any arguments passed into the command
      */
     @SuppressWarnings("UnusedParameters")
-    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-      // Default is a no-op.
+    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, int exitCode, @NotNull String... args) {
+      if (module != null) {
+        printExitMessage(null, module, exitCode);
+      }
     }
-
   }
 }

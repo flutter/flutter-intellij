@@ -59,6 +59,11 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     return (state instanceof FlutterAppState) && ((FlutterAppState)state).getMode() == RunMode.DEBUG;
   }
 
+  @Override
+  public boolean shouldEnableHotReload() {
+    return ((FlutterAppState)myState).getMode().isReloadEnabled();
+  }
+
   private boolean isDebuggingSession() {
     return isDebuggingSession(myState);
   }

@@ -10,14 +10,16 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.PathUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class FlutterRunConfiguration extends FlutterRunConfigurationBase {
+public class FlutterRunConfiguration extends FlutterRunConfigurationBase implements RunConfigurationWithSuppressedDefaultRunAction {
   private @NotNull FlutterRunnerParameters myRunnerParameters = new FlutterRunnerParameters();
 
   public FlutterRunConfiguration(final Project project, final ConfigurationFactory factory, final String name) {
@@ -27,6 +29,11 @@ public class FlutterRunConfiguration extends FlutterRunConfigurationBase {
   @NotNull
   public FlutterRunnerParameters getRunnerParameters() {
     return myRunnerParameters;
+  }
+
+  @Override
+  public void checkConfiguration() throws RuntimeConfigurationException {
+    getRunnerParameters().checkForFilesLaunch(getProject());
   }
 
   @NotNull

@@ -33,9 +33,7 @@ public abstract class FlutterRunConfigurationBase extends LocatableConfiguration
   @NotNull
   public abstract FlutterRunnerParameters getRunnerParameters();
 
-  public void checkConfiguration() throws RuntimeConfigurationException {
-    getRunnerParameters().check(getProject());
-  }
+  public abstract void checkConfiguration() throws RuntimeConfigurationException;
 
   @Override
   public void writeExternal(final Element element) throws WriteExternalException {

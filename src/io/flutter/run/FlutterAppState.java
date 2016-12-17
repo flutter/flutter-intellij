@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.ProcessHandler;
@@ -18,10 +19,11 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.net.NetUtils;
-import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
+import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.console.FlutterConsoleFilter;
-import io.flutter.module.FlutterModuleType;
 import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
@@ -34,11 +36,12 @@ import java.util.List;
 
 public class FlutterAppState extends FlutterAppStateBase {
   private static final String RUN = DefaultRunExecutor.EXECUTOR_ID;
-  private FlutterApp myApp;
-  private final RunMode myMode;
+  protected FlutterApp myApp;
+  protected final RunMode myMode;
 
-  protected FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
+  public FlutterAppState(ExecutionEnvironment environment) throws ExecutionException {
     super(environment);
+
     final String mode = environment.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
       myMode = RunMode.RUN;
@@ -47,8 +50,13 @@ public class FlutterAppState extends FlutterAppStateBase {
       myMode = RunMode.DEBUG;
     }
     else {
-      myMode = RunMode.PROFILE;
+      throw new ExecutionException("unsupported run mode: " + mode);
     }
+  }
+
+  @Override
+  protected void checkConfiguration() throws RuntimeConfigurationError {
+    myRunnerParameters.checkForFilesLaunch(getEnvironment().getProject());
   }
 
   @NotNull
@@ -66,23 +74,25 @@ public class FlutterAppState extends FlutterAppStateBase {
    */
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
-    final FlutterDaemonService service = FlutterDaemonService.getInstance();
-    assert service != null;
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
+
     final Project project = getEnvironment().getProject();
     final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    final Collection<ConnectedDevice> devices = service.getConnectedDevices();
-    if (devices.isEmpty()) {
-      throw new ExecutionException("No connected device");
+    ConnectedDevice device = null;
+
+    // Only pass the current device in if we are showing the device selector.
+    if (service.isActive()) {
+      final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+      if (devices.isEmpty()) {
+        throw new ExecutionException("No connected device");
+      }
+      device = service.getSelectedDevice();
     }
 
-    final ConnectedDevice device = service.getSelectedDevice();
-    if (device == null) {
-      throw new ExecutionException("No selected device");
-    }
-
-    final FlutterRunnerParameters parameters = ((FlutterRunConfiguration)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+    final FlutterRunnerParameters parameters =
+      ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
     final String cwd = parameters.computeProcessWorkingDirectory(project);
 
     String relativePath = parameters.getFilePath();
@@ -93,7 +103,7 @@ public class FlutterAppState extends FlutterAppStateBase {
       }
     }
 
-    myApp = service.startApp(project, cwd, device.deviceId(), myMode, relativePath);
+    myApp = service.startApp(project, cwd, device == null ? null : device.deviceId(), myMode, relativePath);
     return myApp.getController().getProcessHandler();
   }
 
@@ -101,11 +111,18 @@ public class FlutterAppState extends FlutterAppStateBase {
     final ConsoleView console = super.createConsole(executor);
     myApp.setConsole(console);
     if (console != null) {
-      // In the (common) case where there is a single Flutter module, attach a console filter.
       final Project project = getEnvironment().getProject();
-      final Collection<Module> modules = ModuleUtil.getModulesOfType(project, FlutterModuleType.getInstance());
-      if (modules.size() == 1) {
-        console.addMessageFilter(new FlutterConsoleFilter(modules.iterator().next()));
+      final FlutterRunnerParameters parameters =
+        ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
+      final String path = parameters.getFilePath();
+      if (path != null) {
+        final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+        if (file != null) {
+          final Module module = ModuleUtil.findModuleForFile(file, project);
+          if (module != null) {
+            console.addMessageFilter(new FlutterConsoleFilter(module));
+          }
+        }
       }
     }
     return console;
@@ -113,8 +130,8 @@ public class FlutterAppState extends FlutterAppStateBase {
 
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {
     actions.add(new Separator());
-    actions.add(new OpenDartObservatoryUrlAction(
-      "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(), //NON-NLS
+    actions.add(new OpenObservatoryAction(
+      () -> "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(), //NON-NLS
       () -> !processHandler.isProcessTerminated()));
   }
 

@@ -16,7 +16,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
@@ -29,6 +29,7 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,10 +48,24 @@ public class FlutterRunner extends FlutterRunnerBase {
 
   @Override
   public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
-    final FlutterDaemonService service = FlutterDaemonService.getInstance();
-    return (profile instanceof FlutterRunConfiguration &&
-            (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId))) &&
-           (service != null && service.getSelectedDevice() != null);
+    if (!(profile instanceof FlutterRunConfiguration)) {
+      return false;
+    }
+
+    final FlutterRunConfigurationBase runConfiguration = (FlutterRunConfigurationBase)profile;
+    final Project project = runConfiguration.getProject();
+
+    if (FlutterSdk.getFlutterSdk(project) == null) {
+      return false;
+    }
+
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
+    //noinspection SimplifiableIfStatement
+    if (!service.isActive() || !service.hasSelectedDevice()) {
+      return false;
+    }
+
+    return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
   }
 
   @Override
@@ -85,17 +100,18 @@ public class FlutterRunner extends FlutterRunnerBase {
       };
     }
 
-    final String dasExecutionContextId;
+    String dasExecutionContextId = null;
     final RunProfile runConfig = env.getRunProfile();
 
     if (runConfig instanceof FlutterRunConfigurationBase &&
         DartAnalysisServerService.getInstance().serverReadyForRequest(env.getProject())) {
-      final String path = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getFilePath();
-      assert path != null; // already checked
-      dasExecutionContextId = DartAnalysisServerService.getInstance().execution_createContext(path);
-    }
-    else {
-      dasExecutionContextId = null; // remote debug or can't start DAS
+      try {
+        final VirtualFile file = ((FlutterRunConfigurationBase)runConfig).getRunnerParameters().getBestContextFile();
+        final String path = file.getPath();
+        dasExecutionContextId = DartAnalysisServerService.getInstance().execution_createContext(path);
+      }
+      catch (RuntimeConfigurationError ignore) {
+      }
     }
 
     try {
@@ -127,24 +143,22 @@ public class FlutterRunner extends FlutterRunnerBase {
       LOG.error("Unexpected run profile state: " + state.getClass().getName());
       return null;
     }
-    final FlutterAppState appState = (FlutterAppState)state;
 
+    final FlutterAppState appState = (FlutterAppState)state;
     final VirtualFile contextFileOrDir;
     final VirtualFile currentWorkingDirectory;
     final ExecutionResult executionResult;
     final String debuggingHost;
     final int observatoryPort;
 
-    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getDartFile();
+    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getBestContextFile();
 
     final String cwd =
       ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
     currentWorkingDirectory = LocalFileSystem.getInstance().findFileByPath((cwd));
 
-    // TODO(devoncarew): Insert one-shot mode here.
     executionResult = appState.execute(env.getExecutor(), this);
 
-    debuggingHost = null; //TODO: should this be set?
     observatoryPort = appState.getObservatoryPort();
 
     FileDocumentManager.getInstance().saveAllDocuments();
@@ -156,7 +170,7 @@ public class FlutterRunner extends FlutterRunnerBase {
       public XDebugProcess start(@NotNull final XDebugSession session) {
         final DartUrlResolver dartUrlResolver = getDartUrlResolver(env.getProject(), contextFileOrDir);
         return new FlutterDebugProcess(session,
-                                       StringUtil.notNullize(debuggingHost, "localhost"),
+                                       "localhost",
                                        observatoryPort,
                                        state,
                                        executionResult,
@@ -178,7 +192,7 @@ public class FlutterRunner extends FlutterRunnerBase {
 
   @Override
   protected int getTimeout() {
-    return 90000; // Allow 90 seconds to connect to the observatory.
+    return 2 * 60 * 1000; // Allow 2 minutes to connect to the observatory.
   }
 
   @Nullable

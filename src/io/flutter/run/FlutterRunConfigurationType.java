@@ -15,6 +15,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterRunConfigurationType extends ConfigurationTypeBase {
@@ -49,7 +50,8 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project));
+      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
+             FlutterSdkUtil.hasFlutterModule(project);
     }
   }
 }

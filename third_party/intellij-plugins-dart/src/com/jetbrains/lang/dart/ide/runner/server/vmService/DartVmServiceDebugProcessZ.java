@@ -38,7 +38,7 @@ import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.actions.HotReloadFlutterApp;
-import io.flutter.actions.OpenComputedUrlAction;
+import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.VmService;
@@ -173,14 +173,14 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           return;
         }
 
-        getSession().getConsoleView().print("Error: " + message + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-        LOG.error(message);
+        getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        LOG.warn(message);
       }
 
       @Override
       public void logError(final String message, final Throwable exception) {
-        getSession().getConsoleView().print("Error: " + message + "\n", ConsoleViewContentType.ERROR_OUTPUT);
-        LOG.error(message, exception);
+        getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        LOG.warn(message, exception);
       }
 
       @Override
@@ -206,9 +206,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       if (myConnector != null) {
         final long timeout = (long)myTimeout;
         final long startTime = System.currentTimeMillis();
-        while (!myConnector.isConnectionReady()) {
+        while (!getSession().isStopped() && !myConnector.isConnectionReady()) {
           if (System.currentTimeMillis() > startTime + timeout) {
-            final String message = "Observatory connection never became ready";
+            final String message = "Observatory connection never became ready.\n";
             getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
             getSession().stop();
             return;
@@ -217,6 +217,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
             TimeoutUtil.sleep(50);
           }
         }
+
+        if (getSession().isStopped()) {
+          return;
+        }
+
         myObservatoryPort = myConnector.getPort();
       }
 
@@ -449,10 +454,15 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                         @NotNull final DefaultActionGroup settings) {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenComputedUrlAction(this::computeObservatoryUrl, this::isSessionActive));
+    topToolbar.addAction(new OpenObservatoryAction(this::computeObservatoryUrl, this::isSessionActive));
     topToolbar.addSeparator();
-    topToolbar.addAction(new RestartFlutterApp(myConnector, this::isSessionActive));
-    topToolbar.addAction(new HotReloadFlutterApp(myConnector, this::isSessionActive));
+    topToolbar.addAction(new HotReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
+    topToolbar.addAction(new RestartFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
+  }
+
+  // Overridden by subclasses.
+  public boolean shouldEnableHotReload() {
+    return false;
   }
 
   private boolean isSessionActive() {
@@ -527,6 +537,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
       if (myDASExecutionContextId != null && !isDartPatchUri(uri)) {
         if (getRemoteProjectRootUri() == null || !uri.contains(getRemoteProjectRootUri())) {
+          if (uri.startsWith("/")) {
+            // Convert a file path to a file: uri.
+            uri = new File(uri).toURI().toString();
+          }
           final String path = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, null, uri);
           if (path != null) {
             return LocalFileSystem.getInstance().findFileByPath(path);

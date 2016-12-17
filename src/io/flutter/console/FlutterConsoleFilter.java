@@ -39,8 +39,8 @@ public class FlutterConsoleFilter implements Filter {
 
     String pathPart = line.trim();
 
-    // Check for, e.g., "Running lib/main.dart"
-    if (line.startsWith("Running")) {
+    // Check for, e.g., "Launching lib/main.dart"
+    if (line.startsWith("Launching ")) {
       final String[] parts = line.split(" ");
       if (parts.length > 1) {
         pathPart = parts[1];
@@ -75,7 +75,7 @@ public class FlutterConsoleFilter implements Filter {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk != null) {
         try {
-          sdk.runProject(project, "Flutter doctor", null, "doctor");
+          sdk.runProject(project, "Flutter doctor", "doctor");
         }
         catch (ExecutionException e) {
           FlutterErrors.showError(

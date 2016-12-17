@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -27,9 +28,6 @@ import java.util.Set;
  * Long lived singleton that communicates with controllers attached to external Flutter processes.
  */
 public class FlutterDaemonService {
-  private static final boolean HOT_MODE_DEFAULT = true;
-  private static final boolean HOT_MODE_RELEASE = false;
-
   private final Object myLock = new Object();
   private final List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
@@ -41,33 +39,22 @@ public class FlutterDaemonService {
 
   private final DaemonListener myListener = new DaemonListener() {
     public void daemonInput(String string, FlutterDaemonController controller) {
-      final FlutterAppManager mgr;
-      synchronized (myLock) {
-        mgr = myManager;
-      }
-      mgr.processInput(string, controller);
+      myManager.processInput(string, controller);
     }
 
     public void enableDevicePolling(FlutterDaemonController controller) {
-      final FlutterAppManager mgr;
-      synchronized (myLock) {
-        mgr = myManager;
-      }
-      mgr.enableDevicePolling(controller);
+      myManager.enableDevicePolling(controller);
     }
 
     @Override
     public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
       assert handler == controller.getProcessHandler();
-      final FlutterAppManager mgr;
-      synchronized (myLock) {
-        mgr = myManager;
-      }
-      mgr.aboutToTerminateAll(controller);
+      myManager.aboutToTerminateAll(controller);
     }
 
     @Override
     public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
+      myManager.terminateAllFor(controller);
       if (handler == controller.getProcessHandler()) {
         discard(controller);
       }
@@ -75,19 +62,25 @@ public class FlutterDaemonService {
   };
 
   public interface DeviceListener {
+    void deviceAdded(ConnectedDevice device);
+
     void selectedDeviceChanged(ConnectedDevice device);
+
+    void deviceRemoved(ConnectedDevice device);
   }
 
-  @Nullable
-  public static FlutterDaemonService getInstance() {
-    return ServiceManager.getService(FlutterDaemonService.class);
+  @NotNull
+  public static FlutterDaemonService getInstance(@NotNull Project project) {
+    return ServiceManager.getService(project, FlutterDaemonService.class);
   }
 
-  private FlutterDaemonService() {
+  private FlutterDaemonService(Project project) {
     listenForSdkChanges();
-    schedulePolling();
-    Disposer.register(ApplicationManager.getApplication(), this::stopControllers);
-    Disposer.register(ApplicationManager.getApplication(), this::stopListeningForSdkChanges);
+    if (FlutterSdk.getFlutterSdk(project) != null) {
+      schedulePolling();
+    }
+    Disposer.register(project, this::stopControllers);
+    Disposer.register(project, this::stopListeningForSdkChanges);
   }
 
   private class SdkListener implements FlutterSdkManager.Listener {
@@ -110,12 +103,19 @@ public class FlutterDaemonService {
     FlutterSdkManager.getInstance().removeListener(mySdkListener);
   }
 
-  public void addDeviceListener(DeviceListener listener) {
+  public void addDeviceListener(@NotNull DeviceListener listener) {
     myDeviceListeners.add(listener);
   }
 
-  public void removeDeviceListener(DeviceListener listener) {
+  public void removeDeviceListener(@NotNull DeviceListener listener) {
     myDeviceListeners.remove(listener);
+  }
+
+  /**
+   * Return whether the daemon service is up and running.
+   */
+  public boolean isActive() {
+    return myPollster != null;
   }
 
   /**
@@ -137,6 +137,10 @@ public class FlutterDaemonService {
     return mySelectedDevice;
   }
 
+  public boolean hasSelectedDevice() {
+    return mySelectedDevice != null;
+  }
+
   /**
    * Set the current selected device.
    */
@@ -148,15 +152,19 @@ public class FlutterDaemonService {
     }
   }
 
-  void addConnectedDevice(ConnectedDevice device) {
+  void addConnectedDevice(@NotNull ConnectedDevice device) {
     myConnectedDevices.add(device);
 
     if (mySelectedDevice == null) {
       setSelectedDevice(device);
     }
+
+    for (DeviceListener listener : myDeviceListeners) {
+      listener.deviceAdded(device);
+    }
   }
 
-  void removeConnectedDevice(ConnectedDevice device) {
+  void removeConnectedDevice(@NotNull ConnectedDevice device) {
     myConnectedDevices.remove(device);
 
     if (mySelectedDevice == device) {
@@ -166,6 +174,10 @@ public class FlutterDaemonService {
       else {
         setSelectedDevice(getConnectedDevices().get(0));
       }
+    }
+
+    for (DeviceListener listener : myDeviceListeners) {
+      listener.deviceRemoved(device);
     }
   }
 
@@ -179,27 +191,51 @@ public class FlutterDaemonService {
    */
   public FlutterApp startApp(@NotNull Project project,
                              @NotNull String projectDir,
-                             @NotNull String deviceId,
+                             @Nullable String deviceId,
                              @NotNull RunMode mode,
                              @Nullable String relativePath)
     throws ExecutionException {
     final boolean startPaused = mode == RunMode.DEBUG;
-    final boolean isHot = mode.isReloadEnabled() ? HOT_MODE_DEFAULT : HOT_MODE_RELEASE;
+    final boolean isHot = mode.isReloadEnabled();
+
     final FlutterDaemonController controller = createController(projectDir);
-    controller.startRunnerDaemon(project, deviceId, mode, startPaused, isHot, relativePath);
-    final FlutterAppManager mgr;
-    synchronized (myLock) {
-      mgr = myManager;
-    }
-    // TODO(devoncarew): Remove this call - inline what it does.
-    return mgr.startApp(controller, deviceId, mode, project, startPaused, isHot, relativePath);
+    controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
+
+    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
+    app.addStateListener(newState -> {
+      if (newState == FlutterApp.State.TERMINATED) {
+        controller.forceExit();
+      }
+    });
+    return app;
+  }
+
+  public FlutterApp startBazelApp(@NotNull Project project,
+                                  @NotNull String projectDir,
+                                  @NotNull String launchingScript,
+                                  @Nullable String deviceId,
+                                  @NotNull RunMode mode,
+                                  @NotNull String bazelTarget,
+                                  @Nullable String additionalArguments)
+    throws ExecutionException {
+    final boolean startPaused = mode == RunMode.DEBUG;
+    final boolean isHot = mode.isReloadEnabled();
+
+    final FlutterDaemonController controller = createController(projectDir);
+    controller
+      .startBazelProcess(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+
+    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
+    app.addStateListener(newState -> {
+      if (newState == FlutterApp.State.TERMINATED) {
+        controller.forceExit();
+      }
+    });
+    return app;
   }
 
   /**
-   * Scan the list of controllers to see if an existing controller can be reused. If not, create a new one.
-   * Controllers can be reused if the directory is the same. If a controller is found that matches directory
-   * and device then terminate the app on that device and select that controller.
-   * NB: Currently controllers are not shared due to limitations of the debugger.
+   * Create a new FlutterDaemonController.
    *
    * @param projectDir The path to the project root directory
    * @return A FlutterDaemonController that can be used to start the app in the project directory
