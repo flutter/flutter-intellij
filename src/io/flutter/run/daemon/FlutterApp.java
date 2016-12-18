@@ -17,9 +17,8 @@ import java.util.List;
  * A running Flutter app.
  */
 public class FlutterApp {
-  private final FlutterDaemonService myService;
   private final FlutterDaemonController myController;
-  private final FlutterAppManager myManager;
+  private final FlutterDaemonControllerHelper myManager;
   private String myAppId;
   private final RunMode myMode;
   private final Project myProject;
@@ -31,25 +30,16 @@ public class FlutterApp {
   private State myState;
   private final List<StateListener> myListeners = new ArrayList<>();
 
-  public FlutterApp(@NotNull FlutterDaemonService service,
-                    @NotNull FlutterDaemonController controller,
-                    @NotNull FlutterAppManager manager,
+  public FlutterApp(@NotNull FlutterDaemonController controller,
+                    @NotNull FlutterDaemonControllerHelper manager,
                     @NotNull RunMode mode,
                     @NotNull Project project,
                     boolean hot) {
-    myService = service;
     myController = controller;
     myManager = manager;
     myMode = mode;
     myProject = project;
     isHot = hot;
-  }
-
-  /**
-   * @return The FlutterDaemonService used to communicate with the Flutter app.
-   */
-  public FlutterDaemonService getService() {
-    return myService;
   }
 
   /**
@@ -118,13 +108,6 @@ public class FlutterApp {
 
   public void setBaseUri(String uri) {
     myBaseUri = uri;
-  }
-
-  /**
-   * Stop the app.
-   */
-  public void performStop() {
-    myManager.stopApp(this);
   }
 
   /**
