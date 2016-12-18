@@ -5,21 +5,18 @@
  */
 package io.flutter.view;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
-// TODO: toolbar, reload status, connection status, fps?
-
 public class FlutterViewFactory implements ToolWindowFactory {
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
     DumbService.getInstance(project).runWhenSmart(() -> {
-      // TODO:
-
-      //((TodoView)ServiceManager.getService(project, TodoView.class)).initToolWindow(toolWindow);
+      (ServiceManager.getService(project, FlutterView.class)).initToolWindow(toolWindow);
     });
   }
 }
