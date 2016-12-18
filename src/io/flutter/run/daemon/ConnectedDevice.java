@@ -68,6 +68,7 @@ class FlutterDevice implements ConnectedDevice {
 
   @Override
   public boolean equals(Object other) {
+    //noinspection SimplifiableIfStatement
     if (other instanceof FlutterDevice) {
       return Objects.equals(myDeviceName, ((FlutterDevice)other).deviceName()) &&
              Objects.equals(myDeviceId, ((FlutterDevice)other).deviceId()) &&

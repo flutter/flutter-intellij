@@ -41,14 +41,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
   private JPanel mainPanel;
-  // TODO(devoncarew): We're not updating the history for this combo.
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
-  private final Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
-    myProject = project;
-
     init();
 
     myVersionLabel.setText("");
@@ -57,6 +53,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   private void init() {
     mySdkCombo.getComboBox().setEditable(true);
+
     final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       protected void textChanged(final DocumentEvent e) {
@@ -125,6 +122,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
     mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+    FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
 
     updateVersionText();
   }

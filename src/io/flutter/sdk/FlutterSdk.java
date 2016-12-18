@@ -67,6 +67,9 @@ public class FlutterSdk {
     return getFlutterSdkByDartSdk(DartSdk.getDartSdk(project));
   }
 
+  /**
+   * Callers should instead prefer {@link #getFlutterSdk(Project)}.
+   */
   @Nullable
   public static FlutterSdk getGlobalFlutterSdk() {
     return getFlutterSdkByDartSdk(DartSdk.getGlobalDartSdk());
@@ -80,7 +83,7 @@ public class FlutterSdk {
                                                          : null;
   }
 
-  static FlutterSdk forPath(@NotNull final String path) {
+  public static FlutterSdk forPath(@NotNull final String path) {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
   }
 
