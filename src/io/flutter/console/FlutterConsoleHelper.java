@@ -119,15 +119,16 @@ public class FlutterConsoleHelper {
     }
     return null;
   }
-}
 
-class FlutterConsoleInfo {
-  @NotNull final ConsoleView console;
-  @Nullable final Module module;
-  Content content;
 
-  FlutterConsoleInfo(@NotNull ConsoleView console, @Nullable Module module) {
-    this.console = console;
-    this.module = module;
+  static class FlutterConsoleInfo {
+    @NotNull final ConsoleView console;
+    @Nullable final Module module;
+    Content content;
+
+    FlutterConsoleInfo(@NotNull ConsoleView console, @Nullable Module module) {
+      this.console = console;
+      this.module = module;
+    }
   }
 }

@@ -11,6 +11,8 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import gnu.trove.THashMap;
+import io.flutter.utils.StopWatch;
+import io.flutter.utils.TimeoutUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +22,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,7 +64,7 @@ public class FlutterAppManager {
     synchronized (myLock) {
       service = myService;
     }
-    final RunningFlutterApp app = new RunningFlutterApp(service, controller, this, mode, project, isHot);
+    final FlutterApp app = new FlutterApp(service, controller, this, mode, project, isHot);
     synchronized (myLock) {
       myApps.add(app);
     }
@@ -72,12 +73,12 @@ public class FlutterAppManager {
   }
 
   @Nullable
-  private RunningFlutterApp waitForApp(@NotNull FlutterDaemonController controller, @NotNull String appId) {
+  private FlutterApp waitForApp(@NotNull FlutterDaemonController controller, @NotNull String appId) {
     final long timeout = 10000L;
-    final RunningFlutterApp[] resp = {null};
+    final FlutterApp[] resp = {null};
     TimeoutUtil.executeWithTimeout(timeout, () -> {
       while (resp[0] == null) {
-        final RunningFlutterApp app = findApp(controller, appId);
+        final FlutterApp app = findApp(controller, appId);
         if (app != null) {
           resp[0] = app;
         }
@@ -190,7 +191,7 @@ public class FlutterAppManager {
     }
   }
 
-  void restartApp(@NotNull RunningFlutterApp app, boolean isFullRestart, boolean pauseAfterRestart) {
+  void restartApp(@NotNull FlutterApp app, boolean isFullRestart, boolean pauseAfterRestart) {
     final AppRestart appStart = new AppRestart(app.appId(), isFullRestart, pauseAfterRestart);
     app.changeState(FlutterApp.State.STARTING);
     final Method cmd = makeMethod(CMD_APP_RESTART, appStart);
@@ -208,7 +209,7 @@ public class FlutterAppManager {
     });
     final Optional<Command> opt = starts.findFirst();
     assert (opt.isPresent());
-    final RunningFlutterApp app = findApp(controller, stopped.appId);
+    final FlutterApp app = findApp(controller, stopped.appId);
     if (app != null) {
       app.changeState(FlutterApp.State.TERMINATED);
     }
@@ -317,7 +318,7 @@ public class FlutterAppManager {
   }
 
   private void eventLogMessage(@NotNull AppLogEvent message, @NotNull FlutterDaemonController controller) {
-    final RunningFlutterApp app = findApp(controller, message.appId);
+    final FlutterApp app = findApp(controller, message.appId);
 
     if (app == null) {
       return;
@@ -327,7 +328,7 @@ public class FlutterAppManager {
   }
 
   private void eventProgressMessage(@NotNull AppProgressEvent message, @NotNull FlutterDaemonController controller) {
-    final RunningFlutterApp app = findApp(controller, message.appId);
+    final FlutterApp app = findApp(controller, message.appId);
 
     if (app == null) {
       return;
@@ -378,12 +379,9 @@ public class FlutterAppManager {
 
   private void eventAppStart(AppStartEvent event, FlutterDaemonController controller) {
     for (FlutterApp app : myApps) {
-      if (app instanceof RunningFlutterApp) {
-        final RunningFlutterApp runningApp = (RunningFlutterApp)app;
-        if (!runningApp.hasAppId()) {
-          runningApp.setAppId(event.appId);
-          break;
-        }
+      if (!app.hasAppId()) {
+        app.setAppId(event.appId);
+        break;
       }
     }
   }
@@ -409,14 +407,14 @@ public class FlutterAppManager {
   private void eventAppStopped(@NotNull AppStoppedEvent stopped, @NotNull FlutterDaemonController controller) {
     myProgressHandler.cancel();
 
-    final RunningFlutterApp app = findApp(controller, stopped.appId);
+    final FlutterApp app = findApp(controller, stopped.appId);
     if (app != null) {
       app.changeState(FlutterApp.State.TERMINATED);
     }
   }
 
   private void eventDebugPort(@NotNull AppDebugPortEvent port, @NotNull FlutterDaemonController controller) {
-    final RunningFlutterApp app = waitForApp(controller, port.appId);
+    final FlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
       app.setPort(port.port);
 
@@ -443,11 +441,11 @@ public class FlutterAppManager {
     LOG.warn(json.toString());
   }
 
-  private RunningFlutterApp findApp(FlutterDaemonController controller, String appId) {
+  private FlutterApp findApp(FlutterDaemonController controller, String appId) {
     synchronized (myLock) {
       for (FlutterApp app : myApps) {
         if (app.hasAppId() && app.appId().equals(appId)) {
-          return (RunningFlutterApp)app;
+          return app;
         }
       }
     }
@@ -539,7 +537,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") private final boolean pause;
 
     void process(JsonObject obj, FlutterAppManager manager, FlutterDaemonController controller) {
-      final RunningFlutterApp app = manager.findApp(controller, appId);
+      final FlutterApp app = manager.findApp(controller, appId);
       assert app != null;
       app.changeState(FlutterApp.State.STARTED);
     }
@@ -660,7 +658,7 @@ public class FlutterAppManager {
     @SuppressWarnings("unused") String appId;
 
     void process(FlutterAppManager manager, FlutterDaemonController controller) {
-      final RunningFlutterApp app = manager.findApp(controller, appId);
+      final FlutterApp app = manager.findApp(controller, appId);
       assert app != null;
       app.changeState(FlutterApp.State.STARTED);
     }
@@ -689,75 +687,3 @@ public class FlutterAppManager {
   }
 }
 
-class StopWatch {
-  private long startTime;
-  private long stopTime;
-
-  StopWatch() {
-
-  }
-
-  public void start() {
-    startTime = System.currentTimeMillis();
-  }
-
-  public void stop() {
-    stopTime = System.currentTimeMillis();
-  }
-
-  public long getTime() {
-    return stopTime - startTime;
-  }
-}
-
-class TimeoutUtil {
-  private TimeoutUtil() {
-  }
-
-  public static void executeWithTimeout(long timeout, @NotNull final Runnable run) {
-    final long sleep = 50;
-    final long start = System.currentTimeMillis();
-    final AtomicBoolean done = new AtomicBoolean(false);
-    final Thread thread = new Thread("Fast Function Thread@" + run.hashCode()) {
-      public void run() {
-        try {
-          run.run();
-        }
-        catch (ThreadDeath ignored) {
-
-        }
-        finally {
-          done.set(true);
-        }
-      }
-    };
-    thread.start();
-
-    while (!done.get() && System.currentTimeMillis() - start < timeout) {
-      try {
-        Thread.sleep(sleep);
-      }
-      catch (InterruptedException var10) {
-        break;
-      }
-    }
-
-    if (!thread.isInterrupted()) {
-      //noinspection deprecation
-      thread.stop();
-    }
-  }
-
-  public static void sleep(long millis) {
-    try {
-      Thread.sleep(millis);
-    }
-    catch (InterruptedException ignored) {
-
-    }
-  }
-
-  public static long getDurationMillis(long startNanoTime) {
-    return (System.nanoTime() - startNanoTime) / 1000000L;
-  }
-}

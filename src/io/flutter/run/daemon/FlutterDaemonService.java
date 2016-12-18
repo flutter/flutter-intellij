@@ -31,9 +31,9 @@ public class FlutterDaemonService {
   private final Object myLock = new Object();
   private final List<FlutterDaemonController> myControllers = new ArrayList<>();
   private FlutterDaemonController myPollster;
-  private final Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
+  private final Set<FlutterDevice> myConnectedDevices = new THashSet<>();
   private final SdkListener mySdkListener = new SdkListener();
-  private ConnectedDevice mySelectedDevice;
+  private FlutterDevice mySelectedDevice;
   private final FlutterAppManager myManager = new FlutterAppManager(this);
   private final List<DeviceListener> myDeviceListeners = new ArrayList<>();
 
@@ -62,11 +62,11 @@ public class FlutterDaemonService {
   };
 
   public interface DeviceListener {
-    void deviceAdded(ConnectedDevice device);
+    void deviceAdded(FlutterDevice device);
 
-    void selectedDeviceChanged(ConnectedDevice device);
+    void selectedDeviceChanged(FlutterDevice device);
 
-    void deviceRemoved(ConnectedDevice device);
+    void deviceRemoved(FlutterDevice device);
   }
 
   @NotNull
@@ -123,8 +123,8 @@ public class FlutterDaemonService {
    *
    * @return List of ConnectedDevice
    */
-  public List<ConnectedDevice> getConnectedDevices() {
-    final SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
+  public List<FlutterDevice> getConnectedDevices() {
+    final SortedList<FlutterDevice> list = new SortedList<>(Comparator.comparing(FlutterDevice::deviceName));
     list.addAll(myConnectedDevices);
     return list;
   }
@@ -133,7 +133,7 @@ public class FlutterDaemonService {
    * @return the currently selected device
    */
   @Nullable
-  public ConnectedDevice getSelectedDevice() {
+  public FlutterDevice getSelectedDevice() {
     return mySelectedDevice;
   }
 
@@ -144,7 +144,7 @@ public class FlutterDaemonService {
   /**
    * Set the current selected device.
    */
-  public void setSelectedDevice(@Nullable ConnectedDevice device) {
+  public void setSelectedDevice(@Nullable FlutterDevice device) {
     mySelectedDevice = device;
 
     for (DeviceListener listener : myDeviceListeners) {
@@ -152,7 +152,7 @@ public class FlutterDaemonService {
     }
   }
 
-  void addConnectedDevice(@NotNull ConnectedDevice device) {
+  void addConnectedDevice(@NotNull FlutterDevice device) {
     myConnectedDevices.add(device);
 
     if (mySelectedDevice == null) {
@@ -164,7 +164,7 @@ public class FlutterDaemonService {
     }
   }
 
-  void removeConnectedDevice(@NotNull ConnectedDevice device) {
+  void removeConnectedDevice(@NotNull FlutterDevice device) {
     myConnectedDevices.remove(device);
 
     if (mySelectedDevice == device) {
