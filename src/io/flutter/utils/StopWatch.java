@@ -5,6 +5,10 @@
  */
 package io.flutter.utils;
 
+/**
+ * Note: this class is a simplified version of one available in the Apache library. We use this one
+ * instead in order to avoid a dependency.
+ */
 public class StopWatch {
   private long startTime;
   private long stopTime;
