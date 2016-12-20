@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerAdapter;
@@ -20,24 +21,19 @@ import java.util.EventListener;
  * Monitors the application library table to notify clients when Flutter SDK configuration changes.
  */
 public class FlutterSdkManager {
-
-  private static FlutterSdkManager INSTANCE;
   private final EventDispatcher<Listener> myDispatcher = EventDispatcher.create(Listener.class);
   private final LibraryTableListener myLibraryTableListener = new LibraryTableListener();
   private boolean isFlutterConfigured;
+
+  @NotNull
+  public static FlutterSdkManager getInstance() {
+    return ServiceManager.getService(FlutterSdkManager.class);
+  }
 
   private FlutterSdkManager() {
     listenForSdkChanges();
     // Cache initial state.
     isFlutterConfigured = isGlobalFlutterSdkSetAndNeeded();
-  }
-
-  // TODO(devoncarew): Use an app service singleton (ServiceManager.getService(project, ...))?
-  public static FlutterSdkManager getInstance() {
-    if (INSTANCE == null) {
-      INSTANCE = new FlutterSdkManager();
-    }
-    return INSTANCE;
   }
 
   private void listenForSdkChanges() {
@@ -49,6 +45,7 @@ public class FlutterSdkManager {
       public void projectOpened(@NotNull Project project) {
         checkForFlutterSdkAddition();
       }
+
       @Override
       public void projectClosed(@NotNull Project project) {
         checkForFlutterSdkRemoval();
@@ -121,6 +118,5 @@ public class FlutterSdkManager {
     public void afterLibraryRemoved(Library library) {
       checkForFlutterSdkRemoval();
     }
-
   }
 }

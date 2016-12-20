@@ -9,7 +9,6 @@ package io.flutter.settings;
  * Persists Flutter settings for a session.
  */
 public class FlutterUIConfig {
-
   private static final FlutterUIConfig INSTANCE = new FlutterUIConfig();
 
   private boolean ignoreMismatchedDartSdks;

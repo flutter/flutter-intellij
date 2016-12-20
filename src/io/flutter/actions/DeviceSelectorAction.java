@@ -12,7 +12,6 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -21,6 +20,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
+import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
@@ -109,7 +109,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   private void updateVisibility(final Project project, final Presentation presentation) {
-    ApplicationManager.getApplication().invokeAndWait(() -> {
+    FlutterUtils.invokeAndWait(() -> {
       final boolean visible = FlutterSdk.getFlutterSdk(project) != null;
       presentation.setVisible(visible);
 
@@ -149,9 +149,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new Separator());
       actions.add(new OpenSimulatorAction(!simulatorOpen));
 
-      ApplicationManager.getApplication().invokeAndWait(() -> {
+      FlutterUtils.invokeAndWait(() -> {
         final FlutterDevice selectedDevice = service.getSelectedDevice();
-
         for (AnAction action : actions) {
           if (action instanceof SelectDeviceAction) {
             final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
