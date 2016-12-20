@@ -7,33 +7,7 @@ package io.flutter.run.daemon;
 
 import java.util.Objects;
 
-public interface ConnectedDevice {
-
-  /**
-   * The name of the device, which can be shown to the user.
-   *
-   * @return The device name returned by the device
-   */
-  String deviceName();
-
-  /**
-   * @return The deviceId for a device or simulator
-   */
-  String deviceId();
-
-  /**
-   * @return The name of the platform of the device
-   */
-  String platform();
-
-  /**
-   * @return Whether the device is an emulator
-   */
-  boolean emulator();
-}
-
-class FlutterDevice implements ConnectedDevice {
-
+public class FlutterDevice {
   private final String myDeviceName;
   private final String myDeviceId;
   private final String myPlatform;
@@ -46,22 +20,18 @@ class FlutterDevice implements ConnectedDevice {
     myEmulator = emulator;
   }
 
-  @Override
   public String deviceName() {
     return myDeviceName;
   }
 
-  @Override
   public String deviceId() {
     return myDeviceId;
   }
 
-  @Override
   public String platform() {
     return myPlatform;
   }
 
-  @Override
   public boolean emulator() {
     return myEmulator;
   }

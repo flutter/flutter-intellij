@@ -13,8 +13,8 @@ import com.intellij.openapi.project.Project;
 import io.flutter.run.FlutterAppState;
 import io.flutter.run.FlutterRunConfigurationBase;
 import io.flutter.run.FlutterRunnerParameters;
-import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -38,9 +38,9 @@ public class FlutterBazelAppState extends FlutterAppState {
     assert workingDir != null;
 
     // Only pass the current device in if we are showing the device selector.
-    ConnectedDevice device = null;
+    FlutterDevice device = null;
     if (service.isActive()) {
-      final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+      final Collection<FlutterDevice> devices = service.getConnectedDevices();
       if (!devices.isEmpty()) {
         device = service.getSelectedDevice();
       }

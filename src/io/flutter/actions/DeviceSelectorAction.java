@@ -21,8 +21,8 @@ import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
-import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -91,17 +91,17 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
       service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
         @Override
-        public void deviceAdded(ConnectedDevice device) {
+        public void deviceAdded(FlutterDevice device) {
           updateActions(e.getPresentation(), project);
         }
 
         @Override
-        public void selectedDeviceChanged(ConnectedDevice device) {
+        public void selectedDeviceChanged(FlutterDevice device) {
           updateActions(e.getPresentation(), project);
         }
 
         @Override
-        public void deviceRemoved(ConnectedDevice device) {
+        public void deviceRemoved(FlutterDevice device) {
           updateActions(e.getPresentation(), project);
         }
       });
@@ -127,7 +127,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     actions.clear();
 
     final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
-    final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+    final Collection<FlutterDevice> devices = service.getConnectedDevices();
     actions.addAll(devices.stream().map(SelectDeviceAction::new).collect(Collectors.toList()));
 
     if (actions.isEmpty()) {
@@ -139,7 +139,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       for (AnAction action : actions) {
         if (action instanceof SelectDeviceAction) {
           final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
-          final ConnectedDevice device = deviceAction.device;
+          final FlutterDevice device = deviceAction.device;
           if (StringUtil.equals(device.platform(), "ios") && device.emulator()) {
             simulatorOpen = true;
           }
@@ -150,7 +150,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new OpenSimulatorAction(!simulatorOpen));
 
       ApplicationManager.getApplication().invokeAndWait(() -> {
-        final ConnectedDevice selectedDevice = service.getSelectedDevice();
+        final FlutterDevice selectedDevice = service.getSelectedDevice();
 
         for (AnAction action : actions) {
           if (action instanceof SelectDeviceAction) {
@@ -224,9 +224,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   private static class SelectDeviceAction extends AnAction {
     @NotNull
-    private final ConnectedDevice device;
+    private final FlutterDevice device;
 
-    SelectDeviceAction(@NotNull ConnectedDevice device) {
+    SelectDeviceAction(@NotNull FlutterDevice device) {
       super(device.deviceName(), null, FlutterIcons.Phone);
       this.device = device;
     }

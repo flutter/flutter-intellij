@@ -36,33 +36,39 @@ import java.util.StringTokenizer;
  */
 public class FlutterDaemonController extends ProcessAdapter {
   private static final Logger LOG = Logger.getInstance(FlutterDaemonController.class.getName());
+
   private static final String STDOUT_KEY = "stdout";
 
-  private final String myProjectDirectory;
+  @NotNull
+  private final FlutterDaemonService myService;
+  private final FlutterDaemonControllerHelper myControllerHelper;
   private final List<DaemonListener> myListeners = Collections.synchronizedList(new ArrayList<>());
   private ProcessHandler myProcessHandler;
   private boolean myIsPollingController = false;
   private boolean myIsPollingStarted = false;
 
-  public FlutterDaemonController() {
-    myProjectDirectory = null;
+  public FlutterDaemonController(@NotNull FlutterDaemonService service) {
+    myService = service;
+    myControllerHelper = new FlutterDaemonControllerHelper(this);
   }
 
-  public FlutterDaemonController(String projectDir) {
-    myProjectDirectory = projectDir;
+  @NotNull
+  protected FlutterDaemonService getService() {
+    return myService;
   }
 
-  public void addListener(DaemonListener listener) {
-    removeListener(listener);
-    myListeners.add(listener);
+  void addDaemonListener(DaemonListener listener) {
+    if (!myListeners.contains(listener)) {
+      myListeners.add(listener);
+    }
+  }
+
+  void removeDaemonListener(DaemonListener listener) {
+    myListeners.remove(listener);
   }
 
   public ProcessHandler getProcessHandler() {
     return myProcessHandler;
-  }
-
-  public void removeListener(DaemonListener listener) {
-    myListeners.remove(listener);
   }
 
   public void forceExit() {
@@ -70,10 +76,6 @@ public class FlutterDaemonController extends ProcessAdapter {
       myProcessHandler.destroyProcess();
     }
     myProcessHandler = null;
-  }
-
-  public String getProjectDirectory() {
-    return myProjectDirectory;
   }
 
   void startDevicePoller() throws ExecutionException {
@@ -85,36 +87,38 @@ public class FlutterDaemonController extends ProcessAdapter {
     myProcessHandler.startNotify();
   }
 
-  public void startRunnerProcess(@NotNull Project project,
-                                 @NotNull String projectDir,
-                                 @Nullable String deviceId,
-                                 @NotNull RunMode mode,
-                                 boolean startPaused,
-                                 boolean isHot,
-                                 @Nullable String target) throws ExecutionException {
+  public FlutterApp startRunnerProcess(@NotNull Project project,
+                                       @NotNull String projectDir,
+                                       @Nullable String deviceId,
+                                       @NotNull RunMode mode,
+                                       boolean startPaused,
+                                       boolean isHot,
+                                       @Nullable String target) throws ExecutionException {
     final GeneralCommandLine commandLine = createCommandLineRunner(project, projectDir, deviceId, mode, startPaused, isHot, target);
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
+    return myControllerHelper.appStarting(deviceId, mode, project, startPaused, isHot);
   }
 
-  public void startBazelProcess(@NotNull Project project,
-                                @NotNull String projectDir,
-                                @Nullable String deviceId,
-                                @NotNull RunMode mode,
-                                boolean startPaused,
-                                boolean isHot,
-                                @NotNull String launchingScript,
-                                @NotNull String bazelTarget,
-                                @Nullable String additionalArguments) throws ExecutionException {
+  public FlutterApp startBazelProcess(@NotNull Project project,
+                                      @NotNull String projectDir,
+                                      @Nullable String deviceId,
+                                      @NotNull RunMode mode,
+                                      boolean startPaused,
+                                      boolean isHot,
+                                      @NotNull String launchingScript,
+                                      @NotNull String bazelTarget,
+                                      @Nullable String additionalArguments) throws ExecutionException {
     final GeneralCommandLine commandLine =
       createBazelRunner(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
+    return myControllerHelper.appStarting(deviceId, mode, project, startPaused, isHot);
   }
 
-  public void sendCommand(String commandJson, FlutterAppManager manager) {
+  public void sendCommand(String commandJson, FlutterDaemonControllerHelper manager) {
     if (myProcessHandler == null) {
       return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
     }
@@ -159,7 +163,7 @@ public class FlutterDaemonController extends ProcessAdapter {
         myIsPollingStarted = true;
 
         for (DaemonListener listener : myListeners) {
-          listener.enableDevicePolling(this);
+          myControllerHelper.enableDevicePolling();
         }
       }
     }

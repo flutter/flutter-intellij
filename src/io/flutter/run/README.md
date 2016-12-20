@@ -1,13 +1,10 @@
 # Debugger Architecture Overiew
 
-## Packages:
-
-### `io.flutter.run`
+## `io.flutter.run`
 
 * `FlutterAppState` - a `RunProfileState` that puts together and starts Flutter command-line processes.
 * `FlutterAppStateBase` - abstract base class for `FlutterAppState` (appears to be copied from
   `DartCommandLineRunningState`)
-   * TODO: consider consolidating into `FlutterAppState`
 * `FlutterRunConfiguration` - creates:
   * `FlutterRunnerParameters`
   * `FlutterConfigurationEditorForm`
@@ -16,7 +13,6 @@
   to the current launch configuration (run vs. debug).
 * `FlutterRunConfigurationBase` - abstract base class for `FlutterRunConfiguration` (appears to be
   copied from `DartRunConfigurationBase`).
-  * TODO: consider consolidating into `FlutterRunConfiguration`
 * `FlutterRunConfigurationProducer` - creates `FlutterRunConfiguration` based on context (e.g.,
   active file).
 * `FlutterRunConfigurationType` - singleton that determines if Flutter run configurations are
@@ -32,20 +28,27 @@
 * `FlutterRunnerParameters` - encapsulates configuration options for Flutter runs.
 * `FlutterConfigurationEditorForm` - form for editing run configuration settings.
 
-### `io.flutter.run.daemon`
+## `io.flutter.run.daemon`
 
-* `ConnectedDevice` - interface representing a connected Flutter device.
+* `FlutterDevice` - interface representing a connected Flutter device.
 * `DaemonJsonInputFilterProvider` - trims daemon console output.
-* `FlutterDevice` - implements `ConnectedDevice`.
 * `DaemonListener` - callback for daemon lifecycle events.
-* `FlutterApp` - interface representing a running Flutter app.
-* `FlutterAppManager` - manages running Flutter apps.
-  * starts apps
-  * processes daemon JSON input and dispatches handling to appropriate pending Flutter commands.
+* `FlutterApp` - represents a running Flutter app.
+* `FlutterDaemonService` - a project level singleton. It manages the device poller and
+    helps launch apps
 * `FlutterDaemonController`
   * starts a Flutter daemon process, as an external OS-level process.
   * reads from the process standard output and writes to the process standard input, using JSON
     format to control the daemon.
   * defines classes (instances of a base `FlutterJsonObject` that process JSON).
-* `RunningFlutterApp` - concrete implementation of `FlutterApp`.
+* `FlutterDaemonControllerHelper` - manages running Flutter apps.
+  * starts apps
+  * processes daemon JSON input and dispatches handling to appropriate pending Flutter commands.
 
+## `io.flutter.run.bazel`
+
+* `FlutterBazelAppState` - a subclass of `FlutterAppStateBase` specialized for launching Flutter Bazel targets
+* `FlutterBazelRunConfiguration` - a run configuration for Bazel targets; creates FlutterBazelAppState and FlutterBazelConfigurationEditorForm
+* `FlutterBazelRunConfigurationType` - creates Bazel run configurations
+* `FlutterBazelRunner` - a subclass of `FlutterRunner` that customizes the enablement logic
+* `FlutterBazelConfigurationEditorForm` - the UI for Bazel run configurations
