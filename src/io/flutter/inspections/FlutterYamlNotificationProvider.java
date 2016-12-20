@@ -62,32 +62,32 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
 
     return new FlutterYamlActionsPanel(file);
   }
-}
 
-class FlutterYamlActionsPanel extends EditorNotificationPanel {
-  @NotNull final VirtualFile myFile;
+  static class FlutterYamlActionsPanel extends EditorNotificationPanel {
+    @NotNull final VirtualFile myFile;
 
-  FlutterYamlActionsPanel(@NotNull VirtualFile file) {
-    myFile = file;
+    FlutterYamlActionsPanel(@NotNull VirtualFile file) {
+      myFile = file;
 
-    icon(FlutterIcons.Flutter);
-    text("Flutter commands");
+      icon(FlutterIcons.Flutter);
+      text("Flutter commands");
 
-    createActionLabel("Packages get", "flutter.packages.get");
-    createActionLabel("Packages upgrade", "flutter.packages.upgrade");
-    myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
-    createActionLabel("Flutter upgrade", "flutter.upgrade");
-    myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
-    createActionLabel("Flutter doctor", "flutter.doctor");
+      createActionLabel("Packages get", "flutter.packages.get");
+      createActionLabel("Packages upgrade", "flutter.packages.upgrade");
+      myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
+      createActionLabel("Flutter upgrade", "flutter.upgrade");
+      myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
+      createActionLabel("Flutter doctor", "flutter.doctor");
 
-    // TODO: Add for 2017.1.
-    //background(EditorColors.GUTTER_BACKGROUND);
-  }
+      // TODO: Add for 2017.1.
+      //background(EditorColors.GUTTER_BACKGROUND);
+    }
 
-  // TODO: Remove for 2017.1.
-  @Override
-  public Color getBackground() {
-    final Color color = EditorColorsManager.getInstance().getGlobalScheme().getColor(EditorColors.GUTTER_BACKGROUND);
-    return color != null ? color : super.getBackground();
+    // TODO: Remove for 2017.1.
+    @Override
+    public Color getBackground() {
+      final Color color = EditorColorsManager.getInstance().getGlobalScheme().getColor(EditorColors.GUTTER_BACKGROUND);
+      return color != null ? color : super.getBackground();
+    }
   }
 }

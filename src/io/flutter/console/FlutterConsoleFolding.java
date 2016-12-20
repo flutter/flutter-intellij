@@ -28,7 +28,14 @@ public class FlutterConsoleFolding extends ConsoleFolding {
   //     [x86_64] libnetcore-856.20.4
   // 0   libsystem_network.dylib             0x0000000111918682 __nw_create_backtrace_string + 123
   // 1   libnetwork.dylib                    0x0000000111ab2932 nw_socket_add_input_handler + 3100
-  private static final String iosCrashPrefix = "\t        [";
+  private static final String iosCrashFormat1 = "\t        [";
+
+  // (
+  //    0   Foundation                          0x0000000102c3697d __destroyPortContext + 283
+  //    1   CoreFoundation                      0x0000000105002370 ____CFMachPortChecker_block_invoke + 160
+  //    11  libdyld.dylib                       0x00000001073ac68d start + 1
+  // )
+  private static final String iosCrashFormat2 = "\t(";
 
   @Override
   public boolean shouldFoldLine(String line) {
@@ -37,9 +44,14 @@ public class FlutterConsoleFolding extends ConsoleFolding {
       return true;
     }
 
-    if (iosPattern.matcher(line).matches() || line.startsWith(iosCrashPrefix)) {
+    if (iosPattern.matcher(line).matches() || line.startsWith(iosCrashFormat1)) {
       isFolding = true;
       return false;
+    }
+
+    if (line.equals(iosCrashFormat2)) {
+      isFolding = true;
+      return true;
     }
 
     if (isFolding && line.startsWith(("\t"))) {
@@ -57,7 +69,12 @@ public class FlutterConsoleFolding extends ConsoleFolding {
     final String fullText = StringUtil.join(lines, "\n");
     final int index = fullText.indexOf(marker);
     if (index == -1) {
-      if (lines.stream().anyMatch((s) -> s.endsWith("}"))) {
+      final String trimmed = fullText.trim();
+
+      if (trimmed.startsWith("(") && trimmed.endsWith(")")) {
+        return " ( ... )";
+      }
+      else if (lines.stream().anyMatch((s) -> s.endsWith("}"))) {
         return " ... }";
       }
       else {
