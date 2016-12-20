@@ -25,6 +25,7 @@ public class FlutterSdkManager {
   private final LibraryTableListener myLibraryTableListener = new LibraryTableListener();
   private boolean isFlutterConfigured;
 
+  @NotNull
   public static FlutterSdkManager getInstance() {
     return ServiceManager.getService(FlutterSdkManager.class);
   }

@@ -176,7 +176,6 @@
 
     <!-- IDEA only -->
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
-    <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
 
     <!-- Small IDE support -->
     <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>

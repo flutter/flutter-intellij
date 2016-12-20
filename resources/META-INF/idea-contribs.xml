@@ -1,11 +1,15 @@
 <!-- Defines IDEA IDE-specific contributions and implementations. -->
 <idea-plugin version="2">
   <extensions defaultExtensionNs="com.intellij">
-    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService" serviceImplementation="io.flutter.sdk.FlutterIdeaSdkService"
+    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
+                    serviceImplementation="io.flutter.sdk.FlutterIdeaSdkService"
                     overrides="true"/>
+
     <editorNotificationProvider implementation="io.flutter.inspections.IncompatibleDartPluginNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.FlutterYamlNotificationProvider"/>
+
+    <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
   </extensions>
 </idea-plugin>

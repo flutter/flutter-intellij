@@ -19,7 +19,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
   @NotNull
   @Override
   public String getName() {
-    return "Flutter";
+    return FlutterBundle.message("flutter.title");
   }
 
   @Override
