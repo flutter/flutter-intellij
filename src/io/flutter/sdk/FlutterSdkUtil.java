@@ -27,11 +27,10 @@ import io.flutter.module.FlutterModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class FlutterSdkUtil {
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
@@ -41,25 +40,19 @@ public class FlutterSdkUtil {
   private FlutterSdkUtil() {
   }
 
-  public static void updateKnownSdkPaths(@NotNull final Project project, @NotNull final String newSdkPath) {
-    final FlutterSdk old = FlutterSdk.getFlutterSdk(project);
-    updateKnownPaths(FLUTTER_SDK_KNOWN_PATHS, old == null ? null : old.getHomePath(), newSdkPath);
+  public static void updateKnownSdkPaths(@NotNull final String newSdkPath) {
+    updateKnownPaths(FLUTTER_SDK_KNOWN_PATHS, newSdkPath);
   }
 
-  private static void updateKnownPaths(@NotNull final String propertyKey, @Nullable final String oldPath, @NotNull final String newPath) {
-    final THashSet<String> known = new THashSet<>();
+  private static void updateKnownPaths(@NotNull final String propertyKey, @NotNull final String newPath) {
+    final Set<String> known = new THashSet<>();
 
     final String[] oldKnownPaths = PropertiesComponent.getInstance().getValues(propertyKey);
     if (oldKnownPaths != null) {
       known.addAll(Arrays.asList(oldKnownPaths));
     }
 
-    if (oldPath != null) {
-      known.add(oldPath);
-    }
-
-    // do not store current path - we do not need it as we know it anyway
-    known.remove(newPath);
+    known.add(newPath);
 
     if (known.isEmpty()) {
       PropertiesComponent.getInstance().unsetValue(propertyKey);
@@ -67,6 +60,27 @@ public class FlutterSdkUtil {
     else {
       PropertiesComponent.getInstance().setValues(propertyKey, ArrayUtil.toStringArray(known));
     }
+  }
+
+  public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
+    final Set<String> validPathsForUI = new HashSet<>();
+    final String currentPath = combo.getEditor().getItem().toString().trim();
+
+    if (!currentPath.isEmpty()) {
+      validPathsForUI.add(currentPath);
+    }
+
+    final String[] knownPaths = PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
+    if (knownPaths != null && knownPaths.length > 0) {
+      for (String path : knownPaths) {
+        if (FlutterSdk.forPath(path) != null) {
+          validPathsForUI.add(FileUtil.toSystemDependentName(path));
+        }
+      }
+    }
+
+    //noinspection unchecked
+    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(validPathsForUI)));
   }
 
   @NotNull
@@ -184,5 +198,8 @@ public class FlutterSdkUtil {
 
     // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
     DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);
+
+    // Update the list of known sdk paths.
+    FlutterSdkUtil.updateKnownSdkPaths(flutterSdkPath);
   }
 }

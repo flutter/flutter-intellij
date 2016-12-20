@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
+import io.flutter.FlutterErrors;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -26,47 +27,41 @@ import java.util.Set;
 
 /**
  * Long lived singleton that communicates with controllers attached to external Flutter processes.
+ * <p>
+ * There is one Daemon service per IntelliJ project.
  */
 public class FlutterDaemonService {
   private final Object myLock = new Object();
+
   private final List<FlutterDaemonController> myControllers = new ArrayList<>();
-  private FlutterDaemonController myPollster;
-  private final Set<ConnectedDevice> myConnectedDevices = new THashSet<>();
-  private final SdkListener mySdkListener = new SdkListener();
-  private ConnectedDevice mySelectedDevice;
-  private final FlutterAppManager myManager = new FlutterAppManager(this);
+  private FlutterDaemonController myPollingController;
+
+  private final Set<FlutterDevice> myConnectedDevices = new THashSet<>();
+  private FlutterDevice mySelectedDevice;
+
+  private final FlutterSdkManager.Listener mySdkListener = new SdkListener();
   private final List<DeviceListener> myDeviceListeners = new ArrayList<>();
-
-  private final DaemonListener myListener = new DaemonListener() {
-    public void daemonInput(String string, FlutterDaemonController controller) {
-      myManager.processInput(string, controller);
-    }
-
-    public void enableDevicePolling(FlutterDaemonController controller) {
-      myManager.enableDevicePolling(controller);
+  private final DaemonListener myDiscardListener = new DaemonListener() {
+    @Override
+    public void daemonInput(String json, FlutterDaemonController controller) {
     }
 
     @Override
     public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
-      assert handler == controller.getProcessHandler();
-      myManager.aboutToTerminateAll(controller);
     }
 
     @Override
     public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
-      myManager.terminateAllFor(controller);
-      if (handler == controller.getProcessHandler()) {
-        discard(controller);
-      }
+      discard(controller);
     }
   };
 
   public interface DeviceListener {
-    void deviceAdded(ConnectedDevice device);
+    void deviceAdded(FlutterDevice device);
 
-    void selectedDeviceChanged(ConnectedDevice device);
+    void selectedDeviceChanged(FlutterDevice device);
 
-    void deviceRemoved(ConnectedDevice device);
+    void deviceRemoved(FlutterDevice device);
   }
 
   @NotNull
@@ -115,7 +110,7 @@ public class FlutterDaemonService {
    * Return whether the daemon service is up and running.
    */
   public boolean isActive() {
-    return myPollster != null;
+    return myPollingController != null;
   }
 
   /**
@@ -123,8 +118,8 @@ public class FlutterDaemonService {
    *
    * @return List of ConnectedDevice
    */
-  public List<ConnectedDevice> getConnectedDevices() {
-    final SortedList<ConnectedDevice> list = new SortedList<>(Comparator.comparing(ConnectedDevice::deviceName));
+  public List<FlutterDevice> getConnectedDevices() {
+    final SortedList<FlutterDevice> list = new SortedList<>(Comparator.comparing(FlutterDevice::deviceName));
     list.addAll(myConnectedDevices);
     return list;
   }
@@ -133,7 +128,7 @@ public class FlutterDaemonService {
    * @return the currently selected device
    */
   @Nullable
-  public ConnectedDevice getSelectedDevice() {
+  public FlutterDevice getSelectedDevice() {
     return mySelectedDevice;
   }
 
@@ -144,7 +139,7 @@ public class FlutterDaemonService {
   /**
    * Set the current selected device.
    */
-  public void setSelectedDevice(@Nullable ConnectedDevice device) {
+  public void setSelectedDevice(@Nullable FlutterDevice device) {
     mySelectedDevice = device;
 
     for (DeviceListener listener : myDeviceListeners) {
@@ -152,7 +147,7 @@ public class FlutterDaemonService {
     }
   }
 
-  void addConnectedDevice(@NotNull ConnectedDevice device) {
+  void addConnectedDevice(@NotNull FlutterDevice device) {
     myConnectedDevices.add(device);
 
     if (mySelectedDevice == null) {
@@ -164,7 +159,7 @@ public class FlutterDaemonService {
     }
   }
 
-  void removeConnectedDevice(@NotNull ConnectedDevice device) {
+  void removeConnectedDevice(@NotNull FlutterDevice device) {
     myConnectedDevices.remove(device);
 
     if (mySelectedDevice == device) {
@@ -198,15 +193,15 @@ public class FlutterDaemonService {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled();
 
-    final FlutterDaemonController controller = createController(projectDir);
-    controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
+    final FlutterDaemonController controller = createController();
+    final FlutterApp app = controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
 
-    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
     app.addStateListener(newState -> {
       if (newState == FlutterApp.State.TERMINATED) {
         controller.forceExit();
       }
     });
+
     return app;
   }
 
@@ -221,11 +216,10 @@ public class FlutterDaemonService {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled();
 
-    final FlutterDaemonController controller = createController(projectDir);
-    controller
-      .startBazelProcess(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+    final FlutterDaemonController controller = createController();
+    final FlutterApp app = controller.startBazelProcess(
+      project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
 
-    final FlutterApp app = myManager.appStarting(controller, deviceId, mode, project, startPaused, isHot);
     app.addStateListener(newState -> {
       if (newState == FlutterApp.State.TERMINATED) {
         controller.forceExit();
@@ -237,16 +231,15 @@ public class FlutterDaemonService {
   /**
    * Create a new FlutterDaemonController.
    *
-   * @param projectDir The path to the project root directory
    * @return A FlutterDaemonController that can be used to start the app in the project directory
    */
   @NotNull
-  private FlutterDaemonController createController(String projectDir) {
+  private FlutterDaemonController createController() {
     synchronized (myLock) {
-      final FlutterDaemonController newController = new FlutterDaemonController(projectDir);
-      myControllers.add(newController);
-      newController.addListener(myListener);
-      return newController;
+      final FlutterDaemonController controller = new FlutterDaemonController(this);
+      myControllers.add(controller);
+      controller.addDaemonListener(myDiscardListener);
+      return controller;
     }
   }
 
@@ -254,17 +247,25 @@ public class FlutterDaemonService {
     if (!FlutterSdkUtil.hasFlutterModules()) return;
 
     synchronized (myLock) {
-      if (myPollster != null && myPollster.getProcessHandler() != null && !myPollster.getProcessHandler().isProcessTerminating()) {
+      if (myPollingController != null &&
+          myPollingController.getProcessHandler() != null &&
+          !myPollingController.getProcessHandler().isProcessTerminating()) {
         return;
       }
     }
 
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       synchronized (myLock) {
-        myPollster = new FlutterDaemonController();
-        myPollster.addListener(myListener);
-        myControllers.add(myPollster);
-        myManager.startDevicePoller(myPollster);
+        myPollingController = new FlutterDaemonController(this);
+        myControllers.add(myPollingController);
+        myPollingController.addDaemonListener(myDiscardListener);
+      }
+
+      try {
+        myPollingController.startDevicePoller();
+      }
+      catch (ExecutionException error) {
+        FlutterErrors.showError("Unable to poll for Flutter devices", error.toString());
       }
     });
   }
@@ -272,7 +273,6 @@ public class FlutterDaemonService {
   private void discard(FlutterDaemonController controller) {
     synchronized (myLock) {
       myControllers.remove(controller);
-      controller.removeListener(myListener);
       controller.forceExit();
     }
   }
@@ -280,11 +280,10 @@ public class FlutterDaemonService {
   private void stopControllers() {
     synchronized (myLock) {
       for (FlutterDaemonController controller : myControllers) {
-        controller.removeListener(myListener);
         controller.forceExit();
       }
       myControllers.clear();
-      myPollster = null;
+      myPollingController = null;
     }
   }
 }

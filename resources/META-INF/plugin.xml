@@ -12,13 +12,17 @@
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
-  <!-- supported in CE and UE -->
+  <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
+
+  <!-- available in IntelliJ IDEA (CE and UE) -->
   <depends>com.intellij.modules.java</depends>
+
+  <!-- available in all IntelliJ platforms -->
+  <!-- depends>com.intellij.modules.platform</depends -->
 
   <change-notes>
     <![CDATA[
-
 0.1.7:
 <ul>
   <li>improved console output folding when running iOS apps</li>
@@ -154,9 +158,7 @@
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
      </group>
 
-
   </actions>
-
 
   <extensions defaultExtensionNs="com.intellij">
     <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
@@ -172,8 +174,13 @@
     <!-- configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
     <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/ -->
 
+    <!-- IDEA only -->
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
-    <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
+
+    <!-- Small IDE support -->
+    <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>
+
+    <applicationService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
