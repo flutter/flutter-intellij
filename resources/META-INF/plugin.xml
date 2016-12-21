@@ -158,7 +158,12 @@
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
      </group>
 
-  </actions>
+    <!-- help menu -->
+    <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Help"> 
+      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics" />
+     </action>
+
+</actions>
 
   <extensions defaultExtensionNs="com.intellij">
     <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
