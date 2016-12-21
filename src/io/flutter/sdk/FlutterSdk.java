@@ -26,6 +26,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
+import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
@@ -136,7 +137,7 @@ public class FlutterSdk {
         }
 
         cmd.onStart(module, workingDir, args);
-        handler.startNotify();
+        start(handler);
       }
     }
     catch (ExecutionException e) {
@@ -144,6 +145,16 @@ public class FlutterSdk {
       FlutterErrors.showError(
         cmd.title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+    }
+  }
+
+  private void start(@NotNull OSProcessHandler handler) {
+    DartPubActionBase.setIsInProgress(true);
+    try {
+      handler.startNotify();
+    }
+    finally {
+      DartPubActionBase.setIsInProgress(false);
     }
   }
 
@@ -170,7 +181,7 @@ public class FlutterSdk {
         });
 
         FlutterConsoleHelper.attach(project, handler);
-        handler.startNotify();
+        start(handler);
       }
     }
     catch (ExecutionException e) {
