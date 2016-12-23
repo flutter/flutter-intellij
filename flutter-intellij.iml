@@ -40,7 +40,7 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.10154.19/snakeyaml-1.13.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/snakeyaml-1.13.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
