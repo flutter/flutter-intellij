@@ -25,6 +25,7 @@ import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -43,6 +44,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JPanel mainPanel;
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
+  private JCheckBox myReportUsageInformationCheckBox;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     init();
@@ -94,8 +96,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
-    //noinspection RedundantIfStatement
     if (!sdkPathInModel.equals(sdkPathInUI)) {
+      return true;
+    }
+
+    //noinspection RedundantIfStatement
+    if (FlutterInitializer.getCanReportAnalytics() != myReportUsageInformationCheckBox.isSelected()) {
       return true;
     }
 
@@ -114,6 +120,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
     }
 
+    FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
+
     reset(); // because we rely on remembering initial state
   }
 
@@ -123,8 +131,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final String path = sdk != null ? sdk.getHomePath() : "";
     mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
-
     updateVersionText();
+    myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
   }
 
   private void updateVersionText() {
