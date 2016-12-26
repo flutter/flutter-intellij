@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- TODO(devoncarew): we should put the artifacts in google storage -->
+<!-- TODO(devoncarew): We should put the artifacts in google storage. -->
 
-<!-- TODO(devoncarew): run tests -->
+<!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
+     plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
+<!-- TODO(devoncarew): Build against either end of our supported product ranges. -->
 
-<project name="flutter-intellij" default="all">
-  <!-- we should download this artifact -->
-  <!--<property file="build.properties"/>-->
+<project name="flutter-intellij" default="build">
+  <property environment="env"/>
 
   <patternset id="compiler.resources">
     <exclude name="**/?*.java"/>
@@ -31,7 +32,7 @@
 
   <target name="download" depends="init">
     <property name="idea.version" value="2016.3.1"/>
-    <property name="idea.home" value="artifacts/intellij-ce-${idea.version}"/>
+    <property name="idea.home" location="artifacts/intellij-ce-${idea.version}"/>
     <get src="https://download.jetbrains.com/idea/ideaIC-${idea.version}.tar.gz"
          dest="artifacts" usetimestamp="true"/>
     <gunzip src="artifacts/ideaIC-${idea.version}.tar.gz"
@@ -94,6 +95,8 @@
         <include name="third_party/intellij-plugins-dart/testSrc"/>
       </dirset>
     </path>
+
+    <echoproperties/>
   </target>
 
   <target name="build.src" depends="paths">
@@ -159,7 +162,7 @@
     </copy>
 
     <jar destfile="build/flutter-intellij-tests.jar">
-      <zipfileset dir="testSrc"/>
+      <zipfileset dir="build/testSrc"/>
     </jar>
 
     <length file="build/flutter-intellij-tests.jar"/>
@@ -167,9 +170,52 @@
 
   <target name="build" depends="build.src, build.testSrc"/>
 
-  <target name="all" depends="build"/>
+  <target name="test" depends="paths">
+    <!-- create a Dart plugin directory -->
+    <copy todir="build/idea/plugins/Dart/lib" flatten="true">
+      <path refid="dartplugin.jars"/>
+    </copy>
+
+    <property name="idea.sandbox" location="build/idea"/>
+
+    <junit fork="true"
+           forkmode="once"
+           failureproperty="tests.fail"
+           dir="${idea.home}">
+      <env key="flutter.sdk" value="${env.FLUTTER_SDK}"/>
+      <env key="idea.plugins.path" value="${idea.sandbox}/plugins"/>
+
+      <assertions>
+        <enable/>
+      </assertions>
+
+      <classpath>
+        <path>
+          <fileset dir="${idea.home}/lib">
+            <include name="*.jar"/>
+          </fileset>
+        </path>
+        <path refid="dartplugin.jars"/>
+        <pathelement location="build/flutter-intellij.jar"/>
+        <pathelement location="build/flutter-intellij-tests.jar"/>
+      </classpath>
+
+      <formatter type="plain" usefile="false"/>
+
+      <batchtest>
+        <fileset dir="build/testSrc">
+          <include name="**/*Test.class"/>
+        </fileset>
+      </batchtest>
+    </junit>
+
+    <fail if="tests.fail" message="Test task failed."/>
+  </target>
+
+  <target name="all" depends="build, test"/>
 
   <target name="clean">
     <delete dir="build"/>
   </target>
+
 </project>
