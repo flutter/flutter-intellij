@@ -156,7 +156,7 @@
       </group>
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
-     </group>
+    </group>
 
     <!-- main toolbar run actions -->
     <group id="Flutter.MainToolbarActions.Run">
@@ -171,7 +171,12 @@
       <add-to-group anchor="last" group-id="RunContextGroup" />
       <add-to-group anchor="last" group-id="ToolbarRunGroup" />
     </group>
-
+    
+    <!-- help menu -->
+    <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
+      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics" />
+    </action>
+    
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
