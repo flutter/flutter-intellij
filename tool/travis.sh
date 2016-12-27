@@ -16,4 +16,7 @@ pub get
 dart tool/grind.dart api
 
 # Run the ant build.
-ant build
+ant build \
+  -Didea.product=$IDEA_PRODUCT \
+  -Didea.version=$IDEA_VERSION \
+  -Ddart.plugin.version=$DART_PLUGIN_VERSION

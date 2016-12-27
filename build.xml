@@ -5,10 +5,14 @@
 <!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
-<!-- TODO(devoncarew): Build against either end of our supported product ranges. -->
 
 <project name="flutter-intellij" default="build">
   <property environment="env"/>
+
+  <!-- defaults -->
+  <property name="idea.product" value="ideaIC"/>
+  <property name="idea.version" value="2016.3.1"/>
+  <property name="dart.plugin.version" value="163.10154.19"/>
 
   <patternset id="compiler.resources">
     <exclude name="**/?*.java"/>
@@ -31,16 +35,22 @@
   </target>
 
   <target name="download" depends="init">
-    <property name="idea.version" value="2016.3.1"/>
-    <property name="idea.home" location="artifacts/intellij-ce-${idea.version}"/>
-    <get src="https://download.jetbrains.com/idea/ideaIC-${idea.version}.tar.gz"
+    <!-- download IntelliJ -->
+    <property name="idea.home" location="artifacts/${idea.product}-${idea.version}"/>
+    <get src="https://download.jetbrains.com/idea/${idea.product}-${idea.version}.tar.gz"
          dest="artifacts" usetimestamp="true"/>
-    <gunzip src="artifacts/ideaIC-${idea.version}.tar.gz"
-            dest="artifacts/ideaIC-${idea.version}.tar"/>
-    <untar src="artifacts/ideaIC-${idea.version}.tar"
+    <gunzip src="artifacts/${idea.product}-${idea.version}.tar.gz"
+            dest="artifacts/${idea.product}-${idea.version}.tar"/>
+    <untar src="artifacts/${idea.product}-${idea.version}.tar"
            dest="${idea.home}">
       <cutdirsmapper dirs="1"/>
     </untar>
+
+    <!-- download the Dart plugin -->
+    <!-- TODO(devoncarew): download based on dart.plugin.version -->
+    <get src="https://plugins.jetbrains.com/plugin/download?pr=idea&amp;updateId=31054"
+         dest="artifacts/Dart-${dart.plugin.version}.zip" usetimestamp="true"/>
+    <unzip src="artifacts/Dart-${dart.plugin.version}.zip" dest="artifacts"/>
   </target>
 
   <target name="properties" depends="download">
@@ -71,9 +81,9 @@
     </path>
 
     <path id="dartplugin.jars">
-      <pathelement location="${basedir}/lib/dart-plugin/163.10154.19/Dart.jar"/>
-      <pathelement location="${basedir}/lib/dart-plugin/163.10154.19/resources_en.jar"/>
-      <pathelement location="${basedir}/lib/dart-plugin/deps/snakeyaml-1.13.jar"/>
+      <fileset dir="${basedir}/artifacts/Dart/lib">
+        <include name="*.jar"/>
+      </fileset>
     </path>
 
     <path id="junit.jars">
@@ -172,11 +182,11 @@
 
   <target name="test" depends="paths">
     <!-- create a Dart plugin directory -->
-    <copy todir="build/idea/plugins/Dart/lib" flatten="true">
+    <copy todir="build/idea-sandbox/plugins/Dart/lib" flatten="true">
       <path refid="dartplugin.jars"/>
     </copy>
 
-    <property name="idea.sandbox" location="build/idea"/>
+    <property name="idea.sandbox" location="build/idea-sandbox"/>
 
     <junit fork="true"
            forkmode="once"
