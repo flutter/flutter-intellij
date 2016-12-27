@@ -159,7 +159,7 @@
      </group>
 
     <!-- help menu -->
-    <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Help"> 
+    <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help"> 
       <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics" />
      </action>
 
