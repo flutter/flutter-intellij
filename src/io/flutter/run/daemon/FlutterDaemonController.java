@@ -241,7 +241,7 @@ public class FlutterDaemonController extends ProcessAdapter {
                                                       boolean isHot,
                                                       @NotNull String launchingScript,
                                                       @NotNull String bazelTarget,
-                                                      @Nullable String additionalArguments) throws ExecutionException {
+                                                      @Nullable String additionalArguments) {
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(projectDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
