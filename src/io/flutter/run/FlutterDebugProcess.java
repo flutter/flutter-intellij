@@ -64,6 +64,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     return ((FlutterAppState)myState).getMode().isReloadEnabled();
   }
 
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   private boolean isDebuggingSession() {
     return isDebuggingSession(myState);
   }
