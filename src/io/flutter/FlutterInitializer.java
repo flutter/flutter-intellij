@@ -99,7 +99,7 @@ public class FlutterInitializer implements StartupActivity {
         (notification1, event) -> {
           if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
             if ("url".equals(event.getDescription())) {
-              BrowserUtil.browse("https://www.google.com/intl/en/policies/privacy/");
+              BrowserUtil.browse("https://www.google.com/policies/privacy/");
             }
           }
         });

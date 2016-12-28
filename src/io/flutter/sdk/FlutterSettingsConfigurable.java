@@ -9,6 +9,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.CapturingProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
@@ -24,6 +25,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.Nls;
@@ -33,6 +35,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class.getName());
@@ -45,6 +49,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
+  private LinkLabel<String> myPrivacyPolicy;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     init();
@@ -66,6 +71,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySdkCombo.addBrowseFolderListener("Select Flutter SDK Path", null, null,
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+
+    myPrivacyPolicy.setListener((label, linkUrl) -> {
+      try {
+        BrowserLauncher.getInstance().browse(new URI(linkUrl));
+      }
+      catch (URISyntaxException ignore) {
+      }
+    }, FlutterBundle.message("flutter.analytics.privacyUrl"));
   }
 
   private void createUIComponents() {
