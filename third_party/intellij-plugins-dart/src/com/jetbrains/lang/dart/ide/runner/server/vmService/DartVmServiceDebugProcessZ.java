@@ -53,15 +53,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
- * TODO(messick) Add OvservatoryConnector parameter to superclass then delete this class.
+ * TODO(messick) Add ObservatoryConnector parameter to superclass then delete this class.
  */
 public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
   @Nullable private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
-  @NotNull private final String myDebuggingHost;
-  private int myObservatoryPort;
+  private String myObservatoryWsUrl;
 
   private boolean myVmConnected = false;
 
@@ -82,8 +81,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private boolean baseUriWasInited = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
-                                    @NotNull final String debuggingHost,
-                                    final int observatoryPort,
                                     @Nullable final ExecutionResult executionResult,
                                     @NotNull final DartUrlResolver dartUrlResolver,
                                     @Nullable final String dasExecutionContextId,
@@ -91,11 +88,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @Nullable final ObservatoryConnector connector) {
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
-          currentWorkingDirectory);
+    super(session, "localhost", 0, executionResult, dartUrlResolver, dasExecutionContextId,
+          remoteDebug, timeout, currentWorkingDirectory);
 
-    myDebuggingHost = debuggingHost;
-    myObservatoryPort = observatoryPort;
     myExecutionResult = executionResult;
     myDartUrlResolver = dartUrlResolver;
     myTimeout = timeout;
@@ -219,7 +214,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
           return;
         }
 
-        myObservatoryPort = myConnector.getPort();
+        myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
       }
 
       final long timeout = (long)myTimeout;
@@ -259,7 +254,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   private void connect() throws IOException {
-    final VmService vmService = VmService.connect(getObservatoryUrl("ws", "/ws"));
+    final VmService vmService = VmService.connect(myObservatoryWsUrl);
     final DartVmServiceListener vmServiceListener =
       new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
 
@@ -272,11 +267,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     myVmConnected = true;
     getSession().rebuildViews();
-  }
-
-  @NotNull
-  private String getObservatoryUrl(@NotNull final String scheme, @Nullable final String path) {
-    return scheme + "://" + myDebuggingHost + ":" + myObservatoryPort + StringUtil.notNullize(path);
   }
 
   @Override
@@ -451,7 +441,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                         @NotNull final DefaultActionGroup settings) {
     // For Run tool window this action is added in DartCommandLineRunningState.createActions()
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenObservatoryAction(this::computeObservatoryUrl, this::isSessionActive));
+    topToolbar.addAction(new OpenObservatoryAction(this::computeObservatoryBrowserUrl, this::isSessionActive));
     topToolbar.addSeparator();
     topToolbar.addAction(new HotReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
     topToolbar.addAction(new RestartFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
@@ -467,10 +457,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
            myVmConnected && !getSession().isStopped();
   }
 
-  private String computeObservatoryUrl() {
+  private String computeObservatoryBrowserUrl() {
     assert myConnector != null;
-    myObservatoryPort = myConnector.getPort();
-    return getObservatoryUrl("http", null);
+    myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
+    return OpenObservatoryAction.convertWsToHttp(myObservatoryWsUrl);
   }
 
   @NotNull
@@ -655,6 +645,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     }
   }
 
+  @SuppressWarnings("SameParameterValue")
   private java.lang.reflect.Field getDeclaredField(String name) {
     return getDeclaredField(getClass(), name);
   }
@@ -664,7 +655,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       final java.lang.reflect.Field field = clazz.getDeclaredField(name);
       field.setAccessible(true);
       return field;
-
     }
     catch (NoSuchFieldException ex) {
       if (clazz.getSuperclass() != null) {

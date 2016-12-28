@@ -11,9 +11,9 @@ public interface ObservatoryConnector {
   boolean isConnectionReady();
 
   /**
-   * Return the port used by the observatory.
+   * Return the WebSocket URL used by the observatory.
    */
-  int getPort();
+  String getObservatoryWsUrl();
 
   /**
    * Return the FlutterApp used to control the running app.
