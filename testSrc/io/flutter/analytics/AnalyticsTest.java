@@ -6,7 +6,6 @@
 package io.flutter.analytics;
 
 import junit.framework.TestCase;
-import org.junit.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,28 +27,28 @@ public class AnalyticsTest extends TestCase {
 
   public void testSendScreenView() throws Exception {
     analytics.sendScreenView("testAnalyticsPage");
-    Assert.assertEquals(1, transport.sentValues.size());
+    assertEquals(1, transport.sentValues.size());
   }
 
   public void testSendEvent() throws Exception {
     analytics.sendEvent("flutter", "doctor");
-    Assert.assertEquals(1, transport.sentValues.size());
+    assertEquals(1, transport.sentValues.size());
   }
 
   public void testSendTiming() throws Exception {
     analytics.sendTiming("perf", "reloadTime", 100);
-    Assert.assertEquals(1, transport.sentValues.size());
+    assertEquals(1, transport.sentValues.size());
   }
 
   public void testSendException() throws Exception {
     analytics.sendException(new UnsupportedOperationException("test operation"), true);
-    Assert.assertEquals(1, transport.sentValues.size());
+    assertEquals(1, transport.sentValues.size());
   }
 
   public void testOptOutDoesntSend() throws Exception {
     analytics.setCanSend(false);
     analytics.sendScreenView("testAnalyticsPage");
-    Assert.assertEquals(0, transport.sentValues.size());
+    assertEquals(0, transport.sentValues.size());
   }
 
   private static class MockAnalyticsTransport implements Analytics.Transport {

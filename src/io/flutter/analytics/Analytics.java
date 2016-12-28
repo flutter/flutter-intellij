@@ -6,6 +6,7 @@
 package io.flutter.analytics;
 
 import com.intellij.util.concurrency.QueueProcessor;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 import java.io.IOException;
@@ -32,13 +33,15 @@ public class Analytics {
 
   private static final int maxExceptionLength = 512;
 
+  @NotNull
   private final String clientId;
+  @NotNull
   private final String pluginVersion;
   private Transport transport = new HttpTransport();
   private final ThrottlingBucket bucket = new ThrottlingBucket(20);
   private boolean myCanSend = false;
 
-  public Analytics(String clientId, String pluginVersion) {
+  public Analytics(@NotNull String clientId, @NotNull String pluginVersion) {
     this.clientId = clientId;
     this.pluginVersion = pluginVersion;
   }
@@ -58,7 +61,7 @@ public class Analytics {
     this.transport = transport;
   }
 
-  public void sendScreenView(String viewName) {
+  public void sendScreenView(@NotNull String viewName) {
     final Map<String, String> args = new HashMap<>();
     args.put("cd", viewName);
     sendPayload("screenview", args);
@@ -105,7 +108,7 @@ public class Analytics {
     sendPayload("exception", args);
   }
 
-  private void sendPayload(String hitType, Map<String, String> args) {
+  private void sendPayload(@NotNull String hitType, @NotNull Map<String, String> args) {
     if (!canSend()) {
       return;
     }

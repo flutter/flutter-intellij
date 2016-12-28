@@ -31,6 +31,7 @@ public class FlutterInitializer implements StartupActivity {
 
   private static Analytics analytics;
 
+  @NotNull
   public static Analytics getAnalytics() {
     if (analytics == null) {
       final PropertiesComponent properties = PropertiesComponent.getInstance();
@@ -76,25 +77,24 @@ public class FlutterInitializer implements StartupActivity {
     return !properties.getBoolean(analyticsOptOutKey, false);
   }
 
-  public static void sendActionEvent(AnAction action) {
+  public static void sendActionEvent(@NotNull AnAction action) {
     getAnalytics().sendEvent("intellij", action.getClass().getSimpleName());
   }
 
   @Override
   public void runActivity(@NotNull Project project) {
+    // Initialize the daemon service (this starts a device watcher).
     FlutterDaemonService.getInstance(project);
 
+    // Initialize analytics.
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     if (!properties.getBoolean(analyticsToastShown)) {
       properties.setValue(analyticsToastShown, true);
 
       final Notification notification = new Notification(
         FlutterErrors.FLUTTER_NOTIFICATION_GOUP_ID,
-        "Welcome to Flutter!",
-        "The Flutter plugin anonymously reports feature usage statistics and basic crash reports to " +
-        "Google in order to help Google contribute improvements to Flutter over time. See Google's privacy " +
-        "policy: <a href=\"url\">www.google.com/intl/en/policies/privacy</a>.<br><br>" +
-        "Send anonymous usage statistics?",
+        FlutterBundle.message("flutter.analytics.notification.title"),
+        FlutterBundle.message("flutter.analytics.notification.content"),
         NotificationType.INFORMATION,
         (notification1, event) -> {
           if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
@@ -103,14 +103,14 @@ public class FlutterInitializer implements StartupActivity {
             }
           }
         });
-      notification.addAction(new AnAction("Sounds good!") {
+      notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.accept")) {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
           getAnalytics();
         }
       });
-      notification.addAction(new AnAction("No thanks") {
+      notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.decline")) {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
