@@ -24,9 +24,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.net.NetUtils;
 import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.console.FlutterConsoleFilter;
-import io.flutter.run.daemon.ConnectedDevice;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 
@@ -80,11 +80,11 @@ public class FlutterAppState extends FlutterAppStateBase {
     final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    ConnectedDevice device = null;
+    FlutterDevice device = null;
 
     // Only pass the current device in if we are showing the device selector.
     if (service.isActive()) {
-      final Collection<ConnectedDevice> devices = service.getConnectedDevices();
+      final Collection<FlutterDevice> devices = service.getConnectedDevices();
       if (devices.isEmpty()) {
         throw new ExecutionException("No connected device");
       }

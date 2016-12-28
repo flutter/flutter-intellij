@@ -4,7 +4,8 @@ Manual tests to execute before plugin releases.
 
 ## Setup
 
-Pre-reqs: [flutter setup](https://flutter.io/setup/) and [flutter getting started](https://flutter.io/getting-started/).
+Pre-reqs: [flutter setup](https://flutter.io/setup/) and
+[flutter getting started](https://flutter.io/getting-started/).
 
 ## Project Creation
 
@@ -13,7 +14,8 @@ Validate basic project creation.
 * Create a simple project (`File > New > Project…`, pick `Flutter`).
 * Confirm that:
   * Project contents are created.
-    * Verify that a run configuration (sharing the project name) is enabled in the run/debug selector.
+    * Verify that a run configuration (sharing the project name) is enabled in the
+      run/debug selector.
   * Navigation works.
     * Open `lib/main.dart` and navigate to `ThemeData`.
   * There are no analysis errors or warnings.
@@ -22,7 +24,8 @@ Validate basic project creation.
   * Flutter operations work.
     * Open `flutter.yaml` and click the "Doctor" link.
   * Code completion works.
-    * Then change `primarySwatch: Colors.` to some other color and validate that you get completions.
+    * Then change `primarySwatch: Colors.` to some other color and validate that you
+      get completions.
 
 ## Project Import
 
@@ -33,13 +36,14 @@ Validate that an externally created project can be imported.
 * ensure there are no analysis errors or warnings
 * ensure that the `flutter_gallery` launch configuration shows up and is selected
 
-## Device Detection.
+## Device Detection
 
 Validate device selection.
 
 * (OS X) Verify that the simulator can be opened.
   * Disconnect all devices and quit the iOS simulator.
-  * Ensure that a menu item to open the iOS simulator is enabled in the device pull down menu.
+  * Ensure that a menu item to open the iOS simulator is enabled in the device pull
+    down menu.
   * Select "Open iOS Simulator".
   * Verify that the simulator opens.
 
@@ -56,7 +60,8 @@ In the newly created app:
 * verify that the IDE pauses at the breakpoint
 * hit resume in the debugger
 * tap the `'+'` icon on the app
-* verify that the IDE pauses at the breakpoint, and that the `Variables` pane has the right value for `_counter` 
+* verify that the IDE pauses at the breakpoint, and that the `Variables` pane has
+  the right value for `_counter`
 
 ## Hot Reload
 
@@ -89,9 +94,11 @@ After testing the above, terminate your debugging session and start another.
 
 Verify installation and configuration in a fresh IDEA installation.
 
-* Follow the instructions to [simulate a fresh installation](https://github.com/flutter/flutter-intellij/wiki/Development#simulating-a-fresh-install).
+* Follow the instructions to
+  [simulate a fresh installation](https://github.com/flutter/flutter-intellij/wiki/Development#simulating-a-fresh-install).
 * (If not running in a "runtime workbench", [install the plugins](https://flutter.io/setup/#install-the-plugins).)
-* Open "Languages & Frameworks>Flutter" in Preferences and verify that there is no Flutter SDK set.
+* Open "Languages & Frameworks>Flutter" in Preferences and verify that there is
+  no Flutter SDK set.
 * Set the Flutter SDK path to a valid SDK location.
   * Verify that invalid locations are rejected (and cannot be applied).
 * Verify project creation, run/debug.

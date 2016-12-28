@@ -10,6 +10,8 @@ void main() {
   StringBuffer buf = new StringBuffer();
   buf.writeln('# Generated file - do not edit.');
   buf.writeln();
+  buf.writeln('# suppress inspection "UnusedProperty" for whole file');
+  buf.writeln();
 
   // colors
   final Map<String, Color> colors = {

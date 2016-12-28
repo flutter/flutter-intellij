@@ -12,13 +12,17 @@
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
-  <!-- supported in CE and UE -->
+  <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
+
+  <!-- available in IntelliJ IDEA (CE and UE) -->
   <depends>com.intellij.modules.java</depends>
+
+  <!-- available in all IntelliJ platforms -->
+  <!-- depends>com.intellij.modules.platform</depends -->
 
   <change-notes>
     <![CDATA[
-
 0.1.7:
 <ul>
   <li>improved console output folding when running iOS apps</li>
@@ -95,11 +99,11 @@
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
   <actions>
-    <action id="Flutter.HotReloadFlutterAppKey" class="io.flutter.actions.HotReloadFlutterAppKeyAction" text="Flutter Hot Reload">
+    <action id="Flutter.HotReloadFlutterAppKey" class="io.flutter.actions.HotReloadFlutterAppRetarget" text="Flutter Hot Reload">
       <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
       <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
     </action>
-    <action id="Flutter.RestartFlutterAppKey" class="io.flutter.actions.RestartFlutterAppKeyAction" text="Flutter Restart Application">
+    <action id="Flutter.RestartFlutterAppKey" class="io.flutter.actions.RestartFlutterAppRetarget" text="Flutter Restart Application">
       <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt SEMICOLON"/>
       <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
     </action>
@@ -152,11 +156,28 @@
       </group>
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
-     </group>
+    </group>
 
-
+    <!-- main toolbar run actions -->
+    <group id="Flutter.MainToolbarActions.Run">
+      <separator/>
+      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.HotReloadFlutterAppRetarget"
+              description="Reload"
+              icon="FlutterIcons.ReloadBoth"/>
+      <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
+              description="Restart"
+              icon="FlutterIcons.Restart"/>
+      <separator/>
+      <add-to-group anchor="last" group-id="RunContextGroup" />
+      <add-to-group anchor="last" group-id="ToolbarRunGroup" />
+    </group>
+    
+    <!-- help menu -->
+    <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
+      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics" />
+    </action>
+    
   </actions>
-
 
   <extensions defaultExtensionNs="com.intellij">
     <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
@@ -172,8 +193,13 @@
     <!-- configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
     <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/ -->
 
+    <!-- IDEA only -->
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
-    <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
+
+    <!-- Small IDE support -->
+    <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>
+
+    <applicationService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"

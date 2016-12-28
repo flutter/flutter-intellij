@@ -27,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
-
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
   private static final String DART_GROUP_NAME = "Static Web";
@@ -57,7 +56,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     final ContentEntry contentEntry = doAddContentEntry(model);
     final VirtualFile baseDir = contentEntry == null ? null : contentEntry.getFile();
     if (baseDir != null) {
-      setupProject(model, baseDir);
+      createProjectFiles(model, baseDir, getFlutterSdk());
     }
   }
 
@@ -84,15 +83,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterModuleType.getInstance();
   }
 
-  void setupProject(@NotNull final ModifiableRootModel model,
-                    @NotNull final VirtualFile baseDir) {
-
-    final FlutterSdk sdk = getFlutterSdk();
-    if (sdk == null) {
-      // Validation happens in generator peer.
-      return;
-    }
-
+  private static void createProjectFiles(@NotNull final ModifiableRootModel model,
+                                         @NotNull final VirtualFile baseDir,
+                                         @NotNull final FlutterSdk sdk) {
     // Create files.
     try {
       sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, null, baseDir.getPath());
@@ -102,8 +95,20 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
   }
 
-  FlutterSdk getFlutterSdk() {
+  static FlutterSdk getFlutterSdk() {
     return FlutterSdk.getGlobalFlutterSdk();
+  }
+
+  public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
+    throws ConfigurationException {
+    // TODO(devoncarew): Store the flutterSdkPath info (in the project? module?).
+    final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
+    if (sdk == null) {
+      throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
+    }
+
+    model.addContentEntry(baseDir);
+    createProjectFiles(model, baseDir, sdk);
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {

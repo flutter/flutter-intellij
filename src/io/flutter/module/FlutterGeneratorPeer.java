@@ -51,12 +51,12 @@ public class FlutterGeneratorPeer {
   }
 
   private void initSdkCombo() {
-
     final FlutterSdk sdkInitial = FlutterSdk.getGlobalFlutterSdk();
     final String sdkPathInitial = sdkInitial == null ? "" : FileUtil.toSystemDependentName(sdkInitial.getHomePath());
 
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
     mySdkPathComboWithBrowse.getComboBox().getEditor().setItem(sdkPathInitial);
+    FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
                                                      FileChooserDescriptorFactory.createSingleFolderDescriptor(),

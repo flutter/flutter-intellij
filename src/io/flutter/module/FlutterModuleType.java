@@ -5,11 +5,8 @@
  */
 package io.flutter.module;
 
-import com.intellij.ide.util.projectWizard.ModuleWizardStep;
-import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleTypeManager;
-import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
@@ -53,13 +50,5 @@ public class FlutterModuleType extends ModuleType<FlutterModuleBuilder> {
   @Override
   public Icon getNodeIcon(@Deprecated boolean b) {
     return FlutterIcons.Flutter;
-  }
-
-  @NotNull
-  @Override
-  public ModuleWizardStep[] createWizardSteps(@NotNull WizardContext wizardContext,
-                                              @NotNull FlutterModuleBuilder moduleBuilder,
-                                              @NotNull ModulesProvider modulesProvider) {
-    return super.createWizardSteps(wizardContext, moduleBuilder, modulesProvider);
   }
 }

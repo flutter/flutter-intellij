@@ -17,13 +17,6 @@ public interface DaemonListener {
    */
   void daemonInput(String json, FlutterDaemonController controller);
 
-  /**
-   * Instruct the listener that it should enable device polling for the <code>controller.</code>
-   *
-   * @param controller The FlutterDaemonController that controls the daemon
-   */
-  void enableDevicePolling(FlutterDaemonController controller);
-
   void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller);
 
   void processTerminated(ProcessHandler handler, FlutterDaemonController controller);
