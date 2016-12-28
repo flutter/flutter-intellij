@@ -667,7 +667,7 @@ class FlutterDaemonControllerHelper {
 
   private static class AppStoppedEvent extends Event {
     // "event":"app.stop"
-    @SuppressWarnings("unused") private String appId;
+    @SuppressWarnings({"unused", "CanBeFinal"}) private String appId;
 
     void process(FlutterDaemonControllerHelper manager, FlutterDaemonController controller) {
       manager.eventAppStopped(this);

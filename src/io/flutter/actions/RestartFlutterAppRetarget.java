@@ -6,10 +6,10 @@
 package io.flutter.actions;
 
 /**
- * A keystroke invoked {@link HotReloadFlutterApp} action.
+ * A keystroke or tool-bar invoked {@link RestartFlutterApp} action.
  */
-public class HotReloadFlutterAppKeyAction extends FlutterKeyAction {
-  public HotReloadFlutterAppKeyAction() {
-    super(HotReloadFlutterApp.ID);
+public class RestartFlutterAppRetarget extends FlutterRetargetAction {
+  public RestartFlutterAppRetarget() {
+    super(RestartFlutterApp.ID);
   }
 }

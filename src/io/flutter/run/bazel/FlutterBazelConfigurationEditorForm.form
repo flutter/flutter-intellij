@@ -40,7 +40,7 @@
         <properties>
           <inheritsPopupMenu value="true"/>
           <labelFor value="17e7b"/>
-          <text value="Launching script:"/>
+          <text value="Launching &amp;script:"/>
         </properties>
       </component>
       <component id="17e7b" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myLaunchingScript">
@@ -57,7 +57,7 @@
         </constraints>
         <properties>
           <labelFor value="ada9e"/>
-          <text value="Additional args:"/>
+          <text value="Additional &amp;args:"/>
         </properties>
       </component>
       <component id="ada9e" class="javax.swing.JTextField" binding="myAdditionalArgs">
@@ -72,7 +72,7 @@
         </constraints>
         <properties>
           <labelFor value="ada9f"/>
-          <text value="Bazel build target:"/>
+          <text value="Bazel build &amp;target:"/>
         </properties>
       </component>
       <component id="ada9f" class="javax.swing.JTextField" binding="myBuildTarget">
