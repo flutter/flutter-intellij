@@ -8,11 +8,14 @@ package io.flutter.actions;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterGettingStarted extends DumbAwareAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
+    FlutterInitializer.sendActionEvent(this);
+
     final String url = "https://flutter.io/intellij-ide/";
     BrowserLauncher.getInstance().browse(url, null);
   }

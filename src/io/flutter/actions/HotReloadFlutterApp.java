@@ -11,12 +11,12 @@ import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 
 import java.lang.reflect.Method;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class HotReloadFlutterApp extends FlutterAppAction {
-
   public static final String ID = "Flutter.HotReloadFlutterApp"; //NON-NLS
 
   public HotReloadFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
@@ -26,6 +26,8 @@ public class HotReloadFlutterApp extends FlutterAppAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    FlutterInitializer.sendActionEvent(this);
+
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
       final boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");

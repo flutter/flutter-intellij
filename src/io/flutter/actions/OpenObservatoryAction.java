@@ -14,6 +14,7 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -37,6 +38,8 @@ public class OpenObservatoryAction extends DumbAwareAction {
 
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
+    FlutterInitializer.sendActionEvent(this);
+
     openInAnyChromeFamilyBrowser(myUrl.compute());
   }
 

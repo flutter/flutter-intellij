@@ -22,6 +22,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.content.MessageView;
@@ -30,6 +31,7 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
+import io.flutter.FlutterInitializer;
 import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
@@ -137,6 +139,11 @@ public class FlutterSdk {
 
         cmd.onStart(module, workingDir, args);
         handler.startNotify();
+
+        // Send the command to analytics.
+        String commandName = StringUtil.join(cmd.command, "_");
+        commandName = commandName.replaceAll("-", "");
+        FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
       }
     }
     catch (ExecutionException e) {
@@ -171,6 +178,9 @@ public class FlutterSdk {
 
         FlutterConsoleHelper.attach(project, handler);
         handler.startNotify();
+
+        // Send the command to analytics.
+        FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
       }
     }
     catch (ExecutionException e) {
@@ -302,7 +312,6 @@ public class FlutterSdk {
     boolean attachToConsole() {
       return true;
     }
-
 
     /**
      * Invoked on command start (before process spawning).
