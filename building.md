@@ -1,6 +1,7 @@
 ## Building the plugin
 
-We use ant to build the plugin; to check your ant install, run `ant -version`.
+We use ant to build the plugin; to check your ant install, run `ant -version`. We
+recommend `1.8.2` or later (to install ant on a mac, use `brew install ant`).
 
 To build the plugin, type:
 
@@ -8,7 +9,7 @@ To build the plugin, type:
 ant build
 ```
 
-Artifacts are written into the `build/` directory. For example:
+Artifacts are written into the `build/` directory; for example:
 
 ```
 build/flutter-intellij.jar
