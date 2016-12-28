@@ -44,6 +44,9 @@ import java.awt.*;
 
 // TODO: if multiple simultaneous running apps, use tabs to keep them separate
 
+// TODO: open on connetion established
+// TODO: hook up a toggle debug drawing button
+
 @com.intellij.openapi.components.State(
   name = "FlutterView",
   storages = {@Storage("$WORKSPACE_FILE$")}
