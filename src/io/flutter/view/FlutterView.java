@@ -5,10 +5,6 @@
  */
 package io.flutter.view;
 
-import com.intellij.execution.ExecutionListener;
-import com.intellij.execution.ExecutionManager;
-import com.intellij.execution.process.ProcessHandler;
-import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -22,7 +18,6 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.xmlb.annotations.Attribute;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,42 +48,11 @@ import java.awt.*;
 )
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
   private FlutterView.State state = new FlutterView.State();
-  private final Project myProject;
+  @SuppressWarnings("FieldCanBeLocal") private final Project myProject;
   private ContentManager myContentManager;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
-
-    final MessageBusConnection connection = project.getMessageBus().connect(this);
-    connection.subscribe(ExecutionManager.EXECUTION_TOPIC, new ExecutionListener() {
-      @Override
-      public void processStarting(@NotNull String executorId, @NotNull ExecutionEnvironment env) {
-        System.out.println("processStarting: " + env);
-      }
-
-      @Override
-      public void processStarted(@NotNull String executorId, @NotNull ExecutionEnvironment env, @NotNull ProcessHandler handler) {
-        System.out.println("processStarted: " + env);
-      }
-
-      @Override
-      public void processNotStarted(@NotNull String executorId, @NotNull ExecutionEnvironment env) {
-        System.out.println("processNotStarted: " + env);
-      }
-
-      @Override
-      public void processTerminating(@NotNull String executorId, @NotNull ExecutionEnvironment env, @NotNull ProcessHandler handler) {
-        System.out.println("processTerminating: " + env);
-      }
-
-      @Override
-      public void processTerminated(@NotNull String executorId,
-                                    @NotNull ExecutionEnvironment env,
-                                    @NotNull ProcessHandler handler,
-                                    int exitCode) {
-        System.out.println("processTerminated: " + env);
-      }
-    });
   }
 
   @Override
