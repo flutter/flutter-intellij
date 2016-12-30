@@ -6,6 +6,11 @@ jdk:
 install: true
 
 before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+
+before_script:
   - git clone https://github.com/flutter/flutter.git --depth 1
   - export PATH="$PATH":flutter/bin:flutter/bin/cache/dart-sdk/bin
   - flutter config --no-analytics
