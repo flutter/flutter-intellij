@@ -7,7 +7,7 @@
   <property environment="env"/>
 
   <!-- defaults -->
-  <!-- one of ideaIC, WebStorm, android-studio-ide -->
+  <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
   <property name="idea.version" value="2016.3.2"/>
@@ -226,7 +226,7 @@
 
       <formatter type="plain" usefile="false"/>
 
-      <!-- This runs the unit tests; it does not run the integration tests. -->
+      <!-- This runs the unit tests (it does not run the integration tests). -->
       <batchtest>
         <fileset dir="testSrc/unit">
           <include name="**/*Test.java"/>
