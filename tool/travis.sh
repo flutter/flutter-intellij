@@ -12,7 +12,10 @@ echo $FLUTTER_SDK
 flutter --version
 
 # Print a report for the API used from the Dart plugin
+echo -en 'travis_fold:start:pub.get\\r'
 pub get
+echo -en 'travis_fold:end:pub.get\\r'
+
 dart tool/grind.dart api
 
 # Run the ant build.

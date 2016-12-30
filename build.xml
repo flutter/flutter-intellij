@@ -116,7 +116,9 @@
       </dirset>
     </path>
 
+    <echo message="travis_fold:start:ant.properties"/>
     <echoproperties/>
+    <echo message="travis_fold:end:ant.properties"/>
   </target>
 
   <target name="build.src" depends="paths">
