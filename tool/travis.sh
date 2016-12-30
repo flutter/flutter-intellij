@@ -16,7 +16,7 @@ pub get
 dart tool/grind.dart api
 
 # Run the ant build.
-if [ "UNIT_TEST" = "true" ]
+if [ "$UNIT_TEST" = "true" ]
 then
   ant build test \
     -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
