@@ -13,6 +13,7 @@ flutter --version
 
 # Print a report for the API used from the Dart plugin
 echo -en 'travis_fold:start:pub.get\\r'
+echo "pub get"
 pub get
 echo -en 'travis_fold:end:pub.get\\r'
 
