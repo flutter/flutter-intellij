@@ -3,24 +3,18 @@ language: java
 jdk:
   - oraclejdk8
 
-# Skip the gradle install: https://github.com/flutter/flutter-intellij/issues/222
 install: true
 
 before_script:
   - git clone https://github.com/flutter/flutter.git --depth 1
   - export PATH="$PATH":flutter/bin:flutter/bin/cache/dart-sdk/bin
   - flutter config --no-analytics
-  - flutter precache
+  - flutter doctor
   - export FLUTTER_SDK=`pwd`/flutter
+
+env:
+  - IDEA_PRODUCT=ideaIC IDEA_VERSION=2016.2.5 DART_PLUGIN_VERSION=162.2924
+  - IDEA_PRODUCT=ideaIC IDEA_VERSION=2016.3.1 DART_PLUGIN_VERSION=163.10154.19
 
 # execution
 script: ./tool/travis.sh
-
-# disabled: https://github.com/flutter/flutter-intellij/issues/222
-## caching
-#before_cache:
-#  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
-#cache:
-#  directories:
-#    - $HOME/.gradle/caches/
-#    - $HOME/.gradle/wrapper/

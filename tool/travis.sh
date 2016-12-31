@@ -11,10 +11,12 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
-# disabled: https://github.com/flutter/flutter-intellij/issues/222
-# Run the gradle build.
-#gradle build --info
-
 # Print a report for the API used from the Dart plugin
 pub get
 dart tool/grind.dart api
+
+# Run the ant build.
+ant build \
+  -Didea.product=$IDEA_PRODUCT \
+  -Didea.version=$IDEA_VERSION \
+  -Ddart.plugin.version=$DART_PLUGIN_VERSION

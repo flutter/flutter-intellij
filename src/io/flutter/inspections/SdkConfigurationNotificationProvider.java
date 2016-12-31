@@ -66,6 +66,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     return panel;
   }
 
+  @SuppressWarnings("SameReturnValue")
   private static EditorNotificationPanel createNoFlutterSdkPanel() {
     // TODO(pq): add panel for unconfigured Flutter SDK.
 

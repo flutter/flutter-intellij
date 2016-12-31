@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages" />
       <excludeFolder url="file://$MODULE_DIR$/tool/colors/packages" />
@@ -23,6 +24,24 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.10154.19/Dart.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.10154.19/resources_en.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/snakeyaml-1.13.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -198,9 +198,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
   }
 
-  public void scheduleConnect() {
-  }
-
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       if (myConnector != null) {
@@ -481,7 +478,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     final Set<String> result = new HashSet<>();
     final String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
 
-    // If dart:, short circut the results.
+    // If dart:, short circuit the results.
     if (uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
       result.add(uriByIde);
       return result;
