@@ -11,12 +11,15 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterUpgradeAction extends FlutterSdkAction {
   @Override
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
+    FlutterInitializer.sendActionEvent(this);
+
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
       sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);

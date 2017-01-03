@@ -11,6 +11,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import gnu.trove.THashMap;
+import io.flutter.FlutterInitializer;
 import io.flutter.utils.StopWatch;
 import io.flutter.utils.TimeoutUtil;
 import org.jetbrains.annotations.NotNull;
@@ -344,10 +345,12 @@ class FlutterDaemonControllerHelper {
 
         if (message.progressId != null && message.progressId.startsWith("hot.")) {
           if (message.progressId.equals("hot.reload")) {
-            app.getConsole().print("\nReloaded in " + myProgressStopWatch.getTime() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            app.getConsole().print("\nReloaded in " + myProgressStopWatch.getTimeMillis() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            FlutterInitializer.getAnalytics().sendTiming("run", "reload", myProgressStopWatch.getTimeMillis());
           }
           else if (message.progressId.equals("hot.restart")) {
-            app.getConsole().print("\nRestarted in " + myProgressStopWatch.getTime() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            app.getConsole().print("\nRestarted in " + myProgressStopWatch.getTimeMillis() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            FlutterInitializer.getAnalytics().sendTiming("run", "restart", myProgressStopWatch.getTimeMillis());
           }
         }
 

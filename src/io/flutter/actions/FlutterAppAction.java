@@ -18,8 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 abstract public class FlutterAppAction extends DumbAwareAction {
-
-
   private static final Logger LOG = Logger.getInstance(FlutterAppAction.class);
 
   private final ObservatoryConnector myConnector;
@@ -34,7 +32,12 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   };
   private boolean myIsListening = false;
 
-  public FlutterAppAction(ObservatoryConnector connector, String text, String description, Icon icon, Computable<Boolean> isApplicable, @NotNull String actionId) {
+  public FlutterAppAction(ObservatoryConnector connector,
+                          String text,
+                          String description,
+                          Icon icon,
+                          Computable<Boolean> isApplicable,
+                          @NotNull String actionId) {
     super(text, description, icon);
     myConnector = connector;
     myIsApplicable = isApplicable;

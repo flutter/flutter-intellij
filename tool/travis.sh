@@ -11,10 +11,20 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
-# disabled: https://github.com/flutter/flutter-intellij/issues/222
-# Run the gradle build.
-#gradle build --info
-
 # Print a report for the API used from the Dart plugin
+echo -en 'travis_fold:start:pub.get\\r'
+echo "pub get"
 pub get
+echo -en 'travis_fold:end:pub.get\\r'
+
 dart tool/grind.dart api
+
+# Run the ant build.
+if [ "$UNIT_TEST" = "true" ]
+then
+  ant build test \
+    -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
+else
+  ant build \
+    -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
+fi

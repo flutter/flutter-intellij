@@ -112,6 +112,8 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
         builder.append(event.getThrowableText().trim()).append("\n");
         builder.append("```\n");
         builder.append("\n");
+
+        FlutterInitializer.getAnalytics().sendException(event.getThrowable(), false);
       }
     }
 

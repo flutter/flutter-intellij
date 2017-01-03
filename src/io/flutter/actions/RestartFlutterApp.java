@@ -11,6 +11,7 @@ import com.intellij.openapi.util.Computable;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class RestartFlutterApp extends FlutterAppAction {
@@ -24,6 +25,8 @@ public class RestartFlutterApp extends FlutterAppAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    FlutterInitializer.sendActionEvent(this);
+
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
       getApp().performRestartApp();
