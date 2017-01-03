@@ -79,8 +79,9 @@ public class FlutterRunner extends FlutterRunnerBase {
         }
 
         @Override
-        public int getPort() {
-          return appState.getObservatoryPort();
+        @Nullable
+        public String getObservatoryWsUrl() {
+          return appState.getWsUrl();
         }
 
         @Override
@@ -159,8 +160,6 @@ public class FlutterRunner extends FlutterRunnerBase {
 
     executionResult = appState.execute(env.getExecutor(), this);
 
-    observatoryPort = appState.getObservatoryPort();
-
     FileDocumentManager.getInstance().saveAllDocuments();
 
     final XDebuggerManager debuggerManager = XDebuggerManager.getInstance(env.getProject());
@@ -170,8 +169,6 @@ public class FlutterRunner extends FlutterRunnerBase {
       public XDebugProcess start(@NotNull final XDebugSession session) {
         final DartUrlResolver dartUrlResolver = getDartUrlResolver(env.getProject(), contextFileOrDir);
         return new FlutterDebugProcess(session,
-                                       "localhost",
-                                       observatoryPort,
                                        state,
                                        executionResult,
                                        dartUrlResolver,

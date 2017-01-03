@@ -34,8 +34,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
   @NotNull private final RunProfileState myState;
 
   public FlutterDebugProcess(@NotNull XDebugSession session,
-                             @NotNull String debuggingHost,
-                             int observatoryPort,
                              @NotNull RunProfileState state,
                              @Nullable ExecutionResult executionResult,
                              @NotNull DartUrlResolver dartUrlResolver,
@@ -44,7 +42,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
                              int timeout,
                              @Nullable VirtualFile currentWorkingDirectory,
                              @Nullable ObservatoryConnector connector) {
-    super(session, debuggingHost, observatoryPort, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
+    super(session, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
           currentWorkingDirectory, connector);
     myState = state;
   }

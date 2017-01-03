@@ -21,6 +21,16 @@ import java.util.List;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenObservatoryAction extends DumbAwareAction {
+  public static String convertWsToHttp(@NotNull String wsUrl) {
+    if (wsUrl.startsWith("ws:")) {
+      wsUrl = "http:" + wsUrl.substring(3);
+    }
+    if (wsUrl.endsWith("/ws")) {
+      wsUrl = wsUrl.substring(0, wsUrl.length() - 3);
+    }
+    return wsUrl;
+  }
+
   private final Computable<String> myUrl;
   private final Computable<Boolean> myIsApplicable;
 

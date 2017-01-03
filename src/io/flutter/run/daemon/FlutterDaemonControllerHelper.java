@@ -421,7 +421,7 @@ class FlutterDaemonControllerHelper {
   private void eventDebugPort(@NotNull AppDebugPortEvent port, @NotNull FlutterDaemonController controller) {
     final FlutterApp app = waitForApp(controller, port.appId);
     if (app != null) {
-      app.setPort(port.port);
+      app.setWsUrl(port.wsUri);
 
       String uri = port.baseUri;
       if (uri != null) {
@@ -681,7 +681,6 @@ class FlutterDaemonControllerHelper {
   private static class AppDebugPortEvent extends Event {
     // "event":"app.eventDebugPort"
     @SuppressWarnings("unused") private String appId;
-    @SuppressWarnings("unused") private int port;
     @SuppressWarnings("unused") private String wsUri;
     @SuppressWarnings("unused") private String baseUri;
 
