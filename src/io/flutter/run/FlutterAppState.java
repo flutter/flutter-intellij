@@ -21,7 +21,6 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.net.NetUtils;
 import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
@@ -131,16 +130,16 @@ public class FlutterAppState extends FlutterAppStateBase {
   protected void addObservatoryActions(List<AnAction> actions, final ProcessHandler processHandler) {
     actions.add(new Separator());
     actions.add(new OpenObservatoryAction(
-      () -> "http://" + NetUtils.getLocalHostString() + ":" + myApp.port(), //NON-NLS
+      () -> OpenObservatoryAction.convertWsToHttp(myApp.wsUrl()),
       () -> !processHandler.isProcessTerminated()));
   }
 
   public boolean isConnectionReady() {
-    return myApp != null && myApp.port() > 0;
+    return myApp != null && myApp.wsUrl() != null;
   }
 
-  public int getObservatoryPort() {
-    return myApp.port();
+  public String getWsUrl() {
+    return myApp.wsUrl();
   }
 
   public FlutterApp getApp() {
