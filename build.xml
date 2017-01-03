@@ -10,8 +10,8 @@
   <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
-  <property name="idea.version" value="2016.3.1"/>
-  <property name="dart.plugin.version" value="163.10154.19"/>
+  <property name="idea.version" value="2016.3.2"/>
+  <property name="dart.plugin.version" value="163.11306"/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
