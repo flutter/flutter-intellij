@@ -105,6 +105,26 @@ public class FlutterSdk {
     });
   }
 
+  private static void setPubInProgress(boolean inProgress) {
+    try {
+      DartPubActionBase.class.getMethod("setIsInProgress", boolean.class).invoke(null, inProgress);
+    }
+    catch (Exception e) {
+      // ignore and move on
+    }
+  }
+
+  private static void start(@NotNull OSProcessHandler handler) {
+    // TODO: replace w/ DartPubActionBase.setIsInProgress() when DartPlugin lower-bound is upped to 163.10154.
+    setPubInProgress(true);
+    try {
+      handler.startNotify();
+    }
+    finally {
+      setPubInProgress(false);
+    }
+  }
+
   public void run(@NotNull Command cmd,
                   @Nullable Module module,
                   @Nullable VirtualFile workingDir,
@@ -209,16 +229,6 @@ public class FlutterSdk {
   @NotNull
   public String getDartSdkPath() throws ExecutionException {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
-  }
-
-  private void start(@NotNull OSProcessHandler handler) {
-    DartPubActionBase.setIsInProgress(true);
-    try {
-      handler.startNotify();
-    }
-    finally {
-      DartPubActionBase.setIsInProgress(false);
-    }
   }
 
   public enum Command {
