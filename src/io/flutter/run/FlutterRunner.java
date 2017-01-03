@@ -79,6 +79,7 @@ public class FlutterRunner extends FlutterRunnerBase {
         }
 
         @Override
+        @Nullable
         public String getObservatoryWsUrl() {
           return appState.getWsUrl();
         }

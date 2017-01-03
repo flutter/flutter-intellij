@@ -2,6 +2,7 @@ package com.jetbrains.lang.dart.ide.runner;
 
 import com.intellij.xdebugger.XDebugSession;
 import io.flutter.run.daemon.FlutterApp;
+import org.jetbrains.annotations.Nullable;
 
 public interface ObservatoryConnector {
 
@@ -13,6 +14,7 @@ public interface ObservatoryConnector {
   /**
    * Return the WebSocket URL used by the observatory.
    */
+  @Nullable
   String getObservatoryWsUrl();
 
   /**

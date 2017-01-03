@@ -9,6 +9,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -91,17 +92,19 @@ public class FlutterApp {
   /**
    * @return the Observatory WebSocket URL
    */
+  @Nullable
   public String wsUrl() {
     return myWsUrl;
   }
 
-  public void setWsUrl(String url) {
+  public void setWsUrl(@NotNull String url) {
     myWsUrl = url;
   }
 
   /**
    * @return The (optional) baseUri to use for debugger paths.
    */
+  @Nullable
   public String baseUri() {
     return myBaseUri;
   }
