@@ -109,7 +109,7 @@ public class FlutterSdk {
     try {
       DartPubActionBase.class.getMethod("setIsInProgress", boolean.class).invoke(null, inProgress);
     }
-    catch (Exception e) {
+    catch (Throwable th) {
       // ignore and move on
     }
   }
