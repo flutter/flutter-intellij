@@ -37,6 +37,7 @@ api() {
   List<String> keys = usages.keys.toList();
   keys.sort();
 
+  log('travis_fold:start:apis.used');
   log('${keys.length} separate Dart plugin APIs used:');
   log('');
 
@@ -46,6 +47,7 @@ api() {
     places.forEach((String place) => log('  $place'));
     log('');
   }
+  log('travis_fold:end:apis.used');
 }
 
 @Task()

@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- TODO(devoncarew): We should put the artifacts in google storage. -->
-
 <!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
-
 
 <project name="flutter-intellij" default="build">
   <property environment="env"/>
 
   <!-- defaults -->
+  <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
-  <property name="idea.version" value="2016.3.1"/>
-  <property name="dart.plugin.version" value="163.10154.19"/>
+  <!-- the platform version, and substring to use when downloading from google storage -->
+  <property name="idea.version" value="2016.3.2"/>
+  <property name="dart.plugin.version" value="163.11306"/>
+
+  <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
+
+  <condition property="extract.with.zip">
+    <contains string="${idea.product}" substring="android-studio"/>
+  </condition>
 
   <patternset id="compiler.resources">
     <exclude name="**/?*.java"/>
@@ -34,28 +39,38 @@
     <mkdir dir="build/testSrc"/>
   </target>
 
-  <target name="download" depends="init">
-    <!-- download IntelliJ -->
+  <target name="download.android" depends="init" if="extract.with.zip">
     <property name="idea.home" location="artifacts/${idea.product}-${idea.version}"/>
-    <get src="https://download.jetbrains.com/idea/${idea.product}-${idea.version}.tar.gz"
+    <get src="${google.storage.base}/${idea.product}-${idea.version}-linux.zip"
+         dest="artifacts" usetimestamp="true"/>
+    <unzip src="artifacts/${idea.product}-${idea.version}-linux.zip" dest="${idea.home}">
+      <cutdirsmapper dirs="1"/>
+    </unzip>
+  </target>
+
+  <target name="download.idea" depends="init" unless="extract.with.zip">
+    <property name="idea.home" location="artifacts/${idea.product}-${idea.version}"/>
+    <get src="${google.storage.base}/${idea.product}-${idea.version}.tar.gz"
          dest="artifacts" usetimestamp="true"/>
     <gunzip src="artifacts/${idea.product}-${idea.version}.tar.gz"
             dest="artifacts/${idea.product}-${idea.version}.tar"/>
-    <untar src="artifacts/${idea.product}-${idea.version}.tar"
-           dest="${idea.home}">
+    <untar src="artifacts/${idea.product}-${idea.version}.tar" dest="${idea.home}">
       <cutdirsmapper dirs="1"/>
     </untar>
+  </target>
+
+  <target name="download" depends="download.android, download.idea">
+    <!-- download the javac2 jars -->
+    <get src="${google.storage.base}/intellij-javac2.zip" dest="artifacts/" usetimestamp="true"/>
+    <unzip src="artifacts/intellij-javac2.zip" dest="artifacts/javac2"/>
 
     <!-- download the Dart plugin -->
-    <!-- TODO(devoncarew): download based on dart.plugin.version -->
-    <get src="https://plugins.jetbrains.com/plugin/download?pr=idea&amp;updateId=31054"
-         dest="artifacts/Dart-${dart.plugin.version}.zip" usetimestamp="true"/>
+    <get src="${google.storage.base}/Dart-${dart.plugin.version}.zip" dest="artifacts/" usetimestamp="true"/>
     <unzip src="artifacts/Dart-${dart.plugin.version}.zip" dest="artifacts"/>
   </target>
 
   <target name="properties" depends="download">
-    <property name="javac2.home" value="${idea.home}/lib"/>
-
+    <property name="javac2.home" value="artifacts/javac2"/>
     <path id="javac2.classpath">
       <pathelement location="${javac2.home}/javac2.jar"/>
       <pathelement location="${javac2.home}/jdom.jar"/>
@@ -69,15 +84,9 @@
 
   <target name="paths" depends="properties">
     <path id="idea.jars">
-      <pathelement location="${idea.home}/lib/idea.jar"/>
-      <pathelement location="${idea.home}/lib/annotations.jar"/>
-      <pathelement location="${idea.home}/lib/extensions.jar"/>
-      <pathelement location="${idea.home}/lib/openapi.jar"/>
-      <pathelement location="${idea.home}/lib/trove4j.jar"/>
-      <pathelement location="${idea.home}/lib/jdom.jar"/>
-      <pathelement location="${idea.home}/lib/forms_rt.jar"/>
-      <pathelement location="${idea.home}/lib/gson-2.5.jar"/>
-      <pathelement location="${idea.home}/lib/util.jar"/>
+      <fileset dir="${idea.home}/lib">
+        <include name="*.jar"/>
+      </fileset>
     </path>
 
     <path id="dartplugin.jars">
@@ -87,7 +96,7 @@
     </path>
 
     <path id="junit.jars">
-      <pathelement location="${idea.home}/lib/junit-4.12.jar"/>
+      <pathelement location="${idea.home}/lib/junit-*.jar"/>
     </path>
 
     <path id="src.sourcepath">
@@ -101,16 +110,21 @@
 
     <path id="testSrc.sourcepath">
       <dirset dir=".">
-        <include name="testSrc"/>
+        <include name="testSrc/unit"/>
+        <include name="testSrc/integration"/>
         <include name="third_party/intellij-plugins-dart/testSrc"/>
       </dirset>
     </path>
 
+    <echo message="travis_fold:start:ant.properties"/>
     <echoproperties/>
+    <echo message="travis_fold:end:ant.properties"/>
   </target>
 
   <target name="build.src" depends="paths">
-    <javac2 destdir="build/src" memorymaximumsize="700m" fork="true">
+    <echo message="Building against target ${idea.home}"/>
+
+    <javac2 destdir="build/src" memorymaximumsize="1000m" fork="true" includeantruntime="false">
       <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
       <classpath>
         <path refid="idea.jars"/>
@@ -151,7 +165,9 @@
   </target>
 
   <target name="build.testSrc" depends="paths, build.src">
-    <javac2 destdir="build/testSrc" memorymaximumsize="700m" fork="true">
+    <echo message="Building against target ${idea.home}"/>
+
+    <javac2 destdir="build/testSrc" memorymaximumsize="1000m" fork="true" includeantruntime="false">
       <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
       <classpath>
         <path refid="idea.jars"/>
@@ -178,9 +194,9 @@
     <length file="build/flutter-intellij-tests.jar"/>
   </target>
 
-  <target name="build" depends="build.src, build.testSrc"/>
+  <target name="build" depends="build.src"/>
 
-  <target name="test" depends="paths">
+  <target name="test" depends="build.testSrc">
     <!-- create a Dart plugin directory -->
     <copy todir="build/idea-sandbox/plugins/Dart/lib" flatten="true">
       <path refid="dartplugin.jars"/>
@@ -212,9 +228,10 @@
 
       <formatter type="plain" usefile="false"/>
 
+      <!-- This runs the unit tests (it does not run the integration tests). -->
       <batchtest>
-        <fileset dir="build/testSrc">
-          <include name="**/*Test.class"/>
+        <fileset dir="testSrc/unit">
+          <include name="**/*Test.java"/>
         </fileset>
       </batchtest>
     </junit>

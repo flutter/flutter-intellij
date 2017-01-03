@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Flutter Plugin (tests)" type="JUnit" factoryName="JUnit" singleton="true">
+  <configuration default="false" name="Flutter Tests (integration)" type="JUnit" factoryName="JUnit" singleton="true">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
         <option name="PATTERN" value="io.flutter.sdk.*" />
@@ -22,7 +22,7 @@
       <value defaultName="singleModule" />
     </option>
     <envs />
-    <dir value="$PROJECT_DIR$/testSrc" />
+    <dir value="$PROJECT_DIR$/testSrc/integration" />
     <patterns />
     <method />
   </configuration>
