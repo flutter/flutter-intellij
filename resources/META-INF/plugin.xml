@@ -99,14 +99,6 @@
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
   <actions>
-    <action id="Flutter.HotReloadFlutterAppKey" class="io.flutter.actions.HotReloadFlutterAppRetarget" text="Flutter Hot Reload">
-      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
-      <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-    </action>
-    <action id="Flutter.RestartFlutterAppKey" class="io.flutter.actions.RestartFlutterAppRetarget" text="Flutter Restart Application">
-      <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt SEMICOLON"/>
-      <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
-    </action>
     <group id="Flutter.MainToolbarActions">
       <separator/>
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
@@ -163,10 +155,16 @@
       <separator/>
       <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.HotReloadFlutterAppRetarget"
               description="Reload"
-              icon="FlutterIcons.ReloadBoth"/>
+              icon="FlutterIcons.ReloadBoth">
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
+    </action>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
-              icon="FlutterIcons.Restart"/>
+              icon="FlutterIcons.Restart">
+        <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt SEMICOLON"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
+      </action>
       <separator/>
       <add-to-group anchor="last" group-id="RunContextGroup" />
       <add-to-group anchor="last" group-id="ToolbarRunGroup" />
