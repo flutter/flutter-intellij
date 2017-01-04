@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.Computable;
@@ -23,6 +24,8 @@ public class HotReloadFlutterApp extends FlutterAppAction {
 
   public HotReloadFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
     super(connector, TEXT, DESCRIPTION, FlutterIcons.ReloadBoth, isApplicable, ID);
+    // Shortcut is associated with toolbar action.
+    copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAction"));
   }
 
   @Override
