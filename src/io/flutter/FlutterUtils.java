@@ -27,6 +27,7 @@ public class FlutterUtils {
       ModalityState.defaultModalityState());
   }
 
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean isFlutteryFile(@NotNull VirtualFile file) {
     final String fileName = file.getName();
     return file.getFileType() == DartFileType.INSTANCE ||

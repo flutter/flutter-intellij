@@ -28,6 +28,7 @@ import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.Collection;
@@ -138,10 +139,12 @@ public class FlutterAppState extends FlutterAppStateBase {
     return myApp != null && myApp.wsUrl() != null;
   }
 
+  @Nullable
   public String getWsUrl() {
     return myApp.wsUrl();
   }
 
+  @Nullable
   public FlutterApp getApp() {
     return myApp;
   }

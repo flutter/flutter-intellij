@@ -460,6 +460,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private String computeObservatoryBrowserUrl() {
     assert myConnector != null;
     myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
+    assert  myObservatoryWsUrl != null;
     return OpenObservatoryAction.convertWsToHttp(myObservatoryWsUrl);
   }
 
