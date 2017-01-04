@@ -15,12 +15,12 @@ import io.flutter.FlutterInitializer;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class RestartFlutterApp extends FlutterAppAction {
-
   public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
+  public static final String TEXT = FlutterBundle.message("app.restart.action.text");
+  public static final String DESCRIPTION = FlutterBundle.message("app.restart.action.description");
 
   public RestartFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
-    super(connector, FlutterBundle.message("app.restart.action.text"), FlutterBundle.message("app.restart.action.description"),
-          FlutterIcons.Restart, isApplicable, ID);
+    super(connector, TEXT, DESCRIPTION, FlutterIcons.Restart, isApplicable, ID);
   }
 
   @Override

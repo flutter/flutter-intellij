@@ -13,6 +13,7 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,11 @@ public abstract class FlutterRetargetAction extends DumbAwareAction {
   @NotNull
   private final List<String> myPlaces = new ArrayList<>();
 
-  FlutterRetargetAction(@NotNull String actionId, @NotNull String... places) {
+  FlutterRetargetAction(@NotNull String actionId,
+                        @Nullable String text,
+                        @Nullable String description,
+                        @SuppressWarnings("SameParameterValue") @NotNull String... places) {
+    super(text, description, null);
     myActionId = actionId;
     myPlaces.addAll(Arrays.asList(places));
   }
@@ -59,6 +64,11 @@ public abstract class FlutterRetargetAction extends DumbAwareAction {
     // Retargeted actions defer to their targets for presentation updates.
     final AnAction action = getAction();
     if (action != null) {
+      final Presentation template = action.getTemplatePresentation();
+      final String text = template.getTextWithMnemonic();
+      if (text != null) {
+        presentation.setText(text, true);
+      }
       action.update(e);
     }
     else {
