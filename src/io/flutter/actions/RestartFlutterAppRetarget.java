@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces;
  */
 public class RestartFlutterAppRetarget extends FlutterRetargetAction {
   public RestartFlutterAppRetarget() {
-    super(RestartFlutterApp.ID, ActionPlaces.MAIN_TOOLBAR);
+    super(RestartFlutterApp.ID, RestartFlutterApp.TEXT, RestartFlutterApp.DESCRIPTION,
+          ActionPlaces.MAIN_TOOLBAR);
   }
 }

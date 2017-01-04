@@ -12,6 +12,9 @@ import com.intellij.openapi.actionSystem.ActionPlaces;
  */
 public class HotReloadFlutterAppRetarget extends FlutterRetargetAction {
   public HotReloadFlutterAppRetarget() {
-    super(HotReloadFlutterApp.ID, ActionPlaces.MAIN_TOOLBAR);
+    super(HotReloadFlutterApp.ID,
+          HotReloadFlutterApp.TEXT,
+          HotReloadFlutterApp.DESCRIPTION,
+          ActionPlaces.MAIN_TOOLBAR);
   }
 }
