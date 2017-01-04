@@ -85,18 +85,21 @@ public class FlutterRunner extends FlutterRunnerBase {
         }
 
         @Override
+        @NotNull
         public FlutterApp getApp() {
-          return appState.getApp();
+          final FlutterApp app = appState.getApp();
+          assert app != null;
+          return app;
         }
 
         @Override
         public void sessionPaused(XDebugSession sessionHook) {
-          appState.getApp().sessionPaused(sessionHook);
+          getApp().sessionPaused(sessionHook);
         }
 
         @Override
         public void sessionResumed() {
-          appState.getApp().sessionResumed();
+          getApp().sessionResumed();
         }
       };
     }
