@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
@@ -251,8 +252,7 @@ public class FlutterDaemonController extends ProcessAdapter {
     }
 
     // User specified additional arguments.
-    final CommandLineTokenizer argumentsTokenizer =
-      additionalArguments != null ? new CommandLineTokenizer(additionalArguments) : new CommandLineTokenizer("");
+    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArguments));
     while (argumentsTokenizer.hasMoreTokens()) {
       final String token = argumentsTokenizer.nextToken();
       if (token.equals("--")) {
