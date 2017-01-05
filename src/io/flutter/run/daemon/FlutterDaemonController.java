@@ -28,7 +28,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * Control an external Flutter process, including reading events and responses from its stdout and
@@ -120,7 +119,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   public void sendCommand(String commandJson, FlutterDaemonControllerHelper manager) {
     if (myProcessHandler == null) {
-      return; // Possibly, device was removed TODO(messick) Handle disconnecting the device
+      return;
     }
     final OutputStream input = myProcessHandler.getProcessInput();
     if (input == null) {
@@ -246,30 +245,20 @@ public class FlutterDaemonController extends ProcessAdapter {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // TODO(devoncarew): Fix the launch script to accept more flags.
-    //commandLine.addParameters("--machine");
-
-    // TODO(devoncarew): Fix the launch script to accept more flags.
-    //if (deviceId != null) {
-    //  commandLine.addParameter("--device-id=" + deviceId);
-    //}
-
-    // TODO(devoncarew): Fix the launch script to accept more flags.
-    //if (startPaused) {
-    //  commandLine.addParameter("--start-paused");
-    //}
-
     // Set the mode.
     if (mode != RunMode.DEBUG) {
       commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
     }
 
-    // Additional arguments.
-    if (additionalArguments != null) {
-      final StringTokenizer argumentsTokenizer = new CommandLineTokenizer(additionalArguments);
-      while (argumentsTokenizer.hasMoreTokens()) {
-        commandLine.addParameter(argumentsTokenizer.nextToken());
+    // User specified additional arguments.
+    final CommandLineTokenizer argumentsTokenizer =
+      additionalArguments != null ? new CommandLineTokenizer(additionalArguments) : new CommandLineTokenizer("");
+    while (argumentsTokenizer.hasMoreTokens()) {
+      final String token = argumentsTokenizer.nextToken();
+      if (token.equals("--")) {
+        break;
       }
+      commandLine.addParameter(token);
     }
 
     // Append _run[_hot] to bazelTarget.
@@ -280,6 +269,22 @@ public class FlutterDaemonController extends ProcessAdapter {
       }
     }
     commandLine.addParameter(bazelTarget);
+
+    // Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
+    commandLine.addParameter("--");
+
+    // Tell the flutter tommand-line tools that we want a machine interface on stdio.
+    commandLine.addParameters("--machine");
+
+    // Pause the app at startup in order to set breakpoints.
+    if (startPaused) {
+      commandLine.addParameter("--start-paused");
+    }
+
+    // More user-specified args.
+    while (argumentsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(argumentsTokenizer.nextToken());
+    }
 
     return commandLine;
   }
