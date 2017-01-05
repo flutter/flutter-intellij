@@ -187,9 +187,8 @@
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
     <programRunner implementation="io.flutter.run.FlutterRunner"/>
 
-    <!-- TODO(devoncarew): Bazel launch is disabled; the implementation isn't complete. -->
-    <!-- configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
-    <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/ -->
+    <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
+    <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/>
 
     <!-- IDEA only -->
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
