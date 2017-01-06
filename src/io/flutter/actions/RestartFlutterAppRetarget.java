@@ -5,11 +5,14 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionPlaces;
+
 /**
  * A keystroke or tool-bar invoked {@link RestartFlutterApp} action.
  */
 public class RestartFlutterAppRetarget extends FlutterRetargetAction {
   public RestartFlutterAppRetarget() {
-    super(RestartFlutterApp.ID);
+    super(RestartFlutterApp.ID, RestartFlutterApp.TEXT, RestartFlutterApp.DESCRIPTION,
+          ActionPlaces.MAIN_TOOLBAR);
   }
 }

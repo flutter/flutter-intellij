@@ -16,11 +16,26 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenObservatoryAction extends DumbAwareAction {
+  @Nullable
+  public static String convertWsToHttp(@Nullable String wsUrl) {
+    if (wsUrl == null) {
+      return null;
+    }
+    if (wsUrl.startsWith("ws:")) {
+      wsUrl = "http:" + wsUrl.substring(3);
+    }
+    if (wsUrl.endsWith("/ws")) {
+      wsUrl = wsUrl.substring(0, wsUrl.length() - 3);
+    }
+    return wsUrl;
+  }
+
   private final Computable<String> myUrl;
   private final Computable<Boolean> myIsApplicable;
 

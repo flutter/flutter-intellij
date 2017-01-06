@@ -72,6 +72,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
+    myPrivacyPolicy.setIcon(null);
     myPrivacyPolicy.setListener((label, linkUrl) -> {
       try {
         BrowserLauncher.getInstance().browse(new URI(linkUrl));

@@ -5,11 +5,16 @@
  */
 package io.flutter.actions;
 
+import com.intellij.openapi.actionSystem.ActionPlaces;
+
 /**
  * A keystroke or tool-bar invoked {@link HotReloadFlutterApp} action.
  */
 public class HotReloadFlutterAppRetarget extends FlutterRetargetAction {
   public HotReloadFlutterAppRetarget() {
-    super(HotReloadFlutterApp.ID);
+    super(HotReloadFlutterApp.ID,
+          HotReloadFlutterApp.TEXT,
+          HotReloadFlutterApp.DESCRIPTION,
+          ActionPlaces.MAIN_TOOLBAR);
   }
 }
