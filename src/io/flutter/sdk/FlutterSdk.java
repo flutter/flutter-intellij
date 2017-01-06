@@ -155,7 +155,7 @@ public class FlutterSdk {
         });
 
         if (cmd.attachToConsole() && module != null) {
-          FlutterConsoleHelper.attach(module, handler);
+          FlutterConsoleHelper.attach(module, handler, cmd.runOnConsoleActivation());
         }
 
         cmd.onStart(module, workingDir, args);
@@ -197,8 +197,7 @@ public class FlutterSdk {
           }
         });
 
-        FlutterConsoleHelper.attach(project, handler);
-        start(handler);
+        FlutterConsoleHelper.attach(project, handler, () -> start(handler));
 
         // Send the command to analytics.
         FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
@@ -332,6 +331,15 @@ public class FlutterSdk {
     @SuppressWarnings("SameReturnValue")
     boolean attachToConsole() {
       return true;
+    }
+
+    /**
+     * An (optional) action to perform once the console is active.
+     */
+    @SuppressWarnings("SameReturnValue")
+    @Nullable
+    Runnable runOnConsoleActivation() {
+      return null;
     }
 
     /**
