@@ -28,17 +28,19 @@ public class FlutterConsoleHelper {
   private static final Key<FlutterConsoleInfo> FLUTTER_MESSAGES_KEY = Key.create("FLUTTER_MESSAGES_KEY");
 
   /**
-   * Attach the flutter console to the process managed by the given processHandler.
+   * Attach the flutter console to the process managed by the given processHandler. Optionally provide a runnable to execute once the
+   * console is active.
    */
-  public static void attach(@NotNull Project project, @NotNull OSProcessHandler processHandler) {
-    show(project, null, processHandler);
+  public static void attach(@NotNull Project project, @NotNull OSProcessHandler processHandler, @Nullable Runnable runOnActive) {
+    show(project, null, processHandler, runOnActive);
   }
 
   /**
-   * Attach the flutter console to the process managed by the given processHandler.
+   * Attach the flutter console to the process managed by the given processHandler.  Optionally provide a runnable to execute once the
+   * console is active.
    */
-  public static void attach(@NotNull Module module, @NotNull OSProcessHandler processHandler) {
-    show(module.getProject(), module, processHandler);
+  public static void attach(@NotNull Module module, @NotNull OSProcessHandler processHandler, @Nullable Runnable runOnActive) {
+    show(module.getProject(), module, processHandler, runOnActive);
   }
 
   /**
@@ -48,7 +50,8 @@ public class FlutterConsoleHelper {
    */
   private static void show(@NotNull Project project,
                            @Nullable Module module,
-                           @NotNull OSProcessHandler processHandler) {
+                           @NotNull OSProcessHandler processHandler,
+                           @Nullable Runnable runOnActive) {
     final MessageView messageView = MessageView.SERVICE.getInstance(project);
 
     messageView.runWhenInitialized(() -> {
@@ -80,8 +83,8 @@ public class FlutterConsoleHelper {
         contentManager.addContent(info.content);
         contentManager.setSelectedContent(info.content);
 
-        toolWindow.activate(null, true);
         info.console.attachToProcess(processHandler);
+        toolWindow.activate(runOnActive, true);
       }
     });
   }
