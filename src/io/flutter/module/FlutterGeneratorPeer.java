@@ -36,6 +36,7 @@ public class FlutterGeneratorPeer {
   private JBLabel myVersionContent;
   private JLabel errorIcon;
   private JTextPane errorText;
+  private JScrollPane errorPane;
 
   public FlutterGeneratorPeer() {
     errorIcon.setText("");
@@ -94,7 +95,7 @@ public class FlutterGeneratorPeer {
       errorText.setText(XmlStringUtil.wrapInHtml(info.message));
     }
     errorIcon.setVisible(info != null);
-    errorText.setVisible(info != null);
+    errorPane.setVisible(info != null);
 
     return info == null;
   }
