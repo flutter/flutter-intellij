@@ -201,12 +201,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
    * We override the parent with a no-op implementation; our preferred implementation
    * (scheduleConnectNew) is called elsewhere.
    */
-  protected void scheduleConnect() {
+  public void scheduleConnect() {
     // This page intentionally left blank.
 
   }
 
-  protected void scheduleConnectNew() {
+  public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
       if (myConnector != null) {
         final long timeout = (long)myTimeout;
