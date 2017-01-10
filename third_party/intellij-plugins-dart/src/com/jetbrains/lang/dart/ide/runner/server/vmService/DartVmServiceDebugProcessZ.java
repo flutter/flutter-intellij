@@ -137,6 +137,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     else {
       LOG.assertTrue(myExecutionResult != null && myDASExecutionContextId != null, myDASExecutionContextId + myExecutionResult);
     }
+
+    // We disable the service protocol library logger because of a user facing NPE in a
+    // DartVmServiceListener from the Dart plugin.
+    Logging.setLogger(org.dartlang.vm.service.logging.Logger.NULL);
   }
 
   @Nullable
@@ -191,6 +195,15 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         LOG.debug(message, exception);
       }
     });
+  }
+
+  /**
+   * We override the parent with a no-op implementation; our preferred implementation
+   * (scheduleConnectNew) is called elsewhere.
+   */
+  public void scheduleConnect() {
+    // This page intentionally left blank.
+
   }
 
   public void scheduleConnectNew() {
@@ -257,13 +270,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     final VmService vmService = VmService.connect(myObservatoryWsUrl);
     final DartVmServiceListener vmServiceListener =
       new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
-
-    vmService.addVmServiceListener(vmServiceListener);
-
     final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
 
     myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
     myVmServiceWrapper.handleDebuggerConnected();
+
+    vmService.addVmServiceListener(vmServiceListener);
 
     myVmConnected = true;
     getSession().rebuildViews();
@@ -460,7 +472,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private String computeObservatoryBrowserUrl() {
     assert myConnector != null;
     myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
-    assert  myObservatoryWsUrl != null;
+    assert myObservatoryWsUrl != null;
     return OpenObservatoryAction.convertWsToHttp(myObservatoryWsUrl);
   }
 
