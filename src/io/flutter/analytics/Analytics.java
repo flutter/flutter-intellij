@@ -27,6 +27,8 @@ import java.util.Map;
  * Lightweight Google Analytics integration.
  */
 public class Analytics {
+  public static final String GROUP_DISPLAY_ID = "Flutter Usage Statistics";
+
   private static final String analyticsUrl = "https://www.google-analytics.com/collect";
   private static final String applicationName = "Flutter IntelliJ Plugin";
   private static final String trackingId = "UA-67589403-7";
