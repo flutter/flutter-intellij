@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.7</version>
+  <version>0.1.8</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -23,6 +23,18 @@
 
   <change-notes>
     <![CDATA[
+0.1.8:
+<ul>
+  <li>fixed race condition in console reporting on project creation</li>
+  <li>improved interaction between Flutter and Dart plugins during project creation (no more unnecessary nags to run pub)</li>
+  <li>improvements to version checking</li>
+  <li>settings UI refinements</li>
+  <li>new "Help > Flutter Plugin" top-level menu</li>
+  <li>added reload/restart actions in the main toolbar</li>
+  <li>improved console folding for iOS messages</li>
+  <li>fixed NPE in project creation</li>
+</ul>
+
 0.1.7:
 <ul>
   <li>improved console output folding when running iOS apps</li>
