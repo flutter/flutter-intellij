@@ -192,7 +192,8 @@ public class FlutterRunner extends FlutterRunnerBase {
 
   @Override
   protected int getTimeout() {
-    return 2 * 60 * 1000; // Allow 2 minutes to connect to the observatory.
+    // Allow 5 minutes to connect to the observatory; the user can cancel manually in the interim.
+    return 5 * 60 * 1000;
   }
 
   @Nullable
