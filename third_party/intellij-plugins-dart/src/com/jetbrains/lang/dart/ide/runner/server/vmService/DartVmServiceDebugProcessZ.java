@@ -306,9 +306,9 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public void guessRemoteProjectRoot(@NotNull final ElementList<LibraryRef> libraries) {
     final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-    if (pubspec == null) return; // no chance to guess project root
+    final VirtualFile projectRoot = pubspec != null ? pubspec.getParent() : myCurrentWorkingDirectory;
 
-    final VirtualFile localProjectRoot = pubspec.getParent();
+    if (projectRoot == null) return;
 
     for (LibraryRef library : libraries) {
       final String remoteUri = library.getUri();
@@ -317,7 +317,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
       final PsiFile[] localFilesWithSameName = ApplicationManager.getApplication().runReadAction((Computable<PsiFile[]>)() -> {
         final String remoteFileName = PathUtil.getFileName(remoteUri);
-        final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(getSession().getProject(), localProjectRoot, true);
+        final GlobalSearchScope scope = GlobalSearchScopesCore.directoryScope(getSession().getProject(), projectRoot, true);
         return FilenameIndex.getFilesByName(getSession().getProject(), remoteFileName, scope);
       });
 
@@ -327,8 +327,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         final VirtualFile file = DartResolveUtil.getRealVirtualFile(psiFile);
         if (file == null) continue;
 
-        LOG.assertTrue(file.getPath().startsWith(localProjectRoot.getPath() + "/"), file.getPath() + "," + localProjectRoot.getPath());
-        final String relPath = file.getPath().substring(localProjectRoot.getPath().length()); // starts with slash
+        LOG.assertTrue(file.getPath().startsWith(projectRoot.getPath() + "/"), file.getPath() + "," + projectRoot.getPath());
+        final String relPath = file.getPath().substring(projectRoot.getPath().length()); // starts with slash
         if (remoteUri.endsWith(relPath)) {
           howManyFilesMatch++;
           setRemoteProjectRootUri(remoteUri.substring(0, remoteUri.length() - relPath.length()));
@@ -549,10 +549,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       }
 
       final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-      if (getRemoteProjectRootUri() != null && uri.startsWith(getRemoteProjectRootUri()) && pubspec != null) {
-        final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(pubspec.getParent()), '/');
-        LOG.assertTrue(localRootUri.startsWith(DartUrlResolver.FILE_PREFIX), localRootUri);
+      final VirtualFile parent = pubspec != null ? pubspec.getParent() : myCurrentWorkingDirectory;
 
+      if (getRemoteProjectRootUri() != null && uri.startsWith(getRemoteProjectRootUri()) && parent != null) {
+        final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(parent), '/');
         uri = localRootUri + uri.substring(getRemoteProjectRootUri().length());
       }
 
