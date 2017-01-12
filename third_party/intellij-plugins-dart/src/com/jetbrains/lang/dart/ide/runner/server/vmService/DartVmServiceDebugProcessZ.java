@@ -78,7 +78,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private final int myTimeout;
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @Nullable private final ObservatoryConnector myConnector;
-  private boolean baseUriWasInited = false;
+
+  private String mySnapshotBaseUri;
+  private String myRemoteBaseUri;
+  private boolean remoteDebug = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
                                     @Nullable final ExecutionResult executionResult,
@@ -141,6 +144,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // We disable the service protocol library logger because of a user facing NPE in a
     // DartVmServiceListener from the Dart plugin.
     Logging.setLogger(org.dartlang.vm.service.logging.Logger.NULL);
+  }
+
+  @Override
+  public boolean isRemoteDebug() {
+    return remoteDebug;
   }
 
   @Nullable
@@ -273,7 +281,14 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
 
     myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
+
+    // We disable the remote debug flag so that handleDebuggerConnected() does not echo the stdout and
+    // stderr streams (this would duplicate what we get over daemon logging).
+    remoteDebug = false;
     myVmServiceWrapper.handleDebuggerConnected();
+    // We re-enable the remote debug flag so that the service wrapper will call our guessRemoteProjectRoot()
+    // method with the list of loaded libraries for the isolate.
+    remoteDebug = true;
 
     vmService.addVmServiceListener(vmServiceListener);
 
@@ -331,7 +346,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         final String relPath = file.getPath().substring(projectRoot.getPath().length()); // starts with slash
         if (remoteUri.endsWith(relPath)) {
           howManyFilesMatch++;
-          setRemoteProjectRootUri(remoteUri.substring(0, remoteUri.length() - relPath.length()));
+          mySnapshotBaseUri = remoteUri.substring(0, remoteUri.length() - relPath.length());
         }
       }
 
@@ -478,56 +493,56 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
-    final Set<String> result = new HashSet<>();
+    final Set<String> results = new HashSet<>();
     final String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
 
     // If dart:, short circuit the results.
     if (uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
-      result.add(uriByIde);
-      return result;
+      results.add(uriByIde);
+      return results;
     }
 
     // file:
     if (uriByIde.startsWith(DartUrlResolver.FILE_PREFIX)) {
-      result.add(threeSlashize(uriByIde));
+      results.add(threeSlashize(uriByIde));
     }
     else {
-      result.add(uriByIde);
-      result.add(threeSlashize(new File(file.getPath()).toURI().toString()));
+      results.add(uriByIde);
+      results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
     }
 
     // straight path - used by some VM embedders
-    result.add(file.getPath());
+    results.add(file.getPath());
 
     // package: (if applicable)
     if (myDASExecutionContextId != null) {
       final String uriByServer = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, file.getPath(), null);
       if (uriByServer != null) {
-        result.add(uriByServer);
+        results.add(uriByServer);
       }
     }
 
-    // remote prefix (if applicable)
-    if (getRemoteProjectRootUri() != null) {
-      final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
-      if (pubspec != null) {
-        final String projectPath = pubspec.getParent().getPath();
-        final String filePath = file.getPath();
-        if (filePath.startsWith(projectPath)) {
-          result.add(getRemoteProjectRootUri() + filePath.substring(projectPath.length()));
+    final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
+    final VirtualFile projectDirectory = pubspec != null ? pubspec.getParent() : myCurrentWorkingDirectory;
+
+    if (projectDirectory != null) {
+      final String projectPath = projectDirectory.getPath();
+      final String filePath = file.getPath();
+
+      if (filePath.startsWith(projectPath)) {
+        // snapshot prefix (if applicable)
+        if (getSnapshotBaseUri() != null) {
+          results.add(getSnapshotBaseUri() + filePath.substring(projectPath.length()));
         }
-      }
-      else if (myCurrentWorkingDirectory != null) {
-        // Handle projects with no pubspecs.
-        final String projectPath = myCurrentWorkingDirectory.getPath();
-        final String filePath = file.getPath();
-        if (filePath.startsWith(projectPath)) {
-          result.add(getRemoteProjectRootUri() + filePath.substring(projectPath.length()));
+
+        // remote prefix (if applicable)
+        if (getRemoteBaseUri() != null) {
+          results.add(getRemoteBaseUri() + filePath.substring(projectPath.length()));
         }
       }
     }
 
-    return result;
+    return results;
   }
 
   @Nullable
@@ -536,7 +551,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       String uri = scriptRef.getUri();
 
       if (myDASExecutionContextId != null && !isDartPatchUri(uri)) {
-        if (getRemoteProjectRootUri() == null || !uri.contains(getRemoteProjectRootUri())) {
+        if (!stringStartsWith(uri, getSnapshotBaseUri()) && !stringStartsWith(uri, getRemoteBaseUri())) {
           if (uri.startsWith("/")) {
             // Convert a file path to a file: uri.
             uri = new File(uri).toURI().toString();
@@ -551,9 +566,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       final VirtualFile pubspec = myDartUrlResolver.getPubspecYamlFile();
       final VirtualFile parent = pubspec != null ? pubspec.getParent() : myCurrentWorkingDirectory;
 
-      if (getRemoteProjectRootUri() != null && uri.startsWith(getRemoteProjectRootUri()) && parent != null) {
+      if (stringStartsWith(uri, getSnapshotBaseUri()) && parent != null) {
         final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(parent), '/');
-        uri = localRootUri + uri.substring(getRemoteProjectRootUri().length());
+        uri = localRootUri + uri.substring(getSnapshotBaseUri().length());
+      }
+      else if (stringStartsWith(uri, getRemoteBaseUri()) && parent != null) {
+        final String localRootUri = StringUtil.trimEnd(myDartUrlResolver.getDartUrlForFile(parent), '/');
+        uri = localRootUri + uri.substring(getRemoteBaseUri().length());
       }
 
       return myDartUrlResolver.findFileByDartUrl(uri);
@@ -624,58 +643,21 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     return uri;
   }
 
-  private String getRemoteProjectRootUri() {
-    if (!baseUriWasInited) {
+  private String getSnapshotBaseUri() {
+    return mySnapshotBaseUri;
+  }
+
+  private String getRemoteBaseUri() {
+    if (myRemoteBaseUri == null) {
       final FlutterApp app = myConnector != null ? myConnector.getApp() : null;
-      if (app != null && app.baseUri() != null) {
-        setRemoteProjectRootUri(app.baseUri());
+      if (app != null) {
+        myRemoteBaseUri = app.baseUri();
       }
     }
-
-    try {
-      // We use reflection here to access a private field in the super class.
-      final java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
-      return field == null ? null : (String)field.get(this);
-    }
-    catch (IllegalAccessException ex) {
-      LOG.warn("error accessing myRemoteProjectRootUri", ex);
-      return null;
-    }
+    return myRemoteBaseUri;
   }
 
-  private void setRemoteProjectRootUri(String value) {
-    baseUriWasInited = true;
-
-    try {
-      // We use reflection here to access a private field in the super class.
-      final java.lang.reflect.Field field = getDeclaredField("myRemoteProjectRootUri");
-      if (field != null) {
-        field.set(this, value);
-      }
-    }
-    catch (IllegalAccessException ex) {
-      LOG.warn("error accessing myRemoteProjectRootUri", ex);
-    }
-  }
-
-  @SuppressWarnings("SameParameterValue")
-  private java.lang.reflect.Field getDeclaredField(String name) {
-    return getDeclaredField(getClass(), name);
-  }
-
-  private java.lang.reflect.Field getDeclaredField(Class clazz, String name) {
-    try {
-      final java.lang.reflect.Field field = clazz.getDeclaredField(name);
-      field.setAccessible(true);
-      return field;
-    }
-    catch (NoSuchFieldException ex) {
-      if (clazz.getSuperclass() != null) {
-        return getDeclaredField(clazz.getSuperclass(), name);
-      }
-      else {
-        return null;
-      }
-    }
+  private static boolean stringStartsWith(String base, String prefix) {
+    return prefix != null && base.startsWith(prefix);
   }
 }
