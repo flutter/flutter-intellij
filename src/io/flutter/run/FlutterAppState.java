@@ -22,6 +22,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.actions.OpenObservatoryAction;
+import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class FlutterAppState extends FlutterAppStateBase {
   private static final String RUN = DefaultRunExecutor.EXECUTOR_ID;
@@ -100,6 +102,13 @@ public class FlutterAppState extends FlutterAppStateBase {
       relativePath = relativePath.substring(cwd.length());
       if (relativePath.startsWith(File.separator)) {
         relativePath = relativePath.substring(1);
+      }
+    }
+
+    if (device != null) {
+      // Bring simulator to front.
+      if (device.emulator() && Objects.equals(device.platform(), "ios")) {
+        new OpenSimulatorAction(true).actionPerformed(null);
       }
     }
 

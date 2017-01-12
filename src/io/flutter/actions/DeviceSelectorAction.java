@@ -5,11 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
@@ -18,8 +13,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
-import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
 import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.FlutterDevice;
@@ -179,45 +172,6 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     @Override
     public void actionPerformed(AnActionEvent e) {
       // No-op
-    }
-  }
-
-  private static class OpenSimulatorAction extends AnAction {
-    final boolean enabled;
-
-    OpenSimulatorAction(boolean enabled) {
-      super("Open iOS Simulator");
-
-      this.enabled = enabled;
-    }
-
-    @Override
-    public void update(AnActionEvent e) {
-      e.getPresentation().setEnabled(enabled);
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent event) {
-      try {
-        final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", "Simulator.app");
-        final OSProcessHandler handler = new OSProcessHandler(cmd);
-        handler.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(final ProcessEvent event) {
-            if (event.getExitCode() != 0) {
-              FlutterErrors.showError(
-                "Error Opening Simulator",
-                event.getText());
-            }
-          }
-        });
-        handler.startNotify();
-      }
-      catch (ExecutionException e) {
-        FlutterErrors.showError(
-          "Error Opening Simulator",
-          FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-      }
     }
   }
 
