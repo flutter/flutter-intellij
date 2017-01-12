@@ -10,19 +10,23 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import io.flutter.module.FlutterModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,11 +35,13 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class FlutterSdkUtil {
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
+  private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*sdk:\\s*flutter"); //NON-NLS
 
   private FlutterSdkUtil() {
   }
@@ -85,7 +91,8 @@ public class FlutterSdkUtil {
 
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    return sdkRelativePathTo(sdkPath, "bin", "flutter"); // TODO Use flutter.bat on Windows
+    // TODO: Use flutter.bat on Windows.
+    return sdkRelativePathTo(sdkPath, "bin", "flutter");
   }
 
   @NotNull
@@ -173,7 +180,56 @@ public class FlutterSdkUtil {
   }
 
   public static boolean hasFlutterModule(@NotNull Project project) {
-    return ModuleUtil.hasModulesOfType(project, FlutterModuleType.getInstance());
+    if (ModuleUtil.hasModulesOfType(project, FlutterModuleType.getInstance())) {
+      return true;
+    }
+
+    // If not IntelliJ, assume a small IDE (no multi-module project support).
+    // Look for a module with a flutter-like file structure.
+    if (!PlatformUtils.isIntelliJ()) {
+      for (Module module : ModuleManager.getInstance(project).getModules()) {
+        if (usesFlutter(module)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Introspect into the module's content roots, looking for flutter.yaml or a pubspec.yaml that
+   * references flutter.
+   */
+  public static boolean usesFlutter(@NotNull Module module) {
+    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    for (VirtualFile baseDir : roots) {
+      final VirtualFile flutterYaml = baseDir.findChild(FlutterConstants.FLUTTER_YAML);
+      if (flutterYaml != null && flutterYaml.exists()) {
+        return true;
+      }
+      final VirtualFile pubspec = baseDir.findChild(FlutterConstants.PUBSPEC_YAML);
+      if (declaresFlutterDependency(pubspec)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  private static boolean declaresFlutterDependency(VirtualFile pubspec) {
+    if (pubspec == null || !pubspec.exists()) {
+      return false;
+    }
+    try {
+      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
+      if (FLUTTER_SDK_DEP.matcher(contents).find()) {
+        return true;
+      }
+    }
+    catch (IOException e) {
+      // Ignore IO exceptions.
+    }
+    return false;
   }
 
   @Nullable
