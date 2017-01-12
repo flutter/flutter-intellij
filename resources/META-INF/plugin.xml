@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.8</version>
+  <version>0.1.8.1</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -21,6 +21,11 @@
 
   <change-notes>
     <![CDATA[
+0.1.8.1:
+<ul>
+  <li>improve handling of breakpoints for the bazel launch config</li>
+</ul>
+
 0.1.8:
 <ul>
   <li>fixed race condition in console reporting on project creation</li>
