@@ -15,11 +15,9 @@
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
-  <!-- available in IntelliJ IDEA (CE and UE) -->
-  <depends>com.intellij.modules.java</depends>
-
+  <!-- we use the hosted plugin store (plugins.jetbrains.com) to determine product availability -->
   <!-- available in all IntelliJ platforms -->
-  <!-- depends>com.intellij.modules.platform</depends -->
+  <depends>com.intellij.modules.platform</depends>
 
   <change-notes>
     <![CDATA[
@@ -170,7 +168,7 @@
               icon="FlutterIcons.ReloadBoth">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-    </action>
+      </action>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
               icon="FlutterIcons.Restart">
@@ -178,15 +176,15 @@
         <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
       </action>
       <separator/>
-      <add-to-group anchor="last" group-id="RunContextGroup" />
-      <add-to-group anchor="last" group-id="ToolbarRunGroup" />
+      <add-to-group anchor="last" group-id="RunContextGroup"/>
+      <add-to-group anchor="last" group-id="ToolbarRunGroup"/>
     </group>
-    
+
     <!-- help menu -->
     <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
-      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics" />
+      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
     </action>
-    
+
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
