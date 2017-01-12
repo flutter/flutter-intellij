@@ -72,7 +72,7 @@
         </constraints>
         <properties>
           <labelFor value="ada9f"/>
-          <text value="Bazel build &amp;target:"/>
+          <text value="Bazel run &amp;target:"/>
         </properties>
       </component>
       <component id="ada9f" class="javax.swing.JTextField" binding="myBuildTarget">
