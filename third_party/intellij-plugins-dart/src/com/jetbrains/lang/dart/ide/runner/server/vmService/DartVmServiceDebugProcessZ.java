@@ -493,32 +493,32 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
-    final Set<String> result = new HashSet<>();
+    final Set<String> results = new HashSet<>();
     final String uriByIde = myDartUrlResolver.getDartUrlForFile(file);
 
     // If dart:, short circuit the results.
     if (uriByIde.startsWith(DartUrlResolver.DART_PREFIX)) {
-      result.add(uriByIde);
-      return result;
+      results.add(uriByIde);
+      return results;
     }
 
     // file:
     if (uriByIde.startsWith(DartUrlResolver.FILE_PREFIX)) {
-      result.add(threeSlashize(uriByIde));
+      results.add(threeSlashize(uriByIde));
     }
     else {
-      result.add(uriByIde);
-      result.add(threeSlashize(new File(file.getPath()).toURI().toString()));
+      results.add(uriByIde);
+      results.add(threeSlashize(new File(file.getPath()).toURI().toString()));
     }
 
     // straight path - used by some VM embedders
-    result.add(file.getPath());
+    results.add(file.getPath());
 
     // package: (if applicable)
     if (myDASExecutionContextId != null) {
       final String uriByServer = DartAnalysisServerService.getInstance().execution_mapUri(myDASExecutionContextId, file.getPath(), null);
       if (uriByServer != null) {
-        result.add(uriByServer);
+        results.add(uriByServer);
       }
     }
 
@@ -532,17 +532,17 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       if (filePath.startsWith(projectPath)) {
         // snapshot prefix (if applicable)
         if (getSnapshotBaseUri() != null) {
-          result.add(getSnapshotBaseUri() + filePath.substring(projectPath.length()));
+          results.add(getSnapshotBaseUri() + filePath.substring(projectPath.length()));
         }
 
         // remote prefix (if applicable)
         if (getRemoteBaseUri() != null) {
-          result.add(getRemoteBaseUri() + filePath.substring(projectPath.length()));
+          results.add(getRemoteBaseUri() + filePath.substring(projectPath.length()));
         }
       }
     }
 
-    return result;
+    return results;
   }
 
   @Nullable
