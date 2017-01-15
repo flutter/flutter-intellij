@@ -39,13 +39,20 @@ public class Analytics {
   private final String clientId;
   @NotNull
   private final String pluginVersion;
+  @NotNull
+  private final String platformName;
+  @NotNull
+  private final String platformVersion;
+
   private Transport transport = new HttpTransport();
   private final ThrottlingBucket bucket = new ThrottlingBucket(20);
   private boolean myCanSend = false;
 
-  public Analytics(@NotNull String clientId, @NotNull String pluginVersion) {
+  public Analytics(@NotNull String clientId, @NotNull String pluginVersion, @NotNull String platformName, @NotNull String platformVersion) {
     this.clientId = clientId;
     this.pluginVersion = pluginVersion;
+    this.platformName = platformName;
+    this.platformVersion = platformVersion;
   }
 
   public boolean canSend() {
@@ -119,16 +126,22 @@ public class Analytics {
       return;
     }
 
+    args.put("v", "1"); // protocol version
+    args.put("ds", "app"); // specify an 'app' data source
+
     args.put("an", applicationName);
     args.put("av", pluginVersion);
 
-    args.put("v", "1"); // protocol version
+    args.put("aiid", platformName); // Record the platform name as the application installer ID
+    args.put("cd1", platformVersion); // Record the Open API version as a custom dimension
+
     args.put("tid", trackingId);
     args.put("cid", clientId);
     args.put("t", hitType);
 
     final Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
     args.put("sr", screenSize.width + "x" + screenSize.height);
+
     final String language = System.getProperty("user.language");
     if (language != null) {
       args.put("ul", language);

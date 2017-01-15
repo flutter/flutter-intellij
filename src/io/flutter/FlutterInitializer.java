@@ -12,6 +12,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
@@ -42,7 +43,8 @@ public class FlutterInitializer implements StartupActivity {
 
       final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
       assert descriptor != null;
-      analytics = new Analytics(clientId, descriptor.getVersion());
+      final ApplicationInfo info = ApplicationInfo.getInstance();
+      analytics = new Analytics(clientId, descriptor.getVersion(), info.getVersionName(), info.getFullVersion());
 
       // Set up reporting prefs.
       analytics.setCanSend(getCanReportAnalytics());
