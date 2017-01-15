@@ -15,6 +15,7 @@ public class HotReloadFlutterAppRetarget extends FlutterRetargetAction {
     super(HotReloadFlutterApp.ID,
           HotReloadFlutterApp.TEXT,
           HotReloadFlutterApp.DESCRIPTION,
-          ActionPlaces.MAIN_TOOLBAR);
+          ActionPlaces.MAIN_TOOLBAR,
+          ActionPlaces.NAVIGATION_BAR_TOOLBAR);
   }
 }

@@ -8,21 +8,36 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.7</version>
+  <version>0.1.8.1</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
-  <!-- available in IntelliJ IDEA (CE and UE) -->
-  <depends>com.intellij.modules.java</depends>
-
+  <!-- we use the hosted plugin store (plugins.jetbrains.com) to determine product availability -->
   <!-- available in all IntelliJ platforms -->
-  <!-- depends>com.intellij.modules.platform</depends -->
+  <depends>com.intellij.modules.platform</depends>
 
   <change-notes>
     <![CDATA[
+0.1.8.1:
+<ul>
+  <li>improve handling of breakpoints for the bazel launch config</li>
+</ul>
+
+0.1.8:
+<ul>
+  <li>fixed race condition in console reporting on project creation</li>
+  <li>improved interaction between Flutter and Dart plugins during project creation (no more unnecessary nags to run pub)</li>
+  <li>improvements to version checking</li>
+  <li>settings UI refinements</li>
+  <li>new "Help > Flutter Plugin" top-level menu</li>
+  <li>added reload/restart actions in the main toolbar</li>
+  <li>improved console folding for iOS messages</li>
+  <li>fixed NPE in project creation</li>
+</ul>
+
 0.1.7:
 <ul>
   <li>improved console output folding when running iOS apps</li>
@@ -158,7 +173,7 @@
               icon="FlutterIcons.ReloadBoth">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-    </action>
+      </action>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
               icon="FlutterIcons.Restart">
@@ -166,15 +181,15 @@
         <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
       </action>
       <separator/>
-      <add-to-group anchor="last" group-id="RunContextGroup" />
-      <add-to-group anchor="last" group-id="ToolbarRunGroup" />
+      <add-to-group anchor="last" group-id="RunContextGroup"/>
+      <add-to-group anchor="last" group-id="ToolbarRunGroup"/>
     </group>
-    
+
     <!-- help menu -->
     <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
-      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics" />
+      <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
     </action>
-    
+
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">

@@ -9,9 +9,7 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
+import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.extensions.PluginId;
@@ -90,13 +88,19 @@ public class FlutterInitializer implements StartupActivity {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
 
+    // Initialize the analytics notification group.
+    NotificationsConfiguration.getNotificationsConfiguration().register(
+      Analytics.GROUP_DISPLAY_ID,
+      NotificationDisplayType.STICKY_BALLOON,
+      false);
+
     // Initialize analytics.
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     if (!properties.getBoolean(analyticsToastShown)) {
       properties.setValue(analyticsToastShown, true);
 
       final Notification notification = new Notification(
-        FlutterErrors.FLUTTER_NOTIFICATION_GOUP_ID,
+        Analytics.GROUP_DISPLAY_ID,
         FlutterBundle.message("flutter.analytics.notification.title"),
         FlutterBundle.message("flutter.analytics.notification.content"),
         NotificationType.INFORMATION,

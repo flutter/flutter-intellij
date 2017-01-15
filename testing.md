@@ -7,6 +7,8 @@ Manual tests to execute before plugin releases.
 Pre-reqs: [flutter setup](https://flutter.io/setup/) and
 [flutter getting started](https://flutter.io/getting-started/).
 
+*Note*: Make sure that flutter is fully up-to-datel; run `flutter upgrade` in a terminal to get the latest version prior to starting testing.
+
 ## Project Creation
 
 Validate basic project creation.
