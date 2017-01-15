@@ -22,14 +22,17 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
+import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
+import io.flutter.FlutterInitializer;
 import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
@@ -102,6 +105,26 @@ public class FlutterSdk {
     });
   }
 
+  private static void setPubInProgress(boolean inProgress) {
+    try {
+      DartPubActionBase.class.getMethod("setIsInProgress", boolean.class).invoke(null, inProgress);
+    }
+    catch (Throwable th) {
+      // ignore and move on
+    }
+  }
+
+  private static void start(@NotNull OSProcessHandler handler) {
+    // TODO: replace w/ DartPubActionBase.setIsInProgress() when DartPlugin lower-bound is upped to 163.10154.
+    setPubInProgress(true);
+    try {
+      handler.startNotify();
+    }
+    finally {
+      setPubInProgress(false);
+    }
+  }
+
   public void run(@NotNull Command cmd,
                   @Nullable Module module,
                   @Nullable VirtualFile workingDir,
@@ -132,11 +155,16 @@ public class FlutterSdk {
         });
 
         if (cmd.attachToConsole() && module != null) {
-          FlutterConsoleHelper.attach(module, handler);
+          FlutterConsoleHelper.attach(module, handler, cmd.runOnConsoleActivation());
         }
 
         cmd.onStart(module, workingDir, args);
-        handler.startNotify();
+        start(handler);
+
+        // Send the command to analytics.
+        String commandName = StringUtil.join(cmd.command, "_");
+        commandName = commandName.replaceAll("-", "");
+        FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
       }
     }
     catch (ExecutionException e) {
@@ -169,8 +197,10 @@ public class FlutterSdk {
           }
         });
 
-        FlutterConsoleHelper.attach(project, handler);
-        handler.startNotify();
+        FlutterConsoleHelper.attach(project, handler, () -> start(handler));
+
+        // Send the command to analytics.
+        FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
       }
     }
     catch (ExecutionException e) {
@@ -303,6 +333,14 @@ public class FlutterSdk {
       return true;
     }
 
+    /**
+     * An (optional) action to perform once the console is active.
+     */
+    @SuppressWarnings("SameReturnValue")
+    @Nullable
+    Runnable runOnConsoleActivation() {
+      return null;
+    }
 
     /**
      * Invoked on command start (before process spawning).

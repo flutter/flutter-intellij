@@ -23,12 +23,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -117,13 +117,6 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
     return ContainerUtil.newLinkedHashSet(StringUtil.split(value, ","));
   }
 
-  private static boolean isFlutteryFile(@NotNull VirtualFile file) {
-    final String fileName = file.getName();
-    return file.getFileType() == DartFileType.INSTANCE ||
-           fileName.equals(FlutterConstants.FLUTTER_YAML) ||
-           fileName.equals(FlutterConstants.PUBSPEC_YAML);
-  }
-
   @NotNull
   @Override
   public Key<EditorNotificationPanel> getKey() {
@@ -132,7 +125,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
 
   @Override
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
-    if (!isFlutteryFile(file)) return null;
+    if (!FlutterUtils.isFlutteryFile(file)) return null;
     final Module module = ModuleUtilCore.findModuleForFile(file, myProject);
     if (module == null || FlutterSdkUtil.isFlutterModule(module) || getIgnoredModules(myProject).contains(module.getName())) return null;
     return usesFlutter(module) ? createPanel(myProject, module) : null;

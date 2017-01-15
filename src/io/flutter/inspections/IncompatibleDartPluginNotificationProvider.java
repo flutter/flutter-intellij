@@ -19,9 +19,9 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
-import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -40,11 +40,12 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
   @Nullable
   private static EditorNotificationPanel createUpdateDartPanel(@NotNull Project project,
                                                                @Nullable Module module,
-                                                               @NotNull String currentVersion) {
+                                                               @NotNull String currentVersion,
+                                                               @NotNull String minimumVersion) {
     if (module == null) return null;
 
     final EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.setText(FlutterBundle.message("flutter.incompatible.dart.plugin.warning", getPrintableRequiredDartVersion(), currentVersion));
+    panel.setText(FlutterBundle.message("flutter.incompatible.dart.plugin.warning", minimumVersion, currentVersion));
     panel.createActionLabel(FlutterBundle.message("dart.plugin.update.action.label"),
                             () -> ShowSettingsUtil.getInstance().showSettingsDialog(project, PluginManagerConfigurable.class));
 
@@ -63,7 +64,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
 
   @Override
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
-    if (file.getFileType() != DartFileType.INSTANCE) return null;
+    if (!FlutterUtils.isFlutteryFile(file)) return null;
 
     final PsiFile psiFile = PsiManager.getInstance(myProject).findFile(file);
     if (psiFile == null) return null;
@@ -77,6 +78,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
 
     final Version minimumVersion = DartPlugin.getInstance().getMinimumVersion();
     final Version dartVersion = DartPlugin.getInstance().getVersion();
-    return dartVersion.compareTo(minimumVersion) < 0 ? createUpdateDartPanel(myProject, module, getPrintableRequiredDartVersion()) : null;
+    return dartVersion.compareTo(minimumVersion) < 0 ? createUpdateDartPanel(myProject, module, dartVersion.toCompactString(),
+                                                                             getPrintableRequiredDartVersion()) : null;
   }
 }

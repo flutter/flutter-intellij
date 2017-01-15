@@ -12,6 +12,8 @@
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/colors/packages" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/icons/packages" />
       <excludeFolder url="file://$MODULE_DIR$/tool/packages" />
     </content>
     <orderEntry type="inheritedJdk" />

@@ -5,11 +5,19 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * A "retargeting" action that redirects to another action that is setup elsewhere with
@@ -21,8 +29,16 @@ public abstract class FlutterRetargetAction extends DumbAwareAction {
   @NotNull
   private final String myActionId;
 
-  FlutterRetargetAction(@NotNull String actionId) {
+  @NotNull
+  private final List<String> myPlaces = new ArrayList<>();
+
+  FlutterRetargetAction(@NotNull String actionId,
+                        @Nullable String text,
+                        @Nullable String description,
+                        @SuppressWarnings("SameParameterValue") @NotNull String... places) {
+    super(text, description, null);
     myActionId = actionId;
+    myPlaces.addAll(Arrays.asList(places));
   }
 
   @Override
@@ -38,7 +54,7 @@ public abstract class FlutterRetargetAction extends DumbAwareAction {
     final Presentation presentation = e.getPresentation();
 
     final Project project = e.getProject();
-    if (project == null || !FlutterSdkUtil.hasFlutterModule(project)) {
+    if (project == null || !FlutterSdkUtil.hasFlutterModule(project) || !myPlaces.contains(e.getPlace())) {
       presentation.setVisible(false);
       return;
     }
@@ -48,6 +64,11 @@ public abstract class FlutterRetargetAction extends DumbAwareAction {
     // Retargeted actions defer to their targets for presentation updates.
     final AnAction action = getAction();
     if (action != null) {
+      final Presentation template = action.getTemplatePresentation();
+      final String text = template.getTextWithMnemonic();
+      if (text != null) {
+        presentation.setText(text, true);
+      }
       action.update(e);
     }
     else {

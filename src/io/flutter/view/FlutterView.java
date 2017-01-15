@@ -5,7 +5,10 @@
  */
 package io.flutter.view;
 
+import com.intellij.ide.CommonActionsManager;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
@@ -19,13 +22,25 @@ import com.intellij.util.xmlb.annotations.Attribute;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// TODO: toolbar actions
-// TODO: reload status
-// TODO: connection status
-// TODO: fps, fps events
-// TODO: tabs
+import javax.swing.*;
+import java.awt.*;
+
+// TODO: toolbar actions - the 4 flutter options
+// TODO: toolbar actions - open in observatory (profile, timeline)
+
+// TODO: display an fps graph
+// TODO: toolbar setting for displaying an fps graph
+// TODO: display the effective fps
+// TODO: display the frame count
+
+// TODO: device connected to
 // TODO: open on debug
-// TODO: widget tree
+// TODO: pref setting for opening when starting a debug session
+
+// TODO: if multiple simultaneous running apps, use tabs to keep them separate
+
+// TODO: open on connetion established
+// TODO: hook up a toggle debug drawing button
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -33,7 +48,7 @@ import org.jetbrains.annotations.Nullable;
 )
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
   private FlutterView.State state = new FlutterView.State();
-  private final Project myProject;
+  @SuppressWarnings("FieldCanBeLocal") private final Project myProject;
   private ContentManager myContentManager;
 
   public FlutterView(@NotNull Project project) {
@@ -63,23 +78,29 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   public void initToolWindow(ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
-    final Content widgetsContent = contentFactory.createContent(null, "Widgets", false);
+    final Content widgetsContent = contentFactory.createContent(null, null, false);
     final WidgetsPanel widgetsPanel = new WidgetsPanel();
+
+    final DefaultActionGroup group = new DefaultActionGroup();
+    group.add(CommonActionsManager.getInstance().createCollapseAllAction(null, widgetsPanel));
+    group.add(CommonActionsManager.getInstance().createCollapseAllAction(null, widgetsPanel));
+    group.addSeparator();
+    group.add(CommonActionsManager.getInstance().createCollapseAllAction(null, widgetsPanel));
+    widgetsPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", group, true).getComponent());
+    final JPanel panel = new JPanel(new BorderLayout());
+    final JPanel titlePanel = new JPanel(new BorderLayout());
+    panel.add(titlePanel, BorderLayout.NORTH);
+    titlePanel.add(new JLabel("#512"), BorderLayout.WEST);
+    //titlePanel.add(new JLabel("50 fps"), BorderLayout.EAST);
+    //panel.setBorder(IdeBorderFactory.createTitledBorder("Frames", true));
+    widgetsPanel.setContent(panel);
     widgetsContent.setComponent(widgetsPanel);
     Disposer.register(this, widgetsPanel);
 
-    final Content elementsContent = contentFactory.createContent(null, "Elements", false);
-    final ElementsPanel elementsPanel = new ElementsPanel();
-    elementsContent.setComponent(elementsPanel);
-    Disposer.register(this, elementsPanel);
+    widgetsContent.setCloseable(false);
 
     this.myContentManager = toolWindow.getContentManager();
     this.myContentManager.addContent(widgetsContent);
-    this.myContentManager.addContent(elementsContent);
-
-    widgetsContent.setCloseable(false);
-    elementsContent.setCloseable(false);
-
     final Content selContent = this.myContentManager.getContent(this.state.selectedIndex);
     this.myContentManager.setSelectedContent(selContent == null ? widgetsContent : selContent);
   }
@@ -95,16 +116,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   class WidgetsPanel extends SimpleToolWindowPanel implements Disposable {
     public WidgetsPanel() {
-      super(true, true);
-    }
-
-    @Override
-    public void dispose() {
-    }
-  }
-
-  class ElementsPanel extends SimpleToolWindowPanel implements Disposable {
-    public ElementsPanel() {
       super(true, true);
     }
 

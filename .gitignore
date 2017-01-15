@@ -1,5 +1,5 @@
 out/
-.gradle/
+artifacts/
 build/
 flutter-intellij.jar
 packages
