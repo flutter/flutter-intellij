@@ -20,7 +20,7 @@ public class AnalyticsTest extends TestCase {
 
     transport = new MockAnalyticsTransport();
 
-    analytics = new Analytics("123e4567-e89b-12d3-a456-426655440000", "1.0");
+    analytics = new Analytics("123e4567-e89b-12d3-a456-426655440000", "1.0", "IntelliJ CE", "2016.3.2");
     analytics.setTransport(transport);
     analytics.setCanSend(true);
   }
