@@ -13,34 +13,28 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.util.xmlb.annotations.Attribute;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceWrapper;
+import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 
-// TODO: toolbar actions - the 4 flutter options
-// TODO: toolbar actions - open in observatory (profile, timeline)
+// TODO(devoncarew): toolbar actions - the 4 flutter options
+// TODO(devoncarew): toolbar actions - open in observatory (profile, timeline)
 
-// TODO: display an fps graph
-// TODO: toolbar setting for displaying an fps graph
-// TODO: display the effective fps
-// TODO: display the frame count
+// TODO(devoncarew): display an fps graph
 
-// TODO: device connected to
-// TODO: open on debug
-// TODO: pref setting for opening when starting a debug session
-
-// TODO: if multiple simultaneous running apps, use tabs to keep them separate
-
-// TODO: open on connetion established
-// TODO: hook up a toggle debug drawing button
+// TODO(devoncarew): device connected to
+// TODO(devoncarew): pref setting for opening when starting a debug session
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -78,49 +72,54 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   public void initToolWindow(ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
-    final Content widgetsContent = contentFactory.createContent(null, null, false);
-    final WidgetsPanel widgetsPanel = new WidgetsPanel();
+    final Content toolContent = contentFactory.createContent(null, null, false);
+    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, true);
+    toolContent.setComponent(toolWindowPanel);
+    //Disposer.register(this, toolWindowPanel);
+    toolContent.setCloseable(false);
 
-    final DefaultActionGroup group = new DefaultActionGroup();
-    group.add(CommonActionsManager.getInstance().createCollapseAllAction(null, widgetsPanel));
-    group.add(CommonActionsManager.getInstance().createCollapseAllAction(null, widgetsPanel));
-    group.addSeparator();
-    group.add(CommonActionsManager.getInstance().createCollapseAllAction(null, widgetsPanel));
-    widgetsPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", group, true).getComponent());
-    final JPanel panel = new JPanel(new BorderLayout());
-    final JPanel titlePanel = new JPanel(new BorderLayout());
-    panel.add(titlePanel, BorderLayout.NORTH);
-    titlePanel.add(new JLabel("#512"), BorderLayout.WEST);
-    //titlePanel.add(new JLabel("50 fps"), BorderLayout.EAST);
-    //panel.setBorder(IdeBorderFactory.createTitledBorder("Frames", true));
-    widgetsPanel.setContent(panel);
-    widgetsContent.setComponent(widgetsPanel);
-    Disposer.register(this, widgetsPanel);
+    final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+    toolbarGroup.add(CommonActionsManager.getInstance().createCollapseAllAction(null, toolWindowPanel));
+    toolbarGroup.add(CommonActionsManager.getInstance().createCollapseAllAction(null, toolWindowPanel));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(CommonActionsManager.getInstance().createCollapseAllAction(null, toolWindowPanel));
 
-    widgetsContent.setCloseable(false);
+    final JPanel mainContent = new JPanel(new BorderLayout());
+
+    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
+    toolWindowPanel.setContent(mainContent);
 
     this.myContentManager = toolWindow.getContentManager();
-    this.myContentManager.addContent(widgetsContent);
+    this.myContentManager.addContent(toolContent);
     final Content selContent = this.myContentManager.getContent(this.state.selectedIndex);
-    this.myContentManager.setSelectedContent(selContent == null ? widgetsContent : selContent);
+    this.myContentManager.setSelectedContent(selContent == null ? toolContent : selContent);
   }
 
+  /**
+   * Called when a debug connection starts.
+   */
+  public void debugActive(VmServiceWrapper wrapper, VmService vmService) {
+    // TODO: we need some reflection utils
+
+    System.out.println("connection active; system ready");
+
+    vmService.getVM(new VmServiceConsumers.VmConsumerWrapper() {
+      @Override
+      public void received(VM vm) {
+        System.out.println(vm.getHostCPU());
+        System.out.println(vm.getTargetCPU());
+        System.out.println(vm.getVersion());
+      }
+    });
+  }
+
+  // TODO(devoncarew): Remember any state here.
   // see TodoView.State
   class State {
     @Attribute("selected-index")
     public int selectedIndex;
 
     State() {
-    }
-  }
-
-  class WidgetsPanel extends SimpleToolWindowPanel implements Disposable {
-    public WidgetsPanel() {
-      super(true, true);
-    }
-
-    @Override
-    public void dispose() {
     }
   }
 }

@@ -12,23 +12,26 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceWrapper;
+import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterViewFactory implements ToolWindowFactory {
   public static void init(@NotNull Project project) {
     //noinspection CodeBlock2Expr
     project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (vmServiceWrapper) -> {
-        openFlutterView(project, vmServiceWrapper);
+      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (observatoryConnector, vmServiceWrapper, vmService) -> {
+        openFlutterView(project, observatoryConnector, vmServiceWrapper, vmService);
       });
   }
 
-  private static void openFlutterView(Project project, VmServiceWrapper vmServiceWrapper) {
+  private static void openFlutterView(Project project, ObservatoryConnector observatoryConnector, VmServiceWrapper vmServiceWrapper, VmService vmService) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Flutter");
-      // TODO(devoncarew): Remember and restore the previously active view.
       toolWindow.show(() -> {
+        final FlutterView flutterView = ServiceManager.getService(project, FlutterView.class);
+        flutterView.debugActive(vmServiceWrapper, vmService);
       });
     });
   }

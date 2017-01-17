@@ -296,7 +296,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     myVmConnected = true;
     getSession().rebuildViews();
 
-    FlutterViewMessages.sendDebugActive(myVmServiceWrapper);
+    FlutterViewMessages.sendDebugActive(getConnector(), myVmServiceWrapper, vmService);
   }
 
   @Override
