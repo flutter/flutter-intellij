@@ -11,6 +11,7 @@ import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.DartFileType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterUtils {
   private FlutterUtils() {
@@ -33,5 +34,9 @@ public class FlutterUtils {
     return file.getFileType() == DartFileType.INSTANCE ||
            fileName.equals(FlutterConstants.FLUTTER_YAML) ||
            fileName.equals(FlutterConstants.PUBSPEC_YAML);
+  }
+
+  public static boolean exists(@Nullable VirtualFile file) {
+    return file != null && file.exists();
   }
 }

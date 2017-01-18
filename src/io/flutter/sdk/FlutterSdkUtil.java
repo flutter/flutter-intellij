@@ -16,10 +16,12 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.intellij.util.ArrayUtil;
 import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
@@ -27,6 +29,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +38,11 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 
 public class FlutterSdkUtil {
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
@@ -50,7 +57,7 @@ public class FlutterSdkUtil {
     updateKnownPaths(FLUTTER_SDK_KNOWN_PATHS, newSdkPath);
   }
 
-  private static void updateKnownPaths(@NotNull final String propertyKey, @NotNull final String newPath) {
+  private static void updateKnownPaths(@SuppressWarnings("SameParameterValue") @NotNull final String propertyKey, @NotNull final String newPath) {
     final Set<String> known = new THashSet<>();
 
     final String[] oldKnownPaths = PropertiesComponent.getInstance().getValues(propertyKey);
@@ -159,6 +166,10 @@ public class FlutterSdkUtil {
     return null;
   }
 
+  public static boolean hasFlutterYaml(@NotNull Module module) {
+    return FlutterUtils.exists(findFilesInContentRoots(module, dir -> dir.findChild(FlutterConstants.FLUTTER_YAML)));
+  }
+
   private static String readVersionFile(String sdkHomePath) {
     final File versionFile = new File(versionPath(sdkHomePath));
     if (versionFile.isFile() && versionFile.length() < 1000) {
@@ -216,10 +227,11 @@ public class FlutterSdkUtil {
     return false;
   }
 
-  private static boolean declaresFlutterDependency(VirtualFile pubspec) {
-    if (pubspec == null || !pubspec.exists()) {
+  private static boolean declaresFlutterDependency(@Nullable VirtualFile pubspec) {
+    if (!FlutterUtils.exists(pubspec)) {
       return false;
     }
+
     try {
       final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
       if (FLUTTER_SDK_DEP.matcher(contents).find()) {
@@ -230,6 +242,88 @@ public class FlutterSdkUtil {
       // Ignore IO exceptions.
     }
     return false;
+  }
+
+  @Nullable
+  public static VirtualFile findPackagesFileFrom(@NotNull Project project, @SuppressWarnings("SameParameterValue") @Nullable PsiFile psiFile) throws ExecutionException {
+    if (psiFile == null) {
+      final List<VirtualFile> packagesFiles = findPackagesFiles(ModuleManager.getInstance(project).getModules());
+      if (packagesFiles.isEmpty()) {
+        return null;
+      }
+      else if (packagesFiles.size() == 1) {
+        return packagesFiles.get(0);
+      }
+      else {
+        throw new ExecutionException(FlutterBundle.message("multiple.packages.files.error"));
+      }
+    }
+    final VirtualFile file = psiFile.getVirtualFile();
+    final VirtualFile contentRoot = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file);
+    return contentRoot == null ? null : contentRoot.findChild(FlutterConstants.PACKAGES_FILE);
+  }
+
+
+  @Nullable
+  public static VirtualFile findPubspecFrom(@NotNull Project project, @Nullable PsiFile psiFile) throws ExecutionException {
+    if (psiFile == null) {
+      final List<VirtualFile> pubspecs = findPubspecs(ModuleManager.getInstance(project).getModules());
+      if (pubspecs.isEmpty()) {
+        return null;
+      }
+      else if (pubspecs.size() == 1) {
+        return pubspecs.get(0);
+      }
+      else {
+        throw new ExecutionException(FlutterBundle.message("multiple.pubspecs.error"));
+      }
+    }
+    final VirtualFile file = psiFile.getVirtualFile();
+    final VirtualFile contentRoot = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file);
+    return contentRoot == null ? null : contentRoot.findChild(FlutterConstants.PUBSPEC_YAML);
+  }
+
+  @NotNull
+  private static List<VirtualFile> findModuleFiles(@NotNull Module[] modules, Function<Module, VirtualFile> finder) {
+    return Arrays.stream(modules).flatMap(m -> {
+      final VirtualFile file = finder.apply(m);
+      return file != null ? Stream.of(file) : Stream.empty();
+    }).collect(Collectors.toList());
+  }
+
+  @NotNull
+  public static List<VirtualFile> findPubspecs(@NotNull Module[] modules) {
+    return findModuleFiles(modules, FlutterSdkUtil::findPubspecFrom);
+  }
+
+  @NotNull
+  public static List<VirtualFile> findPackagesFiles(@NotNull Module[] modules) {
+    return findModuleFiles(modules, FlutterSdkUtil::findPackagesFileFrom);
+  }
+
+  @Nullable
+  public static VirtualFile findPubspecFrom(@Nullable Module module) {
+    return findFilesInContentRoots(module, dir -> dir.findChild(FlutterConstants.PUBSPEC_YAML));
+  }
+
+  @Nullable
+  public static VirtualFile findPackagesFileFrom(@Nullable Module module) {
+    return findFilesInContentRoots(module, dir -> dir.findChild(FlutterConstants.PACKAGES_FILE));
+  }
+
+  @Nullable
+  public static VirtualFile findFilesInContentRoots(@Nullable Module module, @NotNull Function<VirtualFile, VirtualFile> finder) {
+    if (module == null) {
+      return null;
+    }
+    final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
+    for (VirtualFile dir : moduleRootManager.getContentRoots()) {
+      final VirtualFile file = finder.apply(dir);
+      if (file != null) {
+        return file;
+      }
+    }
+    return null;
   }
 
   @Nullable
@@ -245,6 +339,14 @@ public class FlutterSdkUtil {
     if (!isFlutterSdkHome(sdkRootPath)) return FlutterBundle.message("error.sdk.not.found.in.specified.location");
 
     return null;
+  }
+
+  public static boolean isFlutterProjectDir(@Nullable VirtualFile dir) {
+    if (dir == null || !dir.isDirectory()) return false;
+    if (dir.findChild(FlutterConstants.FLUTTER_YAML) != null) return true;
+
+    final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
+    return declaresFlutterDependency(pubspec);
   }
 
   public static void setFlutterSdkPath(@NotNull final String flutterSdkPath) {
