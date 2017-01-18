@@ -68,9 +68,16 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
   @SuppressWarnings("SameReturnValue")
   private static EditorNotificationPanel createNoFlutterSdkPanel() {
-    // TODO(pq): add panel for unconfigured Flutter SDK.
+    final EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
+    panel.createActionLabel("Dismiss", () -> {
+      panel.setVisible(false);
+    });
 
-    return null;
+    // TODO(skybrian) we should add a link to go to the Dart SDK panel.
+    // However, not yet because this will change with 2017.1 to be project-specific.
+
+    return panel;
   }
 
   @NotNull
