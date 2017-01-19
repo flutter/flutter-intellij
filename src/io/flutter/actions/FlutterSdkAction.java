@@ -90,5 +90,5 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     perform(sdk, project, event);
   }
 
-  abstract void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException;
+  public abstract void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException;
 }
