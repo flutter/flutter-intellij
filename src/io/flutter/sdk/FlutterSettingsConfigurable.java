@@ -143,8 +143,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   public void reset() {
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
-    mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
+
+    // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
+    // (This can happen if the user changed the Dart SDK.)
+    mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+
     updateVersionText();
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
   }
