@@ -185,7 +185,7 @@ class DebugDrawAction extends AbstractToggleableAction {
 
 class RepaintRainbowAction extends AbstractToggleableAction {
   RepaintRainbowAction(@NotNull FlutterView view) {
-    super(view, "Toggle Debug Paint", "Toggle Debug Painting", AllIcons.Gutter.Colors);
+    super(view, "Toggle Repaint Rainbow", "Toggle Repaint Rainbow", AllIcons.Gutter.Colors);
   }
 
   protected void perform(AnActionEvent event) {
