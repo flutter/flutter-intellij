@@ -11,40 +11,41 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterConstants;
 import io.flutter.FlutterErrors;
+import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Base class for Flutter commands.
+ * <p>
+ * In general actions are executed via {@link #actionPerformed(AnActionEvent)}, and
+ * send analytics.  In case an action is performed and analytics should not be
+ * collected, prefer {@link #perform(FlutterSdk, Project, AnActionEvent, boolean)}.
  */
 public abstract class FlutterSdkAction extends DumbAwareAction {
 
   private static final Logger LOG = Logger.getInstance(FlutterSdkAction.class);
 
   @Nullable
-  public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(@NotNull final Project project, final AnActionEvent e)
+  public static Pair<Module, VirtualFile> getModuleAndPubspecYamlFile(@NotNull final Project project, @Nullable final AnActionEvent e)
     throws ExecutionException {
-    Module module = LangDataKeys.MODULE.getData(e.getDataContext());
-    final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(e.getDataContext());
 
-    VirtualFile pubspec = findPubspecFrom(project, psiFile);
+    Module module = e == null ? null : LangDataKeys.MODULE.getData(e.getDataContext());
+    final PsiFile psiFile = e == null ? null : CommonDataKeys.PSI_FILE.getData(e.getDataContext());
+
+    VirtualFile pubspec = FlutterSdkUtil.findPubspecFrom(project, psiFile);
     if (pubspec == null) {
-      pubspec = findPubspecFrom(module);
+      pubspec = FlutterSdkUtil.findPubspecFrom(module);
     }
 
     if (module == null && pubspec != null) {
@@ -54,47 +55,8 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     return pubspec == null ? null : Pair.create(module, pubspec);
   }
 
-  protected static VirtualFile findPubspecFrom(@NotNull Project project, PsiFile psiFile) throws ExecutionException {
-    if (psiFile == null) {
-      final List<VirtualFile> pubspecs = findPubspecs(ModuleManager.getInstance(project).getModules());
-      if (pubspecs.size() == 0) {
-        return null;
-      }
-      else if (pubspecs.size() == 1) {
-        return pubspecs.get(0);
-      }
-      else {
-        throw new ExecutionException(FlutterBundle.message("multiple.pubspecs.error"));
-      }
-    }
-    final VirtualFile file = psiFile.getVirtualFile();
-    final VirtualFile contentRoot = ProjectRootManager.getInstance(project).getFileIndex().getContentRootForFile(file);
-    return contentRoot == null ? null : contentRoot.findChild(FlutterConstants.PUBSPEC_YAML);
-  }
-
-  private static List<VirtualFile> findPubspecs(@NotNull Module[] modules) {
-    final List<VirtualFile> pubspecs = new ArrayList<>();
-    for (Module module : modules) {
-      final VirtualFile file = findPubspecFrom(module);
-      if (file != null) {
-        pubspecs.add(file);
-      }
-    }
-    return pubspecs;
-  }
-
-  protected static VirtualFile findPubspecFrom(Module module) {
-    if (module == null) {
-      return null;
-    }
-    final ModuleRootManager moduleRootManager = ModuleRootManager.getInstance(module);
-    for (VirtualFile dir : moduleRootManager.getContentRoots()) {
-      final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
-      if (pubspec != null) {
-        return pubspec;
-      }
-    }
-    return null;
+  protected void sendActionEvent() {
+    FlutterInitializer.sendActionEvent(this);
   }
 
   @Override
@@ -104,7 +66,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
 
     if (sdk != null) {
       try {
-        perform(sdk, project, event);
+        perform(sdk, project, event, true);
       }
       catch (ExecutionException e) {
         FlutterErrors.showError(
@@ -118,6 +80,14 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
         FlutterBundle.message("flutter.sdk.notAvailable.title"),
         FlutterBundle.message("flutter.sdk.notAvailable.message"));
     }
+  }
+
+  public final void perform(@NotNull FlutterSdk sdk, @NotNull Project project, @Nullable AnActionEvent event, boolean logAction)
+    throws ExecutionException {
+    if (logAction) {
+      sendActionEvent();
+    }
+    perform(sdk, project, event);
   }
 
   public abstract void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException;

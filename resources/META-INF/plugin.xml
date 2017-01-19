@@ -227,6 +227,7 @@
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle"/>
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
+    <projectOpenProcessor implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
   </extensions>
 
 </idea-plugin>
