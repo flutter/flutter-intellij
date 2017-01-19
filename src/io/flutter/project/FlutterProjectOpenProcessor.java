@@ -35,7 +35,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
       return;
     }
 
-    action.perform(sdk, project, null, false);
+    action.perform(sdk, project, null);
   }
 
   @Override
