@@ -37,6 +37,7 @@ class FlutterDaemonControllerHelper {
   private static final String CMD_APP_START = "app.start";
   private static final String CMD_APP_STOP = "app.stop";
   private static final String CMD_APP_RESTART = "app.restart";
+  private static final String CMD_SERVICE_EXTENSION = "app.callServiceExtension";
   private static final String CMD_DEVICE_ENABLE = "device.enable";
 
   private static final Gson GSON = new Gson();
@@ -200,6 +201,10 @@ class FlutterDaemonControllerHelper {
     app.changeState(FlutterApp.State.STARTING);
     final Method cmd = makeMethod(CMD_APP_RESTART, appStart);
     sendCommand(cmd);
+  }
+
+  void callServiceExtension(FlutterApp app, String name, Map<String, Object> params) {
+    sendCommand(makeMethod(CMD_SERVICE_EXTENSION, new AppServiceExtension(app.appId(), name, params)));
   }
 
   private void appStopped(AppStop stopped, FlutterDaemonController controller) {
@@ -442,7 +447,7 @@ class FlutterDaemonControllerHelper {
     }
   }
 
-  private void error(JsonObject json) {
+  private static void error(JsonObject json) {
     LOG.warn(json.toString());
   }
 
@@ -517,7 +522,7 @@ class FlutterDaemonControllerHelper {
     void process(JsonObject obj, FlutterDaemonControllerHelper manager, FlutterDaemonController controller) {
       final JsonObject result = obj.getAsJsonObject("result");
       if (result == null) {
-        manager.error(obj);
+        error(obj);
         return;
       }
       final AppStartEvent app = new AppStartEvent();
@@ -569,6 +574,24 @@ class FlutterDaemonControllerHelper {
           // Apparently the daemon does not find apps started in release mode.
           manager.appStopped(this, controller);
         }
+      }
+    }
+  }
+
+  private static class AppServiceExtension extends Params {
+    @SuppressWarnings("unused") private final String appId;
+    @SuppressWarnings("unused") private final String methodName;
+    @SuppressWarnings("unused") private final Map<String, Object> params;
+
+    AppServiceExtension(String appId, String methodName, Map<String, Object> params) {
+      this.appId = appId;
+      this.methodName = methodName;
+      this.params = params;
+    }
+
+    void process(JsonObject obj, FlutterDaemonControllerHelper manager, FlutterDaemonController controller) {
+      if (obj.has("error")) {
+        error(obj);
       }
     }
   }

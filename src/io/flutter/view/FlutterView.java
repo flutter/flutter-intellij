@@ -5,36 +5,34 @@
  */
 package io.flutter.view;
 
-import com.intellij.ide.CommonActionsManager;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
-import com.intellij.util.xmlb.annotations.Attribute;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceWrapper;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.element.VM;
+import io.flutter.FlutterInitializer;
+import io.flutter.actions.OpenObservatoryAction;
+import io.flutter.run.daemon.FlutterApp;
+import org.dartlang.vm.service.VmServiceListener;
+import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.HashMap;
+import java.util.Map;
 
-// TODO(devoncarew): toolbar actions - the 4 flutter options
-// TODO(devoncarew): toolbar actions - open in observatory (profile, timeline)
-
-// TODO(devoncarew): display an fps graph
-
-// TODO(devoncarew): device connected to
-// TODO(devoncarew): pref setting for opening when starting a debug session
+// TODO(devoncarew): Display an fps graph.
+// TODO(devoncarew): Have a pref setting for opening when starting a debug session.
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -43,7 +41,7 @@ import java.awt.*;
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
   private FlutterView.State state = new FlutterView.State();
   @SuppressWarnings("FieldCanBeLocal") private final Project myProject;
-  private ContentManager myContentManager;
+  FlutterViewMessages.FlutterDebugEvent debugEvent;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -56,11 +54,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   @Nullable
   @Override
   public FlutterView.State getState() {
-    if (this.myContentManager != null) {
-      final Content content = this.myContentManager.getSelectedContent();
-      this.state.selectedIndex = this.myContentManager.getIndexOfContent(content);
-    }
-
     return this.state;
   }
 
@@ -79,47 +72,179 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     toolContent.setCloseable(false);
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(CommonActionsManager.getInstance().createCollapseAllAction(null, toolWindowPanel));
-    toolbarGroup.add(CommonActionsManager.getInstance().createCollapseAllAction(null, toolWindowPanel));
+    toolbarGroup.add(new DebugDrawAction(this));
+    toolbarGroup.add(new RepaintRainbowAction(this));
+    toolbarGroup.add(new PerformanceOverlayAction(this));
+    toolbarGroup.add(new TimeDilationAction(this));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(CommonActionsManager.getInstance().createCollapseAllAction(null, toolWindowPanel));
+    toolbarGroup.add(new ObservatoryTimelineAction(this));
 
     final JPanel mainContent = new JPanel(new BorderLayout());
 
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
     toolWindowPanel.setContent(mainContent);
 
-    this.myContentManager = toolWindow.getContentManager();
-    this.myContentManager.addContent(toolContent);
-    final Content selContent = this.myContentManager.getContent(this.state.selectedIndex);
-    this.myContentManager.setSelectedContent(selContent == null ? toolContent : selContent);
+    final ContentManager contentManager = toolWindow.getContentManager();
+    contentManager.addContent(toolContent);
+    contentManager.setSelectedContent(toolContent);
   }
 
   /**
    * Called when a debug connection starts.
    */
-  public void debugActive(VmServiceWrapper wrapper, VmService vmService) {
-    // TODO: we need some reflection utils
+  public void debugActive(FlutterViewMessages.FlutterDebugEvent event) {
+    this.debugEvent = event;
 
-    System.out.println("connection active; system ready");
-
-    vmService.getVM(new VmServiceConsumers.VmConsumerWrapper() {
+    event.vmService.addVmServiceListener(new VmServiceListener() {
       @Override
-      public void received(VM vm) {
-        System.out.println(vm.getHostCPU());
-        System.out.println(vm.getTargetCPU());
-        System.out.println(vm.getVersion());
+      public void connectionOpened() {
+      }
+
+      @Override
+      public void received(String s, Event event) {
+      }
+
+      @Override
+      public void connectionClosed() {
+        FlutterView.this.debugEvent = null;
       }
     });
   }
 
-  // TODO(devoncarew): Remember any state here.
-  // see TodoView.State
-  class State {
-    @Attribute("selected-index")
-    public int selectedIndex;
+  FlutterApp getFlutterApp() {
+    if (debugEvent == null) {
+      return null;
+    }
+    return debugEvent.observatoryConnector.getApp();
+  }
 
+  /**
+   * State for the view.
+   */
+  class State {
     State() {
     }
+  }
+}
+
+abstract class AbstractToggleableAction extends DumbAwareAction implements Toggleable {
+  @NotNull final FlutterView view;
+  private boolean selected = false;
+
+  AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+    super(text, description, icon);
+
+    this.view = view;
+  }
+
+  @Override
+  public final void update(AnActionEvent e) {
+    // enabled
+    e.getPresentation().setEnabled(view.getFlutterApp() != null);
+
+    // selected
+    final boolean selected = this.isSelected(e);
+    final Presentation presentation = e.getPresentation();
+    presentation.putClientProperty("selected", selected);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    this.setSelected(event, !isSelected(event));
+    final Presentation presentation = event.getPresentation();
+    presentation.putClientProperty("selected", isSelected(event));
+
+    FlutterInitializer.sendActionEvent(this);
+    perform(event);
+  }
+
+  protected abstract void perform(AnActionEvent event);
+
+  public boolean isSelected(AnActionEvent var1) {
+    return selected;
+  }
+
+  public void setSelected(AnActionEvent event, boolean selected) {
+    this.selected = selected;
+
+    ApplicationManager.getApplication().invokeLater(() -> this.update(event));
+  }
+}
+
+class DebugDrawAction extends AbstractToggleableAction {
+  DebugDrawAction(@NotNull FlutterView view) {
+    super(view, "Toggle Debug Paint", "Toggle Debug Painting", AllIcons.General.TbShown);
+  }
+
+  protected void perform(AnActionEvent event) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("enabled", isSelected(event));
+    view.getFlutterApp().callServiceExtension("ext.flutter.debugPaint", params);
+  }
+}
+
+class RepaintRainbowAction extends AbstractToggleableAction {
+  RepaintRainbowAction(@NotNull FlutterView view) {
+    super(view, "Toggle Debug Paint", "Toggle Debug Painting", AllIcons.Gutter.Colors);
+  }
+
+  protected void perform(AnActionEvent event) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("enabled", isSelected(event));
+    view.getFlutterApp().callServiceExtension("ext.flutter.repaintRainbow", params);
+  }
+}
+
+class PerformanceOverlayAction extends AbstractToggleableAction {
+  PerformanceOverlayAction(@NotNull FlutterView view) {
+    super(view, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.General.LocateHover);
+  }
+
+  protected void perform(AnActionEvent event) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("enabled", isSelected(event));
+    view.getFlutterApp().callServiceExtension("ext.flutter.showPerformanceOverlay", params);
+  }
+}
+
+class TimeDilationAction extends AbstractToggleableAction {
+  TimeDilationAction(@NotNull FlutterView view) {
+    super(view, "Toggle Slow Animations", "Toggle Slow Animations", AllIcons.General.MessageHistory);
+  }
+
+  protected void perform(AnActionEvent event) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("timeDilation", isSelected(event) ? 5.0 : 1.0);
+    view.getFlutterApp().callServiceExtension("ext.flutter.timeDilation", params);
+  }
+}
+
+abstract class AbstractObservatoryAction extends DumbAwareAction {
+  @NotNull final FlutterView view;
+
+  AbstractObservatoryAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+    super(text, description, icon);
+
+    this.view = view;
+  }
+
+  @Override
+  public final void update(AnActionEvent e) {
+    e.getPresentation().setEnabled(view.getFlutterApp() != null);
+  }
+}
+
+class ObservatoryTimelineAction extends AbstractObservatoryAction {
+  ObservatoryTimelineAction(@NotNull FlutterView view) {
+    super(view, "Open Observatory Timeline", "Open Observatory Timeline", AllIcons.Debugger.Value);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    FlutterInitializer.sendActionEvent(this);
+
+    final String wsUrl = view.getFlutterApp().wsUrl();
+    final String httpUrl = OpenObservatoryAction.convertWsToHttp(wsUrl) + "/#/timeline";
+    OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl);
   }
 }
