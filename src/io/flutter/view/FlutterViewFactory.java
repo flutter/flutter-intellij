@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -23,7 +23,7 @@ public class FlutterViewFactory implements ToolWindowFactory {
       });
   }
 
-  private static void openFlutterView(Project project, FlutterViewMessages.FlutterDebugEvent event) {
+  private static void openFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Flutter");
       toolWindow.show(() -> {

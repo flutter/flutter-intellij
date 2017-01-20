@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18,6 +18,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.run.daemon.FlutterApp;
@@ -39,7 +40,7 @@ import java.util.Map;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
-  private FlutterView.State state = new FlutterView.State();
+  @NotNull private FlutterView.State state = new FlutterView.State();
   @SuppressWarnings("FieldCanBeLocal") private final Project myProject;
   FlutterViewMessages.FlutterDebugEvent debugEvent;
 
@@ -51,7 +52,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   public void dispose() {
   }
 
-  @Nullable
+  @NotNull
   @Override
   public FlutterView.State getState() {
     return this.state;
@@ -62,7 +63,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     this.state = state;
   }
 
-  public void initToolWindow(ToolWindow toolWindow) {
+  public void initToolWindow(@NotNull ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
     final Content toolContent = contentFactory.createContent(null, null, false);
@@ -92,7 +93,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   /**
    * Called when a debug connection starts.
    */
-  public void debugActive(FlutterViewMessages.FlutterDebugEvent event) {
+  public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     this.debugEvent = event;
 
     event.vmService.addVmServiceListener(new VmServiceListener() {
@@ -122,8 +123,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
    * State for the view.
    */
   class State {
-    State() {
-    }
   }
 }
 
@@ -173,7 +172,8 @@ abstract class AbstractToggleableAction extends DumbAwareAction implements Toggl
 
 class DebugDrawAction extends AbstractToggleableAction {
   DebugDrawAction(@NotNull FlutterView view) {
-    super(view, "Toggle Debug Paint", "Toggle Debug Painting", AllIcons.General.TbShown);
+    super(view, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
+          AllIcons.General.TbShown);
   }
 
   protected void perform(AnActionEvent event) {
@@ -185,7 +185,8 @@ class DebugDrawAction extends AbstractToggleableAction {
 
 class RepaintRainbowAction extends AbstractToggleableAction {
   RepaintRainbowAction(@NotNull FlutterView view) {
-    super(view, "Toggle Repaint Rainbow", "Toggle Repaint Rainbow", AllIcons.Gutter.Colors);
+    super(view, FlutterBundle.message("flutter.view.repaintRainbow.text"), FlutterBundle.message("flutter.view.repaintRainbow.description"),
+          AllIcons.Gutter.Colors);
   }
 
   protected void perform(AnActionEvent event) {
@@ -197,7 +198,8 @@ class RepaintRainbowAction extends AbstractToggleableAction {
 
 class PerformanceOverlayAction extends AbstractToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterView view) {
-    super(view, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.General.LocateHover);
+    super(view, FlutterBundle.message("flutter.view.performanceOverlay.text"),
+          FlutterBundle.message("flutter.view.performanceOverlay.description"), AllIcons.General.LocateHover);
   }
 
   protected void perform(AnActionEvent event) {
@@ -209,7 +211,8 @@ class PerformanceOverlayAction extends AbstractToggleableAction {
 
 class TimeDilationAction extends AbstractToggleableAction {
   TimeDilationAction(@NotNull FlutterView view) {
-    super(view, "Toggle Slow Animations", "Toggle Slow Animations", AllIcons.General.MessageHistory);
+    super(view, FlutterBundle.message("flutter.view.slowAnimations.text"), FlutterBundle.message("flutter.view.slowAnimations.description"),
+          AllIcons.General.MessageHistory);
   }
 
   protected void perform(AnActionEvent event) {
@@ -236,15 +239,18 @@ abstract class AbstractObservatoryAction extends DumbAwareAction {
 
 class ObservatoryTimelineAction extends AbstractObservatoryAction {
   ObservatoryTimelineAction(@NotNull FlutterView view) {
-    super(view, "Open Observatory Timeline", "Open Observatory Timeline", AllIcons.Debugger.Value);
+    super(view, FlutterBundle.message("flutter.view.observatoryTimeline.text"),
+          FlutterBundle.message("flutter.view.observatoryTimeline.description"),
+          AllIcons.Debugger.Value);
   }
 
   @Override
   public void actionPerformed(AnActionEvent event) {
     FlutterInitializer.sendActionEvent(this);
 
-    final String wsUrl = view.getFlutterApp().wsUrl();
-    final String httpUrl = OpenObservatoryAction.convertWsToHttp(wsUrl) + "/#/timeline";
-    OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl);
+    final String httpUrl = OpenObservatoryAction.convertWsToHttp(view.getFlutterApp().wsUrl());
+    if (httpUrl != null) {
+      OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/timeline");
+    }
   }
 }
