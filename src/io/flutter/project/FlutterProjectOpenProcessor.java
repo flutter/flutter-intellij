@@ -87,7 +87,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
       return;
     }
 
-    // TODO(pq): handle adding FLutter module
+    // TODO(pq): handle adding Flutter module type.
     if (!FlutterSdkUtil.hasFlutterModule(project)) {
       return;
     }
