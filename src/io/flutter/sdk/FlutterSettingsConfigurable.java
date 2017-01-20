@@ -143,8 +143,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   public void reset() {
     final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
     final String path = sdk != null ? sdk.getHomePath() : "";
-    mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
+
+    // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
+    // (This can happen if the user changed the Dart SDK.)
+    mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+
     updateVersionText();
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
   }
@@ -153,26 +157,38 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       myVersionLabel.setText("");
+      return;
     }
-    else {
-      try {
-        final ModalityState modalityState = ModalityState.current();
-        sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
-          @Override
-          public void processTerminated(@NotNull ProcessEvent event) {
-            final ProcessOutput output = getOutput();
-            final String stdout = output.getStdout();
-            ApplicationManager.getApplication().invokeLater(() -> {
-              final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
-              myVersionLabel.setText(htmlText);
-            }, modalityState);
-          }
-        });
-      }
-      catch (ExecutionException e) {
-        LOG.warn(e);
-      }
+    try {
+      final ModalityState modalityState = ModalityState.current();
+      sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
+        @Override
+        public void processTerminated(@NotNull ProcessEvent event) {
+          final ProcessOutput output = getOutput();
+          final String stdout = output.getStdout();
+          final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
+          ApplicationManager.getApplication().invokeLater(() -> {
+            updateVersionTextIfCurrent(sdk, htmlText);
+          }, modalityState);
+        }
+      });
     }
+    catch (ExecutionException e) {
+      LOG.warn(e);
+    }
+  }
+
+  /***
+   * Sets the version text but only if we don't have stale data.
+   *
+   * @param sdk the SDK that was current at the time.
+   */
+  private void updateVersionTextIfCurrent(@NotNull FlutterSdk sdk, @NotNull String value) {
+    FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
+    if (current == null || !sdk.getHomePath().equals(current.getHomePath())) {
+      return; // stale
+    }
+    myVersionLabel.setText(value);
   }
 
   @Override

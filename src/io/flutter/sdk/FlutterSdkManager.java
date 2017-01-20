@@ -43,25 +43,22 @@ public class FlutterSdkManager {
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {
-        checkForFlutterSdkAddition();
+        checkForFlutterSdkChange();
       }
 
       @Override
       public void projectClosed(@NotNull Project project) {
-        checkForFlutterSdkRemoval();
+        checkForFlutterSdkChange();
       }
     });
   }
 
-  private void checkForFlutterSdkAddition() {
+  // Send events if Flutter SDK was configured or unconfigured.
+  public void checkForFlutterSdkChange() {
     if (!isFlutterConfigured && isGlobalFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = true;
       myDispatcher.getMulticaster().flutterSdkAdded();
-    }
-  }
-
-  private void checkForFlutterSdkRemoval() {
-    if (isFlutterConfigured && !isGlobalFlutterSdkSetAndNeeded()) {
+    } else if (isFlutterConfigured && !isGlobalFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = false;
       myDispatcher.getMulticaster().flutterSdkRemoved();
     }
@@ -100,13 +97,13 @@ public class FlutterSdkManager {
 
     @Override
     public void afterLibraryAdded(Library newLibrary) {
-      checkForFlutterSdkAddition();
+      checkForFlutterSdkChange();
     }
 
     @Override
     public void afterLibraryRenamed(Library library) {
       // Since we key off name, test to be safe.
-      checkForFlutterSdkRemoval();
+      checkForFlutterSdkChange();
     }
 
     @Override
@@ -116,7 +113,7 @@ public class FlutterSdkManager {
 
     @Override
     public void afterLibraryRemoved(Library library) {
-      checkForFlutterSdkRemoval();
+      checkForFlutterSdkChange();
     }
   }
 }

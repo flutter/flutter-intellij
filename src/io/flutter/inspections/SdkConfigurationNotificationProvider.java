@@ -47,30 +47,18 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     this.project = project;
   }
 
-  @Nullable
-  private static EditorNotificationPanel createWrongSdkPanel(@NotNull Project project, @Nullable Module module) {
-    if (module == null) return null;
-
-    final FlutterUIConfig settings = FlutterUIConfig.getInstance();
-    if (settings.shouldIgnoreMismatchedDartSdks()) return null;
-
+  @SuppressWarnings("SameReturnValue")
+  private static EditorNotificationPanel createNoFlutterSdkPanel() {
     final EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.setText(FlutterBundle.message("flutter.wrong.dart.sdk.warning"));
-    panel.createActionLabel(FlutterBundle.message("dart.sdk.configuration.action.label"),
-                            () -> FlutterSdkService.getInstance(project).configureDartSdk(module));
+    panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> {
-      settings.setIgnoreMismatchedDartSdks();
       panel.setVisible(false);
     });
 
+    // TODO(skybrian) we should add a link to go to the Dart SDK panel.
+    // However, not yet because this will change with 2017.1 to be project-specific.
+
     return panel;
-  }
-
-  @SuppressWarnings("SameReturnValue")
-  private static EditorNotificationPanel createNoFlutterSdkPanel() {
-    // TODO(pq): add panel for unconfigured Flutter SDK.
-
-    return null;
   }
 
   @NotNull
@@ -93,31 +81,13 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
     if (!FlutterSdkUtil.isFlutterModule(module)) return null;
 
-    try {
-      final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-      if (flutterSdk == null) {
-        return createNoFlutterSdkPanel();
-      }
-
-      if (flutterSdk.getVersion().isLessThan(MIN_SUPPORTED_SDK)) {
-        return createOutOfDateFlutterSdkPanel(flutterSdk);
-      }
-
-      final DartSdk dartSdk = DartSdk.getDartSdk(project);
-      if (dartSdk == null) {
-        // TODO(devoncarew): Recommend to set up with Flutter's dart sdk.
-
-        return null;
-      }
-
-      final String flutterDartSdkPath = flutterSdk.getDartSdkPath();
-      final String dartSdkPath = dartSdk.getHomePath();
-      if (!StringUtil.equals(flutterDartSdkPath, dartSdkPath)) {
-        return createWrongSdkPanel(project, module);
-      }
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+    if (flutterSdk == null) {
+      return createNoFlutterSdkPanel();
     }
-    catch (ExecutionException e) {
-      LOG.warn(e);
+
+    if (flutterSdk.getVersion().isLessThan(MIN_SUPPORTED_SDK)) {
+      return createOutOfDateFlutterSdkPanel(flutterSdk);
     }
 
     return null;
