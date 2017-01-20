@@ -14,7 +14,6 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
-import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
@@ -24,8 +23,6 @@ public class FlutterPackagesUpgradeAction extends FlutterSdkAction {
 
   @Override
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
-    FlutterInitializer.sendActionEvent(this);
-
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
       sdk.run(COMMAND, pair.first, pair.second.getParent(), null);

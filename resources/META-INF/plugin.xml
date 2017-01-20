@@ -234,6 +234,7 @@
     <projectService serviceInterface="io.flutter.view.FlutterView"
                     serviceImplementation="io.flutter.view.FlutterView"
                     overrides="false"/>
+    <projectOpenProcessor implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
   </extensions>
 
 </idea-plugin>

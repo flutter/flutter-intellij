@@ -35,6 +35,11 @@ public class FlutterBazelRunner extends FlutterRunner {
       return false;
     }
 
+    //noinspection SimplifiableIfStatement
+    if (hasAnyRunningConfigs(runConfiguration)) {
+      return false;
+    }
+
     return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
   }
 }
