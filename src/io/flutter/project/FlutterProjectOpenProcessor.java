@@ -6,6 +6,10 @@
 package io.flutter.project;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -15,6 +19,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterPackagesGetAction;
+import io.flutter.actions.FlutterPackagesUpgradeAction;
 import io.flutter.actions.FlutterSdkAction;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -22,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -36,6 +42,11 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     }
 
     action.perform(sdk, project, null);
+  }
+
+  private static void handleError(@NotNull Exception e) {
+    FlutterErrors.showError("Error opening",
+                            e.getMessage());
   }
 
   @Override
@@ -80,14 +91,15 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
       if (!FlutterUtils.exists(packagesFile)) {
         doPerform(new FlutterPackagesGetAction(), project);
       }
-      //TODO(pq): Check if .packages is out of date and offer to run `packages update`.
-      //else {
-      //
-      //}
+      else {
+        final VirtualFile pubspecFile = FlutterSdkUtil.findPubspecFrom(project, null);
+        if (FlutterUtils.exists(pubspecFile) && pubspecFile.getTimeStamp() > packagesFile.getTimeStamp()) {
+          Notifications.Bus.notify(new PackagesOutOfDateNotification(project));
+        }
+      }
     }
     catch (ExecutionException e) {
-      FlutterErrors.showError("Error opening",
-                              e.getMessage());
+      handleError(e);
     }
   }
 
@@ -101,5 +113,34 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   @Override
   public boolean isStrongProjectInfoHolder() {
     return true;
+  }
+
+  private static class PackagesOutOfDateNotification extends Notification {
+
+    @NotNull
+    private final Project myProject;
+
+    public PackagesOutOfDateNotification(@NotNull Project project) {
+      super("Flutter Packages", FlutterIcons.Flutter, "Package updates.",
+            null, "This project's packages are ready to" +
+                  " <a href=\"\">update</a>.",
+            NotificationType.INFORMATION, new NotificationListener() {
+          @Override
+          public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
+            final Project project = ((PackagesOutOfDateNotification)notification).myProject;
+            final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+            if (sdk != null) {
+              try {
+                new FlutterPackagesUpgradeAction().perform(sdk, project, null);
+                notification.expire();
+              }
+              catch (ExecutionException e) {
+                handleError(e);
+              }
+            }
+          }
+        });
+      myProject = project;
+    }
   }
 }
