@@ -6,17 +6,21 @@
 package io.flutter.run;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
@@ -33,7 +37,10 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
+
 public class FlutterRunner extends FlutterRunnerBase {
+  private static final Key<RunConfiguration> RUN_CONFIGURATION_KEY = new Key<>("RUN_CONFIGURATION_KEY");
 
   private static final Logger LOG = Logger.getInstance(FlutterRunner.class.getName());
 
@@ -65,7 +72,32 @@ public class FlutterRunner extends FlutterRunnerBase {
       return false;
     }
 
+    // Check to see if there are any processes currently running that were launched from this config.
+    //noinspection SimplifiableIfStatement
+    if (hasAnyRunningConfigs(runConfiguration)) {
+      return false;
+    }
+
     return DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId);
+  }
+
+  protected boolean hasAnyRunningConfigs(FlutterRunConfigurationBase runConfiguration) {
+    final List<RunContentDescriptor> runningProcesses =
+      ExecutionManager.getInstance(runConfiguration.getProject()).getContentManager().getAllDescriptors();
+
+    for (RunContentDescriptor descriptor : runningProcesses) {
+      final ProcessHandler processHandler = descriptor.getProcessHandler();
+      if (processHandler != null) {
+        if (!processHandler.isProcessTerminated()) {
+          final RunConfiguration descriptorRunConfig = processHandler.getUserData(RUN_CONFIGURATION_KEY);
+          if (descriptorRunConfig == runConfiguration) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
   }
 
   @Override
@@ -155,10 +187,11 @@ public class FlutterRunner extends FlutterRunnerBase {
     final String debuggingHost;
     final int observatoryPort;
 
-    contextFileOrDir = ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().getBestContextFile();
+    final FlutterRunConfigurationBase flutterRunConfig = (FlutterRunConfigurationBase)runConfiguration;
 
-    final String cwd =
-      ((FlutterRunConfigurationBase)runConfiguration).getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
+    contextFileOrDir = flutterRunConfig.getRunnerParameters().getBestContextFile();
+
+    final String cwd = flutterRunConfig.getRunnerParameters().computeProcessWorkingDirectory(env.getProject());
     currentWorkingDirectory = LocalFileSystem.getInstance().findFileByPath((cwd));
 
     executionResult = appState.execute(env.getExecutor(), this);
@@ -185,6 +218,12 @@ public class FlutterRunner extends FlutterRunnerBase {
 
     if (!FlutterDebugProcess.isDebuggingSession(appState)) {
       debugSession.setBreakpointMuted(true);
+    }
+
+    // Store the run configuration so we know which config started this process.
+    final ProcessHandler processHandler = debugSession.getRunContentDescriptor().getProcessHandler();
+    if (processHandler != null) {
+      processHandler.putUserData(RUN_CONFIGURATION_KEY, flutterRunConfig);
     }
 
     return debugSession.getRunContentDescriptor();
