@@ -157,26 +157,38 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       myVersionLabel.setText("");
+      return;
     }
-    else {
-      try {
-        final ModalityState modalityState = ModalityState.current();
-        sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
-          @Override
-          public void processTerminated(@NotNull ProcessEvent event) {
-            final ProcessOutput output = getOutput();
-            final String stdout = output.getStdout();
-            ApplicationManager.getApplication().invokeLater(() -> {
-              final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
-              myVersionLabel.setText(htmlText);
-            }, modalityState);
-          }
-        });
-      }
-      catch (ExecutionException e) {
-        LOG.warn(e);
-      }
+    try {
+      final ModalityState modalityState = ModalityState.current();
+      sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
+        @Override
+        public void processTerminated(@NotNull ProcessEvent event) {
+          final ProcessOutput output = getOutput();
+          final String stdout = output.getStdout();
+          final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
+          ApplicationManager.getApplication().invokeLater(() -> {
+            updateVersionTextIfCurrent(sdk, htmlText);
+          }, modalityState);
+        }
+      });
     }
+    catch (ExecutionException e) {
+      LOG.warn(e);
+    }
+  }
+
+  /***
+   * Sets the version text but only if we don't have stale data.
+   *
+   * @param sdk the SDK that was current at the time.
+   */
+  private void updateVersionTextIfCurrent(@NotNull FlutterSdk sdk, @NotNull String value) {
+    FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
+    if (current == null || !sdk.getHomePath().equals(current.getHomePath())) {
+      return; // stale
+    }
+    myVersionLabel.setText(value);
   }
 
   @Override
