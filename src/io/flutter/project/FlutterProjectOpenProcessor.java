@@ -75,17 +75,23 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     }
 
     final Project project = importProvider.doOpenProject(file, projectToClose, forceOpenInNewFrame);
-    if (project == null) {
-      return null;
-    }
 
-    // Once open, perform post open processing.
+    // Once open, process.
     doPostOpenProcessing(project);
 
     return project;
   }
 
-  private void doPostOpenProcessing(@NotNull Project project) {
+  private void doPostOpenProcessing(@Nullable Project project) {
+    if (project == null) {
+      return;
+    }
+
+    // TODO(pq): handle adding Flutter module type.
+    if (!FlutterSdkUtil.hasFlutterModule(project)) {
+      return;
+    }
+
     try {
       final VirtualFile packagesFile = FlutterSdkUtil.findPackagesFileFrom(project, null);
       if (!FlutterUtils.exists(packagesFile)) {
