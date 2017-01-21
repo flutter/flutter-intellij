@@ -5,7 +5,6 @@
  */
 package io.flutter.inspections;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
@@ -13,7 +12,6 @@ import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiManager;
@@ -21,15 +19,12 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
-import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkService;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterUIConfig;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class SdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
   implements DumbAware {
@@ -51,9 +46,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   private static EditorNotificationPanel createNoFlutterSdkPanel() {
     final EditorNotificationPanel panel = new EditorNotificationPanel();
     panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
-    panel.createActionLabel("Dismiss", () -> {
-      panel.setVisible(false);
-    });
+    panel.createActionLabel("Dismiss", () -> panel.setVisible(false));
 
     // TODO(skybrian) we should add a link to go to the Dart SDK panel.
     // However, not yet because this will change with 2017.1 to be project-specific.

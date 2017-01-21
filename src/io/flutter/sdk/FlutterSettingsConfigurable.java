@@ -184,7 +184,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
    * @param sdk the SDK that was current at the time.
    */
   private void updateVersionTextIfCurrent(@NotNull FlutterSdk sdk, @NotNull String value) {
-    FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
+    final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null || !sdk.getHomePath().equals(current.getHomePath())) {
       return; // stale
     }

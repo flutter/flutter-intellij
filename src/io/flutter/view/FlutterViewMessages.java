@@ -17,7 +17,7 @@ import org.jetbrains.annotations.NotNull;
  * Coordinates communication on the message bus.
  */
 public class FlutterViewMessages {
-  public static Topic<FlutterDebugNotifier> FLUTTER_DEBUG_TOPIC = Topic.create("flutter.debugActive", FlutterDebugNotifier.class);
+  public static final Topic<FlutterDebugNotifier> FLUTTER_DEBUG_TOPIC = Topic.create("flutter.debugActive", FlutterDebugNotifier.class);
 
   public interface FlutterDebugNotifier {
     void debugActive(FlutterDebugEvent event);
@@ -28,7 +28,9 @@ public class FlutterViewMessages {
     public final @NotNull VmServiceWrapper vmServiceWrapper;
     public final @NotNull VmService vmService;
 
-    FlutterDebugEvent(@NotNull ObservatoryConnector observatoryConnector, @NotNull VmServiceWrapper vmServiceWrapper, @NotNull VmService vmService) {
+    FlutterDebugEvent(@NotNull ObservatoryConnector observatoryConnector,
+                      @NotNull VmServiceWrapper vmServiceWrapper,
+                      @NotNull VmService vmService) {
       this.observatoryConnector = observatoryConnector;
       this.vmServiceWrapper = vmServiceWrapper;
       this.vmService = vmService;

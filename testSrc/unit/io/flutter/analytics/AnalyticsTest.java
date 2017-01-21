@@ -52,7 +52,7 @@ public class AnalyticsTest extends TestCase {
   }
 
   private static class MockAnalyticsTransport implements Analytics.Transport {
-    public List<Map<String, String>> sentValues = new ArrayList<>();
+    final public List<Map<String, String>> sentValues = new ArrayList<>();
 
     @Override
     public void send(String url, Map<String, String> values) {
