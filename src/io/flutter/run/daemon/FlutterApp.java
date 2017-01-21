@@ -13,6 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A running Flutter app.
@@ -127,22 +128,8 @@ public class FlutterApp {
     myManager.restartApp(this, false, pauseAfterRestart);
   }
 
-  /**
-   * Fetch the widget hierarchy.
-   *
-   * @return Unknown
-   */
-  public Object fetchWidgetHierarchy() {
-    throw new NoSuchMethodError("fetchWidgetHierarchy");
-  }
-
-  /**
-   * Fetch the render tree
-   *
-   * @return Unknown
-   */
-  public Object fetchRenderTree() {
-    throw new NoSuchMethodError("fetchRenderTree");
+  public void callServiceExtension(String methodName, Map<String, Object> params) {
+    myManager.callServiceExtension(this, methodName, params);
   }
 
   public void setConsole(ConsoleView console) {
@@ -184,7 +171,6 @@ public class FlutterApp {
   public void removeStateListener(StateListener listener) {
     myListeners.remove(null);
   }
-
 
   public interface StateListener {
     void stateChanged(State newState);

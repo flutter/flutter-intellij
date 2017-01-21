@@ -58,7 +58,7 @@ public class OpenObservatoryAction extends DumbAwareAction {
     openInAnyChromeFamilyBrowser(myUrl.compute());
   }
 
-  private static void openInAnyChromeFamilyBrowser(@NotNull String url) {
+  public static void openInAnyChromeFamilyBrowser(@NotNull String url) {
     final List chromeBrowsers = WebBrowserManager.getInstance().getBrowsers((browser) -> browser.getFamily() == BrowserFamily.CHROME, true);
     BrowserLauncher.getInstance().browse(url, chromeBrowsers.isEmpty() ? null : (WebBrowser)chromeBrowsers.get(0));
   }

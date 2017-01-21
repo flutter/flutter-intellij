@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.event.HyperlinkEvent;
@@ -85,6 +86,9 @@ public class FlutterInitializer implements StartupActivity {
   public void runActivity(@NotNull Project project) {
     // Initialize the daemon service (this starts a device watcher).
     FlutterDaemonService.getInstance(project);
+
+    // Start watching for Flutter debug active events.
+    FlutterViewFactory.init(project);
 
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(

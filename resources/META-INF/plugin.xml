@@ -227,6 +227,13 @@
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle"/>
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
+
+    <toolWindow id="Flutter" anchor="right" icon="FlutterIcons.Flutter"
+                factoryClass="io.flutter.view.FlutterViewFactory"
+                conditionClass="io.flutter.view.FlutterViewCondition"/>
+    <projectService serviceInterface="io.flutter.view.FlutterView"
+                    serviceImplementation="io.flutter.view.FlutterView"
+                    overrides="false"/>
     <projectOpenProcessor implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
   </extensions>
 

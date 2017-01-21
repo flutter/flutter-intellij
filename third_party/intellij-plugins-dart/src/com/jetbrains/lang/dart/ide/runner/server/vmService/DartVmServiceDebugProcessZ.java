@@ -41,6 +41,7 @@ import io.flutter.actions.HotReloadFlutterApp;
 import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.view.FlutterViewMessages;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -294,6 +295,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     myVmConnected = true;
     getSession().rebuildViews();
+
+    FlutterViewMessages.sendDebugActive(getConnector(), myVmServiceWrapper, vmService);
   }
 
   @Override
