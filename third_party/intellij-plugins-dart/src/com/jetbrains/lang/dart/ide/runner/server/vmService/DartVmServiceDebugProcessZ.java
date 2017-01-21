@@ -78,7 +78,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @Nullable private final String myDASExecutionContextId;
   private final int myTimeout;
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
-  @Nullable private final ObservatoryConnector myConnector;
+  @NotNull private final ObservatoryConnector myConnector;
 
   private String mySnapshotBaseUri;
   private String myRemoteBaseUri;
@@ -91,7 +91,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     final boolean remoteDebug,
                                     final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
-                                    @Nullable final ObservatoryConnector connector) {
+                                    @NotNull final ObservatoryConnector connector) {
     super(session, "localhost", 0, executionResult, dartUrlResolver, dasExecutionContextId,
           remoteDebug, timeout, currentWorkingDirectory);
 
@@ -111,16 +111,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       @Override
       public void sessionPaused() {
         stackFrameChanged();
-        if (connector != null) {
-          connector.sessionPaused(session);
-        }
+        connector.sessionPaused(session);
       }
 
       @Override
       public void sessionResumed() {
-        if (connector != null) {
-          connector.sessionResumed();
-        }
+        connector.sessionResumed();
       }
 
       @Override
@@ -152,7 +148,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     return remoteDebug;
   }
 
-  @Nullable
+  @NotNull
   public ObservatoryConnector getConnector() {
     return myConnector;
   }
@@ -210,6 +206,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
    * We override the parent with a no-op implementation; our preferred implementation
    * (scheduleConnectNew) is called elsewhere.
    */
+  @SuppressWarnings("EmptyMethod")
   public void scheduleConnect() {
     // This page intentionally left blank.
 
@@ -217,30 +214,28 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      if (myConnector != null) {
-        final long timeout = (long)myTimeout;
-        final long startTime = System.currentTimeMillis();
-        while (!getSession().isStopped() && !myConnector.isConnectionReady()) {
-          if (System.currentTimeMillis() > startTime + timeout) {
-            final String message = "Observatory connection never became ready.\n";
-            getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
-            getSession().stop();
-            return;
-          }
-          else {
-            TimeoutUtil.sleep(50);
-          }
-        }
+      final long timeout = (long)myTimeout;
+      long startTime = System.currentTimeMillis();
 
-        if (getSession().isStopped()) {
+      while (!getSession().isStopped() && !myConnector.isConnectionReady()) {
+        if (System.currentTimeMillis() > startTime + timeout) {
+          final String message = "Observatory connection never became ready.\n";
+          getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
+          getSession().stop();
           return;
         }
-
-        myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
+        else {
+          TimeoutUtil.sleep(50);
+        }
       }
 
-      final long timeout = (long)myTimeout;
-      final long startTime = System.currentTimeMillis();
+      if (getSession().isStopped()) {
+        return;
+      }
+
+      myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
+
+      startTime = System.currentTimeMillis();
 
       try {
         while (true) {
@@ -483,12 +478,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   private boolean isSessionActive() {
-    return (myConnector != null && myConnector.isConnectionReady()) &&
-           myVmConnected && !getSession().isStopped();
+    return myConnector.isConnectionReady() && myVmConnected && !getSession().isStopped();
   }
 
   private String computeObservatoryBrowserUrl() {
-    assert myConnector != null;
     myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
     assert myObservatoryWsUrl != null;
     return OpenObservatoryAction.convertWsToHttp(myObservatoryWsUrl);
@@ -652,7 +645,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   private String getRemoteBaseUri() {
     if (myRemoteBaseUri == null) {
-      final FlutterApp app = myConnector != null ? myConnector.getApp() : null;
+      final FlutterApp app = myConnector.getApp();
       if (app != null) {
         myRemoteBaseUri = app.baseUri();
       }

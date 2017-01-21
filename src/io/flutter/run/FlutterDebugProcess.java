@@ -41,7 +41,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
                              boolean remoteDebug,
                              int timeout,
                              @Nullable VirtualFile currentWorkingDirectory,
-                             @Nullable ObservatoryConnector connector) {
+                             @NotNull ObservatoryConnector connector) {
     super(session, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
           currentWorkingDirectory, connector);
     myState = state;

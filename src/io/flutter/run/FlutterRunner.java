@@ -204,6 +204,8 @@ public class FlutterRunner extends FlutterRunnerBase {
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
         final DartUrlResolver dartUrlResolver = getDartUrlResolver(env.getProject(), contextFileOrDir);
+        final ObservatoryConnector observatoryConnector = getConnector();
+        assert (observatoryConnector != null);
         return new FlutterDebugProcess(session,
                                        state,
                                        executionResult,
@@ -212,7 +214,7 @@ public class FlutterRunner extends FlutterRunnerBase {
                                        false,
                                        getTimeout(),
                                        currentWorkingDirectory,
-                                       getConnector());
+                                       observatoryConnector);
       }
     });
 
