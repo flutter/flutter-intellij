@@ -143,9 +143,10 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     private final Project myProject;
 
     public PackagesOutOfDateNotification(@NotNull Project project) {
-      super("Flutter Packages", FlutterIcons.Flutter, "Package updates.",
-            null, "This project's packages are ready to" +
-                  " <a href=\"\">update</a>.",
+      super("Flutter Packages", FlutterIcons.Flutter, "Flutter packages get.",
+            null, "The pubspec.yaml file has been modified since " +
+                  "the last time the 'flutter packages get' was run;" +
+                  " <a href=\"\">run that now</a>?",
             NotificationType.INFORMATION, new NotificationListener() {
           @Override
           public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
@@ -153,7 +154,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
             final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
             if (sdk != null) {
               try {
-                new FlutterPackagesUpgradeAction().perform(sdk, project, null);
+                new FlutterPackagesGetAction().perform(sdk, project, null);
                 notification.expire();
               }
               catch (ExecutionException e) {
