@@ -21,7 +21,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
 import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,9 +43,9 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     Module module = e == null ? null : LangDataKeys.MODULE.getData(e.getDataContext());
     final PsiFile psiFile = e == null ? null : CommonDataKeys.PSI_FILE.getData(e.getDataContext());
 
-    VirtualFile pubspec = FlutterSdkUtil.findPubspecFrom(project, psiFile);
+    VirtualFile pubspec = FlutterModuleUtils.findPubspecFrom(project, psiFile);
     if (pubspec == null) {
-      pubspec = FlutterSdkUtil.findPubspecFrom(module);
+      pubspec = FlutterModuleUtils.findPubspecFrom(module);
     }
 
     if (module == null && pubspec != null) {
@@ -82,7 +82,10 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     }
   }
 
-  public final void perform(@NotNull FlutterSdk sdk, @NotNull Project project, @Nullable AnActionEvent event, boolean logAction)
+  public final void perform(@NotNull FlutterSdk sdk,
+                            @NotNull Project project,
+                            @Nullable AnActionEvent event,
+                            @SuppressWarnings("SameParameterValue") boolean logAction)
     throws ExecutionException {
     if (logAction) {
       sendActionEvent();

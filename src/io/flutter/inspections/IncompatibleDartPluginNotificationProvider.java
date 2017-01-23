@@ -23,7 +23,7 @@ import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,7 +74,7 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
     final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
     if (module == null) return null;
 
-    if (!FlutterSdkUtil.isFlutterModule(module)) return null;
+    if (!FlutterModuleUtils.isFlutterModule(module)) return null;
 
     final Version minimumVersion = DartPlugin.getInstance().getMinimumVersion();
     final Version dartVersion = DartPlugin.getInstance().getVersion();

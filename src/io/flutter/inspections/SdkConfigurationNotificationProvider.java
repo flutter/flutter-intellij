@@ -21,9 +21,9 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterUIConfig;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class SdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
@@ -72,7 +72,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
     if (module == null) return null;
 
-    if (!FlutterSdkUtil.isFlutterModule(module)) return null;
+    if (!FlutterModuleUtils.isFlutterModule(module)) return null;
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {

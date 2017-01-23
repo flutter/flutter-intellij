@@ -7,11 +7,11 @@ package io.flutter.view;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 
 public class FlutterViewCondition implements Condition<Project> {
   @Override
   public boolean value(Project project) {
-    return FlutterSdkUtil.hasFlutterModule(project);
+    return FlutterModuleUtils.hasFlutterModule(project);
   }
 }

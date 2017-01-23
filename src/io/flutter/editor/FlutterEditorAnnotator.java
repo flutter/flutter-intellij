@@ -16,7 +16,7 @@ import com.intellij.util.ui.ColorIcon;
 import com.jetbrains.lang.dart.psi.DartArrayAccessExpression;
 import com.jetbrains.lang.dart.psi.DartNewExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -118,7 +118,7 @@ public class FlutterEditorAnnotator implements Annotator {
   }
 
   private static boolean isInFlutterModule(@NotNull PsiElement element) {
-    return FlutterSdkUtil.isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
+    return FlutterModuleUtils.isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
   }
 
   private Icon getIcon(String id) {
