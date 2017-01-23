@@ -11,7 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,7 +54,7 @@ public abstract class FlutterRetargetAction extends DumbAwareAction {
     final Presentation presentation = e.getPresentation();
 
     final Project project = e.getProject();
-    if (project == null || !FlutterSdkUtil.hasFlutterModule(project) || !myPlaces.contains(e.getPlace())) {
+    if (project == null || !FlutterModuleUtils.hasFlutterModule(project) || !myPlaces.contains(e.getPlace())) {
       presentation.setVisible(false);
       return;
     }

@@ -18,7 +18,7 @@ import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
 import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -51,7 +51,7 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
-    if (!FlutterSdkUtil.hasFlutterModule(project)) {
+    if (!FlutterModuleUtils.hasFlutterModule(project)) {
       return null;
     }
 

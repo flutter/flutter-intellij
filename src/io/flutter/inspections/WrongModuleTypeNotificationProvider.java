@@ -8,13 +8,11 @@ package io.flutter.inspections;
 
 import com.intellij.CommonBundle;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -22,13 +20,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
-import io.flutter.module.FlutterModuleType;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -54,16 +49,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
                                     FlutterBundle.message("update.module.type"),
                                     FlutterBundle.message("reload.project"), CommonBundle.getCancelButtonText(), null);
       if (message == Messages.YES) {
-        module.setOption(Module.ELEMENT_TYPE, FlutterModuleType.getInstance().getId());
-
-        if (DartSdk.getDartSdk(project) != null && !DartSdkGlobalLibUtil.isDartSdkEnabled(module)) {
-          ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
-        }
-
-        project.save();
-
-        EditorNotifications.getInstance(project).updateAllNotifications();
-        ProjectManager.getInstance().reloadProject(project);
+        FlutterModuleUtils.setFlutterModuleAndReload(module, project);
       }
     });
     panel.createActionLabel(FlutterBundle.message("don.t.show.again.for.this.module"), () -> {
@@ -91,7 +77,7 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
     if (!FlutterUtils.isFlutteryFile(file)) return null;
     final Module module = ModuleUtilCore.findModuleForFile(file, myProject);
-    if (module == null || FlutterSdkUtil.isFlutterModule(module) || getIgnoredModules(myProject).contains(module.getName())) return null;
-    return FlutterSdkUtil.usesFlutter(module) ? createPanel(myProject, module) : null;
+    if (module == null || FlutterModuleUtils.isFlutterModule(module) || getIgnoredModules(myProject).contains(module.getName())) return null;
+    return FlutterModuleUtils.usesFlutter(module) ? createPanel(myProject, module) : null;
   }
 }

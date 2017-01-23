@@ -18,7 +18,7 @@ import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -53,7 +53,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     // And only present in the context of a flutter project.
     final Project project = e.getProject();
-    if (project == null || !FlutterSdkUtil.hasFlutterModule(project)) {
+    if (project == null || !FlutterModuleUtils.hasFlutterModule(project)) {
       e.getPresentation().setVisible(false);
       return;
     }
