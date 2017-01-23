@@ -137,7 +137,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
             final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
             if (sdk != null) {
               try {
-                new FlutterPackagesUpgradeAction().perform(sdk, project, null);
+                new FlutterPackagesGetAction().perform(sdk, project, null);
                 notification.expire();
               }
               catch (ExecutionException e) {
