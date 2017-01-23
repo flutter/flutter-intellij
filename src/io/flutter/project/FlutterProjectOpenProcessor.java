@@ -7,9 +7,10 @@ package io.flutter.project;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationListener;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.module.Module;
@@ -21,7 +22,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterPackagesGetAction;
-import io.flutter.actions.FlutterPackagesUpgradeAction;
 import io.flutter.actions.FlutterSdkAction;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -30,7 +30,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.HyperlinkEvent;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.List;
@@ -100,7 +99,8 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
         if (modules.isEmpty()) {
           LOG.warn(MessageFormat.format("No module found for {0}", project.getName()));
           return;
-        } else if (modules.size() > 1){
+        }
+        else if (modules.size() > 1) {
           LOG.warn(MessageFormat.format("{0} contains {1} modules.", project.getName(), modules.size()));
         }
 
@@ -142,28 +142,30 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     @NotNull
     private final Project myProject;
 
-    public PackagesOutOfDateNotification(@NotNull Project project) {
+    public PackagesOutOfDateNotification(final @NotNull Project project) {
       super("Flutter Packages", FlutterIcons.Flutter, "Flutter packages get.",
             null, "The pubspec.yaml file has been modified since " +
-                  "the last time the 'flutter packages get' was run;" +
-                  " <a href=\"\">run that now</a>?",
-            NotificationType.INFORMATION, new NotificationListener() {
-          @Override
-          public void hyperlinkUpdate(@NotNull Notification notification, @NotNull HyperlinkEvent event) {
-            final Project project = ((PackagesOutOfDateNotification)notification).myProject;
+                  "the last time 'flutter packages get' was run.",
+            NotificationType.INFORMATION, null);
+
+      myProject = project;
+
+      addAction(new AnAction("Run 'flutter packages get'") {
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+          expire();
+
+          try {
             final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
             if (sdk != null) {
-              try {
-                new FlutterPackagesGetAction().perform(sdk, project, null);
-                notification.expire();
-              }
-              catch (ExecutionException e) {
-                handleError(e);
-              }
+              new FlutterPackagesGetAction().perform(sdk, project, null);
             }
           }
-        });
-      myProject = project;
+          catch (ExecutionException e) {
+            handleError(e);
+          }
+        }
+      });
     }
   }
 }
