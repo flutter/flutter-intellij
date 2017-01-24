@@ -59,21 +59,24 @@ public class FlutterModuleUtils {
     // If not IntelliJ, assume a small IDE (no multi-module project support).
     // Look for a module with a flutter-like file structure.
     if (!PlatformUtils.isIntelliJ()) {
-      for (Module module : ModuleManager.getInstance(project).getModules()) {
-        if (usesFlutter(module)) {
-          return true;
-        }
+      if (CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::usesFlutter)) {
+        return true;
       }
     }
 
     return false;
   }
 
+  @NotNull
+  public static Module[] getModules(@NotNull Project project) {
+    return ModuleManager.getInstance(project).getModules();
+  }
+
   /**
    * Check if any module in this project {@link #usesFlutter(Module)}.
    */
   public static boolean usesFlutter(@NotNull Project project) {
-    return Arrays.stream(ModuleManager.getInstance(project).getModules()).anyMatch(FlutterModuleUtils::usesFlutter);
+    return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::usesFlutter);
   }
 
   /**
@@ -117,7 +120,7 @@ public class FlutterModuleUtils {
                                                  @SuppressWarnings("SameParameterValue") @Nullable PsiFile psiFile)
     throws ExecutionException {
     if (psiFile == null) {
-      final List<VirtualFile> packagesFiles = findPackagesFiles(ModuleManager.getInstance(project).getModules());
+      final List<VirtualFile> packagesFiles = findPackagesFiles(getModules(project));
       if (packagesFiles.isEmpty()) {
         return null;
       }
@@ -136,7 +139,7 @@ public class FlutterModuleUtils {
   @Nullable
   public static VirtualFile findPubspecFrom(@NotNull Project project, @Nullable PsiFile psiFile) throws ExecutionException {
     if (psiFile == null) {
-      final List<VirtualFile> pubspecs = findPubspecs(ModuleManager.getInstance(project).getModules());
+      final List<VirtualFile> pubspecs = findPubspecs(getModules(project));
       if (pubspecs.isEmpty()) {
         return null;
       }
@@ -197,15 +200,14 @@ public class FlutterModuleUtils {
 
   /**
    * Find flutter modules.
-   *
+   * <p>
    * Flutter modules are defined as:
-   *   1. being tagged with the #FlutterModuleType, or
-   *   2. containing a pubspec that #declaresFlutterDependency
+   * 1. being tagged with the #FlutterModuleType, or
+   * 2. containing a pubspec that #declaresFlutterDependency
    */
   @NotNull
   public static List<Module> findModulesWithFlutterContents(@NotNull Project project) {
-    return Arrays.stream(ModuleManager.getInstance(project).getModules()).filter(
-      m -> isFlutterModule(m) || usesFlutter(m)).collect(Collectors.toList());
+    return CollectionUtils.filter(getModules(project), m -> isFlutterModule(m) || usesFlutter(m));
   }
 
   public static void setFlutterModuleType(@NotNull Module module) {
