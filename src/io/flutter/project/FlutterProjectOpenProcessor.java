@@ -51,8 +51,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   }
 
   private static void handleError(@NotNull Exception e) {
-    FlutterErrors.showError("Error opening",
-                            e.getMessage());
+    FlutterErrors.showError("Error opening", e.getMessage());
   }
 
   @Override
