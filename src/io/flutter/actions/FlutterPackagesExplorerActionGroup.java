@@ -10,20 +10,21 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 
 public class FlutterPackagesExplorerActionGroup extends DefaultActionGroup {
 
-  private static boolean isFlutterYamlFile(@NotNull AnActionEvent e) {
+  private static boolean isFlutterPubspec(@NotNull AnActionEvent e) {
     final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-    return file != null && FlutterConstants.FLUTTER_YAML.equalsIgnoreCase(file.getName());
+    return FlutterUtils.exists(file) && FlutterUtils.isPubspecFile(file) && FlutterModuleUtils.declaresFlutterDependency(file);
   }
 
   @Override
   public void update(AnActionEvent e) {
-    final boolean enabled = isFlutterYamlFile(e);
+    final boolean enabled = isFlutterPubspec(e);
     final Presentation presentation = e.getPresentation();
     presentation.setEnabled(enabled);
     presentation.setVisible(enabled);

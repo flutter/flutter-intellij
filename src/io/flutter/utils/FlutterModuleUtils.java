@@ -43,10 +43,6 @@ public class FlutterModuleUtils {
   private FlutterModuleUtils() {
   }
 
-  public static boolean hasFlutterYaml(@NotNull Module module) {
-    return FlutterUtils.exists(findFilesInContentRoots(module, dir -> dir.findChild(FlutterConstants.FLUTTER_YAML)));
-  }
-
   public static boolean isFlutterModule(@Nullable Module module) {
     return module != null && ModuleType.is(module, FlutterModuleType.getInstance());
   }
@@ -86,10 +82,6 @@ public class FlutterModuleUtils {
   public static boolean usesFlutter(@NotNull Module module) {
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile baseDir : roots) {
-      final VirtualFile flutterYaml = baseDir.findChild(FlutterConstants.FLUTTER_YAML);
-      if (flutterYaml != null && flutterYaml.exists()) {
-        return true;
-      }
       final VirtualFile pubspec = baseDir.findChild(FlutterConstants.PUBSPEC_YAML);
       if (declaresFlutterDependency(pubspec)) {
         return true;

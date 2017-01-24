@@ -13,6 +13,8 @@ import com.jetbrains.lang.dart.DartFileType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
+
 public class FlutterUtils {
   private FlutterUtils() {
   }
@@ -30,10 +32,15 @@ public class FlutterUtils {
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean isFlutteryFile(@NotNull VirtualFile file) {
-    final String fileName = file.getName();
-    return file.getFileType() == DartFileType.INSTANCE ||
-           fileName.equals(FlutterConstants.FLUTTER_YAML) ||
-           fileName.equals(FlutterConstants.PUBSPEC_YAML);
+    return isDartFile(file) || isPubspecFile(file);
+  }
+
+  public static boolean isPubspecFile(@NotNull VirtualFile file) {
+    return Objects.equals(file.getName(), FlutterConstants.PUBSPEC_YAML);
+  }
+
+  public static boolean isDartFile(@NotNull VirtualFile file) {
+    return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }
 
   public static boolean exists(@Nullable VirtualFile file) {
