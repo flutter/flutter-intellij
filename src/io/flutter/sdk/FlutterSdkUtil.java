@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -84,7 +85,7 @@ public class FlutterSdkUtil {
 
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    // TODO: Use flutter.bat on Windows.
+    final String flutterScriptName = SystemInfo.isWindows ? "flutter.ps1" : "flutter";
     return sdkRelativePathTo(sdkPath, "bin", "flutter");
   }
 
