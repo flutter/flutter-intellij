@@ -168,7 +168,6 @@ public class FlutterSdkUtil {
     return null;
   }
 
-
   @Nullable
   public static String getErrorMessageIfWrongSdkRootPath(final @NotNull String sdkRootPath) {
     if (sdkRootPath.isEmpty()) {

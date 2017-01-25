@@ -37,8 +37,8 @@ import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
-import io.flutter.actions.HotReloadFlutterApp;
 import io.flutter.actions.OpenObservatoryAction;
+import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.view.FlutterViewMessages;
@@ -468,7 +468,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     topToolbar.addSeparator();
     topToolbar.addAction(new OpenObservatoryAction(this::computeObservatoryBrowserUrl, this::isSessionActive));
     topToolbar.addSeparator();
-    topToolbar.addAction(new HotReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
+    topToolbar.addAction(new ReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
     topToolbar.addAction(new RestartFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
   }
 
