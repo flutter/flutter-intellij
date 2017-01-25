@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.ActionPlaces;
 /**
  * A keystroke or tool-bar invoked {@link RestartFlutterApp} action.
  */
-public class RestartFlutterAppRetarget extends FlutterRetargetAction {
+public class RestartFlutterAppRetarget extends FlutterRetargetAppAction {
   public RestartFlutterAppRetarget() {
     super(RestartFlutterApp.ID,
           RestartFlutterApp.TEXT,

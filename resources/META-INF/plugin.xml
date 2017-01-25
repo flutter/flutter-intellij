@@ -168,7 +168,7 @@
     <!-- main toolbar run actions -->
     <group id="Flutter.MainToolbarActions.Run">
       <separator/>
-      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.HotReloadFlutterAppRetarget"
+      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
               description="Reload"
               icon="FlutterIcons.ReloadBoth">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
