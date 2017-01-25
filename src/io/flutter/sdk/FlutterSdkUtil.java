@@ -186,7 +186,6 @@ public class FlutterSdkUtil {
 
   public static boolean isFlutterProjectDir(@Nullable VirtualFile dir) {
     if (dir == null || !dir.isDirectory()) return false;
-    if (dir.findChild(FlutterConstants.FLUTTER_YAML) != null) return true;
 
     final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
     return FlutterModuleUtils.declaresFlutterDependency(pubspec);

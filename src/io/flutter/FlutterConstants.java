@@ -7,7 +7,6 @@
 package io.flutter;
 
 public class FlutterConstants {
-  public static final String FLUTTER_YAML = "flutter.yaml";
   public static final String PACKAGES_FILE = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
 
