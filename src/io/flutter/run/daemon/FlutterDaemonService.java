@@ -208,7 +208,7 @@ public class FlutterDaemonService {
   public FlutterApp startBazelApp(@NotNull Project project,
                                   @NotNull String projectDir,
                                   @NotNull String launchingScript,
-                                  @Nullable String deviceId,
+                                  @Nullable FlutterDevice device,
                                   @NotNull RunMode mode,
                                   @NotNull String bazelTarget,
                                   @Nullable String additionalArguments)
@@ -218,7 +218,7 @@ public class FlutterDaemonService {
 
     final FlutterDaemonController controller = createController();
     final FlutterApp app = controller.startBazelProcess(
-      project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+      project, projectDir, device, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
 
     app.addStateListener(newState -> {
       if (newState == FlutterApp.State.TERMINATED) {
