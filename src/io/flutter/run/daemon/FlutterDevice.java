@@ -5,6 +5,8 @@
  */
 package io.flutter.run.daemon;
 
+import com.intellij.openapi.util.text.StringUtil;
+
 import java.util.Objects;
 
 public class FlutterDevice {
@@ -34,6 +36,10 @@ public class FlutterDevice {
 
   public boolean emulator() {
     return myEmulator;
+  }
+
+  public boolean isIOS() {
+    return StringUtil.equals(platform(), "ios") || platform().startsWith("darwin");
   }
 
   @Override

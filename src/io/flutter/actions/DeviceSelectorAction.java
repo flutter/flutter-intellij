@@ -133,7 +133,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         if (action instanceof SelectDeviceAction) {
           final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
           final FlutterDevice device = deviceAction.device;
-          if (StringUtil.equals(device.platform(), "ios") && device.emulator()) {
+          if (device.isIOS() && device.emulator()) {
             simulatorOpen = true;
           }
         }
