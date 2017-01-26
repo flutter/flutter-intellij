@@ -9,6 +9,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,4 +47,10 @@ public class FlutterUtils {
   public static boolean exists(@Nullable VirtualFile file) {
     return file != null && file.exists();
   }
+
+  @Nullable
+  public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
+    return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
+  }
+
 }
