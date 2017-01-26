@@ -16,6 +16,7 @@ import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.PubspecYamlUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -162,7 +163,7 @@ public class FlutterRunnerParameters implements Cloneable {
 
   public void checkForBazelLaunch(final @NotNull Project project) throws RuntimeConfigurationError {
     // check sdk
-    final DartSdk sdk = DartSdk.getDartSdk(project);
+    final DartSdk sdk = DartPlugin.getDartSdk(project);
     if (sdk == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
                                           () -> DartConfigurable.openDartSettings(project));
@@ -198,7 +199,7 @@ public class FlutterRunnerParameters implements Cloneable {
 
   public void checkForFilesLaunch(final @NotNull Project project) throws RuntimeConfigurationError {
     // check sdk
-    final DartSdk sdk = DartSdk.getDartSdk(project);
+    final DartSdk sdk = DartPlugin.getDartSdk(project);
     if (sdk == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
                                           () -> DartConfigurable.openDartSettings(project));

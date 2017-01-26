@@ -19,11 +19,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
-import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -209,8 +208,8 @@ public class FlutterModuleUtils {
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
     setFlutterModuleType(module);
 
-    if (DartSdk.getDartSdk(project) != null && !DartSdkGlobalLibUtil.isDartSdkEnabled(module)) {
-      ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
+    if (DartPlugin.getDartSdk(project) != null && !DartPlugin.isDartSdkEnabled(module)) {
+      ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module));
     }
 
     project.save();

@@ -31,6 +31,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.sdk.FlutterSdk;
@@ -166,7 +167,7 @@ public class FlutterRunner extends FlutterRunnerBase {
                                                   final @NotNull ExecutionEnvironment env,
                                                   final @Nullable String dasExecutionContextId) throws RuntimeConfigurationError,
                                                                                                        ExecutionException {
-    final DartSdk sdk = DartSdk.getDartSdk(env.getProject());
+    final DartSdk sdk = DartPlugin.getDartSdk(env.getProject());
     assert (sdk != null); // already checked
 
     final RunProfile runConfiguration = env.getRunProfile();

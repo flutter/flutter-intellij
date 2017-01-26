@@ -29,11 +29,11 @@ import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterErrors;
 import io.flutter.FlutterInitializer;
 import io.flutter.console.FlutterConsoleHelper;
+import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
 import io.flutter.run.FlutterRunnerParameters;
@@ -67,7 +67,7 @@ public class FlutterSdk {
    */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
-    return getFlutterSdkByDartSdk(DartSdk.getDartSdk(project));
+    return getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
   }
 
   /**
@@ -238,7 +238,7 @@ public class FlutterSdk {
         // Enable Dart.
         if (module != null) {
           ApplicationManager.getApplication()
-            .invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module)));
+            .invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module)));
         }
       }
 
