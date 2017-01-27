@@ -11,6 +11,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Version;
+import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
@@ -62,6 +63,20 @@ public class DartPlugin {
 
   public static boolean isDartSdkHome(@Nullable String path) {
     return DartSdkUtil.isDartSdkHome(path);
+  }
+
+  public static boolean isPubActionInProgress() {
+    return DartPubActionBase.isInProgress();
+  }
+
+  public static void setPubActionInProgress(boolean inProgress) {
+    // TODO: replace w/ DartPubActionBase.setIsInProgress() when DartPlugin lower-bound is upped to 163.10154.
+    try {
+      DartPubActionBase.class.getMethod("setIsInProgress", boolean.class).invoke(null, inProgress);
+    }
+    catch (Throwable th) {
+      // ignore and move on
+    }
   }
 
   /**
