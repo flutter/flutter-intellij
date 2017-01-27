@@ -15,6 +15,8 @@ public class FlutterConstants {
 
   public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
 
+  public static final String INDEPENDENT_PATH_SEPARATOR = "/";
+
   private FlutterConstants() {
 
   }

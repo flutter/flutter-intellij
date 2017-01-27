@@ -1,0 +1,7 @@
+# Line endings: enforce LF in GitHub, convert to native on checkout.
+* text=auto
+*.dart text
+*.java text
+*.md text
+*.sh text
+*.yaml text

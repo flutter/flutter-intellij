@@ -7,9 +7,10 @@ package io.flutter.console;
 
 import com.intellij.execution.ConsoleFolding;
 import com.intellij.openapi.util.text.StringUtil;
+import io.flutter.FlutterConstants;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -18,7 +19,8 @@ import java.util.regex.Pattern;
  * '/Users/.../projects/flutter/flutter/bin/flutter --no-color packages get'.
  */
 public class FlutterConsoleFolding extends ConsoleFolding {
-  private static final String marker = File.separator + "flutter --no-color ";
+  private static final String flutterMarker =
+    FlutterConstants.INDEPENDENT_PATH_SEPARATOR + FlutterSdkUtil.flutterScriptName() + " --no-color ";
 
   private boolean isFolding = false;
 
@@ -39,7 +41,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
 
   @Override
   public boolean shouldFoldLine(String line) {
-    if (line.contains(marker)) {
+    if (line.contains(flutterMarker)) {
       isFolding = false;
       return true;
     }
@@ -67,7 +69,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
   @Override
   public String getPlaceholderText(List<String> lines) {
     final String fullText = StringUtil.join(lines, "\n");
-    final int index = fullText.indexOf(marker);
+    final int index = fullText.indexOf(flutterMarker);
     if (index == -1) {
       final String trimmed = fullText.trim();
 
@@ -82,7 +84,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
       }
     }
     else {
-      return "flutter " + fullText.substring(index + marker.length());
+      return "flutter " + fullText.substring(index + flutterMarker.length());
     }
   }
 }

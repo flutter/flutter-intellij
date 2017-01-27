@@ -126,6 +126,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new NoDevicesAction());
     }
 
+    // Show the 'Open iOS Simulator' action.
     if (SystemInfo.isMac) {
       boolean simulatorOpen = false;
       for (AnAction action : actions) {
@@ -140,26 +141,26 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
       actions.add(new Separator());
       actions.add(new OpenSimulatorAction(!simulatorOpen));
+    }
 
-      FlutterUtils.invokeAndWait(() -> {
-        final FlutterDevice selectedDevice = service.getSelectedDevice();
-        for (AnAction action : actions) {
-          if (action instanceof SelectDeviceAction) {
-            final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+    FlutterUtils.invokeAndWait(() -> {
+      final FlutterDevice selectedDevice = service.getSelectedDevice();
+      for (AnAction action : actions) {
+        if (action instanceof SelectDeviceAction) {
+          final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
 
-            if (Objects.equals(deviceAction.device, selectedDevice)) {
-              final Presentation template = action.getTemplatePresentation();
-              presentation.setIcon(template.getIcon());
-              presentation.setText(template.getText());
-              presentation.setEnabled(true);
-              return;
-            }
+          if (Objects.equals(deviceAction.device, selectedDevice)) {
+            final Presentation template = action.getTemplatePresentation();
+            presentation.setIcon(template.getIcon());
+            presentation.setText(template.getText());
+            presentation.setEnabled(true);
+            return;
           }
         }
+      }
 
-        presentation.setText(null);
-      });
-    }
+      presentation.setText(null);
+    });
   }
 
   private static class NoDevicesAction extends AnAction implements TransparentUpdate {
