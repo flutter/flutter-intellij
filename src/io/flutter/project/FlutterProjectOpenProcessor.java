@@ -19,7 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterPackagesGetAction;
 import io.flutter.actions.FlutterSdkAction;
@@ -51,7 +51,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   }
 
   private static void handleError(@NotNull Exception e) {
-    FlutterErrors.showError("Error opening", e.getMessage());
+    FlutterMessages.showError("Error opening", e.getMessage());
   }
 
   @Override

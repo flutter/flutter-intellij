@@ -10,7 +10,7 @@ import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -50,7 +50,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
         ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel);
       }
       catch (ConfigurationException e) {
-        FlutterErrors.showError("Error creating project", e.getMessage());
+        FlutterMessages.showError("Error creating project", e.getMessage());
       }
     });
   }

@@ -27,6 +27,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -41,7 +42,6 @@ import java.net.URISyntaxException;
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class.getName());
 
-  private static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
@@ -89,7 +89,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Override
   @NotNull
   public String getId() {
-    return FLUTTER_SETTINGS_PAGE_ID;
+    return FlutterConstants.FLUTTER_SETTINGS_PAGE_ID;
   }
 
   @Nullable
@@ -167,9 +167,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
           final ProcessOutput output = getOutput();
           final String stdout = output.getStdout();
           final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
-          ApplicationManager.getApplication().invokeLater(() -> {
-            updateVersionTextIfCurrent(sdk, htmlText);
-          }, modalityState);
+          ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, htmlText), modalityState);
         }
       });
     }
