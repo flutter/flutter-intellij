@@ -7,6 +7,7 @@ package io.flutter.console;
 
 import com.intellij.execution.ConsoleFolding;
 import com.intellij.openapi.util.text.StringUtil;
+import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,7 +19,8 @@ import java.util.regex.Pattern;
  * '/Users/.../projects/flutter/flutter/bin/flutter --no-color packages get'.
  */
 public class FlutterConsoleFolding extends ConsoleFolding {
-  private static final String flutterMarker = "/" + FlutterSdkUtil.flutterScriptName() + " --no-color ";
+  private static final String flutterMarker =
+    FlutterConstants.INDEPENDENT_PATH_SEPARATOR + FlutterSdkUtil.flutterScriptName() + " --no-color ";
 
   private boolean isFolding = false;
 
