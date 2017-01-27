@@ -235,6 +235,10 @@
                     serviceImplementation="io.flutter.view.FlutterView"
                     overrides="false"/>
     <projectOpenProcessor implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
+
+    <localInspection bundle="io.flutter.FlutterBundle" key="outdated.dependencies.inspection.name"
+                     groupName="Flutter" enabledByDefault="true" level="WARNING" language="Dart"
+                     implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
   </extensions>
 
 </idea-plugin>
