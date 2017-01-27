@@ -27,7 +27,6 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
-import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
@@ -105,23 +104,13 @@ public class FlutterSdk {
     });
   }
 
-  private static void setPubInProgress(boolean inProgress) {
-    try {
-      DartPubActionBase.class.getMethod("setIsInProgress", boolean.class).invoke(null, inProgress);
-    }
-    catch (Throwable th) {
-      // ignore and move on
-    }
-  }
-
   private static void start(@NotNull OSProcessHandler handler) {
-    // TODO: replace w/ DartPubActionBase.setIsInProgress() when DartPlugin lower-bound is upped to 163.10154.
-    setPubInProgress(true);
+    DartPlugin.setPubActionInProgress(true);
     try {
       handler.startNotify();
     }
     finally {
-      setPubInProgress(false);
+      DartPlugin.setPubActionInProgress(false);
     }
   }
 

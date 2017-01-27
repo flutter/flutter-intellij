@@ -18,7 +18,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.psi.DartFile;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
@@ -26,6 +25,7 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterSdkAction;
+import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -43,8 +43,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
 
     if (!(psiFile instanceof DartFile)) return null;
 
-
-    if (DartPubActionBase.isInProgress()) return null;
+    if (DartPlugin.isPubActionInProgress()) return null;
 
     final VirtualFile file = FlutterUtils.getRealVirtualFile(psiFile);
     if (file == null || !file.isInLocalFileSystem()) return null;
