@@ -103,7 +103,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   public FlutterApp startBazelProcess(@NotNull Project project,
                                       @NotNull String projectDir,
-                                      @Nullable String deviceId,
+                                      @Nullable FlutterDevice device,
                                       @NotNull RunMode mode,
                                       boolean startPaused,
                                       boolean isHot,
@@ -111,11 +111,11 @@ public class FlutterDaemonController extends ProcessAdapter {
                                       @NotNull String bazelTarget,
                                       @Nullable String additionalArguments) throws ExecutionException {
     final GeneralCommandLine commandLine =
-      createBazelRunner(project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+      createBazelRunner(project, projectDir, device, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
-    return myControllerHelper.appStarting(deviceId, mode, project, startPaused, isHot);
+    return myControllerHelper.appStarting(device == null ? null : device.deviceId(), mode, project, startPaused, isHot);
   }
 
   public void sendCommand(String commandJson, FlutterDaemonControllerHelper manager) {
@@ -235,7 +235,7 @@ public class FlutterDaemonController extends ProcessAdapter {
 
   private static GeneralCommandLine createBazelRunner(@NotNull Project project,
                                                       @NotNull String projectDir,
-                                                      @Nullable String deviceId,
+                                                      @Nullable FlutterDevice device,
                                                       @NotNull RunMode mode,
                                                       boolean startPaused,
                                                       boolean isHot,
@@ -249,6 +249,40 @@ public class FlutterDaemonController extends ProcessAdapter {
     // Set the mode.
     if (mode != RunMode.DEBUG) {
       commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    }
+
+    // Send in platform architecture based in the device info.
+    if (device != null) {
+      final String platform = device.platform();
+
+      if (device.isIOS()) {
+        // --ios_cpu=[arm64, x86_64]
+        final String arch = device.emulator() ? "x86_64" : "arm64";
+        commandLine.addParameter("--ios_cpu=" + arch);
+      }
+      else {
+        // --android_cpu=[armeabi, x86, x86_64]
+        String arch = null;
+
+        switch (platform) {
+          case "android-arm":
+            arch = "armeabi";
+            break;
+          case "android-x86":
+            arch = "x86";
+            break;
+          case "android-x64":
+            arch = "x86_64";
+            break;
+          case "linux-x64":
+            arch = "x86_64";
+            break;
+        }
+
+        if (arch != null) {
+          commandLine.addParameter("--android_cpu=" + arch);
+        }
+      }
     }
 
     // User specified additional arguments.
@@ -284,6 +318,12 @@ public class FlutterDaemonController extends ProcessAdapter {
     // More user-specified args.
     while (argumentsTokenizer.hasMoreTokens()) {
       commandLine.addParameter(argumentsTokenizer.nextToken());
+    }
+
+    // Send in the deviceId.
+    if (device != null) {
+      commandLine.addParameter("-d");
+      commandLine.addParameter(device.deviceId());
     }
 
     return commandLine;

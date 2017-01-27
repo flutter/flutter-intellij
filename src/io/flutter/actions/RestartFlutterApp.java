@@ -13,9 +13,10 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.run.daemon.FlutterApp;
 
 @SuppressWarnings("ComponentNotRegistered")
-public class RestartFlutterApp extends FlutterAppAction {
+public class RestartFlutterApp extends FlutterAppAction implements FlutterRetargetAppAction.AppAction {
   public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.restart.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.restart.action.description");
@@ -28,11 +29,16 @@ public class RestartFlutterApp extends FlutterAppAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    actionPerformed(getApp());
+  }
+
+  @Override
+  public void actionPerformed(FlutterApp app) {
     FlutterInitializer.sendActionEvent(this);
 
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();
-      getApp().performRestartApp();
+      app.performRestartApp();
     });
   }
 }

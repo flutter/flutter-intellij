@@ -16,11 +16,11 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
+import io.flutter.dart.DartPlugin;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -173,7 +173,6 @@ public class FlutterSdkUtil {
     return null;
   }
 
-
   @Nullable
   public static String getErrorMessageIfWrongSdkRootPath(final @NotNull String sdkRootPath) {
     if (sdkRootPath.isEmpty()) {
@@ -191,7 +190,6 @@ public class FlutterSdkUtil {
 
   public static boolean isFlutterProjectDir(@Nullable VirtualFile dir) {
     if (dir == null || !dir.isDirectory()) return false;
-    if (dir.findChild(FlutterConstants.FLUTTER_YAML) != null) return true;
 
     final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
     return FlutterModuleUtils.declaresFlutterDependency(pubspec);
@@ -200,7 +198,7 @@ public class FlutterSdkUtil {
   public static void setFlutterSdkPath(@NotNull final String flutterSdkPath) {
     // In reality this method sets Dart SDK, that is inside the Flutter SDK;
     final String dartSdk = flutterSdkPath + "/bin/cache/dart-sdk";
-    ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.ensureDartSdkConfigured(dartSdk));
+    ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.ensureDartSdkConfigured(dartSdk));
 
     // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
     DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);

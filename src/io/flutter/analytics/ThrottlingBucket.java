@@ -6,11 +6,11 @@
 package io.flutter.analytics;
 
 /**
- * A throttling algorithim.
+ * A throttling algorithm.
  * <p/>
  * This models the throttling after a bucket with water dripping into it at the rate of 1 drop per
  * second. If the bucket has water when an operation is requested, 1 drop of water is removed and
- * the operation is performed. If not the operation is skipped. This algorithim lets operations
+ * the operation is performed. If not the operation is skipped. This algorithm lets operations
  * be peformed in bursts without throttling, but holds the overall average rate of operations to 1
  * per second.
  */

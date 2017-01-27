@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -208,7 +208,7 @@ public class FlutterDaemonService {
   public FlutterApp startBazelApp(@NotNull Project project,
                                   @NotNull String projectDir,
                                   @NotNull String launchingScript,
-                                  @Nullable String deviceId,
+                                  @Nullable FlutterDevice device,
                                   @NotNull RunMode mode,
                                   @NotNull String bazelTarget,
                                   @Nullable String additionalArguments)
@@ -218,7 +218,7 @@ public class FlutterDaemonService {
 
     final FlutterDaemonController controller = createController();
     final FlutterApp app = controller.startBazelProcess(
-      project, projectDir, deviceId, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
+      project, projectDir, device, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
 
     app.addStateListener(newState -> {
       if (newState == FlutterApp.State.TERMINATED) {
@@ -265,7 +265,7 @@ public class FlutterDaemonService {
         myPollingController.startDevicePoller();
       }
       catch (ExecutionException error) {
-        FlutterErrors.showError("Unable to poll for Flutter devices", error.toString());
+        FlutterMessages.showError("Unable to poll for Flutter devices", error.toString());
       }
     });
   }

@@ -59,7 +59,7 @@ public class FlutterBazelAppState extends FlutterAppState {
       project,
       cwd,
       launchingScript,
-      device == null ? null : device.deviceId(),
+      device,
       myMode,
       bazelTarget,
       parameters.getAdditionalArgs());

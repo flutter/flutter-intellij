@@ -19,11 +19,10 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
-import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterModuleType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -41,10 +40,6 @@ public class FlutterModuleUtils {
   private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*sdk:\\s*flutter"); //NON-NLS
 
   private FlutterModuleUtils() {
-  }
-
-  public static boolean hasFlutterYaml(@NotNull Module module) {
-    return FlutterUtils.exists(findFilesInContentRoots(module, dir -> dir.findChild(FlutterConstants.FLUTTER_YAML)));
   }
 
   public static boolean isFlutterModule(@Nullable Module module) {
@@ -86,10 +81,6 @@ public class FlutterModuleUtils {
   public static boolean usesFlutter(@NotNull Module module) {
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile baseDir : roots) {
-      final VirtualFile flutterYaml = baseDir.findChild(FlutterConstants.FLUTTER_YAML);
-      if (flutterYaml != null && flutterYaml.exists()) {
-        return true;
-      }
       final VirtualFile pubspec = baseDir.findChild(FlutterConstants.PUBSPEC_YAML);
       if (declaresFlutterDependency(pubspec)) {
         return true;
@@ -217,8 +208,8 @@ public class FlutterModuleUtils {
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
     setFlutterModuleType(module);
 
-    if (DartSdk.getDartSdk(project) != null && !DartSdkGlobalLibUtil.isDartSdkEnabled(module)) {
-      ApplicationManager.getApplication().runWriteAction(() -> DartSdkGlobalLibUtil.enableDartSdk(module));
+    if (DartPlugin.getDartSdk(project) != null && !DartPlugin.isDartSdkEnabled(module)) {
+      ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module));
     }
 
     project.save();

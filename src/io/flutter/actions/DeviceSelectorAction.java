@@ -11,7 +11,6 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterDaemonService;
@@ -134,7 +133,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         if (action instanceof SelectDeviceAction) {
           final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
           final FlutterDevice device = deviceAction.device;
-          if (StringUtil.equals(device.platform(), "ios") && device.emulator()) {
+          if (device.isIOS() && device.emulator()) {
             simulatorOpen = true;
           }
         }

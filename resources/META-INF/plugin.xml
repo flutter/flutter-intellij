@@ -168,7 +168,7 @@
     <!-- main toolbar run actions -->
     <group id="Flutter.MainToolbarActions.Run">
       <separator/>
-      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.HotReloadFlutterAppRetarget"
+      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
               description="Reload"
               icon="FlutterIcons.ReloadBoth">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
@@ -235,6 +235,10 @@
                     serviceImplementation="io.flutter.view.FlutterView"
                     overrides="false"/>
     <projectOpenProcessor implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
+
+    <localInspection bundle="io.flutter.FlutterBundle" key="outdated.dependencies.inspection.name"
+                     groupName="Flutter" enabledByDefault="true" level="WARNING" language="Dart"
+                     implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
   </extensions>
 
 </idea-plugin>

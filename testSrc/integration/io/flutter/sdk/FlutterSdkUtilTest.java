@@ -8,6 +8,7 @@ package io.flutter.sdk;
 import com.intellij.execution.ExecutionException;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterCodeInsightFixtureTestCase;
+import io.flutter.dart.DartPlugin;
 
 public class FlutterSdkUtilTest extends FlutterCodeInsightFixtureTestCase {
 
@@ -22,7 +23,7 @@ public class FlutterSdkUtilTest extends FlutterCodeInsightFixtureTestCase {
     assertEquals("Incorrect Flutter SDK path", flutterSdk.getHomePath(), path);
 
     // Verify Dart SDK is the one distributed with Flutter.
-    final DartSdk dartSdk = DartSdk.getDartSdk(myFixture.getProject());
+    final DartSdk dartSdk = DartPlugin.getDartSdk(myFixture.getProject());
     assertNotNull(dartSdk);
     assertTrue("Dart SDK not found in Flutter SDK installation", dartSdk.getHomePath().startsWith(flutterSdk.getHomePath()));
 

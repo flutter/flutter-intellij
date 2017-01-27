@@ -18,8 +18,9 @@ import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -63,22 +64,24 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
     final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
-
     if (sdk != null) {
       try {
         perform(sdk, project, event, true);
       }
       catch (ExecutionException e) {
-        FlutterErrors.showError(
+        FlutterMessages.showError(
           FlutterBundle.message("flutter.command.exception.title"),
           FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
         LOG.warn(e);
       }
     }
     else {
-      FlutterErrors.showError(
-        FlutterBundle.message("flutter.sdk.notAvailable.title"),
-        FlutterBundle.message("flutter.sdk.notAvailable.message"));
+      final int response = FlutterMessages.showDialog(project, FlutterBundle.message("flutter.sdk.notAvailable.message"),
+                                                      FlutterBundle.message("flutter.sdk.notAvailable.title"),
+                                                      new String[]{"Yes, configure","No, thanks"}, -1);
+      if (response == 0) {
+        FlutterUtils.openFlutterSettings(project);
+      }
     }
   }
 

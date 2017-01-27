@@ -1,9 +1,9 @@
 /*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.inspections;
+package io.flutter.editor;
 
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -25,8 +25,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 
-public class FlutterYamlNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
-  private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.yaml");
+public class FlutterPubspecNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
+  private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.pubspec");
 
   @NotNull
   @Override
@@ -41,7 +41,7 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
-    if (!FlutterConstants.FLUTTER_YAML.equalsIgnoreCase(file.getName())) {
+    if (!FlutterConstants.PUBSPEC_YAML.equalsIgnoreCase(file.getName())) {
       return null;
     }
 
@@ -60,13 +60,13 @@ public class FlutterYamlNotificationProvider extends EditorNotifications.Provide
       return null;
     }
 
-    return new FlutterYamlActionsPanel(file);
+    return new FlutterPubspecActionsPanel(file);
   }
 
-  static class FlutterYamlActionsPanel extends EditorNotificationPanel {
+  static class FlutterPubspecActionsPanel extends EditorNotificationPanel {
     @NotNull final VirtualFile myFile;
 
-    FlutterYamlActionsPanel(@NotNull VirtualFile file) {
+    FlutterPubspecActionsPanel(@NotNull VirtualFile file) {
       myFile = file;
 
       icon(FlutterIcons.Flutter);

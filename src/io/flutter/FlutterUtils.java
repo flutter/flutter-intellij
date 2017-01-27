@@ -5,13 +5,18 @@
  */
 package io.flutter;
 
+import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Objects;
 
 public class FlutterUtils {
   private FlutterUtils() {
@@ -30,13 +35,27 @@ public class FlutterUtils {
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean isFlutteryFile(@NotNull VirtualFile file) {
-    final String fileName = file.getName();
-    return file.getFileType() == DartFileType.INSTANCE ||
-           fileName.equals(FlutterConstants.FLUTTER_YAML) ||
-           fileName.equals(FlutterConstants.PUBSPEC_YAML);
+    return isDartFile(file) || isPubspecFile(file);
+  }
+
+  public static boolean isPubspecFile(@NotNull VirtualFile file) {
+    return Objects.equals(file.getName(), FlutterConstants.PUBSPEC_YAML);
+  }
+
+  public static boolean isDartFile(@NotNull VirtualFile file) {
+    return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }
 
   public static boolean exists(@Nullable VirtualFile file) {
     return file != null && file.exists();
+  }
+
+  @Nullable
+  public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
+    return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
+  }
+
+  public static void openFlutterSettings(@Nullable Project project) {
+    ShowSettingsUtilImpl.showSettingsDialog(project, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID, "");
   }
 }

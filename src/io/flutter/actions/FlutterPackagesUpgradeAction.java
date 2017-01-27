@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +28,7 @@ public class FlutterPackagesUpgradeAction extends FlutterSdkAction {
       sdk.run(COMMAND, pair.first, pair.second.getParent(), null);
     }
     else {
-      FlutterErrors.showError(
+      FlutterMessages.showError(
         FlutterBundle.message("flutter.command.missing.pubspec"),
         FlutterBundle.message("flutter.command.missing.pubspec.message", COMMAND.title));
     }
