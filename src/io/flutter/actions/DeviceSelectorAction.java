@@ -11,7 +11,6 @@ import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterDaemonService;
