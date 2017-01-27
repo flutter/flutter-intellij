@@ -9,7 +9,7 @@ import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.openapi.project.Project;
-import com.jetbrains.lang.dart.sdk.DartSdk;
+import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterRunConfigurationBase;
 import io.flutter.run.FlutterRunner;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +31,7 @@ public class FlutterBazelRunner extends FlutterRunner {
     final Project project = runConfiguration.getProject();
 
     //noinspection SimplifiableIfStatement
-    if (DartSdk.getDartSdk(project) == null) {
+    if (DartPlugin.getDartSdk(project) == null) {
       return false;
     }
 

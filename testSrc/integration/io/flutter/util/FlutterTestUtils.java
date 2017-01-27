@@ -15,7 +15,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.util.PathUtil;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
+import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -49,12 +49,12 @@ public class FlutterTestUtils {
 
     ApplicationManager.getApplication().runWriteAction(() -> {
       FlutterSdkUtil.setFlutterSdkPath(sdkHome);
-      DartSdkGlobalLibUtil.enableDartSdk(module);
+      DartPlugin.enableDartSdk(module);
     });
 
     Disposer.register(disposable, () -> ApplicationManager.getApplication().runWriteAction(() -> {
       if (!module.isDisposed()) {
-        DartSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
+        DartPlugin.disableDartSdk(Collections.singletonList(module));
       }
 
       final ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();

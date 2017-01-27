@@ -8,7 +8,16 @@ package io.flutter.dart;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Version;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
+import com.jetbrains.lang.dart.sdk.DartSdkUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.Collection;
 
 /**
  * Provides access to the Dart Plugin.
@@ -28,6 +37,31 @@ public class DartPlugin {
 
   public static DartPlugin getInstance() {
     return INSTANCE;
+  }
+
+  @Nullable
+  public static DartSdk getDartSdk(@NotNull Project project) {
+    return DartSdk.getDartSdk(project);
+  }
+
+  public static boolean isDartSdkEnabled(@NotNull Module module) {
+    return DartSdkGlobalLibUtil.isDartSdkEnabled(module);
+  }
+
+  public static void enableDartSdk(@NotNull Module module) {
+    DartSdkGlobalLibUtil.enableDartSdk(module);
+  }
+
+  public static void ensureDartSdkConfigured(@NotNull String sdkHomePath) {
+    DartSdkGlobalLibUtil.ensureDartSdkConfigured(sdkHomePath);
+  }
+
+  public static void disableDartSdk(@NotNull Collection<Module> modules) {
+    DartSdkGlobalLibUtil.disableDartSdk(modules);
+  }
+
+  public static boolean isDartSdkHome(@Nullable String path) {
+    return DartSdkUtil.isDartSdkHome(path);
   }
 
   /**

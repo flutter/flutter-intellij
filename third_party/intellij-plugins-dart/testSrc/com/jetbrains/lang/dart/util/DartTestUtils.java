@@ -12,8 +12,7 @@ import com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess;
 import com.intellij.testFramework.ThreadTracker;
 import com.intellij.util.PathUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
-import com.jetbrains.lang.dart.sdk.DartSdkUtil;
+import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Assert;
 
@@ -64,7 +63,7 @@ public class DartTestUtils {
         Assert.fail("To run tests that use Dart Analysis Server you need to add '-Ddart.sdk=[real SDK home]' to the VM Options field of " +
                     "the corresponding JUnit run configuration (Run | Edit Configurations)");
       }
-      if (!DartSdkUtil.isDartSdkHome(sdkHome)) {
+      if (!DartPlugin.isDartSdkHome(sdkHome)) {
         Assert.fail("Incorrect path to the Dart SDK (" + sdkHome + ") is set as '-Ddart.sdk' VM option of " +
                     "the corresponding JUnit run configuration (Run | Edit Configurations)");
       }
@@ -82,13 +81,13 @@ public class DartTestUtils {
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-      DartSdkGlobalLibUtil.ensureDartSdkConfigured(sdkHome);
-      DartSdkGlobalLibUtil.enableDartSdk(module);
+      DartPlugin.ensureDartSdkConfigured(sdkHome);
+      DartPlugin.enableDartSdk(module);
     });
 
     Disposer.register(disposable, () -> ApplicationManager.getApplication().runWriteAction(() -> {
       if (!module.isDisposed()) {
-        DartSdkGlobalLibUtil.disableDartSdk(Collections.singletonList(module));
+        DartPlugin.disableDartSdk(Collections.singletonList(module));
       }
 
       final ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
