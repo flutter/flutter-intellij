@@ -12,7 +12,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -94,7 +93,6 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     final LocalQuickFix[] fixes = new LocalQuickFix[]{
       new PackageUpdateFix(FlutterBundle.message("get.dependencies"), FlutterConstants.PACKAGES_GET_ACTION_ID),
       new PackageUpdateFix(FlutterBundle.message("upgrade.dependencies"), FlutterConstants.PACKAGES_UPGRADE_ACTION_ID),
-      new OpenPubspecFix(),
       new IgnoreWarningFix(myIgnoredPubspecPaths, pubspecFile.getPath())};
 
     return new ProblemDescriptor[]{
@@ -151,36 +149,6 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
           FlutterErrors.showError("Error performing action", e.getMessage());
         }
       }
-    }
-  }
-
-  private static class OpenPubspecFix extends IntentionAndQuickFixAction {
-    @Override
-    @NotNull
-    public String getName() {
-      return FlutterBundle.message("open.pubspec");
-    }
-
-    @Override
-    @NotNull
-    public String getFamilyName() {
-      return getName();
-    }
-
-    @Override
-    public boolean startInWriteAction() {
-      return false;
-    }
-
-    @Override
-    public void applyFix(@NotNull final Project project, @NotNull final PsiFile psiFile, @Nullable final Editor editor) {
-      final VirtualFile file = FlutterUtils.getRealVirtualFile(psiFile);
-      if (file == null || !file.isInLocalFileSystem()) return;
-
-      final VirtualFile pubspecFile = findPubspecOrNull(project, psiFile);
-      if (pubspecFile == null) return;
-
-      new OpenFileDescriptor(project, pubspecFile).navigate(true);
     }
   }
 
