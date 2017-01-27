@@ -23,7 +23,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterSdkAction;
 import io.flutter.sdk.FlutterSdk;
@@ -146,7 +146,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
           ((FlutterSdkAction)packageAction).perform(sdk, project, null);
         }
         catch (ExecutionException e) {
-          FlutterErrors.showError("Error performing action", e.getMessage());
+          FlutterMessages.showError("Error performing action", e.getMessage());
         }
       }
     }

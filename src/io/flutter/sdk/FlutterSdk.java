@@ -30,7 +30,7 @@ import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterInitializer;
 import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.dart.DartPlugin;
@@ -169,7 +169,7 @@ public class FlutterSdk {
     }
     catch (ExecutionException e) {
       inProgress.set(false);
-      FlutterErrors.showError(
+      FlutterMessages.showError(
         cmd.title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
     }
@@ -205,7 +205,7 @@ public class FlutterSdk {
     }
     catch (ExecutionException e) {
       inProgress.set(false);
-      FlutterErrors.showError(
+      FlutterMessages.showError(
         title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
     }

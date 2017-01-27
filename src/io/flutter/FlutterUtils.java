@@ -5,9 +5,11 @@
  */
 package io.flutter;
 
+import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
@@ -53,4 +55,7 @@ public class FlutterUtils {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
   }
 
+  public static void openFlutterSettings(@Nullable Project project) {
+    ShowSettingsUtilImpl.showSettingsDialog(project, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID, "");
+  }
 }

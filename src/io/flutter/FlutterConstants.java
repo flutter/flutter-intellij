@@ -13,6 +13,8 @@ public class FlutterConstants {
   public static final String PACKAGES_GET_ACTION_ID = "flutter.packages.get";
   public static final String PACKAGES_UPGRADE_ACTION_ID = "flutter.packages.upgrade";
 
+  public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
+
   private FlutterConstants() {
 
   }

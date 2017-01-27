@@ -16,7 +16,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -78,7 +78,7 @@ public class FlutterConsoleFilter implements Filter {
           sdk.runProject(project, "Flutter doctor", "doctor");
         }
         catch (ExecutionException e) {
-          FlutterErrors.showError(
+          FlutterMessages.showError(
             FlutterBundle.message("flutter.command.exception.title"),
             FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
           LOG.warn(e);

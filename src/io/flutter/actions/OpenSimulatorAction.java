@@ -13,7 +13,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenSimulatorAction extends AnAction {
@@ -39,14 +39,14 @@ public class OpenSimulatorAction extends AnAction {
         @Override
         public void processTerminated(final ProcessEvent event) {
           if (event.getExitCode() != 0) {
-            FlutterErrors.showError("Error Opening Simulator", event.getText());
+            FlutterMessages.showError("Error Opening Simulator", event.getText());
           }
         }
       });
       handler.startNotify();
     }
     catch (ExecutionException e) {
-      FlutterErrors.showError(
+      FlutterMessages.showError(
         "Error Opening Simulator",
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
     }

@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
-import io.flutter.FlutterErrors;
+import io.flutter.FlutterMessages;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -265,7 +265,7 @@ public class FlutterDaemonService {
         myPollingController.startDevicePoller();
       }
       catch (ExecutionException error) {
-        FlutterErrors.showError("Unable to poll for Flutter devices", error.toString());
+        FlutterMessages.showError("Unable to poll for Flutter devices", error.toString());
       }
     });
   }
