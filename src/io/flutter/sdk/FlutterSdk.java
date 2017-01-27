@@ -23,6 +23,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.content.MessageView;
@@ -40,6 +41,7 @@ import io.flutter.run.FlutterRunnerParameters;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -134,6 +136,7 @@ public class FlutterSdk {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
     final String dirPath = workingDir == null ? null : workingDir.getPath();
     final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
+    command.setCharset(CharsetToolkit.UTF8_CHARSET);
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
     String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
@@ -181,6 +184,7 @@ public class FlutterSdk {
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
     final GeneralCommandLine command = new GeneralCommandLine();
+    command.setCharset(CharsetToolkit.UTF8_CHARSET);
     command.setExePath(flutterPath);
     // Example: [create, foo_bar]
     final String[] toolArgs = ArrayUtil.prepend("--no-color", args);

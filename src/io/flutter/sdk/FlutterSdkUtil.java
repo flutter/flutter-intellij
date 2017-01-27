@@ -85,8 +85,12 @@ public class FlutterSdkUtil {
 
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    final String flutterScriptName = SystemInfo.isWindows ? "flutter.ps1" : "flutter";
-    return sdkRelativePathTo(sdkPath, "bin", "flutter");
+    return sdkRelativePathTo(sdkPath, "bin", flutterScriptName());
+  }
+
+  @NotNull
+  public static String flutterScriptName() {
+    return SystemInfo.isWindows ? "flutter.bat" : "flutter";
   }
 
   @NotNull

@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.actions.OpenObservatoryAction;
@@ -100,9 +101,13 @@ public class FlutterAppState extends FlutterAppStateBase {
     String relativePath = parameters.getFilePath();
     if (relativePath != null && relativePath.startsWith(cwd)) {
       relativePath = relativePath.substring(cwd.length());
-      if (relativePath.startsWith(File.separator)) {
+      if (relativePath.startsWith("/")) {
         relativePath = relativePath.substring(1);
       }
+    }
+
+    if (relativePath != null) {
+      relativePath = FileUtil.toSystemDependentName(relativePath);
     }
 
     if (device != null) {
