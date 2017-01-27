@@ -8,6 +8,7 @@
     <editorNotificationProvider implementation="io.flutter.inspections.IncompatibleDartPluginNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
 
     <moduleConfigurationEditorProvider implementation="io.flutter.module.FlutterModuleConfigurationEditorProvider"/>
   </extensions>
