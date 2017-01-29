@@ -19,7 +19,7 @@ public class FlutterToolsActionGroup extends DefaultActionGroup {
     final Project project = e == null ? null : e.getProject();
     final Presentation presentation = e == null ? null : e.getPresentation();
     if (presentation != null) {
-      final boolean visible = project == null || !FlutterModuleUtils.usesFlutter(project);
+      final boolean visible = project != null && FlutterModuleUtils.usesFlutter(project);
       presentation.setEnabled(visible);
       presentation.setVisible(visible);
     }
