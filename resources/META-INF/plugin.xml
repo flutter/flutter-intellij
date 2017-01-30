@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.8.1</version>
+  <version>0.1.9</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -21,6 +21,17 @@
 
   <change-notes>
     <![CDATA[
+0.1.9:
+<ul>
+  <li>fixes to the visibility of the "Tools" menu</li>
+  <li>inspection to detect pubspec modifications (that may imply out of date package dependencies)</li>
+  <li>key bindings fixes</li>
+  <li>support for opening source folders as Flutter projects (using "Open...")</li>
+  <li>run and debug button enablement fixes</li>
+  <li>fix to bring iOS simulator to front on run/debug</li>
+  <li>fix to handle devfs breakpoints for projects without pubspecs</li>
+</ul>
+
 0.1.8.1:
 <ul>
   <li>improve handling of breakpoints for the bazel launch config</li>
