@@ -23,6 +23,7 @@
     <![CDATA[
 0.1.9:
 <ul>
+  <li>added a 'Flutter' view to allow users to toggle Flutter framework debugging features while running<li>
   <li>fixes to the visibility of the "Tools" menu</li>
   <li>inspection to detect pubspec modifications (that may imply out of date package dependencies)</li>
   <li>key bindings fixes</li>
