@@ -16,11 +16,12 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterViewFactory implements ToolWindowFactory {
   public static void init(@NotNull Project project) {
+    //TODO: re-enable after UI review (#691)
     //noinspection CodeBlock2Expr
-    project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> {
-        openFlutterView(project, event);
-      });
+    //project.getMessageBus().connect().subscribe(
+    //  FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> {
+    //    openFlutterView(project, event);
+    //  });
   }
 
   private static void openFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
