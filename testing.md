@@ -22,11 +22,11 @@ Validate basic project creation.
     * Open `lib/main.dart` and navigate to `ThemeData`.
   * There are no analysis errors or warnings.
   * Pub operations work.
-    * Open `pubspec.yaml` and click the "Get" and "Upgrade" links.
+    * Open `pubspec.yaml` and click the "Packages get" and "Packages upgrade" links.
   * Flutter operations work.
-    * Open `flutter.yaml` and click the "Doctor" link.
+    * From the `Tools` menu, select `Flutter` > `Flutter Doctor`.
   * Code completion works.
-    * Then change `primarySwatch: Colors.` to some other color and validate that you
+    * Change `primarySwatch: Colors.` to some other color and validate that you
       get completions.
 
 ## Project Import
