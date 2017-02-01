@@ -15,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterViewFactory implements ToolWindowFactory {
   public static void init(@NotNull Project project) {
-    //TODO: re-enable after UI review (#691)
     //noinspection CodeBlock2Expr
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> {
@@ -25,6 +24,7 @@ public class FlutterViewFactory implements ToolWindowFactory {
 
   private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     ApplicationManager.getApplication().invokeLater(() -> {
+      //TODO: re-enable auot-show after UI review (#691)
       final FlutterView flutterView = ServiceManager.getService(project, FlutterView.class);
       flutterView.debugActive(event);
     });
