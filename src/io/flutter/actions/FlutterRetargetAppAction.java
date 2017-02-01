@@ -93,8 +93,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   }
 
   private FlutterApp getCurrentApp(Project project) {
-    final XDebuggerManager manager = XDebuggerManager.getInstance(project);
-    final XDebugSession session = manager.getCurrentSession();
+    final XDebugSession session = getCurrentSession(project);
     if (session == null) {
       return null;
     }
@@ -108,5 +107,19 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
 
   private AnAction getAction() {
     return ActionManager.getInstance().getAction(myActionId);
+  }
+
+  private static XDebugSession getCurrentSession(Project project) {
+    final XDebuggerManager manager = XDebuggerManager.getInstance(project);
+
+    final XDebugSession session = manager.getCurrentSession();
+    if (session != null) {
+      return session;
+    }
+
+    // XDebuggerManager.getCurrentSession() can return null even when there are active session;
+    // we guard against that here.
+    final XDebugSession[] sessions = manager.getDebugSessions();
+    return sessions.length > 0 ? sessions[0] : null;
   }
 }
