@@ -62,9 +62,6 @@ public class FlutterConsoleHelper {
       if (info != null) {
         info.console.clear();
         contentManager.setSelectedContent(info.content);
-
-        toolWindow.activate(null, true);
-        info.console.attachToProcess(processHandler);
       }
       else {
         final ConsoleView console = createConsole(project, module);
@@ -82,10 +79,9 @@ public class FlutterConsoleHelper {
 
         contentManager.addContent(info.content);
         contentManager.setSelectedContent(info.content);
-
-        info.console.attachToProcess(processHandler);
-        toolWindow.activate(runOnActive, true);
       }
+      info.console.attachToProcess(processHandler);
+      toolWindow.activate(runOnActive, true);
     });
   }
 
