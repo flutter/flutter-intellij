@@ -21,6 +21,12 @@
 
   <change-notes>
     <![CDATA[
+0.1.9.1:
+<ul>
+  <li>fix button enablement in the Flutter View</li>
+  <li>fix the reload action for apps launched from 'run'</li>
+</ul>
+
 0.1.9:
 <ul>
   <li>added a 'Flutter' view to allow users to toggle Flutter framework debugging features while running<li>
