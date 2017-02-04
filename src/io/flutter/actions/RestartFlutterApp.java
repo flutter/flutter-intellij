@@ -34,7 +34,7 @@ public class RestartFlutterApp extends FlutterAppAction implements FlutterRetarg
 
   @Override
   public void actionPerformed(FlutterApp app) {
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
 
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();

@@ -57,7 +57,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   }
 
   protected void sendActionEvent() {
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
   }
 
   @Override

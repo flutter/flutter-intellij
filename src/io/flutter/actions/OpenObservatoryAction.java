@@ -53,7 +53,7 @@ public class OpenObservatoryAction extends DumbAwareAction {
 
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
 
     openInAnyChromeFamilyBrowser(myUrl.compute());
   }

@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterGettingStarted extends DumbAwareAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
 
     final String url = "https://flutter.io/intellij-ide/";
     BrowserLauncher.getInstance().browse(url, null);

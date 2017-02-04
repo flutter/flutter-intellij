@@ -36,7 +36,7 @@ public class ReloadFlutterApp extends FlutterAppAction implements FlutterRetarge
 
   @Override
   public void actionPerformed(FlutterApp app) {
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
 
     ifReadyThen(() -> {
       FileDocumentManager.getInstance().saveAllDocuments();

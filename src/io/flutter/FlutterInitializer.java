@@ -78,8 +78,12 @@ public class FlutterInitializer implements StartupActivity {
     return !properties.getBoolean(analyticsOptOutKey, false);
   }
 
-  public static void sendActionEvent(@NotNull AnAction action) {
-    getAnalytics().sendEvent("intellij", action.getClass().getSimpleName());
+  public static void sendAnalyticsAction(@NotNull AnAction action) {
+    sendAnalyticsAction(action.getClass().getSimpleName());
+  }
+
+  public static void sendAnalyticsAction(@NotNull String name) {
+    getAnalytics().sendEvent("intellij", name);
   }
 
   @Override
