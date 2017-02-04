@@ -28,8 +28,7 @@ public class DartPlugin {
   /**
    * Tracks the minimum required Dart Plugin version.
    */
-  //TODO: update to 163.10154 once our IDE lowerbound bumps to 2016.3.2
-  private static final String MINIMUM_REQUIRED_PLUGIN_VERSION = "162.2485";
+  private static final String MINIMUM_REQUIRED_PLUGIN_VERSION = "162.2924";
   private static final Version MINIMUM_VERSION = Version.parseVersion(MINIMUM_REQUIRED_PLUGIN_VERSION);
 
   private static final DartPlugin INSTANCE = new DartPlugin();
