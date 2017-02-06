@@ -19,6 +19,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -98,6 +99,16 @@ public class FlutterDaemonController extends ProcessAdapter {
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
+
+    // Send analytics for the start and stop events.
+    FlutterInitializer.sendAnalyticsAction(StringUtil.capitalize(mode.mode()) + "App");
+    myProcessHandler.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void processTerminated(ProcessEvent event) {
+        FlutterInitializer.sendAnalyticsAction("StopApp");
+      }
+    });
+
     return myControllerHelper.appStarting(deviceId, mode, project, startPaused, isHot);
   }
 
@@ -115,6 +126,16 @@ public class FlutterDaemonController extends ProcessAdapter {
     myProcessHandler = new OSProcessHandler(commandLine);
     myProcessHandler.addProcessListener(this);
     myProcessHandler.startNotify();
+
+    // Send analytics for the start and stop events.
+    FlutterInitializer.sendAnalyticsAction(StringUtil.capitalize(mode.mode()) + "BazelApp");
+    myProcessHandler.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void processTerminated(ProcessEvent event) {
+        FlutterInitializer.sendAnalyticsAction("StopBazelApp");
+      }
+    });
+
     return myControllerHelper.appStarting(device == null ? null : device.deviceId(), mode, project, startPaused, isHot);
   }
 

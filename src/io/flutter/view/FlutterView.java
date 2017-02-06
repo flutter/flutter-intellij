@@ -153,7 +153,7 @@ abstract class AbstractToggleableAction extends DumbAwareAction implements Toggl
     final Presentation presentation = event.getPresentation();
     presentation.putClientProperty("selected", isSelected(event));
 
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
     perform(event);
   }
 
@@ -246,7 +246,7 @@ class ObservatoryTimelineAction extends AbstractObservatoryAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    FlutterInitializer.sendActionEvent(this);
+    FlutterInitializer.sendAnalyticsAction(this);
 
     final String httpUrl = OpenObservatoryAction.convertWsToHttp(view.getFlutterApp().wsUrl());
     if (httpUrl != null) {
