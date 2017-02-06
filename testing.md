@@ -99,7 +99,6 @@ Verify that projects without Flutter project metadata open properly and are give
 * open project ("File > Open")
 * the project should have the Flutter module type and analyze cleanly
 
-
 ## Fresh Install Configuration
 
 Verify installation and configuration in a fresh IDEA installation.
