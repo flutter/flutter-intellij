@@ -92,6 +92,13 @@ After testing the above, terminate your debugging session and start another.
 * validate that a breakpoint is hit
 * verify that the reload keybinding works as expected
 
+## Project Open Verification
+
+Verify that projects without Flutter project metadata open properly and are given the Flutter module type.
+* create a new Flutter project (in the IDE or using `flutter create`) and delete IntelliJ metadata (the `.idea` dir and `.IML` file)
+* open project ("File > Open")
+* the project should have the Flutter module type and analyze cleanly
+
 ## Fresh Install Configuration
 
 Verify installation and configuration in a fresh IDEA installation.
