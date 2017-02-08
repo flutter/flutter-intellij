@@ -8,6 +8,8 @@ package io.flutter.editor;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectLocator;
@@ -51,7 +53,8 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       return null;
     }
 
-    if (!FlutterModuleUtils.hasFlutterModule(project)) {
+    final Module module = ModuleUtilCore.findModuleForFile(file, project);
+    if (module == null || !FlutterModuleUtils.isFlutterModule(module)) {
       return null;
     }
 
