@@ -36,6 +36,28 @@ import java.util.Set;
 public class FlutterDependencyInspection extends LocalInspectionTool {
   private final Set<String> myIgnoredPubspecPaths = new THashSet<>(); // remember for the current session only, do not serialize
 
+  private static boolean isMoreRecent(@NotNull VirtualFile f1, @NotNull VirtualFile f2) {
+    // Trust java.io file timestamps.
+    final File f1File = new File(f1.getPath());
+    final File f2File = new File(f2.getPath());
+    if (f1File.exists() && f2File.exists()) {
+      return f1File.lastModified() > f2File.lastModified();
+    }
+
+    // Otherwise, defer to the virtual filesystem
+    return f1.getTimeStamp() > f2.getTimeStamp();
+  }
+
+  @Nullable
+  private static VirtualFile findPubspecOrNull(@NotNull Project project, @Nullable PsiFile psiFile) {
+    try {
+      return FlutterModuleUtils.findPubspecFrom(project, psiFile);
+    }
+    catch (ExecutionException e) {
+      return null;
+    }
+  }
+  
   @Nullable
   @Override
   public ProblemDescriptor[] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
@@ -71,29 +93,6 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     }
 
     return null;
-  }
-
-  private static boolean isMoreRecent(@NotNull VirtualFile f1, @NotNull VirtualFile f2) {
-    // Trust java.io file timestamps.
-    final File f1File = new File(f1.getPath());
-    final File f2File = new File(f2.getPath());
-    if (f1File.exists() && f2File.exists()) {
-      return f1File.lastModified() > f2File.lastModified();
-    }
-
-    // Otherwise, defer to the virtual filesystem
-    return f1.getTimeStamp() > f2.getTimeStamp();
-  }
-
-
-  @Nullable
-  private static VirtualFile findPubspecOrNull(@NotNull Project project, @Nullable PsiFile psiFile) {
-    try {
-      return FlutterModuleUtils.findPubspecFrom(project, psiFile);
-    }
-    catch (ExecutionException e) {
-      return null;
-    }
   }
 
   @NotNull
