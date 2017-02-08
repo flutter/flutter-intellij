@@ -11,7 +11,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
@@ -31,11 +30,34 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.Set;
 
 public class FlutterDependencyInspection extends LocalInspectionTool {
   private final Set<String> myIgnoredPubspecPaths = new THashSet<>(); // remember for the current session only, do not serialize
 
+  private static boolean isMoreRecent(@NotNull VirtualFile f1, @NotNull VirtualFile f2) {
+    // Trust java.io file timestamps.
+    final File f1File = new File(f1.getPath());
+    final File f2File = new File(f2.getPath());
+    if (f1File.exists() && f2File.exists()) {
+      return f1File.lastModified() > f2File.lastModified();
+    }
+
+    // Otherwise, defer to the virtual filesystem
+    return f1.getTimeStamp() > f2.getTimeStamp();
+  }
+
+  @Nullable
+  private static VirtualFile findPubspecOrNull(@NotNull Project project, @Nullable PsiFile psiFile) {
+    try {
+      return FlutterModuleUtils.findPubspecFrom(project, psiFile);
+    }
+    catch (ExecutionException e) {
+      return null;
+    }
+  }
+  
   @Nullable
   @Override
   public ProblemDescriptor[] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
@@ -66,22 +88,11 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
       return createProblemDescriptors(manager, psiFile, pubspec, FlutterBundle.message("packages.get.never.done"));
     }
 
-    if (FileDocumentManager.getInstance().isFileModified(pubspec) || pubspec.getTimeStamp() > packages.getTimeStamp()) {
+    if (isMoreRecent(pubspec, packages)) {
       return createProblemDescriptors(manager, psiFile, pubspec, FlutterBundle.message("pubspec.edited"));
     }
 
     return null;
-  }
-
-
-  @Nullable
-  private static VirtualFile findPubspecOrNull(@NotNull Project project, @Nullable PsiFile psiFile) {
-    try {
-      return FlutterModuleUtils.findPubspecFrom(project, psiFile);
-    }
-    catch (ExecutionException e) {
-      return null;
-    }
   }
 
   @NotNull
