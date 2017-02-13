@@ -191,9 +191,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       }
 
       if (projectName.length() > FlutterConstants.MAX_PROJECT_NAME_LENGTH) {
-        throw new ConfigurationException("Flutter project name '" +
-                                         projectName +
-                                         "' is too long; must be less than " +
+        throw new ConfigurationException("Flutter project name is too long; must be less than " +
                                          FlutterConstants.MAX_PROJECT_NAME_LENGTH +
                                          " characters.");
       }
