@@ -24,5 +24,3 @@ A very brief summary of the getting started guide linked from above:
 Please note the following known issues:
 
 * [#316](https://github.com/flutter/flutter-intellij/issues/316): Opening existing flutter projects with the plugin can lead to confusing messages if you do not install the 'Flutter' plugin first (see [setup](https://flutter.io/setup/#flutter-intellij-ide-plugins)).
-
-* [#305](https://github.com/flutter/flutter-intellij/issues/305): When stopped during a debugging session, you are free to make edits to the source code, and you can even push those changes to the target with hot reload. However, note that currently we do not update the breakpoints on the target if these move as a result of the edit, and they may thus get out of sync.
