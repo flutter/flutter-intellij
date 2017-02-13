@@ -6,8 +6,10 @@
 package io.flutter.module;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.ide.projectWizard.ProjectSettingsStep;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
@@ -20,6 +22,8 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -58,6 +62,15 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (baseDir != null) {
       createProjectFiles(model, baseDir, getFlutterSdk());
     }
+  }
+
+  @Override
+  public ModuleWizardStep modifyStep(SettingsStep step) {
+    if (getModuleType() != null && step instanceof ProjectSettingsStep) {
+      return new FlutterProjectSettingsStep((ProjectSettingsStep)step);
+    }
+
+    return super.modifyStep(step);
   }
 
   @Override
@@ -138,6 +151,54 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     @Override
     public void dispose() {
+    }
+  }
+
+  // Wraps standard project settings to add project name validation.
+  private static class FlutterProjectSettingsStep extends ModuleWizardStep {
+
+    private final ProjectSettingsStep mySettingsStep;
+
+    FlutterProjectSettingsStep(ProjectSettingsStep settingsStep) {
+      mySettingsStep = settingsStep;
+    }
+
+    @Override
+    public JComponent getComponent() {
+      return mySettingsStep.getComponent();
+    }
+
+    @Override
+    public void updateDataModel() {
+      // Done during validation.
+    }
+
+    @Override
+    public boolean isStepVisible() {
+      return mySettingsStep.isStepVisible();
+    }
+
+    @Override
+    public boolean validate() throws ConfigurationException {
+
+      mySettingsStep.updateDataModel();
+
+      final WizardContext context = mySettingsStep.getContext();
+      final String projectName = context.getProjectName();
+
+      if (!FlutterUtils.isValidDartdentifier(projectName)) {
+        throw new ConfigurationException("Invalid Flutter project name '" + projectName + "'; must be a valid Dart identifier.");
+      }
+
+      if (projectName.length() > FlutterConstants.MAX_PROJECT_NAME_LENGTH) {
+        throw new ConfigurationException("Flutter project name '" +
+                                         projectName +
+                                         "' is too long; must be less than " +
+                                         FlutterConstants.MAX_PROJECT_NAME_LENGTH +
+                                         " characters.");
+      }
+
+      return true;
     }
   }
 }
