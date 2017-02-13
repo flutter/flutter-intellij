@@ -90,7 +90,7 @@ public abstract class WorkspaceCache {
         cacheReady.get();
       }
       catch (Exception e) {
-        LOG.debug("Unexpected exception waiting for cache to be ready", e);
+        LOG.warn("Unexpected exception waiting for cache to be ready", e);
         return null;
       }
       return cache.get();
@@ -103,7 +103,7 @@ public abstract class WorkspaceCache {
       try {
         task.get();
       } catch (Exception e) {
-        LOG.debug("Unexpected exception waiting for refresh task to be idle", e);
+        LOG.warn("Unexpected exception waiting for refresh task to be idle", e);
       }
     }
 
