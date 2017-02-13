@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.9.1</version>
+  <version>0.1.10</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -21,6 +21,14 @@
 
   <change-notes>
     <![CDATA[
+0.1.10:
+<ul>
+  <li>fixes to pubspec timestamp checking</li>
+  <li>analytics events for run, debug, and process stop</li>
+  <li>fix to `flutter doctor` to better support multiple runs</li>
+  <li>fix to the reload action for apps launched from 'run'</li>
+</ul>
+
 0.1.9.1:
 <ul>
   <li>fix button enablement in the Flutter View</li>
