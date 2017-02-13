@@ -11,6 +11,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.project.FlutterProjectCreator;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -46,7 +47,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     ApplicationManager.getApplication().runWriteAction(() -> {
       try {
         final ModifiableRootModel modifiableModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module);
-        FlutterModuleBuilder.setupProject(project, modifiableModel, baseDir, flutterSdkPath);
+        FlutterProjectCreator.setupProject(project, modifiableModel, baseDir, flutterSdkPath);
         ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel);
       }
       catch (ConfigurationException e) {

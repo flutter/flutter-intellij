@@ -5,7 +5,6 @@
  */
 package io.flutter.module;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.ide.projectWizard.ProjectSettingsStep;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
@@ -24,8 +23,8 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.project.FlutterProjectCreator;
 import io.flutter.sdk.FlutterSdk;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -60,7 +59,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     final ContentEntry contentEntry = doAddContentEntry(model);
     final VirtualFile baseDir = contentEntry == null ? null : contentEntry.getFile();
     if (baseDir != null) {
-      createProjectFiles(model, baseDir, getFlutterSdk());
+      FlutterProjectCreator.createProjectFiles(model, baseDir, getFlutterSdk());
     }
   }
 
@@ -96,32 +95,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterModuleType.getInstance();
   }
 
-  private static void createProjectFiles(@NotNull final ModifiableRootModel model,
-                                         @NotNull final VirtualFile baseDir,
-                                         @NotNull final FlutterSdk sdk) {
-    // Create files.
-    try {
-      sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, null, baseDir.getPath());
-    }
-    catch (ExecutionException e) {
-      LOG.warn(e);
-    }
-  }
-
   static FlutterSdk getFlutterSdk() {
     return FlutterSdk.getGlobalFlutterSdk();
-  }
-
-  public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
-    throws ConfigurationException {
-    // TODO(devoncarew): Store the flutterSdkPath info (in the project? module?).
-    final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
-    if (sdk == null) {
-      throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
-    }
-
-    model.addContentEntry(baseDir);
-    createProjectFiles(model, baseDir, sdk);
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
