@@ -4,8 +4,8 @@ Manual tests to execute before plugin releases.
 
 ## Setup
 
-Pre-reqs: [flutter setup](https://flutter.io/setup/) and
-[flutter getting started](https://flutter.io/getting-started/).
+Pre-reqs: Run through the [flutter setup](https://flutter.io/setup/) and
+[flutter getting started](https://flutter.io/getting-started/) guides.
 
 * Run `flutter upgrade` in a terminal to get the latest version prior to starting testing.
 
@@ -54,7 +54,7 @@ Validate device selection.
 Validate basic application running and debugging.
 
 In the newly created app:
-* plugin in an Android device, or open the iOS Simulator
+* plugin in an Android device (or open the iOS Simulator)
 * set a breakpoint on the `_counter++` line
 * hit the `'debug'` icon to start the app running
 * verify the app appears on the device
