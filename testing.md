@@ -70,8 +70,8 @@ In the newly created app:
 Validate basic hot reload functionality.
 
 Assuming the app state from above (i.e., leave the Debug session running):
-* change the `Button tapped ... times.` line to end in an exclamation point
-* change the `_counter++` line to `_counter--` to end in an exclamation point
+* change the `'Button tapped ... times.'` line to end in an exclamation point
+* change the `_counter++` line to `_counter--`
 * hit the hot reload button in the debugger UI
 * validate that
   1. the state persisted (the same number of clicks in the UI), and
@@ -95,9 +95,14 @@ After testing the above, terminate your debugging session and start another.
 ## Project Open Verification
 
 Verify that projects without Flutter project metadata open properly and are given the Flutter module type.
-* create a new Flutter project (in the IDE or using `flutter create`) and delete IntelliJ metadata (the `.idea` dir and `.IML` file)
+
+* create a new Flutter project and delete IntelliJ metadata:
+  * `flutter create foo_bar`
+  * `cd foo_bar`
+  * `rm -rf .idea`
+  * `rm foo_bar.iml`
 * open project ("File > Open")
-* the project should have the Flutter module type and analyze cleanly
+* verify that the project has the Flutter module type (the device pull-down displays) and analyzes cleanly
 
 ## Fresh Install Configuration
 
