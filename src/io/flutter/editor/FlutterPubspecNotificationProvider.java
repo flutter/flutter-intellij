@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
+import com.intellij.ui.HyperlinkLabel;
 import icons.FlutterIcons;
 import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdk;
@@ -75,12 +76,19 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       icon(FlutterIcons.Flutter);
       text("Flutter commands");
 
-      createActionLabel("Packages get", "flutter.packages.get");
-      createActionLabel("Packages upgrade", "flutter.packages.upgrade");
+      HyperlinkLabel label = createActionLabel("Packages get", "flutter.packages.get");
+      label.setToolTipText("Install referenced packages");
+
+      label = createActionLabel("Packages upgrade", "flutter.packages.upgrade");
+      label.setToolTipText("Upgrade referenced packages to the latest versions");
+
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
-      createActionLabel("Flutter upgrade", "flutter.upgrade");
+      label = createActionLabel("Flutter upgrade", "flutter.upgrade");
+      label.setToolTipText("Upgrade the Flutter framework to the latest version");
+
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
-      createActionLabel("Flutter doctor", "flutter.doctor");
+      label = createActionLabel("Flutter doctor", "flutter.doctor");
+      label.setToolTipText("Validate installed tools and their versions");
 
       // TODO: Add for 2017.1.
       //background(EditorColors.GUTTER_BACKGROUND);
