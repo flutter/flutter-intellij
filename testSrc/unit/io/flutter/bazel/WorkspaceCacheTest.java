@@ -6,7 +6,6 @@
 package io.flutter.bazel;
 
 import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ModuleRootModel;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.testing.ProjectFixture;
@@ -32,7 +31,8 @@ public class WorkspaceCacheTest {
 
   @Before
   public void setUp() throws Exception {
-    cache = fixture.getProject().getComponent(WorkspaceCache.class);
+    cache = WorkspaceCache.getInstance(fixture.getProject());
+    assertNotNull(cache);
 
     tmp.ensureDir("abc");
     tmp.writeFile("abc/WORKSPACE", "");
@@ -47,35 +47,27 @@ public class WorkspaceCacheTest {
   public void shouldDetectConfigFileChanges() throws Exception {
     // This test causes stack traces to be logged at shutdown in local history: "Recursive records found".
     // (Unknown cause.)
-    cache.waitForIdle();
     checkNoConfig();
 
     final String configPath = "abc/dart/config/intellij-plugins/flutter.json";
 
     tmp.writeFile(configPath, "{\"start_flutter_daemon\": \"first\"}");
-    cache.waitForIdle();
     checkConfigSetting("first");
 
     tmp.writeFile(configPath, "{}");
-    cache.waitForIdle();
     checkConfigSetting(null);
 
     tmp.writeFile(configPath, "{\"start_flutter_daemon\": \"second\"}");
-    cache.waitForIdle();
     checkConfigSetting("second");
 
     tmp.deleteFile(configPath);
-    cache.waitForIdle();
     checkNoConfig();
   }
   
   @Test
   public void shouldDetectModuleRootChange() throws Exception {
-    cache.waitForIdle();
     checkWorkspaceExists();
-
     removeContentRoot();
-    cache.waitForIdle();
     checkNoWorkspaceExists();
   }
 
@@ -87,22 +79,22 @@ public class WorkspaceCacheTest {
   }
 
   private void checkNoWorkspaceExists() {
-    assertNull("expected no workspace to exist", cache.getValue());
+    assertNull("expected no workspace to exist", cache.getWhenReady());
   }
 
 
   private void checkWorkspaceExists() {
-    assertNotNull("expected a workspace but it doesn't exist", cache.getValue());
+    assertNotNull("expected a workspace but it doesn't exist", cache.getWhenReady());
   }
 
   private void checkNoConfig() {
-    final Workspace w = cache.getValue();
+    final Workspace w = cache.getWhenReady();
     assertNotNull("expected a workspace but it doesn't exist", w);
     assertNull("workspace has unexpected plugin config", w.getPluginConfig());
   }
 
   private void checkConfigSetting(String expected) {
-    final Workspace w = cache.getValue();
+    final Workspace w = cache.getWhenReady();
     assertNotNull("expected a workspace but it doesn't exist", w);
 
     final PluginConfig c = w.getPluginConfig();
