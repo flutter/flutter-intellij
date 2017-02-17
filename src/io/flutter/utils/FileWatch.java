@@ -7,19 +7,18 @@ package io.flutter.utils;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.*;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
-import com.intellij.openapi.vfs.newvfs.events.VFileCreateEvent;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.messages.MessageBusConnection;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.Closeable;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -31,14 +30,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>The callback will be called when the IntelliJ Platform notices the change,
  * which may be different from when it's changed on disk, due to caching.
  */
-public class FileWatch implements Closeable {
+public class FileWatch implements Disposable {
   private final @NotNull ImmutableSet<Location> watched;
   private final @NotNull Runnable callback;
 
   /**
    * When true, no more events should be delivered.
    */
-  private final AtomicBoolean closed = new AtomicBoolean();
+  private final AtomicBoolean disposed = new AtomicBoolean();
 
   private FileWatch(@NotNull ImmutableSet<Location> watched, @NotNull Runnable callback) {
     this.watched = watched;
@@ -87,21 +86,21 @@ public class FileWatch implements Closeable {
    * Unsubscribes this FileWatch from events.
    */
   @Override
-  public void close() {
-    if (!closed.compareAndSet(false, true)) {
-      return; // already closed
+  public void dispose() {
+    if (!disposed.compareAndSet(false, true)) {
+      return; // already disposed
     }
     subscriptions.unsubscribe(this);
   }
 
   private void fireEvent() {
-    if (closed.get()) return;
+    if (disposed.get()) return;
 
     try {
       callback.run();
     } catch (Exception e) {
       LOG.error("Uncaught exception in FileWatch callback", e);
-      close(); // avoid further errors
+      dispose(); // avoid further errors
     }
   }
 
