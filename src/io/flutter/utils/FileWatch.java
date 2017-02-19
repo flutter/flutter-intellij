@@ -11,6 +11,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
@@ -30,18 +31,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * <p>The callback will be called when the IntelliJ Platform notices the change,
  * which may be different from when it's changed on disk, due to caching.
  */
-public class FileWatch implements Disposable {
+public class FileWatch {
   private final @NotNull ImmutableSet<Location> watched;
   private final @NotNull Runnable callback;
 
   /**
    * When true, no more events should be delivered.
    */
-  private final AtomicBoolean disposed = new AtomicBoolean();
+  private final AtomicBoolean unsubscribed = new AtomicBoolean();
+
+  /**
+   * The representation of this FileWatch in IntelliJ's dispose tree.
+   *
+   * <p>(Private so that nobody can add children.)
+   */
+  private final Disposable disposeLeaf;
 
   private FileWatch(@NotNull ImmutableSet<Location> watched, @NotNull Runnable callback) {
     this.watched = watched;
     this.callback = callback;
+    this.disposeLeaf = this::unsubscribe;
   }
 
   /**
@@ -85,22 +94,36 @@ public class FileWatch implements Disposable {
   /**
    * Unsubscribes this FileWatch from events.
    */
-  @Override
-  public void dispose() {
-    if (!disposed.compareAndSet(false, true)) {
-      return; // already disposed
+  public void unsubscribe() {
+    if (!unsubscribed.compareAndSet(false, true)) {
+      return; // already unsubscribed
     }
     subscriptions.unsubscribe(this);
+
+    // Remove from dispose tree. Calls unsubscribe() again, harmlessly.
+    Disposer.dispose(disposeLeaf);
+  }
+
+  /**
+   * Automatically unsubscribes when a parent object is disposed.
+   *
+   * <p>Only one parent can be registered at a time. Auto-unsubscribe
+   * will stop working for any object previously passed to this
+   * method.
+   */
+  public void setDisposeParent(@NotNull Disposable parent) {
+    if (unsubscribed.get()) return;
+    Disposer.register(parent, disposeLeaf);
   }
 
   private void fireEvent() {
-    if (disposed.get()) return;
+    if (unsubscribed.get()) return;
 
     try {
       callback.run();
     } catch (Exception e) {
       LOG.error("Uncaught exception in FileWatch callback", e);
-      dispose(); // avoid further errors
+      unsubscribe(); // avoid further errors
     }
   }
 

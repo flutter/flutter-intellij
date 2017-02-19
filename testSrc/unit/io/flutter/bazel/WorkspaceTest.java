@@ -52,7 +52,8 @@ public class WorkspaceTest {
       ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
 
       tmp.ensureDir("abc/dart/config/intellij-plugins");
-      tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json", "{\"start_flutter_daemon\": \"something\"}");
+      tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json",
+                    "{\"daemonScript\": \"something\"}");
 
       final Workspace w = Workspace.load(fixture.getProject());
 
@@ -60,7 +61,39 @@ public class WorkspaceTest {
       assertEquals(expectedRoot, w.getRoot());
       final PluginConfig c = w.getPluginConfig();
       assertNotNull("expected a plugin config", c);
-      assertEquals("something", c.getFlutterDaemonScript());
+      assertEquals("something", c.getDaemonScript());
     });
+  }
+
+  @Test
+  public void canDetectFlutterModule() throws Exception {
+    tmp.ensureDir("abc");
+    tmp.writeFile("abc/WORKSPACE", "");
+    tmp.ensureDir("abc/dart/config/intellij-plugins");
+    tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json",
+                  "{\"directoryPatterns\": [\"/mobile\"]}");
+
+    final VirtualFile otherApp = tmp.ensureDir("abc/something/notmobile/other");
+    ModuleRootModificationUtil.addContentRoot(fixture.getModule(), otherApp.getPath());
+    Workspace w = Workspace.load(fixture.getProject());
+    assertNotNull(w);
+    assertNotNull(w.getPluginConfig());
+    assertFalse("shouldn't have detected flutter module", w.usesFlutter(fixture.getModule()));
+
+    final VirtualFile mobileApp = tmp.ensureDir("abc/something/mobile/hello");
+    ModuleRootModificationUtil.addContentRoot(fixture.getModule(), mobileApp.getPath());
+    w = Workspace.load(fixture.getProject());
+    assertNotNull(w);
+    assertTrue("failed to detect flutter module", w.usesFlutter(fixture.getModule()));
+
+    // Check default configuration (no flutter.json)
+    tmp.deleteFile("abc/dart/config/intellij-plugins/flutter.json");
+    w = Workspace.load(fixture.getProject());
+    assertNotNull(w);
+    assertFalse("shouldn't have detected flutter module (no config)", w.usesFlutter(fixture.getModule()));
+
+    final VirtualFile flutterApp = tmp.ensureDir("abc/something/flutter/hello");
+    ModuleRootModificationUtil.addContentRoot(fixture.getModule(), flutterApp.getPath());
+    assertTrue("should have detected flutter module (no config)", w.usesFlutter(fixture.getModule()));
   }
 }

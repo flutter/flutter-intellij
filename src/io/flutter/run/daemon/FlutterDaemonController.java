@@ -30,6 +30,7 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Control an external Flutter process, including reading events and responses from its stdout and
@@ -64,6 +65,25 @@ public class FlutterDaemonController extends ProcessAdapter {
     }
   }
 
+  void addProcessTerminatedListener(Consumer<FlutterDaemonController> callback) {
+    addDaemonListener(new DaemonListener() {
+      @Override
+      public void daemonInput(String json, FlutterDaemonController controller) {
+
+      }
+
+      @Override
+      public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
+
+      }
+
+      @Override
+      public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
+        callback.accept(controller);
+      }
+    });
+  }
+
   void removeDaemonListener(DaemonListener listener) {
     myListeners.remove(listener);
   }
@@ -79,13 +99,9 @@ public class FlutterDaemonController extends ProcessAdapter {
     myProcessHandler = null;
   }
 
-  void startDevicePoller() throws ExecutionException {
+  void startDevicePoller(GeneralCommandLine command) throws ExecutionException {
     myIsPollingController = true;
-
-    final GeneralCommandLine commandLine = createCommandLinePoller();
-    myProcessHandler = new OSProcessHandler(commandLine);
-    myProcessHandler.addProcessListener(this);
-    myProcessHandler.startNotify();
+    startProcess(command);
   }
 
   public FlutterApp startRunnerProcess(@NotNull Project project,
@@ -96,9 +112,7 @@ public class FlutterDaemonController extends ProcessAdapter {
                                        boolean isHot,
                                        @Nullable String target) throws ExecutionException {
     final GeneralCommandLine commandLine = createCommandLineRunner(project, projectDir, deviceId, mode, startPaused, isHot, target);
-    myProcessHandler = new OSProcessHandler(commandLine);
-    myProcessHandler.addProcessListener(this);
-    myProcessHandler.startNotify();
+    startProcess(commandLine);
 
     // Send analytics for the start and stop events.
     FlutterInitializer.sendAnalyticsAction(StringUtil.capitalize(mode.mode()) + "App");
@@ -123,9 +137,7 @@ public class FlutterDaemonController extends ProcessAdapter {
                                       @Nullable String additionalArguments) throws ExecutionException {
     final GeneralCommandLine commandLine =
       createBazelRunner(project, projectDir, device, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
-    myProcessHandler = new OSProcessHandler(commandLine);
-    myProcessHandler.addProcessListener(this);
-    myProcessHandler.startNotify();
+    startProcess(commandLine);
 
     // Send analytics for the start and stop events.
     FlutterInitializer.sendAnalyticsAction(StringUtil.capitalize(mode.mode()) + "BazelApp");
@@ -137,6 +149,12 @@ public class FlutterDaemonController extends ProcessAdapter {
     });
 
     return myControllerHelper.appStarting(device == null ? null : device.deviceId(), mode, project, startPaused, isHot);
+  }
+
+  private void startProcess(GeneralCommandLine commandLine) throws ExecutionException {
+    myProcessHandler = new OSProcessHandler(commandLine);
+    myProcessHandler.addProcessListener(this);
+    myProcessHandler.startNotify();
   }
 
   public void sendCommand(String commandJson, FlutterDaemonControllerHelper manager) {
@@ -188,31 +206,6 @@ public class FlutterDaemonController extends ProcessAdapter {
         }
       }
     }
-  }
-
-  /**
-   * Create a command to start the Flutter daemon when used for purposes of polling.
-   */
-  private static GeneralCommandLine createCommandLinePoller() throws ExecutionException {
-    String flutterSdkPath = null;
-    final FlutterSdk flutterSdk = FlutterSdk.getGlobalFlutterSdk();
-    if (flutterSdk != null) {
-      flutterSdkPath = flutterSdk.getHomePath();
-    }
-
-    if (flutterSdkPath == null) {
-      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    }
-
-    final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
-
-    // While not strictly required, we set the working directory to the flutter root for consistency.
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(flutterSdkPath);
-    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
-    commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.addParameter("daemon");
-
-    return commandLine;
   }
 
   /**
