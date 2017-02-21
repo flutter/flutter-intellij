@@ -41,7 +41,7 @@ public class PluginConfig {
    *
    * <p>The path should be relative to the workspace root.
    */
-  public boolean withinFlutterDirectory(String path) {
+  public boolean withinFlutterDirectory(@NotNull String path) {
     if (directoryPatterns == null) {
       // Default if unconfigured.
       return path.contains("flutter");
