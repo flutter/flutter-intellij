@@ -18,11 +18,10 @@ import static org.junit.Assert.assertNotNull;
  * <p>To set up, use JUnit 4's @Rule or @ClassRule attribute.
  */
 public class TestDir extends ExternalResource {
-  private TempDirTestFixtureImpl fixture;
+  final TempDirTestFixtureImpl fixture = new TempDirTestFixtureImpl();
 
   @Override
   protected void before() throws Exception {
-    fixture = new TempDirTestFixtureImpl();
     fixture.setUp();
   }
 

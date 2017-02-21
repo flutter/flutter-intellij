@@ -10,8 +10,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 
 public class ProjectFixture extends AdaptedFixture<IdeaProjectTestFixture> {
-  ProjectFixture(Factory<IdeaProjectTestFixture> factory) {
-    super(factory);
+  ProjectFixture(Factory<IdeaProjectTestFixture> factory, boolean setupOnDispatchThread) {
+    super(factory, setupOnDispatchThread);
   }
 
   public Project getProject() {

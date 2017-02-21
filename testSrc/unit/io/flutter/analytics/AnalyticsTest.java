@@ -5,19 +5,21 @@
  */
 package io.flutter.analytics;
 
-import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class AnalyticsTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+
+public class AnalyticsTest {
   private Analytics analytics;
   private MockAnalyticsTransport transport;
 
-  protected void setUp() throws Exception {
-    super.setUp();
-
+  @Before
+  public void setUp() throws Exception {
     transport = new MockAnalyticsTransport();
 
     analytics = new Analytics("123e4567-e89b-12d3-a456-426655440000", "1.0", "IntelliJ CE", "2016.3.2");
@@ -25,26 +27,31 @@ public class AnalyticsTest extends TestCase {
     analytics.setCanSend(true);
   }
 
+  @Test
   public void testSendScreenView() throws Exception {
     analytics.sendScreenView("testAnalyticsPage");
     assertEquals(1, transport.sentValues.size());
   }
 
+  @Test
   public void testSendEvent() throws Exception {
     analytics.sendEvent("flutter", "doctor");
     assertEquals(1, transport.sentValues.size());
   }
 
+  @Test
   public void testSendTiming() throws Exception {
     analytics.sendTiming("perf", "reloadTime", 100);
     assertEquals(1, transport.sentValues.size());
   }
 
+  @Test
   public void testSendException() throws Exception {
     analytics.sendException(new UnsupportedOperationException("test operation"), true);
     assertEquals(1, transport.sentValues.size());
   }
 
+  @Test
   public void testOptOutDoesntSend() throws Exception {
     analytics.setCanSend(false);
     analytics.sendScreenView("testAnalyticsPage");
