@@ -16,6 +16,7 @@ public class RestartFlutterAppRetarget extends FlutterRetargetAppAction {
           RestartFlutterApp.TEXT,
           RestartFlutterApp.DESCRIPTION,
           ActionPlaces.MAIN_TOOLBAR,
-          ActionPlaces.NAVIGATION_BAR_TOOLBAR);
+          ActionPlaces.NAVIGATION_BAR_TOOLBAR,
+          ActionPlaces.MAIN_MENU);
   }
 }

@@ -16,6 +16,7 @@ public class ReloadFlutterAppRetarget extends FlutterRetargetAppAction {
           ReloadFlutterApp.TEXT,
           ReloadFlutterApp.DESCRIPTION,
           ActionPlaces.MAIN_TOOLBAR,
-          ActionPlaces.NAVIGATION_BAR_TOOLBAR);
+          ActionPlaces.NAVIGATION_BAR_TOOLBAR,
+          ActionPlaces.MAIN_MENU);
   }
 }
