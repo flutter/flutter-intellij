@@ -5,20 +5,21 @@
  */
 package io.flutter.bazel;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The directory tree for a Bazel workspace.
@@ -39,10 +40,84 @@ public class Workspace {
   }
 
   /**
+   * Returns true for a module that uses flutter code within this workspace.
+   *
+   * <p>This is determined by looking for content roots that match a pattern.
+   * By default, any path containing 'flutter' will match, but this can be configured
+   * using the 'directoryPatterns' variable in flutter.json.
+   */
+  public boolean usesFlutter(Module module) {
+    for (String path : getContentPaths(module)) {
+      if (withinFlutterDirectory(path)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Returns the path to each content root within the module that is below the workspace root.
+   *
+   * <p>Each path will be relative to the workspace root directory.
+   */
+  public ImmutableSet<String> getContentPaths(Module module) {
+    // Find all the content roots within this workspace.
+    final VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+    final ImmutableSet.Builder<String> result = ImmutableSet.builder();
+    for (VirtualFile root : contentRoots) {
+      final String path = getRelativePath(root);
+      if (path != null) {
+        result.add(path);
+      }
+    }
+    return result.build();
+  }
+
+  /**
+   * Returns a VirtualFile's path relative to the workspace's root directory.
+   *
+   * <p>Returns null for the workspace root or anything outside the workspace.
+   */
+  public @Nullable String getRelativePath(@Nullable VirtualFile file) {
+    final List<String> path = new ArrayList<>();
+    while (file != null) {
+      if (file.equals(root)) {
+        if (path.isEmpty()) {
+          return null; // This is the root.
+        }
+        Collections.reverse(path);
+        return Joiner.on('/').join(path);
+      }
+      path.add(file.getName());
+      file = file.getParent();
+    }
+    return null;
+  }
+
+  /**
+   * Returns true if the given path is within a flutter project.
+   *
+   * <p>The path should be relative to the workspace root.
+   */
+  public boolean withinFlutterDirectory(@NotNull String path) {
+    final PluginConfig c = getPluginConfig();
+    if (c != null) {
+      return c.withinFlutterDirectory(path);
+    }
+    // Default if unconfigured.
+    return path.contains("flutter");
+  }
+
+  /**
    * Returns the directory containing the WORKSPACE file.
    */
   public @NotNull VirtualFile getRoot() {
     return root;
+  }
+
+  /**
+   * Returns the script that starts 'flutter daemon', or null if not configured.
+   */
+  public @Nullable String getDaemonScript() {
+    return (config == null) ? null : config.getDaemonScript();
   }
 
   /**

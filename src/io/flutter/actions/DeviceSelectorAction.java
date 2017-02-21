@@ -15,9 +15,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkManager;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -50,16 +47,15 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       return;
     }
 
-    // And only present in the context of a flutter project.
+    // Only show device menu when the device daemon process is running.
     final Project project = e.getProject();
-    if (project == null || !FlutterModuleUtils.hasFlutterModule(project)) {
+    final FlutterDaemonService service = project == null ? null : FlutterDaemonService.getInstance(project);
+    if (service == null || !service.isActive()) {
       e.getPresentation().setVisible(false);
       return;
     }
 
     super.update(e);
-
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
 
     if (!knownProjects.contains(project)) {
       knownProjects.add(project);
@@ -69,17 +65,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       updateActions(e.getPresentation(), project);
 
       updateVisibility(project, e.getPresentation());
-      FlutterSdkManager.getInstance().addListener(new FlutterSdkManager.Listener() {
-        @Override
-        public void flutterSdkAdded() {
-          updateVisibility(project, e.getPresentation());
-        }
-
-        @Override
-        public void flutterSdkRemoved() {
-          updateVisibility(project, e.getPresentation());
-        }
-      });
+      service.addDeviceDaemonListener(() -> updateVisibility(project, e.getPresentation()));
 
       service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
         @Override
@@ -102,7 +88,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   private void updateVisibility(final Project project, final Presentation presentation) {
     FlutterUtils.invokeAndWait(() -> {
-      final boolean visible = FlutterSdk.getFlutterSdk(project) != null;
+      final boolean visible = FlutterDaemonService.getInstance(project).isActive();
       presentation.setVisible(visible);
 
       final JComponent button = (JComponent)presentation.getClientProperty("customComponent");

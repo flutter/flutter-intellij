@@ -51,13 +51,13 @@ public class WorkspaceCacheTest {
 
     final String configPath = "abc/dart/config/intellij-plugins/flutter.json";
 
-    tmp.writeFile(configPath, "{\"start_flutter_daemon\": \"first\"}");
+    tmp.writeFile(configPath, "{\"daemonScript\": \"first\"}");
     checkConfigSetting("first");
 
     tmp.writeFile(configPath, "{}");
     checkConfigSetting(null);
 
-    tmp.writeFile(configPath, "{\"start_flutter_daemon\": \"second\"}");
+    tmp.writeFile(configPath, "{\"daemonScript\": \"second\"}");
     checkConfigSetting("second");
 
     tmp.deleteFile(configPath);
@@ -99,6 +99,6 @@ public class WorkspaceCacheTest {
 
     final PluginConfig c = w.getPluginConfig();
     assertNotNull("config file is missing", c);
-    assertEquals(expected, c.getFlutterDaemonScript());
+    assertEquals(expected, c.getDaemonScript());
   }
 }

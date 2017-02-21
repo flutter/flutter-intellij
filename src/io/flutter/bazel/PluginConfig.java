@@ -6,7 +6,9 @@
 package io.flutter.bazel;
 
 import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -15,21 +17,44 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * An in-memory snapshot of the flutter.json file from a Bazel workspace.
  */
 public class PluginConfig {
   private final @NotNull Fields fields;
+  private final @Nullable List<Pattern> directoryPatterns;
 
-  private PluginConfig(@NotNull Fields fields) {
+  private PluginConfig(@NotNull Fields fields, @Nullable List<Pattern> patterns) {
     this.fields = fields;
+    this.directoryPatterns = patterns;
   }
 
-  public @Nullable String getFlutterDaemonScript() {
-    return fields.flutterDaemonScript;
+  /**
+   * Returns true if the given path is within a flutter project in this workspace.
+   *
+   * <p>The path should be relative to the workspace root.
+   */
+  public boolean withinFlutterDirectory(@NotNull String path) {
+    if (directoryPatterns == null) {
+      // Default if unconfigured.
+      return path.contains("flutter");
+    }
+
+    for (Pattern p : directoryPatterns) {
+      if (p.matcher(path).find()) return true;
+    }
+    return false;
+  }
+
+  public @Nullable String getDaemonScript() {
+    return fields.daemonScript;
   }
 
   @Override
@@ -52,22 +77,53 @@ public class PluginConfig {
       try {
         final InputStreamReader input = new InputStreamReader(file.getInputStream(), "UTF-8");
         final Fields fields = GSON.fromJson(input, Fields.class);
-        return new PluginConfig(fields);
+        return new PluginConfig(fields, compilePatterns(fields.directoryPatterns));
+      } catch (FileNotFoundException e) {
+        LOG.info("Flutter plugin didn't find flutter.json at " + file.getPath());
+        return null;
       } catch (IOException e) {
-        LOG.warn("failed to load flutter plugin config", e);
+        LOG.warn("Flutter plugin failed to load config file at " + file.getPath(), e);
+        return null;
+      } catch (JsonSyntaxException e) {
+        LOG.warn("Flutter plugin failed to parse JSON in config file at " + file.getPath());
+        return null;
+      } catch (PatternSyntaxException e) {
+        LOG.warn("Flutter plugin failed to parse directory pattern (" + e.getPattern() +  ") in config file at " + file.getPath());
         return null;
       }
     };
+
     return ApplicationManager.getApplication().runReadAction(readAction);
+  }
+
+  private static @Nullable List<Pattern> compilePatterns(@Nullable Iterable<String> patterns) {
+    if (patterns == null) return null;
+
+    final ImmutableList.Builder<Pattern> result = ImmutableList.builder();
+    for (String regexp : patterns) {
+      result.add(Pattern.compile(regexp));
+    }
+    return result.build();
   }
 
   /**
    * The JSON fields in a PluginConfig, as loaded from disk.
    */
   private static class Fields {
-    @SerializedName("start_flutter_daemon")
+    /**
+     * A list of regular expressions that match workspace-relative paths that contain flutter apps.
+     * (Used to decide whether to show the device menu.)
+     */
+    @SerializedName("directoryPatterns")
     @SuppressWarnings("unused")
-    private String flutterDaemonScript;
+    private List<String> directoryPatterns;
+
+    /**
+     * The script to run to start 'flutter daemon'.
+     */
+    @SerializedName("daemonScript")
+    @SuppressWarnings("unused")
+    private String daemonScript;
 
     Fields() {}
 
@@ -75,12 +131,13 @@ public class PluginConfig {
     public boolean equals(Object obj) {
       if (!(obj instanceof Fields)) return false;
       final Fields other = (Fields)obj;
-      return Objects.equal(flutterDaemonScript, other.flutterDaemonScript);
+      return Objects.equal(directoryPatterns, other.directoryPatterns)
+             && Objects.equal(daemonScript, other.daemonScript);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(flutterDaemonScript);
+      return Objects.hashCode(directoryPatterns, daemonScript);
     }
   }
 

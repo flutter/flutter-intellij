@@ -448,7 +448,7 @@ class FlutterDaemonControllerHelper {
   }
 
   private static void error(JsonObject json) {
-    LOG.warn(json.toString());
+    LOG.warn("Flutter process responded with an error: " + json.toString());
   }
 
   private FlutterApp findApp(String appId) {
@@ -572,6 +572,7 @@ class FlutterDaemonControllerHelper {
         prim = obj.getAsJsonPrimitive("error");
         if (prim != null) {
           // Apparently the daemon does not find apps started in release mode.
+          error(obj);
           manager.appStopped(this, controller);
         }
       }

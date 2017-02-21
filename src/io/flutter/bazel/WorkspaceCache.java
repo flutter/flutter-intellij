@@ -8,7 +8,6 @@ package io.flutter.bazel;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Disposer;
 import io.flutter.project.ProjectWatch;
 import io.flutter.utils.FileWatch;
 import io.flutter.utils.Refreshable;
@@ -29,8 +28,7 @@ public class WorkspaceCache {
     this.project = project;
 
     this.cache = new Refreshable<>();
-    Disposer.register(project, cache);
-
+    cache.setDisposeParent(project);
 
     // Trigger a reload when file dependencies change.
     final AtomicReference<FileWatch> fileWatch = new AtomicReference<>();
@@ -39,13 +37,14 @@ public class WorkspaceCache {
 
       final Workspace next = cache.getNow();
 
-      final FileWatch nextWatch = next == null ? null : FileWatch.subscribe(next.getRoot(), next.getDependencies(), this::refreshAsync);
-      if (nextWatch != null) {
-        Disposer.register(project, nextWatch);
+      FileWatch nextWatch = null;
+      if (next != null) {
+        nextWatch = FileWatch.subscribe(next.getRoot(), next.getDependencies(), this::refreshAsync);
+        nextWatch.setDisposeParent(project);
       }
 
       final FileWatch prevWatch = fileWatch.getAndSet(nextWatch);
-      if (prevWatch != null) prevWatch.dispose();
+      if (prevWatch != null) prevWatch.unsubscribe();
     });
 
     ProjectWatch.subscribe(project, this::refreshAsync); // Detect module root changes.
@@ -66,17 +65,31 @@ public class WorkspaceCache {
    * <p>If the cache hasn't loaded yet, blocks until it's ready.
    * Otherwise doesn't block.
    */
-  public @Nullable Workspace getValue() {
-    return cache.getWhenInitialized();
+  public @Nullable Workspace getNow() {
+    return cache.getNow();
   }
 
   /**
    * Waits for any refreshes to finish, then returns the new workspace (or null).
    *
-   * <p>This shouldn't be called from the Swing dispatch thread.
+   * @throws IllegalStateException if called on the Swing dispatch thread.
    */
   public @Nullable Workspace getWhenReady() {
     return cache.getWhenReady();
+  }
+
+  /**
+   * Runs a callback each time the current Workspace changes.
+   */
+  public void subscribe(Runnable callback) {
+    cache.subscribe(callback);
+  }
+
+  /**
+   * Stops notifications to a callback passed to {@link #subscribe}.
+   */
+  public void unsubscribe(Runnable callback) {
+    cache.unsubscribe(callback);
   }
 
   /**

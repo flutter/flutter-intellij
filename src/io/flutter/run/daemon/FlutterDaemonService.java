@@ -6,55 +6,48 @@
 package io.flutter.run.daemon;
 
 import com.intellij.execution.ExecutionException;
-import com.intellij.execution.process.ProcessHandler;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.containers.SortedList;
 import gnu.trove.THashSet;
 import io.flutter.FlutterMessages;
-import io.flutter.sdk.FlutterSdk;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkManager;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
+import javax.swing.*;
+import java.util.*;
 
 /**
- * Long lived singleton that communicates with controllers attached to external Flutter processes.
- * <p>
- * There is one Daemon service per IntelliJ project.
+ * Long-lived singleton that communicates with external Flutter processes.
+ *
+ * <p>For each IntelliJ project there is one process used to poll for devices
+ * (and populate the device menu) and any number of processes for running Flutter apps
+ * (created by run or debug configurations).
  */
 public class FlutterDaemonService {
-  private final Object myLock = new Object();
+  private final Project project;
 
-  private final List<FlutterDaemonController> myControllers = new ArrayList<>();
-  private FlutterDaemonController myPollingController;
+  /**
+   * The process used to watch for devices changes (for the device menu). May be null if not running.
+   */
+  private final Refreshable<DeviceDaemon> myDeviceDaemon = new Refreshable<>(DeviceDaemon::shutdown);
+
+  /**
+   * Processes started to run or debug a Flutter application.
+   *
+   * <p>Access should be synchronized.
+   */
+  private final List<FlutterDaemonController> myAppControllers = new ArrayList<>();
 
   private final Set<FlutterDevice> myConnectedDevices = new THashSet<>();
   private FlutterDevice mySelectedDevice;
 
-  private final FlutterSdkManager.Listener mySdkListener = new SdkListener();
   private final List<DeviceListener> myDeviceListeners = new ArrayList<>();
-  private final DaemonListener myDiscardListener = new DaemonListener() {
-    @Override
-    public void daemonInput(String json, FlutterDaemonController controller) {
-    }
-
-    @Override
-    public void aboutToTerminate(ProcessHandler handler, FlutterDaemonController controller) {
-    }
-
-    @Override
-    public void processTerminated(ProcessHandler handler, FlutterDaemonController controller) {
-      discard(controller);
-    }
-  };
 
   public interface DeviceListener {
     void deviceAdded(FlutterDevice device);
@@ -70,32 +63,36 @@ public class FlutterDaemonService {
   }
 
   private FlutterDaemonService(Project project) {
-    listenForSdkChanges();
-    if (FlutterSdk.getFlutterSdk(project) != null) {
-      schedulePolling();
-    }
-    Disposer.register(project, this::stopControllers);
-    Disposer.register(project, this::stopListeningForSdkChanges);
+    this.project = project;
+    Disposer.register(project, this::stopAppControllers);
+
+    refreshDeviceDaemon();
+
+    // Watch for Flutter SDK changes.
+    final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
+      @Override
+      public void flutterSdkAdded() {
+        refreshDeviceDaemon();
+      }
+
+      @Override
+      public void flutterSdkRemoved() {
+        stopAppControllers();
+        refreshDeviceDaemon();
+      }
+    };
+    FlutterSdkManager.getInstance().addListener(sdkListener);
+    Disposer.register(project, () -> FlutterSdkManager.getInstance().removeListener(sdkListener));
+
+    // Watch for Bazel workspace changes.
+    WorkspaceCache.getInstance(project).subscribe(this::refreshDeviceDaemon);
   }
 
-  private class SdkListener implements FlutterSdkManager.Listener {
-    @Override
-    public void flutterSdkAdded() {
-      schedulePolling();
-    }
-
-    @Override
-    public void flutterSdkRemoved() {
-      stopControllers();
-    }
-  }
-
-  private void listenForSdkChanges() {
-    FlutterSdkManager.getInstance().addListener(mySdkListener);
-  }
-
-  private void stopListeningForSdkChanges() {
-    FlutterSdkManager.getInstance().removeListener(mySdkListener);
+  /**
+   * Runs a callback after the device daemon starts or stops.
+   */
+  public void addDeviceDaemonListener(Runnable callback) {
+    myDeviceDaemon.subscribe(callback);
   }
 
   public void addDeviceListener(@NotNull DeviceListener listener) {
@@ -107,10 +104,13 @@ public class FlutterDaemonService {
   }
 
   /**
-   * Return whether the daemon service is up and running.
+   * Returns true if the device daemon is running.
+   *
+   * <p>(That is, we are watching for changes to available devices.)
    */
   public boolean isActive() {
-    return myPollingController != null;
+    final DeviceDaemon daemon = myDeviceDaemon.getNow();
+    return daemon != null && daemon.isRunning();
   }
 
   /**
@@ -155,7 +155,10 @@ public class FlutterDaemonService {
     }
 
     for (DeviceListener listener : myDeviceListeners) {
-      listener.deviceAdded(device);
+      // Called from background thread that's holding a lock.
+      // Avoid deadlock by delivering events later.
+      // (Events may not be delivered for a while due to a dialog.)
+      SwingUtilities.invokeLater(() -> listener.deviceAdded(device));
     }
   }
 
@@ -172,7 +175,9 @@ public class FlutterDaemonService {
     }
 
     for (DeviceListener listener : myDeviceListeners) {
-      listener.deviceRemoved(device);
+      // Called from background thread that's holding a lock.
+      // Avoid deadlock by delivering events later.
+      SwingUtilities.invokeLater(() -> listener.deviceRemoved(device));
     }
   }
 
@@ -193,7 +198,7 @@ public class FlutterDaemonService {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled();
 
-    final FlutterDaemonController controller = createController();
+    final FlutterDaemonController controller = createEmptyAppController();
     final FlutterApp app = controller.startRunnerProcess(project, projectDir, deviceId, mode, startPaused, isHot, relativePath);
 
     app.addStateListener(newState -> {
@@ -216,7 +221,7 @@ public class FlutterDaemonService {
     final boolean startPaused = mode == RunMode.DEBUG;
     final boolean isHot = mode.isReloadEnabled();
 
-    final FlutterDaemonController controller = createController();
+    final FlutterDaemonController controller = createEmptyAppController();
     final FlutterApp app = controller.startBazelProcess(
       project, projectDir, device, mode, startPaused, isHot, launchingScript, bazelTarget, additionalArguments);
 
@@ -229,61 +234,66 @@ public class FlutterDaemonService {
   }
 
   /**
-   * Create a new FlutterDaemonController.
-   *
-   * @return A FlutterDaemonController that can be used to start the app in the project directory
+   * Creates a new FlutterDaemonController that is registered with this daemon, but not started.
    */
-  @NotNull
-  private FlutterDaemonController createController() {
-    synchronized (myLock) {
+  @NotNull FlutterDaemonController createEmptyAppController() {
+    synchronized (myAppControllers) {
       final FlutterDaemonController controller = new FlutterDaemonController(this);
-      myControllers.add(controller);
-      controller.addDaemonListener(myDiscardListener);
+      myAppControllers.add(controller);
+      controller.addProcessTerminatedListener(this::discard);
       return controller;
     }
   }
 
-  void schedulePolling() {
-    if (!FlutterSdkUtil.hasFlutterModules()) return;
+  /**
+   * Updates the device daemon to what it should be based on current configuation.
+   *
+   * <p>This might mean starting it, stopping it, or restarting it.
+   */
+  void refreshDeviceDaemon() {
+    myDeviceDaemon.refresh(this::chooseNextDaemon);
+  }
 
-    synchronized (myLock) {
-      if (myPollingController != null &&
-          myPollingController.getProcessHandler() != null &&
-          !myPollingController.getProcessHandler().isProcessTerminating()) {
-        return;
-      }
+  /**
+   * Returns the device daemon that should be running.
+   *
+   * <p>Starts it if needed. If null is returned then the previous daemon will be shut down.
+   */
+  private DeviceDaemon chooseNextDaemon() {
+    final DeviceDaemon.Command nextCommand = DeviceDaemon.chooseCommand(project);
+    if (nextCommand == null) {
+      return null; // Unconfigured; shut down if running.
     }
 
-    ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      synchronized (myLock) {
-        myPollingController = new FlutterDaemonController(this);
-        myControllers.add(myPollingController);
-        myPollingController.addDaemonListener(myDiscardListener);
-      }
+    final DeviceDaemon previous = myDeviceDaemon.getNow();
+    if (previous != null && !previous.needRestart(nextCommand)) {
+      return previous; // Don't do anything; current daemon is what we want.
+    }
 
-      try {
-        myPollingController.startDevicePoller();
-      }
-      catch (ExecutionException error) {
-        FlutterMessages.showError("Unable to poll for Flutter devices", error.toString());
-      }
-    });
+    try {
+      return nextCommand.start(this);
+    }
+    catch (ExecutionException e) {
+      FlutterMessages.showError("Unable to start process to watch Flutter devices", e.toString());
+      return previous; // Couldn't start a new one so don't shut it down.
+    }
   }
 
   private void discard(FlutterDaemonController controller) {
-    synchronized (myLock) {
-      myControllers.remove(controller);
+    synchronized (myAppControllers) {
+      myAppControllers.remove(controller);
       controller.forceExit();
     }
   }
 
-  private void stopControllers() {
-    synchronized (myLock) {
-      for (FlutterDaemonController controller : myControllers) {
+  private void stopAppControllers() {
+    synchronized (myAppControllers) {
+      for (FlutterDaemonController controller : myAppControllers) {
         controller.forceExit();
       }
-      myControllers.clear();
-      myPollingController = null;
+      myAppControllers.clear();
     }
   }
+
+  private static final Logger LOG = Logger.getInstance(FlutterDaemonService.class.getName());
 }
