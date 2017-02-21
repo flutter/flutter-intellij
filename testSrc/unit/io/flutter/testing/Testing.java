@@ -8,10 +8,7 @@ package io.flutter.testing;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.testFramework.builders.EmptyModuleFixtureBuilder;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
-import com.intellij.testFramework.fixtures.TestFixtureBuilder;
+import com.intellij.testFramework.fixtures.*;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
@@ -31,7 +28,7 @@ public class Testing {
    */
   public static ProjectFixture makeEmptyProject() {
     return new ProjectFixture(
-      (x) -> IdeaTestFixtureFactory.getFixtureFactory().createLightFixtureBuilder().getFixture());
+      (x) -> IdeaTestFixtureFactory.getFixtureFactory().createLightFixtureBuilder().getFixture(), true);
   }
 
   /**
@@ -43,7 +40,18 @@ public class Testing {
         IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(testClassName);
       builder.addModule(EmptyModuleFixtureBuilder.class);
       return builder.getFixture();
-    });
+    }, true);
+  }
+
+  public static ProjectFixture makeCodeInsightModule() {
+    return new ProjectFixture((x) -> {
+      final IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
+      final IdeaProjectTestFixture light = factory.createLightFixtureBuilder().getFixture();
+      final CodeInsightTestFixture insight = factory.createCodeInsightFixture(light);
+      // Not clear that we need this; test passes without it.
+      insight.setTestDataPath(FlutterTestUtils.BASE_TEST_DATA_PATH);
+      return insight;
+    }, false);
   }
 
   public static <T> T computeInWriteAction(ThrowableComputable<T, Exception> callback) throws Exception {

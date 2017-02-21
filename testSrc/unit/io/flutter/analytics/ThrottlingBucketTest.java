@@ -5,10 +5,11 @@
  */
 package io.flutter.analytics;
 
-import junit.framework.TestCase;
 import org.junit.Assert;
+import org.junit.Test;
 
-public class ThrottlingBucketTest extends TestCase {
+public class ThrottlingBucketTest {
+  @Test
   public void testRemoveDrop() throws Exception {
     final int bucketSize = 10;
     final ThrottlingBucket bucket = new ThrottlingBucket(bucketSize);

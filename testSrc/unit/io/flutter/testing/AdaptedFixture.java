@@ -17,10 +17,12 @@ import org.junit.runners.model.Statement;
  */
 public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
   public final Factory<T> factory;
+  private final boolean runOnDispatchThread;
   private T inner;
 
-  AdaptedFixture(Factory<T> factory) {
+  AdaptedFixture(Factory<T> factory, boolean runOnDispatchThread) {
     this.factory = factory;
+    this.runOnDispatchThread = runOnDispatchThread;
   }
 
   public T getInner() {
@@ -32,11 +34,19 @@ public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
     return new Statement() {
       public void evaluate() throws Throwable {
         inner = factory.create(description.getClassName());
-        Testing.runOnDispatchThread(inner::setUp);
+        if (runOnDispatchThread) {
+          Testing.runOnDispatchThread(inner::setUp);
+        } else {
+          inner.setUp();
+        }
         try {
           base.evaluate();
         } finally {
-          Testing.runOnDispatchThread(inner::tearDown);
+          if (runOnDispatchThread) {
+            Testing.runOnDispatchThread(inner::tearDown);
+          } else {
+            inner.tearDown();
+          }
           inner = null;
         }
       }
