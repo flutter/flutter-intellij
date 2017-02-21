@@ -207,8 +207,9 @@
         <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
       </action>
       <separator/>
-      <add-to-group anchor="last" group-id="RunContextGroup"/>
-      <add-to-group anchor="last" group-id="ToolbarRunGroup"/>
+      <add-to-group group-id="RunContextGroup" anchor="last"/>
+      <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
+      <add-to-group group-id="RunMenu" anchor="last"/>
     </group>
 
     <!-- help menu -->
