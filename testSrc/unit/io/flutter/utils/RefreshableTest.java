@@ -6,6 +6,7 @@
 package io.flutter.utils;
 
 import com.google.common.collect.ImmutableList;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.core.Is.is;
@@ -22,11 +25,15 @@ import static org.junit.Assert.*;
 public class RefreshableTest {
 
   private final List<String> logEntries = new ArrayList<>();
+  private final Semaphore unpublished = new Semaphore(0);
   private Refreshable<String> value;
 
   @Before
   public void setUp() {
-    value = new Refreshable<>((value) -> log("unpublished: " + value));
+    value = new Refreshable<>((value) -> {
+      log("unpublished: " + value);
+      unpublished.release();
+    });
   }
 
   @Test
@@ -36,20 +43,28 @@ public class RefreshableTest {
   }
 
   @Test
-  public void refreshShouldPublishNewValue() {
+  public void refreshShouldPublishNewValue() throws Exception {
     value.refresh(() -> "hello");
     assertEquals("hello", value.getWhenReady());
     checkLog();
+    value.close();
+    waitForUnpublish();
+    checkLog("unpublished: hello");
   }
 
   @Test
-  public void refreshShouldUnpublishPreviousValue() {
+  public void refreshShouldUnpublishPreviousValue() throws Exception {
     value.refresh(() -> "one");
     assertEquals("one", value.getWhenReady());
 
     value.refresh(() -> "two");
     assertEquals("two", value.getWhenReady());
+    waitForUnpublish();
     checkLog("unpublished: one");
+
+    value.close();
+    waitForUnpublish();
+    checkLog("unpublished: two");
   }
 
   @Test
@@ -65,7 +80,7 @@ public class RefreshableTest {
   }
 
   @Test
-  public void refreshShouldNotNotifySubscriberOfDuplicateValue() {
+  public void refreshShouldNotNotifySubscriberOfDuplicateValue() throws Exception {
     value.subscribe(() -> log("got event"));
     value.refresh(() -> "hello");
     assertEquals("hello", value.getWhenReady());
@@ -74,6 +89,10 @@ public class RefreshableTest {
     value.refresh(() -> "hello");
     assertEquals("hello", value.getWhenReady());
     checkLog();
+
+    value.close();
+    waitForUnpublish();
+    checkLog("unpublished: hello");
   }
 
   @Test
@@ -106,7 +125,7 @@ public class RefreshableTest {
   }
 
   @Test
-  public void whenPublishedShouldFireOnce() {
+  public void whenPublishedShouldFireOnce() throws Exception {
     value.whenPublished(() -> log("got event"));
 
     value.refresh(() -> "first");
@@ -115,6 +134,7 @@ public class RefreshableTest {
 
     value.refresh(() -> "second");
     assertEquals("second", value.getWhenReady());
+    waitForUnpublish();
     checkLog("unpublished: first");
   }
 
@@ -150,6 +170,7 @@ public class RefreshableTest {
 
     dependency.run(); // Make first task exit, allowing second to run.
     assertEquals("second task", value.getWhenReady());
+    waitForUnpublish();
     checkLog("unpublished: first task");
   }
 
@@ -177,20 +198,11 @@ public class RefreshableTest {
 
   @Test
   public void publishShouldYieldToQueuedEvents() throws Exception {
-    // Create a task that will block until we say to finish.
-    final FutureTask startedTask = new FutureTask<>(() -> null);
-    final FutureTask<String> dependency = new FutureTask<>(() -> "first");
-    final Callable<String> task = () -> {
-      startedTask.run();
-      return dependency.get();
-    };
     value.subscribe(() -> log("got event"));
-
-    value.refresh(task);
-    startedTask.get(); // Wait for task to start running.
+    final Semaphore finish = startRefresh("first");
 
     SwingUtilities.invokeAndWait(() -> {
-      dependency.run();
+      finish.release();
 
       // Make sure it's blocked until we exit.
       try {
@@ -204,8 +216,68 @@ public class RefreshableTest {
     });
 
     assertEquals("first", value.getWhenReady());
-    checkLog("event handler done",
+    checkLog("entered refresh callback: first",
+             "exited refresh callback: first",
+             "event handler done",
              "got event");
+  }
+
+  @Test
+  public void shouldNotPublishWhenClosedDuringRefreshCallback() throws Exception {
+    value.subscribe(() -> log("got event"));
+    final Semaphore finish = startRefresh("first");
+    value.close();
+    finish.release();
+    assertNull(value.getWhenReady());
+    waitForUnpublish();
+    checkLog("entered refresh callback: first",
+             "exited refresh callback: first",
+             "unpublished: first");
+  }
+
+  @Test
+  public void shouldNotPublishWhenClosedBeforePublish() throws Exception {
+    value.subscribe(() -> log("got event"));
+    final Semaphore finish = startRefresh("first");
+
+    SwingUtilities.invokeAndWait(() -> {
+      SwingUtilities.invokeLater(() -> {
+        value.close();
+        log("closed");
+      });
+      finish.release();
+    });
+    assertNull(value.getWhenReady());
+    waitForUnpublish();
+    checkLog("entered refresh callback: first",
+             "exited refresh callback: first",
+             "closed",
+             "unpublished: first");
+  }
+
+  private void waitForUnpublish() throws Exception {
+    assertTrue("timed out waiting for value to be unpublished",
+               unpublished.tryAcquire(1, TimeUnit.SECONDS));
+  }
+
+  /**
+   * Starts running a refresh, but block until the test tells it to finish.
+   *
+   * <p>The caller should invoke release on the returned semaphore to unblock
+   * the refresh callback.
+   */
+  private @NotNull Semaphore startRefresh(String newValue) throws Exception {
+    final Semaphore start = new Semaphore(0);
+    final Semaphore finish = new Semaphore(0);
+    value.refresh(() -> {
+      log("entered refresh callback: " + newValue);
+      start.release();
+      finish.acquire();
+      log("exited refresh callback: " + newValue);
+      return newValue;
+    });
+    start.acquire();
+    return finish;
   }
 
   private synchronized boolean log(String message) {

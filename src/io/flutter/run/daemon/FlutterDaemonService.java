@@ -66,6 +66,7 @@ public class FlutterDaemonService {
     this.project = project;
     Disposer.register(project, this::stopAppControllers);
 
+    myDeviceDaemon.setDisposeParent(project);
     refreshDeviceDaemon();
 
     // Watch for Flutter SDK changes.
