@@ -205,6 +205,11 @@ public class Refreshable<T> implements Closeable {
     // Cancel any running create task.
     schedule.reschedule(null);
 
+    // Free subscribers. (Avoid memory leaks.)
+    synchronized (subscribers) {
+      subscribers.clear();
+    }
+
     // Remove from dispose tree. Calls close() again, harmlessly.
     Disposer.dispose(disposeNode);
   }
@@ -363,21 +368,34 @@ public class Refreshable<T> implements Closeable {
      * Schedules a value to be published later, provided that it's not a duplicate.
      */
     synchronized void reschedule(@Nullable T toPublish) {
-      if (closing) return;
+      if (scheduled != null && Objects.equal(toPublish, scheduled)) {
+        return; // Duplicate already scheduled. Nothing to do.
+      }
 
-      if (scheduled != null && !Objects.equal(toPublish, scheduled)) {
+      // Discard any previously scheduled value.
+      if (scheduled != null) {
         final T old = scheduled;
         SwingUtilities.invokeLater(() -> unpublish.accept(old));
+        scheduled = null;
       }
 
+      // Don't publish a duplicate. (Don't unpublish a duplicate either.)
       if (initialized.isDone() && Objects.equal(toPublish, published)) {
-        // don't publish a duplicate
-        scheduled = null;
         needToPublish = false;
-      } else {
-        scheduled = toPublish;
-        needToPublish = true;
+        return;
       }
+
+      if (closing) {
+        // Don't publish anything else since we're closing.
+        // Discard new value instead of publishing it.
+        if (toPublish != null) {
+          SwingUtilities.invokeLater(() -> unpublish.accept(toPublish));
+        }
+        return;
+      }
+
+      scheduled = toPublish;
+      needToPublish = true;
     }
 
     synchronized boolean close() {
