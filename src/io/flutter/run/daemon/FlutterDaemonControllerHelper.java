@@ -380,11 +380,11 @@ class FlutterDaemonControllerHelper {
 
   private void eventDeviceRemoved(@NotNull DeviceRemovedEvent removed, @NotNull FlutterDaemonController controller) {
     synchronized (myLock) {
-      myController.getService().getConnectedDevices().stream().filter(
-        device -> device.deviceName().equals(removed.name) &&
-                  device.deviceId().equals(removed.id) &&
-                  device.platform().equals(removed.platform))
-        .forEach(myController.getService()::removeConnectedDevice);
+      for (FlutterDevice candidate : myController.getService().getConnectedDevices()) {
+        if (candidate.deviceId().equals(removed.id)) {
+          myController.getService().removeConnectedDevice(candidate);
+        }
+      }
     }
   }
 
