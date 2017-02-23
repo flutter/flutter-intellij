@@ -5,6 +5,7 @@
  */
 package io.flutter.run.daemon;
 
+import com.google.common.base.Stopwatch;
 import com.google.gson.*;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -12,7 +13,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import gnu.trove.THashMap;
 import io.flutter.FlutterInitializer;
-import io.flutter.utils.StopWatch;
 import io.flutter.utils.TimeoutUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -23,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,7 +50,7 @@ class FlutterDaemonControllerHelper {
   private final Object myLock = new Object();
   private final Map<Method, FlutterJsonObject> myResponses = new THashMap<>();
   private ProgressHelper myProgressHandler;
-  private StopWatch myProgressStopWatch;
+  private Stopwatch myProgressStopWatch;
 
   FlutterDaemonControllerHelper(@NotNull FlutterDaemonController controller) {
     myController = controller;
@@ -347,15 +348,16 @@ class FlutterDaemonControllerHelper {
 
       if (myProgressStopWatch != null) {
         myProgressStopWatch.stop();
+        final long elapsed = myProgressStopWatch.elapsed(TimeUnit.MILLISECONDS);
 
         if (message.progressId != null && message.progressId.startsWith("hot.")) {
           if (message.progressId.equals("hot.reload")) {
-            app.getConsole().print("\nReloaded in " + myProgressStopWatch.getTimeMillis() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
-            FlutterInitializer.getAnalytics().sendTiming("run", "reload", myProgressStopWatch.getTimeMillis());
+            app.getConsole().print("\nReloaded in " + elapsed + " ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            FlutterInitializer.getAnalytics().sendTiming("run", "reload", elapsed);
           }
           else if (message.progressId.equals("hot.restart")) {
-            app.getConsole().print("\nRestarted in " + myProgressStopWatch.getTimeMillis() + "ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
-            FlutterInitializer.getAnalytics().sendTiming("run", "restart", myProgressStopWatch.getTimeMillis());
+            app.getConsole().print("\nRestarted in " + elapsed + " ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+            FlutterInitializer.getAnalytics().sendTiming("run", "restart", elapsed);
           }
         }
 
@@ -366,8 +368,7 @@ class FlutterDaemonControllerHelper {
       myProgressHandler.start(message.message);
 
       if (message.progressId != null && message.progressId.startsWith("hot.")) {
-        myProgressStopWatch = new StopWatch();
-        myProgressStopWatch.start();
+        myProgressStopWatch = Stopwatch.createStarted();
       }
     }
   }
