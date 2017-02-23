@@ -23,6 +23,10 @@ A very brief summary of the getting started guide linked from above:
 
 Please note the following known issues:
 
-* [#565](https://github.com/flutter/flutter-intellij/issues/565): IntelliJ has a single setting containing the path to the Dart SDK. This can be an issue if you work on both Flutter projects, and [AngularDart projects](https://webdev.dartlang.org/) as they tend to use different Dart SDK versions.
+* [#565](https://github.com/flutter/flutter-intellij/issues/565): IntelliJ/WebStorm has a single setting containing the path to the Dart SDK. This can be an issue if you work on both Flutter projects, and [AngularDart projects](https://webdev.dartlang.org/) as they tend to use different Dart SDK versions. In that case, after using Flutter you will have to manually reconfigure IntelliJ/WebStorm back to the correct Dart SDK path:
+
+   - Open an existing Dart project / create a new one
+   - Go to Preferences > Languages & Frameworks > Dart
+   - Enter the Dart SDK path (i.e., where your main Dart SDK is located, not the one bundled with Flutter)
 
 * [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will read the PATH variable just once on startup. Thus, if you change PATH later to include the Flutter SDK path, this will not have an affect in IntelliJ until you restart the IDE.
