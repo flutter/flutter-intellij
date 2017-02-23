@@ -209,7 +209,7 @@
       <separator/>
       <add-to-group group-id="RunContextGroup" anchor="last"/>
       <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
-      <add-to-group group-id="RunMenu" anchor="last"/>
+      <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
 
     <!-- help menu -->
