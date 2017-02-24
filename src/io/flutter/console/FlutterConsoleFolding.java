@@ -22,8 +22,6 @@ public class FlutterConsoleFolding extends ConsoleFolding {
   private static final String flutterMarker =
     FlutterConstants.INDEPENDENT_PATH_SEPARATOR + FlutterSdkUtil.flutterScriptName() + " --no-color ";
 
-  private boolean isFolding = false;
-
   // CoreSimulatorBridge: Requesting launch of ... with options: {
   private static final Pattern iosPattern = Pattern.compile("^\\w+: .* \\{$");
 
@@ -39,6 +37,18 @@ public class FlutterConsoleFolding extends ConsoleFolding {
   // )
   private static final String iosCrashFormat2 = "\t(";
 
+  // CoreSimulatorBridge: Beginning launch sequence for bundle 'com.yourcompany.flutterGallery'
+  //         retryTimeout: 300.000000 (default write com.apple.CoreSimulatorBridge LaunchRetryTimeout <value>)
+  //         bootTimeout: 300.000000 (default write com.apple.CoreSimulatorBridge BootRetryTimeout <value>)
+  //         bootLeeway: 120.000000 (default write com.apple.CoreSimulatorBridge BootLeeway <value>)
+  //         Note: Use 'xcrun simctl spawn booted defaults write <domain> <key> <value>' to modify defaults in the booted Simulator device.
+  //     Simulator booted at: 2017-02-24 07:56:56 +0000
+  //     Current time: 2017-02-24 07:57:56 +0000
+  //     Within boot leeway: YES
+  private static final String launchSequencePrefix = "CoreSimulatorBridge: Beginning launch sequence for bundle";
+
+  private boolean isFolding = false;
+
   @Override
   public boolean shouldFoldLine(String line) {
     if (line.contains(flutterMarker)) {
@@ -46,7 +56,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
       return true;
     }
 
-    if (iosPattern.matcher(line).matches() || line.startsWith(iosCrashFormat1)) {
+    if (iosPattern.matcher(line).matches() || line.startsWith(iosCrashFormat1) || line.startsWith(launchSequencePrefix)) {
       isFolding = true;
       return false;
     }
