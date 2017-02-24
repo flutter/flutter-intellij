@@ -6,6 +6,8 @@
 package io.flutter.view;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
@@ -37,10 +39,11 @@ public class FlutterViewMessages {
     }
   }
 
-  public static void sendDebugActive(@NotNull ObservatoryConnector observatoryConnector,
+  public static void sendDebugActive(@NotNull Project project,
+                                     @NotNull ObservatoryConnector observatoryConnector,
                                      @NotNull VmServiceWrapper vmServiceWrapper,
                                      @NotNull VmService vmService) {
-    final MessageBus bus = ApplicationManager.getApplication().getMessageBus();
+    final MessageBus bus = project.getMessageBus();
     final FlutterDebugNotifier publisher = bus.syncPublisher(FLUTTER_DEBUG_TOPIC);
     publisher.debugActive(new FlutterDebugEvent(observatoryConnector, vmServiceWrapper, vmService));
   }
