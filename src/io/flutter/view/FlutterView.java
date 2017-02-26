@@ -5,6 +5,7 @@
  */
 package io.flutter.view;
 
+import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -15,9 +16,11 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.actions.OpenObservatoryAction;
@@ -40,6 +43,8 @@ import java.util.Map;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
+  public static final String TOOL_WINDOW_ID = "Flutter";
+
   @NotNull private FlutterView.State state = new FlutterView.State();
   @SuppressWarnings("FieldCanBeLocal") private final Project myProject;
   FlutterViewMessages.FlutterDebugEvent debugEvent;
@@ -108,8 +113,12 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       @Override
       public void connectionClosed() {
         FlutterView.this.debugEvent = null;
+
+        updateIcon();
       }
     });
+
+    updateIcon();
   }
 
   FlutterApp getFlutterApp() {
@@ -117,6 +126,19 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       return null;
     }
     return debugEvent.observatoryConnector.getApp();
+  }
+
+  private void updateIcon() {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
+
+      if (getFlutterApp() == null) {
+        toolWindow.setIcon(FlutterIcons.Flutter);
+      }
+      else {
+        toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter));
+      }
+    });
   }
 
   /**
