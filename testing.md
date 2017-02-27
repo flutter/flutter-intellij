@@ -9,6 +9,11 @@ Pre-reqs: Run through the [flutter setup](https://flutter.io/setup/) and
 
 * Run `flutter upgrade` in a terminal to get the latest version prior to starting testing.
 
+## Testing matrix
+
+Testers should generally test against IntelliJ CE. We also support WebStorm and internal
+IntelliJ; we should have testers assigned to each for each roll.
+
 ## Project Creation
 
 Validate basic project creation.
