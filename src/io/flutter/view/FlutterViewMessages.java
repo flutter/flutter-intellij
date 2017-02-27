@@ -5,9 +5,7 @@
  */
 package io.flutter.view;
 
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
