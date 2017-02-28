@@ -64,11 +64,9 @@ In the newly created app:
 * hit the `'debug'` icon to start the app running
 * verify the app appears on the device
 * tap the `'+'` icon on the app
-* verify that the IDE pauses at the breakpoint
-* hit resume in the debugger
-* tap the `'+'` icon on the app
 * verify that the IDE pauses at the breakpoint, and that the `Variables` pane has
   the right value for `_counter`
+* hit resume in the debugger
 
 ## Hot Reload
 
