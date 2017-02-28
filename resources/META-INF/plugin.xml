@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>0.1.10</version>
+  <version>0.1.11</version>
 
   <idea-version since-build="162.1" until-build="163.*"/>
 
@@ -21,6 +21,15 @@
 
   <change-notes>
     <![CDATA[
+0.1.11:
+<ul>
+  <li>Flutter tool window badging when active</li>
+  <li>iOS console output folding improvements</li>
+  <li>Flutter reload actions added to main "Run" menu</li>
+  <li>devices menu fixes</li>
+  <li>improved tooltips for pubspec editor notifications</li>
+</ul>
+
 0.1.10:
 <ul>
   <li>fixes to pubspec timestamp checking</li>
