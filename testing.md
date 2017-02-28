@@ -31,7 +31,7 @@ Validate basic project creation.
   * Flutter operations work.
     * From the `Tools` menu, select `Flutter` > `Flutter Doctor`.
   * Code completion works.
-    * Change `primarySwatch: Colors.` to some other color and validate that you
+    * Change `primarySwatch: Colors` to some other color and validate that you
       get completions.
 
 ## Project Import
