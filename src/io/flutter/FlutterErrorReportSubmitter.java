@@ -13,6 +13,7 @@ import com.intellij.ide.scratch.ScratchRootType;
 import com.intellij.lang.Language;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
+import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.diagnostic.ErrorReportSubmitter;
 import com.intellij.openapi.diagnostic.IdeaLoggingEvent;
 import com.intellij.openapi.diagnostic.Logger;
@@ -84,7 +85,8 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     builder.append("\n");
     final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
     //noinspection ConstantConditions
-    builder.append("Flutter plugin `").append(descriptor.getVersion()).append("`\n");
+    builder.append("Flutter plugin `").append(descriptor.getVersion()).append("` • ");
+    builder.append(ApplicationNamesInfo.getInstance().getFullProductName()).append("\n");
     builder.append("\n");
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
