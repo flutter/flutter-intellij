@@ -130,6 +130,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   private void updateIcon() {
     ApplicationManager.getApplication().invokeLater(() -> {
+      if (myProject.isDisposed()) {
+        return;
+      }
+
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
 
       if (getFlutterApp() == null) {
