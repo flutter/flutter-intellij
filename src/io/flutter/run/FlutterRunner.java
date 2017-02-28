@@ -125,12 +125,12 @@ public class FlutterRunner extends FlutterRunnerBase {
 
         @Override
         public void sessionPaused(XDebugSession sessionHook) {
-          getApp().sessionPaused(sessionHook);
+          getApp().onPause(sessionHook);
         }
 
         @Override
         public void sessionResumed() {
-          getApp().sessionResumed();
+          getApp().onResume();
         }
       };
     }

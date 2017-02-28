@@ -270,7 +270,10 @@ class DeviceDaemon {
         return;
       }
 
-      final FlutterDevice newDevice = new FlutterDevice(event.name, event.id, event.platform, event.emulator);
+      final FlutterDevice newDevice = new FlutterDevice(event.id,
+                                                        event.name == null ? event.id : event.name,
+                                                        event.platform,
+                                                        event.emulator);
       devices.updateAndGet((old) -> addDevice(old.stream(), newDevice));
       deviceChanged.run();
     }
