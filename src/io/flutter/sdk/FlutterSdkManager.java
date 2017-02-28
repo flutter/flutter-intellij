@@ -100,12 +100,12 @@ public class FlutterSdkManager {
     /**
      * Fired when the Flutter global library is set.
      */
-    void flutterSdkAdded();
+    default void flutterSdkAdded() {}
 
     /**
      * Fired when the Flutter global library is removed.
      */
-    void flutterSdkRemoved();
+    default void flutterSdkRemoved() {}
   }
 
   // Listens for changes in Flutter Library configuration state in the Library table.

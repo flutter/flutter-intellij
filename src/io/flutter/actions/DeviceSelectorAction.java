@@ -13,13 +13,13 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
-import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   final private List<AnAction> actions = new ArrayList<>();
@@ -49,8 +49,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     // Only show device menu when the device daemon process is running.
     final Project project = e.getProject();
-    final FlutterDaemonService service = project == null ? null : FlutterDaemonService.getInstance(project);
-    if (service == null || !service.isActive()) {
+    if (!isSelectorVisible(project)) {
       e.getPresentation().setVisible(false);
       return;
     }
@@ -61,52 +60,41 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       knownProjects.add(project);
       Disposer.register(project, () -> knownProjects.remove(project));
 
-      // Setup initial actions.
-      updateActions(e.getPresentation(), project);
-
-      updateVisibility(project, e.getPresentation());
-      service.addDeviceDaemonListener(() -> updateVisibility(project, e.getPresentation()));
-
-      service.addDeviceListener(new FlutterDaemonService.DeviceListener() {
-        @Override
-        public void deviceAdded(FlutterDevice device) {
-          updateActions(e.getPresentation(), project);
-        }
-
-        @Override
-        public void selectedDeviceChanged(FlutterDevice device) {
-          updateActions(e.getPresentation(), project);
-        }
-
-        @Override
-        public void deviceRemoved(FlutterDevice device) {
-          updateActions(e.getPresentation(), project);
-        }
-      });
+      DeviceService.getInstance(project).addListener(() -> update(project, e.getPresentation()));
+      update(project, e.getPresentation());
     }
   }
 
-  private void updateVisibility(final Project project, final Presentation presentation) {
+  private void update(Project project, Presentation presentation) {
     FlutterUtils.invokeAndWait(() -> {
-      final boolean visible = FlutterDaemonService.getInstance(project).isActive();
-      presentation.setVisible(visible);
-
-      final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
-      if (button != null) {
-        button.setVisible(visible);
-        if (button.getParent() != null) {
-          button.getParent().doLayout();
-        }
-      }
+      updateVisibility(project, presentation);
+      updateActions(project, presentation);
     });
   }
 
-  private void updateActions(Presentation presentation, @NotNull Project project) {
+  private void updateVisibility(final Project project, final Presentation presentation) {
+    final boolean visible = isSelectorVisible(project);
+    presentation.setVisible(visible);
+
+    final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
+    if (button != null) {
+      button.setVisible(visible);
+      if (button.getParent() != null) {
+        button.getParent().doLayout();
+      }
+    }
+  }
+
+  private boolean isSelectorVisible(@Nullable Project project) {
+    return project != null && DeviceService.getInstance(project).getStatus() != DeviceService.State.INACTIVE;
+  }
+
+  private void updateActions(@NotNull Project project, Presentation presentation) {
     actions.clear();
 
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
-    final Collection<FlutterDevice> devices = service.getConnectedDevices();
-    actions.addAll(devices.stream().map(SelectDeviceAction::new).collect(Collectors.toList()));
+    for (FlutterDevice item : DeviceService.getInstance(project).getConnectedDevices()) {
+      actions.add(new SelectDeviceAction(item));
+    }
 
     if (actions.isEmpty()) {
       actions.add(new NoDevicesAction());
@@ -129,24 +117,22 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new OpenSimulatorAction(!simulatorOpen));
     }
 
-    FlutterUtils.invokeAndWait(() -> {
-      final FlutterDevice selectedDevice = service.getSelectedDevice();
-      for (AnAction action : actions) {
-        if (action instanceof SelectDeviceAction) {
-          final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
+    final FlutterDevice selectedDevice = DeviceService.getInstance(project).getSelectedDevice();
+    for (AnAction action : actions) {
+      if (action instanceof SelectDeviceAction) {
+        final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
 
-          if (Objects.equals(deviceAction.device, selectedDevice)) {
-            final Presentation template = action.getTemplatePresentation();
-            presentation.setIcon(template.getIcon());
-            presentation.setText(template.getText());
-            presentation.setEnabled(true);
-            return;
-          }
+        if (Objects.equals(deviceAction.device, selectedDevice)) {
+          final Presentation template = action.getTemplatePresentation();
+          presentation.setIcon(template.getIcon());
+          presentation.setText(template.getText());
+          presentation.setEnabled(true);
+          return;
         }
       }
+    }
 
-      presentation.setText(null);
-    });
+    presentation.setText(null);
   }
 
   private static class NoDevicesAction extends AnAction implements TransparentUpdate {
@@ -173,7 +159,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     @Override
     public void actionPerformed(AnActionEvent e) {
       final Project project = e.getProject();
-      final FlutterDaemonService service = project != null ? FlutterDaemonService.getInstance(project) : null;
+      final DeviceService service = project == null ? null : DeviceService.getInstance(project);
       if (service != null) {
         service.setSelectedDevice(device);
       }

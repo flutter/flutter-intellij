@@ -46,8 +46,6 @@ public class FlutterDaemonController extends ProcessAdapter {
   private final FlutterDaemonControllerHelper myControllerHelper;
   private final List<DaemonListener> myListeners = Collections.synchronizedList(new ArrayList<>());
   private ProcessHandler myProcessHandler;
-  private boolean myIsPollingController = false;
-  private boolean myIsPollingStarted = false;
 
   public FlutterDaemonController(@NotNull FlutterDaemonService service) {
     myService = service;
@@ -97,11 +95,6 @@ public class FlutterDaemonController extends ProcessAdapter {
       myProcessHandler.destroyProcess();
     }
     myProcessHandler = null;
-  }
-
-  void startDevicePoller(GeneralCommandLine command) throws ExecutionException {
-    myIsPollingController = true;
-    startProcess(command);
   }
 
   public FlutterApp startRunnerProcess(@NotNull Project project,
@@ -195,14 +188,6 @@ public class FlutterDaemonController extends ProcessAdapter {
         text = text.substring(1, text.length() - 1);
         for (DaemonListener listener : myListeners) {
           listener.daemonInput(text, this);
-        }
-      }
-
-      if (myIsPollingController && !myIsPollingStarted) {
-        myIsPollingStarted = true;
-
-        for (DaemonListener listener : myListeners) {
-          myControllerHelper.enableDevicePolling();
         }
       }
     }

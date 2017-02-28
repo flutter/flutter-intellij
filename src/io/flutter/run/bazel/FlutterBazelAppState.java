@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import io.flutter.run.FlutterAppState;
 import io.flutter.run.FlutterRunConfigurationBase;
 import io.flutter.run.FlutterRunnerParameters;
+import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
@@ -31,20 +32,12 @@ public class FlutterBazelAppState extends FlutterAppState {
 
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
-
     final Project project = getEnvironment().getProject();
+
     final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    // Only pass the current device in if we are showing the device selector.
-    FlutterDevice device = null;
-    if (service.isActive()) {
-      final Collection<FlutterDevice> devices = service.getConnectedDevices();
-      if (!devices.isEmpty()) {
-        device = service.getSelectedDevice();
-      }
-    }
+    final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
 
     final FlutterRunnerParameters parameters =
       ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
@@ -55,6 +48,7 @@ public class FlutterBazelAppState extends FlutterAppState {
     final String bazelTarget = parameters.getBazelTarget();
     assert bazelTarget != null;
 
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
     myApp = service.startBazelApp(
       project,
       cwd,

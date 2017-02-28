@@ -32,8 +32,8 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
+import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -67,9 +67,7 @@ public class FlutterRunner extends FlutterRunnerBase {
       return false;
     }
 
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(project);
-    //noinspection SimplifiableIfStatement
-    if (!service.isActive() || !service.hasSelectedDevice()) {
+    if (DeviceService.getInstance(project).getSelectedDevice() == null) {
       return false;
     }
 

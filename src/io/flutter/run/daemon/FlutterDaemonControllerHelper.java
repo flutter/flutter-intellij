@@ -229,11 +229,6 @@ class FlutterDaemonControllerHelper {
     }
   }
 
-  void enableDevicePolling() {
-    final Method method = makeMethod(CMD_DEVICE_ENABLE, null);
-    sendCommand(method);
-  }
-
   void aboutToTerminateAll(FlutterDaemonController controller) {
     final List<FlutterApp> apps;
     synchronized (myLock) {
@@ -299,10 +294,6 @@ class FlutterDaemonControllerHelper {
   @Nullable
   private Event eventHandler(@NotNull String eventName, @Nullable String json) {
     switch (eventName) {
-      case "device.added":
-        return new DeviceAddedEvent();
-      case "device.removed":
-        return new DeviceRemovedEvent();
       case "app.start":
         return new AppStartEvent();
       case "app.started":
@@ -369,22 +360,6 @@ class FlutterDaemonControllerHelper {
 
       if (message.progressId != null && message.progressId.startsWith("hot.")) {
         myProgressStopWatch = Stopwatch.createStarted();
-      }
-    }
-  }
-
-  private void eventDeviceAdded(@NotNull DeviceAddedEvent added, @NotNull FlutterDaemonController controller) {
-    synchronized (myLock) {
-      myController.getService().addConnectedDevice(new FlutterDevice(added.name, added.id, added.platform, added.emulator));
-    }
-  }
-
-  private void eventDeviceRemoved(@NotNull DeviceRemovedEvent removed, @NotNull FlutterDaemonController controller) {
-    synchronized (myLock) {
-      for (FlutterDevice candidate : myController.getService().getConnectedDevices()) {
-        if (candidate.deviceId().equals(removed.id)) {
-          myController.getService().removeConnectedDevice(candidate);
-        }
       }
     }
   }
@@ -640,32 +615,6 @@ class FlutterDaemonControllerHelper {
 
     void process(FlutterDaemonControllerHelper manager, FlutterDaemonController controller) {
       manager.eventProgressMessage(this);
-    }
-  }
-
-  @SuppressWarnings("CanBeFinal")
-  private static class DeviceAddedEvent extends Event {
-    // "event":"device.added"
-    @SuppressWarnings("unused") private String id;
-    @SuppressWarnings("unused") private String name;
-    @SuppressWarnings("unused") private String platform;
-    @SuppressWarnings("unused") private boolean emulator;
-
-    void process(FlutterDaemonControllerHelper manager, FlutterDaemonController controller) {
-      manager.eventDeviceAdded(this, controller);
-    }
-  }
-
-  @SuppressWarnings("CanBeFinal")
-  private static class DeviceRemovedEvent extends Event {
-    // "event":"device.removed"
-    @SuppressWarnings("unused") private String id;
-    @SuppressWarnings("unused") private String name;
-    @SuppressWarnings("unused") private String platform;
-    @SuppressWarnings("unused") private boolean emulator;
-
-    void process(FlutterDaemonControllerHelper manager, FlutterDaemonController controller) {
-      manager.eventDeviceRemoved(this, controller);
     }
   }
 
