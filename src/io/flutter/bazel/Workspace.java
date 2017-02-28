@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
@@ -37,6 +38,16 @@ public class Workspace {
   private Workspace(@NotNull VirtualFile root, @Nullable PluginConfig config) {
     this.root = root;
     this.config = config;
+  }
+
+  /**
+   * Returns true for a project that uses Flutter code within this workspace.
+   */
+  public boolean usesFlutter(Project project) {
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      if (usesFlutter(module)) return true;
+    }
+    return false;
   }
 
   /**
