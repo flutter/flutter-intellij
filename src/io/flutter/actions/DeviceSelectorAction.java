@@ -12,6 +12,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import icons.FlutterIcons;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterDevice;
@@ -100,7 +101,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     if (actions.isEmpty()) {
       final boolean isLoading = service.getStatus() == DeviceService.State.LOADING;
-      final String message = isLoading ? "Loading..." : "No devices";
+      final String message = isLoading ? FlutterBundle.message("devicelist.loading") : FlutterBundle.message("devicelist.empty");
       actions.add(new NoDevicesAction(message));
     }
 
