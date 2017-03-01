@@ -26,10 +26,7 @@ import io.flutter.FlutterConstants;
 import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.console.FlutterConsoleFilter;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.FlutterDaemonService;
-import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.daemon.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,22 +74,14 @@ public class FlutterAppState extends FlutterAppStateBase {
    */
   @NotNull
   protected ProcessHandler startProcess() throws ExecutionException {
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
 
     final Project project = getEnvironment().getProject();
     final String workingDir = project.getBasePath();
     assert workingDir != null;
 
-    FlutterDevice device = null;
-
-    // Only pass the current device in if we are showing the device selector.
-    if (service.isActive()) {
-      final Collection<FlutterDevice> devices = service.getConnectedDevices();
-      if (devices.isEmpty()) {
-        throw new ExecutionException("No connected device");
-      }
-      device = service.getSelectedDevice();
-    }
+    // The device will be null if we aren't showing the device selector.
+    final DeviceService devService = DeviceService.getInstance(getEnvironment().getProject());
+    final FlutterDevice device = devService.getSelectedDevice();
 
     final FlutterRunnerParameters parameters =
       ((FlutterRunConfigurationBase)getEnvironment().getRunProfile()).getRunnerParameters().clone();
@@ -117,6 +106,7 @@ public class FlutterAppState extends FlutterAppStateBase {
       }
     }
 
+    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
     myApp = service.startApp(project, cwd, device == null ? null : device.deviceId(), myMode, relativePath);
     return myApp.getController().getProcessHandler();
   }

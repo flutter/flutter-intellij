@@ -10,6 +10,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -23,6 +24,17 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
 /**
  * A process running 'flutter daemon' to watch for devices.
  */
@@ -32,19 +44,31 @@ class DeviceDaemon {
    */
   private final @NotNull Command command;
 
-  private final @NotNull FlutterDaemonController controller;
+  private final @NotNull ProcessHandler process;
 
-  private DeviceDaemon(@NotNull Command command, @NotNull FlutterDaemonController controller) {
+  private final @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices;
+
+  private DeviceDaemon(@NotNull Command command, @NotNull ProcessHandler process,
+                       @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices) {
     this.command = command;
-    this.controller = controller;
+    this.process = process;
+    this.devices = devices;
   }
 
   /**
    * Returns true if the process is still running.
    */
-  public boolean isRunning() {
-    final ProcessHandler handler = controller.getProcessHandler();
-    return handler != null && !handler.isProcessTerminating();
+  boolean isRunning() {
+    return !process.isProcessTerminating() && !process.isProcessTerminated();
+  }
+
+  /**
+   * Returns the current devices.
+   *
+   * <p>This is calculated based on add and remove events seen since the process started.
+   */
+  ImmutableList<FlutterDevice> getDevices() {
+    return devices.get();
   }
 
   /**
@@ -52,16 +76,16 @@ class DeviceDaemon {
    *
    * @param next the command that should be running now.
    */
-  public boolean needRestart(@NotNull Command next) {
+  boolean needRestart(@NotNull Command next) {
     return !isRunning() || !command.equals(next);
   }
 
   /**
    * Kills the process.
    */
-  public void shutdown() {
+  void shutdown() {
     LOG.info("shutting down Flutter device poller: " + command.toString());
-    controller.forceExit();
+    process.destroyProcess();
   }
 
   /**
@@ -130,11 +154,50 @@ class DeviceDaemon {
     /**
      * Launches the daemon.
      */
-    DeviceDaemon start(FlutterDaemonService service) throws ExecutionException {
-      final FlutterDaemonController controller = new FlutterDaemonController(service);
+    DeviceDaemon start(Supplier<Boolean> isCancelled, Runnable deviceChanged) throws ExecutionException {
       LOG.info("starting Flutter device poller: " + toString());
-      controller.startDevicePoller(toCommandLine());
-      return new DeviceDaemon(this, controller);
+      final ProcessHandler process = new OSProcessHandler(toCommandLine());
+      boolean succeeded = false;
+      try {
+        final AtomicReference<ImmutableList<FlutterDevice>> devices = new AtomicReference<>(ImmutableList.of());
+
+        final DaemonApi api = new DaemonApi(process);
+        api.listen(process, new Listener(api, devices, deviceChanged));
+
+        final Future ready = api.enableDeviceEvents();
+
+        // Block until we get a response, or are cancelled.
+        while (true) {
+          if (isCancelled.get()) {
+            throw new CancellationException();
+          }
+
+          try {
+            ready.get(100, TimeUnit.MILLISECONDS);
+
+            // Try not to show a partial device list.
+            // It currently takes 4+ seconds for the devices to show up.
+            // Remove when fixed: https://github.com/flutter/flutter/issues/8439
+            Thread.sleep(4200);
+
+            succeeded = true;
+            return new DeviceDaemon(this, process, devices);
+          }
+          catch (TimeoutException e) {
+            // Check for cancellation and try again.
+          }
+          catch (InterruptedException e) {
+            throw new CancellationException();
+          }
+          catch (java.util.concurrent.ExecutionException e) {
+            throw new ExecutionException(e.getCause());
+          }
+        }
+      } finally {
+        if (!succeeded) {
+          process.destroyProcess();
+        }
+      }
     }
 
     @Override
@@ -172,6 +235,63 @@ class DeviceDaemon {
         out.append(Joiner.on(' ').join(parameters));
       }
       return out.toString();
+    }
+  }
+
+  /**
+   * Handles events sent by the device daemon process.
+   *
+   * <p>Updates the device list based on incoming events.
+   */
+  private static class Listener implements DaemonEvent.Listener {
+    private final DaemonApi api;
+    private final AtomicReference<ImmutableList<FlutterDevice>> devices;
+    private final Runnable deviceChanged;
+
+    Listener(DaemonApi api, AtomicReference<ImmutableList<FlutterDevice>> devices, Runnable deviceChanged) {
+      this.api = api;
+      this.devices = devices;
+      this.deviceChanged = deviceChanged;
+    }
+
+    // daemon domain
+
+    @Override
+    public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
+      LOG.info("flutter device watcher: " + message.message);
+    }
+
+    // device domain
+
+    public void onDeviceAdded(@NotNull DaemonEvent.DeviceAdded event) {
+      if (event.id == null) {
+        // We can't start a flutter app on this device if it doesn't have a device id.
+        LOG.warn("Ignored an event from a Flutter process without a device id: " + event);
+        return;
+      }
+
+      final FlutterDevice newDevice = new FlutterDevice(event.name, event.id, event.platform, event.emulator);
+      devices.updateAndGet((old) -> addDevice(old.stream(), newDevice));
+      deviceChanged.run();
+    }
+
+    public void onDeviceRemoved(@NotNull DaemonEvent.DeviceRemoved event) {
+      devices.updateAndGet((old) -> removeDevice(old.stream(), event.id));
+      deviceChanged.run();
+    }
+
+    // helpers
+
+    private static ImmutableList<FlutterDevice> addDevice(Stream<FlutterDevice> old, FlutterDevice newDevice) {
+      final List<FlutterDevice> changed = new ArrayList<>();
+      changed.addAll(removeDevice(old, newDevice.deviceId()));
+      changed.add(newDevice);
+      changed.sort(Comparator.comparing(FlutterDevice::deviceName));
+      return ImmutableList.copyOf(changed);
+    }
+
+    private static ImmutableList<FlutterDevice> removeDevice(Stream<FlutterDevice> old, String idToRemove) {
+      return ImmutableList.copyOf(old.filter((d) -> !d.deviceId().equals(idToRemove)).iterator());
     }
   }
 
