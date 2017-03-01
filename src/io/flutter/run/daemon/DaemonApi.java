@@ -37,21 +37,21 @@ import java.util.function.Function;
  * >The Flutter Daemon Mode</a>.
  */
 class DaemonApi {
-  private final Consumer<String> callback;
+  private final @NotNull Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
 
   /**
    * Creates an Api that sends JSON to a callback.
    */
-  DaemonApi(Consumer<String> callback) {
+  DaemonApi(@NotNull Consumer<String> callback) {
     this.callback = callback;
   }
 
   /**
    * Creates an Api that sends JSON to a process.
    */
-  DaemonApi(ProcessHandler process) {
+  DaemonApi(@NotNull ProcessHandler process) {
     this((String json) -> sendCommand(json, process));
   }
 
@@ -242,14 +242,14 @@ class DaemonApi {
    * A pending command to a Flutter process.
    */
   private static class Command<T> {
-    final String method;
+    final @NotNull String method;
     final @Nullable JsonElement params;
     final int id;
 
     transient final @Nullable Function<JsonElement, T> parseResult;
     transient final CompletableFuture<T> done = new CompletableFuture<>();
 
-    Command(String method, @Nullable Params<T> params, int id) {
+    Command(@NotNull String method, @Nullable Params<T> params, int id) {
       this.method = method;
       // GSON has trouble with params as a field, because it has both a generic type and subclasses.
       // But it handles it okay at top-level.
