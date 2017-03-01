@@ -260,15 +260,26 @@ public class FlutterDaemonService {
    *
    * <p>Starts it if needed. If null is returned then the previous daemon will be shut down.
    */
-  private DeviceDaemon chooseNextDaemon() {
+  private DeviceDaemon chooseNextDaemon(Refreshable.Request<DeviceDaemon> request) {
     final DeviceDaemon.Command nextCommand = DeviceDaemon.chooseCommand(project);
     if (nextCommand == null) {
       return null; // Unconfigured; shut down if running.
     }
 
-    final DeviceDaemon previous = myDeviceDaemon.getNow();
+    final DeviceDaemon previous = request.getPrevious();
     if (previous != null && !previous.needRestart(nextCommand)) {
       return previous; // Don't do anything; current daemon is what we want.
+    }
+
+    // Wait a bit to see if we get cancelled.
+    // This is to avoid starting a process only to immediately kill it.
+    try {
+      Thread.sleep(50);
+    } catch (InterruptedException e) {
+      return previous;
+    }
+    if (request.isCancelled()) {
+      return previous;
     }
 
     try {

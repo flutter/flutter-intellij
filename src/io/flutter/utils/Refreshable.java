@@ -25,7 +25,7 @@ import java.util.function.Consumer;
 /**
  * A thread-safe variable that can be updated by submitting a callback to run in the background.
  *
- * <p>When the create callback is finished (and there is no newer task that makes it obsolete),
+ * <p>When the callback is finished (and there is no newer task that makes it obsolete),
  * its value will be published and subscribers will be notified.
  *
  * <p>It's guaranteed that a Refreshable's visible state won't change while an event handler
@@ -41,7 +41,7 @@ public class Refreshable<T> implements Closeable {
    *
    * <p>Null when idle.
    */
-  private final AtomicReference<Future> busy = new AtomicReference<>();
+  private final AtomicReference<Future> backgroundTask = new AtomicReference<>();
 
   /**
    * Subscribers to be notified after a value is published.
@@ -79,26 +79,33 @@ public class Refreshable<T> implements Closeable {
    *
    * <p>Calling getNow() twice during the same Swing event handler will return the same result.
    */
-  public T getNow() {
+  public @Nullable T getNow() {
     return publisher.get();
   }
 
   /**
-   * Waits for the background task to finish, then returns the current value.
+   * Returns whether the Refreshable is busy, idle, or closed.
+   */
+  public State getState() {
+    return publisher.state.get();
+  }
+
+  /**
+   * Waits for the background task to finish or the Refreshable to be closed, then returns the current value.
    *
    * <p>If {@link #refresh} is never called then this will block forever waiting
    * for the variable to be initialized.
    *
    * @throws IllegalStateException if called on the Swing dispatch thread.
    */
-  public T getWhenReady() {
+  public @Nullable T getWhenReady() {
     if (SwingUtilities.isEventDispatchThread()) {
       throw new IllegalStateException("getWhenReady shouldn't be called from Swing dispatch thread");
     }
 
     publisher.waitForFirstValue();
 
-    final Future refreshDone = busy.get();
+    final Future refreshDone = backgroundTask.get();
     if (refreshDone == null) {
       return getNow(); // No background task; currently idle.
     }
@@ -112,27 +119,9 @@ public class Refreshable<T> implements Closeable {
   }
 
   /**
-   * Runs a callback after the next value is published.
+   * Runs a callback whenever the Refreshable's value or state changes.
    *
    * <p>The callback will be run on the Swing dispatch thread.
-   */
-  public void whenPublished(@NotNull Runnable callback) {
-    final Runnable once = new Runnable() {
-      public void run() {
-        unsubscribe(this);
-        callback.run();
-      }
-    };
-    subscribe(once);
-  }
-
-  /**
-   * Runs a callback each time a new value is published.
-   *
-   * <p>The callback will be run on the Swing dispatch thread.
-   *
-   * <p>No notification will be sent if a published value is equal to the
-   * previous one.
    */
   public void subscribe(@NotNull Runnable callback) {
     synchronized (subscribers) {
@@ -155,47 +144,39 @@ public class Refreshable<T> implements Closeable {
   /**
    * Creates and publishes a new value in the background.
    *
-   * <p>The new value will be published if the callback finishes normally,
-   * no newer refresh request is submitted in the meantime, and the value is different
-   * (according to {#link Object#equals}) from the previous one.
-   *
-   * <p>The Callable interface doesn't provide any way to find out if the task was
-   * cancelled. Instead, the callback can use {@link #isCancelled} to poll for this.
-   *
-   * <p>The callback should throw {@link CancellationException} to avoid publishing a
-   * new value. (Any other exception will have the same effect, but a warning will
-   * be logged.)
+   * <p>(Convenience method for when a {@link Request} isn't needed.)
    */
-  public void refresh(@NotNull Callable<T> create) {
+  public void refresh(@NotNull Callable<T> callback) {
+    refresh((x) -> callback.call());
+  }
+
+  /**
+   * Creates and publishes a new value in the background.
+   *
+   * <p>If an exception is thrown, no new value will be published, but
+   * a message will be logged.
+   */
+  public void refresh(@NotNull Callback<T> callback) {
     if (publisher.isClosing()) {
       LOG.warn("attempted to update closed Refreshable");
       return;
     }
-    schedule.reschedule(create);
+    schedule.reschedule(new Request<>(this, callback));
 
     // Start up the background task if it's not running.
     final FutureTask next = new FutureTask<>(this::runInBackground, null);
-    if (busy.compareAndSet(null, next)) {
+    if (backgroundTask.compareAndSet(null, next)) {
       // Wait until after event handler currently running, in case it calls refresh again.
       SwingUtilities.invokeLater(() -> AppExecutorUtil.getAppExecutorService().submit(next));
     }
   }
 
   /**
-   * Returns true if the given callback was passed to the {@link #refresh}
-   * method and is both running and cancelled.
+   * Asynchronously shuts down the Refreshable.
    *
-   * <p>(The callback can use this to poll for cancellation.)
-   */
-  public boolean isCancelled(Callable<T> callback) {
-    return schedule.isCancelled(callback);
-  }
-
-  /**
-   * Starts shutting down the Refreshable.
+   * <p>Sets the published value to null and cancels any background tasks.
    *
-   * Asynchronously removes all subscribers, cancels any background tasks,
-   * and unpublishes any values.
+   * <p>Also sets the state to CLOSED and notifies subscribers. Removes subscribers after delivering the last event.
    */
   public void close() {
     if (!publisher.close()) {
@@ -204,11 +185,6 @@ public class Refreshable<T> implements Closeable {
 
     // Cancel any running create task.
     schedule.reschedule(null);
-
-    // Free subscribers. (Avoid memory leaks.)
-    synchronized (subscribers) {
-      subscribers.clear();
-    }
 
     // Remove from dispose tree. Calls close() again, harmlessly.
     Disposer.dispose(disposeNode);
@@ -230,20 +206,13 @@ public class Refreshable<T> implements Closeable {
    */
   private void runInBackground() {
     try {
-      // Yield to queued events.
-      // Avoids unnecessary work if they change the schedule.
-      try {
-        SwingUtilities.invokeAndWait(() -> {});
-      }
-      catch (Exception e) {
-        LOG.warn("Unexpected exception while updating a Refreshable", e);
-        return;
-      }
+      publisher.setState(State.BUSY);
 
-      for (Callable<T> request = schedule.next(); request != null; request = schedule.next()) {
+      for (Request<T> request = schedule.next(); request != null; request = schedule.next()) {
         // Do the work.
         try {
-          publisher.reschedule(request.call());
+          final T value = request.callback.call(request);
+          publisher.reschedule(value);
         } catch (CancellationException e) {
           // This is normal.
         } catch (Exception e) {
@@ -259,26 +228,74 @@ public class Refreshable<T> implements Closeable {
           SwingUtilities.invokeAndWait(() -> {
             // If the schedule changed in the meantime, skip publishing the value.
             if (!schedule.hasNext()) {
-              publisher.publish();
+              if (publisher.publish()) {
+                publisher.fireEvent();
+              }
             }
           });
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           LOG.warn("Unable to publish a value while updating a Refreshable", e);
         }
       }
     } finally {
-      busy.set(null); // Allow restart on exit.
-    }
-  }
-
-  private Set<Runnable> getSubscribers() {
-    synchronized (subscribers) {
-      return ImmutableSet.copyOf(subscribers);
+      publisher.setState(State.IDLE);
+      backgroundTask.set(null); // Allow restart on exit.
     }
   }
 
   private static final Logger LOG = Logger.getInstance(Refreshable.class);
+
+  /**
+   * A value indicating whether the Refreshable is being updated or not.
+   */
+  public enum State { BUSY, IDLE, CLOSED }
+
+  /**
+   * A function that produces the next value of a Refreshable.
+   */
+  public interface Callback<T> {
+    /**
+     * Calculates the new value.
+     *
+     * <p>If no update is needed, it should either return the previous value or
+     * throw {@link CancellationException} to avoid publishing a new value.
+     * (Any other exception will have the same effect, but a warning will be logged.)
+     */
+    T call(Request req) throws Exception;
+  }
+
+  /**
+   * A scheduled or running refresh request.
+   */
+  public static class Request<T> {
+    private final Refreshable<T> target;
+    private final Callback<T> callback;
+
+    Request(Refreshable<T> target, Callback<T> callback) {
+      this.target = target;
+      this.callback = callback;
+    }
+
+    /**
+     * Returns true if the value is no longer needed, because another request
+     * is ready to run.
+     *
+     * <p>When the request is cancelled, the caller can either return the previous
+     * value or throw {@link CancellationException} to avoid publishing a new
+     * value.
+     */
+    public boolean isCancelled() {
+      return target.schedule.isCancelled(this);
+    }
+
+    /**
+     * The value returned by the most recent successful request.
+     * (It might not be published yet.)
+     */
+    public T getPrevious() {
+      return target.publisher.getPrevious();
+    }
+  }
 
   /**
    * Manages the schedule for creating new values on the background thread.
@@ -289,24 +306,24 @@ public class Refreshable<T> implements Closeable {
      *
      * <p>Null when there's nothing more to do.
      */
-    private @Nullable Callable<T> scheduled;
+    private @Nullable Request<T> scheduled;
 
     /**
      * The currently running create callback.
      *
      * <p>Null when nothing is currently running.
      */
-    private @Nullable Callable<T> running;
+    private @Nullable Request<T> running;
 
     /**
      * If not null, the create callback has been cancelled.
      */
-    private @Nullable Callable<T> cancelled;
+    private @Nullable Request<T> cancelled;
 
     /**
      * Replaces currently scheduled tasks with a new task.
      */
-    synchronized void reschedule(@Nullable Callable<T> request) {
+    synchronized void reschedule(@Nullable Request<T> request) {
       scheduled = request;
       cancelled = running;
     }
@@ -321,7 +338,7 @@ public class Refreshable<T> implements Closeable {
     /**
      * Returns the next task to run, or null if nothing is scheduled.
      */
-    synchronized @Nullable Callable<T> next() {
+    synchronized @Nullable Request<T> next() {
       assert(running == null);
       running = scheduled;
       scheduled = null;
@@ -331,13 +348,13 @@ public class Refreshable<T> implements Closeable {
     /**
      * Indicates that we finished creating a value.
      */
-    synchronized void done(@NotNull Callable<T> request) {
+    synchronized void done(@NotNull Request<T> request) {
       assert(running != null);
       running = null;
       cancelled = null;
     }
 
-    synchronized boolean isCancelled(Callable<T> callback) {
+    synchronized boolean isCancelled(Request<T> callback) {
       return callback == cancelled;
     }
   }
@@ -346,13 +363,15 @@ public class Refreshable<T> implements Closeable {
    * Manages the schedule for publishing and unpublishing values.
    */
   private class Publisher {
-    private final @NotNull Consumer<T> unpublish;
+    private final @NotNull Consumer<T> unpublishCallback;
 
     private @Nullable T scheduled;
     private @Nullable T published;
 
+    private final AtomicReference<State> state = new AtomicReference<>(State.IDLE);
+
     /**
-     * Completes when the first value is published.
+     * Completes when the first value is published or the Refreshable is closed.
      */
     private final FutureTask initialized = new FutureTask<>(() -> null);
 
@@ -361,7 +380,7 @@ public class Refreshable<T> implements Closeable {
 
     Publisher(@Nullable Consumer<T> unpublish) {
       if (unpublish == null) unpublish = (x) -> {};
-      this.unpublish = unpublish;
+      this.unpublishCallback = unpublish;
     }
 
     /**
@@ -372,11 +391,9 @@ public class Refreshable<T> implements Closeable {
         return; // Duplicate already scheduled. Nothing to do.
       }
 
-      // Discard any previously scheduled value.
-      if (scheduled != null) {
-        final T old = scheduled;
-        SwingUtilities.invokeLater(() -> unpublish.accept(old));
-        scheduled = null;
+      final T discarded = unschedule();
+      if (discarded != null) {
+        SwingUtilities.invokeLater(() -> unpublish(discarded));
       }
 
       // Don't publish a duplicate. (Don't unpublish a duplicate either.)
@@ -389,7 +406,7 @@ public class Refreshable<T> implements Closeable {
         // Don't publish anything else since we're closing.
         // Discard new value instead of publishing it.
         if (toPublish != null) {
-          SwingUtilities.invokeLater(() -> unpublish.accept(toPublish));
+          SwingUtilities.invokeLater(() -> unpublish(toPublish));
         }
         return;
       }
@@ -398,61 +415,110 @@ public class Refreshable<T> implements Closeable {
       needToPublish = true;
     }
 
-    synchronized boolean close() {
-      if (closing) return false;
-      reschedule(null);
-      closing = true;
-      publishAsync();
+    /**
+     * Remove any previously scheduled value, returning it.
+     */
+    private synchronized T unschedule() {
+      final T old = scheduled;
+      scheduled = null;
+      needToPublish = false;
+      return old;
+    }
+
+    /**
+     * Returns the value that was scheduled most recently.
+     */
+    private synchronized T getPrevious() {
+      if (needToPublish) {
+        return scheduled;
+      } else {
+        return published;
+      }
+    }
+
+    boolean close() {
+      final T wasScheduled;
+      synchronized (this) {
+        if (closing) return false;
+        wasScheduled = unschedule();
+        closing = true;
+      }
+      SwingUtilities.invokeLater(() -> {
+        unpublish(wasScheduled);
+
+        final T wasPublished;
+        synchronized (this) {
+          wasPublished = published;
+          published = null;
+        }
+        unpublish(wasPublished);
+        setState(State.CLOSED);
+
+        // Free subscribers. (Avoid memory leaks.)
+        synchronized (subscribers) {
+          subscribers.clear();
+        }
+
+        // unblock getWhenReady() if no value was ever published.
+        initialized.run();
+      });
       return true;
     }
 
     /**
-     * Publishes the next value synchronously.
-     *
-     * <p>Waits for any previously scheduled Swing event handlers to finish.
+     * Returns true if the value was published.
      */
-    void waitAndPublish() {
-      synchronized(this) {
-        if (!needToPublish) return;
-      }
-      try {
-        SwingUtilities.invokeAndWait(this::publish);
-      }
-      catch (Exception e) {
-        LOG.warn("Unable to publish a value", e);
-      }
-    }
-
-    void publishAsync() {
-      synchronized(this) {
-        if (!needToPublish) return;
-      }
-      SwingUtilities.invokeLater(this::publish);
-    }
-
-    void publish() {
+    boolean publish() {
       assert(SwingUtilities.isEventDispatchThread());
 
       final T discarded;
       synchronized (this) {
-        if (!needToPublish) return;
+        if (!needToPublish) return false;
         discarded = published;
-        published = scheduled;
+        published = unschedule();
         needToPublish = false;
-        scheduled = null;
         initialized.run();
       }
 
       if (discarded != null) {
-        try {
-          unpublish.accept(discarded);
-        } catch (Exception e) {
-          LOG.warn("An unpublish callback threw an exception while updating a Refreshable", e);
-        }
+        unpublish(discarded);
       }
 
-      final Set<Runnable> subscribers = getSubscribers();
-      for (Runnable sub : subscribers) {
+      return true;
+    }
+
+    void unpublish(@Nullable T discarded) {
+      assert(SwingUtilities.isEventDispatchThread());
+      if (discarded == null) return;
+      try {
+        unpublishCallback.accept(discarded);
+      } catch (Exception e) {
+        LOG.warn("An unpublish callback threw an exception while updating a Refreshable", e);
+      }
+    }
+
+    void setState(State newState) {
+      if (SwingUtilities.isEventDispatchThread()) {
+        doSetState(newState);
+        return;
+      }
+
+      try {
+        SwingUtilities.invokeAndWait(() -> doSetState(newState));
+      } catch (Exception e) {
+        LOG.error("Unable to change state of Refreshable", e);
+      }
+    }
+
+    private void doSetState(State newState) {
+      final State oldState = state.getAndSet(newState);
+      if (oldState == newState) return; // debounce
+      fireEvent();
+    }
+
+    private void fireEvent() {
+      assert SwingUtilities.isEventDispatchThread();
+      for (Runnable sub : getSubscribers()) {
         try {
           sub.run();
         } catch (Exception e) {
@@ -460,6 +526,12 @@ public class Refreshable<T> implements Closeable {
             LOG.warn("A subscriber to a Refreshable threw an exception", e);
           }
         }
+      }
+    }
+
+    private Set<Runnable> getSubscribers() {
+      synchronized (subscribers) {
+        return ImmutableSet.copyOf(subscribers);
       }
     }
 
