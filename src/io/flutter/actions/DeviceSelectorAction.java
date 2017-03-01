@@ -92,12 +92,16 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private void updateActions(@NotNull Project project, Presentation presentation) {
     actions.clear();
 
-    for (FlutterDevice item : DeviceService.getInstance(project).getConnectedDevices()) {
+    final DeviceService service = DeviceService.getInstance(project);
+
+    for (FlutterDevice item : service.getConnectedDevices()) {
       actions.add(new SelectDeviceAction(item));
     }
 
     if (actions.isEmpty()) {
-      actions.add(new NoDevicesAction());
+      final boolean isLoading = service.getStatus() == DeviceService.State.LOADING;
+      final String message = isLoading ? "Loading..." : "No devices";
+      actions.add(new NoDevicesAction(message));
     }
 
     // Show the 'Open iOS Simulator' action.
@@ -117,7 +121,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new OpenSimulatorAction(!simulatorOpen));
     }
 
-    final FlutterDevice selectedDevice = DeviceService.getInstance(project).getSelectedDevice();
+    final FlutterDevice selectedDevice = service.getSelectedDevice();
     for (AnAction action : actions) {
       if (action instanceof SelectDeviceAction) {
         final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
@@ -135,9 +139,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     presentation.setText(null);
   }
 
+  // It's not clear if we need TransparentUpdate, but apparently it will make the UI refresh
+  // the display more often?
+  // See: https://intellij-support.jetbrains.com/hc/en-us/community/posts/206772825-How-to-enable-disable-action-in-runtime
   private static class NoDevicesAction extends AnAction implements TransparentUpdate {
-    NoDevicesAction() {
-      super("No devices", null, null);
+    NoDevicesAction(String message) {
+      super(message, null, null);
       getTemplatePresentation().setEnabled(false);
     }
 
