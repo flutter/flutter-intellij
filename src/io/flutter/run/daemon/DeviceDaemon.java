@@ -60,6 +60,7 @@ class DeviceDaemon {
    * Kills the process.
    */
   public void shutdown() {
+    LOG.info("shutting down Flutter device poller: " + command.toString());
     controller.forceExit();
   }
 
@@ -69,30 +70,42 @@ class DeviceDaemon {
    * A null means the device daemon should be shut down.
    */
   static @Nullable Command chooseCommand(Project project) {
-    // If an SDK is configured, prefer using it to the Bazel script.
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk != null) {
-      // Only enable this for projects containing flutter modules.
-      if (!FlutterModuleUtils.hasFlutterModule(project)) return null;
+    if (!usesFlutter(project)) {
+      return null;
+    }
 
-      try {
-        final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-        return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"));
-      }
-      catch (ExecutionException e) {
-        LOG.warn("Unable to calculate command to watch Flutter devices", e);
-        return null;
+    // See if the Bazel workspace provides a script.
+    final Workspace w = WorkspaceCache.getInstance(project).getNow();
+    if (w != null) {
+      final String script = w.getDaemonScript();
+      if (script != null) {
+        return new Command(w.getRoot().getPath(), script, ImmutableList.of());
       }
     }
 
-    // See if the Bazel project provides a script.
-    final Workspace w = WorkspaceCache.getInstance(project).getNow();
-    if (w == null) return null;
+    // Otherwise, use the Flutter SDK.
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk == null) {
+      return null;
+    }
 
-    final String script = w.getDaemonScript();
-    if (script == null) return null;
+    try {
+      final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
+      return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"));
+    }
+    catch (ExecutionException e) {
+      LOG.warn("Unable to calculate command to watch Flutter devices", e);
+      return null;
+    }
+  }
 
-    return new Command(w.getRoot().getPath(), script, ImmutableList.of());
+  private static boolean usesFlutter(Project p) {
+    final Workspace w = WorkspaceCache.getInstance(p).getNow();
+    if (w != null) {
+      return w.usesFlutter(p);
+    } else {
+      return FlutterModuleUtils.hasFlutterModule(p);
+    }
   }
 
   /**
@@ -119,6 +132,7 @@ class DeviceDaemon {
      */
     DeviceDaemon start(FlutterDaemonService service) throws ExecutionException {
       final FlutterDaemonController controller = new FlutterDaemonController(service);
+      LOG.info("starting Flutter device poller: " + toString());
       controller.startDevicePoller(toCommandLine());
       return new DeviceDaemon(this, controller);
     }
