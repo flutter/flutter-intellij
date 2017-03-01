@@ -142,6 +142,7 @@ public class DeviceService {
    * <p>This might mean starting it, stopping it, or restarting it.
    */
   private void refreshDeviceDaemon() {
+    if (project.isDisposed()) return;
     deviceDaemon.refresh(this::chooseNextDaemon);
   }
 

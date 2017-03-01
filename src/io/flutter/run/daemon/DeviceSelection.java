@@ -17,10 +17,10 @@ import java.util.*;
 class DeviceSelection {
   static final DeviceSelection EMPTY = new DeviceSelection(ImmutableList.of(), null);
 
-  private final ImmutableList<FlutterDevice> devices;
+  private final @NotNull ImmutableList<FlutterDevice> devices;
   private final @Nullable FlutterDevice selection;
 
-  private DeviceSelection(ImmutableList<FlutterDevice> devices, @Nullable FlutterDevice selected) {
+  private DeviceSelection(@NotNull ImmutableList<FlutterDevice> devices, @Nullable FlutterDevice selected) {
     this.devices = devices;
     this.selection = selected;
   }
