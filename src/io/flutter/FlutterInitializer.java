@@ -18,7 +18,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.run.daemon.DeviceService;
-import io.flutter.run.daemon.FlutterDaemonService;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -91,9 +90,6 @@ public class FlutterInitializer implements StartupActivity {
   public void runActivity(@NotNull Project project) {
     // Start watching for devices.
     DeviceService.getInstance(project);
-
-    // Initialize the daemon service (for launching apps).
-    FlutterDaemonService.getInstance(project);
 
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);

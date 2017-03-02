@@ -5,32 +5,33 @@
  */
 package io.flutter.run.daemon;
 
-import com.intellij.openapi.util.text.StringUtil;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 public class FlutterDevice {
-  private final String myDeviceName;
-  private final String myDeviceId;
-  private final String myPlatform;
+  private final @NotNull String myDeviceId;
+  private final @NotNull String myDeviceName;
+  private final @Nullable String myPlatform;
   private final boolean myEmulator;
 
-  FlutterDevice(String deviceName, String deviceId, String platform, boolean emulator) {
-    myDeviceName = deviceName;
+  FlutterDevice(@NotNull String deviceId, @NotNull String deviceName, @Nullable String platform, boolean emulator) {
     myDeviceId = deviceId;
+    myDeviceName = deviceName;
     myPlatform = platform;
     myEmulator = emulator;
   }
 
-  public String deviceName() {
-    return myDeviceName;
-  }
-
-  public String deviceId() {
+  public @NotNull String deviceId() {
     return myDeviceId;
   }
 
-  public String platform() {
+  public @NotNull String deviceName() {
+    return myDeviceName;
+  }
+
+  public @Nullable String platform() {
     return myPlatform;
   }
 
@@ -39,7 +40,7 @@ public class FlutterDevice {
   }
 
   public boolean isIOS() {
-    return StringUtil.equals(platform(), "ios") || platform().startsWith("darwin");
+    return myPlatform != null && (myPlatform.equals("ios") || myPlatform.startsWith("darwin"));
   }
 
   @Override

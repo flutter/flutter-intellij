@@ -14,11 +14,9 @@ import io.flutter.run.FlutterAppState;
 import io.flutter.run.FlutterRunConfigurationBase;
 import io.flutter.run.FlutterRunnerParameters;
 import io.flutter.run.daemon.DeviceService;
-import io.flutter.run.daemon.FlutterDaemonService;
+import io.flutter.run.daemon.FlutterAppService;
 import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.Collection;
 
 public class FlutterBazelAppState extends FlutterAppState {
   public FlutterBazelAppState(ExecutionEnvironment environment) throws ExecutionException {
@@ -48,15 +46,15 @@ public class FlutterBazelAppState extends FlutterAppState {
     final String bazelTarget = parameters.getBazelTarget();
     assert bazelTarget != null;
 
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
-    myApp = service.startBazelApp(
-      project,
+    final FlutterAppService appService = FlutterAppService.getInstance(project);
+    myApp = appService.startBazelApp(
       cwd,
       launchingScript,
       device,
       myMode,
       bazelTarget,
       parameters.getAdditionalArgs());
-    return myApp.getController().getProcessHandler();
+
+    return myApp.getProcessHandler();
   }
 }

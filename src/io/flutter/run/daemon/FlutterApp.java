@@ -5,8 +5,10 @@
  */
 package io.flutter.run.daemon;
 
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
-import com.intellij.openapi.project.Project;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import com.intellij.xdebugger.XDebugSession;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -14,80 +16,46 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A running Flutter app.
  */
 public class FlutterApp {
-  private final FlutterDaemonController myController;
-  private final FlutterDaemonControllerHelper myManager;
-  private String myAppId;
-  private final RunMode myMode;
-  private final Project myProject;
-  private final boolean isHot;
-  private String myWsUrl;
-  private String myBaseUri;
-  private ConsoleView myConsole;
-  private XDebugSession mySesionHook;
-  private State myState;
+  private final @NotNull ProcessHandler myProcessHandler;
+  private final @NotNull DaemonApi myDaemonApi;
+
+  private @Nullable String myAppId;
+  private @Nullable String myWsUrl;
+  private @Nullable String myBaseUri;
+  private @Nullable ConsoleView myConsole;
+
+  /**
+   * Non-null when the debugger is paused.
+   */
+  private @Nullable XDebugSession mySessionHook;
+
+  private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final List<StateListener> myListeners = new ArrayList<>();
 
-  public FlutterApp(@NotNull FlutterDaemonController controller,
-                    @NotNull FlutterDaemonControllerHelper manager,
-                    @NotNull RunMode mode,
-                    @NotNull Project project,
-                    boolean hot) {
-    myController = controller;
-    myManager = manager;
-    myMode = mode;
-    myProject = project;
-    isHot = hot;
+  public FlutterApp(@NotNull ProcessHandler processHandler,
+                    @NotNull DaemonApi daemonApi) {
+    myProcessHandler = processHandler;
+    myDaemonApi = daemonApi;
   }
 
   /**
-   * @return The FlutterDaemonController that controls the process running the daemon.
+   * Returns the process running the daemon.
    */
-  public FlutterDaemonController getController() {
-    return myController;
+  public @NotNull ProcessHandler getProcessHandler() {
+    return myProcessHandler;
   }
 
-  /**
-   * @return <code>true</code> if the appId has been set. This is set asynchronously after the app is launched.
-   */
-  public boolean hasAppId() {
-    return myAppId != null;
-  }
-
-  /**
-   * @return The appId for the running app.
-   */
-  public String appId() {
-    return myAppId;
-  }
-
-  public void setAppId(String id) {
+  void setAppId(@NotNull String id) {
     myAppId = id;
-  }
-
-  /**
-   * @return <code>true</code> if the app is in hot-restart mode.
-   */
-  public boolean isHot() {
-    return isHot;
-  }
-
-  /**
-   * @return The mode the app is running in.
-   */
-  public RunMode mode() {
-    return myMode;
-  }
-
-  /**
-   * @return The project associated with this app.
-   */
-  public Project project() {
-    return myProject;
   }
 
   /**
@@ -98,7 +66,7 @@ public class FlutterApp {
     return myWsUrl;
   }
 
-  public void setWsUrl(@NotNull String url) {
+  void setWsUrl(@NotNull String url) {
     myWsUrl = url;
   }
 
@@ -110,7 +78,7 @@ public class FlutterApp {
     return myBaseUri;
   }
 
-  public void setBaseUri(String uri) {
+  void setBaseUri(@NotNull String uri) {
     myBaseUri = uri;
   }
 
@@ -118,58 +86,114 @@ public class FlutterApp {
    * Perform a full restart of the the app.
    */
   public void performRestartApp() {
-    myManager.restartApp(this, true, false);
+    if (myAppId == null) {
+      LOG.warn("cannot restart Flutter app because app id is not set");
+      return;
+    }
+    myDaemonApi.restartApp(myAppId, true, false)
+      .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
   }
 
   /**
    * Perform a hot reload of the app.
    */
   public void performHotReload(boolean pauseAfterRestart) {
-    myManager.restartApp(this, false, pauseAfterRestart);
+    if (myAppId == null) {
+      LOG.warn("cannot reload Flutter app because app id is not set");
+      return;
+    }
+    myDaemonApi.restartApp(myAppId, false, pauseAfterRestart)
+      .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
   }
 
   public void callServiceExtension(String methodName, Map<String, Object> params) {
-    myManager.callServiceExtension(this, methodName, params);
+    if (myAppId == null) {
+      LOG.warn("cannot invoke " + methodName + " on Flutter app because app id is not set");
+      return;
+    }
+    myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
   }
 
-  public void setConsole(ConsoleView console) {
+  public void setConsole(@Nullable ConsoleView console) {
     myConsole = console;
   }
 
-  public ConsoleView getConsole() {
+  public @Nullable ConsoleView getConsole() {
     return myConsole;
   }
 
-  public boolean isSessionPaused() {
-    return mySesionHook != null;
+  public void onPause(XDebugSession sessionHook) {
+    mySessionHook = sessionHook;
   }
 
-  public void sessionPaused(XDebugSession sessionHook) {
-    mySesionHook = sessionHook;
+  public void onResume() {
+    mySessionHook = null;
   }
 
-  public void sessionResumed() {
-    mySesionHook = null;
-  }
-
-  public void forceResume() {
-    if (mySesionHook != null && mySesionHook.isPaused()) {
-      mySesionHook.resume();
+  /**
+   * Transitions to a new state and fires events.
+   *
+   * If no change is needed, returns false and does not fire events.
+   */
+  boolean changeState(State newState) {
+    final State oldState = myState.getAndSet(newState);
+    if (oldState == newState) {
+      return false; // debounce
     }
+    myListeners.iterator().forEachRemaining(x -> x.stateChanged(newState));
+    return true;
   }
 
-  public void changeState(State newState) {
-    myState = newState;
-    myListeners.iterator().forEachRemaining(x -> x.stateChanged(myState));
+  /**
+   * Starts shutting down the process.
+   *
+   * <p>If possible, we want to shut down gracefully by sending a stop command to the application.
+   */
+  Future shutdownAsync() {
+    final FutureTask done = new FutureTask<>(() -> null);
+    if (!changeState(State.TERMINATING)) {
+      done.run();
+      return done; // Debounce; already shutting down.
+    }
+
+    // Resume if paused.
+    if (mySessionHook != null && mySessionHook.isPaused()) {
+      mySessionHook.resume();
+    }
+
+    final String appId = myAppId;
+    if (appId == null) {
+      // If it it didn't finish starting up, shut down abruptly.
+      myProcessHandler.destroyProcess();
+      done.run();
+      return done;
+    }
+
+    // Do the rest in the background to avoid freezing the Swing dispatch thread.
+    AppExecutorUtil.getAppExecutorService().submit(() -> {
+      // Try to shut down gracefully. (Need to wait for a response.)
+      final Future stopDone = myDaemonApi.stopApp(appId);
+      try {
+        stopDone.get(10, TimeUnit.SECONDS);
+      }
+      catch (Exception e) {
+        // Probably timed out.
+      }
+
+      // If it didn't work, shut down abruptly.
+      myProcessHandler.destroyProcess();
+      done.run();
+    });
+    return done;
   }
 
-  public void addStateListener(StateListener listener) {
+  public void addStateListener(@NotNull StateListener listener) {
     myListeners.add(listener);
-    listener.stateChanged(myState);
+    listener.stateChanged(myState.get());
   }
 
-  public void removeStateListener(StateListener listener) {
-    myListeners.remove(null);
+  public void removeStateListener(@NotNull StateListener listener) {
+    myListeners.remove(listener);
   }
 
   public interface StateListener {
@@ -177,4 +201,6 @@ public class FlutterApp {
   }
 
   public enum State {STARTING, STARTED, TERMINATING, TERMINATED}
+
+  private static final Logger LOG = Logger.getInstance(FlutterApp.class);
 }

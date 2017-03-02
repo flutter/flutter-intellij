@@ -30,7 +30,6 @@ import io.flutter.run.daemon.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -106,9 +105,9 @@ public class FlutterAppState extends FlutterAppStateBase {
       }
     }
 
-    final FlutterDaemonService service = FlutterDaemonService.getInstance(getEnvironment().getProject());
-    myApp = service.startApp(project, cwd, device == null ? null : device.deviceId(), myMode, relativePath);
-    return myApp.getController().getProcessHandler();
+    final FlutterAppService appService = FlutterAppService.getInstance(getEnvironment().getProject());
+    myApp = appService.startFlutterSdkApp(cwd, device == null ? null : device.deviceId(), myMode, relativePath);
+    return myApp.getProcessHandler();
   }
 
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
