@@ -6,6 +6,7 @@
 package io.flutter.run;
 
 import com.intellij.execution.actions.ConfigurationContext;
+import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Ref;
@@ -13,78 +14,125 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.ide.DartWritingAccessProvider;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
+import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
+/**
+ * Determines when we can run a Dart file as a Flutter app.
+ *
+ * <p>(For example, when right-clicking on main.dart in the Project view.)
+ */
 public class FlutterRunConfigurationProducer extends RunConfigurationProducer<FlutterRunConfiguration> {
 
   public FlutterRunConfigurationProducer() {
     super(FlutterRunConfigurationType.getInstance());
   }
 
+  /**
+   * If the current file contains the main method for a Flutter app, updates the FutterRunConfiguration
+   * and sets its corresponding source location.
+   *
+   * <p>Returns false if it wasn't a match.
+   */
   @Override
-  protected boolean setupConfigurationFromContext(final @NotNull FlutterRunConfiguration configuration,
+  protected boolean setupConfigurationFromContext(final @NotNull FlutterRunConfiguration config,
                                                   final @NotNull ConfigurationContext context,
                                                   final @NotNull Ref<PsiElement> sourceElement) {
-    final VirtualFile dartFile = getRunnableFlutterFileFromContext(context);
-    if (dartFile != null) {
-      configuration.getRunnerParameters().setFilePath(dartFile.getPath());
-      configuration.getRunnerParameters()
-        .setWorkingDirectory(FlutterRunnerParameters.suggestDartWorkingDir(context.getProject(), dartFile));
-      configuration.setGeneratedName();
-
-      sourceElement.set(sourceElement.isNull() ? null : sourceElement.get().getContainingFile());
-      return true;
+    final VirtualFile main = getFlutterEntryFile(context);
+    if (main == null) {
+      return false;
     }
-    return false;
+
+    config.getRunnerParameters().setFilePath(main.getPath());
+    config.getRunnerParameters()
+      .setWorkingDirectory(FlutterRunnerParameters.suggestDartWorkingDir(context.getProject(), main));
+    config.setGeneratedName();
+
+    final PsiElement elt = sourceElement.get();
+    if (elt != null) {
+      sourceElement.set(elt.getContainingFile());
+    }
+    return true;
   }
 
+  /**
+   * Returns true if an existing FlutterRunConfiguration points to the current Dart file.
+   */
   @Override
   public boolean isConfigurationFromContext(final @NotNull FlutterRunConfiguration configuration,
                                             final @NotNull ConfigurationContext context) {
-    final VirtualFile dartFile = getDartFileFromContext(context);
-    return dartFile != null && dartFile.getPath().equals(configuration.getRunnerParameters().getFilePath());
-  }
-
-  @Nullable
-  private static VirtualFile getRunnableFlutterFileFromContext(final @NotNull ConfigurationContext context) {
-    final PsiElement psiLocation = context.getPsiLocation();
-    final PsiFile psiFile = psiLocation == null ? null : psiLocation.getContainingFile();
-    final VirtualFile virtualFile = DartResolveUtil.getRealVirtualFile(psiFile);
-
-    if (psiFile instanceof DartFile &&
-        virtualFile != null &&
-        ProjectRootManager.getInstance(context.getProject()).getFileIndex().isInContent(virtualFile) &&
-        !DartWritingAccessProvider.isInDartSdkOrDartPackagesFolder(psiFile.getProject(), virtualFile) &&
-        DartResolveUtil.getMainFunction(psiFile) != null &&
-        hasImport((DartFile)psiFile, "package:flutter/material.dart")) { // TODO Determine flutter imports
-      return virtualFile;
+    final DartFile dart = getDartFile(context);
+    if (dart == null) {
+      return false;
     }
 
-    return null;
+    final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
+    return virtual != null && virtual.getPath().equals(configuration.getRunnerParameters().getFilePath());
   }
 
+  /**
+   * Returns true if Flutter's run configuration should take priority over another one that
+   * applies to the same source file.
+   */
+  @Override
+  public boolean shouldReplace(ConfigurationFromContext self, ConfigurationFromContext other) {
+    // Prefer Flutter runner to plain Dart runner for Flutter code.
+    return DartPlugin.isDartRunConfiguration(other.getConfigurationType());
+  }
+
+  /**
+   * Returns the file containing a Flutter app's main() function, or null if not a match.
+   */
   @Nullable
-  private static VirtualFile getDartFileFromContext(final @NotNull ConfigurationContext context) {
-    final PsiElement psiLocation = context.getPsiLocation();
-    final PsiFile psiFile = psiLocation == null ? null : psiLocation.getContainingFile();
-    final VirtualFile virtualFile = DartResolveUtil.getRealVirtualFile(psiFile);
-    return psiFile instanceof DartFile && virtualFile != null ? virtualFile : null;
-  }
+  private static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context) {
+    final DartFile dart = getDartFile(context);
+    if (dart == null) return null;
 
-  private static boolean hasImport(final @NotNull DartFile psiFile, final @NotNull String... importTexts) {
-    final DartImportStatement[] importStatements = PsiTreeUtil.getChildrenOfType(psiFile, DartImportStatement.class);
-    if (importStatements == null) return false;
+    if (DartResolveUtil.getMainFunction(dart) == null) return null;
+    if (findImportUrls(dart).noneMatch((url) -> url.startsWith("package:flutter/"))) return null;
 
-    for (DartImportStatement importStatement : importStatements) {
-      if (ArrayUtil.contains(importStatement.getUriString(), importTexts)) return true;
+    final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
+    if (virtual == null) return null;
+
+    if (!ProjectRootManager.getInstance(context.getProject()).getFileIndex().isInContent(virtual)) {
+      return null;
     }
 
-    return false;
+    if (DartWritingAccessProvider.isInDartSdkOrDartPackagesFolder(dart.getProject(), virtual)) {
+      return null;
+    }
+
+    return virtual;
+  }
+
+  /**
+   * Returns the Dart file at the current location, or null if not a match.
+   */
+  private static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
+    final PsiElement elt = context.getPsiLocation();
+    if (elt == null) return null;
+
+    final PsiFile psiFile = elt.getContainingFile();
+    if (!(psiFile instanceof DartFile)) return null;
+
+    return (DartFile) psiFile;
+  }
+
+  /**
+   * Returns the import URL's in a Dart file.
+   */
+  private static @NotNull Stream<String> findImportUrls(@NotNull DartFile file) {
+    final DartImportStatement[] imports = PsiTreeUtil.getChildrenOfType(file, DartImportStatement.class);
+    if (imports == null) return Stream.empty();
+
+    return Arrays.stream(imports).map(DartImportStatement::getUriString);
   }
 }

@@ -5,6 +5,7 @@
  */
 package io.flutter.dart;
 
+import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.extensions.PluginId;
@@ -76,6 +77,10 @@ public class DartPlugin {
     catch (Throwable th) {
       // ignore and move on
     }
+  }
+
+  public static boolean isDartRunConfiguration(ConfigurationType type) {
+    return type.getId().equals("DartCommandLineRunConfigurationType");
   }
 
   /**
