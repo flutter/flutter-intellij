@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
@@ -103,7 +104,14 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
           LOG.warn(MessageFormat.format("{0} contains {1} modules.", project.getName(), modules.size()));
         }
 
-        FlutterModuleUtils.setFlutterModuleAndReload(modules.get(0), project);
+        final Module module = modules.get(0);
+
+        final Pair<VirtualFile, VirtualFile> main = FlutterModuleUtils.findFlutterMain(module);
+        if (main != null) {
+          FlutterModuleUtils.createRunConfig(project, main.first, main.second);
+        }
+
+        FlutterModuleUtils.setFlutterModuleAndReload(module, project);
       }
     }
 
