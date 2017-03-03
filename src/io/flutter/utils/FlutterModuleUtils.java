@@ -19,7 +19,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
@@ -131,17 +130,17 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Returns a pair describing the main file (`lib/main.dart`) and it's content root for
+   * Returns file context describing the main file (`lib/main.dart`) and its content root for
    * the given module.  Note that if there is more than one defined main in the given module,
    * the first will be returned.  If none is found, returns `null`.
    */
   @Nullable
-  public static Pair<VirtualFile, VirtualFile> findFlutterMain(@NotNull Module module) {
+  public static FileWithContext findFlutterMain(@NotNull Module module) {
     final VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile root : contentRoots) {
       final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(root.getPath() + "/lib/main.dart");
       if (FlutterUtils.exists(main)) {
-        return Pair.create(main, root);
+        return new FileWithContext(main, root);
       }
     }
     return null;
@@ -289,5 +288,20 @@ public class FlutterModuleUtils {
 
     EditorNotifications.getInstance(project).updateAllNotifications();
     ProjectManager.getInstance().reloadProject(project);
+  }
+
+  /**
+   * Describes a file and its associated content root.
+   */
+  public static class FileWithContext {
+    @NotNull
+    public final VirtualFile file;
+    @NotNull
+    public final VirtualFile contentRoot;
+
+    public FileWithContext(@NotNull VirtualFile file, @NotNull VirtualFile contentRoot) {
+      this.file = file;
+      this.contentRoot = contentRoot;
+    }
   }
 }
