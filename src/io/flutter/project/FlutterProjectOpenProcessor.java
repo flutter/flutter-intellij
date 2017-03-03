@@ -103,7 +103,14 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
           LOG.warn(MessageFormat.format("{0} contains {1} modules.", project.getName(), modules.size()));
         }
 
-        FlutterModuleUtils.setFlutterModuleAndReload(modules.get(0), project);
+        final Module module = modules.get(0);
+
+        final FlutterModuleUtils.FileWithContext main = FlutterModuleUtils.findFlutterMain(module);
+        if (main != null) {
+          FlutterModuleUtils.createRunConfig(project, main.file, main.contentRoot);
+        }
+
+        FlutterModuleUtils.setFlutterModuleAndReload(module, project);
       }
     }
 

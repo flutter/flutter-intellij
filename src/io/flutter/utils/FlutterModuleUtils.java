@@ -6,6 +6,10 @@
 package io.flutter.utils;
 
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.RunManager;
+import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -15,6 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.ui.EditorNotifications;
@@ -24,12 +29,16 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterModuleType;
+import io.flutter.run.FlutterRunConfiguration;
+import io.flutter.run.FlutterRunConfigurationType;
+import io.flutter.run.FlutterRunnerParameters;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -72,6 +81,69 @@ public class FlutterModuleUtils {
    */
   public static boolean usesFlutter(@NotNull Project project) {
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::usesFlutter);
+  }
+
+
+  /**
+   * Create a Flutter run configuration.
+   *
+   * @param project    the project
+   * @param main       the target main
+   * @param workingDir the working directory
+   */
+  public static void createRunConfig(@NotNull Project project, @Nullable VirtualFile main, @NotNull VirtualFile workingDir) {
+    final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
+    final Optional<ConfigurationFactory> factory =
+      Arrays.stream(factories).filter((f) -> f instanceof FlutterRunConfigurationType.FlutterConfigurationFactory).findFirst();
+    assert (factory.isPresent());
+    final ConfigurationFactory configurationFactory = factory.get();
+
+    final RunManager runManager = RunManager.getInstance(project);
+    final List<RunConfiguration> configurations = runManager.getConfigurationsList(FlutterRunConfigurationType.getInstance());
+
+    // If the target project has no flutter run configurations, create one.
+    if (configurations.isEmpty()) {
+      final RunnerAndConfigurationSettings settings =
+        runManager.createRunConfiguration(project.getName(), configurationFactory);
+      final FlutterRunConfiguration configuration = (FlutterRunConfiguration)settings.getConfiguration();
+
+      // Set config name.
+      String name = configuration.suggestedName();
+      if (name == null) {
+        name = project.getName();
+      }
+      configuration.setName(name);
+
+      // Setup parameters.
+      final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
+
+      // Add main if appropriate.
+      if (main != null && main.exists()) {
+        parameters.setFilePath(main.getPath());
+      }
+
+      parameters.setWorkingDirectory(workingDir.getPath());
+
+      runManager.addConfiguration(settings, false);
+      runManager.setSelectedConfiguration(settings);
+    }
+  }
+
+  /**
+   * Returns file context describing the main file (`lib/main.dart`) and its content root for
+   * the given module.  Note that if there is more than one defined main in the given module,
+   * the first will be returned.  If none is found, returns `null`.
+   */
+  @Nullable
+  public static FileWithContext findFlutterMain(@NotNull Module module) {
+    final VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
+    for (VirtualFile root : contentRoots) {
+      final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(root.getPath() + "/lib/main.dart");
+      if (FlutterUtils.exists(main)) {
+        return new FileWithContext(main, root);
+      }
+    }
+    return null;
   }
 
   /**
@@ -216,5 +288,20 @@ public class FlutterModuleUtils {
 
     EditorNotifications.getInstance(project).updateAllNotifications();
     ProjectManager.getInstance().reloadProject(project);
+  }
+
+  /**
+   * Describes a file and its associated content root.
+   */
+  public static class FileWithContext {
+    @NotNull
+    public final VirtualFile file;
+    @NotNull
+    public final VirtualFile contentRoot;
+
+    public FileWithContext(@NotNull VirtualFile file, @NotNull VirtualFile contentRoot) {
+      this.file = file;
+      this.contentRoot = contentRoot;
+    }
   }
 }
