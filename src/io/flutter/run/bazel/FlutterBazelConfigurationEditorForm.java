@@ -14,12 +14,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
-import io.flutter.run.FlutterRunnerParameters;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class FlutterBazelConfigurationEditorForm extends SettingsEditor<FlutterBazelRunConfiguration> {
+public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRunConfig> {
   private JPanel myMainPanel;
 
   private JLabel myWorkingDirectoryLabel;
@@ -41,21 +40,22 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<FlutterB
   }
 
   @Override
-  protected void resetEditorFrom(@NotNull final FlutterBazelRunConfiguration configuration) {
-    final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
-    myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getWorkingDirectory())));
-    myBuildTarget.setText(StringUtil.notNullize(parameters.getBazelTarget()));
-    myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getLaunchingScript())));
-    myAdditionalArgs.setText(StringUtil.notNullize(parameters.getAdditionalArgs()));
+  protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
+    final BazelFields fields = configuration.getFields();
+    myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getWorkingDirectory())));
+    myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
+    myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getLaunchingScript())));
+    myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
 
   @Override
-  protected void applyEditorTo(@NotNull final FlutterBazelRunConfiguration configuration) throws ConfigurationException {
-    final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
-    parameters.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
-    parameters.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
-    parameters.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
-    parameters.setAdditionalArgs(StringUtil.nullize(myAdditionalArgs.getText().trim(), true));
+  protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
+    final BazelFields fields = new BazelFields();
+    fields.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
+    fields.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
+    fields.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
+    fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgs.getText().trim(), true));
+    configuration.setFields(fields);
   }
 
   @NotNull

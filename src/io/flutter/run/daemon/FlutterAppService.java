@@ -19,6 +19,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
@@ -43,19 +44,20 @@ public class FlutterAppService {
 
   /**
    * Start a Flutter app using the current Flutter SDK.
-   * @param workDir    The directory where the command should be run.
-   * @param deviceId   The device id as reported by the Flutter daemon
-   * @param mode       The RunMode to use (release, debug, profile)
+   * @param workDir The directory where the command should be run.
+   * @param device The device to use.
+   * @param mode The RunMode to use (release, debug, profile).
+   * @param path Path to the Dart file containing the main method.
    */
   public FlutterApp startFlutterSdkApp(@NotNull String workDir,
-                                       @Nullable String deviceId,
+                                       @Nullable FlutterDevice device,
                                        @NotNull RunMode mode,
-                                       @Nullable String relativePath)
+                                       @Nullable String path)
     throws ExecutionException {
 
-    final GeneralCommandLine command = createFlutterSdkRunCommand(workDir, deviceId, mode, relativePath);
+    final GeneralCommandLine command = createFlutterSdkRunCommand(workDir, device, mode, path);
 
-    final FlutterApp app = startApp(command, StringUtil.capitalize(mode.mode()) + "App", "StopApp");
+    final FlutterApp app = startApp(mode, command, StringUtil.capitalize(mode.mode()) + "App", "StopApp");
 
     // Stop the app if the Flutter SDK changes.
     final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
@@ -80,11 +82,12 @@ public class FlutterAppService {
     final GeneralCommandLine command = createBazelRunCommand(
       projectDir, device, mode, launchingScript, bazelTarget, additionalArguments);
 
-    return startApp(command, StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
+    return startApp(mode, command, StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
   }
 
   @NotNull
-  private FlutterApp startApp(@NotNull GeneralCommandLine command,
+  private FlutterApp startApp(@NotNull RunMode mode,
+                              @NotNull GeneralCommandLine command,
                               @NotNull String analyticsStart,
                               @NotNull String analyticsStop)
     throws ExecutionException {
@@ -102,7 +105,7 @@ public class FlutterAppService {
     });
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(process, api);
+    final FlutterApp app = new FlutterApp(mode, process, api);
     api.listen(process, new FlutterAppListener(app, project));
 
     return app;
@@ -112,9 +115,9 @@ public class FlutterAppService {
    * Create a command to run 'flutter run --machine'.
    */
   private GeneralCommandLine createFlutterSdkRunCommand(@NotNull String workDir,
-                                                        @Nullable String deviceId,
+                                                        @Nullable FlutterDevice device,
                                                         @NotNull RunMode mode,
-                                                        @Nullable String target) throws ExecutionException {
+                                                        @Nullable String path) throws ExecutionException {
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
@@ -127,8 +130,8 @@ public class FlutterAppService {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
     commandLine.addParameters("run", "--machine");
-    if (deviceId != null) {
-      commandLine.addParameter("--device-id=" + deviceId);
+    if (device != null) {
+      commandLine.addParameter("--device-id=" + device.deviceId());
     }
     if (mode == RunMode.PROFILE) {
       commandLine.addParameter("--profile");
@@ -139,8 +142,16 @@ public class FlutterAppService {
     if (!mode.isReloadEnabled()) {
       commandLine.addParameter("--no-hot");
     }
-    if (target != null) {
-      commandLine.addParameter(target);
+    if (path != null) {
+      // Make the path relative if possible (to make the command line prettier).
+      if (path.startsWith(workDir)) {
+        path = path.substring(workDir.length());
+        if (path.startsWith("/")) {
+          path = path.substring(1);
+        }
+      }
+      path = FileUtil.toSystemDependentName(path);
+      commandLine.addParameter(path);
     }
     return commandLine;
   }

@@ -29,9 +29,9 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterModuleType;
-import io.flutter.run.FlutterRunConfiguration;
 import io.flutter.run.FlutterRunConfigurationType;
-import io.flutter.run.FlutterRunnerParameters;
+import io.flutter.run.SdkFields;
+import io.flutter.run.SdkRunConfig;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -105,24 +105,21 @@ public class FlutterModuleUtils {
     if (configurations.isEmpty()) {
       final RunnerAndConfigurationSettings settings =
         runManager.createRunConfiguration(project.getName(), configurationFactory);
-      final FlutterRunConfiguration configuration = (FlutterRunConfiguration)settings.getConfiguration();
+      final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
 
       // Set config name.
-      String name = configuration.suggestedName();
+      final String name = config.suggestedName();
       if (name == null) {
-        name = project.getName();
+        config.setName(project.getName());
       }
-      configuration.setName(name);
 
-      // Setup parameters.
-      final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
-
-      // Add main if appropriate.
+      // Set fields.
+      final SdkFields fields = new SdkFields();
+      fields.setWorkingDirectory(workingDir.getPath());
       if (main != null && main.exists()) {
-        parameters.setFilePath(main.getPath());
+        fields.setFilePath(main.getPath());
       }
-
-      parameters.setWorkingDirectory(workingDir.getPath());
+      config.setFields(fields);
 
       runManager.addConfiguration(settings, false);
       runManager.setSelectedConfiguration(settings);

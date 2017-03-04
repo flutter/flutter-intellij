@@ -1,34 +1,34 @@
 package com.jetbrains.lang.dart.ide.runner;
 
-import com.intellij.xdebugger.XDebugSession;
-import io.flutter.run.daemon.FlutterApp;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Provides connection settings to an observatory-based debugger, plus a couple of callbacks.
+ */
 public interface ObservatoryConnector {
 
   /**
-   * Return true if the observatory is ready to make a connection.
+   * Returns the WebSocket URL used by the observatory, or null if the app didn't connect yet.
    */
-  boolean isConnectionReady();
+  @Nullable String getWebSocketUrl();
 
   /**
-   * Return the WebSocket URL used by the observatory.
+   * Returns the http URL to open a browser session, if available.
    */
-  @Nullable
-  String getObservatoryWsUrl();
+  @Nullable String getBrowserUrl();
+
+  @Nullable String getRemoteBaseUrl();
 
   /**
-   * Return the FlutterApp used to control the running app.
+   * Called when the debugger has paused.
+   *
+   * <p>The callback can be used to tell the debugger to resume executing the program.
    */
-  FlutterApp getApp();
+  void onDebuggerPaused(@NotNull Runnable resume);
 
   /**
-   * The debug session has been paused.
+   * Called when the debugger has resumed execution.
    */
-  void sessionPaused(XDebugSession sessionHook);
-
-  /**
-   * The debug session has been resumed.
-   */
-  void sessionResumed();
+  void onDebuggerResumed();
 }

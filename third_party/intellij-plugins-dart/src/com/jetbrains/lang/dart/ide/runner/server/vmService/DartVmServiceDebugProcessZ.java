@@ -4,7 +4,6 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.ExecutionConsole;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
@@ -37,11 +36,6 @@ import gnu.trove.THashMap;
 import gnu.trove.THashSet;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
-import io.flutter.actions.OpenObservatoryAction;
-import io.flutter.actions.ReloadFlutterApp;
-import io.flutter.actions.RestartFlutterApp;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.view.FlutterViewMessages;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -61,7 +55,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Nullable private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
-  private String myObservatoryWsUrl;
 
   private boolean myVmConnected = false;
 
@@ -76,7 +69,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap = new THashMap<>();
 
   @Nullable private final String myDASExecutionContextId;
-  private final int myTimeout;
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @NotNull private final ObservatoryConnector myConnector;
 
@@ -88,16 +80,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                                     @Nullable final ExecutionResult executionResult,
                                     @NotNull final DartUrlResolver dartUrlResolver,
                                     @Nullable final String dasExecutionContextId,
-                                    final boolean remoteDebug,
-                                    final int timeout,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @NotNull final ObservatoryConnector connector) {
     super(session, "localhost", 0, executionResult, dartUrlResolver, dasExecutionContextId,
-          remoteDebug, timeout, currentWorkingDirectory);
+          false, 0, currentWorkingDirectory);
 
     myExecutionResult = executionResult;
     myDartUrlResolver = dartUrlResolver;
-    myTimeout = timeout;
     myCurrentWorkingDirectory = currentWorkingDirectory;
     myConnector = connector;
 
@@ -107,16 +96,22 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     setLogger();
 
+    final Runnable resumeCallback = () -> {
+      if (session.isPaused()) {
+        session.resume();
+      }
+    };
+
     session.addSessionListener(new XDebugSessionListener() {
       @Override
       public void sessionPaused() {
         stackFrameChanged();
-        connector.sessionPaused(session);
+        connector.onDebuggerPaused(resumeCallback);
       }
 
       @Override
       public void sessionResumed() {
-        connector.sessionResumed();
+        connector.onDebuggerResumed();
       }
 
       @Override
@@ -131,12 +126,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     scheduleConnectNew();
 
-    if (remoteDebug) {
-      LOG.assertTrue(myExecutionResult == null && myDASExecutionContextId == null, myDASExecutionContextId + myExecutionResult);
-    }
-    else {
-      LOG.assertTrue(myExecutionResult != null && myDASExecutionContextId != null, myDASExecutionContextId + myExecutionResult);
-    }
+    LOG.assertTrue(myExecutionResult != null && myDASExecutionContextId != null, myDASExecutionContextId + myExecutionResult);
 
     // We disable the service protocol library logger because of a user facing NPE in a
     // DartVmServiceListener from the Dart plugin.
@@ -214,10 +204,14 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      final long timeout = (long)myTimeout;
+      // Allow 5 minutes to connect to the observatory; the user can cancel manually in the interim.
+      final long timeout = (long)5 * 60 * 1000;
       long startTime = System.currentTimeMillis();
 
-      while (!getSession().isStopped() && !myConnector.isConnectionReady()) {
+      String url = myConnector.getWebSocketUrl();
+      while (url == null) {
+        if (getSession().isStopped()) return;
+
         if (System.currentTimeMillis() > startTime + timeout) {
           final String message = "Observatory connection never became ready.\n";
           getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
@@ -227,20 +221,19 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         else {
           TimeoutUtil.sleep(50);
         }
+        url = myConnector.getWebSocketUrl();
       }
 
       if (getSession().isStopped()) {
         return;
       }
 
-      myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
-
       startTime = System.currentTimeMillis();
 
       try {
         while (true) {
           try {
-            connect();
+            connect(url);
             break;
           }
           catch (IOException e) {
@@ -270,8 +263,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
   }
 
-  private void connect() throws IOException {
-    final VmService vmService = VmService.connect(myObservatoryWsUrl);
+  private void connect(@NotNull String websocketUrl) throws IOException {
+    final VmService vmService = VmService.connect(websocketUrl);
     final DartVmServiceListener vmServiceListener =
       new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
@@ -291,8 +284,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     myVmConnected = true;
     getSession().rebuildViews();
 
-    FlutterViewMessages.sendDebugActive(getSession().getProject(), getConnector(), myVmServiceWrapper, vmService);
+    onVmConnected(vmService);
   }
+
+  /**
+   * Callback for subclass.
+   */
+  protected void onVmConnected(@NotNull VmService vmService) {}
 
   @Override
   protected ProcessHandler doGetProcessHandler() {
@@ -460,33 +458,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
              : FlutterBundle.message("waiting.for.flutter");
   }
 
-  @Override
-  public void registerAdditionalActions(@NotNull final DefaultActionGroup leftToolbar,
-                                        @NotNull final DefaultActionGroup topToolbar,
-                                        @NotNull final DefaultActionGroup settings) {
-    // For Run tool window this action is added in DartCommandLineRunningState.createActions()
-    topToolbar.addSeparator();
-    topToolbar.addAction(new OpenObservatoryAction(this::computeObservatoryBrowserUrl, this::isSessionActive));
-    topToolbar.addSeparator();
-    topToolbar.addAction(new ReloadFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
-    topToolbar.addAction(new RestartFlutterApp(myConnector, () -> shouldEnableHotReload() && isSessionActive()));
-  }
-
-  // Overridden by subclasses.
-  public boolean shouldEnableHotReload() {
-    return false;
-  }
-
-  private boolean isSessionActive() {
-    return myConnector.isConnectionReady() && myVmConnected && !getSession().isStopped();
-  }
-
-  private String computeObservatoryBrowserUrl() {
-    myObservatoryWsUrl = myConnector.getObservatoryWsUrl();
-    assert myObservatoryWsUrl != null;
-    return OpenObservatoryAction.convertWsToHttp(myObservatoryWsUrl);
-  }
-
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
     final Set<String> results = new HashSet<>();
@@ -645,12 +616,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   private String getRemoteBaseUri() {
     if (myRemoteBaseUri == null) {
-      final FlutterApp app = myConnector.getApp();
-      if (app != null) {
-        myRemoteBaseUri = app.baseUri();
-      }
+      myRemoteBaseUri = myConnector.getRemoteBaseUrl();
     }
     return myRemoteBaseUri;
+  }
+
+  public boolean getVmConnected() {
+    return myVmConnected;
   }
 
   private static boolean stringStartsWith(String base, String prefix) {

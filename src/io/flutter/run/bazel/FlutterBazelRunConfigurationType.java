@@ -8,7 +8,6 @@ package io.flutter.run.bazel;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
-import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.FileTypeIndex;
 import com.intellij.psi.search.GlobalSearchScope;
@@ -22,22 +21,18 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
   public FlutterBazelRunConfigurationType() {
     super("FlutterBazelRunConfigurationType", FlutterBundle.message("runner.flutter.bazel.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
-    addFactory(new FlutterBazelRunConfigurationType.FlutterBazelConfigurationFactory(this));
+    addFactory(new Factory(this));
   }
 
-  public static FlutterBazelRunConfigurationType getInstance() {
-    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterBazelRunConfigurationType.class);
-  }
-
-  public static class FlutterBazelConfigurationFactory extends ConfigurationFactory {
-    public FlutterBazelConfigurationFactory(FlutterBazelRunConfigurationType type) {
+  private static class Factory extends ConfigurationFactory {
+    public Factory(FlutterBazelRunConfigurationType type) {
       super(type);
     }
 
     @Override
     @NotNull
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-      return new FlutterBazelRunConfiguration(project, this, "Flutter (Bazel)");
+      return new BazelRunConfig(project, this, "Flutter (Bazel)");
     }
 
     @Override

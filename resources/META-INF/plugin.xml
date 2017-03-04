@@ -245,10 +245,10 @@
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
-    <programRunner implementation="io.flutter.run.FlutterRunner"/>
+    <programRunner implementation="io.flutter.run.SdkRunner"/>
 
     <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
-    <programRunner implementation="io.flutter.run.bazel.FlutterBazelRunner"/>
+    <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
 
     <!-- IDEA only -->
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>

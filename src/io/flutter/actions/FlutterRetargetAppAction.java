@@ -11,11 +11,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
-import com.intellij.xdebugger.XDebugProcess;
-import com.intellij.xdebugger.XDebugSession;
-import com.intellij.xdebugger.XDebuggerManager;
-import io.flutter.run.FlutterDebugProcess;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,10 +25,6 @@ import java.util.List;
  */
 public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   public static final String RELOAD_DISPLAY_ID = "Flutter Commands"; //NON-NLS
-
-  public interface AppAction {
-    void actionPerformed(FlutterApp app);
-  }
 
   @NotNull
   private final String myActionId;
@@ -53,16 +44,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     final AnAction action = getAction();
-
-    if (action instanceof AppAction) {
-      final FlutterApp app = getCurrentApp(e.getProject());
-      if (app != null) {
-        ((AppAction)action).actionPerformed(app);
-      }
-    }
-    else if (action != null) {
-      action.actionPerformed(e);
-    }
+    action.actionPerformed(e);
   }
 
   @Override
@@ -92,34 +74,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     }
   }
 
-  private FlutterApp getCurrentApp(Project project) {
-    final XDebugSession session = getCurrentSession(project);
-    if (session == null) {
-      return null;
-    }
-    final XDebugProcess process = session.getDebugProcess();
-    if (process instanceof FlutterDebugProcess) {
-      final FlutterDebugProcess flutterProcess = (FlutterDebugProcess)process;
-      return flutterProcess.getConnector().getApp();
-    }
-    return null;
-  }
-
   private AnAction getAction() {
     return ActionManager.getInstance().getAction(myActionId);
-  }
-
-  private static XDebugSession getCurrentSession(Project project) {
-    final XDebuggerManager manager = XDebuggerManager.getInstance(project);
-
-    final XDebugSession session = manager.getCurrentSession();
-    if (session != null) {
-      return session;
-    }
-
-    // XDebuggerManager.getCurrentSession() can return null even when there are active session;
-    // we guard against that here.
-    final XDebugSession[] sessions = manager.getDebugSessions();
-    return sessions.length > 0 ? sessions[0] : null;
   }
 }
