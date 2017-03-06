@@ -5,7 +5,12 @@
  */
 package io.flutter.run.daemon;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import org.jetbrains.annotations.NonNls;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Associate a Java name with the strings passed to Flutter that determine execution mode.
@@ -13,26 +18,21 @@ import org.jetbrains.annotations.NonNls;
 public enum RunMode {
 
   @NonNls
-  DEBUG("debug") {
-    public boolean isReloadEnabled() {
-      return true;
-    }
-  },
+  DEBUG("debug", true),
+
+  // Not used. See: https://github.com/flutter/flutter-intellij/issues/410
+  @NonNls
+  PROFILE("profile", false),
 
   @NonNls
-  PROFILE("profile"),
-
-  @NonNls
-  RUN("run") {
-    public boolean isReloadEnabled() {
-      return true;
-    }
-  };
+  RUN("run", true);
 
   private final String myModeString;
+  private final boolean canReload;
 
-  RunMode(String modeString) {
+  RunMode(String modeString, boolean canReload) {
     myModeString = modeString;
+    this.canReload = canReload;
   }
 
   public String mode() {
@@ -43,6 +43,17 @@ public enum RunMode {
    * Returns true if this is a reload/restart enabled mode (run|debug).
    */
   public boolean isReloadEnabled() {
-    return false;
+    return canReload;
+  }
+
+  public static RunMode fromEnv(@NotNull ExecutionEnvironment env) throws ExecutionException {
+    final String mode = env.getExecutor().getId();
+    if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {
+      return RUN;
+    } else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
+      return DEBUG;
+    } else {
+      throw new ExecutionException("unsupported run mode: " + mode);
+    }
   }
 }

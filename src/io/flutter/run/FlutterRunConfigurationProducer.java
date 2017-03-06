@@ -30,7 +30,7 @@ import java.util.stream.Stream;
  *
  * <p>(For example, when right-clicking on main.dart in the Project view.)
  */
-public class FlutterRunConfigurationProducer extends RunConfigurationProducer<FlutterRunConfiguration> {
+public class FlutterRunConfigurationProducer extends RunConfigurationProducer<SdkRunConfig> {
 
   public FlutterRunConfigurationProducer() {
     super(FlutterRunConfigurationType.getInstance());
@@ -43,17 +43,13 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Fl
    * <p>Returns false if it wasn't a match.
    */
   @Override
-  protected boolean setupConfigurationFromContext(final @NotNull FlutterRunConfiguration config,
+  protected boolean setupConfigurationFromContext(final @NotNull SdkRunConfig config,
                                                   final @NotNull ConfigurationContext context,
                                                   final @NotNull Ref<PsiElement> sourceElement) {
     final VirtualFile main = getFlutterEntryFile(context);
-    if (main == null) {
-      return false;
-    }
+    if (main == null) return false;
 
-    config.getRunnerParameters().setFilePath(main.getPath());
-    config.getRunnerParameters()
-      .setWorkingDirectory(FlutterRunnerParameters.suggestDartWorkingDir(context.getProject(), main));
+    config.setFields(new SdkFields(main, context.getProject()));
     config.setGeneratedName();
 
     final PsiElement elt = sourceElement.get();
@@ -64,10 +60,10 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Fl
   }
 
   /**
-   * Returns true if an existing FlutterRunConfiguration points to the current Dart file.
+   * Returns true if an existing SdkRunConfig points to the current Dart file.
    */
   @Override
-  public boolean isConfigurationFromContext(final @NotNull FlutterRunConfiguration configuration,
+  public boolean isConfigurationFromContext(final @NotNull SdkRunConfig configuration,
                                             final @NotNull ConfigurationContext context) {
     final DartFile dart = getDartFile(context);
     if (dart == null) {
@@ -75,7 +71,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Fl
     }
 
     final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
-    return virtual != null && virtual.getPath().equals(configuration.getRunnerParameters().getFilePath());
+    return virtual != null && virtual.getPath().equals(configuration.getFields().getFilePath());
   }
 
   /**

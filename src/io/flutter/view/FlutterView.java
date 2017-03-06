@@ -45,9 +45,14 @@ import java.util.Map;
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter";
 
-  @NotNull private FlutterView.State state = new FlutterView.State();
-  @SuppressWarnings("FieldCanBeLocal") private final Project myProject;
-  FlutterViewMessages.FlutterDebugEvent debugEvent;
+  @NotNull
+  private FlutterView.State state = new FlutterView.State();
+
+  @NotNull
+  private final Project myProject;
+
+  @Nullable
+  FlutterApp app;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -99,7 +104,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
    * Called when a debug connection starts.
    */
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
-    this.debugEvent = event;
+    this.app = event.app;
 
     event.vmService.addVmServiceListener(new VmServiceListener() {
       @Override
@@ -112,8 +117,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
       @Override
       public void connectionClosed() {
-        FlutterView.this.debugEvent = null;
-
+        FlutterView.this.app = null;
         updateIcon();
       }
     });
@@ -122,10 +126,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   }
 
   FlutterApp getFlutterApp() {
-    if (debugEvent == null) {
-      return null;
-    }
-    return debugEvent.observatoryConnector.getApp();
+    return app;
   }
 
   private void updateIcon() {
@@ -135,11 +136,11 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       }
 
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
+      if (toolWindow == null) return;
 
-      if (getFlutterApp() == null) {
+      if (app == null) {
         toolWindow.setIcon(FlutterIcons.Flutter);
-      }
-      else {
+      } else {
         toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter));
       }
     });
@@ -274,7 +275,7 @@ class ObservatoryTimelineAction extends AbstractObservatoryAction {
   public void actionPerformed(AnActionEvent event) {
     FlutterInitializer.sendAnalyticsAction(this);
 
-    final String httpUrl = OpenObservatoryAction.convertWsToHttp(view.getFlutterApp().wsUrl());
+    final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
     if (httpUrl != null) {
       OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/timeline");
     }

@@ -38,7 +38,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     @Override
     @NotNull
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
-      return new FlutterRunConfiguration(project, this, "Flutter");
+      return new SdkRunConfig(project, this, "Flutter");
     }
 
     @Override

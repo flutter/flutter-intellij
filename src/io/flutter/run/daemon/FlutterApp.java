@@ -9,7 +9,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.intellij.xdebugger.XDebugSession;
+import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A running Flutter app.
  */
 public class FlutterApp {
+  private final @NotNull RunMode myMode;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull DaemonApi myDaemonApi;
 
@@ -36,15 +37,56 @@ public class FlutterApp {
   /**
    * Non-null when the debugger is paused.
    */
-  private @Nullable XDebugSession mySessionHook;
+  private @Nullable Runnable myResume;
 
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final List<StateListener> myListeners = new ArrayList<>();
 
-  public FlutterApp(@NotNull ProcessHandler processHandler,
+  private final ObservatoryConnector myConnector;
+
+  public FlutterApp(@NotNull RunMode mode,
+                    @NotNull ProcessHandler processHandler,
                     @NotNull DaemonApi daemonApi) {
+    myMode = mode;
     myProcessHandler = processHandler;
     myDaemonApi = daemonApi;
+    myConnector = new ObservatoryConnector() {
+      @Override
+      public @Nullable String getWebSocketUrl() {
+        return myWsUrl;
+      }
+
+      public @Nullable String getBrowserUrl() {
+        String url = myWsUrl;
+        if (url == null) return null;
+        if (url.startsWith("ws:")) {
+          url = "http:" + url.substring(3);
+        }
+        if (url.endsWith("/ws")) {
+          url = url.substring(0, url.length() - 3);
+        }
+        return url;
+      }
+
+      @Override
+      public String getRemoteBaseUrl() {
+        return myBaseUri;
+      }
+
+      @Override
+      public void onDebuggerPaused(@NotNull Runnable resume) {
+        myResume = resume;
+      }
+
+      @Override
+      public void onDebuggerResumed() {
+        myResume = null;
+      }
+    };
+  }
+
+  public @NotNull RunMode getMode() {
+    return myMode;
   }
 
   /**
@@ -54,28 +96,25 @@ public class FlutterApp {
     return myProcessHandler;
   }
 
+  public @NotNull ObservatoryConnector getConnector() {
+    return myConnector;
+  }
+
+  public State getState() {
+    return myState.get();
+  }
+
+  public boolean isStarted() {
+    return myState.get() == State.STARTED;
+  }
+
   void setAppId(@NotNull String id) {
     myAppId = id;
   }
 
-  /**
-   * @return the Observatory WebSocket URL
-   */
-  @Nullable
-  public String wsUrl() {
-    return myWsUrl;
-  }
 
   void setWsUrl(@NotNull String url) {
     myWsUrl = url;
-  }
-
-  /**
-   * @return The (optional) baseUri to use for debugger paths.
-   */
-  @Nullable
-  public String baseUri() {
-    return myBaseUri;
   }
 
   void setBaseUri(@NotNull String uri) {
@@ -122,14 +161,6 @@ public class FlutterApp {
     return myConsole;
   }
 
-  public void onPause(XDebugSession sessionHook) {
-    mySessionHook = sessionHook;
-  }
-
-  public void onResume() {
-    mySessionHook = null;
-  }
-
   /**
    * Transitions to a new state and fires events.
    *
@@ -156,9 +187,8 @@ public class FlutterApp {
       return done; // Debounce; already shutting down.
     }
 
-    // Resume if paused.
-    if (mySessionHook != null && mySessionHook.isPaused()) {
-      mySessionHook.resume();
+    if (myResume != null) {
+      myResume.run();
     }
 
     final String appId = myAppId;

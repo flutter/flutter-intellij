@@ -18,31 +18,26 @@ import io.flutter.run.daemon.FlutterApp;
 import java.lang.reflect.Method;
 
 @SuppressWarnings("ComponentNotRegistered")
-public class ReloadFlutterApp extends FlutterAppAction implements FlutterRetargetAppAction.AppAction {
+public class ReloadFlutterApp extends FlutterAppAction {
   public static final String ID = "Flutter.ReloadFlutterApp"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.reload.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.reload.action.description");
 
-  public ReloadFlutterApp(ObservatoryConnector connector, Computable<Boolean> isApplicable) {
-    super(connector, TEXT, DESCRIPTION, FlutterIcons.ReloadBoth, isApplicable, ID);
+  public ReloadFlutterApp(FlutterApp app, Computable<Boolean> isApplicable) {
+    super(app, TEXT, DESCRIPTION, FlutterIcons.ReloadBoth, isApplicable, ID);
     // Shortcut is associated with toolbar action.
     copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAction"));
   }
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    actionPerformed(getApp());
-  }
-
-  @Override
-  public void actionPerformed(FlutterApp app) {
     FlutterInitializer.sendAnalyticsAction(this);
 
-    ifReadyThen(() -> {
+    if (getApp().isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
       final boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
-      app.performHotReload(pauseAfterRestart);
-    });
+      getApp().performHotReload(pauseAfterRestart);
+    }
   }
 
   private static boolean hasCapability(@SuppressWarnings("SameParameterValue") String featureId) {

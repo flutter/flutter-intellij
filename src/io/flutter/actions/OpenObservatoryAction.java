@@ -12,37 +12,24 @@ import com.intellij.ide.browsers.WebBrowserManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
+import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenObservatoryAction extends DumbAwareAction {
-  @Nullable
-  public static String convertWsToHttp(@Nullable String wsUrl) {
-    if (wsUrl == null) {
-      return null;
-    }
-    if (wsUrl.startsWith("ws:")) {
-      wsUrl = "http:" + wsUrl.substring(3);
-    }
-    if (wsUrl.endsWith("/ws")) {
-      wsUrl = wsUrl.substring(0, wsUrl.length() - 3);
-    }
-    return wsUrl;
-  }
 
-  private final Computable<String> myUrl;
+  private final @NotNull ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
 
-  public OpenObservatoryAction(@NotNull final Computable<String> url, @NotNull final Computable<Boolean> isApplicable) {
+  public OpenObservatoryAction(@NotNull final ObservatoryConnector connector, @NotNull final Computable<Boolean> isApplicable) {
     super(FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"),
           FlutterIcons.OpenObservatory);
-    myUrl = url;
+    myConnector = connector;
     myIsApplicable = isApplicable;
   }
 
@@ -55,7 +42,10 @@ public class OpenObservatoryAction extends DumbAwareAction {
   public void actionPerformed(@NotNull final AnActionEvent e) {
     FlutterInitializer.sendAnalyticsAction(this);
 
-    openInAnyChromeFamilyBrowser(myUrl.compute());
+    final String url = myConnector.getBrowserUrl();
+    if (url != null) {
+      openInAnyChromeFamilyBrowser(url);
+    }
   }
 
   public static void openInAnyChromeFamilyBrowser(@NotNull String url) {

@@ -6,19 +6,24 @@
 package io.flutter.run;
 
 import com.intellij.execution.ExecutionResult;
-import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.ui.RunnerLayoutUi;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.actions.OpenObservatoryAction;
+import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.RestartFlutterApp;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.view.FlutterViewMessages;
+import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,43 +33,31 @@ import java.util.List;
 import java.util.Objects;
 
 
+/**
+ * A debug process that handles hot reloads for Flutter.
+ *
+ * <p>It's used for both the 'Run' and 'Debug' modes. (We apparently need a debug process even
+ * when not debugging in order to support hot reload.)
+ */
 public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
-
   private static final Logger LOG = Logger.getInstance(FlutterDebugProcess.class.getName());
-  @NotNull private final RunProfileState myState;
 
-  public FlutterDebugProcess(@NotNull XDebugSession session,
-                             @NotNull RunProfileState state,
+  private final @NotNull FlutterApp app;
+
+  public FlutterDebugProcess(@NotNull FlutterApp app,
+                             @NotNull XDebugSession session,
                              @Nullable ExecutionResult executionResult,
                              @NotNull DartUrlResolver dartUrlResolver,
                              @Nullable String dasExecutionContextId,
-                             boolean remoteDebug,
-                             int timeout,
-                             @Nullable VirtualFile currentWorkingDirectory,
-                             @NotNull ObservatoryConnector connector) {
-    super(session, executionResult, dartUrlResolver, dasExecutionContextId, remoteDebug, timeout,
-          currentWorkingDirectory, connector);
-    myState = state;
-  }
-
-  /**
-   * Test if the given run profile state should be run as a debugging session.
-   *
-   * @param state the state to check
-   * @return true if the profile should be run as a debug session, false otherwise
-   */
-  public static boolean isDebuggingSession(RunProfileState state) {
-    return (state instanceof FlutterAppState) && ((FlutterAppState)state).getMode() == RunMode.DEBUG;
+                             @Nullable VirtualFile currentWorkingDirectory) {
+    super(session, executionResult, dartUrlResolver, dasExecutionContextId,
+          currentWorkingDirectory, app.getConnector());
+    this.app = app;
   }
 
   @Override
-  public boolean shouldEnableHotReload() {
-    return ((FlutterAppState)myState).getMode().isReloadEnabled();
-  }
-
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  private boolean isDebuggingSession() {
-    return isDebuggingSession(myState);
+  protected void onVmConnected(@NotNull VmService vmService) {
+    FlutterViewMessages.sendDebugActive(getSession().getProject(), app, vmService);
   }
 
   @Override
@@ -72,7 +65,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
                                         @NotNull final DefaultActionGroup topToolbar,
                                         @NotNull final DefaultActionGroup settings) {
 
-    if (!isDebuggingSession()) {
+    if (app.getMode() != RunMode.DEBUG) {
+      // Remove the debug-specific actions that aren't needed when we're not debugging.
 
       // Remove all but specified actions.
       final AnAction[] leftActions = leftToolbar.getChildActionsOrStubs();
@@ -99,13 +93,24 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
       }
     }
 
-    super.registerAdditionalActions(leftToolbar, topToolbar, settings);
+    // Add actions common to run and debug windows.
+
+    final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
+    final Computable<Boolean> canReload = () -> app.getMode().isReloadEnabled() && isSessionActive.compute();
+
+    topToolbar.addSeparator();
+    topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), isSessionActive));
+    topToolbar.addSeparator();
+    topToolbar.addAction(new ReloadFlutterApp(app, canReload));
+    topToolbar.addAction(new RestartFlutterApp(app, canReload));
+
+    // Don't call super since we have our own observatory action.
   }
 
   @Override
   public void sessionInitialized() {
     // If running outside a Debug launch, suppress debug views (e.g., variables and frames).
-    if (!isDebuggingSession()) {
+    if (app.getMode() != RunMode.DEBUG) {
       final RunnerLayoutUi ui = getSession().getUI();
       if (ui != null) {
         for (Content c : ui.getContents()) {

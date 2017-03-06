@@ -19,7 +19,7 @@ import javax.swing.*;
 
 import static com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse;
 
-public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunConfiguration> {
+public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig> {
   private JPanel myMainPanel;
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
@@ -33,17 +33,18 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<FlutterRunCon
   }
 
   @Override
-  protected void resetEditorFrom(@NotNull final FlutterRunConfiguration configuration) {
-    final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
-    myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getFilePath())));
-    myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(parameters.getWorkingDirectory())));
+  protected void resetEditorFrom(@NotNull final SdkRunConfig config) {
+    final SdkFields fields = config.getFields();
+    myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getFilePath())));
+    myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getWorkingDirectory())));
   }
 
   @Override
-  protected void applyEditorTo(@NotNull final FlutterRunConfiguration configuration) throws ConfigurationException {
-    final FlutterRunnerParameters parameters = configuration.getRunnerParameters();
-    parameters.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
-    parameters.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
+  protected void applyEditorTo(@NotNull final SdkRunConfig config) throws ConfigurationException {
+    final SdkFields fields = new SdkFields();
+    fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
+    fields.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
+    config.setFields(fields);
   }
 
   @NotNull
