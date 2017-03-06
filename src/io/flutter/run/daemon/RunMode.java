@@ -20,7 +20,7 @@ public enum RunMode {
   @NonNls
   DEBUG("debug", true),
 
-  // TODO(skybrian) profiling seems to be unused?
+  // Not used. See: https://github.com/flutter/flutter-intellij/issues/410
   @NonNls
   PROFILE("profile", false),
 

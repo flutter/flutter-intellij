@@ -27,7 +27,7 @@ public class BazelRunConfig extends RunConfigurationBase
   implements RunConfigurationWithSuppressedDefaultRunAction, Launcher.RunConfig {
   private @NotNull BazelFields fields = new BazelFields();
 
-  public BazelRunConfig(final Project project, final ConfigurationFactory factory, final String name) {
+  public BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
   }
 

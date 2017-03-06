@@ -109,7 +109,7 @@ public class Launcher extends CommandLineState {
     if (RunMode.fromEnv(getEnvironment()).isReloadEnabled()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
     } else {
-      // This branch is unused? It seems we don't have profiling yet.
+      // Not used yet. See https://github.com/flutter/flutter-intellij/issues/410
       return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
   }
@@ -145,7 +145,7 @@ public class Launcher extends CommandLineState {
   }
 
   @NotNull
-  private ExecutionResult setUpConsoleAndActions(FlutterApp app) throws ExecutionException {
+  private ExecutionResult setUpConsoleAndActions(@NotNull FlutterApp app) throws ExecutionException {
     final ConsoleView console = createConsole(getEnvironment().getExecutor());
     if (console != null) {
       app.setConsole(console);

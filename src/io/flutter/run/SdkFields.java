@@ -117,7 +117,7 @@ public class SdkFields {
   }
 
   static @NotNull VirtualFile checkLaunchFile(String path) throws RuntimeConfigurationError {
-    // TODO(skybrian) also check that it's a Flutter app?
+    // TODO(skybrian) also check that it's a Flutter app and contains main.
 
     if (StringUtil.isEmptyOrSpaces(path)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("path.to.dart.file.not.set"));
