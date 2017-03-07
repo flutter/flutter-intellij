@@ -27,7 +27,7 @@ public class BazelRunConfig extends RunConfigurationBase
   implements RunConfigurationWithSuppressedDefaultRunAction, Launcher.RunConfig {
   private @NotNull BazelFields fields = new BazelFields();
 
-  public BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
+  BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
   }
 
@@ -82,6 +82,13 @@ public class BazelRunConfig extends RunConfigurationBase
     final BazelRunConfig clone = (BazelRunConfig)super.clone();
     clone.fields = fields.copy();
     return clone;
+  }
+
+  RunConfiguration copyTemplateToNonTemplate(String name) {
+    final BazelRunConfig copy = (BazelRunConfig)super.clone();
+    copy.setName(name);
+    copy.fields = fields.copyTemplateToNonTemplate(getProject());
+    return copy;
   }
 
   @Override
