@@ -84,9 +84,9 @@ public class BazelRunConfig extends RunConfigurationBase
     return clone;
   }
 
-  RunConfiguration copyTemplateToNonTemplate() {
+  RunConfiguration copyTemplateToNonTemplate(String name) {
     final BazelRunConfig copy = (BazelRunConfig)super.clone();
-    copy.setName(getProject().getName());
+    copy.setName(name);
     copy.fields = fields.copyTemplateToNonTemplate(getProject());
     return copy;
   }
