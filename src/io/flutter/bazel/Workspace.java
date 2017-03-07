@@ -132,6 +132,13 @@ public class Workspace {
   }
 
   /**
+   * Returns the script that runs the bazel target for a Flutter app, or null if not configured.
+   */
+  public @Nullable String getLaunchScript() {
+    return (config == null) ? null : config.getLaunchScript();
+  }
+
+  /**
    * Returns the flutter plugin configuration or null if not available.
    */
   public @Nullable PluginConfig getPluginConfig() {

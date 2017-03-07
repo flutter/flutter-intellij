@@ -42,7 +42,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
   implements Launcher.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
   private @NotNull SdkFields fields = new SdkFields();
 
-  public SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
+  SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
     super(project, factory, name);
   }
 

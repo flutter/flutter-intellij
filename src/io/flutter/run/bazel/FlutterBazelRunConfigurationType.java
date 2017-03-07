@@ -32,14 +32,25 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
     @Override
     @NotNull
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
+      // This is always called first when loading a run config, even when it's a non-template config.
+      // See RunManagerImpl.doCreateConfiguration
       return new BazelRunConfig(project, this, "Flutter (Bazel)");
     }
 
     @Override
     @NotNull
     public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-      // Override the default name which is always "Unnamed".
-      return super.createConfiguration(template.getProject().getName(), template);
+      // Called in two cases:
+      //   - When creating a non-template config from a template.
+      //   - whenever the run configuration editor is open (for creating snapshots).
+      // In the first case, we want to override the defaults from the template.
+      // In the second case, don't change anything.
+      //   (But the name doesn't matter; it will immediately be overwritten.)
+      if ((name.equals("Unnamed") || name.startsWith("Unnamed (")) && template instanceof BazelRunConfig) {
+        return ((BazelRunConfig)template).copyTemplateToNonTemplate();
+      } else {
+        return super.createConfiguration(name, template);
+      }
     }
 
     @Override

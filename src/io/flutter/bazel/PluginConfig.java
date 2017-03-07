@@ -57,6 +57,10 @@ public class PluginConfig {
     return fields.daemonScript;
   }
 
+  public @Nullable String getLaunchScript() {
+    return fields.launchScript;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof PluginConfig)) return false;
@@ -109,21 +113,26 @@ public class PluginConfig {
   /**
    * The JSON fields in a PluginConfig, as loaded from disk.
    */
+  @SuppressWarnings("unused")
   private static class Fields {
     /**
      * A list of regular expressions that match workspace-relative paths that contain flutter apps.
      * (Used to decide whether to show the device menu.)
      */
     @SerializedName("directoryPatterns")
-    @SuppressWarnings("unused")
     private List<String> directoryPatterns;
 
     /**
      * The script to run to start 'flutter daemon'.
      */
     @SerializedName("daemonScript")
-    @SuppressWarnings("unused")
     private String daemonScript;
+
+    /**
+     *
+     */
+    @SerializedName("launchScript")
+    private String launchScript;
 
     Fields() {}
 
@@ -132,12 +141,13 @@ public class PluginConfig {
       if (!(obj instanceof Fields)) return false;
       final Fields other = (Fields)obj;
       return Objects.equal(directoryPatterns, other.directoryPatterns)
-             && Objects.equal(daemonScript, other.daemonScript);
+             && Objects.equal(daemonScript, other.daemonScript)
+             && Objects.equal(launchScript, other.launchScript);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(directoryPatterns, daemonScript);
+      return Objects.hashCode(directoryPatterns, daemonScript, launchScript);
     }
   }
 

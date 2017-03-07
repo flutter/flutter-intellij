@@ -30,6 +30,30 @@ public class BazelFields {
   private @Nullable String additionalArgs;
   private @Nullable String bazelTarget;
 
+  BazelFields() {}
+
+  /** Copy constructor */
+  private BazelFields(@NotNull BazelFields original) {
+    workDir = original.workDir;
+    launchScript = original.launchScript;
+    additionalArgs = original.additionalArgs;
+    bazelTarget = original.bazelTarget;
+  }
+
+  /** Create non-template from template. */
+  private BazelFields(@NotNull BazelFields template, Workspace w) {
+    this(template);
+    if (StringUtil.isEmptyOrSpaces(workDir)) {
+      workDir = w.getRoot().getPath();
+    }
+    if (StringUtil.isEmptyOrSpaces(launchScript)) {
+      launchScript = w.getLaunchScript();
+      if (launchScript != null && !launchScript.startsWith("/")) {
+        launchScript = w.getRoot().getPath() + "/" + launchScript;
+      }
+    }
+  }
+
   @Nullable
   public String getWorkingDirectory() {
     return workDir;
@@ -67,22 +91,27 @@ public class BazelFields {
   }
 
   BazelFields copy() {
-    final BazelFields copy = new BazelFields();
-    copy.setWorkingDirectory(workDir);
-    copy.setLaunchingScript(launchScript);
-    copy.setBazelTarget(bazelTarget);
-    copy.setAdditionalArgs(additionalArgs);
-    return copy;
+    return new BazelFields(this);
+  }
+
+  BazelFields copyTemplateToNonTemplate(Project project) {
+    final Workspace w = WorkspaceCache.getInstance(project).getNow();
+    if (w == null) return new BazelFields(this);
+    return new BazelFields(this, w);
   }
 
   /**
-   * Reports any errors that the user should correct.
+   * Reports an error in the run config that the user should correct.
    *
-   * <p>This will be called while the user is typing; see RunConfiguration.checkConfiguration.
+   * <p>This will be called while the user is typing into a non-template run config.
+   * (See RunConfiguration.checkConfiguration.)
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
+    // The UI only shows one error message at a time.
+    // The order we do the checks here determines priority.
+
     final DartSdk sdk = DartPlugin.getDartSdk(project);
     if (sdk == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
