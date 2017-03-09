@@ -53,6 +53,8 @@ public class FlutterApp {
     myConnector = new ObservatoryConnector() {
       @Override
       public @Nullable String getWebSocketUrl() {
+        // Don't try to use observatory until the flutter command is done starting up.
+        if (getState() != State.STARTED) return null;
         return myWsUrl;
       }
 
@@ -111,7 +113,6 @@ public class FlutterApp {
   void setAppId(@NotNull String id) {
     myAppId = id;
   }
-
 
   void setWsUrl(@NotNull String url) {
     myWsUrl = url;
