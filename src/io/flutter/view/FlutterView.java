@@ -135,6 +135,9 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       }
 
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
+      if (toolWindow == null) {
+        return;
+      }
 
       if (getFlutterApp() == null) {
         toolWindow.setIcon(FlutterIcons.Flutter);
