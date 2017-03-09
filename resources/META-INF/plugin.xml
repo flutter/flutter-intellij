@@ -21,6 +21,11 @@
 
   <change-notes>
     <![CDATA[
+0.1.11.2:
+<ul>
+  <li>fix an NPE in the Flutter View when launching an app</li>
+</ul>
+
 0.1.11.1:
 <ul>
   <li>fix to a use after dispose exception in the Flutter View</li>
