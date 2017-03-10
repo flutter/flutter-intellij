@@ -116,23 +116,18 @@ public class Launcher extends CommandLineState {
 
   @NotNull
   private XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
-                                                  final FlutterApp app,
-                                                  final ExecutionResult executionResult)
+                                           @NotNull final FlutterApp app,
+                                           @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
+
+    final String executionContextId = getExecutionContextId(env, app);
+
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
     final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
-
         final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
-
-        String executionContextId = null;
-        final DartAnalysisServerService service = DartAnalysisServerService.getInstance();
-        if (service.serverReadyForRequest(env.getProject())) {
-          executionContextId = service.execution_createContext(sourceLocation.getPath());
-        }
-
         return new FlutterDebugProcess(app, session, executionResult, resolver, executionContextId, workDir);
       }
     });
@@ -142,6 +137,30 @@ public class Launcher extends CommandLineState {
     }
 
     return session;
+  }
+
+  /**
+   * Returns an id needed to ask the analysis server to map source files (for breakpoints).
+   */
+  private String getExecutionContextId(@NotNull ExecutionEnvironment env, @NotNull FlutterApp app)
+    throws ExecutionException {
+
+    if (app.getMode() != RunMode.DEBUG) {
+      return null; // Don't need analysis server just to run.
+    }
+
+    final DartAnalysisServerService service = DartAnalysisServerService.getInstance();
+    if (!service.serverReadyForRequest(env.getProject())) {
+      // TODO(skybrian) make this required to debug at all? Seems bad for breakpoints to be flaky.
+      LOG.warn("Dart analysis server is not running. Some breakpoints may not work.");
+      return null;
+    }
+
+    final String result = service.execution_createContext(sourceLocation.getPath());
+    if (result == null) {
+      LOG.warn("Failed to get execution context from analysis server. Some breakpoints may not work.");
+    }
+    return result;
   }
 
   @NotNull
