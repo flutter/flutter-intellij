@@ -46,7 +46,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
 
   public FlutterDebugProcess(@NotNull FlutterApp app,
                              @NotNull XDebugSession session,
-                             @Nullable ExecutionResult executionResult,
+                             @NotNull ExecutionResult executionResult,
                              @NotNull DartUrlResolver dartUrlResolver,
                              @Nullable String dasExecutionContextId,
                              @Nullable VirtualFile currentWorkingDirectory) {

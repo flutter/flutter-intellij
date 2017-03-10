@@ -1,9 +1,7 @@
 package com.jetbrains.lang.dart.ide.runner.server.vmService;
 
 import com.intellij.execution.ExecutionResult;
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.execution.ui.ExecutionConsole;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
@@ -49,11 +47,12 @@ import java.util.*;
 
 /**
  * TODO(messick) Add ObservatoryConnector parameter to superclass then delete this class.
+ *
+ * <p>Doesn't do remote debugging. (The Flutter plugin doesn't need it.)</p>
  */
 public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
-  @Nullable private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
 
   private boolean myVmConnected = false;
@@ -68,24 +67,35 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private final Map<String, LightVirtualFile> myScriptIdToContentMap = new THashMap<>();
   private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap = new THashMap<>();
 
+  /**
+   * Same private variable as superclass, but we override all methods so only this one is used.
+   */
   @Nullable private final String myDASExecutionContextId;
+
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @NotNull private final ObservatoryConnector myConnector;
 
+  /**
+   * A prefix to be removed from a remote URI before looking for a corresponding local file.
+   * (Typically a "snapshot prefix".)
+   */
   private String mySnapshotBaseUri;
+
+  /**
+   * The "devfs" base uri returned by the Flutter app at start.
+   */
   private String myRemoteBaseUri;
   private boolean remoteDebug = false;
 
   public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
-                                    @Nullable final ExecutionResult executionResult,
+                                    @NotNull final ExecutionResult executionResult,
                                     @NotNull final DartUrlResolver dartUrlResolver,
                                     @Nullable final String dasExecutionContextId,
                                     @Nullable final VirtualFile currentWorkingDirectory,
                                     @NotNull final ObservatoryConnector connector) {
-    super(session, "localhost", 0, executionResult, dartUrlResolver, dasExecutionContextId,
+    super(session, "localhost", 0, executionResult, dartUrlResolver, "fakeExecutionIdNotUsed",
           false, 0, currentWorkingDirectory);
 
-    myExecutionResult = executionResult;
     myDartUrlResolver = dartUrlResolver;
     myCurrentWorkingDirectory = currentWorkingDirectory;
     myConnector = connector;
@@ -126,8 +136,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     scheduleConnectNew();
 
-    LOG.assertTrue(myExecutionResult != null && myDASExecutionContextId != null, myDASExecutionContextId + myExecutionResult);
-
     // We disable the service protocol library logger because of a user facing NPE in a
     // DartVmServiceListener from the Dart plugin.
     Logging.setLogger(org.dartlang.vm.service.logging.Logger.NULL);
@@ -135,6 +143,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @Override
   public boolean isRemoteDebug() {
+    // The flutter plugin doesn't do remote debugging, but we set this value to
+    // whatever is needed to fake out the superclass.
     return remoteDebug;
   }
 
@@ -291,17 +301,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
    * Callback for subclass.
    */
   protected void onVmConnected(@NotNull VmService vmService) {}
-
-  @Override
-  protected ProcessHandler doGetProcessHandler() {
-    return myExecutionResult == null ? super.doGetProcessHandler() : myExecutionResult.getProcessHandler();
-  }
-
-  @NotNull
-  @Override
-  public ExecutionConsole createConsole() {
-    return myExecutionResult == null ? super.createConsole() : myExecutionResult.getExecutionConsole();
-  }
 
   @NotNull
   @Override

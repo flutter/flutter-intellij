@@ -5,6 +5,7 @@
  */
 package io.flutter.run.daemon;
 
+import com.google.common.base.Stopwatch;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -204,11 +206,17 @@ public class FlutterApp {
     AppExecutorUtil.getAppExecutorService().submit(() -> {
       // Try to shut down gracefully. (Need to wait for a response.)
       final Future stopDone = myDaemonApi.stopApp(appId);
-      try {
-        stopDone.get(10, TimeUnit.SECONDS);
-      }
-      catch (Exception e) {
-        // Probably timed out.
+      final Stopwatch watch = Stopwatch.createStarted();
+      while (watch.elapsed(TimeUnit.SECONDS) < 10 && getState() == State.TERMINATING) {
+        try {
+          stopDone.get(100, TimeUnit.MILLISECONDS);
+          break;
+        } catch (TimeoutException e) {
+          // continue
+        } catch (Exception e) {
+          LOG.warn(e);
+          break;
+        }
       }
 
       // If it didn't work, shut down abruptly.
