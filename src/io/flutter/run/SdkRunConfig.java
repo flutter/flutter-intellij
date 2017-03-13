@@ -79,9 +79,11 @@ public class SdkRunConfig extends LocatableConfigurationBase
     // TODO(skybrian) make this less awkward?
     final VirtualFile launchFile;
     final VirtualFile workDir;
+    final String additionalArgs;
     try {
       launchFile = SdkFields.checkLaunchFile(fields.getFilePath());
       workDir = fields.chooseWorkDir(launchFile, env.getProject());
+      additionalArgs = fields.getAdditionalArgs();
     } catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e); // Shouldn't happen here since we already checked.
     }
@@ -89,7 +91,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final FlutterAppService appService = FlutterAppService.getInstance(env.getProject());
 
     final Launcher.Callback callback = (device) ->
-      appService.startFlutterSdkApp(workDir.getPath(), device, RunMode.fromEnv(env), launchFile.getPath());
+      appService.startFlutterSdkApp(workDir.getPath(), additionalArgs, device, RunMode.fromEnv(env), launchFile.getPath());
 
     final Launcher launcher = new Launcher(env, workDir, launchFile, this, callback);
 
