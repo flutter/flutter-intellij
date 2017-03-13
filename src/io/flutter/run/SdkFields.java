@@ -25,13 +25,15 @@ import org.jetbrains.annotations.Nullable;
  */
 public class SdkFields {
   private @Nullable String filePath;
+  private @Nullable String programArgs;
   private @Nullable String workDir;
 
-  public SdkFields() {}
+  public SdkFields() {
+  }
 
   /**
    * Creates SDK fields from a Dart file containing a main method.
-   *
+   * <p>
    * <p>(Automatically chooses the working directory.)
    */
   public SdkFields(VirtualFile launchFile, Project project) {
@@ -49,6 +51,15 @@ public class SdkFields {
   }
 
   @Nullable
+  public String getProgramArgs() {
+    return programArgs;
+  }
+
+  public void setProgramArgs(final @Nullable String programArgs) {
+    this.programArgs = programArgs;
+  }
+
+  @Nullable
   public String getWorkingDirectory() {
     return workDir;
   }
@@ -59,7 +70,7 @@ public class SdkFields {
 
   /**
    * Reports any errors that the user should correct.
-   *
+   * <p>
    * <p>This will be called while the user is typing; see RunConfiguration.checkConfiguration.
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
@@ -77,7 +88,8 @@ public class SdkFields {
     // Work directory is optional; if not set we must infer it.
     if (!StringUtil.isEmptyOrSpaces(workDir)) {
       return checkWorkDir(workDir);
-    } else {
+    }
+    else {
       return suggestWorkDirFromLaunchFile(launchFile, project);
     }
   }
@@ -92,7 +104,8 @@ public class SdkFields {
   /**
    * Chooses a suitable working directory based on the user's selected Dart file.
    */
-  static @NotNull VirtualFile suggestWorkDirFromLaunchFile(@NotNull VirtualFile launchFile, @NotNull Project project) {
+  @NotNull
+  static VirtualFile suggestWorkDirFromLaunchFile(@NotNull VirtualFile launchFile, @NotNull Project project) {
     // Default to pubspec's directory if available.
     final VirtualFile pubspec = PubspecYamlUtil.findPubspecYamlFile(project, launchFile);
     if (pubspec != null) {
@@ -116,7 +129,9 @@ public class SdkFields {
     return sdk;
   }
 
-  static @NotNull VirtualFile checkLaunchFile(String path) throws RuntimeConfigurationError {
+
+  @NotNull
+  static VirtualFile checkLaunchFile(String path) throws RuntimeConfigurationError {
     // TODO(skybrian) also check that it's a Flutter app and contains main.
 
     if (StringUtil.isEmptyOrSpaces(path)) {
