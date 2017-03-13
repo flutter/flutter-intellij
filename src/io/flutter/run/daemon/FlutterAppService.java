@@ -144,6 +144,11 @@ public class FlutterAppService {
     if (!mode.isReloadEnabled()) {
       commandLine.addParameter("--no-hot");
     }
+    if (additionalArgs != null) {
+      for (String param : additionalArgs.split(" ")) {
+        commandLine.addParameter(param);
+      }
+    }
     if (path != null) {
       // Make the path relative if possible (to make the command line prettier).
       if (path.startsWith(workDir)) {
@@ -154,11 +159,6 @@ public class FlutterAppService {
       }
       path = FileUtil.toSystemDependentName(path);
       commandLine.addParameter(path);
-    }
-    if (additionalArgs != null) {
-      for (String param : additionalArgs.split(" ")) {
-        commandLine.addParameter(param);
-      }
     }
 
     return commandLine;

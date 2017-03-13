@@ -21,7 +21,7 @@ public class SdkFieldsTest {
   public void shouldReadFieldsFromXml() {
     final Element elt = new Element("test");
     addOption(elt, "filePath", "lib/main.dart");
-    addOption(elt, "programArgs", "--trace-startup");
+    addOption(elt, "additionalArgs", "--trace-startup");
     addOption(elt, "workingDirectory", "/tmp/test/example");
 
 
