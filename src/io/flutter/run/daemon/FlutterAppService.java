@@ -44,19 +44,19 @@ public class FlutterAppService {
   /**
    * Start a Flutter app using the current Flutter SDK.
    * @param workDir The directory where the command should be run.
-   * @param programArgs Additional program args.
+   * @param additionalArgs Additional program args.
    * @param device The device to use.
    * @param mode The RunMode to use (release, debug, profile).
    * @param path Path to the Dart file containing the main method.
    */
   public FlutterApp startFlutterSdkApp(@NotNull String workDir,
-                                       @Nullable String programArgs,
+                                       @Nullable String additionalArgs,
                                        @Nullable FlutterDevice device,
                                        @NotNull RunMode mode,
                                        @Nullable String path)
     throws ExecutionException {
 
-    final GeneralCommandLine command = createFlutterSdkRunCommand(workDir, programArgs, device, mode, path);
+    final GeneralCommandLine command = createFlutterSdkRunCommand(workDir, additionalArgs, device, mode, path);
 
     final FlutterApp app = startApp(mode, command, StringUtil.capitalize(mode.mode()) + "App", "StopApp");
 

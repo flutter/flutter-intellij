@@ -25,7 +25,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class SdkFields {
   private @Nullable String filePath;
-  private @Nullable String programArgs;
+  private @Nullable String additionalArgs;
   private @Nullable String workDir;
 
   public SdkFields() {
@@ -33,7 +33,6 @@ public class SdkFields {
 
   /**
    * Creates SDK fields from a Dart file containing a main method.
-   * <p>
    * <p>(Automatically chooses the working directory.)
    */
   public SdkFields(VirtualFile launchFile, Project project) {
@@ -51,12 +50,12 @@ public class SdkFields {
   }
 
   @Nullable
-  public String getProgramArgs() {
-    return programArgs;
+  public String getAdditionalArgs() {
+    return additionalArgs;
   }
 
-  public void setProgramArgs(final @Nullable String programArgs) {
-    this.programArgs = programArgs;
+  public void setAdditionalArgs(final @Nullable String additionalArgs) {
+    this.additionalArgs = additionalArgs;
   }
 
   @Nullable
@@ -70,12 +69,12 @@ public class SdkFields {
 
   /**
    * Reports any errors that the user should correct.
-   * <p>
    * <p>This will be called while the user is typing; see RunConfiguration.checkConfiguration.
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
+    //TODO(pq): consider validating additional args values
     checkSdk(project);
     final VirtualFile file = checkLaunchFile(filePath);
     chooseWorkDir(file, project);

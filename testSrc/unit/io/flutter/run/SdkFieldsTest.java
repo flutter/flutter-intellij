@@ -21,14 +21,14 @@ public class SdkFieldsTest {
   public void shouldReadFieldsFromXml() {
     final Element elt = new Element("test");
     addOption(elt, "filePath", "lib/main.dart");
-    addOption(elt, "programArgs", "--debug");
+    addOption(elt, "programArgs", "--trace-startup");
     addOption(elt, "workingDirectory", "/tmp/test/example");
 
 
     final SdkFields fields = new SdkFields();
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("lib/main.dart", fields.getFilePath());
-    assertEquals("--debug", fields.getProgramArgs());
+    assertEquals("--trace-startup", fields.getAdditionalArgs());
     assertEquals("/tmp/test/example", fields.getWorkingDirectory());
   }
 
@@ -36,7 +36,7 @@ public class SdkFieldsTest {
   public void roundTripShouldPreserveFields() {
     final SdkFields before = new SdkFields();
     before.setFilePath("main.dart");
-    before.setProgramArgs("--debug");
+    before.setAdditionalArgs("--trace-startup");
     before.setWorkingDirectory("work");
 
     final Element elt = new Element("test");
@@ -45,7 +45,7 @@ public class SdkFieldsTest {
     final SdkFields after = new SdkFields();
     XmlSerializer.deserializeInto(after, elt);
     assertEquals("main.dart", before.getFilePath());
-    assertEquals("--debug", before.getProgramArgs());
+    assertEquals("--trace-startup", before.getAdditionalArgs());
     assertEquals("work", after.getWorkingDirectory());
   }
 

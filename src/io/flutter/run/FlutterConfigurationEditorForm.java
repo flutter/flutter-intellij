@@ -24,7 +24,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
   private TextFieldWithBrowseButton myWorkingDirectory;
-  private JTextField myProgramArguments;
+  private JTextField myAdditionalArguments;
 
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
@@ -38,7 +38,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
     final SdkFields fields = config.getFields();
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getFilePath())));
     myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getWorkingDirectory())));
-    myProgramArguments.setText(fields.getProgramArgs());
+    myAdditionalArguments.setText(fields.getAdditionalArgs());
   }
 
   @Override
@@ -46,7 +46,7 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
     final SdkFields fields = new SdkFields();
     fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
     fields.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
-    fields.setProgramArgs(StringUtil.nullize(myProgramArguments.getText().trim()));
+    fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArguments.getText().trim()));
     config.setFields(fields);
   }
 
