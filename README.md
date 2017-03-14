@@ -19,6 +19,14 @@ A very brief summary of the getting started guide linked from above:
 - choose the option to restart IntelliJ
 - configure the Flutter SDK setting (Preferences on macOS, File>Settings on Linux, select Languages & Frameworks>Flutter, and set the path to the root of your flutter repo)
 
+## Filing issues
+
+Please use our [issue tracker](https://github.com/flutter/flutter-intellij/issues)
+for Flutter IntelliJ issues. For more general Flutter issues, you should prefer to use
+the Flutter [issue tracker](https://github.com/flutter/flutter/issues). For more
+Dart IntelliJ releated issues, you can use JetBrains'
+[YouTrack tracker](https://youtrack.jetbrains.com/issues?q=%23Dart%20%23Unresolved%20).
+
 ## Known issues
 
 Please note the following known issues:
