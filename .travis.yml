@@ -31,7 +31,7 @@ env:
   - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2016.3.4    DART_PLUGIN_VERSION=163.13137
   - IDEA_PRODUCT=ideaIC             IDEA_VERSION=171.3780.15 DART_PLUGIN_VERSION=171.3780.21
 
-  # WebStorm
+  # WebStorm supported range
   - IDEA_PRODUCT=WebStorm           IDEA_VERSION=2016.3.3
   - IDEA_PRODUCT=WebStorm           IDEA_VERSION=2017.1-RC
 

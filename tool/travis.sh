@@ -22,9 +22,15 @@ dart tool/grind.dart api
 # Run the ant build.
 if [ "$UNIT_TEST" = "true" ]
 then
-  ant build test \
-    -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
+  if [ -z "$DART_PLUGIN_VERSION" ]
+    ant build test -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION
+  else
+    ant build test -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
+  fi
 else
-  ant build \
-    -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
+  if [ -z "$DART_PLUGIN_VERSION" ]
+    ant build -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION
+  else
+    ant build -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
+  fi
 fi
