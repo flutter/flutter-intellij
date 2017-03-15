@@ -71,6 +71,8 @@
   </target>
 
   <target name="properties" depends="download">
+    <mkdir dir="${basedir}/artifacts/Dart/lib"/>
+
     <property name="javac2.home" value="artifacts/javac2"/>
     <path id="javac2.classpath">
       <pathelement location="${javac2.home}/javac2.jar"/>
