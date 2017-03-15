@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -19,11 +20,11 @@ import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import org.dartlang.vm.service.element.LibraryRef;
-import org.dartlang.vm.service.element.Script;
 import org.dartlang.vm.service.element.ScriptRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,11 +33,11 @@ import java.io.File;
 import java.util.*;
 
 /**
- * Converts positions between Dart files in Observatory and local dart files.
+ * Converts positions between Dart files in Observatory and local Dart files.
  * <p>
  * Used when setting breakpoints, stepping through code, and so on while debugging.
  */
-public class PositionMapper {
+public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper {
   @NotNull
   private final Project project;
 
@@ -64,7 +65,7 @@ public class PositionMapper {
    * Initialized when the debugger connects.
    */
   @Nullable
-  private ScriptProvider scriptProvider;
+  private DartVmServiceDebugProcessZ.ScriptProvider scriptProvider;
 
   /**
    * The "devfs" base uri reported by the flutter process on startup.
@@ -99,7 +100,7 @@ public class PositionMapper {
     this.analyzer = analyzer;
   }
 
-  public void onConnect(@NotNull ScriptProvider provider, @Nullable String remoteBaseUri) {
+  public void onConnect(@NotNull DartVmServiceDebugProcessZ.ScriptProvider provider, @Nullable String remoteBaseUri) {
     if (this.scriptProvider != null) {
       throw new IllegalStateException("already connected");
     }
@@ -114,7 +115,7 @@ public class PositionMapper {
     // TODO(skybrian) what should we do if this gets called multiple times?
     // This happens when there is more than one isolate.
     // Currently it overwrites the previous value.
-    
+
     // Calculate the remote source root.
     for (LibraryRef library : libraries) {
       final String remoteUri = library.getUri();
@@ -165,7 +166,7 @@ public class PositionMapper {
    * (The URI may change after a hot restart.)
    */
   @NotNull
-  public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
+  public Collection<String> getBreakpointUris(@NotNull final VirtualFile file) {
     final Set<String> results = new HashSet<>();
     final String uriByIde = resolver.getDartUrlForFile(file);
 
@@ -234,7 +235,7 @@ public class PositionMapper {
     return remote.createPosition(local, tokenPos);
   }
 
-  // for testing
+  @VisibleForTesting
   @Nullable
   String getRemoteSourceRoot() {
     return remoteSourceRoot;
@@ -359,13 +360,5 @@ public class PositionMapper {
         }
       };
     }
-  }
-
-  public interface ScriptProvider {
-    /**
-     * Downloads a script from observatory. Blocks until it's available.
-     */
-    @Nullable
-    Script downloadScript(@NotNull String isolateId, @NotNull String scriptId);
   }
 }

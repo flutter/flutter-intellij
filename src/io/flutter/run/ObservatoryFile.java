@@ -11,6 +11,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.DartFileType;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
 import org.dartlang.vm.service.element.Script;
@@ -118,7 +119,7 @@ class ObservatoryFile {
     private final String isolateId;
 
     @NotNull
-    private final PositionMapper.ScriptProvider provider;
+    private final DartVmServiceDebugProcessZ.ScriptProvider provider;
 
     /**
      * A cache containing each file downloaded from Observatory. The key is a script id.
@@ -126,7 +127,7 @@ class ObservatoryFile {
      */
     private final Map<String, ObservatoryFile> versions = new THashMap<>();
 
-    Cache(@NotNull String isolateId, @NotNull PositionMapper.ScriptProvider provider) {
+    Cache(@NotNull String isolateId, @NotNull DartVmServiceDebugProcessZ.ScriptProvider provider) {
       this.isolateId = isolateId;
       this.provider = provider;
     }

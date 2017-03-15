@@ -19,7 +19,6 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSu
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
-import io.flutter.run.PositionMapper;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -244,7 +243,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
 
-    final PositionMapper.ScriptProvider provider =
+    final ScriptProvider provider =
       (isolateId, scriptId) -> myVmServiceWrapper.getScriptSync(isolateId, scriptId);
 
     mapper.onConnect(provider, myConnector.getRemoteBaseUrl());
@@ -392,7 +391,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   @NotNull
   public Collection<String> getUrisForFile(@NotNull final VirtualFile file) {
-    return mapper.getUrisForFile(file);
+    return mapper.getBreakpointUris(file);
   }
 
   @Nullable
@@ -402,5 +401,46 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public boolean getVmConnected() {
     return myVmConnected;
+  }
+
+  // TODO(skybrian) when we merge this back to the Dart plugin,
+  // I expect we will copy PositionMapper's implementation and ObservatoryFile as well.
+  // But we should keep these interfaces to allow them to be overridden by the Flutter plugin if needed.
+
+  /**
+   * Converts positions between Dart files in Observatory and local Dart files.
+   * <p>
+   * Used when setting breakpoints and stepping through code while debugging.
+   */
+  public interface PositionMapper {
+    void onConnect(ScriptProvider provider, String remoteBaseUrl);
+
+    // TODO(skybrian) this is called once per isolate. Should we pass in the isolate id?
+    /**
+     * Just after connecting, the debugger downloads the list of Dart libraries from Observatory and reports it here.
+     */
+    void onLibrariesDownloaded(Iterable<LibraryRef> libraries);
+
+    /**
+     * Returns all possible Observatory URI's corresponding to a local file.
+     *
+     * (A breakpoint will be set in all of them that exist.)
+     */
+    Collection<String> getBreakpointUris(VirtualFile file);
+
+    /**
+     * Returns the local position (to display to the user) corresponding to a token position in Observatory.
+     */
+    XSourcePosition getSourcePosition(String isolateId, ScriptRef scriptRef, int tokenPos);
+
+    void shutdown();
+  }
+
+  public interface ScriptProvider {
+    /**
+     * Downloads a script from observatory. Blocks until it's available.
+     */
+    @Nullable
+    Script downloadScript(@NotNull String isolateId, @NotNull String scriptId);
   }
 }

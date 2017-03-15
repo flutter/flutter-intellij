@@ -11,6 +11,7 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.roots.ModuleRootModificationUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
 import io.flutter.testing.ProjectFixture;
@@ -112,7 +113,7 @@ public class PositionMapperTest {
     return new ScriptRef(elt);
   }
 
-  private static final class FakeScriptProvider implements PositionMapper.ScriptProvider {
+  private static final class FakeScriptProvider implements DartVmServiceDebugProcessZ.ScriptProvider {
     final Map<String, Script> scripts = new HashMap<>();
 
     void addScript(String isolateId, String scriptId, String uri, List<Line> table) {
