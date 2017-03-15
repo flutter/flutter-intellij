@@ -199,7 +199,7 @@
 
   <target name="test" depends="build.testSrc">
     <!-- create a Dart plugin directory -->
-    <copy todir="build/idea-sandbox/plugins/Dart/lib" flatten="true">
+    <copy todir="build/idea-sandbox/plugins/Dart/lib" flatten="true" failonerror="false">
       <path refid="dartplugin.jars"/>
     </copy>
 
