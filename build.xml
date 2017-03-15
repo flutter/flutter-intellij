@@ -71,6 +71,7 @@
   </target>
 
   <target name="properties" depends="download">
+    <mkdir dir="${idea.home}/plugins/Dart/lib"/>
     <mkdir dir="${basedir}/artifacts/Dart/lib"/>
 
     <property name="javac2.home" value="artifacts/javac2"/>
