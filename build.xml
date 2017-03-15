@@ -10,8 +10,8 @@
   <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
-  <property name="idea.version" value="2016.3.2"/>
-  <property name="dart.plugin.version" value="163.11306"/>
+  <property name="idea.version" value="2016.3.4"/>
+  <property name="dart.plugin.version" value="163.13137"/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
@@ -59,14 +59,16 @@
     </untar>
   </target>
 
-  <target name="download" depends="download.android, download.idea">
-    <!-- download the javac2 jars -->
-    <get src="${google.storage.base}/intellij-javac2.zip" dest="artifacts/" usetimestamp="true"/>
-    <unzip src="artifacts/intellij-javac2.zip" dest="artifacts/javac2"/>
-
+  <target name="download-dart-plugin" depends="init" if="dart.plugin.version">
     <!-- download the Dart plugin -->
     <get src="${google.storage.base}/Dart-${dart.plugin.version}.zip" dest="artifacts/" usetimestamp="true"/>
     <unzip src="artifacts/Dart-${dart.plugin.version}.zip" dest="artifacts"/>
+  </target>
+
+  <target name="download" depends="download.android, download.idea, download-dart-plugin">
+    <!-- download the javac2 jars -->
+    <get src="${google.storage.base}/intellij-javac2.zip" dest="artifacts/" usetimestamp="true"/>
+    <unzip src="artifacts/intellij-javac2.zip" dest="artifacts/javac2"/>
   </target>
 
   <target name="properties" depends="download">
