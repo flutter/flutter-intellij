@@ -11,7 +11,6 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
@@ -25,7 +24,6 @@ import io.flutter.run.daemon.RunMode;
 import io.flutter.view.FlutterViewMessages;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -48,10 +46,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
                              @NotNull XDebugSession session,
                              @NotNull ExecutionResult executionResult,
                              @NotNull DartUrlResolver dartUrlResolver,
-                             @Nullable String dasExecutionContextId,
-                             @Nullable VirtualFile currentWorkingDirectory) {
-    super(session, executionResult, dartUrlResolver, dasExecutionContextId,
-          currentWorkingDirectory, app.getConnector());
+                             @NotNull PositionMapper mapper) {
+    super(session, executionResult, dartUrlResolver, app.getConnector(), mapper);
     this.app = app;
   }
 

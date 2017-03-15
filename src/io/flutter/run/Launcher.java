@@ -32,7 +32,6 @@ import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.actions.OpenObservatoryAction;
@@ -120,15 +119,15 @@ public class Launcher extends CommandLineState {
                                            @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
 
-    final String executionContextId = getExecutionContextId(env, app);
+    final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
+    final PositionMapper mapper = createPositionMapper(env, app, resolver);
 
     final XDebuggerManager manager = XDebuggerManager.getInstance(env.getProject());
     final XDebugSession session = manager.startSession(env, new XDebugProcessStarter() {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
-        final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
-        return new FlutterDebugProcess(app, session, executionResult, resolver, executionContextId, workDir);
+        return new FlutterDebugProcess(app, session, executionResult, resolver, mapper);
       }
     });
 
@@ -139,28 +138,23 @@ public class Launcher extends CommandLineState {
     return session;
   }
 
-  /**
-   * Returns an id needed to ask the analysis server to map source files (for breakpoints).
-   */
-  private String getExecutionContextId(@NotNull ExecutionEnvironment env, @NotNull FlutterApp app)
-    throws ExecutionException {
-
-    if (app.getMode() != RunMode.DEBUG) {
-      return null; // Don't need analysis server just to run.
+  @NotNull
+  private PositionMapper createPositionMapper(@NotNull ExecutionEnvironment env,
+                                              @NotNull FlutterApp app,
+                                              @NotNull DartUrlResolver resolver) {
+    final PositionMapper.Analyzer analyzer;
+    if (app.getMode() == RunMode.DEBUG) {
+      analyzer = PositionMapper.Analyzer.create(env.getProject(), sourceLocation);
+    } else {
+      analyzer = null; // Don't need analysis server just to run.
     }
 
-    final DartAnalysisServerService service = DartAnalysisServerService.getInstance();
-    if (!service.serverReadyForRequest(env.getProject())) {
-      // TODO(skybrian) make this required to debug at all? Seems bad for breakpoints to be flaky.
-      LOG.warn("Dart analysis server is not running. Some breakpoints may not work.");
-      return null;
-    }
+    // Choose source root containing the Dart application.
+    // TODO(skybrian) for bazel, we probably should pass in three source roots here (for bazel-bin, bazel-genfiles, etc).
+    final VirtualFile pubspec = resolver.getPubspecYamlFile();
+    final VirtualFile sourceRoot = pubspec != null ? pubspec.getParent() : workDir;
 
-    final String result = service.execution_createContext(sourceLocation.getPath());
-    if (result == null) {
-      LOG.warn("Failed to get execution context from analysis server. Some breakpoints may not work.");
-    }
-    return result;
+    return new PositionMapper(env.getProject(), sourceRoot, resolver, analyzer);
   }
 
   @NotNull
