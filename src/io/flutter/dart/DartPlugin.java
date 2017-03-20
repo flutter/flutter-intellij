@@ -8,10 +8,12 @@ package io.flutter.dart;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Version;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
@@ -100,5 +102,13 @@ public class DartPlugin {
       myVersion = Version.parseVersion(descriptor.getVersion());
     }
     return myVersion;
+  }
+
+  /**
+   * Return the DartAnalysisServerService instance. This handles the older case where the service was app
+   * based, and the newer case where the service is project based.
+   */
+  public DartAnalysisServerService getAnalysisService(@NotNull final Project project) {
+    return ServiceManager.getService(project, DartAnalysisServerService.class);
   }
 }
