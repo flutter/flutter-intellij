@@ -255,6 +255,9 @@
     <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
     <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
 
+    <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
+    <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
+
     <!-- IDEA only -->
     <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
 
