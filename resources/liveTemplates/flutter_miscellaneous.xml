@@ -1,0 +1,20 @@
+<templateSet group="Flutter">
+  <template name="stless" value="class $NAME$ extends StatelessWidget {&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return new Container($END$);&#10;  }&#10;}&#10;" description="New Stateless widget" toReformat="false" toShortenFQNames="true">
+    <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="DART_TOPLEVEL" value="true" />
+    </context>
+  </template>
+  <template name="stful" value="class $NAME$ extends StatefulWidget {&#10;  @override&#10;  _$NAME$State createState() =&gt; new _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends State&lt;$NAME$&gt; {&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return new Container($END$);&#10;  }&#10;}&#10;" description="New Stateful widget" toReformat="false" toShortenFQNames="true">
+    <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="DART_TOPLEVEL" value="true" />
+    </context>
+  </template>
+  <template name="stanim" value="class $NAME$ extends StatefulWidget {&#10;  @override&#10;  _$NAME$State createState() =&gt; new _$NAME$State();&#10;}&#10;&#10;class _$NAME$State extends State&lt;$NAME$&gt;&#10;    with SingleTickerProviderStateMixin {&#10;  AnimationController _controller;&#10;&#10;  @override&#10;  void initState() {&#10;    super.initState();&#10;    _controller = new AnimationController(vsync: this);&#10;  }&#10;&#10;  @override&#10;  void dispose() {&#10;    super.dispose();&#10;    _controller.dispose();&#10;  }&#10;&#10;  @override&#10;  Widget build(BuildContext context) {&#10;    return new Container($END$);&#10;  }&#10;}&#10;" description="New widget with AnimationController" toReformat="false" toShortenFQNames="true">
+    <variable name="NAME" expression="" defaultValue="" alwaysStopAt="true" />
+    <context>
+      <option name="DART_TOPLEVEL" value="true" />
+    </context>
+  </template>
+</templateSet>
