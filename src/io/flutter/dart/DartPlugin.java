@@ -35,6 +35,7 @@ public class DartPlugin {
   private static final Version MINIMUM_VERSION = Version.parseVersion(MINIMUM_REQUIRED_PLUGIN_VERSION);
 
   private static final DartPlugin INSTANCE = new DartPlugin();
+  private static DartSdkLibUtilDelegate mySdkLibUtilDelegate;
 
   private Version myVersion;
 
@@ -48,19 +49,20 @@ public class DartPlugin {
   }
 
   public static boolean isDartSdkEnabled(@NotNull Module module) {
-    return DartSdkGlobalLibUtil.isDartSdkEnabled(module);
+    return getSdkLibUtilDelegate().isDartSdkEnabled(module);
   }
 
   public static void enableDartSdk(@NotNull Module module) {
-    DartSdkGlobalLibUtil.enableDartSdk(module);
+    getSdkLibUtilDelegate().enableDartSdk(module);
   }
 
   public static void ensureDartSdkConfigured(@NotNull String sdkHomePath) {
+    // TODO: ???
     DartSdkGlobalLibUtil.ensureDartSdkConfigured(sdkHomePath);
   }
 
   public static void disableDartSdk(@NotNull Collection<Module> modules) {
-    DartSdkGlobalLibUtil.disableDartSdk(modules);
+    getSdkLibUtilDelegate().disableDartSdk(modules);
   }
 
   public static boolean isDartSdkHome(@Nullable String path) {
@@ -102,6 +104,14 @@ public class DartPlugin {
       myVersion = Version.parseVersion(descriptor.getVersion());
     }
     return myVersion;
+  }
+
+  private static DartSdkLibUtilDelegate getSdkLibUtilDelegate() {
+    if (mySdkLibUtilDelegate == null) {
+      mySdkLibUtilDelegate = new DartSdkLibUtilDelegate();
+    }
+
+    return mySdkLibUtilDelegate;
   }
 
   /**

@@ -95,7 +95,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
   }
 
-  static FlutterSdk getFlutterSdk() {
+  private static FlutterSdk getFlutterSdk() {
     return FlutterSdk.getGlobalFlutterSdk();
   }
 
