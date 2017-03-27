@@ -50,8 +50,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel<String> myPrivacyPolicy;
+  private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
+    this.myProject = project;
+
     init();
 
     myVersionLabel.setText("");
@@ -131,7 +134,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final String sdkHomePath = getSdkPathText();
     if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
+      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath));
     }
 
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());

@@ -9,6 +9,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
@@ -195,10 +197,10 @@ public class FlutterSdkUtil {
     return FlutterModuleUtils.declaresFlutterDependency(pubspec);
   }
 
-  public static void setFlutterSdkPath(@NotNull final String flutterSdkPath) {
-    // In reality this method sets Dart SDK, that is inside the Flutter SDK;
+  public static void setFlutterSdkPath(final Project project, @NotNull final String flutterSdkPath) {
+    // In reality this method sets Dart SDK (that is inside the Flutter SDK).
     final String dartSdk = flutterSdkPath + "/bin/cache/dart-sdk";
-    ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.ensureDartSdkConfigured(dartSdk));
+    ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.ensureDartSdkConfigured(project, dartSdk));
 
     // Checking for updates doesn't make sense since the channels don't correspond to Flutter...
     DartSdkUpdateOption.setDartSdkUpdateOption(DartSdkUpdateOption.DoNotCheck);

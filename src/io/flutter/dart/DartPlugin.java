@@ -16,7 +16,6 @@ import com.intellij.openapi.util.Version;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,9 +55,8 @@ public class DartPlugin {
     getSdkLibUtilDelegate().enableDartSdk(module);
   }
 
-  public static void ensureDartSdkConfigured(@NotNull String sdkHomePath) {
-    // TODO: ???
-    DartSdkGlobalLibUtil.ensureDartSdkConfigured(sdkHomePath);
+  public static void ensureDartSdkConfigured(Project project, @NotNull String sdkHomePath) {
+    getSdkLibUtilDelegate().ensureDartSdkConfigured(project, sdkHomePath);
   }
 
   public static void disableDartSdk(@NotNull Collection<Module> modules) {

@@ -6,6 +6,7 @@
 package io.flutter.dart;
 
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,11 +14,13 @@ import java.util.Collection;
 
 public class DartSdkLibUtilDelegate {
   private Class delegate;
+  private boolean isGlobalSdk = true;
 
   DartSdkLibUtilDelegate() {
     delegate = classForName("com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil");
     if (delegate == null) {
       delegate = classForName("com.jetbrains.lang.dart.sdk.DartSdkLibUtil");
+      isGlobalSdk = false;
     }
     assert delegate != null;
   }
@@ -64,6 +67,31 @@ public class DartSdkLibUtilDelegate {
       //noinspection unchecked
       final Method method = delegate.getMethod("disableDartSdk", Collection.class);
       method.invoke(null, modules);
+    }
+    catch (IllegalAccessException | NoSuchMethodException ignored) {
+    }
+    catch (InvocationTargetException e) {
+      if (e.getTargetException() instanceof IllegalArgumentException) {
+        throw (IllegalArgumentException)e.getTargetException();
+      }
+      else {
+        throw new RuntimeException(e.getTargetException());
+      }
+    }
+  }
+
+  public void ensureDartSdkConfigured(Project project, String sdkHomePath) {
+    try {
+      if (isGlobalSdk) {
+        //noinspection unchecked
+        final Method method = delegate.getMethod("ensureDartSdkConfigured", String.class);
+        method.invoke(null, sdkHomePath);
+      }
+      else {
+        //noinspection unchecked
+        final Method method = delegate.getMethod("ensureDartSdkConfigured", Project.class, Collection.class);
+        method.invoke(null, project, sdkHomePath);
+      }
     }
     catch (IllegalAccessException | NoSuchMethodException ignored) {
     }

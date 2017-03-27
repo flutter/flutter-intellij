@@ -25,7 +25,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
@@ -50,7 +49,7 @@ public class FlutterSdk {
     myVersion = FlutterSdkVersion.forVersionString(version);
   }
 
-  private FlutterSdk(@NotNull final String homePath) {
+  public FlutterSdk(@NotNull final String homePath) {
     this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
   }
 

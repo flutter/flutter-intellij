@@ -20,6 +20,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,6 +31,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
   private static final String DART_GROUP_NAME = "Static Web";
+
+  private FlutterModuleWizardStep myStep;
 
   @Override
   public String getName() {
@@ -56,21 +59,22 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     final ContentEntry contentEntry = doAddContentEntry(model);
     final VirtualFile baseDir = contentEntry == null ? null : contentEntry.getFile();
     if (baseDir != null) {
-      createProjectFiles(model, baseDir, getFlutterSdk());
+      createProjectFiles(model, baseDir, myStep.getFlutterSdk());
     }
   }
 
   @Override
   public boolean validate(Project current, Project dest) {
+    // TODO:
     return FlutterSdk.getGlobalFlutterSdk() != null;
   }
 
   @Nullable
   @Override
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
-    final FlutterModuleWizardStep step = new FlutterModuleWizardStep();
-    Disposer.register(parentDisposable, step);
-    return step;
+    myStep = new FlutterModuleWizardStep();
+    Disposer.register(parentDisposable, myStep);
+    return myStep;
   }
 
   @Override
@@ -86,6 +90,13 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static void createProjectFiles(@NotNull final ModifiableRootModel model,
                                          @NotNull final VirtualFile baseDir,
                                          @NotNull final FlutterSdk sdk) {
+    try {
+      DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
+    }
+    catch (ExecutionException e) {
+      LOG.warn("Error configuring the Flutter SDK.", e);
+    }
+
     // Create files.
     try {
       sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, null, baseDir.getPath());
@@ -95,10 +106,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
   }
 
-  private static FlutterSdk getFlutterSdk() {
-    return FlutterSdk.getGlobalFlutterSdk();
-  }
-
   public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
     throws ConfigurationException {
     // TODO(devoncarew): Store the flutterSdkPath info (in the project? module?).
@@ -106,13 +113,13 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (sdk == null) {
       throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
     }
-
     model.addContentEntry(baseDir);
     createProjectFiles(model, baseDir, sdk);
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer peer;
+    private FlutterSdk myFlutterSdk;
 
     public FlutterModuleWizardStep() {
       this.peer = new FlutterGeneratorPeer();
@@ -138,6 +145,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     @Override
     public void dispose() {
+    }
+
+    public FlutterSdk getFlutterSdk() {
+      return new FlutterSdk(peer.getSdkComboPath());
     }
   }
 }

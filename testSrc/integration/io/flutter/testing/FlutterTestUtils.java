@@ -48,7 +48,7 @@ public class FlutterTestUtils {
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-      FlutterSdkUtil.setFlutterSdkPath(sdkHome);
+      FlutterSdkUtil.setFlutterSdkPath(module.getProject(), sdkHome);
       DartPlugin.enableDartSdk(module);
     });
 

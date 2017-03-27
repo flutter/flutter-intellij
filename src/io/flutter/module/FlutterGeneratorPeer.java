@@ -6,7 +6,6 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
@@ -73,11 +72,6 @@ public class FlutterGeneratorPeer {
   }
 
   void apply() {
-    final String sdkHomePath = getSdkComboPath();
-    final FlutterSdk currentSdk = FlutterSdk.getGlobalFlutterSdk();
-    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath) && (currentSdk == null || !currentSdk.getHomePath().equals(sdkHomePath))) {
-      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
-    }
   }
 
   @NotNull
@@ -112,7 +106,7 @@ public class FlutterGeneratorPeer {
   }
 
   @NotNull
-  private String getSdkComboPath() {
+  public String getSdkComboPath() {
     return FileUtilRt.toSystemIndependentName(mySdkPathComboWithBrowse.getComboBox().getEditor().getItem().toString().trim());
   }
 }
