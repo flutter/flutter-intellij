@@ -21,7 +21,7 @@ Validate basic project creation.
 * Create a simple project (`File > New > Project...`, pick `Flutter`).
 * Confirm that:
   * Project contents are created.
-    * Verify that a run configuration (sharing the project name) is enabled in the
+    * Verify that a run configuration (`main.dart`) is enabled in the
       run/debug selector.
   * Navigation works.
     * Open `lib/main.dart` and navigate to `ThemeData`.
