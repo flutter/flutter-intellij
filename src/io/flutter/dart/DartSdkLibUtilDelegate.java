@@ -94,7 +94,7 @@ public class DartSdkLibUtilDelegate {
       }
       else {
         //noinspection unchecked
-        final Method method = delegate.getMethod("ensureDartSdkConfigured", Project.class, Collection.class);
+        final Method method = delegate.getMethod("ensureDartSdkConfigured", Project.class, String.class);
         method.invoke(null, project, sdkHomePath);
       }
     }

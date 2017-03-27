@@ -186,10 +186,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
    */
   private void updateVersionTextIfCurrent(@NotNull FlutterSdk sdk, @NotNull String value) {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
-    if (current == null || !sdk.getHomePath().equals(current.getHomePath())) {
-      return; // stale
+    if (current == null) {
+      myVersionLabel.setText("");
     }
-    myVersionLabel.setText(value);
+    else {
+      myVersionLabel.setText(value);
+    }
   }
 
   @Override
