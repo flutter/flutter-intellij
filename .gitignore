@@ -9,5 +9,6 @@ pubspec.lock
 .idea/workspace.xml
 .idea/shelf
 .idea/emacs.xml
+.idea/kotlinc.xml
 .vscode/
 material-design-icons/

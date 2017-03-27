@@ -22,7 +22,7 @@
   <change-notes>
     <![CDATA[
 
-0.12.0:
+12.0:
 <ul>
   <li>support for IDEA `2017.1`</li>
   <li>new Flutter `stless`, `stful`, and `stanim` live templates</li>
