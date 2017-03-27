@@ -21,6 +21,17 @@
 
   <change-notes>
     <![CDATA[
+
+0.12.0:
+<ul>
+  <li>support for IDEA `2017.1`</li>
+  <li>new Flutter `stless`, `stful`, and `stanim` live templates</li>
+  <li>support for specifying "Additional Args" to Flutter application launches</li>
+  <li>default run configuration creation on project open (when possible)</li>
+  <li>device menu improvements</li>
+  <li>miscellaneous bug fixes</li>
+</ul>
+
 0.1.11.2:
 <ul>
   <li>fix an NPE in the Flutter View when launching an app</li>
