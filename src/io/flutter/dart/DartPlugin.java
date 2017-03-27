@@ -55,7 +55,7 @@ public class DartPlugin {
     getSdkLibUtilDelegate().enableDartSdk(module);
   }
 
-  public static void ensureDartSdkConfigured(Project project, @NotNull String sdkHomePath) {
+  public static void ensureDartSdkConfigured(@Nullable Project project, @NotNull String sdkHomePath) {
     getSdkLibUtilDelegate().ensureDartSdkConfigured(project, sdkHomePath);
   }
 

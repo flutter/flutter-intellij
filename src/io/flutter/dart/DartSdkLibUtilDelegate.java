@@ -7,11 +7,16 @@ package io.flutter.dart;
 
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
+/**
+ * This class lets us delegate to either <code>DartSdkGlobalLibUtil</code> or
+ * <code>DartSdkLibUtil</code>, depending on the version of the Dart plugin we're running with.
+ */
 public class DartSdkLibUtilDelegate {
   private Class delegate;
   private boolean isGlobalSdk = true;
@@ -80,7 +85,7 @@ public class DartSdkLibUtilDelegate {
     }
   }
 
-  public void ensureDartSdkConfigured(Project project, String sdkHomePath) {
+  public void ensureDartSdkConfigured(@Nullable Project project, String sdkHomePath) {
     try {
       if (isGlobalSdk) {
         //noinspection unchecked
