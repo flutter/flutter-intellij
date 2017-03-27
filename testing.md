@@ -59,7 +59,7 @@ Validate device selection.
 Validate basic application running and debugging.
 
 In the newly created app:
-* plugin in an Android device (or open the iOS Simulator)
+* plug in an Android device (or open the iOS Simulator)
 * set a breakpoint on the `_counter++` line
 * hit the `'debug'` icon to start the app running
 * verify the app appears on the device
