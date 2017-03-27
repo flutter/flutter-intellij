@@ -6,7 +6,6 @@
 package io.flutter.utils;
 
 import com.google.common.collect.ImmutableSet;
-import com.intellij.mock.MockVirtualFile;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;

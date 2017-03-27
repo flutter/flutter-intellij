@@ -109,7 +109,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public boolean isModified() {
-    final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
@@ -144,7 +144,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final String path = sdk != null ? sdk.getHomePath() : "";
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
 

@@ -9,7 +9,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
@@ -83,6 +82,10 @@ public class FlutterSdkUtil {
 
     //noinspection unchecked
     combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(validPathsForUI)));
+
+    if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
+      combo.setSelectedIndex(0);
+    }
   }
 
   @NotNull
@@ -141,6 +144,10 @@ public class FlutterSdkUtil {
     return Arrays.stream(ProjectManager.getInstance().getOpenProjects()).anyMatch(FlutterModuleUtils::hasFlutterModule);
   }
 
+  public static boolean hasFlutterModules(@NotNull Project project) {
+    return FlutterModuleUtils.hasFlutterModule(project);
+  }
+
   @Nullable
   public static String getSdkVersion(@NotNull String sdkHomePath) {
     final File versionFile = new File(versionPath(sdkHomePath));
@@ -197,7 +204,7 @@ public class FlutterSdkUtil {
     return FlutterModuleUtils.declaresFlutterDependency(pubspec);
   }
 
-  public static void setFlutterSdkPath(final Project project, @NotNull final String flutterSdkPath) {
+  public static void setFlutterSdkPath(@NotNull final Project project, @NotNull final String flutterSdkPath) {
     // In reality this method sets Dart SDK (that is inside the Flutter SDK).
     final String dartSdk = flutterSdkPath + "/bin/cache/dart-sdk";
     ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.ensureDartSdkConfigured(project, dartSdk));
@@ -209,6 +216,6 @@ public class FlutterSdkUtil {
     FlutterSdkUtil.updateKnownSdkPaths(flutterSdkPath);
 
     // Fire events for a Flutter SDK change, which updates the UI.
-    FlutterSdkManager.getInstance().checkForFlutterSdkChange();
+    FlutterSdkManager.getInstance(project).checkForFlutterSdkChange();
   }
 }

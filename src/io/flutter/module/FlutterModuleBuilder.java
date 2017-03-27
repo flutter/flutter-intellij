@@ -65,8 +65,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public boolean validate(Project current, Project dest) {
-    // TODO:
-    return FlutterSdk.getGlobalFlutterSdk() != null;
+    return myStep.getFlutterSdk() != null;
   }
 
   @Nullable
@@ -148,7 +147,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     public FlutterSdk getFlutterSdk() {
-      return new FlutterSdk(peer.getSdkComboPath());
+      return FlutterSdk.forPath(peer.getSdkComboPath());
     }
   }
 }

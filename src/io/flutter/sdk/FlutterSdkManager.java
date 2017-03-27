@@ -27,16 +27,19 @@ public class FlutterSdkManager {
   private final LibraryTableListener myLibraryTableListener = new LibraryTableListener();
   private final RootProvider.RootSetChangedListener rootListener = x -> checkForFlutterSdkChange();
   private boolean isFlutterConfigured;
+  private final Project myProject;
 
   @NotNull
-  public static FlutterSdkManager getInstance() {
-    return ServiceManager.getService(FlutterSdkManager.class);
+  public static FlutterSdkManager getInstance(@NotNull Project project) {
+    return ServiceManager.getService(project, FlutterSdkManager.class);
   }
 
-  private FlutterSdkManager() {
+  private FlutterSdkManager(Project project) {
+    myProject = project;
+
     listenForSdkChanges();
     // Cache initial state.
-    isFlutterConfigured = isGlobalFlutterSdkSetAndNeeded();
+    isFlutterConfigured = isFlutterSdkSetAndNeeded();
   }
 
   private void listenForSdkChanges() {
@@ -62,10 +65,11 @@ public class FlutterSdkManager {
 
   // Send events if Flutter SDK was configured or unconfigured.
   public void checkForFlutterSdkChange() {
-    if (!isFlutterConfigured && isGlobalFlutterSdkSetAndNeeded()) {
+    if (!isFlutterConfigured && isFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = true;
       myDispatcher.getMulticaster().flutterSdkAdded();
-    } else if (isFlutterConfigured && !isGlobalFlutterSdkSetAndNeeded()) {
+    }
+    else if (isFlutterConfigured && !isFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = false;
       myDispatcher.getMulticaster().flutterSdkRemoved();
     }
@@ -83,13 +87,14 @@ public class FlutterSdkManager {
     final RootProvider provider = library.getRootProvider();
     if (Objects.equal(library.getName(), "Dart SDK")) {
       provider.addRootSetChangedListener(rootListener);
-    } else {
+    }
+    else {
       provider.removeRootSetChangedListener(rootListener);
     }
   }
 
-  private static boolean isGlobalFlutterSdkSetAndNeeded() {
-    return FlutterSdk.getGlobalFlutterSdk() != null && FlutterSdkUtil.hasFlutterModules();
+  private boolean isFlutterSdkSetAndNeeded() {
+    return FlutterSdk.getFlutterSdk(myProject) != null && FlutterSdkUtil.hasFlutterModules();
   }
 
   /**
@@ -100,12 +105,14 @@ public class FlutterSdkManager {
     /**
      * Fired when the Flutter global library is set.
      */
-    default void flutterSdkAdded() {}
+    default void flutterSdkAdded() {
+    }
 
     /**
      * Fired when the Flutter global library is removed.
      */
-    default void flutterSdkRemoved() {}
+    default void flutterSdkRemoved() {
+    }
   }
 
   // Listens for changes in Flutter Library configuration state in the Library table.

@@ -43,11 +43,12 @@ public class FlutterAppService {
 
   /**
    * Start a Flutter app using the current Flutter SDK.
-   * @param workDir The directory where the command should be run.
+   *
+   * @param workDir        The directory where the command should be run.
    * @param additionalArgs Additional program args.
-   * @param device The device to use.
-   * @param mode The RunMode to use (release, debug, profile).
-   * @param path Path to the Dart file containing the main method.
+   * @param device         The device to use.
+   * @param mode           The RunMode to use (release, debug, profile).
+   * @param path           Path to the Dart file containing the main method.
    */
   public FlutterApp startFlutterSdkApp(@NotNull String workDir,
                                        @Nullable String additionalArgs,
@@ -67,8 +68,8 @@ public class FlutterAppService {
         app.shutdownAsync();
       }
     };
-    FlutterSdkManager.getInstance().addListener(sdkListener);
-    Disposer.register(project, () -> FlutterSdkManager.getInstance().removeListener(sdkListener));
+    FlutterSdkManager.getInstance(project).addListener(sdkListener);
+    Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
     return app;
   }

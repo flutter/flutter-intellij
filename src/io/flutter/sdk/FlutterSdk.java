@@ -49,28 +49,16 @@ public class FlutterSdk {
     myVersion = FlutterSdkVersion.forVersionString(version);
   }
 
-  public FlutterSdk(@NotNull final String homePath) {
+  private FlutterSdk(@NotNull final String homePath) {
     this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
   }
 
   /**
-   * At the moment per-project SDK configuration is not supported, so this method returns the same as {@link #getGlobalFlutterSdk()}.
-   * Prefer using this method if you have Project in hands.
+   * Return the FlutterSdk for the given project.
    */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
     return getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
-  }
-
-  /**
-   * Callers should instead prefer {@link #getFlutterSdk(Project)}.
-   */
-  @Nullable
-  public static FlutterSdk getGlobalFlutterSdk() {
-    //DartSdkUtil.getFirstKnownDartSdkPath();
-    //DartSdkUtil.
-    // TODO: ???
-    return getFlutterSdkByDartSdk(DartSdk.getGlobalDartSdk());
   }
 
   @Nullable
