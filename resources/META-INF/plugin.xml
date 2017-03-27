@@ -10,7 +10,7 @@
 
   <version>12.0</version>
 
-  <idea-version since-build="162.1" until-build="163.*"/>
+  <idea-version since-build="162.1" until-build="171.*"/>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
@@ -275,7 +275,7 @@
     <!-- Small IDE support -->
     <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>
 
-    <applicationService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
+    <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
     <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"

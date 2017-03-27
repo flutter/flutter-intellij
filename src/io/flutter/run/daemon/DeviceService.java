@@ -19,7 +19,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -37,11 +39,13 @@ public class DeviceService {
 
   private final AtomicReference<ImmutableSet<Runnable>> listeners = new AtomicReference<>(ImmutableSet.of());
 
-  public static @NotNull DeviceService getInstance(@NotNull Project project) {
+  public static
+  @NotNull
+  DeviceService getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, DeviceService.class);
   }
 
-  private DeviceService(Project project) {
+  private DeviceService(@NotNull Project project) {
     this.project = project;
 
     deviceDaemon.setDisposeParent(project);
@@ -60,8 +64,8 @@ public class DeviceService {
         refreshDeviceDaemon();
       }
     };
-    FlutterSdkManager.getInstance().addListener(sdkListener);
-    Disposer.register(project, () -> FlutterSdkManager.getInstance().removeListener(sdkListener));
+    FlutterSdkManager.getInstance(project).addListener(sdkListener);
+    Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
     // Watch for Bazel workspace changes.
     WorkspaceCache.getInstance(project).subscribe(this::refreshDeviceDaemon);
@@ -86,9 +90,11 @@ public class DeviceService {
     final DeviceDaemon daemon = deviceDaemon.getNow();
     if (daemon != null && daemon.isRunning()) {
       return State.READY;
-    } else if (deviceDaemon.getState() == Refreshable.State.BUSY) {
+    }
+    else if (deviceDaemon.getState() == Refreshable.State.BUSY) {
       return State.LOADING;
-    } else {
+    }
+    else {
       return State.INACTIVE;
     }
   }
@@ -102,10 +108,12 @@ public class DeviceService {
 
   /**
    * Returns the currently selected device.
-   *
+   * <p>
    * <p>When there is no device list (perhaps because the daemon isn't running), this will be null.
    */
-  public @Nullable FlutterDevice getSelectedDevice() {
+  public
+  @Nullable
+  FlutterDevice getSelectedDevice() {
     return deviceSelection.get().getSelection();
   }
 
@@ -129,7 +137,8 @@ public class DeviceService {
       for (Runnable listener : listeners.get()) {
         try {
           listener.run();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           LOG.error("DeviceDaemon listerner threw an exception", e);
         }
       }
@@ -138,7 +147,7 @@ public class DeviceService {
 
   /**
    * Updates the device daemon to what it should be based on current configuation.
-   *
+   * <p>
    * <p>This might mean starting it, stopping it, or restarting it.
    */
   private void refreshDeviceDaemon() {
@@ -148,7 +157,7 @@ public class DeviceService {
 
   /**
    * Returns the device daemon that should be running.
-   *
+   * <p>
    * <p>Starts it if needed. If null is returned then the previous daemon will be shut down.
    */
   private DeviceDaemon chooseNextDaemon(Refreshable.Request<DeviceDaemon> request) {
@@ -166,7 +175,8 @@ public class DeviceService {
     // This is to try to avoid starting a process only to immediately kill it.
     try {
       Thread.sleep(50);
-    } catch (InterruptedException e) {
+    }
+    catch (InterruptedException e) {
       return previous;
     }
     if (request.isCancelled()) {
@@ -182,7 +192,7 @@ public class DeviceService {
     }
   }
 
-  public enum State { INACTIVE, LOADING, READY }
+  public enum State {INACTIVE, LOADING, READY}
 
   private static final Logger LOG = Logger.getInstance(DeviceService.class.getName());
 }

@@ -10,8 +10,7 @@
   <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
-  <property name="idea.version" value="2016.3.2"/>
-  <property name="dart.plugin.version" value="163.11306"/>
+  <property name="idea.version" value="2016.3.4"/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
@@ -59,17 +58,22 @@
     </untar>
   </target>
 
-  <target name="download" depends="download.android, download.idea">
-    <!-- download the javac2 jars -->
-    <get src="${google.storage.base}/intellij-javac2.zip" dest="artifacts/" usetimestamp="true"/>
-    <unzip src="artifacts/intellij-javac2.zip" dest="artifacts/javac2"/>
-
+  <target name="download-dart-plugin" depends="init" if="dart.plugin.version">
     <!-- download the Dart plugin -->
     <get src="${google.storage.base}/Dart-${dart.plugin.version}.zip" dest="artifacts/" usetimestamp="true"/>
     <unzip src="artifacts/Dart-${dart.plugin.version}.zip" dest="artifacts"/>
   </target>
 
+  <target name="download" depends="download.android, download.idea, download-dart-plugin">
+    <!-- download the javac2 jars -->
+    <get src="${google.storage.base}/intellij-javac2.zip" dest="artifacts/" usetimestamp="true"/>
+    <unzip src="artifacts/intellij-javac2.zip" dest="artifacts/javac2"/>
+  </target>
+
   <target name="properties" depends="download">
+    <mkdir dir="${idea.home}/plugins/Dart/lib"/>
+    <mkdir dir="${basedir}/artifacts/Dart/lib"/>
+
     <property name="javac2.home" value="artifacts/javac2"/>
     <path id="javac2.classpath">
       <pathelement location="${javac2.home}/javac2.jar"/>
@@ -85,6 +89,9 @@
   <target name="paths" depends="properties">
     <path id="idea.jars">
       <fileset dir="${idea.home}/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins/Dart/lib">
         <include name="*.jar"/>
       </fileset>
     </path>
@@ -198,7 +205,7 @@
 
   <target name="test" depends="build.testSrc">
     <!-- create a Dart plugin directory -->
-    <copy todir="build/idea-sandbox/plugins/Dart/lib" flatten="true">
+    <copy todir="build/idea-sandbox/plugins/Dart/lib" flatten="true" failonerror="false">
       <path refid="dartplugin.jars"/>
     </copy>
 

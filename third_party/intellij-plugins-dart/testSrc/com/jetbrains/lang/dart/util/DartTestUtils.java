@@ -81,7 +81,7 @@ public class DartTestUtils {
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-      DartPlugin.ensureDartSdkConfigured(sdkHome);
+      DartPlugin.ensureDartSdkConfigured(module.getProject(), sdkHome);
       DartPlugin.enableDartSdk(module);
     });
 

@@ -8,13 +8,14 @@ package io.flutter.dart;
 import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Version;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.jetbrains.lang.dart.sdk.DartSdkGlobalLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,6 +34,7 @@ public class DartPlugin {
   private static final Version MINIMUM_VERSION = Version.parseVersion(MINIMUM_REQUIRED_PLUGIN_VERSION);
 
   private static final DartPlugin INSTANCE = new DartPlugin();
+  private static DartSdkLibUtilDelegate mySdkLibUtilDelegate;
 
   private Version myVersion;
 
@@ -46,19 +48,19 @@ public class DartPlugin {
   }
 
   public static boolean isDartSdkEnabled(@NotNull Module module) {
-    return DartSdkGlobalLibUtil.isDartSdkEnabled(module);
+    return getSdkLibUtilDelegate().isDartSdkEnabled(module);
   }
 
   public static void enableDartSdk(@NotNull Module module) {
-    DartSdkGlobalLibUtil.enableDartSdk(module);
+    getSdkLibUtilDelegate().enableDartSdk(module);
   }
 
-  public static void ensureDartSdkConfigured(@NotNull String sdkHomePath) {
-    DartSdkGlobalLibUtil.ensureDartSdkConfigured(sdkHomePath);
+  public static void ensureDartSdkConfigured(@Nullable Project project, @NotNull String sdkHomePath) {
+    getSdkLibUtilDelegate().ensureDartSdkConfigured(project, sdkHomePath);
   }
 
   public static void disableDartSdk(@NotNull Collection<Module> modules) {
-    DartSdkGlobalLibUtil.disableDartSdk(modules);
+    getSdkLibUtilDelegate().disableDartSdk(modules);
   }
 
   public static boolean isDartSdkHome(@Nullable String path) {
@@ -100,5 +102,21 @@ public class DartPlugin {
       myVersion = Version.parseVersion(descriptor.getVersion());
     }
     return myVersion;
+  }
+
+  private static DartSdkLibUtilDelegate getSdkLibUtilDelegate() {
+    if (mySdkLibUtilDelegate == null) {
+      mySdkLibUtilDelegate = new DartSdkLibUtilDelegate();
+    }
+
+    return mySdkLibUtilDelegate;
+  }
+
+  /**
+   * Return the DartAnalysisServerService instance. This handles the older case where the service was app
+   * based, and the newer case where the service is project based.
+   */
+  public DartAnalysisServerService getAnalysisService(@NotNull final Project project) {
+    return ServiceManager.getService(project, DartAnalysisServerService.class);
   }
 }

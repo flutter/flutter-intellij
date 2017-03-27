@@ -50,8 +50,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel<String> myPrivacyPolicy;
+  private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
+    this.myProject = project;
+
     init();
 
     myVersionLabel.setText("");
@@ -106,7 +109,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public boolean isModified() {
-    final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
@@ -131,7 +134,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final String sdkHomePath = getSdkPathText();
     if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
+      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath));
     }
 
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
@@ -141,7 +144,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   @Override
   public void reset() {
-    final FlutterSdk sdk = FlutterSdk.getGlobalFlutterSdk();
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final String path = sdk != null ? sdk.getHomePath() : "";
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
 
@@ -183,10 +186,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
    */
   private void updateVersionTextIfCurrent(@NotNull FlutterSdk sdk, @NotNull String value) {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
-    if (current == null || !sdk.getHomePath().equals(current.getHomePath())) {
-      return; // stale
+    if (current == null) {
+      myVersionLabel.setText("");
     }
-    myVersionLabel.setText(value);
+    else {
+      myVersionLabel.setText(value);
+    }
   }
 
   @Override

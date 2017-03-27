@@ -11,13 +11,11 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.platform.WebProjectGenerator;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import io.flutter.FlutterBundle;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,12 +32,8 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
   }
 
   private void createUIComponents() {
-    final FlutterSdk sdkInitial = FlutterSdk.getGlobalFlutterSdk();
-    final String sdkPathInitial = sdkInitial == null ? "" : FileUtil.toSystemDependentName(sdkInitial.getHomePath());
-
     sdkPathComboWithBrowse = new ComboboxWithBrowseButton(new ComboBox<>());
     sdkPathComboWithBrowse.getComboBox().setEditable(true);
-    sdkPathComboWithBrowse.getComboBox().getEditor().setItem(sdkPathInitial);
     FlutterSdkUtil.addKnownSDKPathsToCombo(sdkPathComboWithBrowse.getComboBox());
 
     sdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,

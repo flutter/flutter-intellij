@@ -54,20 +54,11 @@ public class FlutterSdk {
   }
 
   /**
-   * At the moment per-project SDK configuration is not supported, so this method returns the same as {@link #getGlobalFlutterSdk()}.
-   * Prefer using this method if you have Project in hands.
+   * Return the FlutterSdk for the given project.
    */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
     return getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
-  }
-
-  /**
-   * Callers should instead prefer {@link #getFlutterSdk(Project)}.
-   */
-  @Nullable
-  public static FlutterSdk getGlobalFlutterSdk() {
-    return getFlutterSdkByDartSdk(DartSdk.getGlobalDartSdk());
   }
 
   @Nullable

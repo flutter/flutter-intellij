@@ -6,20 +6,17 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,11 +49,7 @@ public class FlutterGeneratorPeer {
   }
 
   private void initSdkCombo() {
-    final FlutterSdk sdkInitial = FlutterSdk.getGlobalFlutterSdk();
-    final String sdkPathInitial = sdkInitial == null ? "" : FileUtil.toSystemDependentName(sdkInitial.getHomePath());
-
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
-    mySdkPathComboWithBrowse.getComboBox().getEditor().setItem(sdkPathInitial);
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
@@ -73,11 +66,6 @@ public class FlutterGeneratorPeer {
   }
 
   void apply() {
-    final String sdkHomePath = getSdkComboPath();
-    final FlutterSdk currentSdk = FlutterSdk.getGlobalFlutterSdk();
-    if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath) && (currentSdk == null || !currentSdk.getHomePath().equals(sdkHomePath))) {
-      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(sdkHomePath));
-    }
   }
 
   @NotNull
@@ -112,7 +100,7 @@ public class FlutterGeneratorPeer {
   }
 
   @NotNull
-  private String getSdkComboPath() {
+  public String getSdkComboPath() {
     return FileUtilRt.toSystemIndependentName(mySdkPathComboWithBrowse.getComboBox().getEditor().getItem().toString().trim());
   }
 }

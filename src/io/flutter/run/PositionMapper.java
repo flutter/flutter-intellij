@@ -24,13 +24,17 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugPro
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
+import io.flutter.dart.DartPlugin;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.ScriptRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Converts positions between Dart files in Observatory and local Dart files.
@@ -328,7 +332,7 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
      */
     @Nullable
     static Analyzer create(@NotNull Project project, @NotNull VirtualFile sourceLocation) {
-      final DartAnalysisServerService service = DartAnalysisServerService.getInstance();
+      final DartAnalysisServerService service = DartPlugin.getInstance().getAnalysisService(project);
       if (!service.serverReadyForRequest(project)) {
         // TODO(skybrian) make this required to debug at all? It seems bad for breakpoints to be flaky.
         LOG.warn("Dart analysis server is not running. Some breakpoints may not work.");
