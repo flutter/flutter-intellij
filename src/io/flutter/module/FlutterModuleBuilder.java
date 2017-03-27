@@ -22,6 +22,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -91,6 +92,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
                                          @NotNull final FlutterSdk sdk) {
     try {
       DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
+      FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
     }
     catch (ExecutionException e) {
       LOG.warn("Error configuring the Flutter SDK.", e);
