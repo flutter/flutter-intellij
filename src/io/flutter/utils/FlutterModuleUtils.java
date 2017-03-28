@@ -52,7 +52,14 @@ public class FlutterModuleUtils {
   }
 
   public static boolean isFlutterModule(@Nullable Module module) {
-    return module != null && ModuleType.is(module, FlutterModuleType.getInstance());
+    // If not IntelliJ, assume a small IDE (no multi-module project support).
+    // Look for a module with a flutter-like file structure.
+    if (!PlatformUtils.isIntelliJ()) {
+      return module != null && FlutterModuleUtils.usesFlutter(module);
+    }
+    else {
+      return module != null && ModuleType.is(module, FlutterModuleType.getInstance());
+    }
   }
 
   public static boolean hasFlutterModule(@NotNull Project project) {
