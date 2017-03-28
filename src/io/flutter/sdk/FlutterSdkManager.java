@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -17,8 +18,8 @@ import com.intellij.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EventListener;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Monitors the application library table to notify clients when Flutter SDK configuration changes.
@@ -26,6 +27,7 @@ import java.util.TimerTask;
 public class FlutterSdkManager {
   private final EventDispatcher<Listener> myDispatcher = EventDispatcher.create(Listener.class);
   private boolean isFlutterConfigured;
+  private final @NotNull Project myProject;
 
   @NotNull
   public static FlutterSdkManager getInstance(@NotNull Project project) {
@@ -33,45 +35,44 @@ public class FlutterSdkManager {
   }
 
   private FlutterSdkManager(@NotNull Project project) {
-    final LibraryTableListener libraryTableListener = new LibraryTableListener(project);
+    myProject = project;
+
+    final LibraryTableListener libraryTableListener = new LibraryTableListener();
     ProjectLibraryTable.getInstance(project).addListener(libraryTableListener);
 
-    final Timer timer = new Timer();
-    timer.scheduleAtFixedRate(new TimerTask() {
-      @Override
-      public void run() {
-        checkForFlutterSdkChange(project);
-      }
-    }, 1000, 1000);
+    // TODO(devoncarew): We should replace this polling solution with listeners to project
+    // structure changes.
+    final ScheduledFuture timer = JobScheduler.getScheduler().scheduleWithFixedDelay(
+      this::checkForFlutterSdkChange, 1, 1, TimeUnit.SECONDS);
 
     Disposer.register(project, () -> {
       ProjectLibraryTable.getInstance(project).removeListener(libraryTableListener);
-      timer.cancel();
+      timer.cancel(false);
     });
 
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {
-        checkForFlutterSdkChange(project);
+        checkForFlutterSdkChange();
       }
 
       @Override
       public void projectClosed(@NotNull Project project) {
-        checkForFlutterSdkChange(project);
+        checkForFlutterSdkChange();
       }
     });
 
     // Cache initial state.
-    isFlutterConfigured = isFlutterSdkSetAndNeeded(project);
+    isFlutterConfigured = isFlutterSdkSetAndNeeded();
   }
 
   // Send events if Flutter SDK was configured or unconfigured.
-  public void checkForFlutterSdkChange(@NotNull Project project) {
-    if (!isFlutterConfigured && isFlutterSdkSetAndNeeded(project)) {
+  public void checkForFlutterSdkChange() {
+    if (!isFlutterConfigured && isFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = true;
       myDispatcher.getMulticaster().flutterSdkAdded();
     }
-    else if (isFlutterConfigured && !isFlutterSdkSetAndNeeded(project)) {
+    else if (isFlutterConfigured && !isFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = false;
       myDispatcher.getMulticaster().flutterSdkRemoved();
     }
@@ -85,8 +86,8 @@ public class FlutterSdkManager {
     myDispatcher.removeListener(listener);
   }
 
-  private boolean isFlutterSdkSetAndNeeded(@NotNull Project project) {
-    return FlutterSdk.getFlutterSdk(project) != null && FlutterSdkUtil.hasFlutterModules(project);
+  private boolean isFlutterSdkSetAndNeeded() {
+    return FlutterSdk.getFlutterSdk(myProject) != null && FlutterSdkUtil.hasFlutterModules(myProject);
   }
 
   /**
@@ -108,21 +109,15 @@ public class FlutterSdkManager {
 
   // Listens for changes in Flutter Library configuration state in the Library table.
   private final class LibraryTableListener implements LibraryTable.Listener {
-    private @NotNull final Project myProject;
-
-    LibraryTableListener(@NotNull Project project) {
-      myProject = project;
-    }
-
     @Override
     public void afterLibraryAdded(Library newLibrary) {
-      checkForFlutterSdkChange(myProject);
+      checkForFlutterSdkChange();
     }
 
     @Override
     public void afterLibraryRenamed(Library library) {
       // Since we key off name, test to be safe.
-      checkForFlutterSdkChange(myProject);
+      checkForFlutterSdkChange();
     }
 
     @Override
@@ -132,7 +127,7 @@ public class FlutterSdkManager {
 
     @Override
     public void afterLibraryRemoved(Library library) {
-      checkForFlutterSdkChange(myProject);
+      checkForFlutterSdkChange();
     }
   }
 }

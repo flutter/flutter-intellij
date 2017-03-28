@@ -216,6 +216,6 @@ public class FlutterSdkUtil {
     FlutterSdkUtil.updateKnownSdkPaths(flutterSdkPath);
 
     // Fire events for a Flutter SDK change, which updates the UI.
-    FlutterSdkManager.getInstance(project).checkForFlutterSdkChange(project);
+    FlutterSdkManager.getInstance(project).checkForFlutterSdkChange();
   }
 }
