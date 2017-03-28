@@ -25,25 +25,31 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.11306/Dart.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" scope="PROVIDED">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.11306/resources_en.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" scope="PROVIDED">
-      <library>
-        <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/snakeyaml-1.13.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.13137/Dart.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/gen" />
+          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/src" />
+          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/testSrc" />
+          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/thirdPartySrc/analysisServer" />
+          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/thirdPartySrc/vmServiceDrivers" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="PROVIDED">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/163.13137/resources_en.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
