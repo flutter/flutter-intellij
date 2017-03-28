@@ -58,7 +58,7 @@ public class FlutterSdk {
    */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
-    return getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
+    return project.isDisposed() ? null : getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
   }
 
   @Nullable
