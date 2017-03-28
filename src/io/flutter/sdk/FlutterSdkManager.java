@@ -5,71 +5,73 @@
  */
 package io.flutter.sdk;
 
-import com.google.common.base.Objects;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectManagerAdapter;
-import com.intellij.openapi.roots.RootProvider;
-import com.intellij.openapi.roots.impl.libraries.ApplicationLibraryTable;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.util.EventDispatcher;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.EventListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Monitors the application library table to notify clients when Flutter SDK configuration changes.
  */
 public class FlutterSdkManager {
   private final EventDispatcher<Listener> myDispatcher = EventDispatcher.create(Listener.class);
-  private final LibraryTableListener myLibraryTableListener = new LibraryTableListener();
-  private final RootProvider.RootSetChangedListener rootListener = x -> checkForFlutterSdkChange();
   private boolean isFlutterConfigured;
-  private final Project myProject;
 
   @NotNull
   public static FlutterSdkManager getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, FlutterSdkManager.class);
   }
 
-  private FlutterSdkManager(Project project) {
-    myProject = project;
+  private FlutterSdkManager(@NotNull Project project) {
+    final LibraryTableListener libraryTableListener = new LibraryTableListener(project);
+    ProjectLibraryTable.getInstance(project).addListener(libraryTableListener);
 
-    listenForSdkChanges();
-    // Cache initial state.
-    isFlutterConfigured = isFlutterSdkSetAndNeeded();
-  }
+    final Timer timer = new Timer();
+    timer.scheduleAtFixedRate(new TimerTask() {
+      @Override
+      public void run() {
+        checkForFlutterSdkChange(project);
+      }
+    }, 1000, 1000);
 
-  private void listenForSdkChanges() {
-    ApplicationLibraryTable.getApplicationTable().addListener(myLibraryTableListener);
+    Disposer.register(project, () -> {
+      ProjectLibraryTable.getInstance(project).removeListener(libraryTableListener);
+      timer.cancel();
+    });
 
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {
-        checkForFlutterSdkChange();
+        checkForFlutterSdkChange(project);
       }
 
       @Override
       public void projectClosed(@NotNull Project project) {
-        checkForFlutterSdkChange();
+        checkForFlutterSdkChange(project);
       }
     });
 
-    // The Dart plugin modifies the library in place, so we need to listen for its root changes.
-    for (Library library : ApplicationLibraryTable.getApplicationTable().getLibraries()) {
-      watchDartSdkRoots(library);
-    }
+    // Cache initial state.
+    isFlutterConfigured = isFlutterSdkSetAndNeeded(project);
   }
 
   // Send events if Flutter SDK was configured or unconfigured.
-  public void checkForFlutterSdkChange() {
-    if (!isFlutterConfigured && isFlutterSdkSetAndNeeded()) {
+  public void checkForFlutterSdkChange(@NotNull Project project) {
+    if (!isFlutterConfigured && isFlutterSdkSetAndNeeded(project)) {
       isFlutterConfigured = true;
       myDispatcher.getMulticaster().flutterSdkAdded();
     }
-    else if (isFlutterConfigured && !isFlutterSdkSetAndNeeded()) {
+    else if (isFlutterConfigured && !isFlutterSdkSetAndNeeded(project)) {
       isFlutterConfigured = false;
       myDispatcher.getMulticaster().flutterSdkRemoved();
     }
@@ -83,25 +85,14 @@ public class FlutterSdkManager {
     myDispatcher.removeListener(listener);
   }
 
-  private void watchDartSdkRoots(Library library) {
-    final RootProvider provider = library.getRootProvider();
-    if (Objects.equal(library.getName(), "Dart SDK")) {
-      provider.addRootSetChangedListener(rootListener);
-    }
-    else {
-      provider.removeRootSetChangedListener(rootListener);
-    }
-  }
-
-  private boolean isFlutterSdkSetAndNeeded() {
-    return FlutterSdk.getFlutterSdk(myProject) != null && FlutterSdkUtil.hasFlutterModules();
+  private boolean isFlutterSdkSetAndNeeded(@NotNull Project project) {
+    return FlutterSdk.getFlutterSdk(project) != null && FlutterSdkUtil.hasFlutterModules(project);
   }
 
   /**
    * Listen for SDK configuration changes.
    */
   public interface Listener extends EventListener {
-
     /**
      * Fired when the Flutter global library is set.
      */
@@ -117,18 +108,21 @@ public class FlutterSdkManager {
 
   // Listens for changes in Flutter Library configuration state in the Library table.
   private final class LibraryTableListener implements LibraryTable.Listener {
+    private @NotNull final Project myProject;
+
+    LibraryTableListener(@NotNull Project project) {
+      myProject = project;
+    }
 
     @Override
     public void afterLibraryAdded(Library newLibrary) {
-      checkForFlutterSdkChange();
-      watchDartSdkRoots(newLibrary);
+      checkForFlutterSdkChange(myProject);
     }
 
     @Override
     public void afterLibraryRenamed(Library library) {
       // Since we key off name, test to be safe.
-      checkForFlutterSdkChange();
-      watchDartSdkRoots(library);
+      checkForFlutterSdkChange(myProject);
     }
 
     @Override
@@ -138,8 +132,7 @@ public class FlutterSdkManager {
 
     @Override
     public void afterLibraryRemoved(Library library) {
-      library.getRootProvider().removeRootSetChangedListener(rootListener);
-      checkForFlutterSdkChange();
+      checkForFlutterSdkChange(myProject);
     }
   }
 }
