@@ -303,6 +303,8 @@
     <localInspection bundle="io.flutter.FlutterBundle" key="outdated.dependencies.inspection.name"
                      groupName="Flutter" enabledByDefault="true" level="WARNING" language="Dart"
                      implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
+
+    <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
   </extensions>
 
 </idea-plugin>
