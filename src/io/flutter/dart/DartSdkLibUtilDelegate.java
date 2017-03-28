@@ -5,6 +5,7 @@
  */
 package io.flutter.dart;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nullable;
@@ -50,6 +51,7 @@ public class DartSdkLibUtilDelegate {
   }
 
   public void enableDartSdk(Module module) {
+    assert ApplicationManager.getApplication().isWriteAccessAllowed();
     try {
       //noinspection unchecked
       final Method method = delegate.getMethod("enableDartSdk", Module.class);
@@ -68,6 +70,7 @@ public class DartSdkLibUtilDelegate {
   }
 
   public void disableDartSdk(Collection<Module> modules) {
+    assert ApplicationManager.getApplication().isWriteAccessAllowed();
     try {
       //noinspection unchecked
       final Method method = delegate.getMethod("disableDartSdk", Collection.class);

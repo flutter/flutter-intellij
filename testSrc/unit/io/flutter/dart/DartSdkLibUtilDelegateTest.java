@@ -22,14 +22,14 @@ public class DartSdkLibUtilDelegateTest {
   @Test
   public void enableDartSdk() throws Exception {
     final DartSdkLibUtilDelegate delegate = new DartSdkLibUtilDelegate();
-    delegate.enableDartSdk(fixture.getModule());
+    Testing.runInWriteAction(() -> delegate.enableDartSdk(fixture.getModule()));
     assertTrue(delegate.isDartSdkEnabled(fixture.getModule()));
   }
 
   @Test
   public void disableDartSdk() throws Exception {
     final DartSdkLibUtilDelegate delegate = new DartSdkLibUtilDelegate();
-    delegate.disableDartSdk(Collections.singleton(fixture.getModule()));
+    Testing.runInWriteAction(() -> delegate.disableDartSdk(Collections.singleton(fixture.getModule())));
     assertFalse(delegate.isDartSdkEnabled(fixture.getModule()));
   }
 }
