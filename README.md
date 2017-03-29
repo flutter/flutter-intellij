@@ -31,10 +31,14 @@ Dart IntelliJ releated issues, you can use JetBrains'
 
 Please note the following known issues:
 
-* [#565](https://github.com/flutter/flutter-intellij/issues/565): IntelliJ/WebStorm has a single setting containing the path to the Dart SDK. This can be an issue if you work on both Flutter projects, and [AngularDart projects](https://webdev.dartlang.org/) as they tend to use different Dart SDK versions. In that case, after using Flutter you will have to manually reconfigure IntelliJ/WebStorm back to the correct Dart SDK path:
+* The 2017.1 release of the Dart plugin has added the ability to have Dart SDKs configured on a
+  per-project basis (previously an SDK had been configured globally). This is great for the Flutter
+  plugin as users can now use separate Dart SDKs for Flutter and Dart for web projects. However,
+  when opening a project in 2017.1 created with older IntelliJs, you may encounter an issue where
+  no Dart SDK is configured for your project. If this is the case, open the
+  `Languages & Frameworks > Dart` settings page, check the option to enable Dart support, and select
+  a Dart SDK inside the Flutter SDK (`<flutter>/bin/cache/dart-sdk`).
 
-   - Open an existing Dart project / create a new one
-   - Go to Preferences > Languages & Frameworks > Dart
-   - Enter the Dart SDK path (i.e., where your main Dart SDK is located, not the one bundled with Flutter)
-
-* [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will read the PATH variable just once on startup. Thus, if you change PATH later to include the Flutter SDK path, this will not have an affect in IntelliJ until you restart the IDE.
+* [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will read the PATH
+  variable just once on startup. Thus, if you change PATH later to include the Flutter SDK path,
+  this will not have an affect in IntelliJ until you restart the IDE.
