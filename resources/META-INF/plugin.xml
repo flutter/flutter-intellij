@@ -26,6 +26,13 @@
 <ul>
   <li>support for IDEA `2017.1`</li>
   <li>new Flutter `stless`, `stful`, and `stanim` live templates</li>
+  <li>new assists for editing widget hierarchy
+    <ul>
+      <li>move widget up or down</li>
+      <li>re-parent widget or list of widgets</li>
+      <li>convert child: keyword to children:</li>
+    </ul>
+  </li>
   <li>support for specifying "Additional Args" to Flutter application launches</li>
   <li>default run configuration creation on project open (when possible)</li>
   <li>device menu improvements</li>
