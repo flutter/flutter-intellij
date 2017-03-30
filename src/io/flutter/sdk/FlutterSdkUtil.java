@@ -9,6 +9,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Pair;
@@ -217,5 +219,17 @@ public class FlutterSdkUtil {
 
     // Fire events for a Flutter SDK change, which updates the UI.
     FlutterSdkManager.getInstance(project).checkForFlutterSdkChange();
+  }
+
+  // TODO(devoncarew): The Dart plugin supports specifying individual modules in the settings page.
+
+  /**
+   * Do a best-effort basis to enable Dart support for the given project.
+   */
+  public static void enableDartSdk(@NotNull final Project project) {
+    final Module[] modules = ModuleManager.getInstance(project).getModules();
+    if (modules.length == 1) {
+      DartPlugin.enableDartSdk(modules[0]);
+    }
   }
 }

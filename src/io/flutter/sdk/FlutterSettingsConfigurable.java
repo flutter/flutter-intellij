@@ -29,6 +29,7 @@ import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -134,7 +135,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final String sdkHomePath = getSdkPathText();
     if (FlutterSdkUtil.isFlutterSdkHome(sdkHomePath)) {
-      ApplicationManager.getApplication().runWriteAction(() -> FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath));
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        FlutterSdkUtil.setFlutterSdkPath(myProject, sdkHomePath);
+        FlutterSdkUtil.enableDartSdk(myProject);
+      });
     }
 
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
