@@ -6,7 +6,6 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.editor.colors.EditorColors;
-import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -26,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class FlutterPubspecNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.pubspec");
@@ -71,6 +69,8 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
     @NotNull final VirtualFile myFile;
 
     FlutterPubspecActionsPanel(@NotNull VirtualFile file) {
+      super(EditorColors.GUTTER_BACKGROUND);
+
       myFile = file;
 
       icon(FlutterIcons.Flutter);
@@ -89,16 +89,6 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
       label = createActionLabel("Flutter doctor", "flutter.doctor");
       label.setToolTipText("Validate installed tools and their versions");
-
-      // TODO: Add for 2017.1.
-      //background(EditorColors.GUTTER_BACKGROUND);
-    }
-
-    // TODO: Remove for 2017.1.
-    @Override
-    public Color getBackground() {
-      final Color color = EditorColorsManager.getInstance().getGlobalScheme().getColor(EditorColors.GUTTER_BACKGROUND);
-      return color != null ? color : super.getBackground();
     }
   }
 }
