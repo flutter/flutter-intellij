@@ -34,10 +34,12 @@ public class Workspace {
 
   private @NotNull final VirtualFile root;
   private @Nullable final PluginConfig config;
+  private @Nullable final String daemonScript;
 
-  private Workspace(@NotNull VirtualFile root, @Nullable PluginConfig config) {
+  private Workspace(@NotNull VirtualFile root, @Nullable PluginConfig config, @Nullable String daemonScript) {
     this.root = root;
     this.config = config;
+    this.daemonScript = daemonScript;
   }
 
   /**
@@ -109,9 +111,8 @@ public class Workspace {
    * <p>The path should be relative to the workspace root.
    */
   public boolean withinFlutterDirectory(@NotNull String path) {
-    final PluginConfig c = getPluginConfig();
-    if (c != null) {
-      return c.withinFlutterDirectory(path);
+    if (config != null) {
+      return config.withinFlutterDirectory(path);
     }
     // Default if unconfigured.
     return path.contains("flutter");
@@ -128,7 +129,7 @@ public class Workspace {
    * Returns the script that starts 'flutter daemon', or null if not configured.
    */
   public @Nullable String getDaemonScript() {
-    return (config == null) ? null : config.getDaemonScript();
+    return daemonScript;
   }
 
   /**
@@ -139,10 +140,10 @@ public class Workspace {
   }
 
   /**
-   * Returns the flutter plugin configuration or null if not available.
+   * Returns true if the pluging config was loaded.
    */
-  public @Nullable PluginConfig getPluginConfig() {
-    return config;
+  public boolean hasPluginConfig() {
+    return config != null;
   }
 
   /**
@@ -180,9 +181,30 @@ public class Workspace {
     if (workspaceFile == null) return null;
 
     final VirtualFile root = workspaceFile.getParent();
-    final VirtualFile configFile = root.findFileByRelativePath(PLUGIN_CONFIG_PATH);
+    final String readonlyPath = "../READONLY/" + root.getName();
+    final VirtualFile readonlyRoot = root.findFileByRelativePath(readonlyPath);
+    VirtualFile configFile = root.findFileByRelativePath(PLUGIN_CONFIG_PATH);
+    if (configFile == null && readonlyRoot != null) {
+      configFile = readonlyRoot.findFileByRelativePath(PLUGIN_CONFIG_PATH);
+    }
     final PluginConfig config = configFile == null ? null : PluginConfig.load(configFile);
-    return new Workspace(root, config);
+
+    final String daemonScript;
+    if (config == null || config.getDaemonScript() == null) {
+      daemonScript = null;
+    } else {
+      final String script = config.getDaemonScript();
+      final String readonlyScript = readonlyPath + "/" + script;
+      if (root.findFileByRelativePath(script) != null) {
+        daemonScript = script;
+      } else if (root.findFileByRelativePath(readonlyScript) != null) {
+        daemonScript = readonlyScript;
+      } else {
+        daemonScript = null;
+      }
+    }
+
+    return new Workspace(root, config, daemonScript);
   }
 
   /**

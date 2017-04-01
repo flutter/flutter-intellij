@@ -27,7 +27,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * An in-memory snapshot of the flutter.json file from a Bazel workspace.
  */
-public class PluginConfig {
+class PluginConfig {
   private final @NotNull Fields fields;
   private final @Nullable List<Pattern> directoryPatterns;
 
@@ -41,7 +41,7 @@ public class PluginConfig {
    *
    * <p>The path should be relative to the workspace root.
    */
-  public boolean withinFlutterDirectory(@NotNull String path) {
+  boolean withinFlutterDirectory(@NotNull String path) {
     if (directoryPatterns == null) {
       // Default if unconfigured.
       return path.contains("flutter");
@@ -53,11 +53,11 @@ public class PluginConfig {
     return false;
   }
 
-  public @Nullable String getDaemonScript() {
+  @Nullable String getDaemonScript() {
     return fields.daemonScript;
   }
 
-  public @Nullable String getLaunchScript() {
+  @Nullable String getLaunchScript() {
     return fields.launchScript;
   }
 

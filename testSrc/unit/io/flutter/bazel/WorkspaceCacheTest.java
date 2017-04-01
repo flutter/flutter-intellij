@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import static junit.framework.TestCase.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 
 public class WorkspaceCacheTest {
@@ -51,14 +52,16 @@ public class WorkspaceCacheTest {
 
     final String configPath = "abc/dart/config/intellij-plugins/flutter.json";
 
-    tmp.writeFile(configPath, "{\"daemonScript\": \"first\"}");
-    checkConfigSetting("first");
+    tmp.writeFile(configPath, "{\"daemonScript\": \"first.sh\"}");
+    tmp.writeFile("abc/first.sh", "");
+    checkConfigSetting("first.sh");
 
     tmp.writeFile(configPath, "{}");
     checkConfigSetting(null);
 
-    tmp.writeFile(configPath, "{\"daemonScript\": \"second\"}");
-    checkConfigSetting("second");
+    tmp.writeFile(configPath, "{\"daemonScript\": \"second.sh\"}");
+    tmp.writeFile("abc/second.sh", "");
+    checkConfigSetting("second.sh");
 
     tmp.deleteFile(configPath);
     checkNoConfig();
@@ -90,15 +93,12 @@ public class WorkspaceCacheTest {
   private void checkNoConfig() {
     final Workspace w = cache.getWhenReady();
     assertNotNull("expected a workspace but it doesn't exist", w);
-    assertNull("workspace has unexpected plugin config", w.getPluginConfig());
+    assertFalse("workspace has unexpected plugin config", w.hasPluginConfig());
   }
 
   private void checkConfigSetting(String expected) {
     final Workspace w = cache.getWhenReady();
     assertNotNull("expected a workspace but it doesn't exist", w);
-
-    final PluginConfig c = w.getPluginConfig();
-    assertNotNull("config file is missing", c);
-    assertEquals(expected, c.getDaemonScript());
+    assertEquals(expected, w.getDaemonScript());
   }
 }
