@@ -35,9 +35,12 @@ Please note the following known issues:
   per-project basis (previously an SDK had been configured globally). This is great for the Flutter
   plugin as users can now use separate Dart SDKs for Flutter and Dart for web projects. However,
   when opening a project in 2017.1 created with older IntelliJs, you may encounter an issue where
-  no Dart SDK is configured for your project. If this is the case, open the
-  `Languages & Frameworks > Dart` settings page, check the option to enable Dart support, and select
-  a Dart SDK inside the Flutter SDK (`<flutter>/bin/cache/dart-sdk`).
+  no Dart SDK is configured for your project. Take these steps to resolve this issue:
+   * Open the page `Settings > Languages & Frameworks > Dart`
+   * Check the option to `Enable Dart support for the project`
+   * As the `Dart SDK path`, select the Dart SDK located inside the Flutter SDK (`<flutter sdk path>/bin/cache/dart-sdk`).
+   * Check the project and all modules in the `Enable Dart support for the following modules`-list at the bottom
+   * Click `OK`
 
 * [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will read the PATH
   variable just once on startup. Thus, if you change PATH later to include the Flutter SDK path,
