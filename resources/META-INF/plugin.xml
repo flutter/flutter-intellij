@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>12.0</version>
+  <version>12.1</version>
 
   <idea-version since-build="162.1" until-build="171.*"/>
 
@@ -21,6 +21,11 @@
 
   <change-notes>
     <![CDATA[
+
+12.1:
+<ul>
+  <li>fix an issue with enabling Dart support for modules from the Flutter settings page</li>
+</ul>
 
 12.0:
 <ul>
