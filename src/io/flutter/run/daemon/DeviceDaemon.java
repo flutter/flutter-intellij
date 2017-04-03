@@ -220,6 +220,7 @@ class DeviceDaemon {
       final GeneralCommandLine result = new GeneralCommandLine().withWorkDirectory(workDir);
       result.setCharset(CharsetToolkit.UTF8_CHARSET);
       result.setExePath(FileUtil.toSystemDependentName(command));
+      result.withEnvironment(FlutterSdkUtil.FLUTTER_ENVIRONMENT, FlutterSdkUtil.getFlutterEnvValue());
       for (String param : parameters) {
         result.addParameter(param);
       }
