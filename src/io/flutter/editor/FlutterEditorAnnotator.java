@@ -75,6 +75,14 @@ public class FlutterEditorAnnotator implements Annotator {
             attachColorIcon(element, holder, color);
           }
         }
+        else if (!(element.getParent() instanceof DartArrayAccessExpression) && colors.containsKey(key + ".primary")) {
+          // If we're a primary color access, and we're not followed by an array access (really referencing a
+          // more specific color).
+          final Color color = getColor(key + ".primary");
+          if (color != null) {
+            attachColorIcon(element, holder, color);
+          }
+        }
       }
       else if (text.startsWith("Icons.")) {
         final String key = text.substring("Icons.".length());
@@ -110,6 +118,20 @@ public class FlutterEditorAnnotator implements Annotator {
               attachIcon(element, holder, icon);
             }
           }
+        }
+        catch (NumberFormatException ignored) {
+        }
+      }
+      else if (text.startsWith("const Color(") && text.endsWith(")")) {
+        String val = text.substring("const Color(".length());
+        val = val.substring(0, val.length() - 1);
+        try {
+          final long value = val.startsWith("0x")
+                            ? Long.parseLong(val.substring(2), 16)
+                            : Long.parseLong(val);
+          //noinspection UseJBColor
+          final Color color = new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
+          attachColorIcon(element, holder, color);
         }
         catch (NumberFormatException ignored) {
         }

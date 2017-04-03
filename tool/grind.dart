@@ -11,10 +11,11 @@ main(List<String> args) => grind(args);
 
 @Task('Generate a report of the API usage for the Dart plugin')
 api() {
-  String imports = run('git',
+  String imports = run(
+    'git',
     // Note: extra quotes added so grep doesn't match this file.
     arguments: ['grep', 'import com.jetbrains.' 'lang.dart.'],
-    quiet: true
+    quiet: true,
   );
 
   // path:import
@@ -57,7 +58,7 @@ generate() => null;
 @Task('Generate Flutter color information')
 colors() async {
   final String kUrl = 'https://raw.githubusercontent.com/flutter/flutter/'
-    'master/packages/flutter/lib/src/material/colors.dart';
+      'master/packages/flutter/lib/src/material/colors.dart';
 
   // Get color file from flutter.
   HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
@@ -66,13 +67,14 @@ colors() async {
 
   // Remove an import and define the Color class.
   String str = data.join('');
-  str = str.replaceFirst("import 'dart:ui' show Color;", "import 'colors_main.dart';");
+  str = str.replaceFirst(
+      "import 'dart:ui' show Color, hashValues;", "import 'colors_main.dart';");
   File file = new File('tool/colors/colors.dart');
   file.writeAsStringSync(str);
 
   // Run tool/color/colors_main.dart, pipe output to //resources/flutter/color.properties.
-  ProcessResult result =
-    Process.runSync(Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
+  ProcessResult result = Process
+      .runSync(Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
   if (result.exitCode != 0) {
     fail('${result.stdout}\n${result.stderr}');
   }
@@ -84,7 +86,7 @@ colors() async {
 @Task('Generate Flutter icon information')
 icons() async {
   final String kUrl = 'https://raw.githubusercontent.com/flutter/flutter/'
-    'master/dev/tools/update_icons.dart';
+      'master/dev/tools/update_icons.dart';
 
   // Get color file from flutter.
   HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
