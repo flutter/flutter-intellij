@@ -14,7 +14,7 @@ void main() {
   buf.writeln();
 
   // colors
-  final Map<String, Color> colors = {
+  final Map<String, Color> colors = <String, ColorSwatch>{
     'transparent': Colors.transparent,
     'black': Colors.black,
     'black87': Colors.black87,
@@ -38,7 +38,7 @@ void main() {
   buf.writeln();
 
   // primaries + grey
-  final Map<String, Map<int, Color>> primaryMap = {
+  final Map<String, ColorSwatch> primaryMap = <String, ColorSwatch> {
     'red': Colors.red,
     'pink': Colors.pink,
     'purple': Colors.purple,
@@ -71,7 +71,7 @@ void main() {
   buf.writeln();
 
   // accents
-  final Map<String, Map<int, Color>> accentsMap = {
+  final Map<String, MaterialAccentColor> accentsMap = {
     'redAccent': Colors.redAccent,
     'pinkAccent': Colors.pinkAccent,
     'purpleAccent': Colors.purpleAccent,
@@ -101,15 +101,22 @@ void main() {
   print(buf.toString().trim());
 }
 
-void _writeColorSet(StringBuffer buf, String name, Map<int, Color> colors) {
-  for (int index in colors.keys) {
-    Color color = colors[index];
-    buf.writeln('${name}[${index}]=${color.toString()}');
+void _writeColorSet(StringBuffer buf, String name, ColorSwatch colorSwatch) {
+  // write the primary color
+  Color mainColor = new Color(colorSwatch.value);
+  buf.writeln('${name}.primary=${mainColor.toString()}');
+
+  // write the individual colors
+  for (int index in [50, 100, 200, 300, 350, 400, 500, 600, 700, 800, 850, 900]) {
+    Color color = colorSwatch[index];
+    if (color != null) {
+      buf.writeln('${name}[${index}]=${color.toString()}');
+    }
   }
 }
 
 class Color {
-  final int hexValue;
-  const Color(this.hexValue);
-  String toString() => '${hexValue.toRadixString(16).padLeft(8, '0')}';
+  final int value;
+  const Color(this.value);
+  String toString() => '${value.toRadixString(16).padLeft(8, '0')}';
 }
