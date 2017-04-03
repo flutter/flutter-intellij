@@ -25,44 +25,61 @@ public class WorkspaceTest {
 
   @Test
   public void canLoadWorkspaceWithoutConfigFile() throws Exception {
-    Testing.runOnDispatchThread(() -> {
-      final VirtualFile expectedRoot = tmp.ensureDir("abc");
-      tmp.writeFile("abc/WORKSPACE", "");
+    final VirtualFile expectedRoot = tmp.ensureDir("abc");
+    tmp.writeFile("abc/WORKSPACE", "");
 
-      tmp.ensureDir("abc/dart");
-      final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
-      ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
+    tmp.ensureDir("abc/dart");
+    final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
+    ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
 
-      final Workspace w = Workspace.load(fixture.getProject());
+    final Workspace w = Workspace.load(fixture.getProject());
 
-      assertNotNull("expected a workspace", w);
-      assertEquals(expectedRoot, w.getRoot());
-      assertNull("config shouldn't be there", w.getPluginConfig());
-    });
+    assertNotNull("expected a workspace", w);
+    assertEquals(expectedRoot, w.getRoot());
+    assertFalse("config shouldn't be there", w.hasPluginConfig());
   }
 
   @Test
   public void canLoadWorkspaceWithConfigFile() throws Exception {
-    Testing.runOnDispatchThread(() -> {
-      final VirtualFile expectedRoot = tmp.ensureDir("abc");
-      tmp.writeFile("abc/WORKSPACE", "");
+    final VirtualFile expectedRoot = tmp.ensureDir("abc");
+    tmp.writeFile("abc/WORKSPACE", "");
 
-      tmp.ensureDir("abc/dart");
-      final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
-      ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
+    tmp.ensureDir("abc/dart");
+    final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
+    ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
 
-      tmp.ensureDir("abc/dart/config/intellij-plugins");
-      tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json",
-                    "{\"daemonScript\": \"something\"}");
+    tmp.ensureDir("abc/dart/config/intellij-plugins");
+    tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json",
+                  "{\"daemonScript\": \"something.sh\"}");
+    tmp.writeFile("abc/something.sh", "");
 
-      final Workspace w = Workspace.load(fixture.getProject());
+    final Workspace w = Workspace.load(fixture.getProject());
 
-      assertNotNull("expected a workspace", w);
-      assertEquals(expectedRoot, w.getRoot());
-      final PluginConfig c = w.getPluginConfig();
-      assertNotNull("expected a plugin config", c);
-      assertEquals("something", c.getDaemonScript());
-    });
+    assertNotNull("expected a workspace", w);
+    assertEquals(expectedRoot, w.getRoot());
+    assertEquals("something.sh", w.getDaemonScript());
+  }
+
+  @Test
+  public void canLoadWorkspaceWithConfigFileAndScriptInReadonly() throws Exception {
+    final VirtualFile expectedRoot = tmp.ensureDir("abc");
+    tmp.writeFile("abc/WORKSPACE", "");
+
+    tmp.ensureDir("abc/dart");
+    final VirtualFile contentRoot = tmp.ensureDir("abc/dart/something");
+    ModuleRootModificationUtil.addContentRoot(fixture.getModule(), contentRoot.getPath());
+
+    tmp.ensureDir("READONLY/abc/dart/config/intellij-plugins");
+    tmp.writeFile("READONLY/abc/dart/config/intellij-plugins/flutter.json",
+                  "{\"daemonScript\": \"scripts/startDaemon.sh\"}");
+    tmp.ensureDir("READONLY/abc/scripts");
+    tmp.writeFile("READONLY/abc/scripts/startDaemon.sh", "");
+
+    final Workspace w = Workspace.load(fixture.getProject());
+
+    assertNotNull("expected a workspace", w);
+    assertEquals(expectedRoot, w.getRoot());
+    assertEquals("../READONLY/abc/scripts/startDaemon.sh", w.getDaemonScript());
   }
 
   @Test
@@ -77,7 +94,7 @@ public class WorkspaceTest {
     ModuleRootModificationUtil.addContentRoot(fixture.getModule(), otherApp.getPath());
     Workspace w = Workspace.load(fixture.getProject());
     assertNotNull(w);
-    assertNotNull(w.getPluginConfig());
+    assertTrue(w.hasPluginConfig());
     assertFalse("shouldn't have detected flutter module", w.usesFlutter(fixture.getModule()));
 
     final VirtualFile mobileApp = tmp.ensureDir("abc/something/mobile/hello");
