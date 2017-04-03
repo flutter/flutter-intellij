@@ -132,7 +132,7 @@ public class FlutterAppService {
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workDir);
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.withEnvironment(FlutterSdkUtil.FLUTTER_ENVIRONMENT, FlutterSdkUtil.getFlutterEnvValue());
+    commandLine.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
     commandLine.addParameters("run", "--machine");
     if (device != null) {
       commandLine.addParameter("--device-id=" + device.deviceId());
