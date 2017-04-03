@@ -91,7 +91,7 @@ public class DartTestUtils {
       }
 
       final ApplicationLibraryTable libraryTable = ApplicationLibraryTable.getApplicationTable();
-      final Library library = libraryTable.getLibraryByName(DartSdk.DART_SDK_GLOBAL_LIB_NAME);
+      final Library library = libraryTable.getLibraryByName(DartSdk.DART_SDK_LIB_NAME);
       if (library != null) {
         libraryTable.removeLibrary(library);
       }

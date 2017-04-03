@@ -20,19 +20,17 @@ before_script:
 # android-studio-ide-162.3764568-linux.zip is Android Studio 2.3.
 env:
   # Android Studio
-  - IDEA_PRODUCT=android-studio-ide IDEA_VERSION=162.3764568 DART_PLUGIN_VERSION=162.2924
+  #- IDEA_PRODUCT=android-studio-ide IDEA_VERSION=162.3764568 DART_PLUGIN_VERSION=162.2924
 
   # IntelliJ CE internal version
   # TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2016.3.1    DART_PLUGIN_VERSION=163.13137
+  #- IDEA_PRODUCT=ideaIC             IDEA_VERSION=2016.3.1    DART_PLUGIN_VERSION=163.13137
 
   # IntelliJ CE supported range
   # TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2016.3.4    DART_PLUGIN_VERSION=163.13137
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.1      DART_PLUGIN_VERSION=171.3780.21
+  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.1      DART_PLUGIN_VERSION=171.4006
 
   # WebStorm supported range
-  - IDEA_PRODUCT=WebStorm           IDEA_VERSION=2016.3.3
   - IDEA_PRODUCT=WebStorm           IDEA_VERSION=2017.1
 
 # execution

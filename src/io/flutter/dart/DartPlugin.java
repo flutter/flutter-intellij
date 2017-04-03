@@ -16,6 +16,7 @@ import com.intellij.openapi.util.Version;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,11 +31,9 @@ public class DartPlugin {
   /**
    * Tracks the minimum required Dart Plugin version.
    */
-  private static final String MINIMUM_REQUIRED_PLUGIN_VERSION = "162.2924";
-  private static final Version MINIMUM_VERSION = Version.parseVersion(MINIMUM_REQUIRED_PLUGIN_VERSION);
+  private static final Version MINIMUM_VERSION = Version.parseVersion("171.3780.79");
 
   private static final DartPlugin INSTANCE = new DartPlugin();
-  private static DartSdkLibUtilDelegate mySdkLibUtilDelegate;
 
   private Version myVersion;
 
@@ -48,19 +47,19 @@ public class DartPlugin {
   }
 
   public static boolean isDartSdkEnabled(@NotNull Module module) {
-    return getSdkLibUtilDelegate().isDartSdkEnabled(module);
+    return DartSdkLibUtil.isDartSdkEnabled(module);
   }
 
   public static void enableDartSdk(@NotNull Module module) {
-    getSdkLibUtilDelegate().enableDartSdk(module);
+    DartSdkLibUtil.enableDartSdk(module);
   }
 
-  public static void ensureDartSdkConfigured(@Nullable Project project, @NotNull String sdkHomePath) {
-    getSdkLibUtilDelegate().ensureDartSdkConfigured(project, sdkHomePath);
+  public static void ensureDartSdkConfigured(@NotNull Project project, @NotNull String sdkHomePath) {
+    DartSdkLibUtil.ensureDartSdkConfigured(project, sdkHomePath);
   }
 
   public static void disableDartSdk(@NotNull Collection<Module> modules) {
-    getSdkLibUtilDelegate().disableDartSdk(modules);
+    DartSdkLibUtil.disableDartSdk(modules);
   }
 
   public static boolean isDartSdkHome(@Nullable String path) {
@@ -102,14 +101,6 @@ public class DartPlugin {
       myVersion = Version.parseVersion(descriptor.getVersion());
     }
     return myVersion;
-  }
-
-  private static DartSdkLibUtilDelegate getSdkLibUtilDelegate() {
-    if (mySdkLibUtilDelegate == null) {
-      mySdkLibUtilDelegate = new DartSdkLibUtilDelegate();
-    }
-
-    return mySdkLibUtilDelegate;
   }
 
   /**
