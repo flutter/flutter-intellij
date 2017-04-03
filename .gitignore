@@ -3,6 +3,7 @@ artifacts/
 build/
 flutter-intellij.jar
 packages
+.DS_Store
 .packages
 pubspec.lock
 .pub/
