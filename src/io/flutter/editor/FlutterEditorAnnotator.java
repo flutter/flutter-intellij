@@ -24,11 +24,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Properties;
 
-// Support Icons.add
-// Support Colors.white70
-// Support Colors.red[400]
-// Support const IconData(0xe145)
-
 public class FlutterEditorAnnotator implements Annotator {
   private static final Logger LOG = Logger.getInstance(FlutterEditorAnnotator.class);
 
@@ -108,8 +103,8 @@ public class FlutterEditorAnnotator implements Annotator {
         val = val.substring(0, val.length() - 1);
         try {
           final int value = val.startsWith("0x")
-                      ? Integer.parseInt(val.substring(2), 16)
-                      : Integer.parseInt(val);
+                            ? Integer.parseInt(val.substring(2), 16)
+                            : Integer.parseInt(val);
           final String hex = Integer.toHexString(value);
           final String iconName = icons.getProperty(hex + ".codepoint");
           if (iconName != null) {
@@ -127,8 +122,8 @@ public class FlutterEditorAnnotator implements Annotator {
         val = val.substring(0, val.length() - 1);
         try {
           final long value = val.startsWith("0x")
-                            ? Long.parseLong(val.substring(2), 16)
-                            : Long.parseLong(val);
+                             ? Long.parseLong(val.substring(2), 16)
+                             : Long.parseLong(val);
           //noinspection UseJBColor
           final Color color = new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
           attachColorIcon(element, holder, color);
@@ -170,7 +165,7 @@ public class FlutterEditorAnnotator implements Annotator {
   }
 
   private static void attachColorIcon(final PsiElement element, AnnotationHolder holder, Color color) {
-    attachIcon(element, holder, new ColorIcon(16, 12, color, false));
+    attachIcon(element, holder, new ColorIcon(16, 12, color, true));
   }
 
   private static void attachIcon(final PsiElement element, AnnotationHolder holder, Icon icon) {
