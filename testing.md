@@ -34,20 +34,44 @@ Validate basic project creation.
     * Change `primarySwatch: Colors` to some other color and validate that you
       get completions.
 
-## Project Import
+## Project Open
 
-Validate that an externally created project can be imported.
+Validate that our example projects can be opened.
 
+* close any open projects in IDEA
 * choose `File > Open...`
 * browse to and select `<flutter-root>/examples/flutter_gallery`
 * ensure there are no analysis errors or warnings
-* ensure that the `flutter_gallery` launch configuration shows up and is selected
+* test that code completion is working as expected
+* ensure that the `main.dart` launch configuration shows up and is selected
+
+Validate that a `flutter create` project can opened.
+
+* close any open projects in IDEA
+* run `flutter create` in a terminal to create a new project `testcreate`
+* choose `File > Open...`
+* browse to and select the 'testcreate' project
+* ensure there are no analysis errors or warnings
+* test that code completion is working as expected
+* ensure that the `main.dart` launch configuration shows up and is selected
 
 ## Device Detection
 
 Validate device selection.
 
-* (OS X) Verify that the simulator can be opened.
+### Any OS
+
+* Physical Android device
+  * Plug in a physical Android device
+  * Ensure that a menu item appears in the device pull down for the device.
+  
+* Emulated Android device
+  * Start an Android emulator (using the AVD manager in Android Studio)
+  * Ensure that a menu item appears in the device pull down for the device.  
+
+### macOS only
+
+* Verify that the simulator can be opened.
   * Disconnect all devices and quit the iOS simulator.
   * Ensure that a menu item to open the iOS simulator is enabled in the device pull
     down menu.
