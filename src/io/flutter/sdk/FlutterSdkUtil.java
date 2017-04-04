@@ -8,6 +8,7 @@ package io.flutter.sdk;
 import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ApplicationNamesInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
@@ -35,11 +36,23 @@ import java.util.*;
 
 
 public class FlutterSdkUtil {
+  /** The environment variable to use to tell the flutter tool which app is driving it. */
+  public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST_ENV";
+
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
 
   private FlutterSdkUtil() {
+  }
+
+  /**
+   * Return the environment variable value to use when shelling out to the Flutter command-line tool.
+   */
+  public static String getFlutterHostEnvValue() {
+    final String clientId = ApplicationNamesInfo.getInstance().getFullProductName().replaceAll(" ", "-");
+    final String existingVar = System.getenv(FLUTTER_HOST_ENV);
+    return existingVar == null ? clientId : (existingVar + ":" + clientId);
   }
 
   public static void updateKnownSdkPaths(@NotNull final String newSdkPath) {

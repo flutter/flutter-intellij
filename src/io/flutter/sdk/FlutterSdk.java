@@ -109,6 +109,7 @@ public class FlutterSdk {
     final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
     command.setCharset(CharsetToolkit.UTF8_CHARSET);
     command.setExePath(flutterPath);
+    command.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
     // Example: [create, foo_bar]
     String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
     toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
@@ -157,6 +158,7 @@ public class FlutterSdk {
     final GeneralCommandLine command = new GeneralCommandLine();
     command.setCharset(CharsetToolkit.UTF8_CHARSET);
     command.setExePath(flutterPath);
+    command.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
     // Example: [create, foo_bar]
     final String[] toolArgs = ArrayUtil.prepend("--no-color", args);
     command.addParameters(toolArgs);
