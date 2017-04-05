@@ -245,8 +245,6 @@
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
               icon="FlutterIcons.Restart">
-        <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl alt SEMICOLON"/>
-        <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl BACK_SLASH"/>
       </action>
       <separator/>
       <add-to-group group-id="RunContextGroup" anchor="last"/>
