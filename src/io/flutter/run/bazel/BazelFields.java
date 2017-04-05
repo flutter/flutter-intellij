@@ -5,10 +5,14 @@
  */
 package io.flutter.run.bazel;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.CommandLineTokenizer;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
@@ -17,6 +21,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,9 +36,12 @@ public class BazelFields {
   private @Nullable String additionalArgs;
   private @Nullable String bazelTarget;
 
-  BazelFields() {}
+  BazelFields() {
+  }
 
-  /** Copy constructor */
+  /**
+   * Copy constructor
+   */
   private BazelFields(@NotNull BazelFields original) {
     workDir = original.workDir;
     launchScript = original.launchScript;
@@ -40,7 +49,9 @@ public class BazelFields {
     bazelTarget = original.bazelTarget;
   }
 
-  /** Create non-template from template. */
+  /**
+   * Create non-template from template.
+   */
   private BazelFields(@NotNull BazelFields template, Workspace w) {
     this(template);
     if (StringUtil.isEmptyOrSpaces(workDir)) {
@@ -102,8 +113,8 @@ public class BazelFields {
 
   /**
    * Reports an error in the run config that the user should correct.
-   *
-   * <p>This will be called while the user is typing into a non-template run config.
+   * <p>
+   * This will be called while the user is typing into a non-template run config.
    * (See RunConfiguration.checkConfiguration.)
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
@@ -141,9 +152,115 @@ public class BazelFields {
   }
 
   /**
+   * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
+   */
+  GeneralCommandLine getLaunchCommand(@NotNull Project project,
+                                      @Nullable FlutterDevice device,
+                                      @NotNull RunMode mode)
+    throws ExecutionException {
+    try {
+      checkRunnable(project);
+    } catch (RuntimeConfigurationError e) {
+      throw new ExecutionException(e);
+    }
+
+    final VirtualFile workDir = chooseWorkDir(project);
+    assert workDir != null; // already checked
+
+    final String launchingScript = getLaunchingScript();
+    assert launchingScript != null; // already checked
+
+    final String target = chooseTarget(mode);
+    assert target != null; // already checked
+
+    final String additionalArgs = getAdditionalArgs();
+
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workDir.getPath());
+    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+
+    // Set the mode.
+    if (mode != RunMode.DEBUG) {
+      commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    }
+
+    // Send in platform architecture based in the device info.
+    if (device != null) {
+
+      if (device.isIOS()) {
+        // --ios_cpu=[arm64, x86_64]
+        final String arch = device.emulator() ? "x86_64" : "arm64";
+        commandLine.addParameter("--ios_cpu=" + arch);
+      }
+      else {
+        // --android_cpu=[armeabi, x86, x86_64]
+        String arch = null;
+        final String platform = device.platform();
+        if (platform != null) {
+          switch (platform) {
+            case "android-arm":
+              arch = "armeabi";
+              break;
+            case "android-x86":
+              arch = "x86";
+              break;
+            case "android-x64":
+              arch = "x86_64";
+              break;
+            case "linux-x64":
+              arch = "x86_64";
+              break;
+          }
+        }
+
+        if (arch != null) {
+          commandLine.addParameter("--android_cpu=" + arch);
+        }
+      }
+    }
+
+    // User specified additional arguments.
+    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
+    while (argumentsTokenizer.hasMoreTokens()) {
+      final String token = argumentsTokenizer.nextToken();
+      if (token.equals("--")) {
+        break;
+      }
+      commandLine.addParameter(token);
+    }
+
+    commandLine.addParameter(target);
+
+    // Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
+    commandLine.addParameter("--");
+
+    // Tell the flutter tommand-line tools that we want a machine interface on stdio.
+    commandLine.addParameters("--machine");
+
+    // Pause the app at startup in order to set breakpoints.
+    if (mode == RunMode.DEBUG) {
+      commandLine.addParameter("--start-paused");
+    }
+
+    // More user-specified args.
+    while (argumentsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(argumentsTokenizer.nextToken());
+    }
+
+    // Send in the deviceId.
+    if (device != null) {
+      commandLine.addParameter("-d");
+      commandLine.addParameter(device.deviceId());
+    }
+
+    return commandLine;
+  }
+
+  /**
    * Chooses the work directory to launch with.
    */
-  @Nullable VirtualFile chooseWorkDir(@NotNull final Project project) {
+  @Nullable
+  VirtualFile chooseWorkDir(@NotNull final Project project) {
     // Prefer user's selection.
     if (!StringUtil.isEmptyOrSpaces(workDir)) {
       final VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(workDir);
@@ -158,5 +275,19 @@ public class BazelFields {
 
     // None found.
     return null;
+  }
+
+  @Nullable
+  private String chooseTarget(RunMode mode) {
+    String target = getBazelTarget();
+    if (target == null) return null;
+    // Append _run[_hot] to bazelTarget.
+    if (!target.endsWith("_run") && !target.endsWith(("_hot"))) {
+      target += "_run";
+      if (mode.isReloadEnabled()) {
+        target += "_hot";
+      }
+    }
+    return target;
   }
 }

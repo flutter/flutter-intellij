@@ -6,11 +6,19 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,21 +54,23 @@ public class FlutterApp {
 
   private final ObservatoryConnector myConnector;
 
-  public FlutterApp(@NotNull RunMode mode,
-                    @NotNull ProcessHandler processHandler,
-                    @NotNull DaemonApi daemonApi) {
+  FlutterApp(@NotNull RunMode mode,
+             @NotNull ProcessHandler processHandler,
+             @NotNull DaemonApi daemonApi) {
     myMode = mode;
     myProcessHandler = processHandler;
     myDaemonApi = daemonApi;
     myConnector = new ObservatoryConnector() {
       @Override
-      public @Nullable String getWebSocketUrl() {
+      public @Nullable
+      String getWebSocketUrl() {
         // Don't try to use observatory until the flutter command is done starting up.
         if (getState() != State.STARTED) return null;
         return myWsUrl;
       }
 
-      public @Nullable String getBrowserUrl() {
+      public @Nullable
+      String getBrowserUrl() {
         String url = myWsUrl;
         if (url == null) return null;
         if (url.startsWith("ws:")) {
@@ -89,18 +99,51 @@ public class FlutterApp {
     };
   }
 
-  public @NotNull RunMode getMode() {
+  /**
+   * Creates a process that will launch the flutter app.
+   * <p>
+   * (Assumes we are launching it in --machine mode.)
+   */
+  @NotNull
+  public static FlutterApp start(Project project, @NotNull RunMode mode,
+                          @NotNull GeneralCommandLine command,
+                          @NotNull String analyticsStart,
+                          @NotNull String analyticsStop)
+    throws ExecutionException {
+
+    final ProcessHandler process = new OSProcessHandler(command);
+    Disposer.register(project, process::destroyProcess);
+
+    // Send analytics for the start and stop events.
+    FlutterInitializer.sendAnalyticsAction(analyticsStart);
+    process.addProcessListener(new ProcessAdapter() {
+      @Override
+      public void processTerminated(ProcessEvent event) {
+        FlutterInitializer.sendAnalyticsAction(analyticsStop);
+      }
+    });
+
+    final DaemonApi api = new DaemonApi(process);
+    final FlutterApp app = new FlutterApp(mode, process, api);
+    api.listen(process, new FlutterAppListener(app, project));
+    return app;
+  }
+
+  @NotNull
+  public RunMode getMode() {
     return myMode;
   }
 
   /**
    * Returns the process running the daemon.
    */
-  public @NotNull ProcessHandler getProcessHandler() {
+  @NotNull
+  public ProcessHandler getProcessHandler() {
     return myProcessHandler;
   }
 
-  public @NotNull ObservatoryConnector getConnector() {
+  @NotNull
+  public ObservatoryConnector getConnector() {
     return myConnector;
   }
 
@@ -160,13 +203,14 @@ public class FlutterApp {
     myConsole = console;
   }
 
-  public @Nullable ConsoleView getConsole() {
+  @Nullable
+  public ConsoleView getConsole() {
     return myConsole;
   }
 
   /**
    * Transitions to a new state and fires events.
-   *
+   * <p>
    * If no change is needed, returns false and does not fire events.
    */
   boolean changeState(State newState) {
@@ -180,8 +224,8 @@ public class FlutterApp {
 
   /**
    * Starts shutting down the process.
-   *
-   * <p>If possible, we want to shut down gracefully by sending a stop command to the application.
+   * <p>
+   * If possible, we want to shut down gracefully by sending a stop command to the application.
    */
   Future shutdownAsync() {
     final FutureTask done = new FutureTask<>(() -> null);
@@ -211,9 +255,11 @@ public class FlutterApp {
         try {
           stopDone.get(100, TimeUnit.MILLISECONDS);
           break;
-        } catch (TimeoutException e) {
+        }
+        catch (TimeoutException e) {
           // continue
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           LOG.warn(e);
           break;
         }

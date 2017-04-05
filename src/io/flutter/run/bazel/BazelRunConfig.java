@@ -14,10 +14,12 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.Launcher;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterAppService;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
@@ -54,26 +56,24 @@ public class BazelRunConfig extends RunConfigurationBase
   @NotNull
   @Override
   public Launcher getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+    final BazelFields launchFields = fields.copy();
     try {
-      fields.checkRunnable(env.getProject());
+      launchFields.checkRunnable(env.getProject());
     } catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile workDir = fields.chooseWorkDir(env.getProject());
+    final VirtualFile workDir = launchFields.chooseWorkDir(env.getProject());
     assert workDir != null; // already checked
 
-    final String launchingScript = fields.getLaunchingScript();
-    assert launchingScript != null; // already checked
-
-    final String target = fields.getBazelTarget();
-    assert target != null; // already checked
-
-    final String additionalArgs = fields.getAdditionalArgs();
+    final RunMode mode = RunMode.fromEnv(env);
 
     final FlutterAppService appService = FlutterAppService.getInstance(env.getProject());
-    final Launcher.Callback callback = (device) ->
-      appService.startBazelApp(workDir.getPath(), launchingScript, device, RunMode.fromEnv(env), target, additionalArgs);
+    final Launcher.Callback callback = (device) -> {
+      final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
+      return FlutterApp.start(env.getProject(), mode, command,
+                              StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
+    };
 
     return new Launcher(env, workDir, workDir, this, callback);
   }
