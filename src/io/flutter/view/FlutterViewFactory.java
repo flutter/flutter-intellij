@@ -25,7 +25,6 @@ public class FlutterViewFactory implements ToolWindowFactory {
 
   private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     ApplicationManager.getApplication().invokeLater(() -> {
-      // TODO: re-enable auto-show after UI review (#691)
       final FlutterView flutterView = ServiceManager.getService(project, FlutterView.class);
       flutterView.debugActive(event);
     });

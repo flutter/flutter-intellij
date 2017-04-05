@@ -65,7 +65,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     myConnector = connector;
 
     myIsolatesInfo = new IsolatesInfo();
-    final DartVmServiceBreakpointHandler breakpointHandler = new DartVmServiceBreakpointHandlerZ(this);
+    final DartVmServiceBreakpointHandler breakpointHandler = new DartVmServiceBreakpointHandler(this);
     myBreakpointHandlers = new XBreakpointHandler[]{breakpointHandler};
 
     setLogger();
@@ -168,8 +168,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
    * We override the parent with a no-op implementation; our preferred implementation
    * (scheduleConnectNew) is called elsewhere.
    */
-  @SuppressWarnings("EmptyMethod")
-  public void scheduleConnect() {
+  @Override
+  protected void scheduleConnect(@NotNull final String url) {
     // This page intentionally left blank.
 
   }

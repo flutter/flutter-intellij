@@ -71,7 +71,8 @@ public class SdkRunConfig extends LocatableConfigurationBase
   public Launcher getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
     try {
       fields.checkRunnable(env.getProject());
-    } catch (RuntimeConfigurationError e) {
+    }
+    catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e);
     }
 
@@ -84,7 +85,8 @@ public class SdkRunConfig extends LocatableConfigurationBase
       launchFile = SdkFields.checkLaunchFile(fields.getFilePath());
       workDir = fields.chooseWorkDir(launchFile, env.getProject());
       additionalArgs = fields.getAdditionalArgs();
-    } catch (RuntimeConfigurationError e) {
+    }
+    catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e); // Shouldn't happen here since we already checked.
     }
 
@@ -196,5 +198,4 @@ public class SdkRunConfig extends LocatableConfigurationBase
       }
     }
   }
-
 }

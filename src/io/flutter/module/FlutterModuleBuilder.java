@@ -109,7 +109,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
     throws ConfigurationException {
-    // TODO(devoncarew): Store the flutterSdkPath info (in the project? module?).
     final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
     if (sdk == null) {
       throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");

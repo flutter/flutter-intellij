@@ -40,7 +40,7 @@ public class FlutterGeneratorPeer {
     errorIcon.setIcon(AllIcons.Actions.Lightning);
     Messages.installHyperlinkSupport(errorText);
 
-    // Hide pending real content -- TODO: #83.
+    // Hide pending real content.
     myVersionLabel.setVisible(false);
     myVersionContent.setVisible(false);
 
