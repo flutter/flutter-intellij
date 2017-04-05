@@ -227,7 +227,7 @@ public class FlutterApp {
    * <p>
    * If possible, we want to shut down gracefully by sending a stop command to the application.
    */
-  Future shutdownAsync() {
+  public Future shutdownAsync() {
     final FutureTask done = new FutureTask<>(() -> null);
     if (!changeState(State.TERMINATING)) {
       done.run();

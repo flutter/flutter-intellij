@@ -20,7 +20,6 @@ import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.Launcher;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.FlutterAppService;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +67,6 @@ public class BazelRunConfig extends RunConfigurationBase
 
     final RunMode mode = RunMode.fromEnv(env);
 
-    final FlutterAppService appService = FlutterAppService.getInstance(env.getProject());
     final Launcher.Callback callback = (device) -> {
       final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
       return FlutterApp.start(env.getProject(), mode, command,

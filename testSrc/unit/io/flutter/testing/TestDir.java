@@ -66,8 +66,15 @@ public class TestDir extends ExternalResource {
   public void deleteFile(String path) throws Exception {
     Testing.runInWriteAction(() -> {
       final VirtualFile target = fixture.getFile(path);
-      assertNotNull("attempted to delete nonexistentent file: " + path, target);
+      assertNotNull("attempted to delete nonexistent file: " + path, target);
       target.delete(this);
     });
+  }
+
+  /**
+   * Given a path relative to the temp directory, returns the absolute path.
+   */
+  public String pathAt(String path) throws Exception {
+    return fixture.getTempDirPath() + "/" + path;
   }
 }
