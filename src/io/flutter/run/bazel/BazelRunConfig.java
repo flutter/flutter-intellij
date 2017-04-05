@@ -15,10 +15,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.Launcher;
+import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
@@ -62,9 +62,7 @@ public class BazelRunConfig extends RunConfigurationBase
       throw new ExecutionException(e);
     }
 
-    final VirtualFile workDir = launchFields.chooseWorkDir(env.getProject());
-    assert workDir != null; // already checked
-
+    final MainFile main = MainFile.verify(launchFields.getEntryFile(), env.getProject()).get();
     final RunMode mode = RunMode.fromEnv(env);
 
     final Launcher.Callback callback = (device) -> {
@@ -73,7 +71,7 @@ public class BazelRunConfig extends RunConfigurationBase
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
-    return new Launcher(env, workDir, workDir, this, callback);
+    return new Launcher(env, main.getAppDir(), main.getFile(), this, callback);
   }
 
   public BazelRunConfig clone() {
