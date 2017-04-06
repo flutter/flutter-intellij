@@ -215,7 +215,7 @@
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
               text="Submit Feedback…"
-              description="Provie feedback for the Flutter plugin"/>
+              description="Provide feedback for the Flutter plugin"/>
     </group>
 
     <!-- project explorer actions -->
