@@ -15,9 +15,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 public class MainFileTest {
 
@@ -47,13 +45,14 @@ public class MainFileTest {
                   "import \"package:flutter/ui.dart\"\n" +
                   "main() {}\n").getPath();
 
-    final MainFile main = Testing.computeOnDispatchThread(() -> MainFile.verify(mainPath, fixture.getProject()));
-    if (!main.canLaunch()) {
-      fail("Flutter app should be valid but got error: " + main.getError());
+    final MainFile.Result result = Testing.computeOnDispatchThread(() -> MainFile.verify(mainPath, fixture.getProject()));
+    if (!result.canLaunch()) {
+      fail("Flutter app should be valid but got error: " + result.getError());
     }
-
+    final MainFile main = result.get();
     assertEquals(mainPath, main.getFile().getPath());
     assertEquals(appDir, main.getAppDir().getPath());
+    assertTrue(main.hasFlutterImports());
   }
 
   @Test
@@ -67,8 +66,6 @@ public class MainFileTest {
     tmp.writeFile("root/foo.dart", "");
     checkInvalid("root/foo.dart", "doesn't contain a main function");
 
-    tmp.writeFile("root/bar.dart", "main() {}\n");
-    checkInvalid("root/bar.dart", "doesn't have any Flutter imports");
     tmp.writeFile("elsewhere.dart",
                   "import \"package:flutter/ui.dart\"\n" +
                   "main() {}\n");
@@ -81,7 +78,7 @@ public class MainFileTest {
 
   private void checkInvalid(@Nullable String path, String expected) throws Exception {
     final String fullPath = path == null ? null : tmp.pathAt(path);
-    final MainFile main = Testing.computeOnDispatchThread(
+    final MainFile.Result main = Testing.computeOnDispatchThread(
       () -> MainFile.verify(fullPath, fixture.getProject()));
 
     assertFalse(main.canLaunch());

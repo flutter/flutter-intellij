@@ -79,7 +79,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
       throw new ExecutionException(e);
     }
 
-    final MainFile main = MainFile.verify(launchFields.getFilePath(), env.getProject());
+    final MainFile main = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
 

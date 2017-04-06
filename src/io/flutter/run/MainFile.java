@@ -33,40 +33,18 @@ import java.util.stream.Stream;
  */
 public class MainFile {
 
-  @Nullable
+  @NotNull
   private final VirtualFile file;
 
-  @Nullable
+  @NotNull
   private final VirtualFile appDir;
 
-  @Nullable
-  private final String error;
+  private final boolean flutterImports;
 
-  private MainFile(@Nullable VirtualFile file, @Nullable VirtualFile appDir, @Nullable String error) {
-    assert ((file != null && appDir != null) || error != null);
+  private MainFile(@NotNull VirtualFile file, @NotNull VirtualFile appDir, boolean flutterImports) {
     this.file = file;
     this.appDir = appDir;
-    this.error = error;
-  }
-
-  /**
-   * Returns true if the Flutter app can be launched.
-   * <p>
-   * If false, the error can be found by calling {@link #getError}.
-   */
-  public boolean canLaunch() {
-    return error == null;
-  }
-
-  /**
-   * Returns the error message to display if this file is not launchable.
-   */
-  @NotNull
-  public String getError() {
-    if (error == null) {
-      throw new IllegalStateException("called getError when there is no error");
-    }
-    return error;
+    this.flutterImports = flutterImports;
   }
 
   /**
@@ -74,9 +52,6 @@ public class MainFile {
    */
   @NotNull
   public VirtualFile getFile() {
-    if (file == null) {
-      throw new IllegalStateException("called getFile without checking for error: " + error);
-    }
     return file;
   }
 
@@ -85,18 +60,22 @@ public class MainFile {
    */
   @NotNull
   public VirtualFile getAppDir() {
-    if (appDir == null) {
-      throw new IllegalStateException("called getAppDir witrhout checking for error: " + error);
-    }
     return appDir;
+  }
+
+  /**
+   * Returns true if the file has any direct flutter imports.
+   */
+  public boolean hasFlutterImports() {
+    return flutterImports;
   }
 
   /**
    * Verifies that the given path points to an entrypoint file within a Flutter app.
    * <p>
-   * If there is an error, {@link #canLaunch} will return false and the error is available via {@link #getError}
+   * If there is an error, {@link Result#canLaunch} will return false and the error is available via {@link Result#getError}
    */
-  public static MainFile verify(@Nullable String path, Project project) {
+  public static MainFile.Result verify(@Nullable String path, Project project) {
     if (!ApplicationManager.getApplication().isReadAccessAllowed()) {
       throw new IllegalStateException("need read access");
     }
@@ -123,10 +102,6 @@ public class MainFile {
       return error(FlutterBundle.message("main.not.in.entrypoint"));
     }
 
-    if (findImportUrls(dart).noneMatch((url) -> url.startsWith("package:flutter/"))) {
-      return error(FlutterBundle.message("flutter.not.in.entrypoint"));
-    }
-
     if (!inProject(file, project)) {
       return error(FlutterBundle.message("entrypoint.not.in.project"));
     }
@@ -136,7 +111,9 @@ public class MainFile {
       return error(FlutterBundle.message("entrypoint.not.in.app.dir"));
     }
 
-    return new MainFile(file, dir, null);
+    final boolean hasFlutterImports = findImportUrls(dart).anyMatch((url) -> url.startsWith("package:flutter/"));
+
+    return new MainFile.Result(new MainFile(file, dir, hasFlutterImports), null);
   }
 
   @Nullable
@@ -167,7 +144,55 @@ public class MainFile {
     return Arrays.stream(imports).map(DartImportStatement::getUriString);
   }
 
-  private static MainFile error(@NotNull String message) {
-    return new MainFile(null, null, message);
+  private static MainFile.Result error(@NotNull String message) {
+    return new MainFile.Result(null, message);
+  }
+
+  /**
+   * The result of {@link #verify}; either a MainFile or an error.
+   */
+  public static class Result {
+    @Nullable
+    private final MainFile file;
+
+    @Nullable
+    private final String error;
+
+    private Result(@Nullable MainFile file, @Nullable String error) {
+      assert(file == null || error == null);
+      assert(file != null || error != null);
+      this.file = file;
+      this.error = error;
+    }
+
+    /**
+     * Returns true if the Flutter app can be launched.
+     * <p>
+     * If false, the error can be found by calling {@link #getError}.
+     */
+    public boolean canLaunch() {
+      return error == null;
+    }
+
+    /**
+     * Returns the error message to display if this file is not launchable.
+     */
+    @NotNull
+    public String getError() {
+      if (error == null) {
+        throw new IllegalStateException("called getError when there is no error");
+      }
+      return error;
+    }
+
+    /**
+     * Unwraps the MainFile. Valid only if there's not an error.
+     */
+    public MainFile get() {
+      if (file == null) {
+        throw new IllegalStateException("called getLaunchable when there is an error: " + error);
+      }
+      return file;
+    }
   }
 }

@@ -107,7 +107,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
         final FlutterModuleUtils.FileWithContext main = FlutterModuleUtils.findFlutterMain(module);
         if (main != null) {
-          FlutterModuleUtils.createRunConfig(project, main.file, main.contentRoot);
+          FlutterModuleUtils.createRunConfig(project, main.file);
         }
 
         FlutterModuleUtils.setFlutterModuleAndReload(module, project);

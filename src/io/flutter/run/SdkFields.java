@@ -11,7 +11,6 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -83,8 +82,8 @@ public class SdkFields {
   void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
     //TODO(pq): consider validating additional args values
     checkSdk(project);
-    final MainFile main = MainFile.verify(filePath, project);
-    if (!main.canLaunch()) {
+    final MainFile.Result main = MainFile.verify(filePath, project);
+    if (!MainFile.verify(filePath, project).canLaunch()) {
       throw new RuntimeConfigurationError(main.getError());
     }
   }
@@ -95,7 +94,7 @@ public class SdkFields {
   public GeneralCommandLine createFlutterSdkRunCommand(Project project, @Nullable FlutterDevice device,
                                                               @NotNull RunMode mode) throws ExecutionException {
 
-    final MainFile main = MainFile.verify(filePath, project);
+    final MainFile main = MainFile.verify(filePath, project).get();
     final String appPath = main.getAppDir().getPath();
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
@@ -142,7 +141,7 @@ public class SdkFields {
     return copy;
   }
 
-  static DartSdk checkSdk(@NotNull Project project) throws RuntimeConfigurationError {
+  private static void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {
     // TODO(skybrian) shouldn't this be flutter SDK?
 
     final DartSdk sdk = DartPlugin.getDartSdk(project);
@@ -150,15 +149,5 @@ public class SdkFields {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
                                           () -> DartConfigurable.openDartSettings(project));
     }
-    return sdk;
-  }
-
-  static VirtualFile checkWorkDir(String dir) throws RuntimeConfigurationError {
-    final VirtualFile workDir = LocalFileSystem.getInstance().findFileByPath(dir);
-    if (workDir == null || !workDir.isDirectory()) {
-      throw new RuntimeConfigurationError(
-        FlutterBundle.message("work.dir.does.not.exist", FileUtil.toSystemDependentName(dir)));
-    }
-    return workDir;
   }
 }
