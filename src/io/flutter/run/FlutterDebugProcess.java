@@ -33,7 +33,7 @@ import java.util.Objects;
 /**
  * A debug process that handles hot reloads for Flutter.
  * <p>
- * <p>It's used for both the 'Run' and 'Debug' modes. (We apparently need a debug process even
+ * It's used for both the 'Run' and 'Debug' modes. (We apparently need a debug process even
  * when not debugging in order to support hot reload.)
  */
 public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
