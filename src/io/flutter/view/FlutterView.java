@@ -6,6 +6,8 @@
 package io.flutter.view;
 
 import com.intellij.execution.runners.ExecutionUtil;
+import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -87,6 +89,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     toolbarGroup.add(new RepaintRainbowAction(this));
     toolbarGroup.add(new PerformanceOverlayAction(this));
     toolbarGroup.add(new TimeDilationAction(this));
+    toolbarGroup.add(new TogglePlatformAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new ObservatoryTimelineAction(this));
 
@@ -140,7 +143,8 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
       if (app == null) {
         toolWindow.setIcon(FlutterIcons.Flutter);
-      } else {
+      }
+      else {
         toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter));
       }
     });
@@ -249,10 +253,35 @@ class TimeDilationAction extends AbstractToggleableAction {
   }
 }
 
-abstract class AbstractObservatoryAction extends DumbAwareAction {
+class TogglePlatformAction extends AbstractFlutterAction {
+  private boolean isAndroid = false;
+
+  TogglePlatformAction(@NotNull FlutterView view) {
+    super(view, FlutterBundle.message("flutter.view.togglePlatform.text"), FlutterBundle.message("flutter.view.togglePlatform.description"),
+          AllIcons.RunConfigurations.Application);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    isAndroid = !isAndroid;
+
+    // ext.flutter.platformOverride, value: iOS, android
+    final Map<String, Object> params = new HashMap<>();
+    params.put("value", isAndroid ? "android" : "iOS");
+    view.getFlutterApp().callServiceExtension("ext.flutter.platformOverride", params);
+
+    final ConsoleView console = view.getFlutterApp().getConsole();
+    if (console != null) {
+      console.print(FlutterBundle.message("flutter.view.togglePlatform.output", isAndroid ? "Android" : "iOS"),
+                    ConsoleViewContentType.SYSTEM_OUTPUT);
+    }
+  }
+}
+
+abstract class AbstractFlutterAction extends DumbAwareAction {
   @NotNull final FlutterView view;
 
-  AbstractObservatoryAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+  AbstractFlutterAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
     super(text, description, icon);
 
     this.view = view;
@@ -264,7 +293,7 @@ abstract class AbstractObservatoryAction extends DumbAwareAction {
   }
 }
 
-class ObservatoryTimelineAction extends AbstractObservatoryAction {
+class ObservatoryTimelineAction extends AbstractFlutterAction {
   ObservatoryTimelineAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.observatoryTimeline.text"),
           FlutterBundle.message("flutter.view.observatoryTimeline.description"),
