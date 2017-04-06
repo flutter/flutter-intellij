@@ -9,13 +9,11 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.util.Computable;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
+import com.jetbrains.lang.dart.DartPluginCapabilities;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterApp;
-
-import java.lang.reflect.Method;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class ReloadFlutterApp extends FlutterAppAction {
@@ -41,16 +39,6 @@ public class ReloadFlutterApp extends FlutterAppAction {
   }
 
   private static boolean hasCapability(@SuppressWarnings("SameParameterValue") String featureId) {
-    // return DartPluginCapabilities.isSupported(featureId);
-
-    try {
-      final Class clazz = Class.forName("com.jetbrains.lang.dart.DartPluginCapabilities");
-      @SuppressWarnings("unchecked") final Method method = clazz.getMethod("isSupported", String.class);
-      final Object result = method.invoke(null, featureId);
-      return result instanceof Boolean && (Boolean)result;
-    }
-    catch (Throwable t) {
-      return false;
-    }
+    return DartPluginCapabilities.isSupported(featureId);
   }
 }

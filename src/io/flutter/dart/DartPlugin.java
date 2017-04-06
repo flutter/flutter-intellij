@@ -71,13 +71,7 @@ public class DartPlugin {
   }
 
   public static void setPubActionInProgress(boolean inProgress) {
-    // TODO: replace w/ DartPubActionBase.setIsInProgress() when DartPlugin lower-bound is upped to 163.10154.
-    try {
-      DartPubActionBase.class.getMethod("setIsInProgress", boolean.class).invoke(null, inProgress);
-    }
-    catch (Throwable th) {
-      // ignore and move on
-    }
+    DartPubActionBase.setIsInProgress(inProgress);
   }
 
   public static boolean isDartRunConfiguration(ConfigurationType type) {
