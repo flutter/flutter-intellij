@@ -17,6 +17,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
+import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
@@ -93,6 +94,8 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
+
+    FlutterRunNotifications.init(project);
 
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(
