@@ -18,7 +18,6 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugPro
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.ReloadFlutterApp;
-import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.view.FlutterViewMessages;
@@ -94,10 +93,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     final Computable<Boolean> canReload = () -> app.getMode().isReloadEnabled() && isSessionActive.compute();
 
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), isSessionActive));
-    topToolbar.addSeparator();
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
-    topToolbar.addAction(new RestartFlutterApp(app, canReload));
+    topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), isSessionActive));
 
     // Don't call super since we have our own observatory action.
   }

@@ -44,7 +44,9 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     final AnAction action = getAction();
-    action.actionPerformed(e);
+    if (action != null) {
+      action.actionPerformed(e);
+    }
   }
 
   @Override
