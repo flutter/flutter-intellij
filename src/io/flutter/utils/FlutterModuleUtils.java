@@ -96,9 +96,8 @@ public class FlutterModuleUtils {
    *
    * @param project    the project
    * @param main       the target main
-   * @param workingDir the working directory
    */
-  public static void createRunConfig(@NotNull Project project, @Nullable VirtualFile main, @NotNull VirtualFile workingDir) {
+  public static void createRunConfig(@NotNull Project project, @Nullable VirtualFile main) {
     final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
     final Optional<ConfigurationFactory> factory =
       Arrays.stream(factories).filter((f) -> f instanceof FlutterRunConfigurationType.FlutterConfigurationFactory).findFirst();
@@ -122,7 +121,6 @@ public class FlutterModuleUtils {
 
       // Set fields.
       final SdkFields fields = new SdkFields();
-      fields.setWorkingDirectory(workingDir.getPath());
       if (main != null && main.exists()) {
         fields.setFilePath(main.getPath());
       }

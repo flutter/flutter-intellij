@@ -233,7 +233,7 @@ public class FlutterSdk {
             // Find main.
             final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/lib/main.dart");
 
-            FlutterModuleUtils.createRunConfig(project, main, workingDir);
+            FlutterModuleUtils.createRunConfig(project, main);
 
             super.onTerminate(module, workingDir, exitCode, args);
 

@@ -15,8 +15,10 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
@@ -29,8 +31,9 @@ import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
-import io.flutter.run.daemon.FlutterAppService;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterSdkManager;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,39 +72,43 @@ public class SdkRunConfig extends LocatableConfigurationBase
   @NotNull
   @Override
   public Launcher getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+    final SdkFields launchFields = fields.copy();
     try {
-      fields.checkRunnable(env.getProject());
-    }
-    catch (RuntimeConfigurationError e) {
+      launchFields.checkRunnable(env.getProject());
+    } catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e);
     }
 
-    // Do it again to get the files to use.
-    // TODO(skybrian) make this less awkward?
-    final VirtualFile launchFile;
-    final VirtualFile workDir;
-    final String additionalArgs;
-    try {
-      launchFile = SdkFields.checkLaunchFile(fields.getFilePath());
-      workDir = fields.chooseWorkDir(launchFile, env.getProject());
-      additionalArgs = fields.getAdditionalArgs();
-    }
-    catch (RuntimeConfigurationError e) {
-      throw new ExecutionException(e); // Shouldn't happen here since we already checked.
-    }
+    final MainFile main = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
+    final Project project = env.getProject();
+    final RunMode mode = RunMode.fromEnv(env);
 
-    final FlutterAppService appService = FlutterAppService.getInstance(env.getProject());
+    final Launcher.Callback callback = (device) -> {
+      final GeneralCommandLine command = fields.createFlutterSdkRunCommand(project, device, mode);
+      final FlutterApp app = FlutterApp.start(project, mode, command,
+                                              StringUtil.capitalize(mode.mode()) + "App",
+                                              "StopApp");
 
-    final Launcher.Callback callback = (device) ->
-      appService.startFlutterSdkApp(workDir.getPath(), additionalArgs, device, RunMode.fromEnv(env), launchFile.getPath());
+      // Stop the app if the Flutter SDK changes.
+      final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
+        @Override
+        public void flutterSdkRemoved() {
+          app.shutdownAsync();
+        }
+      };
+      FlutterSdkManager.getInstance(project).addListener(sdkListener);
+      Disposer.register(project, () -> FlutterSdkManager.getInstance(project).removeListener(sdkListener));
 
-    final Launcher launcher = new Launcher(env, workDir, launchFile, this, callback);
+      return app;
+    };
+
+    final Launcher launcher = new Launcher(env, main.getAppDir(), main.getFile(), this, callback);
 
     // Set up additional console filters.
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();
-    builder.addFilter(new DartConsoleFilter(env.getProject(), launchFile));
+    builder.addFilter(new DartConsoleFilter(env.getProject(), main.getFile()));
 
-    final Module module = ModuleUtil.findModuleForFile(launchFile, env.getProject());
+    final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
     if (module != null) {
       builder.addFilter(new FlutterConsoleFilter(module));
     }
@@ -183,15 +190,9 @@ public class SdkRunConfig extends LocatableConfigurationBase
     protected void refactored(@NotNull final PsiElement element, @Nullable final String oldQualifiedName) {
       final boolean generatedName = getName().equals(suggestedName());
       final String filePath = fields.getFilePath();
-      final boolean updateWorkingDir = filePath != null &&
-                                       PathUtil.getParentPath(filePath).equals(fields.getWorkingDirectory());
 
       final String newPath = getNewPathAndUpdateAffectedPath(element);
       fields.setFilePath(newPath);
-
-      if (updateWorkingDir) {
-        fields.setWorkingDirectory(PathUtil.getParentPath(newPath));
-      }
 
       if (generatedName) {
         setGeneratedName();

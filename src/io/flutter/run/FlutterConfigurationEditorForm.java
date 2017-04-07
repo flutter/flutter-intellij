@@ -5,8 +5,6 @@
  */
 package io.flutter.run;
 
-import com.intellij.execution.ExecutionBundle;
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
@@ -23,21 +21,16 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private JPanel myMainPanel;
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
-  private TextFieldWithBrowseButton myWorkingDirectory;
   private JTextField myAdditionalArguments;
 
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
-    //noinspection DialogTitleCapitalization
-    myWorkingDirectory.addBrowseFolderListener(ExecutionBundle.message("select.working.directory.message"), null, project,
-                                               FileChooserDescriptorFactory.createSingleFolderDescriptor());
   }
 
   @Override
   protected void resetEditorFrom(@NotNull final SdkRunConfig config) {
     final SdkFields fields = config.getFields();
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getFilePath())));
-    myWorkingDirectory.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getWorkingDirectory())));
     myAdditionalArguments.setText(fields.getAdditionalArgs());
   }
 
@@ -45,7 +38,6 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   protected void applyEditorTo(@NotNull final SdkRunConfig config) throws ConfigurationException {
     final SdkFields fields = new SdkFields();
     fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
-    fields.setWorkingDirectory(StringUtil.nullize(FileUtil.toSystemIndependentName(myWorkingDirectory.getText().trim()), true));
     fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArguments.getText().trim()));
     config.setFields(fields);
   }
