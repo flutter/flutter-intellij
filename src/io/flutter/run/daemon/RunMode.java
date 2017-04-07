@@ -20,7 +20,7 @@ public enum RunMode {
   @NonNls
   DEBUG("debug", true),
 
-  // Not used. See: https://github.com/flutter/flutter-intellij/issues/410
+  // TODO(devoncarew): Delete this - the IntelliJ profile mode is not the same as the flutter_tools' --profile mode.
   @NonNls
   PROFILE("profile", false),
 

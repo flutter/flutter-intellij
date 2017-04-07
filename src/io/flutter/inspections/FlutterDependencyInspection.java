@@ -57,7 +57,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
       return null;
     }
   }
-  
+
   @Nullable
   @Override
   public ProblemDescriptor[] checkFile(@NotNull final PsiFile psiFile, @NotNull final InspectionManager manager, final boolean isOnTheFly) {
@@ -81,7 +81,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
 
     if (pubspec == null || myIgnoredPubspecPaths.contains(pubspec.getPath())) return null;
 
-    //TODO(pq): consider validating package name here (`get` will fail if it's invalid).
+    // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 
     final VirtualFile packages = pubspec.getParent().findChild(FlutterConstants.PACKAGES_FILE);
     if (packages == null) {

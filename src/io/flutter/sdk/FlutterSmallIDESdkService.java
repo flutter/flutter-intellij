@@ -17,7 +17,6 @@ public class FlutterSmallIDESdkService extends FlutterSdkService {
 
   @Override
   public void configureDartSdk(@NotNull Module module) {
-      //TODO(pq): implement
+    // TODO(pq): implement
   }
-
 }

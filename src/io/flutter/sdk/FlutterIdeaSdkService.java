@@ -17,8 +17,7 @@ public class FlutterIdeaSdkService extends FlutterSdkService {
 
   @Override
   public void configureDartSdk(@NotNull Module module) {
-    //TODO(pq): consider a service that sets this value or seeds the dialog with a proposed path
+    // TODO(pq): consider a service that sets this value or seeds the dialog with a proposed path
     DartConfigurable.openDartSettings(module.getProject());
   }
-
 }
