@@ -8,17 +8,17 @@
     <properties/>
     <border type="none"/>
     <children>
-      <component id="55076" class="javax.swing.JLabel" binding="myWorkingDirectoryLabel">
+      <component id="55076" class="javax.swing.JLabel" binding="myEntryFileLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <inheritsPopupMenu value="true"/>
           <labelFor value=""/>
-          <text value="Working directory:"/>
+          <text value="Dart entrypoint:"/>
         </properties>
       </component>
-      <component id="17e7a" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myWorkingDirectory">
+      <component id="17e7a" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myEntryFile">
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>

@@ -21,6 +21,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
+import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
@@ -31,7 +32,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BazelFields {
 
-  private @Nullable String workDir;
+  private @Nullable String entryFile;
   private @Nullable String launchScript;
   private @Nullable String additionalArgs;
   private @Nullable String bazelTarget;
@@ -43,7 +44,7 @@ public class BazelFields {
    * Copy constructor
    */
   private BazelFields(@NotNull BazelFields original) {
-    workDir = original.workDir;
+    entryFile = original.entryFile;
     launchScript = original.launchScript;
     additionalArgs = original.additionalArgs;
     bazelTarget = original.bazelTarget;
@@ -54,9 +55,6 @@ public class BazelFields {
    */
   private BazelFields(@NotNull BazelFields template, Workspace w) {
     this(template);
-    if (StringUtil.isEmptyOrSpaces(workDir)) {
-      workDir = w.getRoot().getPath();
-    }
     if (StringUtil.isEmptyOrSpaces(launchScript)) {
       launchScript = w.getLaunchScript();
       if (launchScript != null && !launchScript.startsWith("/")) {
@@ -65,13 +63,34 @@ public class BazelFields {
     }
   }
 
+  /**
+   * The file containing the main function that starts the Flutter app.
+   */
   @Nullable
-  public String getWorkingDirectory() {
-    return workDir;
+  public String getEntryFile() {
+    return entryFile;
   }
 
+  public void setEntryFile(final @Nullable String entryFile) {
+    this.entryFile = entryFile;
+  }
+
+  /**
+   * Present only for deserializing old run configs.
+   */
+  @Deprecated
+  public String getWorkingDirectory() {
+    return null;
+  }
+
+  /**
+   * Used only for deserializing old run configs.
+   */
+  @Deprecated
   public void setWorkingDirectory(final @Nullable String workDir) {
-    this.workDir = workDir;
+    if (entryFile == null && workDir != null) {
+      entryFile = workDir + "/lib/main.dart";
+    }
   }
 
   @Nullable
@@ -129,6 +148,11 @@ public class BazelFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
+    final MainFile.Result main = MainFile.verify(entryFile, project);
+    if (!main.canLaunch()) {
+      throw new RuntimeConfigurationError(main.getError());
+    }
+
     // check launcher script
     if (StringUtil.isEmptyOrSpaces(launchScript)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
@@ -143,11 +167,6 @@ public class BazelFields {
     // check bazel target
     if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
-    }
-
-    // The working directory is optional, provided there is a Workspace.
-    if (chooseWorkDir(project) == null) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noWorkingDirectorySet"));
     }
   }
 
@@ -164,8 +183,7 @@ public class BazelFields {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile workDir = chooseWorkDir(project);
-    assert workDir != null; // already checked
+    final VirtualFile appDir = MainFile.verify(entryFile, project).get().getAppDir();
 
     final String launchingScript = getLaunchingScript();
     assert launchingScript != null; // already checked
@@ -175,7 +193,7 @@ public class BazelFields {
 
     final String additionalArgs = getAdditionalArgs();
 
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workDir.getPath());
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(appDir.getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
@@ -254,27 +272,6 @@ public class BazelFields {
     }
 
     return commandLine;
-  }
-
-  /**
-   * Chooses the work directory to launch with.
-   */
-  @Nullable
-  VirtualFile chooseWorkDir(@NotNull final Project project) {
-    // Prefer user's selection.
-    if (!StringUtil.isEmptyOrSpaces(workDir)) {
-      final VirtualFile dir = LocalFileSystem.getInstance().findFileByPath(workDir);
-      if (dir == null || !dir.isDirectory()) return null;
-      return dir;
-    }
-
-    // Default to Workspace root.
-    // TODO(skybrian) maybe we should extract the directory from the Bazel target to get closer?
-    final Workspace w = WorkspaceCache.getInstance(project).getNow();
-    if (w != null) return w.getRoot();
-
-    // None found.
-    return null;
   }
 
   @Nullable
