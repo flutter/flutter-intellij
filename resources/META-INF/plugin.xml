@@ -238,17 +238,25 @@
       <separator/>
       <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
               description="Reload"
-              icon="FlutterIcons.ReloadBoth">
+              icon="FlutterIcons.HotReload">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-      </action>
-      <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
-              description="Restart"
-              icon="FlutterIcons.Restart">
       </action>
       <separator/>
       <add-to-group group-id="RunContextGroup" anchor="last"/>
       <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
+    </group>
+    <group id="Flutter.MenuActions.Run">
+      <separator/>
+      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
+              description="Reload"
+              icon="FlutterIcons.HotReload">
+      </action>
+      <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
+              description="Restart"
+              icon="AllIcons.Actions.Restart">
+      </action>
+      <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
 

@@ -15,6 +15,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterApp;
 
+import java.awt.event.InputEvent;
+
 @SuppressWarnings("ComponentNotRegistered")
 public class ReloadFlutterApp extends FlutterAppAction {
   public static final String ID = "Flutter.ReloadFlutterApp"; //NON-NLS
@@ -22,7 +24,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
   public static final String DESCRIPTION = FlutterBundle.message("app.reload.action.description");
 
   public ReloadFlutterApp(FlutterApp app, Computable<Boolean> isApplicable) {
-    super(app, TEXT, DESCRIPTION, FlutterIcons.ReloadBoth, isApplicable, ID);
+    super(app, TEXT, DESCRIPTION, FlutterIcons.HotReload, isApplicable, ID);
     // Shortcut is associated with toolbar action.
     copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAction"));
   }
@@ -33,8 +35,19 @@ public class ReloadFlutterApp extends FlutterAppAction {
 
     if (getApp().isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
-      final boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
-      getApp().performHotReload(pauseAfterRestart);
+
+      // If the shift key is held down, perform a restart. We check to see if we're being invoked from the
+      // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go to action dialog.
+      final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
+
+      if (shouldRestart) {
+        getApp().performRestartApp();
+      }
+      else {
+        // Else perform a hot reload.
+        final boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
+        getApp().performHotReload(pauseAfterRestart);
+      }
     }
   }
 
