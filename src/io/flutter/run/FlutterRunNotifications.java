@@ -8,14 +8,14 @@ package io.flutter.run;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.event.HyperlinkEvent;
 
 public class FlutterRunNotifications {
   public static final String GROUP_DISPLAY_ID = "Flutter App Run";
@@ -56,15 +56,14 @@ public class FlutterRunNotifications {
         GROUP_DISPLAY_ID,
         FlutterBundle.message("flutter.reload.firstRun.title"),
         FlutterBundle.message("flutter.reload.firstRun.content"),
-        NotificationType.INFORMATION,
-        (notification1, event) -> {
-          if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-            if ("url".equals(event.getDescription())) {
-              BrowserUtil.browse(FlutterBundle.message("flutter.reload.firstRun.url"));
-            }
-          }
-        });
-      notification.setIcon(FlutterIcons.Flutter);
+        NotificationType.INFORMATION);
+      notification.setIcon(FlutterIcons.HotReload);
+      notification.addAction(new AnAction("Learn more") {
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+          BrowserUtil.browse(FlutterBundle.message("flutter.reload.firstRun.url"));
+        }
+      });
       Notifications.Bus.notify(notification);
     }
   }
