@@ -32,7 +32,6 @@ import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
-import com.jetbrains.lang.dart.DartPluginCapabilities;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.actions.OpenObservatoryAction;
@@ -277,18 +276,17 @@ public class LauncherState extends CommandLineState {
               return null;
             }
 
-            // TODO(devoncarew): This maps re-running or re-debugging an existing process to a hot reload.
-            // It's unclear whether we want to do a hot reload or a full restart.
+            // Map a re-run action to a flutter full restart.
             FileDocumentManager.getInstance().saveAllDocuments();
-            app.performHotReload(DartPluginCapabilities.isSupported("supports.pausePostRequest"));
+            app.performRestartApp();
+
             return null;
           }
         }
       }
 
       // Else, launch the app.
-      final LauncherState launcher = (LauncherState)state;
-      return launcher.launch(env);
+      return launcherState.launch(env);
     }
 
     /**
@@ -306,7 +304,6 @@ public class LauncherState extends CommandLineState {
         if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
           if (ignoreSameLaunchMode) {
             final String launchMode = process.getUserData(FLUTTER_LAUNCH_MODE_KEY);
-            //final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
             if (executorId.equals(launchMode)) {
               continue;
             }
