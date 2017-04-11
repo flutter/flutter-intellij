@@ -80,7 +80,7 @@ public abstract class RunFlutterAction extends AnAction {
   @Override
   public void update(AnActionEvent e) {
     final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
-    // TODO: add support for Bazel.
+    // TODO(pq): add support for Bazel.
     final boolean enabled = settings != null && (settings.getConfiguration() instanceof SdkRunConfig);
     e.getPresentation().setEnabled(enabled);
   }
