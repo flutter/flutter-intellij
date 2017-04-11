@@ -256,6 +256,14 @@
               description="Restart"
               icon="AllIcons.Actions.Restart">
       </action>
+      <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
+              description="Profile"
+              icon="AllIcons.Actions.Profile">
+      </action>
+      <action id="Flutter.Menu.RunReleaseAction" class="io.flutter.actions.RunReleaseFlutterApp"
+              description="Release"
+              icon="AllIcons.Actions.Execute">
+      </action>
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
