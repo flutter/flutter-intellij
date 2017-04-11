@@ -98,7 +98,7 @@ public class LauncherState extends CommandLineState {
     // Remember the run configuration that started this process.
     app.getProcessHandler().putUserData(FLUTTER_RUN_CONFIG_KEY, runConfig);
     app.getProcessHandler().putUserData(FLUTTER_APP_KEY, app);
-    app.getProcessHandler().putUserData(FLUTTER_LAUNCH_MODE_KEY, getEnvironment().getExecutor().getId());
+    assert (app.getMode().mode().equals(getEnvironment().getExecutor().getId()));
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
@@ -232,9 +232,14 @@ public class LauncherState extends CommandLineState {
         return false;
       }
 
+      // If the app is running and the launch mode is the same, then we can run.
       final RunConfig config = (RunConfig)profile;
-      if (isRunning(config, executorId, true)) {
-        return false;
+      final ProcessHandler process = getRunningApp(config);
+      if (process != null) {
+        final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
+        if (app == null || !executorId.equals(app.getMode().mode())) {
+          return false;
+        }
       }
 
       if (DartPlugin.getDartSdk(config.getProject()) == null) {
@@ -266,23 +271,18 @@ public class LauncherState extends CommandLineState {
       final List<RunContentDescriptor> runningProcesses =
         ExecutionManager.getInstance(env.getProject()).getContentManager().getAllDescriptors();
 
-      for (RunContentDescriptor descriptor : runningProcesses) {
-        final ProcessHandler process = descriptor.getProcessHandler();
-        if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == launcherState.runConfig) {
-          final String launchMode = process.getUserData(FLUTTER_LAUNCH_MODE_KEY);
-          final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
-          if (executorId.equals(launchMode) && app != null && app.getMode().isReloadEnabled()) {
-            if (!app.isStarted()) {
-              return null;
-            }
-
+      final ProcessHandler process = getRunningApp(launcherState.runConfig);
+      if (process != null) {
+        final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
+        if (app != null && executorId.equals(app.getMode().mode())) {
+          if (app.getMode().isReloadEnabled() && app.isStarted()) {
             // Map a re-run action to a flutter full restart.
             FileDocumentManager.getInstance().saveAllDocuments();
             app.performRestartApp();
-
-            return null;
           }
         }
+
+        return null;
       }
 
       // Else, launch the app.
@@ -290,35 +290,27 @@ public class LauncherState extends CommandLineState {
     }
 
     /**
-     * Returns true if any processes are running that were launched from the given RunConfig.
+     * Returns the currently running app for the given RunConfig, if any.
      */
-    @SuppressWarnings("SameParameterValue")
-    private static boolean isRunning(RunConfig config, String executorId, boolean ignoreSameLaunchMode) {
+    @Nullable
+    private static ProcessHandler getRunningApp(RunConfig config) {
       final Project project = config.getProject();
-
       final List<RunContentDescriptor> runningProcesses =
         ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
 
       for (RunContentDescriptor descriptor : runningProcesses) {
         final ProcessHandler process = descriptor.getProcessHandler();
         if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
-          if (ignoreSameLaunchMode) {
-            final String launchMode = process.getUserData(FLUTTER_LAUNCH_MODE_KEY);
-            if (executorId.equals(launchMode)) {
-              continue;
-            }
-          }
-
-          return true;
+          return process;
         }
       }
-      return false;
+
+      return null;
     }
   }
 
   private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
-  private static final Key<String> FLUTTER_LAUNCH_MODE_KEY = new Key<>("FLUTTER_LAUNCH_MODE_KEY");
 
   private static final Logger LOG = Logger.getInstance(LauncherState.class.getName());
 }
