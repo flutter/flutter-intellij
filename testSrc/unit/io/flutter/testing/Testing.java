@@ -55,7 +55,7 @@ public class Testing {
   }
 
   public static <T> T computeInWriteAction(ThrowableComputable<T, Exception> callback) throws Exception {
-    return computeOnDispatchThread(() -> ApplicationManager.getApplication().<T, Exception>runWriteAction(callback));
+    return computeOnDispatchThread(() -> ApplicationManager.getApplication().runWriteAction(callback));
   }
 
   public static void runInWriteAction(RunnableThatThrows callback) throws Exception {
@@ -63,7 +63,7 @@ public class Testing {
       callback.run();
       return null;
     };
-    runOnDispatchThread(() -> ApplicationManager.getApplication().<Object, Exception>runWriteAction(action));
+    runOnDispatchThread(() -> ApplicationManager.getApplication().runWriteAction(action));
   }
 
   public static <T> T computeOnDispatchThread(ThrowableComputable<T,Exception> callback) throws Exception {

@@ -39,7 +39,7 @@ public class FlutterRunNotifications {
     );
   }
 
-  @NotNull Project myProject;
+  @NotNull final Project myProject;
 
   FlutterRunNotifications(@NotNull Project project) {
     this.myProject = project;
