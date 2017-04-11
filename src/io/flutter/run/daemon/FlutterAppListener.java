@@ -128,12 +128,8 @@ class FlutterAppListener implements DaemonEvent.Listener {
   }
 
   private void reportElapsed(@NotNull Stopwatch watch, String verb, String analyticsName) {
-    final long elapsed = watch.elapsed(TimeUnit.MILLISECONDS);
-    FlutterInitializer.getAnalytics().sendTiming("run", analyticsName, elapsed);
-
-    final ConsoleView console = app.getConsole();
-    if (console == null) return;
-    console.print("\n" + verb + " in " + elapsed + " ms.\n", ConsoleViewContentType.NORMAL_OUTPUT);
+    final long elapsedMs = watch.elapsed(TimeUnit.MILLISECONDS);
+    FlutterInitializer.getAnalytics().sendTiming("run", analyticsName, elapsedMs);
   }
 
   @Override
