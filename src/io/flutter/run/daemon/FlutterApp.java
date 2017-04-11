@@ -37,7 +37,7 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class FlutterApp {
 
-  public static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
+  private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private final @NotNull RunMode myMode;
   private final @NotNull ProcessHandler myProcessHandler;
