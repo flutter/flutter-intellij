@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import io.flutter.FlutterInitializer;
+import io.flutter.run.LaunchState;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import org.jetbrains.annotations.NotNull;
@@ -79,10 +80,14 @@ public abstract class RunFlutterAction extends AnAction {
 
   @Override
   public void update(AnActionEvent e) {
+    e.getPresentation().setEnabled(shouldEnable(e));
+  }
+
+  private static boolean shouldEnable(@Nullable AnActionEvent e) {
     final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
+    final RunConfiguration config = settings == null ? null : settings.getConfiguration();
     // TODO(pq): add support for Bazel.
-    final boolean enabled = settings != null && (settings.getConfiguration() instanceof SdkRunConfig);
-    e.getPresentation().setEnabled(enabled);
+    return config instanceof SdkRunConfig && LaunchState.getRunningAppProcess((SdkRunConfig)config) == null;
   }
 
   @Nullable

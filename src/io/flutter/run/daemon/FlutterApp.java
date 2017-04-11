@@ -16,6 +16,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.Key;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
@@ -35,6 +36,9 @@ import java.util.concurrent.atomic.AtomicReference;
  * A running Flutter app.
  */
 public class FlutterApp {
+
+  private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
+
   private final @NotNull RunMode myMode;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull DaemonApi myDaemonApi;
@@ -59,6 +63,7 @@ public class FlutterApp {
              @NotNull DaemonApi daemonApi) {
     myMode = mode;
     myProcessHandler = processHandler;
+    myProcessHandler.putUserData(FLUTTER_APP_KEY, this);
     myDaemonApi = daemonApi;
     myConnector = new ObservatoryConnector() {
       @Override
@@ -97,6 +102,11 @@ public class FlutterApp {
         myResume = null;
       }
     };
+  }
+
+  @Nullable
+  public static FlutterApp fromProcess(@NotNull ProcessHandler process) {
+    return process.getUserData(FLUTTER_APP_KEY);
   }
 
   /**
