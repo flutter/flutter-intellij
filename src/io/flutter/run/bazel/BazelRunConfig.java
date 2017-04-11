@@ -17,7 +17,7 @@ import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
-import io.flutter.run.LauncherState;
+import io.flutter.run.LaunchState;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
@@ -25,7 +25,7 @@ import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
 public class BazelRunConfig extends RunConfigurationBase
-  implements RunConfigurationWithSuppressedDefaultRunAction, LauncherState.RunConfig {
+  implements RunConfigurationWithSuppressedDefaultRunAction, LaunchState.RunConfig {
   private @NotNull BazelFields fields = new BazelFields();
 
   BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
@@ -54,7 +54,7 @@ public class BazelRunConfig extends RunConfigurationBase
 
   @NotNull
   @Override
-  public LauncherState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+  public LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
     final BazelFields launchFields = fields.copy();
     try {
       launchFields.checkRunnable(env.getProject());
@@ -66,13 +66,13 @@ public class BazelRunConfig extends RunConfigurationBase
     final MainFile main = MainFile.verify(launchFields.getEntryFile(), env.getProject()).get();
     final RunMode mode = RunMode.fromEnv(env);
 
-    final LauncherState.Callback callback = (device) -> {
+    final LaunchState.Callback callback = (device) -> {
       final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
       return FlutterApp.start(env.getProject(), mode, command,
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
-    return new LauncherState(env, main.getAppDir(), main.getFile(), this, callback);
+    return new LaunchState(env, main.getAppDir(), main.getFile(), this, callback);
   }
 
   public BazelRunConfig clone() {

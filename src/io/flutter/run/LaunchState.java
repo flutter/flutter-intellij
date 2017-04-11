@@ -53,7 +53,7 @@ import java.util.List;
  * <p>
  * Normally creates a debugging session, which is needed for hot reload.
  */
-public class LauncherState extends CommandLineState {
+public class LaunchState extends CommandLineState {
   private final @NotNull VirtualFile workDir;
 
   /**
@@ -67,11 +67,11 @@ public class LauncherState extends CommandLineState {
   private final @NotNull RunConfig runConfig;
   private final @NotNull Callback callback;
 
-  public LauncherState(@NotNull ExecutionEnvironment env,
-                       @NotNull VirtualFile workDir,
-                       @NotNull VirtualFile sourceLocation,
-                       @NotNull RunConfig runConfig,
-                       @NotNull Callback callback) {
+  public LaunchState(@NotNull ExecutionEnvironment env,
+                     @NotNull VirtualFile workDir,
+                     @NotNull VirtualFile sourceLocation,
+                     @NotNull RunConfig runConfig,
+                     @NotNull Callback callback) {
     super(env);
     this.workDir = workDir;
     this.sourceLocation = sourceLocation;
@@ -208,7 +208,7 @@ public class LauncherState extends CommandLineState {
     Project getProject();
 
     @NotNull
-    LauncherState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
+    LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
   }
 
   /**
@@ -259,19 +259,19 @@ public class LauncherState extends CommandLineState {
     @Override
     protected final RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
       throws ExecutionException {
-      if (!(state instanceof LauncherState)) {
+      if (!(state instanceof LaunchState)) {
         LOG.error("unexpected RunProfileState: " + state.getClass());
         return null;
       }
 
-      final LauncherState launcherState = (LauncherState)state;
+      final LaunchState launchState = (LaunchState)state;
       final String executorId = env.getExecutor().getId();
 
       // See if we should issue a hot-reload.
       final List<RunContentDescriptor> runningProcesses =
         ExecutionManager.getInstance(env.getProject()).getContentManager().getAllDescriptors();
 
-      final ProcessHandler process = getRunningAppProcess(launcherState.runConfig);
+      final ProcessHandler process = getRunningAppProcess(launchState.runConfig);
       if (process != null) {
         final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
         if (app != null && executorId.equals(app.getMode().mode())) {
@@ -286,7 +286,7 @@ public class LauncherState extends CommandLineState {
       }
 
       // Else, launch the app.
-      return launcherState.launch(env);
+      return launchState.launch(env);
     }
 
     /**
@@ -312,5 +312,5 @@ public class LauncherState extends CommandLineState {
   private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
-  private static final Logger LOG = Logger.getInstance(LauncherState.class.getName());
+  private static final Logger LOG = Logger.getInstance(LaunchState.class.getName());
 }

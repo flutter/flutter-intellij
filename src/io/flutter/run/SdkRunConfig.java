@@ -42,7 +42,7 @@ import org.jetbrains.annotations.Nullable;
  * Run configuration used for launching a Flutter app using the Flutter SDK.
  */
 public class SdkRunConfig extends LocatableConfigurationBase
-  implements LauncherState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
+  implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
   private @NotNull SdkFields fields = new SdkFields();
 
   SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
@@ -71,7 +71,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
 
   @NotNull
   @Override
-  public LauncherState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+  public LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
     final SdkFields launchFields = fields.copy();
     try {
       launchFields.checkRunnable(env.getProject());
@@ -84,7 +84,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
 
-    final LauncherState.Callback callback = (device) -> {
+    final LaunchState.Callback callback = (device) -> {
       final GeneralCommandLine command = fields.createFlutterSdkRunCommand(project, device, mode);
       final FlutterApp app = FlutterApp.start(project, mode, command,
                                               StringUtil.capitalize(mode.mode()) + "App",
@@ -103,7 +103,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
       return app;
     };
 
-    final LauncherState launcher = new LauncherState(env, main.getAppDir(), main.getFile(), this, callback);
+    final LaunchState launcher = new LaunchState(env, main.getAppDir(), main.getFile(), this, callback);
 
     // Set up additional console filters.
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();
