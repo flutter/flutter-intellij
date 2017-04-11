@@ -27,8 +27,8 @@ import java.util.stream.Stream;
 
 /**
  * Determines when we can run a Dart file as a Flutter app.
- *
- * <p>(For example, when right-clicking on main.dart in the Project view.)
+ * <p>
+ * (For example, when right-clicking on main.dart in the Project view.)
  */
 public class FlutterRunConfigurationProducer extends RunConfigurationProducer<SdkRunConfig> {
 
@@ -39,8 +39,8 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   /**
    * If the current file contains the main method for a Flutter app, updates the FutterRunConfiguration
    * and sets its corresponding source location.
-   *
-   * <p>Returns false if it wasn't a match.
+   * <p>
+   * Returns false if it wasn't a match.
    */
   @Override
   protected boolean setupConfigurationFromContext(final @NotNull SdkRunConfig config,
@@ -79,7 +79,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
    * applies to the same source file.
    */
   @Override
-  public boolean shouldReplace(ConfigurationFromContext self, ConfigurationFromContext other) {
+  public boolean shouldReplace(@NotNull ConfigurationFromContext self, @NotNull ConfigurationFromContext other) {
     // Prefer Flutter runner to plain Dart runner for Flutter code.
     return DartPlugin.isDartRunConfiguration(other.getConfigurationType());
   }
@@ -119,7 +119,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
     final PsiFile psiFile = elt.getContainingFile();
     if (!(psiFile instanceof DartFile)) return null;
 
-    return (DartFile) psiFile;
+    return (DartFile)psiFile;
   }
 
   /**

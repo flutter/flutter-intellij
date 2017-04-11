@@ -9,6 +9,7 @@ import com.intellij.execution.ConsoleFolding;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.FlutterConstants;
 import io.flutter.sdk.FlutterSdkUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -50,7 +51,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
   private boolean isFolding = false;
 
   @Override
-  public boolean shouldFoldLine(String line) {
+  public boolean shouldFoldLine(@NotNull String line) {
     if (line.contains(flutterMarker)) {
       isFolding = false;
       return true;
@@ -77,7 +78,7 @@ public class FlutterConsoleFolding extends ConsoleFolding {
 
   @Nullable
   @Override
-  public String getPlaceholderText(List<String> lines) {
+  public String getPlaceholderText(@NotNull List<String> lines) {
     final String fullText = StringUtil.join(lines, "\n");
     final int index = fullText.indexOf(flutterMarker);
     if (index == -1) {

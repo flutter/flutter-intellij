@@ -219,17 +219,17 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         }
       }
       catch (IOException e) {
-        String message = "Failed to connect to the VM observatory service: " + e.toString() + "\n";
+        final StringBuilder message = new StringBuilder("Failed to connect to the VM observatory service: " + e.toString() + "\n");
         Throwable cause = e.getCause();
         while (cause != null) {
-          message += "Caused by: " + cause.toString() + "\n";
+          message.append("Caused by: ").append(cause.toString()).append("\n");
           final Throwable cause1 = cause.getCause();
           if (cause1 != cause) {
             cause = cause1;
           }
         }
 
-        getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
+        getSession().getConsoleView().print(message.toString(), ConsoleViewContentType.ERROR_OUTPUT);
         getSession().stop();
       }
     });
