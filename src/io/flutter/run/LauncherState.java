@@ -234,7 +234,7 @@ public class LauncherState extends CommandLineState {
 
       // If the app is running and the launch mode is the same, then we can run.
       final RunConfig config = (RunConfig)profile;
-      final ProcessHandler process = getRunningApp(config);
+      final ProcessHandler process = getRunningAppProcess(config);
       if (process != null) {
         final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
         if (app == null || !executorId.equals(app.getMode().mode())) {
@@ -271,7 +271,7 @@ public class LauncherState extends CommandLineState {
       final List<RunContentDescriptor> runningProcesses =
         ExecutionManager.getInstance(env.getProject()).getContentManager().getAllDescriptors();
 
-      final ProcessHandler process = getRunningApp(launcherState.runConfig);
+      final ProcessHandler process = getRunningAppProcess(launcherState.runConfig);
       if (process != null) {
         final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
         if (app != null && executorId.equals(app.getMode().mode())) {
@@ -293,7 +293,7 @@ public class LauncherState extends CommandLineState {
      * Returns the currently running app for the given RunConfig, if any.
      */
     @Nullable
-    private static ProcessHandler getRunningApp(RunConfig config) {
+    private static ProcessHandler getRunningAppProcess(RunConfig config) {
       final Project project = config.getProject();
       final List<RunContentDescriptor> runningProcesses =
         ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
