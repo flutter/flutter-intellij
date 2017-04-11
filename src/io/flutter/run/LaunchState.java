@@ -97,7 +97,6 @@ public class LaunchState extends CommandLineState {
 
     // Remember the run configuration that started this process.
     app.getProcessHandler().putUserData(FLUTTER_RUN_CONFIG_KEY, runConfig);
-    app.getProcessHandler().putUserData(FLUTTER_APP_KEY, app);
     assert (app.getMode().mode().equals(getEnvironment().getExecutor().getId()));
 
     final ExecutionResult result = setUpConsoleAndActions(app);
@@ -236,7 +235,7 @@ public class LaunchState extends CommandLineState {
       final RunConfig config = (RunConfig)profile;
       final ProcessHandler process = getRunningAppProcess(config);
       if (process != null) {
-        final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
+        final FlutterApp app = FlutterApp.fromProcess(process);
         if (app == null || !executorId.equals(app.getMode().mode())) {
           return false;
         }
@@ -273,7 +272,7 @@ public class LaunchState extends CommandLineState {
 
       final ProcessHandler process = getRunningAppProcess(launchState.runConfig);
       if (process != null) {
-        final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
+        final FlutterApp app = FlutterApp.fromProcess(process);
         if (app != null && executorId.equals(app.getMode().mode())) {
           if (app.getMode().isReloadEnabled() && app.isStarted()) {
             // Map a re-run action to a flutter full restart.
@@ -289,28 +288,29 @@ public class LaunchState extends CommandLineState {
       return launchState.launch(env);
     }
 
-    /**
-     * Returns the currently running app for the given RunConfig, if any.
-     */
-    @Nullable
-    private static ProcessHandler getRunningAppProcess(RunConfig config) {
-      final Project project = config.getProject();
-      final List<RunContentDescriptor> runningProcesses =
-        ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+  }
 
-      for (RunContentDescriptor descriptor : runningProcesses) {
-        final ProcessHandler process = descriptor.getProcessHandler();
-        if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
-          return process;
-        }
+
+  /**
+   * Returns the currently running app for the given RunConfig, if any.
+   */
+  @Nullable
+  public static ProcessHandler getRunningAppProcess(RunConfig config) {
+    final Project project = config.getProject();
+    final List<RunContentDescriptor> runningProcesses =
+      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+
+    for (RunContentDescriptor descriptor : runningProcesses) {
+      final ProcessHandler process = descriptor.getProcessHandler();
+      if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
+        return process;
       }
-
-      return null;
     }
+
+    return null;
   }
 
   private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
-  private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private static final Logger LOG = Logger.getInstance(LaunchState.class.getName());
 }
