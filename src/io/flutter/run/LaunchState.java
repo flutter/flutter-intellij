@@ -50,28 +50,28 @@ import java.util.List;
 
 /**
  * Launches a flutter app, showing it in the console.
- *
- * <p>Normally creates a debugging session, which is needed for hot reload.
+ * <p>
+ * Normally creates a debugging session, which is needed for hot reload.
  */
-public class Launcher extends CommandLineState {
+public class LaunchState extends CommandLineState {
   private final @NotNull VirtualFile workDir;
 
   /**
    * The file or directory holding the Flutter app's source code.
    * This determines how the analysis server resolves URI's (for breakpoints, etc).
-   *
-   * <p>If a file, this should be the file containing the main() method.
+   * <p>
+   * If a file, this should be the file containing the main() method.
    */
   private final @NotNull VirtualFile sourceLocation;
 
   private final @NotNull RunConfig runConfig;
   private final @NotNull Callback callback;
 
-  public Launcher(@NotNull ExecutionEnvironment env,
-                  @NotNull VirtualFile workDir,
-                  @NotNull VirtualFile sourceLocation,
-                  @NotNull RunConfig runConfig,
-                  @NotNull Callback callback) {
+  public LaunchState(@NotNull ExecutionEnvironment env,
+                     @NotNull VirtualFile workDir,
+                     @NotNull VirtualFile sourceLocation,
+                     @NotNull RunConfig runConfig,
+                     @NotNull Callback callback) {
     super(env);
     this.workDir = workDir;
     this.sourceLocation = sourceLocation;
@@ -96,7 +96,9 @@ public class Launcher extends CommandLineState {
     final FlutterApp app = callback.createApp(device);
 
     // Remember the run configuration that started this process.
-    app.getProcessHandler().putUserData(KEY, runConfig);
+    app.getProcessHandler().putUserData(FLUTTER_RUN_CONFIG_KEY, runConfig);
+    app.getProcessHandler().putUserData(FLUTTER_APP_KEY, app);
+    assert (app.getMode().mode().equals(getEnvironment().getExecutor().getId()));
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
@@ -107,7 +109,8 @@ public class Launcher extends CommandLineState {
 
     if (RunMode.fromEnv(getEnvironment()).isReloadEnabled()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
-    } else {
+    }
+    else {
       // Not used yet. See https://github.com/flutter/flutter-intellij/issues/410
       return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
@@ -145,7 +148,8 @@ public class Launcher extends CommandLineState {
     final PositionMapper.Analyzer analyzer;
     if (app.getMode() == RunMode.DEBUG) {
       analyzer = PositionMapper.Analyzer.create(env.getProject(), sourceLocation);
-    } else {
+    }
+    else {
       analyzer = null; // Don't need analysis server just to run.
     }
 
@@ -177,18 +181,20 @@ public class Launcher extends CommandLineState {
   }
 
   @Override
-  public @NotNull ExecutionResult execute(@NotNull Executor executor, @NotNull ProgramRunner runner) throws ExecutionException {
+  public @NotNull
+  ExecutionResult execute(@NotNull Executor executor, @NotNull ProgramRunner runner) throws ExecutionException {
     throw new ExecutionException("not implemented"); // Not used; launch() does this.
   }
 
   @Override
-  protected @NotNull ProcessHandler startProcess() throws ExecutionException {
+  protected @NotNull
+  ProcessHandler startProcess() throws ExecutionException {
     throw new ExecutionException("not implemented"); // Not used; callback does this.
   }
 
   /**
    * Starts the process and wraps it in a FlutterApp.
-   *
+   * <p>
    * The callback knows the appropriate command line arguments (bazel versus non-bazel).
    */
   public interface Callback {
@@ -202,7 +208,7 @@ public class Launcher extends CommandLineState {
     Project getProject();
 
     @NotNull
-    Launcher getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
+    LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
   }
 
   /**
@@ -221,10 +227,25 @@ public class Launcher extends CommandLineState {
       if (!DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && !DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)) {
         return false;
       }
-      if (!(profile instanceof RunConfig)) return false;
+
+      if (!(profile instanceof RunConfig)) {
+        return false;
+      }
+
+      // If the app is running and the launch mode is the same, then we can run.
       final RunConfig config = (RunConfig)profile;
-      if (isRunning(config)) return false;
-      if (DartPlugin.getDartSdk(config.getProject()) == null) return false;
+      final ProcessHandler process = getRunningAppProcess(config);
+      if (process != null) {
+        final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
+        if (app == null || !executorId.equals(app.getMode().mode())) {
+          return false;
+        }
+      }
+
+      if (DartPlugin.getDartSdk(config.getProject()) == null) {
+        return false;
+      }
+
       return runConfigClass.isInstance(profile) && canRun(runConfigClass.cast(profile));
     }
 
@@ -238,33 +259,58 @@ public class Launcher extends CommandLineState {
     @Override
     protected final RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
       throws ExecutionException {
-      if (!(state instanceof Launcher)) {
+      if (!(state instanceof LaunchState)) {
         LOG.error("unexpected RunProfileState: " + state.getClass());
         return null;
       }
-      final Launcher launcher = (Launcher)state;
-      return launcher.launch(env);
+
+      final LaunchState launchState = (LaunchState)state;
+      final String executorId = env.getExecutor().getId();
+
+      // See if we should issue a hot-reload.
+      final List<RunContentDescriptor> runningProcesses =
+        ExecutionManager.getInstance(env.getProject()).getContentManager().getAllDescriptors();
+
+      final ProcessHandler process = getRunningAppProcess(launchState.runConfig);
+      if (process != null) {
+        final FlutterApp app = process.getUserData(FLUTTER_APP_KEY);
+        if (app != null && executorId.equals(app.getMode().mode())) {
+          if (app.getMode().isReloadEnabled() && app.isStarted()) {
+            // Map a re-run action to a flutter full restart.
+            FileDocumentManager.getInstance().saveAllDocuments();
+            app.performRestartApp();
+          }
+        }
+
+        return null;
+      }
+
+      // Else, launch the app.
+      return launchState.launch(env);
     }
 
     /**
-     * Returns true if any processes are running that were launched from the given RunConfig.
+     * Returns the currently running app for the given RunConfig, if any.
      */
-    private static boolean isRunning(RunConfig config) {
+    @Nullable
+    private static ProcessHandler getRunningAppProcess(RunConfig config) {
       final Project project = config.getProject();
-
       final List<RunContentDescriptor> runningProcesses =
         ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
 
       for (RunContentDescriptor descriptor : runningProcesses) {
         final ProcessHandler process = descriptor.getProcessHandler();
-        if (process != null && !process.isProcessTerminated() && process.getUserData(KEY) == config) {
-          return true;
+        if (process != null && !process.isProcessTerminated() && process.getUserData(FLUTTER_RUN_CONFIG_KEY) == config) {
+          return process;
         }
       }
-      return false;
+
+      return null;
     }
   }
 
-  private static final Key<RunConfig> KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
-  private static final Logger LOG = Logger.getInstance(Launcher.class.getName());
+  private static final Key<RunConfig> FLUTTER_RUN_CONFIG_KEY = new Key<>("FLUTTER_RUN_CONFIG_KEY");
+  private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
+
+  private static final Logger LOG = Logger.getInstance(LaunchState.class.getName());
 }

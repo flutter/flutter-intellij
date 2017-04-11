@@ -5,10 +5,10 @@
  */
 package io.flutter.run.bazel;
 
-import io.flutter.run.Launcher;
+import io.flutter.run.LaunchState;
 import org.jetbrains.annotations.NotNull;
 
-public class BazelRunner extends Launcher.Runner<BazelRunConfig> {
+public class BazelRunner extends LaunchState.Runner<BazelRunConfig> {
 
   public BazelRunner() {
     super(BazelRunConfig.class);

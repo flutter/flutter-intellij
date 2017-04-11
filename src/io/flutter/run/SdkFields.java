@@ -71,7 +71,8 @@ public class SdkFields {
    * Present only for deserializing old run configs.
    */
   @Deprecated
-  public void setWorkingDirectory(final @Nullable String dir) {}
+  public void setWorkingDirectory(final @Nullable String dir) {
+  }
 
   /**
    * Reports any errors that the user should correct.
@@ -80,7 +81,7 @@ public class SdkFields {
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
-    //TODO(pq): consider validating additional args values
+    // TODO(pq): consider validating additional args values
     checkSdk(project);
     final MainFile.Result main = MainFile.verify(filePath, project);
     if (!MainFile.verify(filePath, project).canLaunch()) {
@@ -92,7 +93,7 @@ public class SdkFields {
    * Create a command to run 'flutter run --machine'.
    */
   public GeneralCommandLine createFlutterSdkRunCommand(Project project, @Nullable FlutterDevice device,
-                                                              @NotNull RunMode mode) throws ExecutionException {
+                                                       @NotNull RunMode mode) throws ExecutionException {
 
     final MainFile main = MainFile.verify(filePath, project).get();
     final String appPath = main.getAppDir().getPath();
@@ -111,9 +112,6 @@ public class SdkFields {
     commandLine.addParameters("run", "--machine");
     if (device != null) {
       commandLine.addParameter("--device-id=" + device.deviceId());
-    }
-    if (mode == RunMode.PROFILE) {
-      commandLine.addParameter("--profile");
     }
     if (mode == RunMode.DEBUG) {
       commandLine.addParameter("--start-paused");
