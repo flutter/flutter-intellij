@@ -5,18 +5,18 @@
  */
 package io.flutter.actions;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.wm.ToolWindowId;
-import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 
 
 @SuppressWarnings("ComponentNotRegistered")
-public class RunProfileFlutterApp extends FlutterRunModeAction {
+public class RunProfileFlutterApp extends RunFlutterAction {
   public static final String TEXT = FlutterBundle.message("app.profile.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.profile.action.description");
 
   public RunProfileFlutterApp() {
-    super(TEXT, DESCRIPTION, FlutterIcons.RunProfile, "--profile", ToolWindowId.RUN
+    super(TEXT, DESCRIPTION, AllIcons.Actions.Execute, "--profile", ToolWindowId.RUN
     );
   }
 }

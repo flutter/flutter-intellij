@@ -24,16 +24,16 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 
-public abstract class FlutterRunModeAction extends AnAction {
+public abstract class RunFlutterAction extends AnAction {
 
   private final @NotNull String myRunArg;
   private final @NotNull String myExecutorId;
 
-  public FlutterRunModeAction(@NotNull String text,
-                              @NotNull String description,
-                              @NotNull Icon icon,
-                              @NotNull String runArg,
-                              @NotNull String executorId) {
+  public RunFlutterAction(@NotNull String text,
+                          @NotNull String description,
+                          @NotNull Icon icon,
+                          @NotNull String runArg,
+                          @NotNull String executorId) {
     super(text, description, icon);
     myRunArg = runArg;
     myExecutorId = executorId;
@@ -43,19 +43,14 @@ public abstract class FlutterRunModeAction extends AnAction {
   public void actionPerformed(AnActionEvent e) {
     FlutterInitializer.sendAnalyticsAction(this);
 
-    final Project project = e.getProject();
-    if (project == null) {
-      return;
-    }
-
-    final RunnerAndConfigurationSettings settings = RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
+    final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
     if (settings == null) {
       return;
     }
 
     final RunConfiguration configuration = settings.getConfiguration();
     if (!(configuration instanceof SdkRunConfig)) {
-      //TODO: supported in Bazel?
+      // Action is disabled; shouldn't happen.
       return;
     }
 
@@ -71,7 +66,6 @@ public abstract class FlutterRunModeAction extends AnAction {
       }
     }
 
-
     final Executor executor = getExecutor(myExecutorId);
     if (executor == null) {
       return;
@@ -81,6 +75,25 @@ public abstract class FlutterRunModeAction extends AnAction {
     final ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
 
     ProgramRunnerUtil.executeConfiguration(env, false, true);
+  }
+
+  @Override
+  public void update(AnActionEvent e) {
+    final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
+    // TODO: add support for Bazel.
+    final boolean enabled = settings != null && (settings.getConfiguration() instanceof SdkRunConfig);
+    e.getPresentation().setEnabled(enabled);
+  }
+
+  @Nullable
+  private static RunnerAndConfigurationSettings getRunConfigSettings(@Nullable AnActionEvent e) {
+    if (e == null) return null;
+    final Project project = e.getProject();
+    if (project == null) {
+      return null;
+    }
+
+    return RunManagerEx.getInstanceEx(project).getSelectedConfiguration();
   }
 
   @Nullable

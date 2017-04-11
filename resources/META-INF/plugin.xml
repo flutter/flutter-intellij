@@ -258,11 +258,11 @@
       </action>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Profile"
-              icon="FlutterIcons.RunProfile">
+              icon="AllIcons.Actions.Profile">
       </action>
       <action id="Flutter.Menu.RunReleaseAction" class="io.flutter.actions.RunReleaseFlutterApp"
               description="Release"
-              icon="FlutterIcons.RunRelease">
+              icon="AllIcons.Actions.Execute">
       </action>
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>

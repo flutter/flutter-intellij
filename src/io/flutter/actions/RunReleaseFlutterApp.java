@@ -5,18 +5,18 @@
  */
 package io.flutter.actions;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.wm.ToolWindowId;
-import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 
 
 @SuppressWarnings("ComponentNotRegistered")
-public class RunReleaseFlutterApp extends FlutterRunModeAction {
+public class RunReleaseFlutterApp extends RunFlutterAction {
   public static final String TEXT = FlutterBundle.message("app.release.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.release.action.description");
 
   public RunReleaseFlutterApp() {
-    super(TEXT, DESCRIPTION, FlutterIcons.RunProfile, "--release", ToolWindowId.RUN
+    super(TEXT, DESCRIPTION, AllIcons.Actions.Profile, "--release", ToolWindowId.RUN
     );
   }
 }
