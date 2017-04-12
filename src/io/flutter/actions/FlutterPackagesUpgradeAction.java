@@ -25,7 +25,7 @@ public class FlutterPackagesUpgradeAction extends FlutterSdkAction {
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
-      sdk.run(COMMAND, pair.first, pair.second.getParent(), null);
+      sdk.startProcess(COMMAND, pair.first, pair.second.getParent(), null);
     }
     else {
       FlutterMessages.showError(

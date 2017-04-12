@@ -29,7 +29,7 @@ public class FlutterPackagesGetAction extends FlutterSdkAction {
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
       final VirtualFile workingDir = pair.second.getParent();
-      sdk.run(COMMAND, pair.first, workingDir, new ProcessAdapter() {
+      sdk.startProcess(COMMAND, pair.first, workingDir, new ProcessAdapter() {
         @Override
         public void processTerminated(ProcessEvent event) {
           // Refresh to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.

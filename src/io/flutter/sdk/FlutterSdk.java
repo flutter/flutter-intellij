@@ -88,7 +88,8 @@ public class FlutterSdk {
     });
   }
 
-  private static void start(@NotNull OSProcessHandler handler) {
+  private static void startListening(@NotNull OSProcessHandler handler) {
+    // TODO(skybrian) what is this for? We are only setting it very briefly.
     DartPlugin.setPubActionInProgress(true);
     try {
       handler.startNotify();
@@ -98,11 +99,17 @@ public class FlutterSdk {
     }
   }
 
-  public void run(@NotNull Command cmd,
-                  @Nullable Module module,
-                  @Nullable VirtualFile workingDir,
-                  @Nullable ProcessListener listener,
-                  @NotNull String... args)
+  /**
+   * Starts running a flutter command.
+   * <p>
+   * Returns the process if successful.
+   */
+  @Nullable
+  public Process startProcess(@NotNull Command cmd,
+                              @Nullable Module module,
+                              @Nullable VirtualFile workingDir,
+                              @Nullable ProcessListener listener,
+                              @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
     final String dirPath = workingDir == null ? null : workingDir.getPath();
@@ -116,37 +123,40 @@ public class FlutterSdk {
     command.addParameters(toolArgs);
 
     try {
-      if (inProgress.compareAndSet(false, true)) {
-        final OSProcessHandler handler = new OSProcessHandler(command);
-        if (listener != null) {
-          handler.addProcessListener(listener);
-        }
-        handler.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(final ProcessEvent event) {
-            inProgress.set(false);
-            cmd.onTerminate(module, workingDir, event.getExitCode(), args);
-          }
-        });
-
-        if (cmd.attachToConsole() && module != null) {
-          FlutterConsoleHelper.attach(module, handler, cmd.runOnConsoleActivation());
-        }
-
-        cmd.onStart(module, workingDir, args);
-        start(handler);
-
-        // Send the command to analytics.
-        String commandName = StringUtil.join(cmd.command, "_");
-        commandName = commandName.replaceAll("-", "");
-        FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
+      if (!inProgress.compareAndSet(false, true)) {
+        return null; // already running.
       }
+      final OSProcessHandler handler = new OSProcessHandler(command);
+      if (listener != null) {
+        handler.addProcessListener(listener);
+      }
+      handler.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void processTerminated(final ProcessEvent event) {
+          inProgress.set(false);
+          cmd.onTerminate(module, workingDir, event.getExitCode(), args);
+        }
+      });
+
+      if (cmd.attachToConsole() && module != null) {
+        FlutterConsoleHelper.attach(module, handler, cmd.runOnConsoleActivation());
+      }
+
+      cmd.onStart(module, workingDir, args);
+      startListening(handler);
+
+      // Send the command to analytics.
+      String commandName = StringUtil.join(cmd.command, "_");
+      commandName = commandName.replaceAll("-", "");
+      FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
+      return handler.getProcess();
     }
     catch (ExecutionException e) {
       inProgress.set(false);
       FlutterMessages.showError(
         cmd.title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+      return null;
     }
   }
 
@@ -174,7 +184,7 @@ public class FlutterSdk {
           }
         });
 
-        FlutterConsoleHelper.attach(project, handler, () -> start(handler));
+        FlutterConsoleHelper.attach(project, handler, () -> startListening(handler));
 
         // Send the command to analytics.
         FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
