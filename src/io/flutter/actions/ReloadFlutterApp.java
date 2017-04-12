@@ -45,13 +45,9 @@ public class ReloadFlutterApp extends FlutterAppAction {
       }
       else {
         // Else perform a hot reload.
-        final boolean pauseAfterRestart = hasCapability("supports.pausePostRequest");
+        final boolean pauseAfterRestart = DartPluginCapabilities.isSupported("supports.pausePostRequest");
         getApp().performHotReload(pauseAfterRestart);
       }
     }
-  }
-
-  private static boolean hasCapability(@SuppressWarnings("SameParameterValue") String featureId) {
-    return DartPluginCapabilities.isSupported(featureId);
   }
 }
