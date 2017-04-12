@@ -14,9 +14,10 @@ import io.flutter.FlutterBundle;
 public class RunReleaseFlutterApp extends RunFlutterAction {
   public static final String TEXT = FlutterBundle.message("app.release.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.release.action.description");
+  private static final String TEXT_DETAIL_MSG_KEY = "app.release.config.action.text";
 
   public RunReleaseFlutterApp() {
-    super(TEXT, DESCRIPTION, AllIcons.Actions.Profile, "--release", ToolWindowId.RUN
+    super(TEXT, TEXT_DETAIL_MSG_KEY, DESCRIPTION, AllIcons.Actions.Profile, "--release", ToolWindowId.RUN
     );
   }
 }
