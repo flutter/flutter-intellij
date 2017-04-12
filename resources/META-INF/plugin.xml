@@ -1,4 +1,4 @@
-<idea-plugin version="2">
+<idea-plugin>
   <id>io.flutter</id>
   <name>Flutter</name>
   <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
