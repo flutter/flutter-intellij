@@ -15,6 +15,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.LaunchState;
 import io.flutter.run.SdkFields;
@@ -27,15 +28,18 @@ import javax.swing.*;
 
 public abstract class RunFlutterAction extends AnAction {
 
+  private final @NotNull String myDetailedTextKey;
   private final @NotNull String myRunArg;
   private final @NotNull String myExecutorId;
 
   public RunFlutterAction(@NotNull String text,
+                          @NotNull String detailedTextKey,
                           @NotNull String description,
                           @NotNull Icon icon,
                           @NotNull String runArg,
                           @NotNull String executorId) {
     super(text, description, icon);
+    myDetailedTextKey = detailedTextKey;
     myRunArg = runArg;
     myExecutorId = executorId;
   }
@@ -80,6 +84,13 @@ public abstract class RunFlutterAction extends AnAction {
 
   @Override
   public void update(AnActionEvent e) {
+    // Text.
+    final String config = getSelectedRunConfig(e);
+    final String message =
+      config != null ? FlutterBundle.message(myDetailedTextKey, config) : FlutterBundle.message("app.profile.action.text");
+    e.getPresentation().setText(message);
+
+    // Enablement.
     e.getPresentation().setEnabled(shouldEnable(e));
   }
 
@@ -88,6 +99,18 @@ public abstract class RunFlutterAction extends AnAction {
     final RunConfiguration config = settings == null ? null : settings.getConfiguration();
     // TODO(pq): add support for Bazel.
     return config instanceof SdkRunConfig && LaunchState.getRunningAppProcess((SdkRunConfig)config) == null;
+  }
+
+  @Nullable
+  protected static String getSelectedRunConfig(@Nullable AnActionEvent e) {
+    final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
+    if (settings != null) {
+      final RunConfiguration configuration = settings.getConfiguration();
+      if (configuration != null) {
+        return configuration.getName();
+      }
+    }
+    return null;
   }
 
   @Nullable

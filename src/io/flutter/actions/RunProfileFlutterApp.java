@@ -14,9 +14,10 @@ import io.flutter.FlutterBundle;
 public class RunProfileFlutterApp extends RunFlutterAction {
   public static final String TEXT = FlutterBundle.message("app.profile.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.profile.action.description");
+  private static final String TEXT_DETAIL_MSG_KEY = "app.profile.config.action.text";
 
   public RunProfileFlutterApp() {
-    super(TEXT, DESCRIPTION, AllIcons.Actions.Execute, "--profile", ToolWindowId.RUN
+    super(TEXT, TEXT_DETAIL_MSG_KEY, DESCRIPTION, AllIcons.Actions.Execute, "--profile", ToolWindowId.RUN
     );
   }
 }
