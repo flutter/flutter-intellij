@@ -311,6 +311,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   }
 
   @Override
+  public void dropFrame(DartVmServiceStackFrame frame) {
+    myVmServiceWrapper.dropFrame(frame.getIsolateId(), frame.getFrameIndex() + 1);
+  }
+
+  @Override
   public void stop() {
     myVmConnected = false;
     mapper.shutdown();
