@@ -16,7 +16,6 @@ import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
@@ -97,6 +96,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
+    topToolbar.addAction(new FlutterPopFrameAction());
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), isSessionActive));
 
     // Don't call super since we have our own observatory action.

@@ -34,7 +34,6 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.actions.OpenObservatoryAction;
 import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.DeviceService;

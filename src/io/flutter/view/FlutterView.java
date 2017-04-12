@@ -25,7 +25,7 @@ import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
-import io.flutter.actions.OpenObservatoryAction;
+import io.flutter.run.OpenObservatoryAction;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
