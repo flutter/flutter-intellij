@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.run.FlutterRunNotifications;
+import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
@@ -96,6 +97,9 @@ public class FlutterInitializer implements StartupActivity {
     FlutterViewFactory.init(project);
 
     FlutterRunNotifications.init(project);
+
+    // Watch save actions.
+    FlutterReloadManager.getInstance(project);
 
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(

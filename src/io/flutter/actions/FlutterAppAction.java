@@ -70,7 +70,8 @@ abstract public class FlutterAppAction extends DumbAwareAction {
     }
   }
 
-  @NotNull FlutterApp getApp() {
+  @NotNull
+  public FlutterApp getApp() {
     return myApp;
   }
 }

@@ -11,21 +11,13 @@ package io.flutter.settings;
 public class FlutterUIConfig {
   private static final FlutterUIConfig INSTANCE = new FlutterUIConfig();
 
-  private boolean ignoreMismatchedDartSdks;
   private boolean ignoreOutOfDateFlutterSdks;
 
-  private FlutterUIConfig() {}
+  private FlutterUIConfig() {
+  }
 
   public static FlutterUIConfig getInstance() {
     return INSTANCE;
-  }
-
-  public boolean shouldIgnoreMismatchedDartSdks() {
-    return ignoreMismatchedDartSdks;
-  }
-
-  public void setIgnoreMismatchedDartSdks() {
-    this.ignoreMismatchedDartSdks = true;
   }
 
   public boolean shouldIgnoreOutOfDateFlutterSdks() {
