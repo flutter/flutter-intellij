@@ -12,6 +12,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import io.flutter.FlutterConstants;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,7 +21,7 @@ import javax.swing.*;
 public class FlutterIconProvider extends IconProvider {
   @Nullable
   public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
-    if (element instanceof PsiDirectory) {
+    if (element instanceof PsiDirectory && FlutterModuleUtils.hasFlutterModule(element.getProject())) {
       final VirtualFile folder = ((PsiDirectory)element).getVirtualFile();
       if (isFolderNearPubspecYaml(folder, "lib")) return AllIcons.Modules.SourceRoot;
       if (isFolderNearPubspecYaml(folder, ".idea")) return AllIcons.Modules.GeneratedFolder;
