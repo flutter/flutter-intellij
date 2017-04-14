@@ -5,6 +5,7 @@
  */
 package io.flutter.testing;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.testFramework.builders.EmptyModuleFixtureBuilder;
@@ -54,8 +55,12 @@ public class Testing {
     }, false);
   }
 
+  @SuppressWarnings("RedundantTypeArguments")
   public static <T> T computeInWriteAction(ThrowableComputable<T, Exception> callback) throws Exception {
-    return computeOnDispatchThread(() -> ApplicationManager.getApplication().runWriteAction(callback));
+    return computeOnDispatchThread(() -> {
+      Application app = ApplicationManager.getApplication();
+      return app.<T, Exception>runWriteAction(callback);
+    });
   }
 
   public static void runInWriteAction(RunnableThatThrows callback) throws Exception {
