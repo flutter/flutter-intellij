@@ -248,10 +248,7 @@
     </group>
     <group id="Flutter.MenuActions.Run">
       <separator/>
-      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
-              description="Reload"
-              icon="FlutterIcons.HotReload">
-      </action>
+      <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
               icon="AllIcons.Actions.Restart">
