@@ -192,7 +192,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     throw new ConfigurationException("flutter create command was unsuccessful");
   }
 
-  public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
+  /**
+   * Set up a "small IDE" project. (For example, WebStorm.)
+   */
+  public static void setupSmallProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
     throws ConfigurationException {
     final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
     if (sdk == null) {
