@@ -331,6 +331,8 @@
                      implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
 
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
+
+    <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
   </extensions>
 
 </idea-plugin>
