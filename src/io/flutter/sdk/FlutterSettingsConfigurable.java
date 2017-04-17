@@ -167,7 +167,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
     try {
       final ModalityState modalityState = ModalityState.current();
-      sdk.run(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
+      sdk.startProcess(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
         @Override
         public void processTerminated(@NotNull ProcessEvent event) {
           final ProcessOutput output = getOutput();

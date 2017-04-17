@@ -46,7 +46,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     ApplicationManager.getApplication().runWriteAction(() -> {
       try {
         final ModifiableRootModel modifiableModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module);
-        FlutterModuleBuilder.setupProject(project, modifiableModel, baseDir, flutterSdkPath);
+        FlutterModuleBuilder.setupSmallProject(project, modifiableModel, baseDir, flutterSdkPath);
         ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel);
       }
       catch (ConfigurationException e) {

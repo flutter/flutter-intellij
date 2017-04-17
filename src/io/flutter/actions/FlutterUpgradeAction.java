@@ -19,7 +19,7 @@ public class FlutterUpgradeAction extends FlutterSdkAction {
   public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
     final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
     if (pair != null) {
-      sdk.run(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
+      sdk.startProcess(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
     }
     else {
       sdk.runProject(project, "Flutter upgrade", "upgrade");
