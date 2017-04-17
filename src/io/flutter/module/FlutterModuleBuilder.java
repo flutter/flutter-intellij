@@ -20,6 +20,8 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -105,6 +107,21 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     catch (ExecutionException e) {
       LOG.warn(e);
     }
+  }
+
+  @Override
+  public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {
+    if (!FlutterUtils.isValidDartdentifier(moduleName)) {
+      throw new ConfigurationException("Invalid Flutter module name '" + moduleName + "'; must be a valid Dart identifier.");
+    }
+
+    if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
+      throw new ConfigurationException("Flutter module name is too long; must be less than " +
+                                       FlutterConstants.MAX_MODULE_NAME_LENGTH +
+                                       " characters.");
+    }
+
+    return super.validateModuleName(moduleName);
   }
 
   public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)

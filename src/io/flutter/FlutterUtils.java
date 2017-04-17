@@ -17,8 +17,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class FlutterUtils {
+  private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
+
   private FlutterUtils() {
   }
 
@@ -57,5 +60,16 @@ public class FlutterUtils {
 
   public static void openFlutterSettings(@Nullable Project project) {
     ShowSettingsUtilImpl.showSettingsDialog(project, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID, "");
+  }
+
+  /**
+   * Checks whether a given string is a valid Dart identifier.
+   *
+   * See: https://www.dartlang.org/guides/language/spec
+   * @param id the string to check
+   * @return true if a valid identifer, false otherwise.
+   */
+  public static boolean isValidDartdentifier(@NotNull String id) {
+    return VALID_ID.matcher(id).matches();
   }
 }

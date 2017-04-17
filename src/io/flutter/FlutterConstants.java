@@ -7,6 +7,8 @@
 package io.flutter;
 
 public class FlutterConstants {
+  public static final int MAX_MODULE_NAME_LENGTH = 30;
+
   public static final String PACKAGES_FILE = ".packages";
   public static final String PUBSPEC_YAML = "pubspec.yaml";
 
