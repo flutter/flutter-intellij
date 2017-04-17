@@ -3,6 +3,7 @@
 <!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
+<!--suppress AntResolveInspection -->
 <project name="flutter-intellij" default="build">
   <property environment="env"/>
 

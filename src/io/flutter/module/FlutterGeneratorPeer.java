@@ -65,6 +65,7 @@ public class FlutterGeneratorPeer {
     });
   }
 
+  @SuppressWarnings("EmptyMethod")
   void apply() {
   }
 

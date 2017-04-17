@@ -174,11 +174,6 @@ public class FileWatch {
       return base.equals(file);
     }
 
-    @Override
-    public boolean equals(Object obj) {
-      return super.equals(obj);
-    }
-
     private static final Splitter splitter = Splitter.on('/');
   }
 
