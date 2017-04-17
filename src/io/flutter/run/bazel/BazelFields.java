@@ -78,6 +78,7 @@ public class BazelFields {
   /**
    * Present only for deserializing old run configs.
    */
+  @SuppressWarnings("SameReturnValue")
   @Deprecated
   public String getWorkingDirectory() {
     return null;

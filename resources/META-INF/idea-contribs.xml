@@ -1,5 +1,5 @@
 <!-- Defines IDEA IDE-specific contributions and implementations. -->
-<idea-plugin version="2">
+<idea-plugin>
   <extensions defaultExtensionNs="com.intellij">
     <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
                     serviceImplementation="io.flutter.sdk.FlutterIdeaSdkService"

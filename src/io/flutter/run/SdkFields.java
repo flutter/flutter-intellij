@@ -61,6 +61,7 @@ public class SdkFields {
   /**
    * Present only for deserializing old run configs.
    */
+  @SuppressWarnings("SameReturnValue")
   @Deprecated
   @Nullable
   public String getWorkingDirectory() {
@@ -70,6 +71,7 @@ public class SdkFields {
   /**
    * Present only for deserializing old run configs.
    */
+  @SuppressWarnings("EmptyMethod")
   @Deprecated
   public void setWorkingDirectory(final @Nullable String dir) {
   }

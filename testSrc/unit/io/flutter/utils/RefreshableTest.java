@@ -67,7 +67,7 @@ public class RefreshableTest {
   }
 
   @Test
-  public void refreshShouldPublishNewValue() throws Exception {
+  public void refreshShouldPublishNewValue() {
     value.refresh(() -> "hello");
     assertEquals("hello", value.getWhenReady());
     checkLog("BUSY: null",
@@ -83,7 +83,7 @@ public class RefreshableTest {
   }
 
   @Test
-  public void refreshShouldProvideAndUnpublishPreviousValue() throws Exception {
+  public void refreshShouldProvideAndUnpublishPreviousValue() {
     value.refresh((req) -> {
       log("previous: " + req.getPrevious());
       return "one";
@@ -115,7 +115,7 @@ public class RefreshableTest {
   }
 
   @Test
-  public void refreshShouldNotPublishOrUnpublishDuplicateValue() throws Exception {
+  public void refreshShouldNotPublishOrUnpublishDuplicateValue() {
     value.refresh(() -> "hello");
     assertEquals("hello", value.getWhenReady());
     checkLog("BUSY: null",
@@ -135,7 +135,7 @@ public class RefreshableTest {
   }
 
   @Test
-  public void refreshShouldNotPublishWhenCallbackThrowsException() throws Exception {
+  public void refreshShouldNotPublishWhenCallbackThrowsException() {
     value.refresh(() -> "first");
     assertEquals("first", value.getWhenReady());
     checkLog("BUSY: null",
@@ -312,12 +312,12 @@ public class RefreshableTest {
              "CLOSED: null");
   }
 
-  private void expectUnpublish() throws Exception {
+  private void expectUnpublish() {
     canUnpublish.release();
     acquireOrLog(unpublished, "should have unpublished");
   }
 
-  private void expectCloseEvent() throws Exception {
+  private void expectCloseEvent() {
     canFireCloseEvent.release();
     acquireOrLog(closeEventReceived, "should have gotten close event");
   }
