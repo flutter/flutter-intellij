@@ -86,7 +86,7 @@ public class FlutterSdkUtil {
       validPathsForUI.add(currentPath);
     }
 
-    final String[] knownPaths = PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
+    final String[] knownPaths = getKnownFlutterSdkPaths();
     if (knownPaths != null && knownPaths.length > 0) {
       for (String path : knownPaths) {
         if (FlutterSdk.forPath(path) != null) {
@@ -101,6 +101,11 @@ public class FlutterSdkUtil {
     if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
       combo.setSelectedIndex(0);
     }
+  }
+
+  @Nullable
+  public static String[] getKnownFlutterSdkPaths() {
+    return PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
   }
 
   @NotNull
