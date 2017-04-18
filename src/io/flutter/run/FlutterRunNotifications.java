@@ -62,6 +62,7 @@ public class FlutterRunNotifications {
         @Override
         public void actionPerformed(AnActionEvent event) {
           BrowserUtil.browse(FlutterBundle.message("flutter.reload.firstRun.url"));
+          notification.expire();
         }
       });
       Notifications.Bus.notify(notification);
