@@ -32,6 +32,8 @@ import io.flutter.module.FlutterModuleType;
 import io.flutter.run.FlutterRunConfigurationType;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,8 +96,8 @@ public class FlutterModuleUtils {
   /**
    * Create a Flutter run configuration.
    *
-   * @param project    the project
-   * @param main       the target main
+   * @param project the project
+   * @param main    the target main
    */
   public static void createRunConfig(@NotNull Project project, @Nullable VirtualFile main) {
     final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
@@ -282,8 +284,22 @@ public class FlutterModuleUtils {
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
     setFlutterModuleType(module);
 
-    if (DartPlugin.getDartSdk(project) != null && !DartPlugin.isDartSdkEnabled(module)) {
-      ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module));
+    if (!DartPlugin.isDartSdkEnabled(module)) {
+      final String[] flutterSdkPaths = FlutterSdkUtil.getKnownFlutterSdkPaths();
+      if (flutterSdkPaths != null && flutterSdkPaths.length > 0) {
+        final FlutterSdk flutterSdk = FlutterSdk.forPath(flutterSdkPaths[0]);
+        if (flutterSdk != null) {
+          ApplicationManager.getApplication().runWriteAction(() -> {
+            try {
+              DartPlugin.ensureDartSdkConfigured(project, flutterSdk.getDartSdkPath());
+              DartPlugin.enableDartSdk(module);
+            }
+            catch (ExecutionException e) {
+              // Ignore -- best effort.
+            }
+          });
+        }
+      }
     }
 
     project.save();
