@@ -328,6 +328,8 @@
                      implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
 
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
   </extensions>
