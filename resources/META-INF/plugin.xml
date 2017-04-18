@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>12.1</version>
+  <version>13.0</version>
 
   <idea-version since-build="171.1" until-build="171.*"/>
 
@@ -21,6 +21,20 @@
 
   <change-notes>
     <![CDATA[
+
+13.0:
+<ul>
+  <li>small IDE support improvements</li>
+  <li>android module enablement on project creation</li>
+  <li>project explorer icon customizations</li>
+  <li>support for Flutter drop frame debugging</li>
+  <li>hot reload UX improvements</li>
+  <li>Bazel run config refinements</li>
+  <li>support for toggling OS in the Flutter View</li>
+  <li>Flutter CLI interop fixes (proper env setup)</li>
+  <li>color icon improvements</li>
+  <li>bump to require 2017.1+</li>
+</ul>
 
 12.1:
 <ul>
