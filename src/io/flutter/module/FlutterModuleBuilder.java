@@ -15,10 +15,11 @@ import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -31,9 +32,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -64,29 +65,45 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public void setupRootModel(ModifiableRootModel model) throws ConfigurationException {
-    final ContentEntry contentEntry = doAddContentEntry(model);
-
-    final VirtualFile baseDir = contentEntry == null ? null : contentEntry.getFile();
-    if (baseDir == null) {
-      return;
-    }
-    createProjectFiles(model, baseDir, myStep.getFlutterSdk());
+    doAddContentEntry(model);
+    // Add a reference to Dart SDK project library, without committing.
+    model.addInvalidLibrary("Dart SDK", "project");
   }
 
   @Nullable
   @Override
   public List<Module> commit(@NotNull Project project, @Nullable ModifiableModuleModel model, ModulesProvider modulesProvider) {
+    final String basePath = getModuleFileDirectory();
+    if (basePath == null) {
+      Messages.showErrorDialog("Module path not set", "Internal Error");
+      return null;
+    }
+    final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(basePath);
+    if (baseDir == null) {
+      Messages.showErrorDialog("Unable to determine Flutter project directory", "Internal Error");
+      return null;
+    }
+
+    final FlutterSdk sdk = myStep.getFlutterSdk();
+    if (!runFlutterCreateWithProgress(baseDir, sdk, project)) {
+      Messages.showErrorDialog("Flutter create command was unsuccessful", "Error");
+      return null;
+    }
+    FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
+
+    // Create the Flutter module. This indirectly calls setupRootModule, etc.
     final List<Module> result = super.commit(project, model, modulesProvider);
     if (result == null || result.size() != 1) {
       return result;
     }
+    final Module flutter = result.get(0);
 
-    final String baseDirPath = new File(result.get(0).getModuleFilePath()).getParent();
-    final Module android = addAndroidModule(project, model, baseDirPath);
+    final Module android = addAndroidModule(project, model, basePath);
     if (android != null) {
-      return ImmutableList.of(result.get(0), android);
-    } else {
-      return result;
+      return ImmutableList.of(flutter, android);
+    }
+    else {
+      return ImmutableList.of(flutter);
     }
   }
 
@@ -110,7 +127,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       if (model == null) {
         toCommit = ModuleManager.getInstance(project).getModifiableModel();
         model = toCommit;
-      } else {
+      }
+      else {
         toCommit = null;
       }
 
@@ -154,23 +172,35 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterModuleType.getInstance();
   }
 
-  private static void createProjectFiles(@NotNull final ModifiableRootModel model,
-                                         @NotNull final VirtualFile baseDir,
-                                         @NotNull final FlutterSdk sdk) throws ConfigurationException {
+  /**
+   * Runs flutter create without showing a console, but with an indeterminate progress dialog.
+   */
+  private static boolean runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
+                                                      @NotNull FlutterSdk sdk,
+                                                      @NotNull Project project) {
+    final ProgressManager progress = ProgressManager.getInstance();
+    final AtomicBoolean succeeded = new AtomicBoolean(false);
 
-    runFlutterCreate(sdk, model.getModule(), baseDir);
+    progress.runProcessWithProgressSynchronously(() -> {
+      progress.getProgressIndicator().setIndeterminate(true);
+      try {
+        runFlutterCreate(sdk, baseDir, null);
+        succeeded.set(true);
+      }
+      catch (ConfigurationException e) {
+        LOG.warn(e);
+      }
+    }, "Creating Flutter Project", false, project);
 
-    try {
-      DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
-      FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
-    }
-    catch (ExecutionException e) {
-      LOG.warn("Error configuring the Flutter SDK.", e);
-      throw new ConfigurationException("Error configuring Flutter SDK");
-    }
+    return succeeded.get();
   }
 
-  private static void runFlutterCreate(@NotNull FlutterSdk sdk, Module module, @NotNull VirtualFile baseDir)
+  /**
+   * Runs flutter create. If the module parameter isn't null, shows output in a console.
+   */
+  private static void runFlutterCreate(@NotNull FlutterSdk sdk,
+                                       @NotNull VirtualFile baseDir,
+                                       @Nullable Module module)
     throws ConfigurationException {
     // Create files.
     try {
@@ -178,7 +208,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
         sdk.startProcess(FlutterSdk.Command.CREATE, module, baseDir, null, baseDir.getPath());
       if (process != null) {
         // Wait for process to finish. (We overwrite some files, so make sure we lose the race.)
-        // TODO(skybrian) the user sees a short pause. Show progress somehow?
         final int exitCode = process.waitFor();
         if (exitCode == 0) {
           baseDir.refresh(false, true);
@@ -202,7 +231,17 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
     }
     model.addContentEntry(baseDir);
-    createProjectFiles(model, baseDir, sdk);
+
+    runFlutterCreate(sdk, baseDir, model.getModule());
+
+    try {
+      DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
+      FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
+    }
+    catch (ExecutionException e) {
+      LOG.warn("Error configuring the Flutter SDK.", e);
+      throw new ConfigurationException("Error configuring Flutter SDK");
+    }
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
