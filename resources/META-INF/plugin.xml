@@ -314,10 +314,6 @@
 
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
-    <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
-    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
-                    serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
-                    overrides="false"/>
     <projectService serviceInterface="io.flutter.settings.FlutterSettings"
                     serviceImplementation="io.flutter.settings.FlutterSettings"
                     overrides="false"/>
