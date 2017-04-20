@@ -22,12 +22,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.JDOMUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.pointers.VirtualFilePointer;
-import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -38,14 +38,19 @@ import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.dart.DartPlugin;
 import io.flutter.utils.FlutterModuleUtils;
+import org.jdom.Element;
+import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
 
+  private static final String SDK_LIBRARY_PATH = ".idea/libraries/Dart_SDK.xml";
   private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
 
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
@@ -70,57 +75,55 @@ public class FlutterSdk {
     return project.isDisposed() ? null : getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
   }
 
-
   /**
-   * Returns the Flutter SDK for a project that has a possibly broken "Dart SDK" project library.
+   * Returns the Flutter SDK for an unopened project that has a possibly broken "Dart SDK" project library.
    * <p>
    * (This can happen for a newly-cloned Flutter SDK where the Dart SDK is not cached yet.)
    */
   @Nullable
-  public static FlutterSdk getIncomplete(@NotNull final Project project) {
-    final Library lib = findDartSdkLibrary(project);
+  public static FlutterSdk getForProjectDir(final VirtualFile projectDir) {
+    final Library lib = loadDartSdkLibrary(projectDir);
     if (lib == null) {
       return null;
     }
+
 
     final String[] urls = lib.getUrls(OrderRootType.CLASSES);
     for (String url : urls) {
       if (url.endsWith(DART_CORE_SUFFIX)) {
         final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
-        final String path = getPathForProjectLibraryUrl(flutterUrl, project);
-        return path == null ? null : new FlutterSdk(path);
-      }
-    }
-
-    return null;
-  }
-
-  @Nullable
-  private static Library findDartSdkLibrary(@NotNull Project project) {
-    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
-    for (Library lib : libraries) {
-      if ("Dart SDK".equals(lib.getName())) {
-        return lib;
+        final String flutterPath = getPathForProjectLibraryUrl(flutterUrl, projectDir);
+        return flutterPath == null ? null : new FlutterSdk(flutterPath);
       }
     }
     return null;
   }
 
   @Nullable
-  private static String getPathForProjectLibraryUrl(@NotNull String url, @NotNull Project project) {
-    // Use VirtualFilePointer to resolve the URL, which may contain PROJECT_DIRS or other template variables.
-    // TODO(skybrian) somehow discard the pointer before returning.
-    // This is complicated because it apparently uses both the dispose framework and some kind of reference counting.
-    // For now we will leak it until the project is closed.
-
-    final VirtualFilePointer pointer = VirtualFilePointerManager.getInstance().create(url, project, null);
-
-    final VirtualFile file = pointer.getFile();
-    if (file == null) {
+  private static Library loadDartSdkLibrary(@NotNull VirtualFile projectDir) {
+    final VirtualFile libPath = projectDir.findFileByRelativePath(SDK_LIBRARY_PATH);
+    if (libPath == null) {
       return null;
     }
 
-    return file.getCanonicalPath();
+    try {
+      final Element elt = JDOMUtil.load(new File(libPath.getPath()));
+      final ProjectLibraryTable table = new ProjectLibraryTable();
+      table.readExternal(elt);
+      return table.getLibraryByName("Dart SDK");
+    }
+    catch (JDOMException | IOException e) {
+      return null;
+    }
+  }
+
+  @Nullable
+  private static String getPathForProjectLibraryUrl(@NotNull String url, @NotNull VirtualFile projectDir) {
+    // Calling IDEA's path macro expansion is infeasible.
+    // So, just expand one variable here and hope it works.
+    url = url.replace("$PROJECT_DIR$", projectDir.getPath());
+    final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(url);
+    return file == null ? null : file.getPath();
   }
 
   @Nullable
@@ -171,7 +174,7 @@ public class FlutterSdk {
    *
    * @return true if successful (the Dart SDK exists).
    */
-  public boolean syncShowingProgress(Project project) {
+  public boolean syncShowingProgress(@Nullable Project project) {
     assert !ApplicationManager.getApplication().isWriteAccessAllowed();
 
     final ProgressManager progress = ProgressManager.getInstance();
@@ -188,9 +191,12 @@ public class FlutterSdk {
         if (process.exitValue() != 0) {
           return;
         }
-        final LocalFileSystem localFS = LocalFileSystem.getInstance();
-        localFS.refreshAndFindFileByPath(myHomePath + "/bin/cache");
-        succeeded.set(localFS.findFileByPath(myHomePath + "/bin/cache/dart-sdk") != null);
+        final VirtualFile flutterBin = LocalFileSystem.getInstance().findFileByPath(myHomePath + "/bin");
+        if (flutterBin == null) {
+          return;
+        }
+        flutterBin.refresh(false, true);
+        succeeded.set(flutterBin.findFileByRelativePath("cache/dart-sdk") != null);
       }
       catch (ExecutionException | InterruptedException e) {
         LOG.warn(e);
@@ -316,6 +322,18 @@ public class FlutterSdk {
   @NotNull
   public String getDartSdkPath() throws ExecutionException {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
+  }
+
+  /**
+   * Returns true if the Dart SDK has been downloaded for this Flutter SDK.
+   */
+  public boolean hasDartSdk() {
+    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(myHomePath + "/bin/cache/dart-sdk");
+    if (file == null) {
+      return false;
+    }
+    file.refresh(false, false);
+    return file.exists();
   }
 
   public enum Command {

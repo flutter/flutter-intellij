@@ -16,6 +16,7 @@ import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -68,6 +69,14 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
       return null;
     }
 
+    final FlutterSdk sdk = FlutterSdk.getForProjectDir(file);
+    if (sdk != null && !sdk.hasDartSdk()) {
+      boolean ok = sdk.syncShowingProgress(null);
+      if (!ok) {
+        LOG.warn("failed to sync flutter SDK");
+      }
+    }
+
     final Project project = importProvider.doOpenProject(file, projectToClose, forceOpenInNewFrame);
 
     // Once open, process.
@@ -79,16 +88,6 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   private void doPostOpenProcessing(@Nullable Project project) {
     if (project == null) {
       return;
-    }
-
-    if ( FlutterSdk.getFlutterSdk(project) == null) {
-      final FlutterSdk incomplete = FlutterSdk.getIncomplete(project);
-      if (incomplete != null) {
-        boolean ok = incomplete.syncShowingProgress(project);
-        if (!ok) {
-          LOG.warn("failed to sync flutter SDK");
-        }
-      }
     }
 
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
