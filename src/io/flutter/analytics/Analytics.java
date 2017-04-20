@@ -167,10 +167,10 @@ public class Analytics {
         return "Mozilla/5.0 (Windows; Windows; Windows; " + locale + ")";
       }
       else if (SystemInfo.isMac) {
-        return "Mozilla/5.0 (Macintosh; Intel Mac OS X; Macintosh; \" + locale + \")";
+        return "Mozilla/5.0 (Macintosh; Intel Mac OS X; Macintosh; " + locale + ")";
       }
       else if (SystemInfo.isLinux) {
-        return "Mozilla/5.0 (Linux; Linux; Linux; \" + locale + \")";
+        return "Mozilla/5.0 (Linux; Linux; Linux; " + locale + ")";
       }
 
       return null;
