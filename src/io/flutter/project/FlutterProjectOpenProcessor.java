@@ -22,7 +22,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterPackagesGetAction;
-import io.flutter.actions.FlutterSdkAction;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
@@ -39,16 +38,6 @@ import java.util.Objects;
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class.getName());
-
-  private static void doPerform(@NotNull FlutterSdkAction action, @NotNull Project project) throws ExecutionException {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null) {
-      // Lack of SDK will be flagged elsewhere by inspection.
-      return;
-    }
-
-    action.perform(sdk, project, null);
-  }
 
   private static void handleError(@NotNull Exception e) {
     FlutterMessages.showError("Error opening", e.getMessage());
@@ -92,6 +81,16 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
       return;
     }
 
+    if ( FlutterSdk.getFlutterSdk(project) == null) {
+      final FlutterSdk incomplete = FlutterSdk.getIncomplete(project);
+      if (incomplete != null) {
+        boolean ok = incomplete.syncShowingProgress(project);
+        if (!ok) {
+          LOG.warn("failed to sync flutter SDK");
+        }
+      }
+    }
+
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       if (FlutterModuleUtils.usesFlutter(project)) {
         final List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
@@ -117,7 +116,10 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     try {
       final VirtualFile packagesFile = FlutterModuleUtils.findPackagesFileFrom(project, null);
       if (!FlutterUtils.exists(packagesFile)) {
-        doPerform(new FlutterPackagesGetAction(), project);
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+        if (sdk != null) {
+          new FlutterPackagesGetAction().perform(sdk, project, null);
+        }
       }
       else {
         final VirtualFile pubspecFile = FlutterModuleUtils.findPubspecFrom(project, null);

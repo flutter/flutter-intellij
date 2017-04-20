@@ -17,11 +17,17 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
+import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.pointers.VirtualFilePointer;
+import com.intellij.openapi.vfs.pointers.VirtualFilePointerManager;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -39,6 +45,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
+
+  private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
+
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
   private final @NotNull String myHomePath;
@@ -59,6 +68,59 @@ public class FlutterSdk {
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
     return project.isDisposed() ? null : getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
+  }
+
+
+  /**
+   * Returns the Flutter SDK for a project that has a possibly broken "Dart SDK" project library.
+   * <p>
+   * (This can happen for a newly-cloned Flutter SDK where the Dart SDK is not cached yet.)
+   */
+  @Nullable
+  public static FlutterSdk getIncomplete(@NotNull final Project project) {
+    final Library lib = findDartSdkLibrary(project);
+    if (lib == null) {
+      return null;
+    }
+
+    final String[] urls = lib.getUrls(OrderRootType.CLASSES);
+    for (String url : urls) {
+      if (url.endsWith(DART_CORE_SUFFIX)) {
+        final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
+        final String path = getPathForProjectLibraryUrl(flutterUrl, project);
+        return path == null ? null : new FlutterSdk(path);
+      }
+    }
+
+    return null;
+  }
+
+  @Nullable
+  private static Library findDartSdkLibrary(@NotNull Project project) {
+    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
+    for (Library lib : libraries) {
+      if ("Dart SDK".equals(lib.getName())) {
+        return lib;
+      }
+    }
+    return null;
+  }
+
+  @Nullable
+  private static String getPathForProjectLibraryUrl(@NotNull String url, @NotNull Project project) {
+    // Use VirtualFilePointer to resolve the URL, which may contain PROJECT_DIRS or other template variables.
+    // TODO(skybrian) somehow discard the pointer before returning.
+    // This is complicated because it apparently uses both the dispose framework and some kind of reference counting.
+    // For now we will leak it until the project is closed.
+
+    final VirtualFilePointer pointer = VirtualFilePointerManager.getInstance().create(url, project, null);
+
+    final VirtualFile file = pointer.getFile();
+    if (file == null) {
+      return null;
+    }
+
+    return file.getCanonicalPath();
   }
 
   @Nullable
@@ -97,6 +159,45 @@ public class FlutterSdk {
     finally {
       DartPlugin.setPubActionInProgress(false);
     }
+  }
+
+  /**
+   * Runs "flutter --version" and waits for it to complete.
+   * <p>
+   * This ensures that the Dart SDK exists and is up to date.
+   * <p>
+   * Shows an indefinite progress dialog while it's running.
+   * (Must not run in write action.)
+   *
+   * @return true if successful (the Dart SDK exists).
+   */
+  public boolean syncShowingProgress(Project project) {
+    assert !ApplicationManager.getApplication().isWriteAccessAllowed();
+
+    final ProgressManager progress = ProgressManager.getInstance();
+    final AtomicBoolean succeeded = new AtomicBoolean(false);
+
+    progress.runProcessWithProgressSynchronously(() -> {
+      try {
+        progress.getProgressIndicator().setIndeterminate(true);
+        final Process process = startProcess(Command.VERSION, null, null, null);
+        if (process == null) {
+          return;
+        }
+        process.waitFor();
+        if (process.exitValue() != 0) {
+          return;
+        }
+        final LocalFileSystem localFS = LocalFileSystem.getInstance();
+        localFS.refreshAndFindFileByPath(myHomePath + "/bin/cache");
+        succeeded.set(localFS.findFileByPath(myHomePath + "/bin/cache/dart-sdk") != null);
+      }
+      catch (ExecutionException | InterruptedException e) {
+        LOG.warn(e);
+      }
+    }, "Building Flutter Tool", false, project);
+
+    return succeeded.get();
   }
 
   /**
