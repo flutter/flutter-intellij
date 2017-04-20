@@ -5,8 +5,10 @@
  */
 package io.flutter.analytics;
 
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.util.concurrency.QueueProcessor;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.io.IOException;
@@ -157,10 +159,21 @@ public class Analytics {
   private static class HttpTransport implements Transport {
     private final QueueProcessor<Runnable> sendingQueue = QueueProcessor.createRunnableQueueProcessor();
 
+    @Nullable
     private static String createUserAgent() {
       final String locale = Locale.getDefault().toString();
-      final String os = System.getProperty("os.name");
-      return "Mozilla/5.0 (" + os + "; " + os + "; " + os + "; " + locale + ")";
+
+      if (SystemInfo.isWindows) {
+        return "Mozilla/5.0 (Windows; Windows; Windows; " + locale + ")";
+      }
+      else if (SystemInfo.isMac) {
+        return "Mozilla/5.0 (Macintosh; Intel Mac OS X; Macintosh; " + locale + ")";
+      }
+      else if (SystemInfo.isLinux) {
+        return "Mozilla/5.0 (Linux; Linux; Linux; " + locale + ")";
+      }
+
+      return null;
     }
 
     @Override
@@ -181,7 +194,10 @@ public class Analytics {
           conn.setRequestMethod("POST");
           conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
           conn.setRequestProperty("Content-Length", String.valueOf(postDataBytes.length));
-          conn.setRequestProperty("User-Agent", createUserAgent());
+          final String userAgent = createUserAgent();
+          if (userAgent != null) {
+            conn.setRequestProperty("User-Agent", createUserAgent());
+          }
           conn.setDoOutput(true);
           conn.getOutputStream().write(postDataBytes);
 
