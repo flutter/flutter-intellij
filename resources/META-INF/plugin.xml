@@ -248,18 +248,15 @@
     </group>
 
     <!-- main toolbar run actions -->
-    <group id="Flutter.MainToolbarActions.Run">
-      <separator/>
-      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
-              description="Reload"
-              icon="FlutterIcons.HotReload">
-        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
-        <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-      </action>
-      <separator/>
-      <add-to-group group-id="RunContextGroup" anchor="last"/>
-      <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
-    </group>
+    <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
+            description="Reload"
+            icon="FlutterIcons.HotReload">
+      <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
+    </action>
+
+    <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">
       <separator/>
       <reference ref="Flutter.Toolbar.ReloadAction"/>
@@ -287,7 +284,6 @@
     <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
       <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
     </action>
-
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
