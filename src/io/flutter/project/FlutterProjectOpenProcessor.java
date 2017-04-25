@@ -60,9 +60,11 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   }
 
   /**
-   * Opens a Flutter project for the first time.
-   *
-   * For actions that run every time, see {@link ProjectOpenActivity} and {@link io.flutter.FlutterInitializer}.
+   * Runs when a project is opened by selecting the project directly, possibly for import.
+   * <p>
+   * Doesn't run when a project is opened via recent projects menu (and so on). Actions that
+   * should run every time a project is opened should be in
+   * {@link ProjectOpenActivity} or {@link io.flutter.FlutterInitializer}.
    */
   @Nullable
   @Override
