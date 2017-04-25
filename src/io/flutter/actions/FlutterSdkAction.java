@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
@@ -29,8 +30,8 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Base class for Flutter commands.
  * <p>
- * In general actions are executed via {@link #actionPerformed(AnActionEvent)}, and
- * send analytics.  In case an action is performed and analytics should not be
+ * In general actions are executed via {@link #actionPerformed(AnActionEvent)} and
+ * send analytics. In case an action is performed and analytics should not be
  * collected, prefer {@link #perform(FlutterSdk, Project, AnActionEvent, boolean)}.
  */
 public abstract class FlutterSdkAction extends DumbAwareAction {
@@ -56,10 +57,6 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     return pubspec == null ? null : Pair.create(module, pubspec);
   }
 
-  protected void sendActionEvent() {
-    FlutterInitializer.sendAnalyticsAction(this);
-  }
-
   @Override
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
@@ -78,7 +75,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     else {
       final int response = FlutterMessages.showDialog(project, FlutterBundle.message("flutter.sdk.notAvailable.message"),
                                                       FlutterBundle.message("flutter.sdk.notAvailable.title"),
-                                                      new String[]{"Yes, configure","No, thanks"}, -1);
+                                                      new String[]{"Yes, configure", "No, thanks"}, -1);
       if (response == 0) {
         FlutterUtils.openFlutterSettings(project);
       }
@@ -88,11 +85,14 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public final void perform(@NotNull FlutterSdk sdk,
                             @NotNull Project project,
                             @Nullable AnActionEvent event,
-                            @SuppressWarnings("SameParameterValue") boolean logAction)
+                            @SuppressWarnings("SameParameterValue") boolean sendAnalytics)
     throws ExecutionException {
-    if (logAction) {
-      sendActionEvent();
+    if (sendAnalytics) {
+      FlutterInitializer.sendAnalyticsAction(this);
     }
+
+    FileDocumentManager.getInstance().saveAllDocuments();
+
     perform(sdk, project, event);
   }
 
