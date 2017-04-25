@@ -21,8 +21,8 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.ProjectOpenActivity;
 import io.flutter.actions.FlutterPackagesGetAction;
-import io.flutter.actions.FlutterSdkAction;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
@@ -39,16 +39,6 @@ import java.util.Objects;
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class.getName());
-
-  private static void doPerform(@NotNull FlutterSdkAction action, @NotNull Project project) throws ExecutionException {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null) {
-      // Lack of SDK will be flagged elsewhere by inspection.
-      return;
-    }
-
-    action.perform(sdk, project, null);
-  }
 
   private static void handleError(@NotNull Exception e) {
     FlutterMessages.showError("Error opening", e.getMessage());
@@ -69,6 +59,13 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     return FlutterSdkUtil.isFlutterProjectDir(file);
   }
 
+  /**
+   * Runs when a project is opened by selecting the project directly, possibly for import.
+   * <p>
+   * Doesn't run when a project is opened via recent projects menu (and so on). Actions that
+   * should run every time a project is opened should be in
+   * {@link ProjectOpenActivity} or {@link io.flutter.FlutterInitializer}.
+   */
   @Nullable
   @Override
   public Project doOpenProject(@NotNull VirtualFile file, @Nullable Project projectToClose, boolean forceOpenInNewFrame) {
@@ -117,7 +114,10 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     try {
       final VirtualFile packagesFile = FlutterModuleUtils.findPackagesFileFrom(project, null);
       if (!FlutterUtils.exists(packagesFile)) {
-        doPerform(new FlutterPackagesGetAction(), project);
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+        if (sdk != null) {
+          new FlutterPackagesGetAction().perform(sdk, project, null);
+        }
       }
       else {
         final VirtualFile pubspecFile = FlutterModuleUtils.findPubspecFrom(project, null);

@@ -25,6 +25,13 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.event.HyperlinkEvent;
 import java.util.UUID;
 
+/**
+ * Runs actions after the project has started up and the index is up to date.
+ *
+ * @see ProjectOpenActivity for actions that run earlier.
+ * @see io.flutter.project.FlutterProjectOpenProcessor for additional actions that
+ * may run when a project is being imported.
+ */
 public class FlutterInitializer implements StartupActivity {
   private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";

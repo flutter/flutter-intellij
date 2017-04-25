@@ -288,6 +288,7 @@
 
   <extensions defaultExtensionNs="com.intellij">
     <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
+    <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.DeviceService"
                     serviceImplementation="io.flutter.run.daemon.DeviceService"/>

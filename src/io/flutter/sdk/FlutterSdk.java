@@ -18,10 +18,14 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
+import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
@@ -39,6 +43,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
+
+  private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
+
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicBoolean inProgress = new AtomicBoolean(false);
   private final @NotNull String myHomePath;
@@ -55,18 +62,42 @@ public class FlutterSdk {
 
   /**
    * Return the FlutterSdk for the given project.
+   * <p>
+   * Returns null if the Dart SDK is not set or does not exist.
    */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
-    return project.isDisposed() ? null : getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
+    if (project.isDisposed()) {
+      return null;
+    }
+    final DartSdk dartSdk = DartPlugin.getDartSdk(project);
+    if (dartSdk == null) {
+      return null;
+    }
+
+    final String dartPath = dartSdk.getHomePath();
+    final String suffix = "/bin/cache/dart-sdk";
+    if (!dartPath.endsWith(suffix)) {
+      return null;
+    }
+    return forPath(dartPath.substring(0, dartPath.length() - suffix.length()));
   }
 
+  /**
+   * Returns the Flutter SDK for a project that has a possibly broken "Dart SDK" project library.
+   * <p>
+   * (This can happen for a newly-cloned Flutter SDK where the Dart SDK is not cached yet.)
+   */
   @Nullable
-  private static FlutterSdk getFlutterSdkByDartSdk(@Nullable final DartSdk dartSdk) {
-    final String suffix = "/bin/cache/dart-sdk";
-    final String dartPath = dartSdk == null ? null : dartSdk.getHomePath();
-    return dartPath != null && dartPath.endsWith(suffix) ? forPath(dartPath.substring(0, dartPath.length() - suffix.length()))
-                                                         : null;
+  public static FlutterSdk getIncomplete(@NotNull final Project project) {
+    if (project.isDisposed()) {
+      return null;
+    }
+    final Library lib = getDartSdkLibrary(project);
+    if (lib == null) {
+      return null;
+    }
+    return getFlutterFromDartSdkLibrary(lib, project.getBaseDir());
   }
 
   public static FlutterSdk forPath(@NotNull final String path) {
@@ -100,9 +131,45 @@ public class FlutterSdk {
   }
 
   /**
+   * Runs "flutter --version" and waits for it to complete.
+   * <p>
+   * This ensures that the Dart SDK exists and is up to date.
+   * <p>
+   * If project is not null, displays output in a console.
+   *
+   * @return true if successful (the Dart SDK exists).
+   */
+  public boolean sync(@Nullable Project project) {
+    try {
+      final Process process = runProject(project, "flutter --version", "--version");
+      if (process == null) {
+        return false;
+      }
+      process.waitFor();
+      if (process.exitValue() != 0) {
+        return false;
+      }
+      final VirtualFile flutterBin = LocalFileSystem.getInstance().findFileByPath(myHomePath + "/bin");
+      if (flutterBin == null) {
+        return false;
+      }
+      flutterBin.refresh(false, true);
+      return flutterBin.findFileByRelativePath("cache/dart-sdk") != null;
+    }
+    catch (ExecutionException | InterruptedException e) {
+      LOG.warn(e);
+      return false;
+    }
+  }
+
+  /**
    * Starts running a flutter command.
    * <p>
-   * Returns the process if successful.
+   * If a module is supplied, shows output in the appropriate console for that module.
+   * <p>
+   * Returns the process if successfully started.
+   * <p>
+   * Doesn't run the comand if another command is already running.
    */
   @Nullable
   public Process startProcess(@NotNull Command cmd,
@@ -160,9 +227,19 @@ public class FlutterSdk {
     }
   }
 
-  public void runProject(@NotNull Project project,
-                         @NotNull String title,
-                         @NotNull String... args)
+  /**
+   * Starts running a flutter command that's not associated with any particular module's console.
+   * <p>
+   * If a project is supplied, shows output in a console.
+   * <p>
+   * Returns the process if successfully started.
+   * <p>
+   * Doesn't run the comand if another command is already running.
+   */
+  @Nullable
+  public Process runProject(@Nullable Project project,
+                            @NotNull String title,
+                            @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
     final GeneralCommandLine command = new GeneralCommandLine();
@@ -173,28 +250,35 @@ public class FlutterSdk {
     final String[] toolArgs = ArrayUtil.prepend("--no-color", args);
     command.addParameters(toolArgs);
 
+    if (!inProgress.compareAndSet(false, true)) {
+      return null;
+    }
+
     try {
-      if (inProgress.compareAndSet(false, true)) {
-        final OSProcessHandler handler = new OSProcessHandler(command);
-        handler.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(final ProcessEvent event) {
-            inProgress.set(false);
-            printExitMessage(project, null, event.getExitCode());
-          }
-        });
+      final OSProcessHandler handler = new OSProcessHandler(command);
+      handler.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void processTerminated(final ProcessEvent event) {
+          inProgress.set(false);
+          printExitMessage(project, null, event.getExitCode());
+        }
+      });
 
-        FlutterConsoleHelper.attach(project, handler, () -> startListening(handler));
-
-        // Send the command to analytics.
-        FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
+      if (project != null) {
+        ApplicationManager.getApplication().invokeAndWait(
+          () -> FlutterConsoleHelper.attach(project, handler, () -> startListening(handler)));
       }
+
+      // Send the command to analytics.
+      FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
+      return handler.getProcess();
     }
     catch (ExecutionException e) {
       inProgress.set(false);
       FlutterMessages.showError(
         title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+      return null;
     }
   }
 
@@ -212,9 +296,36 @@ public class FlutterSdk {
     return myVersion;
   }
 
-  @NotNull
-  public String getDartSdkPath() throws ExecutionException {
+  /**
+   * Returns the path to the Dart SDK cached within the Flutter SDK, or null if it doesn't exist.
+   */
+  @Nullable
+  public String getDartSdkPath() {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
+  }
+
+  @Nullable
+  private static Library getDartSdkLibrary(@NotNull Project project) {
+    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
+    for (Library lib : libraries) {
+      if ("Dart SDK".equals(lib.getName())) {
+        return lib;
+      }
+    }
+    return null;
+  }
+
+  @Nullable
+  private static FlutterSdk getFlutterFromDartSdkLibrary(Library lib, VirtualFile projectDir) {
+    final String[] urls = lib.getUrls(OrderRootType.CLASSES);
+    for (String url : urls) {
+      if (url.endsWith(DART_CORE_SUFFIX)) {
+        final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
+        final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
+        return file == null ? null : new FlutterSdk(file.getPath());
+      }
+    }
+    return null;
   }
 
   public enum Command {

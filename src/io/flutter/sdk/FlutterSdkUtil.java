@@ -110,7 +110,11 @@ public class FlutterSdkUtil {
 
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    return sdkRelativePathTo(sdkPath, "bin", flutterScriptName());
+    final String path = findDescendant(sdkPath, "/bin/" + flutterScriptName());
+    if (path == null) {
+      throw new ExecutionException("Flutter SDK is not configured");
+    }
+    return path;
   }
 
   @NotNull
@@ -118,22 +122,21 @@ public class FlutterSdkUtil {
     return SystemInfo.isWindows ? "flutter.bat" : "flutter";
   }
 
-  @NotNull
-  public static String pathToDartSdk(@NotNull String sdkPath) throws ExecutionException {
-    return sdkRelativePathTo(sdkPath, "bin", "cache", "dart-sdk");
+  /**
+   * Returns the path to the Dart SDK within a Flutter SDK, or null if it doesn't exist.
+   */
+  @Nullable
+  public static String pathToDartSdk(@NotNull String flutterSdkPath) {
+    return findDescendant(flutterSdkPath, "/bin/cache/dart-sdk");
   }
 
-  @NotNull
-  private static String sdkRelativePathTo(@NotNull String sdkPath, @NotNull String... segments) throws ExecutionException {
-    VirtualFile child = LocalFileSystem.getInstance().findFileByPath(sdkPath);
-    if (child == null) throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    for (String segment : segments) {
-      child = child.findChild(segment);
-      if (child == null) {
-        throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-      }
+  @Nullable
+  private static String findDescendant(@NotNull String flutterSdkPath, @NotNull String path) {
+    final VirtualFile file = LocalFileSystem.getInstance().refreshAndFindFileByPath(flutterSdkPath + path);
+    if (file == null || !file.exists()) {
+      return null;
     }
-    return child.getPath();
+    return file.getPath();
   }
 
   public static boolean isFlutterSdkHome(@NotNull final String path) {

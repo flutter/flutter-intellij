@@ -233,15 +233,13 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     model.addContentEntry(baseDir);
 
     runFlutterCreate(sdk, baseDir, model.getModule());
+    final String dartSdkPath = sdk.getDartSdkPath();
+    if (dartSdkPath == null) {
+      throw new ConfigurationException("unable to get Dart SDK"); // shouldn't happen; we just created it.
+    }
 
-    try {
-      DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
-      FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
-    }
-    catch (ExecutionException e) {
-      LOG.warn("Error configuring the Flutter SDK.", e);
-      throw new ConfigurationException("Error configuring Flutter SDK");
-    }
+    DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
+    FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
