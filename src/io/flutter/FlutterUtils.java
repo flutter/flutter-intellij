@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
+import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -35,11 +36,7 @@ public class FlutterUtils {
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean isFlutteryFile(@NotNull VirtualFile file) {
-    return isDartFile(file) || isPubspecFile(file);
-  }
-
-  public static boolean isPubspecFile(@NotNull VirtualFile file) {
-    return Objects.equals(file.getName(), FlutterConstants.PUBSPEC_YAML);
+    return isDartFile(file) || PubRoot.isPubspec(file);
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {

@@ -22,8 +22,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,16 +45,15 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     Module module = e == null ? null : LangDataKeys.MODULE.getData(e.getDataContext());
     final PsiFile psiFile = e == null ? null : CommonDataKeys.PSI_FILE.getData(e.getDataContext());
 
-    VirtualFile pubspec = FlutterModuleUtils.findPubspecFrom(project, psiFile);
-    if (pubspec == null) {
-      pubspec = FlutterModuleUtils.findPubspecFrom(module);
+    PubRoot root = psiFile == null ? null : PubRoot.forPsiFile(psiFile);
+    if (root == null) root = PubRoot.forProjectWithRefresh(project);
+    if (root == null && module != null) root = PubRoot.forModuleWithRefresh(module);
+
+    if (module == null && root != null) {
+      module = ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(root.getPubspec());
     }
 
-    if (module == null && pubspec != null) {
-      module = ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
-    }
-
-    return pubspec == null ? null : Pair.create(module, pubspec);
+    return root == null ? null : Pair.create(module, root.getPubspec());
   }
 
   @Override

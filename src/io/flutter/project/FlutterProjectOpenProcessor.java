@@ -20,11 +20,10 @@ import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
 import io.flutter.ProjectOpenActivity;
 import io.flutter.actions.FlutterPackagesGetAction;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,7 +55,9 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Override
   public boolean canOpenProject(@Nullable VirtualFile file) {
-    return FlutterSdkUtil.isFlutterProjectDir(file);
+    if (file == null) return false;
+    final PubRoot root = PubRoot.forDirectoryWithRefresh(file);
+    return root != null && root.declaresFlutter();
   }
 
   /**
@@ -101,10 +102,10 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
         }
 
         final Module module = modules.get(0);
-
-        final FlutterModuleUtils.FileWithContext main = FlutterModuleUtils.findFlutterMain(module);
+        final PubRoot root = PubRoot.forModuleWithRefresh(module);
+        final VirtualFile main = root == null ? null : root.getLibMain();
         if (main != null) {
-          FlutterModuleUtils.createRunConfig(project, main.file);
+          FlutterModuleUtils.createRunConfig(project, main);
         }
 
         FlutterModuleUtils.setFlutterModuleAndReload(module, project);
@@ -112,16 +113,15 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     }
 
     try {
-      final VirtualFile packagesFile = FlutterModuleUtils.findPackagesFileFrom(project, null);
-      if (!FlutterUtils.exists(packagesFile)) {
+      final PubRoot root = PubRoot.forProjectWithRefresh(project);
+      if (root != null && root.getPackages() == null) {
         final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
         if (sdk != null) {
           new FlutterPackagesGetAction().perform(sdk, project, null);
         }
       }
       else {
-        final VirtualFile pubspecFile = FlutterModuleUtils.findPubspecFrom(project, null);
-        if (FlutterUtils.exists(pubspecFile) && pubspecFile.getTimeStamp() > packagesFile.getTimeStamp()) {
+        if (root != null && !root.hasUpToDatePackages()) {
           Notifications.Bus.notify(new PackagesOutOfDateNotification(project));
         }
       }

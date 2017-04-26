@@ -12,11 +12,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,7 +32,7 @@ public class FlutterPackagesGetAction extends FlutterSdkAction {
         @Override
         public void processTerminated(ProcessEvent event) {
           // Refresh to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
-          LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/" + FlutterConstants.PACKAGES_FILE);
+          PubRoot.forDirectoryWithRefresh(workingDir);
         }
       });
     }
