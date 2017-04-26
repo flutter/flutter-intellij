@@ -25,6 +25,7 @@ import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -218,13 +219,6 @@ public class FlutterSdkUtil {
     if (!isFlutterSdkHome(sdkRootPath)) return FlutterBundle.message("error.sdk.not.found.in.specified.location");
 
     return null;
-  }
-
-  public static boolean isFlutterProjectDir(@Nullable VirtualFile dir) {
-    if (dir == null || !dir.isDirectory()) return false;
-
-    final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
-    return FlutterModuleUtils.declaresFlutterDependency(pubspec);
   }
 
   public static void setFlutterSdkPath(@NotNull final Project project, @NotNull final String flutterSdkPath) {

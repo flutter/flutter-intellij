@@ -18,7 +18,7 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.ui.HyperlinkLabel;
 import icons.FlutterIcons;
-import io.flutter.FlutterConstants;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +42,7 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       return null;
     }
 
-    if (!FlutterConstants.PUBSPEC_YAML.equalsIgnoreCase(file.getName())) {
+    if (!PubRoot.isPubspec(file)) {
       return null;
     }
 
