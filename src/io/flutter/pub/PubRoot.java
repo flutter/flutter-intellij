@@ -137,8 +137,8 @@ public class PubRoot {
    * (The existence check is based on the filesystem cache; doesn't refresh anything.)
    */
   @Nullable
-  public static PubRoot forDirectory(@NotNull VirtualFile dir) {
-    if (!dir.isDirectory()) {
+  public static PubRoot forDirectory(@Nullable VirtualFile dir) {
+    if (dir == null || !dir.isDirectory()) {
       return null;
     }
 
