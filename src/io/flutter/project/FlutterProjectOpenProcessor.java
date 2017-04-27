@@ -173,6 +173,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
           }
 
           try {
+            // TODO(skybrian) analytics?
             sdk.startPackagesGet(root, project);
           }
           catch (ExecutionException e) {

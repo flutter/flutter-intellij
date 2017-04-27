@@ -75,6 +75,7 @@ public class FlutterConsoleFilter implements Filter {
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk != null) {
         try {
+          // TODO(skybrian) analytics?
           sdk.startProcessWithoutModule(project, "Flutter doctor", "doctor");
         }
         catch (ExecutionException e) {

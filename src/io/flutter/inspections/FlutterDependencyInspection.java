@@ -121,6 +121,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
       if (root == null) return;
 
       try {
+        // TODO(skybrian) analytics?
         mySdkAction.run(sdk, root, project);
       } catch (ExecutionException e) {
         FlutterMessages.showError("Error performing action", e.getMessage());
