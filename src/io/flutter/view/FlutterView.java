@@ -5,6 +5,7 @@
  */
 package io.flutter.view;
 
+import com.google.gson.JsonObject;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -36,6 +37,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 // TODO(devoncarew): Display an fps graph.
 // TODO(devoncarew): Have a pref setting for opening when starting a debug session.
@@ -254,8 +256,6 @@ class TimeDilationAction extends AbstractToggleableAction {
 }
 
 class TogglePlatformAction extends AbstractFlutterAction {
-  private boolean isAndroid = false;
-
   TogglePlatformAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.togglePlatform.text"), FlutterBundle.message("flutter.view.togglePlatform.description"),
           AllIcons.RunConfigurations.Application);
@@ -263,18 +263,26 @@ class TogglePlatformAction extends AbstractFlutterAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    isAndroid = !isAndroid;
-
     // ext.flutter.platformOverride, value: iOS, android
-    final Map<String, Object> params = new HashMap<>();
-    params.put("value", isAndroid ? "android" : "iOS");
-    view.getFlutterApp().callServiceExtension("ext.flutter.platformOverride", params);
+    final CompletableFuture<JsonObject> result = view.getFlutterApp().callServiceExtension(
+      "ext.flutter.platformOverride", new HashMap<>());
+    result.thenAccept(obj -> {
+      if (obj == null) {
+        return;
+      }
 
-    final ConsoleView console = view.getFlutterApp().getConsole();
-    if (console != null) {
-      console.print(FlutterBundle.message("flutter.view.togglePlatform.output", isAndroid ? "Android" : "iOS"),
-                    ConsoleViewContentType.SYSTEM_OUTPUT);
-    }
+      final boolean switchToAndroid = !"android".equals(obj.get("value").getAsString());
+
+      final Map<String, Object> params = new HashMap<>();
+      params.put("value", switchToAndroid ? "android" : "iOS");
+      view.getFlutterApp().callServiceExtension("ext.flutter.platformOverride", params);
+
+      final ConsoleView console = view.getFlutterApp().getConsole();
+      if (console != null) {
+        console.print(FlutterBundle.message("flutter.view.togglePlatform.output", switchToAndroid ? "Android" : "iOS"),
+                      ConsoleViewContentType.SYSTEM_OUTPUT);
+      }
+    });
   }
 }
 
