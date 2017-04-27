@@ -6,7 +6,6 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -26,6 +25,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -198,6 +198,37 @@ public class FlutterApp {
     }
     myDaemonApi.restartApp(myAppId, false, pauseAfterRestart)
       .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
+  }
+
+  public CompletableFuture<Boolean> togglePlatform() {
+    if (myAppId == null) {
+      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      return CompletableFuture.completedFuture(null);
+    }
+
+    final CompletableFuture<JsonObject> result = callServiceExtension("ext.flutter.platformOverride");
+    return result.thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj != null && "android".equals(obj.get("value").getAsString());
+    });
+  }
+
+  public CompletableFuture<Boolean> togglePlatform(boolean showAndroid) {
+    if (myAppId == null) {
+      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      return CompletableFuture.completedFuture(null);
+    }
+
+    final Map<String, Object> params = new HashMap<>();
+    params.put("value", showAndroid ? "android" : "iOS");
+    return callServiceExtension("ext.flutter.platformOverride", params).thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj != null && "android".equals(obj.get("value").getAsString());
+    });
+  }
+
+  public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
+    return callServiceExtension(methodName, new HashMap<>());
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName, Map<String, Object> params) {

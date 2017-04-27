@@ -181,8 +181,8 @@ public class DaemonApi {
     cmd.complete(result);
   }
 
-  private @Nullable
-  Command takePending(int id) {
+  @Nullable
+  private Command takePending(int id) {
     final Command cmd;
     synchronized (pending) {
       cmd = pending.remove(id);
@@ -227,8 +227,8 @@ public class DaemonApi {
     }
   }
 
-  private static @Nullable
-  PrintWriter getStdin(ProcessHandler processHandler) {
+  @Nullable
+  private static PrintWriter getStdin(ProcessHandler processHandler) {
     final OutputStream stdin = processHandler.getProcessInput();
     if (stdin == null) return null;
     return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));

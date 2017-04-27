@@ -5,9 +5,7 @@
  */
 package io.flutter.view;
 
-import com.google.gson.JsonObject;
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
@@ -37,7 +35,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 // TODO(devoncarew): Display an fps graph.
 // TODO(devoncarew): Have a pref setting for opening when starting a debug session.
@@ -263,25 +260,21 @@ class TogglePlatformAction extends AbstractFlutterAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    // ext.flutter.platformOverride, value: iOS, android
-    final CompletableFuture<JsonObject> result = view.getFlutterApp().callServiceExtension(
-      "ext.flutter.platformOverride", new HashMap<>());
-    result.thenAccept(obj -> {
-      if (obj == null) {
+    final FlutterApp app = view.getFlutterApp();
+
+    app.togglePlatform().thenAccept(isAndroid -> {
+      if (isAndroid == null) {
         return;
       }
 
-      final boolean switchToAndroid = !"android".equals(obj.get("value").getAsString());
-
-      final Map<String, Object> params = new HashMap<>();
-      params.put("value", switchToAndroid ? "android" : "iOS");
-      view.getFlutterApp().callServiceExtension("ext.flutter.platformOverride", params);
-
-      final ConsoleView console = view.getFlutterApp().getConsole();
-      if (console != null) {
-        console.print(FlutterBundle.message("flutter.view.togglePlatform.output", switchToAndroid ? "Android" : "iOS"),
-                      ConsoleViewContentType.SYSTEM_OUTPUT);
-      }
+      app.togglePlatform(!isAndroid).thenAccept(isNowAndroid -> {
+        if (app.getConsole() != null && isNowAndroid != null) {
+          app.getConsole().print(
+            FlutterBundle.message("flutter.view.togglePlatform.output",
+                                  isNowAndroid ? "Android" : "iOS"),
+            ConsoleViewContentType.SYSTEM_OUTPUT);
+        }
+      });
     });
   }
 }
