@@ -5,6 +5,9 @@
  */
 package io.flutter.pub;
 
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectFileIndex;
@@ -73,6 +76,32 @@ public class PubRoot {
       return null;
     }
     return roots.get(0).refresh();
+  }
+
+  /**
+   * Returns the appropriate pub root for an event.
+   * <p>
+   * Refreshes the returned pubroot's directory. (Not any others.)
+   */
+  @Nullable
+  public static PubRoot forEventWithRefresh(@NotNull final AnActionEvent event) {
+    final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(event.getDataContext());
+    if (psiFile != null) {
+      final PubRoot root = PubRoot.forPsiFile(psiFile);
+      return root == null ? null : root.refresh();
+    }
+
+    final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
+    if (module != null) {
+      return PubRoot.forModuleWithRefresh(module);
+    }
+
+    final Project project = event.getData(CommonDataKeys.PROJECT);
+    if (project != null) {
+      return PubRoot.forProjectWithRefresh(project);
+    }
+
+    return null;
   }
 
   /**
@@ -205,6 +234,15 @@ public class PubRoot {
   @Nullable
   public VirtualFile getLibMain() {
     return lib == null ? null : lib.findChild("main.dart");
+  }
+
+  /**
+   * Returns the module containing this pub root, if any.
+   */
+  @Nullable
+  public Module getModule(@NotNull Project project) {
+    if (project.isDisposed()) return null;
+    return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
   }
 
   public static boolean isPubspec(@NotNull VirtualFile file) {

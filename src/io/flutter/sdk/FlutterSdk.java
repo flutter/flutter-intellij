@@ -35,6 +35,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -141,7 +142,7 @@ public class FlutterSdk {
    */
   public boolean sync(@Nullable Project project) {
     try {
-      final Process process = runProject(project, "flutter --version", "--version");
+      final Process process = startProcessWithoutModule(project, "flutter --version", "--version");
       if (process == null) {
         return false;
       }
@@ -160,6 +161,45 @@ public class FlutterSdk {
       LOG.warn(e);
       return false;
     }
+  }
+
+  /**
+   * Starts running 'flutter packages get' on the given pub root provided it's in one of this project's modules.
+   * <p>
+   * Shows output in the console associated with the given module.
+   * <p>
+   * Returns the process if successfully started.
+   */
+  public Process startPackagesGet(@NotNull PubRoot root, @NotNull Project project) throws ExecutionException {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+
+    return startProcess(Command.PACKAGES_GET, module, root.getRoot(), new ProcessAdapter() {
+      @Override
+      public void processTerminated(ProcessEvent event) {
+        // Refresh to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
+        root.refresh();
+      }
+    });
+  }
+
+  /**
+   * Starts running 'flutter packages upgrade' on the given pub root.
+   * <p>
+   * Shows output in the console associated with the given module.
+   * <p>
+   * Returns the process if successfully started.
+   */
+  public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) throws ExecutionException {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+
+    return startProcess(Command.PACKAGES_UPGRADE, module, root.getRoot(), new ProcessAdapter() {
+      @Override
+      public void processTerminated(ProcessEvent event) {
+        root.refresh();
+      }
+    });
   }
 
   /**
@@ -237,9 +277,9 @@ public class FlutterSdk {
    * Doesn't run the comand if another command is already running.
    */
   @Nullable
-  public Process runProject(@Nullable Project project,
-                            @NotNull String title,
-                            @NotNull String... args)
+  public Process startProcessWithoutModule(@Nullable Project project,
+                                           @NotNull String title,
+                                           @NotNull String... args)
     throws ExecutionException {
     final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
     final GeneralCommandLine command = new GeneralCommandLine();

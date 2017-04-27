@@ -6,14 +6,15 @@
 package io.flutter.actions;
 
 import com.intellij.execution.ExecutionException;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
   @Override
-  public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
-    sdk.runProject(project, "Flutter doctor", "doctor");
+  public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) throws ExecutionException {
+    sdk.startProcessWithoutModule(project, "Flutter doctor", "doctor");
   }
 }
