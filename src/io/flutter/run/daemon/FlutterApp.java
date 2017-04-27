@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
+import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
@@ -24,12 +25,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -116,9 +115,9 @@ public class FlutterApp {
    */
   @NotNull
   public static FlutterApp start(Project project, @NotNull RunMode mode,
-                          @NotNull GeneralCommandLine command,
-                          @NotNull String analyticsStart,
-                          @NotNull String analyticsStop)
+                                 @NotNull GeneralCommandLine command,
+                                 @NotNull String analyticsStart,
+                                 @NotNull String analyticsStop)
     throws ExecutionException {
 
     final ProcessHandler process = new OSProcessHandler(command);
@@ -201,12 +200,43 @@ public class FlutterApp {
       .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
   }
 
-  public void callServiceExtension(String methodName, Map<String, Object> params) {
+  public CompletableFuture<Boolean> togglePlatform() {
+    if (myAppId == null) {
+      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      return CompletableFuture.completedFuture(null);
+    }
+
+    final CompletableFuture<JsonObject> result = callServiceExtension("ext.flutter.platformOverride");
+    return result.thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj != null && "android".equals(obj.get("value").getAsString());
+    });
+  }
+
+  public CompletableFuture<Boolean> togglePlatform(boolean showAndroid) {
+    if (myAppId == null) {
+      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      return CompletableFuture.completedFuture(null);
+    }
+
+    final Map<String, Object> params = new HashMap<>();
+    params.put("value", showAndroid ? "android" : "iOS");
+    return callServiceExtension("ext.flutter.platformOverride", params).thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj != null && "android".equals(obj.get("value").getAsString());
+    });
+  }
+
+  public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
+    return callServiceExtension(methodName, new HashMap<>());
+  }
+
+  public CompletableFuture<JsonObject> callServiceExtension(String methodName, Map<String, Object> params) {
     if (myAppId == null) {
       LOG.warn("cannot invoke " + methodName + " on Flutter app because app id is not set");
-      return;
+      return CompletableFuture.completedFuture(null);
     }
-    myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
+    return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
   }
 
   public void setConsole(@Nullable ConsoleView console) {
