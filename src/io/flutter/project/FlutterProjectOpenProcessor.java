@@ -21,7 +21,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.ProjectOpenActivity;
-import io.flutter.actions.FlutterPackagesGetAction;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
