@@ -6,23 +6,15 @@
 package io.flutter.actions;
 
 import com.intellij.execution.ExecutionException;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterUpgradeAction extends FlutterSdkAction {
   @Override
-  public void perform(@NotNull FlutterSdk sdk, @NotNull Project project, AnActionEvent event) throws ExecutionException {
-    final Pair<Module, VirtualFile> pair = getModuleAndPubspecYamlFile(project, event);
-    if (pair != null) {
-      sdk.startProcess(FlutterSdk.Command.UPGRADE, pair.first, pair.second.getParent(), null);
-    }
-    else {
-      sdk.runProject(project, "Flutter upgrade", "upgrade");
-    }
+  public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) throws ExecutionException {
+    sdk.startProcessWithoutModule(project, "Flutter upgrade", "upgrade");
   }
 }

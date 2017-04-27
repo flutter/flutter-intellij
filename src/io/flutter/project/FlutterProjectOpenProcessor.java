@@ -109,6 +109,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
         }
 
         FlutterModuleUtils.setFlutterModuleAndReload(module, project);
+        return;
       }
     }
 
@@ -117,7 +118,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
       if (root != null && root.getPackages() == null) {
         final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
         if (sdk != null) {
-          new FlutterPackagesGetAction().perform(sdk, project, null);
+          sdk.startPackagesGet(root, project);
         }
       }
       else {
@@ -148,7 +149,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     @NotNull
     private final Project myProject;
 
-    public PackagesOutOfDateNotification(final @NotNull Project project) {
+    public PackagesOutOfDateNotification(@NotNull Project project) {
       super("Flutter Packages", FlutterIcons.Flutter, "Flutter packages get.",
             null, "The pubspec.yaml file has been modified since " +
                   "the last time 'flutter packages get' was run.",
@@ -161,11 +162,19 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
         public void actionPerformed(AnActionEvent event) {
           expire();
 
+          final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+          if (sdk == null) {
+            return;
+          }
+
+          final PubRoot root = PubRoot.forProjectWithRefresh(project);
+          if (root == null) {
+            return;
+          }
+
           try {
-            final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-            if (sdk != null) {
-              new FlutterPackagesGetAction().perform(sdk, project, null);
-            }
+            // TODO(skybrian) analytics?
+            sdk.startPackagesGet(root, project);
           }
           catch (ExecutionException e) {
             handleError(e);
