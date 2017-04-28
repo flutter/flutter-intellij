@@ -28,7 +28,7 @@ public class ToolWindowTracker extends ToolWindowManagerAdapter {
   private final Analytics myAnalytics;
   private final ToolWindowManagerEx myToolWindowManager;
 
-  private String currentWindow;
+  private String currentWindowId;
 
   private ToolWindowTracker(@NotNull Project project, @NotNull Analytics analytics) {
     myAnalytics = analytics;
@@ -45,16 +45,16 @@ public class ToolWindowTracker extends ToolWindowManagerAdapter {
   }
 
   private void update() {
-    final String newWindow = calcToolWindow();
+    final String newWindow = findWindowId();
 
-    if (!StringUtil.equals(newWindow, currentWindow)) {
-      currentWindow = newWindow;
-      myAnalytics.sendScreenView(currentWindow);
+    if (!StringUtil.equals(newWindow, currentWindowId)) {
+      currentWindowId = newWindow;
+      myAnalytics.sendScreenView(currentWindowId);
     }
   }
 
   @NotNull
-  private String calcToolWindow() {
+  private String findWindowId() {
     final String newWindow = myToolWindowManager.getActiveToolWindowId();
     return newWindow == null ? "editor" : newWindow.toLowerCase();
   }
