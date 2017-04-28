@@ -58,7 +58,7 @@ public class Testing {
   @SuppressWarnings("RedundantTypeArguments")
   public static <T> T computeInWriteAction(ThrowableComputable<T, Exception> callback) throws Exception {
     return computeOnDispatchThread(() -> {
-      Application app = ApplicationManager.getApplication();
+      final Application app = ApplicationManager.getApplication();
       return app.<T, Exception>runWriteAction(callback);
     });
   }

@@ -21,11 +21,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
-import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterConstants;
 import io.flutter.dart.DartPlugin;
-import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +31,6 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
 
 public class FlutterSdkUtil {
   /** The environment variable to use to tell the flutter tool which app is driving it. */
@@ -62,20 +58,23 @@ public class FlutterSdkUtil {
 
   private static void updateKnownPaths(@SuppressWarnings("SameParameterValue") @NotNull final String propertyKey,
                                        @NotNull final String newPath) {
-    final Set<String> known = new THashSet<>();
+    final Set<String> allPaths = new LinkedHashSet<>();
 
-    final String[] oldKnownPaths = PropertiesComponent.getInstance().getValues(propertyKey);
-    if (oldKnownPaths != null) {
-      known.addAll(Arrays.asList(oldKnownPaths));
+    // Add the new value first; this ensures that it's the 'default' flutter sdk.
+    allPaths.add(newPath);
+
+    // Add the existing known paths.
+    final String[] oldPaths = PropertiesComponent.getInstance().getValues(propertyKey);
+    if (oldPaths != null) {
+      allPaths.addAll(Arrays.asList(oldPaths));
     }
 
-    known.add(newPath);
-
-    if (known.isEmpty()) {
+    // Store the values back.
+    if (allPaths.isEmpty()) {
       PropertiesComponent.getInstance().unsetValue(propertyKey);
     }
     else {
-      PropertiesComponent.getInstance().setValues(propertyKey, ArrayUtil.toStringArray(known));
+      PropertiesComponent.getInstance().setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
     }
   }
 
