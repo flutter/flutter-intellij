@@ -13,9 +13,11 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
@@ -26,15 +28,17 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -85,7 +89,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final FlutterSdk sdk = myStep.getFlutterSdk();
-    if (!runFlutterCreateWithProgress(baseDir, sdk, project)) {
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project);
+    if (root == null) {
       Messages.showErrorDialog("Flutter create command was unsuccessful", "Error");
       return null;
     }
@@ -97,6 +102,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       return result;
     }
     final Module flutter = result.get(0);
+    setUpMain(root, flutter);
 
     final Module android = addAndroidModule(project, model, basePath);
     if (android != null) {
@@ -174,51 +180,68 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   /**
    * Runs flutter create without showing a console, but with an indeterminate progress dialog.
+   * <p>
+   * Returns the PubRoot if successful.
    */
-  private static boolean runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
+  @Nullable
+  private static PubRoot runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
                                                       @NotNull FlutterSdk sdk,
                                                       @NotNull Project project) {
     final ProgressManager progress = ProgressManager.getInstance();
-    final AtomicBoolean succeeded = new AtomicBoolean(false);
+    final AtomicReference<PubRoot> result = new AtomicReference<>(null);
 
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
-      try {
-        runFlutterCreate(sdk, baseDir, null);
-        succeeded.set(true);
-      }
-      catch (ConfigurationException e) {
-        LOG.warn(e);
-      }
+      result.set(runFlutterCreate(sdk, baseDir, null));
     }, "Creating Flutter Project", false, project);
 
-    return succeeded.get();
+    return result.get();
   }
 
   /**
    * Runs flutter create. If the module parameter isn't null, shows output in a console.
+   * <p>
+   * Returns the PubRoot if successful.
    */
-  private static void runFlutterCreate(@NotNull FlutterSdk sdk,
-                                       @NotNull VirtualFile baseDir,
-                                       @Nullable Module module)
-    throws ConfigurationException {
+  @Nullable
+  private static PubRoot runFlutterCreate(@NotNull FlutterSdk sdk,
+                                          @NotNull VirtualFile baseDir,
+                                          @Nullable Module module) {
     // Create files.
     try {
       final Process process =
         sdk.startProcess(FlutterSdk.Command.CREATE, module, baseDir, null, baseDir.getPath());
-      if (process != null) {
-        // Wait for process to finish. (We overwrite some files, so make sure we lose the race.)
-        final int exitCode = process.waitFor();
-        if (exitCode == 0) {
-          baseDir.refresh(false, true);
-          return; // success
-        }
+      if (process == null) {
+        return null;
+      }
+
+      // Wait for process to finish. (We overwrite some files, so make sure we lose the race.)
+      final int exitCode = process.waitFor();
+      if (exitCode != 0) {
+        return null;
       }
     }
     catch (ExecutionException | InterruptedException e) {
       LOG.warn(e);
+      return null;
     }
-    throw new ConfigurationException("flutter create command was unsuccessful");
+
+    baseDir.refresh(false, true);
+    return PubRoot.forDirectory(baseDir);
+  }
+
+  /**
+   * Creates the run configuration and shows lib/main.dart.
+   */
+  private static void setUpMain(@NotNull PubRoot root, @NotNull Module module) {
+    final VirtualFile main = root.getLibMain();
+    if (main != null) {
+      FlutterModuleUtils.createRunConfig(module.getProject(), main);
+      DumbService.getInstance(module.getProject()).runWhenSmart(() -> {
+        final FileEditorManager manager = FileEditorManager.getInstance(module.getProject());
+        manager.openFile(main, true);
+      });
+    }
   }
 
   /**
@@ -232,7 +255,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
     model.addContentEntry(baseDir);
 
-    runFlutterCreate(sdk, baseDir, model.getModule());
+    final PubRoot root = runFlutterCreate(sdk, baseDir, model.getModule());
+    if (root != null) {
+      setUpMain(root, model.getModule());
+    }
     final String dartSdkPath = sdk.getDartSdkPath();
     if (dartSdkPath == null) {
       throw new ConfigurationException("unable to get Dart SDK"); // shouldn't happen; we just created it.
