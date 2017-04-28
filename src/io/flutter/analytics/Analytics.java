@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-// TODO(devoncarew): Investigate sending send view activations for Dart or Flutter views.
-
 /**
  * Lightweight Google Analytics integration.
  */

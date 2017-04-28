@@ -17,6 +17,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
+import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.view.FlutterViewFactory;
@@ -131,7 +132,8 @@ public class FlutterInitializer implements StartupActivity {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
-          getAnalytics();
+          final Analytics analytics = getAnalytics();
+          ToolWindowTracker.track(project, analytics);
         }
       });
       notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.decline")) {
@@ -144,7 +146,8 @@ public class FlutterInitializer implements StartupActivity {
       Notifications.Bus.notify(notification);
     }
     else {
-      getAnalytics();
+      final Analytics analytics = getAnalytics();
+      ToolWindowTracker.track(project, analytics);
     }
   }
 }
