@@ -12,10 +12,17 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * This class interfaces with the IntelliJ tool window manager and reports tool window
+ * usage to analytics.
+ */
 public class ToolWindowTracker extends ToolWindowManagerAdapter {
 
   public static void track(@NotNull Project project, @NotNull Analytics analytics) {
-    new ToolWindowTracker(project, analytics);
+    // We only track for flutter projects.
+    if (FlutterModuleUtils.usesFlutter(project)) {
+      new ToolWindowTracker(project, analytics);
+    }
   }
 
   private final Analytics myAnalytics;
@@ -25,13 +32,11 @@ public class ToolWindowTracker extends ToolWindowManagerAdapter {
 
   private ToolWindowTracker(@NotNull Project project, @NotNull Analytics analytics) {
     myAnalytics = analytics;
-    myToolWindowManager = ToolWindowManagerEx.getInstanceEx(project);
 
-    // We only track for flutter projects.
-    if (FlutterModuleUtils.usesFlutter(project)) {
-      myToolWindowManager.addToolWindowManagerListener(this);
-      update();
-    }
+    myToolWindowManager = ToolWindowManagerEx.getInstanceEx(project);
+    myToolWindowManager.addToolWindowManagerListener(this);
+
+    update();
   }
 
   @Override
