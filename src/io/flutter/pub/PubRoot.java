@@ -245,6 +245,11 @@ public class PubRoot {
     return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
   }
 
+  @Override
+  public String toString() {
+    return "PubRoot(" + root.getName() + ")";
+  }
+
   public static boolean isPubspec(@NotNull VirtualFile file) {
     return !file.isDirectory() && file.getName().equals("pubspec.yaml");
   }

@@ -379,35 +379,6 @@ public class FlutterSdk {
             .invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module)));
         }
       }
-
-      @Override
-      @SuppressWarnings("UnusedParameters")
-      void onTerminate(@Nullable Module module,
-                       @Nullable VirtualFile workingDir,
-                       int exitCode,
-                       @NotNull String... args) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-          if (workingDir != null && module != null && !module.isDisposed()) {
-            final Project project = module.getProject();
-            final FileEditorManager manager = FileEditorManager.getInstance(project);
-
-            // Find main.
-            final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/lib/main.dart");
-
-            FlutterModuleUtils.createRunConfig(project, main);
-
-            super.onTerminate(module, workingDir, exitCode, args);
-
-            // Open main for editing.
-            if (FlutterUtils.exists(main)) {
-              manager.openFile(main, true);
-            }
-            else {
-              LOG.warn("Unable to find (and open) created `main` file.");
-            }
-          }
-        });
-      }
     },
     DOCTOR("Flutter doctor", "doctor"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
