@@ -11,11 +11,7 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessListener;
-import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
@@ -26,21 +22,18 @@ import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.ui.content.MessageView;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
-import io.flutter.console.FlutterConsoleHelper;
+import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -48,7 +41,7 @@ public class FlutterSdk {
   private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
 
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
-  private static final AtomicBoolean inProgress = new AtomicBoolean(false);
+  private static final AtomicReference<GeneralCommandLine> inProgress = new AtomicReference<>(null);
   private final @NotNull String myHomePath;
   private final @NotNull FlutterSdkVersion myVersion;
 
@@ -103,32 +96,6 @@ public class FlutterSdk {
 
   public static FlutterSdk forPath(@NotNull final String path) {
     return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
-  }
-
-  private static void printExitMessage(@Nullable Project project, @Nullable Module module, int exitCode) {
-    if (project == null && module == null) {
-      return;
-    }
-
-    final Project p = project == null ? module.getProject() : project;
-    MessageView.SERVICE.getInstance(p).runWhenInitialized(() -> {
-      final ConsoleView console = FlutterConsoleHelper.findConsoleView(p, module);
-      if (console != null) {
-        console.print(
-          FlutterBundle.message("finished.with.exit.code.text.message", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
-      }
-    });
-  }
-
-  private static void startListening(@NotNull OSProcessHandler handler) {
-    // TODO(skybrian) what is this for? We are only setting it very briefly.
-    DartPlugin.setPubActionInProgress(true);
-    try {
-      handler.startNotify();
-    }
-    finally {
-      DartPlugin.setPubActionInProgress(false);
-    }
   }
 
   /**
@@ -229,42 +196,27 @@ public class FlutterSdk {
     toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
     command.addParameters(toolArgs);
 
-    try {
-      if (!inProgress.compareAndSet(false, true)) {
-        return null; // already running.
-      }
-      final OSProcessHandler handler = new OSProcessHandler(command);
-      if (listener != null) {
-        handler.addProcessListener(listener);
-      }
-      handler.addProcessListener(new ProcessAdapter() {
-        @Override
-        public void processTerminated(final ProcessEvent event) {
-          inProgress.set(false);
-          cmd.onTerminate(module, workingDir, event.getExitCode(), args);
-        }
-      });
-
-      if (cmd.attachToConsole() && module != null) {
-        FlutterConsoleHelper.attach(module, handler, cmd.runOnConsoleActivation());
-      }
-
-      cmd.onStart(module, workingDir, args);
-      startListening(handler);
-
-      // Send the command to analytics.
-      String commandName = StringUtil.join(cmd.command, "_");
-      commandName = commandName.replaceAll("-", "");
-      FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
-      return handler.getProcess();
-    }
-    catch (ExecutionException e) {
-      inProgress.set(false);
-      FlutterMessages.showError(
-        cmd.title,
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+    final OSProcessHandler handler = createProcess(command, cmd.title);
+    if (handler == null) {
       return null;
     }
+
+    if (listener != null) {
+      handler.addProcessListener(listener);
+    }
+
+    if (module != null) {
+      FlutterConsoles.displayProcess(handler, module.getProject(), module);
+    } else {
+      handler.startNotify();
+    }
+
+    // Send the command to analytics.
+    String commandName = StringUtil.join(cmd.command, "_");
+    commandName = commandName.replaceAll("-", "");
+    FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
+
+    return handler.getProcess();
   }
 
   /**
@@ -290,31 +242,49 @@ public class FlutterSdk {
     final String[] toolArgs = ArrayUtil.prepend("--no-color", args);
     command.addParameters(toolArgs);
 
-    if (!inProgress.compareAndSet(false, true)) {
+    final OSProcessHandler handler = createProcess(command, title);
+    if (handler == null) {
       return null;
     }
 
+    if (project != null) {
+      FlutterConsoles.displayProcess(handler, project, null);
+    } else {
+      handler.startNotify();
+    }
+
+    FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
+
+    return handler.getProcess();
+  }
+
+  /**
+   * Starts a Flutter process provided that it isn't already running.
+   * <p>
+   * Returns the handler if successfully started.
+   */
+  @Nullable
+  private OSProcessHandler createProcess(GeneralCommandLine command, String title) {
+    if (!inProgress.compareAndSet(null, command)) {
+      return null;
+    }
+    DartPlugin.setPubActionInProgress(true);
+
+    final OSProcessHandler handler;
     try {
-      final OSProcessHandler handler = new OSProcessHandler(command);
+      handler = new OSProcessHandler(command);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(final ProcessEvent event) {
-          inProgress.set(false);
-          printExitMessage(project, null, event.getExitCode());
+          inProgress.set(null);
+          DartPlugin.setPubActionInProgress(false);
         }
       });
-
-      if (project != null) {
-        ApplicationManager.getApplication().invokeAndWait(
-          () -> FlutterConsoleHelper.attach(project, handler, () -> startListening(handler)));
-      }
-
-      // Send the command to analytics.
-      FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
-      return handler.getProcess();
+      return handler;
     }
     catch (ExecutionException e) {
-      inProgress.set(false);
+      inProgress.set(null);
+      DartPlugin.setPubActionInProgress(false);
       FlutterMessages.showError(
         title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
@@ -369,27 +339,12 @@ public class FlutterSdk {
   }
 
   public enum Command {
-
-    CREATE("Flutter create", "create") {
-      @Override
-      void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-        // Enable Dart.
-        if (module != null) {
-          ApplicationManager.getApplication()
-            .invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module)));
-        }
-      }
-    },
+    CREATE("Flutter create", "create"),
     DOCTOR("Flutter doctor", "doctor"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
     UPGRADE("Flutter upgrade", "upgrade"),
-    VERSION("Flutter version", "--version") {
-      @Override
-      boolean attachToConsole() {
-        return false;
-      }
-    };
+    VERSION("Flutter version", "--version");
 
     final public String title;
     final String[] command;
@@ -397,50 +352,6 @@ public class FlutterSdk {
     Command(String title, String... command) {
       this.title = title;
       this.command = command;
-    }
-
-    /**
-     * Whether to attach to a console view (defaults to true).
-     */
-    @SuppressWarnings("SameReturnValue")
-    boolean attachToConsole() {
-      return true;
-    }
-
-    /**
-     * An (optional) action to perform once the console is active.
-     */
-    @SuppressWarnings("SameReturnValue")
-    @Nullable
-    Runnable runOnConsoleActivation() {
-      return null;
-    }
-
-    /**
-     * Invoked on command start (before process spawning).
-     *
-     * @param module     the target module
-     * @param workingDir the working directory for the command
-     * @param args       any arguments passed into the command
-     */
-    @SuppressWarnings("UnusedParameters")
-    void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-      // Default is a no-op.
-    }
-
-    /**
-     * Invoked after the command terminates.
-     *
-     * @param module     the target module
-     * @param workingDir the working directory for the command
-     * @param exitCode   the command process's exit code
-     * @param args       any arguments passed into the command
-     */
-    @SuppressWarnings("UnusedParameters")
-    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, int exitCode, @NotNull String... args) {
-      if (module != null) {
-        printExitMessage(null, module, exitCode);
-      }
     }
   }
 }
