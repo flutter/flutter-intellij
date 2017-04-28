@@ -205,8 +205,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
    */
   @Nullable
   private static PubRoot runFlutterCreate(@NotNull FlutterSdk sdk,
-                                       @NotNull VirtualFile baseDir,
-                                       @Nullable Module module) {
+                                          @NotNull VirtualFile baseDir,
+                                          @Nullable Module module) {
     // Create files.
     try {
       final Process process =
