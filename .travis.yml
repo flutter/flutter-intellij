@@ -24,14 +24,14 @@ env:
 
   # IntelliJ CE internal version
   # TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
-  #- IDEA_PRODUCT=ideaIC             IDEA_VERSION=2016.3.1    DART_PLUGIN_VERSION=163.13137
+  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.1.1    DART_PLUGIN_VERSION=171.4424.10
 
   # IntelliJ CE supported range
   # TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.1      DART_PLUGIN_VERSION=171.4006
+  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.1.2      DART_PLUGIN_VERSION=171.4424.10
 
   # WebStorm supported range
-  - IDEA_PRODUCT=WebStorm           IDEA_VERSION=2017.1
+  - IDEA_PRODUCT=WebStorm           IDEA_VERSION=2017.1.2
 
 # execution
 script: ./tool/travis.sh
