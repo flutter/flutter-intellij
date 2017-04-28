@@ -40,6 +40,7 @@ import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -173,6 +174,7 @@ public class LaunchState extends CommandLineState {
     final List<AnAction> actions = new ArrayList<>(Arrays.asList(
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
+    actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
     actions.add(new OpenObservatoryAction(app.getConnector(), () -> !app.getProcessHandler().isProcessTerminated()));
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));
