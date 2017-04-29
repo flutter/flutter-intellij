@@ -15,6 +15,6 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterDoctorAction extends FlutterSdkAction {
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) throws ExecutionException {
-    sdk.startProcessWithoutModule(project, "Flutter doctor", "doctor");
+    sdk.flutterDoctor().startInConsole(project);
   }
 }

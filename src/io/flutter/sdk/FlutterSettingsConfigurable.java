@@ -5,9 +5,6 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.process.CapturingProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.application.ApplicationManager;
@@ -165,21 +162,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       myVersionLabel.setText("");
       return;
     }
-    try {
-      final ModalityState modalityState = ModalityState.current();
-      sdk.startProcess(FlutterSdk.Command.VERSION, null, null, new CapturingProcessAdapter() {
-        @Override
-        public void processTerminated(@NotNull ProcessEvent event) {
-          final ProcessOutput output = getOutput();
-          final String stdout = output.getStdout();
-          final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
-          ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, htmlText), modalityState);
-        }
-      });
-    }
-    catch (ExecutionException e) {
-      LOG.warn(e);
-    }
+    final ModalityState modalityState = ModalityState.current();
+
+    sdk.flutterVersion().start((ProcessOutput output) -> {
+      final String stdout = output.getStdout();
+      final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
+      ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, htmlText), modalityState);
+    });
   }
 
   /***

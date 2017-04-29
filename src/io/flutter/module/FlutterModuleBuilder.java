@@ -6,7 +6,6 @@
 package io.flutter.module;
 
 import com.google.common.collect.ImmutableList;
-import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
@@ -89,6 +88,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final FlutterSdk sdk = myStep.getFlutterSdk();
+    if (sdk == null) {
+      Messages.showErrorDialog("Flutter SDK not found", "Error");
+      return null;
+    }
     final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project);
     if (root == null) {
       Messages.showErrorDialog("Flutter create command was unsuccessful", "Error");
@@ -219,42 +222,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
-      result.set(runFlutterCreate(sdk, baseDir, null));
+      result.set(sdk.createFiles(baseDir, null));
     }, "Creating Flutter Project", false, project);
 
     return result.get();
-  }
-
-  /**
-   * Runs flutter create. If the module parameter isn't null, shows output in a console.
-   * <p>
-   * Returns the PubRoot if successful.
-   */
-  @Nullable
-  private static PubRoot runFlutterCreate(@NotNull FlutterSdk sdk,
-                                          @NotNull VirtualFile baseDir,
-                                          @Nullable Module module) {
-    // Create files.
-    try {
-      final Process process =
-        sdk.startProcess(FlutterSdk.Command.CREATE, module, baseDir, null, baseDir.getPath());
-      if (process == null) {
-        return null;
-      }
-
-      // Wait for process to finish. (We overwrite some files, so make sure we lose the race.)
-      final int exitCode = process.waitFor();
-      if (exitCode != 0) {
-        return null;
-      }
-    }
-    catch (ExecutionException | InterruptedException e) {
-      LOG.warn(e);
-      return null;
-    }
-
-    baseDir.refresh(false, true);
-    return PubRoot.forDirectory(baseDir);
   }
 
   /**
@@ -268,7 +239,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
     model.addContentEntry(baseDir);
 
-    final PubRoot root = runFlutterCreate(sdk, baseDir, model.getModule());
+    final PubRoot root = sdk.createFiles(baseDir, model.getModule());
     if (root != null) {
       FlutterModuleUtils.autoShowMain(project, root);
     }
@@ -311,6 +282,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     public void dispose() {
     }
 
+    @Nullable
     public FlutterSdk getFlutterSdk() {
       return FlutterSdk.forPath(peer.getSdkComboPath());
     }
