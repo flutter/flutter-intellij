@@ -20,18 +20,25 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterRunConfigurationType extends ConfigurationTypeBase {
 
+  private final Factory factory;
+
   public FlutterRunConfigurationType() {
     super("FlutterRunConfigurationType", FlutterBundle.message("runner.flutter.configuration.name"),
           FlutterBundle.message("runner.flutter.configuration.description"), FlutterIcons.Flutter);
-    addFactory(new FlutterConfigurationFactory(this));
+    factory = new Factory(this);
+    addFactory(factory);
+  }
+
+  public Factory getFactory() {
+    return factory;
   }
 
   public static FlutterRunConfigurationType getInstance() {
     return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterRunConfigurationType.class);
   }
 
-  public static class FlutterConfigurationFactory extends ConfigurationFactory {
-    public FlutterConfigurationFactory(FlutterRunConfigurationType type) {
+  public static class Factory extends ConfigurationFactory {
+    public Factory(FlutterRunConfigurationType type) {
       super(type);
     }
 
