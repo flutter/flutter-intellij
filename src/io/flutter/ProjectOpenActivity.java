@@ -35,7 +35,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
-    final PubRoot root = PubRoot.forProjectWithRefresh(project);
+    PubRoot root = PubRoot.forProjectWithRefresh(project);
     if (root == null) {
       return;
     }
@@ -44,7 +44,8 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
-    if (!root.hasUpToDatePackages()) {
+    root = root.refresh();
+    if (root != null && !root.hasUpToDatePackages()) {
       Notifications.Bus.notify(new PackagesOutOfDateNotification(project));
     }
   }
