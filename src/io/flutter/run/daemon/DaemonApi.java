@@ -29,14 +29,16 @@ import java.util.function.Function;
 
 /**
  * Sends JSON commands to a flutter daemon process, assigning a new id to each one.
- *
+ * <p>
  * <p>Also handles dispatching incoming responses and events.
- *
+ * <p>
  * <p>The protocol is specified in
  * <a href="https://github.com/flutter/flutter/wiki/The-flutter-daemon-mode"
  * >The Flutter Daemon Mode</a>.
  */
-class DaemonApi {
+public class DaemonApi {
+  private static final boolean DEBUG_LOG = false;
+
   private final @NotNull Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
@@ -57,7 +59,7 @@ class DaemonApi {
 
   // app domain
 
-  CompletableFuture<Result> restartApp(@NotNull String appId, boolean fullRestart, boolean pause) {
+  CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause) {
     return send("app.restart", new AppRestart(appId, fullRestart, pause));
   }
 
@@ -66,14 +68,11 @@ class DaemonApi {
   }
 
   /**
-   * Calls an undocumented API.
-   *
-   * <p>See <a href="https://github.com/flutter/flutter/search?q=callServiceExtension">Flutter source code</a>
-   * for details.
+   * Used to invoke an arbitrary service protocol extension.
    */
-  CompletableFuture<Result> callAppServiceExtension(@NotNull String appId,
-                                                    @NotNull String methodName,
-                                                    @NotNull Map<String, Object> params) {
+  CompletableFuture<JsonObject> callAppServiceExtension(@NotNull String appId,
+                                                        @NotNull String methodName,
+                                                        @NotNull Map<String, Object> params) {
     return send("app.callServiceExtension", new AppServiceExtension(appId, methodName, params));
   }
 
@@ -96,6 +95,11 @@ class DaemonApi {
         }
 
         final String text = event.getText().trim();
+
+        if (DEBUG_LOG) {
+          System.out.println("[<-- " + text + "]");
+        }
+
         if (!text.startsWith("[{") || !text.endsWith("}]")) {
           return; // Ignore anything not in our expected format.
         }
@@ -128,7 +132,8 @@ class DaemonApi {
       final JsonParser jp = new JsonParser();
       final JsonElement elem = jp.parse(json);
       obj = elem.getAsJsonObject();
-    } catch (JsonSyntaxException e) {
+    }
+    catch (JsonSyntaxException e) {
       LOG.error("Unable to parse response from Flutter daemon", e);
       return;
     }
@@ -138,7 +143,8 @@ class DaemonApi {
       // It's an event.
       if (listener != null) {
         DaemonEvent.dispatch(obj, listener);
-      } else {
+      }
+      else {
         LOG.info("ignored event from Flutter daemon: " + json);
       }
       return;
@@ -147,7 +153,8 @@ class DaemonApi {
     final int id;
     try {
       id = primId.getAsInt();
-    } catch (NumberFormatException e) {
+    }
+    catch (NumberFormatException e) {
       LOG.error("Unable to parse response from Flutter daemon", e);
       return;
     }
@@ -174,9 +181,10 @@ class DaemonApi {
     cmd.complete(result);
   }
 
-  private @Nullable Command takePending(int id) {
+  @Nullable
+  private Command takePending(int id) {
     final Command cmd;
-    synchronized(pending) {
+    synchronized (pending) {
       cmd = pending.remove(id);
     }
     if (cmd == null) {
@@ -209,19 +217,25 @@ class DaemonApi {
     stdin.write('[');
     stdin.write(json);
     stdin.write("]\n");
+
+    if (DEBUG_LOG) {
+      System.out.println("[--> " + json + "]");
+    }
+
     if (stdin.checkError()) {
       LOG.warn("can't write command to Flutter process: " + json);
     }
   }
 
-  private static @Nullable PrintWriter getStdin(ProcessHandler processHandler) {
+  @Nullable
+  private static PrintWriter getStdin(ProcessHandler processHandler) {
     final OutputStream stdin = processHandler.getProcessInput();
     if (stdin == null) return null;
     return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
   }
 
   @SuppressWarnings("unused")
-  static class Result {
+  public static class RestartResult {
     private int code;
     private String message;
 
@@ -265,7 +279,8 @@ class DaemonApi {
       }
       try {
         done.complete(parseResult.apply(result));
-      } catch (Exception e) {
+      }
+      catch (Exception e) {
         LOG.warn("Unable to parse response from Flutter daemon. Command was: " + this, e);
         done.completeExceptionally(e);
       }
@@ -282,11 +297,12 @@ class DaemonApi {
   }
 
   private abstract static class Params<T> {
-    abstract @Nullable T parseResult(@Nullable JsonElement result);
+    abstract @Nullable
+    T parseResult(@Nullable JsonElement result);
   }
 
   @SuppressWarnings("unused")
-  private static class AppRestart extends Params<Result> {
+  private static class AppRestart extends Params<RestartResult> {
     final String appId;
     final boolean fullRestart;
     final boolean pause;
@@ -298,8 +314,8 @@ class DaemonApi {
     }
 
     @Override
-    Result parseResult(JsonElement result) {
-      return GSON.fromJson(result, Result.class);
+    RestartResult parseResult(JsonElement result) {
+      return GSON.fromJson(result, RestartResult.class);
     }
   }
 
@@ -318,7 +334,7 @@ class DaemonApi {
   }
 
   @SuppressWarnings("unused")
-  private static class AppServiceExtension extends Params<Result> {
+  private static class AppServiceExtension extends Params<JsonObject> {
     final String appId;
     final String methodName;
     final Map<String, Object> params;
@@ -330,8 +346,14 @@ class DaemonApi {
     }
 
     @Override
-    Result parseResult(JsonElement result) {
-      return GSON.fromJson(result, Result.class);
+    JsonObject parseResult(JsonElement result) {
+      if (result instanceof JsonObject) {
+        return (JsonObject)result;
+      }
+
+      final JsonObject obj = new JsonObject();
+      obj.add("result", result);
+      return obj;
     }
   }
 

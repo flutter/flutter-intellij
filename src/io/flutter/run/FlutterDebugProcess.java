@@ -21,6 +21,7 @@ import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.view.FlutterViewMessages;
+import io.flutter.view.OpenFlutterViewAction;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 
@@ -87,16 +88,21 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
       }
     }
 
-    // Add actions common to run and debug windows.
+    // Add actions common to the run and debug windows.
 
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
     final Computable<Boolean> canReload = () -> app.getMode().isReloadEnabled() && isSessionActive.compute();
+
+    if (app.getMode() == RunMode.DEBUG) {
+      topToolbar.addSeparator();
+      topToolbar.addAction(new FlutterPopFrameAction());
+    }
 
     topToolbar.addSeparator();
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
-    topToolbar.addAction(new FlutterPopFrameAction());
+    topToolbar.add(new OpenFlutterViewAction(isSessionActive));
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), isSessionActive));
 
     // Don't call super since we have our own observatory action.

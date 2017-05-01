@@ -6,7 +6,6 @@
 package io.flutter.view;
 
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
@@ -254,8 +253,6 @@ class TimeDilationAction extends AbstractToggleableAction {
 }
 
 class TogglePlatformAction extends AbstractFlutterAction {
-  private boolean isAndroid = false;
-
   TogglePlatformAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.togglePlatform.text"), FlutterBundle.message("flutter.view.togglePlatform.description"),
           AllIcons.RunConfigurations.Application);
@@ -263,18 +260,22 @@ class TogglePlatformAction extends AbstractFlutterAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    isAndroid = !isAndroid;
+    final FlutterApp app = view.getFlutterApp();
 
-    // ext.flutter.platformOverride, value: iOS, android
-    final Map<String, Object> params = new HashMap<>();
-    params.put("value", isAndroid ? "android" : "iOS");
-    view.getFlutterApp().callServiceExtension("ext.flutter.platformOverride", params);
+    app.togglePlatform().thenAccept(isAndroid -> {
+      if (isAndroid == null) {
+        return;
+      }
 
-    final ConsoleView console = view.getFlutterApp().getConsole();
-    if (console != null) {
-      console.print(FlutterBundle.message("flutter.view.togglePlatform.output", isAndroid ? "Android" : "iOS"),
-                    ConsoleViewContentType.SYSTEM_OUTPUT);
-    }
+      app.togglePlatform(!isAndroid).thenAccept(isNowAndroid -> {
+        if (app.getConsole() != null && isNowAndroid != null) {
+          app.getConsole().print(
+            FlutterBundle.message("flutter.view.togglePlatform.output",
+                                  isNowAndroid ? "Android" : "iOS"),
+            ConsoleViewContentType.SYSTEM_OUTPUT);
+        }
+      });
+    });
   }
 }
 

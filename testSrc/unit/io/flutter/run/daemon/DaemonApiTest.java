@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class DaemonApiTest {
 
   @Test
   public void canRestartApp() throws Exception {
-    final Future<DaemonApi.Result> result = api.restartApp("foo", true, false);
+    final Future<DaemonApi.RestartResult> result = api.restartApp("foo", true, false);
     checkSent(result, "app.restart",
               curly("appId:\"foo\"", "fullRestart:true", "pause:false"));
 
@@ -57,14 +58,12 @@ public class DaemonApiTest {
   @Test
   public void canCallServiceExtension() throws Exception {
     final Map<String, Object> params = ImmutableMap.of("reversed", true);
-    final Future<DaemonApi.Result> result = api.callAppServiceExtension("foo", "rearrange", params);
+    final Future<JsonObject> result = api.callAppServiceExtension("foo", "rearrange", params);
     checkSent(result, "app.callServiceExtension",
               curly("appId:\"foo\"", "methodName:\"rearrange\"", "params:" + curly("reversed:true")));
 
-    replyWithResult(result, curly("code:42", "message:\"sorry\""));
-    assertFalse(result.get().ok());
-    assertEquals(42, result.get().getCode());
-    assertEquals("sorry", result.get().getMessage());
+    replyWithResult(result, curly("type:_extensionType", "method:\"rearrange\""));
+    assertEquals("_extensionType", result.get().get("type").getAsString());
   }
 
   // device domain

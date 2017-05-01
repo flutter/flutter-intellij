@@ -17,6 +17,7 @@ import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
+import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.view.FlutterViewFactory;
@@ -25,6 +26,13 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.event.HyperlinkEvent;
 import java.util.UUID;
 
+/**
+ * Runs actions after the project has started up and the index is up to date.
+ *
+ * @see ProjectOpenActivity for actions that run earlier.
+ * @see io.flutter.project.FlutterProjectOpenProcessor for additional actions that
+ * may run when a project is being imported.
+ */
 public class FlutterInitializer implements StartupActivity {
   private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
@@ -124,7 +132,8 @@ public class FlutterInitializer implements StartupActivity {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
-          getAnalytics();
+          final Analytics analytics = getAnalytics();
+          ToolWindowTracker.track(project, analytics);
         }
       });
       notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.decline")) {
@@ -137,7 +146,8 @@ public class FlutterInitializer implements StartupActivity {
       Notifications.Bus.notify(notification);
     }
     else {
-      getAnalytics();
+      final Analytics analytics = getAnalytics();
+      ToolWindowTracker.track(project, analytics);
     }
   }
 }

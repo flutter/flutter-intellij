@@ -10,8 +10,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.FlutterUtils;
-import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 
 
@@ -19,7 +18,8 @@ public class FlutterPackagesExplorerActionGroup extends DefaultActionGroup {
 
   private static boolean isFlutterPubspec(@NotNull AnActionEvent e) {
     final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-    return FlutterUtils.exists(file) && FlutterUtils.isPubspecFile(file) && FlutterModuleUtils.declaresFlutterDependency(file);
+    final PubRoot root = file == null ? null : PubRoot.forDirectory(file.getParent());
+    return root != null && root.getPubspec().equals(file) && root.declaresFlutter();
   }
 
   @Override
