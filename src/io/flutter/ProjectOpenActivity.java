@@ -47,9 +47,6 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (!root.hasUpToDatePackages()) {
       Notifications.Bus.notify(new PackagesOutOfDateNotification(project));
     }
-
-    FlutterModuleUtils.autoCreateRunConfig(project, root);
-    FlutterModuleUtils.autoShowMain(project, root);
   }
 
   /**

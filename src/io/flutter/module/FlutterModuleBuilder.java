@@ -103,7 +103,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
     final Module flutter = result.get(0);
 
-    FlutterModuleUtils.autoCreateRunConfig(project, root);
     FlutterModuleUtils.autoShowMain(project, root);
 
     final Module android = addAndroidModule(project, model, basePath);
@@ -271,7 +270,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     final PubRoot root = runFlutterCreate(sdk, baseDir, model.getModule());
     if (root != null) {
-      FlutterModuleUtils.autoCreateRunConfig(project, root);
       FlutterModuleUtils.autoShowMain(project, root);
     }
     final String dartSdkPath = sdk.getDartSdkPath();

@@ -81,6 +81,8 @@ public class FlutterModuleUtils {
    * Creates a Flutter run configuration if none exist.
    */
   public static void autoCreateRunConfig(@NotNull Project project, @NotNull PubRoot root) {
+    assert ApplicationManager.getApplication().isReadAccessAllowed();
+
     final VirtualFile main = root.getLibMain();
     if (main == null || !main.exists()) return;
 
@@ -97,10 +99,7 @@ public class FlutterModuleUtils {
     final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
 
     // Set config name.
-    final String name = config.suggestedName();
-    if (name == null) {
-      config.setName(project.getName());
-    }
+    config.setName("main.dart");
 
     // Set fields.
     final SdkFields fields = new SdkFields();
