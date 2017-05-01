@@ -60,13 +60,24 @@ public class FlutterUtils {
   }
 
   /**
-   * Checks whether a given string is a valid Dart identifier.
+   * Checks whether a given string is a Dart keyword.
    *
+   * @param string the string to check
+   * @return true if a keyword, false oetherwise
+   */
+  public static boolean isDartKeword(@NotNull String string) {
+    return FlutterConstants.DART_KEYWORDS.contains(string);
+  }
+  
+  /**
+   * Checks whether a given string is a valid Dart identifier.
+   * <p>
    * See: https://www.dartlang.org/guides/language/spec
+   *
    * @param id the string to check
    * @return true if a valid identifer, false otherwise.
    */
-  public static boolean isValidDartdentifier(@NotNull String id) {
+  public static boolean isValidDartIdentifier(@NotNull String id) {
     return VALID_ID.matcher(id).matches();
   }
 }

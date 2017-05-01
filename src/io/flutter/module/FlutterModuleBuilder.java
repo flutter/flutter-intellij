@@ -5,18 +5,23 @@
  */
 package io.flutter.module;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.options.ConfigurationException;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -29,6 +34,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
@@ -59,16 +67,119 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public void setupRootModel(ModifiableRootModel model) throws ConfigurationException {
-    final ContentEntry contentEntry = doAddContentEntry(model);
-    final VirtualFile baseDir = contentEntry == null ? null : contentEntry.getFile();
-    if (baseDir != null) {
-      createProjectFiles(model, baseDir, myStep.getFlutterSdk());
+    doAddContentEntry(model);
+    // Add a reference to Dart SDK project library, without committing.
+    model.addInvalidLibrary("Dart SDK", "project");
+  }
+
+  @Nullable
+  @Override
+  public List<Module> commit(@NotNull Project project, @Nullable ModifiableModuleModel model, ModulesProvider modulesProvider) {
+    final String basePath = getModuleFileDirectory();
+    if (basePath == null) {
+      Messages.showErrorDialog("Module path not set", "Internal Error");
+      return null;
+    }
+    final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(basePath);
+    if (baseDir == null) {
+      Messages.showErrorDialog("Unable to determine Flutter project directory", "Internal Error");
+      return null;
+    }
+
+    final FlutterSdk sdk = myStep.getFlutterSdk();
+    if (!runFlutterCreateWithProgress(baseDir, sdk, project)) {
+      Messages.showErrorDialog("Flutter create command was unsuccessful", "Error");
+      return null;
+    }
+    FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
+
+    // Create the Flutter module. This indirectly calls setupRootModule, etc.
+    final List<Module> result = super.commit(project, model, modulesProvider);
+    if (result == null || result.size() != 1) {
+      return result;
+    }
+    final Module flutter = result.get(0);
+
+    final Module android = addAndroidModule(project, model, basePath);
+    if (android != null) {
+      return ImmutableList.of(flutter, android);
+    }
+    else {
+      return ImmutableList.of(flutter);
+    }
+  }
+
+  @Nullable
+  private Module addAndroidModule(@NotNull Project project,
+                                  @Nullable ModifiableModuleModel model,
+                                  @NotNull String baseDirPath) {
+    final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
+    if (baseDir == null) {
+      return null;
+    }
+
+    final String androidPath = baseDirPath + "/android.iml";
+    final VirtualFile androidFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(androidPath);
+    if (androidFile == null) {
+      return null;
+    }
+
+    try {
+      final ModifiableModuleModel toCommit;
+      if (model == null) {
+        toCommit = ModuleManager.getInstance(project).getModifiableModel();
+        model = toCommit;
+      }
+      else {
+        toCommit = null;
+      }
+
+      final Module androidModule = model.loadModule(androidFile.getPath());
+
+      if (toCommit != null) {
+        WriteAction.run(toCommit::commit);
+      }
+
+      return androidModule;
+    }
+    catch (ModuleWithNameAlreadyExists exists) {
+      return null;
+    }
+    catch (IOException e) {
+      LOG.warn(e);
+      return null;
     }
   }
 
   @Override
   public boolean validate(Project current, Project dest) {
     return myStep.getFlutterSdk() != null;
+  }
+
+  @Override
+  public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {
+
+    // See: https://www.dartlang.org/tools/pub/pubspec#name
+
+    if (FlutterUtils.isDartKeword(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must not be a Dart keyword.");
+    }
+
+    if (!FlutterUtils.isValidDartIdentifier(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart identifier.");
+    }
+
+    if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
+    }
+
+    if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
+      throw new ConfigurationException("Flutter module name is too long - must be less than " +
+                                       FlutterConstants.MAX_MODULE_NAME_LENGTH +
+                                       " characters.");
+    }
+
+    return super.validateModuleName(moduleName);
   }
 
   @Nullable
@@ -89,49 +200,74 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterModuleType.getInstance();
   }
 
-  private static void createProjectFiles(@NotNull final ModifiableRootModel model,
-                                         @NotNull final VirtualFile baseDir,
-                                         @NotNull final FlutterSdk sdk) {
-    try {
-      DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
-      FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
-    }
-    catch (ExecutionException e) {
-      LOG.warn("Error configuring the Flutter SDK.", e);
-    }
+  /**
+   * Runs flutter create without showing a console, but with an indeterminate progress dialog.
+   */
+  private static boolean runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
+                                                      @NotNull FlutterSdk sdk,
+                                                      @NotNull Project project) {
+    final ProgressManager progress = ProgressManager.getInstance();
+    final AtomicBoolean succeeded = new AtomicBoolean(false);
 
+    progress.runProcessWithProgressSynchronously(() -> {
+      progress.getProgressIndicator().setIndeterminate(true);
+      try {
+        runFlutterCreate(sdk, baseDir, null);
+        succeeded.set(true);
+      }
+      catch (ConfigurationException e) {
+        LOG.warn(e);
+      }
+    }, "Creating Flutter Project", false, project);
+
+    return succeeded.get();
+  }
+
+  /**
+   * Runs flutter create. If the module parameter isn't null, shows output in a console.
+   */
+  private static void runFlutterCreate(@NotNull FlutterSdk sdk,
+                                       @NotNull VirtualFile baseDir,
+                                       @Nullable Module module)
+    throws ConfigurationException {
     // Create files.
     try {
-      sdk.run(FlutterSdk.Command.CREATE, model.getModule(), baseDir, null, baseDir.getPath());
+      final Process process =
+        sdk.startProcess(FlutterSdk.Command.CREATE, module, baseDir, null, baseDir.getPath());
+      if (process != null) {
+        // Wait for process to finish. (We overwrite some files, so make sure we lose the race.)
+        final int exitCode = process.waitFor();
+        if (exitCode == 0) {
+          baseDir.refresh(false, true);
+          return; // success
+        }
+      }
     }
-    catch (ExecutionException e) {
+    catch (ExecutionException | InterruptedException e) {
       LOG.warn(e);
     }
+    throw new ConfigurationException("flutter create command was unsuccessful");
   }
 
-  @Override
-  public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {
-    if (!FlutterUtils.isValidDartdentifier(moduleName)) {
-      throw new ConfigurationException("Invalid Flutter module name '" + moduleName + "'; must be a valid Dart identifier.");
-    }
-
-    if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
-      throw new ConfigurationException("Flutter module name is too long; must be less than " +
-                                       FlutterConstants.MAX_MODULE_NAME_LENGTH +
-                                       " characters.");
-    }
-
-    return super.validateModuleName(moduleName);
-  }
-
-  public static void setupProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
+  /**
+   * Set up a "small IDE" project. (For example, WebStorm.)
+   */
+  public static void setupSmallProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
     throws ConfigurationException {
     final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
     if (sdk == null) {
       throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
     }
     model.addContentEntry(baseDir);
-    createProjectFiles(model, baseDir, sdk);
+
+    runFlutterCreate(sdk, baseDir, model.getModule());
+    final String dartSdkPath = sdk.getDartSdkPath();
+    if (dartSdkPath == null) {
+      throw new ConfigurationException("unable to get Dart SDK"); // shouldn't happen; we just created it.
+    }
+
+    DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
+    FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
