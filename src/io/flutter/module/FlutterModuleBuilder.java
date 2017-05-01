@@ -27,6 +27,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
@@ -158,6 +160,32 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Override
   public boolean validate(Project current, Project dest) {
     return myStep.getFlutterSdk() != null;
+  }
+
+  @Override
+  public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {
+
+    // See: https://www.dartlang.org/tools/pub/pubspec#name
+
+    if (FlutterUtils.isDartKeword(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must not be a Dart keyword.");
+    }
+
+    if (!FlutterUtils.isValidDartIdentifier(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart identifier.");
+    }
+
+    if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
+    }
+
+    if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
+      throw new ConfigurationException("Invalid module name - must be less than " +
+                                       FlutterConstants.MAX_MODULE_NAME_LENGTH +
+                                       " characters.");
+    }
+
+    return super.validateModuleName(moduleName);
   }
 
   @Nullable
