@@ -180,7 +180,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
-      throw new ConfigurationException("Flutter module name is too long - must be less than " +
+      throw new ConfigurationException("Invalid module name - must be less than " +
                                        FlutterConstants.MAX_MODULE_NAME_LENGTH +
                                        " characters.");
     }
