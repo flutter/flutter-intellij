@@ -137,7 +137,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       }
     }
 
-    presentation.setText(null);
+    presentation.setText("<no devices>");
   }
 
   // It's not clear if we need TransparentUpdate, but apparently it will make the UI refresh
