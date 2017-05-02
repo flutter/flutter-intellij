@@ -7,13 +7,13 @@ package io.flutter.utils;
 
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -31,9 +31,7 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 
 public class FlutterModuleUtils {
 
@@ -80,43 +78,51 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Create a Flutter run configuration.
-   *
-   * @param project the project
-   * @param main    the target main
+   * Creates a Flutter run configuration if none exist.
    */
-  public static void createRunConfig(@NotNull Project project, @Nullable VirtualFile main) {
-    final ConfigurationFactory[] factories = FlutterRunConfigurationType.getInstance().getConfigurationFactories();
-    final Optional<ConfigurationFactory> factory =
-      Arrays.stream(factories).filter((f) -> f instanceof FlutterRunConfigurationType.FlutterConfigurationFactory).findFirst();
-    assert (factory.isPresent());
-    final ConfigurationFactory configurationFactory = factory.get();
+  public static void autoCreateRunConfig(@NotNull Project project, @NotNull PubRoot root) {
+    assert ApplicationManager.getApplication().isReadAccessAllowed();
+
+    final VirtualFile main = root.getLibMain();
+    if (main == null || !main.exists()) return;
+
+    final FlutterRunConfigurationType configType = FlutterRunConfigurationType.getInstance();
 
     final RunManager runManager = RunManager.getInstance(project);
-    final List<RunConfiguration> configurations = runManager.getConfigurationsList(FlutterRunConfigurationType.getInstance());
-
-    // If the target project has no flutter run configurations, create one.
-    if (configurations.isEmpty()) {
-      final RunnerAndConfigurationSettings settings =
-        runManager.createRunConfiguration(project.getName(), configurationFactory);
-      final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
-
-      // Set config name.
-      final String name = config.suggestedName();
-      if (name == null) {
-        config.setName(project.getName());
-      }
-
-      // Set fields.
-      final SdkFields fields = new SdkFields();
-      if (main != null && main.exists()) {
-        fields.setFilePath(main.getPath());
-      }
-      config.setFields(fields);
-
-      runManager.addConfiguration(settings, false);
-      runManager.setSelectedConfiguration(settings);
+    if (!runManager.getConfigurationsList(configType).isEmpty()) {
+      return;
     }
+
+    final RunnerAndConfigurationSettings settings =
+      runManager.createRunConfiguration(project.getName(), configType.getFactory());
+
+    final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
+
+    // Set config name.
+    config.setName("main.dart");
+
+    // Set fields.
+    final SdkFields fields = new SdkFields();
+    fields.setFilePath(main.getPath());
+    config.setFields(fields);
+
+    runManager.addConfiguration(settings, false);
+    runManager.setSelectedConfiguration(settings);
+  }
+
+  /**
+   * If no files are open, show lib/main.dart for the given PubRoot.
+   */
+  public static void autoShowMain(@NotNull Project project, @NotNull PubRoot root) {
+    final VirtualFile main = root.getLibMain();
+    if (main == null) return;
+
+    DumbService.getInstance(project).runWhenSmart(() -> {
+      final FileEditorManager manager = FileEditorManager.getInstance(project);
+      if (manager.getAllEditors().length == 0) {
+        manager.openFile(main, true);
+      }
+    });
   }
 
   /**

@@ -18,8 +18,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
+import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
+import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -102,6 +104,12 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
+
+    final PubRoot root = PubRoot.forProjectWithRefresh(project);
+    if (root != null) {
+      FlutterModuleUtils.autoCreateRunConfig(project, root);
+      FlutterModuleUtils.autoShowMain(project, root);
+    }
 
     FlutterRunNotifications.init(project);
 

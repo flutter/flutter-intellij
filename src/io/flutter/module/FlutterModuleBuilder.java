@@ -13,11 +13,9 @@ import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.*;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
@@ -104,7 +102,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       return result;
     }
     final Module flutter = result.get(0);
-    setUpMain(root, flutter);
+
+    FlutterModuleUtils.autoShowMain(project, root);
 
     final Module android = addAndroidModule(project, model, basePath);
     if (android != null) {
@@ -259,20 +258,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   /**
-   * Creates the run configuration and shows lib/main.dart.
-   */
-  private static void setUpMain(@NotNull PubRoot root, @NotNull Module module) {
-    final VirtualFile main = root.getLibMain();
-    if (main != null) {
-      FlutterModuleUtils.createRunConfig(module.getProject(), main);
-      DumbService.getInstance(module.getProject()).runWhenSmart(() -> {
-        final FileEditorManager manager = FileEditorManager.getInstance(module.getProject());
-        manager.openFile(main, true);
-      });
-    }
-  }
-
-  /**
    * Set up a "small IDE" project. (For example, WebStorm.)
    */
   public static void setupSmallProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
@@ -285,7 +270,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     final PubRoot root = runFlutterCreate(sdk, baseDir, model.getModule());
     if (root != null) {
-      setUpMain(root, model.getModule());
+      FlutterModuleUtils.autoShowMain(project, root);
     }
     final String dartSdkPath = sdk.getDartSdkPath();
     if (dartSdkPath == null) {
