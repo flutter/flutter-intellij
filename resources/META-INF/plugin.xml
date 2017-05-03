@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>13.0</version>
+  <version>13.1</version>
 
   <idea-version since-build="171.1" until-build="171.*"/>
 
@@ -21,6 +21,16 @@
 
   <change-notes>
     <![CDATA[
+
+13.1:
+<ul>
+  <li>project opening improvements</li>
+  <li>new action to open the Flutter view</li>
+  <li>module name validation on creation</li>
+  <li>fix to ensure all open files are saved to disk before running Flutter actions</li>
+  <li>improved progress reporting during calls to 'flutter create'</li>
+  <li>miscellaneous fixes and analytics improvements</li>
+</ul>
 
 13.0:
 <ul>
