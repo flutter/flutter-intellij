@@ -89,8 +89,10 @@ public class FlutterConsoleFilter implements Filter {
     if (pathPart.startsWith("open ")) {
       final String[] parts = pathPart.split(" ");
       if (parts.length > 1) {
-        pathPart = parts[1];
-        openAsExternalFile = true;
+        if (parts[1].endsWith(".xcworkspace")) {
+          pathPart = parts[1];
+          openAsExternalFile = true;
+        }
       }
     }
 
