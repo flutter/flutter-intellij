@@ -141,6 +141,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     if (devices.isEmpty()) {
       presentation.setText("<no devices>");
+    } else {
+      presentation.setText(null);
     }
   }
 
