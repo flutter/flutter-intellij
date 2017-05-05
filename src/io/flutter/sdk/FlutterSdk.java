@@ -43,15 +43,9 @@ public class FlutterSdk {
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
   private static final AtomicReference<GeneralCommandLine> inProgress = new AtomicReference<>(null);
   private final @NotNull String myHomePath;
-  private final @NotNull FlutterSdkVersion myVersion;
-
-  private FlutterSdk(@NotNull final String homePath, @Nullable final String version) {
-    myHomePath = homePath;
-    myVersion = FlutterSdkVersion.forVersionString(version);
-  }
 
   private FlutterSdk(@NotNull final String homePath) {
-    this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
+    myHomePath = homePath;
   }
 
   /**
@@ -207,7 +201,8 @@ public class FlutterSdk {
 
     if (module != null) {
       FlutterConsoles.displayProcess(handler, module.getProject(), module);
-    } else {
+    }
+    else {
       handler.startNotify();
     }
 
@@ -249,7 +244,8 @@ public class FlutterSdk {
 
     if (project != null) {
       FlutterConsoles.displayProcess(handler, project, null);
-    } else {
+    }
+    else {
       handler.startNotify();
     }
 
@@ -295,15 +291,6 @@ public class FlutterSdk {
   @NotNull
   public String getHomePath() {
     return myHomePath;
-  }
-
-  /**
-   * Returns the Flutter Version as captured in the VERSION file.  This version is very coarse grained and not meant for presentation and
-   * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
-   */
-  @NotNull
-  public FlutterSdkVersion getVersion() {
-    return myVersion;
   }
 
   /**

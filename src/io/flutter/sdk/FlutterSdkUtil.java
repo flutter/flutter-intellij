@@ -29,7 +29,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class FlutterSdkUtil {
@@ -153,11 +152,6 @@ public class FlutterSdkUtil {
     return flutterVersionFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
 
-  @NotNull
-  public static String versionPath(@NotNull String sdkHomePath) {
-    return sdkHomePath + "/VERSION";
-  }
-
   /**
    * Checks the workspace for any open Flutter projects.
    *
@@ -169,40 +163,6 @@ public class FlutterSdkUtil {
 
   public static boolean hasFlutterModules(@NotNull Project project) {
     return FlutterModuleUtils.hasFlutterModule(project);
-  }
-
-  @Nullable
-  public static String getSdkVersion(@NotNull String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile()) {
-      final String cachedVersion = ourVersions.get(Pair.create(versionFile, versionFile.lastModified()));
-      if (cachedVersion != null) return cachedVersion;
-    }
-
-    final String version = readVersionFile(sdkHomePath);
-    if (version != null) {
-      ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
-      return version;
-    }
-
-    LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
-    return null;
-  }
-
-  private static String readVersionFile(String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile() && versionFile.length() < 1000) {
-      try {
-        final String content = FileUtil.loadFile(versionFile).trim();
-        final int index = content.lastIndexOf('\n');
-        if (index < 0) return content;
-        return content.substring(index + 1).trim();
-      }
-      catch (IOException e) {
-        /* ignore */
-      }
-    }
-    return null;
   }
 
   @Nullable

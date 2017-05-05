@@ -21,16 +21,11 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
-import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class SdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
   implements DumbAware {
-
-  // Minimum SDK known to support hot reload.
-  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.3");
 
   private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
 
@@ -79,25 +74,6 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
       return createNoFlutterSdkPanel();
     }
 
-    if (flutterSdk.getVersion().isLessThan(MIN_SUPPORTED_SDK)) {
-      return createOutOfDateFlutterSdkPanel(flutterSdk);
-    }
-
     return null;
-  }
-
-  private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
-
-    final FlutterUIConfig settings = FlutterUIConfig.getInstance();
-    if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
-
-    final EditorNotificationPanel panel = new EditorNotificationPanel();
-    panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
-    panel.createActionLabel("Dismiss", () -> {
-      settings.setIgnoreOutOfDateFlutterSdks();
-      panel.setVisible(false);
-    });
-
-    return panel;
   }
 }
