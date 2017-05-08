@@ -84,7 +84,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // We have a .packages file, but need to run a flutter command to download the Dart SDK.
       final boolean ok = sdk.sync(project);
       if (!ok) {
-        FlutterMessages.showError("Error opening", "failed to download Dart SDK for Flutter");
+        FlutterMessages.showError("Error opening project", "Failed to download Dart SDK for Flutter");
       }
       return ok;
     } else {
