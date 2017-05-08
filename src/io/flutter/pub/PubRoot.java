@@ -219,6 +219,7 @@ public class PubRoot {
   /**
    * Returns true if the packages file is up to date.
    */
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean hasUpToDatePackages() {
     return packages != null && pubspec.getTimeStamp() < packages.getTimeStamp();
   }
