@@ -39,7 +39,7 @@ public class DaemonEventTest {
 
       @Override
       public void onDaemonShowMessage(DaemonEvent.ShowMessage event) {
-        logEvent(event, event.title, event.message);
+        logEvent(event, event.level, event.title, event.message);
       }
 
       // app domain
@@ -109,8 +109,8 @@ public class DaemonEventTest {
 
   @Test
   public void canReceiveShowMessage() {
-    send("daemon.showMessage", curly("title:\"Spam\"", "message:\"Make money fast\""));
-    checkLog("ShowMessage: Spam, Make money fast");
+    send("daemon.showMessage", curly("level:\"info\"", "title:\"Spam\"", "message:\"Make money fast\""));
+    checkLog("ShowMessage: info, Spam, Make money fast");
   }
 
   // app domain

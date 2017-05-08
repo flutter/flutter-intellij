@@ -148,6 +148,7 @@ abstract class DaemonEvent {
   @SuppressWarnings("unused")
   static class ShowMessage extends DaemonEvent {
     // "event":"daemon.showMessage"
+    String level;
     String title;
     String message;
 
