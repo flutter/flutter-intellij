@@ -9,6 +9,7 @@ import com.intellij.execution.*;
 import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.configurations.SearchScopeProvider;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.filters.TextConsoleBuilder;
@@ -28,6 +29,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -36,10 +38,7 @@ import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
-import io.flutter.run.daemon.DeviceService;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -78,13 +77,22 @@ public class LaunchState extends CommandLineState {
     this.runConfig = runConfig;
     this.callback = callback;
 
+    // Create our own console builder.
+    // We need to filter input to this console without affecting other consoles,
+    // so we cannot use a consoleFilterInputProvider.
+    final GlobalSearchScope searchScope = SearchScopeProvider.createSearchScope(env.getProject(), env.getRunProfile());
+    final TextConsoleBuilder builder = new TextConsoleBuilderImpl(env.getProject(), searchScope) {
+      @NotNull
+      @Override
+      protected ConsoleView createConsole() {
+        return new DaemonConsoleView(env.getProject(), searchScope);
+      }
+    };
+
     // Set up basic console filters. (Callers may add more.)
-    final TextConsoleBuilder builder = getConsoleBuilder();
-    if (builder instanceof TextConsoleBuilderImpl) {
-      ((TextConsoleBuilderImpl)builder).setUsePredefinedMessageFilter(false);
-    }
     builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), workDir.getPath()));
     builder.addFilter(new UrlFilter());
+    setConsoleBuilder(builder);
   }
 
   @NotNull
