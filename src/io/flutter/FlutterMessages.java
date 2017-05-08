@@ -29,6 +29,16 @@ public class FlutterMessages {
                        NotificationType.ERROR));
   }
 
+  public static void showMessage(String title, String message) {
+    final Notification notification = new Notification(
+      FLUTTER_NOTIFICATION_GOUP_ID,
+      title,
+      message,
+      NotificationType.INFORMATION);
+    notification.setIcon(FlutterIcons.Flutter);
+    Notifications.Bus.notify(notification);
+  }
+
   public static int showDialog(@Nullable Project project,
                                @NotNull String message,
                                @NotNull @Nls(capitalization = Nls.Capitalization.Title) String title,

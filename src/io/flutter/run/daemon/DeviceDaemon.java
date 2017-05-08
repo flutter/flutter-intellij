@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -260,6 +261,11 @@ class DeviceDaemon {
     @Override
     public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
       LOG.info("flutter device watcher: " + message.message);
+    }
+
+    @Override
+    public void onDaemonShowMessage(@NotNull DaemonEvent.ShowMessage event) {
+      FlutterMessages.showMessage(event.title, event.message);
     }
 
     // device domain
