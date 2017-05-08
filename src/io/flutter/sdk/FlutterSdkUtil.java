@@ -62,40 +62,46 @@ public class FlutterSdkUtil {
     // Add the new value first; this ensures that it's the 'default' flutter sdk.
     allPaths.add(newPath);
 
+
+    final PropertiesComponent props = PropertiesComponent.getInstance();
+
     // Add the existing known paths.
-    final String[] oldPaths = PropertiesComponent.getInstance().getValues(propertyKey);
+    final String[] oldPaths = props.getValues(propertyKey);
     if (oldPaths != null) {
       allPaths.addAll(Arrays.asList(oldPaths));
     }
 
     // Store the values back.
     if (allPaths.isEmpty()) {
-      PropertiesComponent.getInstance().unsetValue(propertyKey);
+      props.unsetValue(propertyKey);
     }
     else {
-      PropertiesComponent.getInstance().setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
+      props.setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
     }
   }
 
+  /**
+   * Adds the current path and other known paths to the combo, most recently used first.
+   */
   public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
-    final Set<String> validPathsForUI = new HashSet<>();
-    final String currentPath = combo.getEditor().getItem().toString().trim();
+    final Set<String> pathsToShow = new LinkedHashSet<>();
 
+    final String currentPath = combo.getEditor().getItem().toString().trim();
     if (!currentPath.isEmpty()) {
-      validPathsForUI.add(currentPath);
+      pathsToShow.add(currentPath);
     }
 
     final String[] knownPaths = getKnownFlutterSdkPaths();
-    if (knownPaths != null && knownPaths.length > 0) {
+    if (knownPaths != null) {
       for (String path : knownPaths) {
         if (FlutterSdk.forPath(path) != null) {
-          validPathsForUI.add(FileUtil.toSystemDependentName(path));
+          pathsToShow.add(FileUtil.toSystemDependentName(path));
         }
       }
     }
 
     //noinspection unchecked
-    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(validPathsForUI)));
+    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(pathsToShow)));
 
     if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
       combo.setSelectedIndex(0);
