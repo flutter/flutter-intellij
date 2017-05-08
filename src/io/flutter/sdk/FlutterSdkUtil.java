@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.util.*;
 
 public class FlutterSdkUtil {
-  /** The environment variable to use to tell the flutter tool which app is driving it. */
+  /**
+   * The environment variable to use to tell the flutter tool which app is driving it.
+   */
   public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST_ENV";
 
   private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
@@ -140,17 +142,17 @@ public class FlutterSdkUtil {
   }
 
   public static boolean isFlutterSdkHome(@NotNull final String path) {
-    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterPubspecFile = new File(path + "/packages/flutter/pubspec.yaml");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterVersionFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
+    return flutterPubspecFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
   }
 
   private static boolean isFlutterSdkHomeWithoutDartSdk(@NotNull final String path) {
-    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterPubspecFile = new File(path + "/packages/flutter/pubspec.yaml");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterVersionFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
+    return flutterPubspecFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
 
   @NotNull
@@ -174,19 +176,18 @@ public class FlutterSdkUtil {
   @Nullable
   public static String getSdkVersion(@NotNull String sdkHomePath) {
     final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile()) {
-      final String cachedVersion = ourVersions.get(Pair.create(versionFile, versionFile.lastModified()));
-      if (cachedVersion != null) return cachedVersion;
+    final Pair<File, Long> key = Pair.create(versionFile, versionFile.lastModified());
+    if (ourVersions.containsKey(key)) {
+      return ourVersions.get(key);
     }
 
     final String version = readVersionFile(sdkHomePath);
-    if (version != null) {
-      ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
-      return version;
+    if (version == null) {
+      LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
     }
 
-    LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
-    return null;
+    ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
+    return version;
   }
 
   private static String readVersionFile(String sdkHomePath) {

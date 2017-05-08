@@ -13,6 +13,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterSdkVersion implements Comparable<FlutterSdkVersion> {
 
+  // Minimum SDK known to support hot reload.
+  public static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.3");
+
   @NonNls private static final FlutterSdkVersion UNKNOWN = new FlutterSdkVersion("0.0.0");
 
   private final Version myVersion;
