@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterMessages;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -64,7 +65,7 @@ class DeviceDaemon {
 
   /**
    * Returns the current devices.
-   *
+   * <p>
    * <p>This is calculated based on add and remove events seen since the process started.
    */
   ImmutableList<FlutterDevice> getDevices() {
@@ -90,10 +91,11 @@ class DeviceDaemon {
 
   /**
    * Returns the appropriate command to start the device daemon, if any.
-   *
+   * <p>
    * A null means the device daemon should be shut down.
    */
-  static @Nullable Command chooseCommand(Project project) {
+  static @Nullable
+  Command chooseCommand(Project project) {
     if (!usesFlutter(project)) {
       return null;
     }
@@ -127,14 +129,15 @@ class DeviceDaemon {
     final Workspace w = WorkspaceCache.getInstance(p).getNow();
     if (w != null) {
       return w.usesFlutter(p);
-    } else {
+    }
+    else {
       return FlutterModuleUtils.hasFlutterModule(p);
     }
   }
 
   /**
    * The command used to start the daemon.
-   *
+   * <p>
    * <p>Comparing two Commands lets us detect configuration changes that require a restart.
    */
   static class Command {
@@ -193,7 +196,8 @@ class DeviceDaemon {
             throw new ExecutionException(e.getCause());
           }
         }
-      } finally {
+      }
+      finally {
         if (!succeeded) {
           process.destroyProcess();
         }
@@ -241,7 +245,7 @@ class DeviceDaemon {
 
   /**
    * Handles events sent by the device daemon process.
-   *
+   * <p>
    * <p>Updates the device list based on incoming events.
    */
   private static class Listener implements DaemonEvent.Listener {
@@ -260,6 +264,19 @@ class DeviceDaemon {
     @Override
     public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
       LOG.info("flutter device watcher: " + message.message);
+    }
+
+    @Override
+    public void onDaemonShowMessage(@NotNull DaemonEvent.ShowMessage event) {
+      if ("error".equals(event.level)) {
+        FlutterMessages.showError(event.title, event.message);
+      }
+      else if ("warning".equals(event.level)) {
+        FlutterMessages.showWarning(event.title, event.message);
+      }
+      else {
+        FlutterMessages.showInfo(event.title, event.message);
+      }
     }
 
     // device domain
