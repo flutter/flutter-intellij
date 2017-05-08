@@ -30,9 +30,9 @@ public class FlutterSdk {
   private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
 
-  private FlutterSdk(@NotNull final VirtualFile home, @Nullable final String version) {
+  private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;
-    myVersion = FlutterSdkVersion.forVersionString(version);
+    myVersion = version;
   }
 
   /**
@@ -83,7 +83,7 @@ public class FlutterSdk {
     } else if (!FlutterSdkUtil.isFlutterSdkHome(path)) {
       return null;
     } else {
-      return new FlutterSdk(home, FlutterSdkUtil.getSdkVersion(path));
+      return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
     }
   }
 
@@ -249,7 +249,7 @@ public class FlutterSdk {
       if (url.endsWith(DART_CORE_SUFFIX)) {
         final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
         final VirtualFile home = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
-        return home == null ? null : new FlutterSdk(home, FlutterSdkUtil.getSdkVersion(home.getPath()));
+        return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
       }
     }
     return null;

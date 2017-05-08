@@ -21,7 +21,6 @@ import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +74,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
       return createNoFlutterSdkPanel();
     }
 
-    if (flutterSdk.getVersion().isLessThan(FlutterSdkVersion.MIN_SUPPORTED_SDK)) {
+    if (!flutterSdk.getVersion().isSupported()) {
       return createOutOfDateFlutterSdkPanel(flutterSdk);
     }
 
