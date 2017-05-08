@@ -47,7 +47,8 @@ public class FlutterSdk {
 
   private FlutterSdk(@NotNull final String homePath, @Nullable final String version) {
     myHomePath = homePath;
-    myVersion = FlutterSdkVersion.forVersionString(version);
+    // If there is no VERSION file, don't complain about needing to upgrade.
+    myVersion = version == null ? FlutterSdkVersion.MIN_SUPPORTED_SDK : FlutterSdkVersion.forVersionString(version);
   }
 
   private FlutterSdk(@NotNull final String homePath) {
@@ -298,7 +299,7 @@ public class FlutterSdk {
   }
 
   /**
-   * Returns the Flutter Version as captured in the VERSION file.  This version is very coarse grained and not meant for presentation and
+   * Returns the Flutter Version as captured in the VERSION file. This version is very coarse grained and not meant for presentation and
    * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
    */
   @NotNull

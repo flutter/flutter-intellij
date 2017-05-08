@@ -28,10 +28,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class SdkConfigurationNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel>
   implements DumbAware {
-
-  // Minimum SDK known to support hot reload.
-  private static final FlutterSdkVersion MIN_SUPPORTED_SDK = FlutterSdkVersion.forVersionString("0.0.3");
-
   private static final Key<EditorNotificationPanel> KEY = Key.create("FlutterWrongDartSdkNotification");
 
   private static final Logger LOG = Logger.getInstance(SdkConfigurationNotificationProvider.class);
@@ -79,7 +75,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
       return createNoFlutterSdkPanel();
     }
 
-    if (flutterSdk.getVersion().isLessThan(MIN_SUPPORTED_SDK)) {
+    if (flutterSdk.getVersion().isLessThan(FlutterSdkVersion.MIN_SUPPORTED_SDK)) {
       return createOutOfDateFlutterSdkPanel(flutterSdk);
     }
 
