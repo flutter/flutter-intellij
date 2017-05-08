@@ -14,7 +14,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -29,7 +28,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class FlutterSdkUtil {
@@ -38,7 +36,6 @@ public class FlutterSdkUtil {
    */
   public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST_ENV";
 
-  private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
 
@@ -155,11 +152,6 @@ public class FlutterSdkUtil {
     return flutterPubspecFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
 
-  @NotNull
-  public static String versionPath(@NotNull String sdkHomePath) {
-    return sdkHomePath + "/VERSION";
-  }
-
   /**
    * Checks the workspace for any open Flutter projects.
    *
@@ -171,39 +163,6 @@ public class FlutterSdkUtil {
 
   public static boolean hasFlutterModules(@NotNull Project project) {
     return FlutterModuleUtils.hasFlutterModule(project);
-  }
-
-  @Nullable
-  public static String getSdkVersion(@NotNull String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    final Pair<File, Long> key = Pair.create(versionFile, versionFile.lastModified());
-    if (ourVersions.containsKey(key)) {
-      return ourVersions.get(key);
-    }
-
-    final String version = readVersionFile(sdkHomePath);
-    if (version == null) {
-      LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
-    }
-
-    ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
-    return version;
-  }
-
-  private static String readVersionFile(String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile() && versionFile.length() < 1000) {
-      try {
-        final String content = FileUtil.loadFile(versionFile).trim();
-        final int index = content.lastIndexOf('\n');
-        if (index < 0) return content;
-        return content.substring(index + 1).trim();
-      }
-      catch (IOException e) {
-        /* ignore */
-      }
-    }
-    return null;
   }
 
   @Nullable
