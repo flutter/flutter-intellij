@@ -26,7 +26,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
-import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -226,30 +225,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }, "Creating Flutter Project", false, project);
 
     return result.get();
-  }
-
-  /**
-   * Set up a "small IDE" project. (For example, WebStorm.)
-   */
-  public static void setupSmallProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
-    throws ConfigurationException {
-    final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
-    if (sdk == null) {
-      throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
-    }
-    model.addContentEntry(baseDir);
-
-    final PubRoot root = sdk.createFiles(baseDir, model.getModule());
-    if (root != null) {
-      FlutterModuleUtils.autoShowMain(project, root);
-    }
-    final String dartSdkPath = sdk.getDartSdkPath();
-    if (dartSdkPath == null) {
-      throw new ConfigurationException("unable to get Dart SDK"); // shouldn't happen; we just created it.
-    }
-
-    DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
-    FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {

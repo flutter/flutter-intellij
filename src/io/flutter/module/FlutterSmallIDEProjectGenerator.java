@@ -11,6 +11,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -43,15 +48,38 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
                               @NotNull VirtualFile baseDir,
                               @NotNull String flutterSdkPath,
                               @NotNull Module module) {
+
+    final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
+    if (sdk == null) {
+      FlutterMessages.showError("Error creating project", flutterSdkPath + " is not a valid Flutter SDK");
+      return;
+    }
+
+    // Run "flutter create".
+    final PubRoot root = sdk.createFiles(baseDir, module);
+    if (root == null) {
+      FlutterMessages.showError("Error creating project", "Failed to run flutter create.");
+      return;
+    }
+
     ApplicationManager.getApplication().runWriteAction(() -> {
-      try {
-        final ModifiableRootModel modifiableModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module);
-        FlutterModuleBuilder.setupSmallProject(project, modifiableModel, baseDir, flutterSdkPath);
-        ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel);
+
+      // Set up Dart SDK.
+      final String dartSdkPath = sdk.getDartSdkPath();
+      if (dartSdkPath == null) {
+        FlutterMessages.showError("Error creating project", "unable to get Dart SDK"); // shouldn't happen; we just created it.
+        return;
       }
-      catch (ConfigurationException e) {
-        FlutterMessages.showError("Error creating project", e.getMessage());
-      }
+      DartPlugin.ensureDartSdkConfigured(project, sdk.getDartSdkPath());
+      DartPlugin.enableDartSdk(module);
+      FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
+
+      // Set up module.
+      final ModifiableRootModel modifiableModel = ModifiableModelsProvider.SERVICE.getInstance().getModuleModifiableModel(module);
+      modifiableModel.addContentEntry(root.getRoot());
+      ModifiableModelsProvider.SERVICE.getInstance().commitModuleModifiableModel(modifiableModel);
+
+      FlutterModuleUtils.autoShowMain(project, root);
     });
   }
 }
