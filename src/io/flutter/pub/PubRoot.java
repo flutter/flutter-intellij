@@ -9,7 +9,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -50,16 +52,27 @@ public class PubRoot {
    * Returns the unique pub root for a project.
    * <p>
    * If there is more than one, returns null.
+   */
+  @Nullable
+  public static PubRoot forProject(@NotNull Project project) {
+    final List<PubRoot> roots = PubRoots.forProject(project);
+    if (roots.size() != 1) {
+      return null;
+    }
+    return roots.get(0);
+  }
+
+  /**
+   * Returns the unique pub root for a project.
+   * <p>
+   * If there is more than one, returns null.
    * <p>
    * Refreshes the returned pubroot's directory. (Not any others.)
    */
   @Nullable
   public static PubRoot forProjectWithRefresh(@NotNull Project project) {
-    final List<PubRoot> roots = PubRoots.forProject(project);
-    if (roots.size() != 1) {
-      return null;
-    }
-    return roots.get(0).refresh();
+    final PubRoot root = forProject(project);
+    return root == null ? null : root.refresh();
   }
 
   /**
@@ -235,6 +248,34 @@ public class PubRoot {
   @Nullable
   public VirtualFile getLibMain() {
     return lib == null ? null : lib.findChild("main.dart");
+  }
+
+  /**
+   * Returns the android subdirectory if it exists.
+   */
+  @Nullable
+  public VirtualFile getAndroidDir() {
+    return root.findChild("android");
+  }
+
+
+  /**
+   * Returns true if the project has a module for the "android" directory.
+   */
+  public boolean hasAndroidModule(Project project) {
+    final VirtualFile androidDir = getAndroidDir();
+    if (androidDir == null) {
+      return false;
+    }
+
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      for (VirtualFile contentRoot : ModuleRootManager.getInstance(module).getContentRoots()) {
+        if (contentRoot.equals(androidDir)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /**
