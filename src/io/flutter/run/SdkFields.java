@@ -9,17 +9,16 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -82,57 +81,41 @@ public class SdkFields {
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
-  void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
+  void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {
     // TODO(pq): consider validating additional args values
     checkSdk(project);
     final MainFile.Result main = MainFile.verify(filePath, project);
-    if (!MainFile.verify(filePath, project).canLaunch()) {
+    if (!main.canLaunch()) {
       throw new RuntimeConfigurationError(main.getError());
+    }
+    if (PubRoot.forDirectory(main.get().getAppDir()) == null) {
+      throw new RuntimeConfigurationError("Entrypoint isn't within a Flutter pub root");
     }
   }
 
   /**
    * Create a command to run 'flutter run --machine'.
    */
-  public GeneralCommandLine createFlutterSdkRunCommand(Project project, @Nullable FlutterDevice device,
+  public GeneralCommandLine createFlutterSdkRunCommand(@NotNull Project project,
+                                                       @Nullable FlutterDevice device,
                                                        @NotNull RunMode mode) throws ExecutionException {
 
     final MainFile main = MainFile.verify(filePath, project).get();
-    final String appPath = main.getAppDir().getPath();
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
       throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
     }
-    final String flutterSdkPath = flutterSdk.getHomePath();
-    final String flutterExec = FlutterSdkUtil.pathToFlutterTool(flutterSdkPath);
 
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(appPath);
-    commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
-    commandLine.setExePath(FileUtil.toSystemDependentName(flutterExec));
-    commandLine.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-    commandLine.addParameters("run", "--machine");
-    if (device != null) {
-      commandLine.addParameter("--device-id=" + device.deviceId());
+    final PubRoot root = PubRoot.forDirectory(main.getAppDir());
+    if (root == null) {
+      throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
-    if (mode == RunMode.DEBUG) {
-      commandLine.addParameter("--start-paused");
-    }
-    if (!mode.isReloadEnabled()) {
-      commandLine.addParameter("--no-hot");
-    }
-    if (additionalArgs != null) {
-      for (String param : additionalArgs.split(" ")) {
-        commandLine.addParameter(param);
-      }
-    }
-    // Make the path relative if possible (to make the command line prettier).
-    assert main.getFile().getPath().startsWith(appPath);
-    assert !appPath.endsWith("/");
-    final String mainPath = main.getFile().getPath().substring(appPath.length() + 1);
-    commandLine.addParameter(FileUtil.toSystemDependentName(mainPath));
 
-    return commandLine;
+    final String[] args = additionalArgs == null ? new String [] {} : additionalArgs.split(" ");
+
+    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, mode, args);
+    return command.createGeneralCommandLine(project);
   }
 
   SdkFields copy() {

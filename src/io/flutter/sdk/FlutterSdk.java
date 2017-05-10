@@ -11,14 +11,22 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -99,16 +107,44 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
   }
 
-  public FlutterCommand flutterCreate(VirtualFile appDir) {
+  public FlutterCommand flutterCreate(@NotNull VirtualFile appDir) {
     return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, appDir.getName());
   }
 
-  public FlutterCommand flutterPackagesGet(PubRoot root) {
+  public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_GET);
   }
 
-  public FlutterCommand flutterPackagesUpgrade(PubRoot root) {
+  public FlutterCommand flutterPackagesUpgrade(@NotNull PubRoot root) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
+  }
+
+  public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
+                                   @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
+    if (!root.contains(main)) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    }
+
+    final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    if (device != null) {
+      args.add("--device-id=" + device.deviceId());
+    }
+    if (mode == RunMode.DEBUG) {
+      args.add("--start-paused");
+    }
+    if (!mode.isReloadEnabled()) {
+      args.add("--no-hot");
+    }
+    args.addAll(asList(additionalArgs));
+
+    // Make the path to main relative (to make the command line prettier).
+    assert main.getPath().startsWith(root.getPath());
+    assert !root.getPath().endsWith("/");
+    final String mainPath = main.getPath().substring(root.getPath().length() + 1);
+    args.add(FileUtil.toSystemDependentName(mainPath));
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
   /**

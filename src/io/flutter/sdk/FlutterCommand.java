@@ -12,11 +12,13 @@ import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
+import io.flutter.android.AndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.FlutterApp;
@@ -71,7 +73,8 @@ public class FlutterCommand {
    * If unable to start (for example, if a command is already running), returns null.
    */
   public Process start(@Nullable Consumer<ProcessOutput> onDone) {
-    final OSProcessHandler handler = startProcess();
+    // TODO(skybrian) add Project parameter if it turns out later that we need to set ANDROID_HOME.
+    final OSProcessHandler handler = startProcess(null);
     if (handler == null) {
       return null;
     }
@@ -103,7 +106,7 @@ public class FlutterCommand {
    * If unable to start (for example, if a command is already running), returns null.
    */
   public Process startInConsole(@NotNull Project project) {
-    final OSProcessHandler handler = startProcess();
+    final OSProcessHandler handler = startProcess(project);
     if (handler == null) {
       return null;
     }
@@ -120,7 +123,7 @@ public class FlutterCommand {
    * If unable to start (for example, if a command is already running), returns null.
    */
   public Process startInModuleConsole(Module module, Runnable onDone) {
-    final OSProcessHandler handler = startProcess();
+    final OSProcessHandler handler = startProcess(module.getProject());
     if (handler == null) {
       return null;
     }
@@ -150,10 +153,12 @@ public class FlutterCommand {
   /**
    * Starts a process that runs a flutter command, unless one is already running.
    * <p>
+   * If a project is supplied, it will be used to determine the ANDROID_HOME variable for the subprocess.
+   * <p>
    * Returns the handler if successfully started.
    */
   @Nullable
-  private OSProcessHandler startProcess() {
+  private OSProcessHandler startProcess(@Nullable Project project) {
     if (!inProgress.compareAndSet(null, this)) {
       return null;
     }
@@ -161,7 +166,7 @@ public class FlutterCommand {
 
     final OSProcessHandler handler;
     try {
-      handler = new OSProcessHandler(createGeneralCommandLine());
+      handler = new OSProcessHandler(createGeneralCommandLine(project));
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(final ProcessEvent event) {
@@ -182,12 +187,24 @@ public class FlutterCommand {
     }
   }
 
+  /**
+   * Creates the command line to run.
+   * <p>
+   * If a project is supplied, it will be used to determine the ANDROID_HOME variable for the subprocess.
+   */
   @NotNull
-  private GeneralCommandLine createGeneralCommandLine() {
+  public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
     final GeneralCommandLine line = new GeneralCommandLine();
     line.setCharset(CharsetToolkit.UTF8_CHARSET);
-    line.setExePath(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName());
+
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+
+    final String androidHome = AndroidSdk.chooseAndroidHome(project);
+    if (androidHome != null) {
+      line.withEnvironment("ANDROID_HOME", androidHome);
+    }
+
+    line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
     line.setWorkDirectory(workDir.getPath());
     line.addParameter("--no-color");
     line.addParameters(type.subCommand);
@@ -201,7 +218,8 @@ public class FlutterCommand {
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
     UPGRADE("Flutter upgrade", "upgrade"),
-    VERSION("Flutter version", "--version");
+    VERSION("Flutter version", "--version"),
+    RUN("Flutter run", "run");
 
     final public String title;
     final ImmutableList<String> subCommand;

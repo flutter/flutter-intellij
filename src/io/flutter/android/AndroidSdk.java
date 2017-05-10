@@ -53,6 +53,15 @@ public class AndroidSdk {
   }
 
   /**
+   * Returns the Java SDK in the project's configuration, or null if not an Android SDK.
+   */
+  @Nullable
+  public static AndroidSdk fromProject(@NotNull Project project) {
+    final Sdk candidate = ProjectRootManager.getInstance(project).getProjectSdk();
+    return fromSdk(candidate);
+  }
+
+  /**
    * Returns the Android SDK that matches the ANDROID_HOME environment variable, provided it exists.
    */
   @Nullable
@@ -68,6 +77,14 @@ public class AndroidSdk {
       return null;
     }
 
+    return fromHome(file);
+  }
+
+  /**
+   * Returns the Android SDK for the given home directory, or null if no SDK matches.
+   */
+  @Nullable
+  public static AndroidSdk fromHome(VirtualFile file) {
     for (AndroidSdk candidate : findAll()) {
       if (file.equals(candidate.getHome())) {
         return candidate;
@@ -75,6 +92,16 @@ public class AndroidSdk {
     }
 
     return null; // not found
+  }
+
+  /**
+   * Returns the best value of ANDROID_HOME to use.
+   * <p>
+   * If the given project has an Android SDK set, prefer that. Otherwise get it from the environment.
+   */
+  public static String chooseAndroidHome(@Nullable Project project) {
+    final AndroidSdk sdk = project == null ? null : fromProject(project);
+    return sdk == null ? EnvironmentUtil.getValue("ANDROID_HOME") : sdk.getHome().getPath();
   }
 
   /**
