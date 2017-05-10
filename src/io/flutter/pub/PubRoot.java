@@ -207,6 +207,11 @@ public class PubRoot {
   }
 
   @NotNull
+  public String getPath() {
+    return root.getPath();
+  }
+
+  @NotNull
   public VirtualFile getPubspec() {
     return pubspec;
   }
@@ -285,6 +290,20 @@ public class PubRoot {
   public Module getModule(@NotNull Project project) {
     if (project.isDisposed()) return null;
     return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
+  }
+
+  /**
+   * Returns true if the PubRoot is an ancestor of the given file.
+   */
+  public boolean contains(@NotNull VirtualFile file) {
+    VirtualFile dir = file.getParent();
+    while (dir != null) {
+      if (dir.equals(root)) {
+        return true;
+      }
+      dir = dir.getParent();
+    }
+    return false;
   }
 
   @Override

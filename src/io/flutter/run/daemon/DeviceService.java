@@ -11,6 +11,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkManager;
@@ -69,6 +70,9 @@ public class DeviceService {
 
     // Watch for Bazel workspace changes.
     WorkspaceCache.getInstance(project).subscribe(this::refreshDeviceDaemon);
+
+    // Watch for Java SDK changes. (Used to get the value of ANDROID_HOME.)
+    ProjectRootManagerEx.getInstanceEx(project).addProjectJdkListener(this::refreshDeviceDaemon);
   }
 
   /**
