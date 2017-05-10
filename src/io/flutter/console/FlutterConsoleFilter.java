@@ -17,9 +17,9 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +58,6 @@ public class FlutterConsoleFilter implements Filter {
     }
   }
 
-
   private static final Logger LOG = Logger.getInstance(FlutterConsoleFilter.class);
 
   private final @NotNull Module module;
@@ -78,8 +77,8 @@ public class FlutterConsoleFilter implements Filter {
     String pathPart = line.trim();
 
     // Check for, e.g., "Launching lib/main.dart"
-    if (pathPart.startsWith("Launching ")) {
-      final String[] parts = pathPart.split(" ");
+    if (line.startsWith("Launching ")) {
+      final String[] parts = line.split(" ");
       if (parts.length > 1) {
         pathPart = parts[1];
       }
@@ -124,18 +123,14 @@ public class FlutterConsoleFilter implements Filter {
   private class FlutteryHyperlinkInfo implements HyperlinkInfo {
     @Override
     public void navigate(final Project project) {
+      // TODO(skybrian) analytics for clicking the link? (We do log the command.)
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (sdk != null) {
-        try {
-          // TODO(skybrian) analytics?
-          sdk.startProcessWithoutModule(project, "Flutter doctor", "doctor");
-        }
-        catch (ExecutionException e) {
-          FlutterMessages.showError(
-            FlutterBundle.message("flutter.command.exception.title"),
-            FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-          LOG.warn(e);
-        }
+      if (sdk == null) {
+        Messages.showErrorDialog(project, "Flutter SDK not found", "Error");
+        return;
+      }
+      if (sdk.flutterDoctor().startInConsole(project) == null) {
+        Messages.showErrorDialog(project, "Failed to start 'flutter doctor'", "Error");
       }
     }
   }
