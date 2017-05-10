@@ -168,8 +168,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     // See: https://www.dartlang.org/tools/pub/pubspec#name
 
-    if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
-      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
+    if (!FlutterUtils.isValidPackageName(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
     }
 
     if (FlutterUtils.isDartKeword(moduleName)) {
@@ -180,8 +180,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart identifier.");
     }
 
-    if (!FlutterUtils.isValidPackageName(moduleName)) {
-      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
+    if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
     }
 
     if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
