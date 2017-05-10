@@ -22,6 +22,7 @@ import java.util.regex.Pattern;
 
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
+  private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]+([_]?[a-z0-9]+)*)+$");
 
   private FlutterUtils() {
   }
@@ -68,7 +69,7 @@ public class FlutterUtils {
   public static boolean isDartKeword(@NotNull String string) {
     return FlutterConstants.DART_KEYWORDS.contains(string);
   }
-  
+
   /**
    * Checks whether a given string is a valid Dart identifier.
    * <p>
@@ -79,5 +80,17 @@ public class FlutterUtils {
    */
   public static boolean isValidDartIdentifier(@NotNull String id) {
     return VALID_ID.matcher(id).matches();
+  }
+
+  /**
+   * Checks whether a given string is a valid Dart package name.
+   * <p>
+   * See: https://www.dartlang.org/tools/pub/pubspec#name
+   *
+   * @param name the string to check
+   * @return true if a valid package name, false otherwise.
+   */
+  public static boolean isValidPackageName(@NotNull String name) {
+    return VALID_PACKAGE.matcher(name).matches();
   }
 }

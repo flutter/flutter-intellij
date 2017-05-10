@@ -168,6 +168,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     // See: https://www.dartlang.org/tools/pub/pubspec#name
 
+    if (!FlutterUtils.isValidPackageName(moduleName)) {
+      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
+    }
+
     if (FlutterUtils.isDartKeword(moduleName)) {
       throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must not be a Dart keyword.");
     }
