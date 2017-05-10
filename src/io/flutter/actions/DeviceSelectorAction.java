@@ -95,7 +95,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     final DeviceService service = DeviceService.getInstance(project);
 
-    for (FlutterDevice item : service.getConnectedDevices()) {
+    final Collection<FlutterDevice> devices = service.getConnectedDevices();
+
+    for (FlutterDevice item : devices) {
       actions.add(new SelectDeviceAction(item));
     }
 
@@ -137,7 +139,11 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       }
     }
 
-    presentation.setText("<no devices>");
+    if (devices.isEmpty()) {
+      presentation.setText("<no devices>");
+    } else {
+      presentation.setText(null);
+    }
   }
 
   // It's not clear if we need TransparentUpdate, but apparently it will make the UI refresh

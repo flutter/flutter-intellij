@@ -5,35 +5,28 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessListener;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
-import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
-import io.flutter.FlutterMessages;
-import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
@@ -41,17 +34,13 @@ public class FlutterSdk {
   private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
 
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
-  private static final AtomicReference<GeneralCommandLine> inProgress = new AtomicReference<>(null);
-  private final @NotNull String myHomePath;
+
+  private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
 
-  private FlutterSdk(@NotNull final String homePath, @Nullable final String version) {
-    myHomePath = homePath;
-    myVersion = FlutterSdkVersion.forVersionString(version);
-  }
-
-  private FlutterSdk(@NotNull final String homePath) {
-    this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
+  private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
+    myHome = home;
+    myVersion = version;
   }
 
   /**
@@ -94,8 +83,68 @@ public class FlutterSdk {
     return getFlutterFromDartSdkLibrary(lib, project.getBaseDir());
   }
 
+  @Nullable
   public static FlutterSdk forPath(@NotNull final String path) {
-    return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
+    final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
+    if (home == null) {
+      return null;
+    } else if (!FlutterSdkUtil.isFlutterSdkHome(path)) {
+      return null;
+    } else {
+      return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
+    }
+  }
+
+  public FlutterCommand flutterVersion() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.VERSION);
+  }
+
+  public FlutterCommand flutterUpgrade() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.UPGRADE);
+  }
+
+  public FlutterCommand flutterDoctor() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
+  }
+
+  public FlutterCommand flutterCreate(@NotNull VirtualFile appDir) {
+    return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, appDir.getName());
+  }
+
+  public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_GET);
+  }
+
+  public FlutterCommand flutterPackagesUpgrade(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
+  }
+
+  public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
+                                   @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
+    if (!root.contains(main)) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    }
+
+    final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    if (device != null) {
+      args.add("--device-id=" + device.deviceId());
+    }
+    if (mode == RunMode.DEBUG) {
+      args.add("--start-paused");
+    }
+    if (!mode.isReloadEnabled()) {
+      args.add("--no-hot");
+    }
+    args.addAll(asList(additionalArgs));
+
+    // Make the path to main relative (to make the command line prettier).
+    assert main.getPath().startsWith(root.getPath());
+    assert !root.getPath().endsWith("/");
+    final String mainPath = main.getPath().substring(root.getPath().length() + 1);
+    args.add(FileUtil.toSystemDependentName(mainPath));
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
   /**
@@ -107,9 +156,9 @@ public class FlutterSdk {
    *
    * @return true if successful (the Dart SDK exists).
    */
-  public boolean sync(@Nullable Project project) {
+  public boolean sync(@NotNull Project project) {
     try {
-      final Process process = startProcessWithoutModule(project, "flutter --version", "--version");
+      final Process process = flutterVersion().startInConsole(project);
       if (process == null) {
         return false;
       }
@@ -117,19 +166,53 @@ public class FlutterSdk {
       if (process.exitValue() != 0) {
         return false;
       }
-      final VirtualFile flutterBin = LocalFileSystem.getInstance().findFileByPath(myHomePath + "/bin");
+      final VirtualFile flutterBin = myHome.findChild("bin");
       if (flutterBin == null) {
         return false;
       }
       flutterBin.refresh(false, true);
       return flutterBin.findFileByRelativePath("cache/dart-sdk") != null;
     }
-    catch (ExecutionException | InterruptedException e) {
+    catch (InterruptedException e) {
       LOG.warn(e);
       return false;
     }
   }
+  
+  /**
+   * Runs flutter create and waits for it to finish.
+   * <p>
+   * Shows output in a console unless the module parameter is null.
+   * <p>
+   * Returns the PubRoot if successful.
+   */
+  @Nullable
+  public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module) {
 
+    final Process process;
+    if (module == null) {
+      process = flutterCreate(baseDir).start(null);
+    } else {
+      process = flutterCreate(baseDir).startInModuleConsole(module, null);
+    }
+    if (process == null) {
+      return null;
+    }
+
+    try {
+      if (process.waitFor() != 0) {
+        return null;
+      }
+    }
+    catch (InterruptedException e) {
+      LOG.warn(e);
+      return null;
+    }
+
+    baseDir.refresh(false, true);
+    return PubRoot.forDirectory(baseDir);
+  }
+  
   /**
    * Starts running 'flutter packages get' on the given pub root provided it's in one of this project's modules.
    * <p>
@@ -137,17 +220,11 @@ public class FlutterSdk {
    * <p>
    * Returns the process if successfully started.
    */
-  public Process startPackagesGet(@NotNull PubRoot root, @NotNull Project project) throws ExecutionException {
+  public Process startPackagesGet(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
-
-    return startProcess(Command.PACKAGES_GET, module, root.getRoot(), new ProcessAdapter() {
-      @Override
-      public void processTerminated(ProcessEvent event) {
-        // Refresh to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
-        root.refresh();
-      }
-    });
+    // Refresh afterwards to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
+    return flutterPackagesGet(root).startInModuleConsole(module, root::refresh);
   }
 
   /**
@@ -157,148 +234,24 @@ public class FlutterSdk {
    * <p>
    * Returns the process if successfully started.
    */
-  public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) throws ExecutionException {
+  public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
-
-    return startProcess(Command.PACKAGES_UPGRADE, module, root.getRoot(), new ProcessAdapter() {
-      @Override
-      public void processTerminated(ProcessEvent event) {
-        root.refresh();
-      }
-    });
+    return flutterPackagesUpgrade(root).startInModuleConsole(module, root::refresh);
   }
 
-  /**
-   * Starts running a flutter command.
-   * <p>
-   * If a module is supplied, shows output in the appropriate console for that module.
-   * <p>
-   * Returns the process if successfully started.
-   * <p>
-   * Doesn't run the comand if another command is already running.
-   */
-  @Nullable
-  public Process startProcess(@NotNull Command cmd,
-                              @Nullable Module module,
-                              @Nullable VirtualFile workingDir,
-                              @Nullable ProcessListener listener,
-                              @NotNull String... args)
-    throws ExecutionException {
-    final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
-    final String dirPath = workingDir == null ? null : workingDir.getPath();
-    final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
-    command.setCharset(CharsetToolkit.UTF8_CHARSET);
-    command.setExePath(flutterPath);
-    command.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-    // Example: [create, foo_bar]
-    String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
-    toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
-    command.addParameters(toolArgs);
-
-    final OSProcessHandler handler = createProcess(command, cmd.title);
-    if (handler == null) {
-      return null;
-    }
-
-    if (listener != null) {
-      handler.addProcessListener(listener);
-    }
-
-    if (module != null) {
-      FlutterConsoles.displayProcess(handler, module.getProject(), module);
-    } else {
-      handler.startNotify();
-    }
-
-    // Send the command to analytics.
-    String commandName = StringUtil.join(cmd.command, "_");
-    commandName = commandName.replaceAll("-", "");
-    FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
-
-    return handler.getProcess();
-  }
-
-  /**
-   * Starts running a flutter command that's not associated with any particular module's console.
-   * <p>
-   * If a project is supplied, shows output in a console.
-   * <p>
-   * Returns the process if successfully started.
-   * <p>
-   * Doesn't run the comand if another command is already running.
-   */
-  @Nullable
-  public Process startProcessWithoutModule(@Nullable Project project,
-                                           @NotNull String title,
-                                           @NotNull String... args)
-    throws ExecutionException {
-    final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
-    final GeneralCommandLine command = new GeneralCommandLine();
-    command.setCharset(CharsetToolkit.UTF8_CHARSET);
-    command.setExePath(flutterPath);
-    command.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-    // Example: [create, foo_bar]
-    final String[] toolArgs = ArrayUtil.prepend("--no-color", args);
-    command.addParameters(toolArgs);
-
-    final OSProcessHandler handler = createProcess(command, title);
-    if (handler == null) {
-      return null;
-    }
-
-    if (project != null) {
-      FlutterConsoles.displayProcess(handler, project, null);
-    } else {
-      handler.startNotify();
-    }
-
-    FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
-
-    return handler.getProcess();
-  }
-
-  /**
-   * Starts a Flutter process provided that it isn't already running.
-   * <p>
-   * Returns the handler if successfully started.
-   */
-  @Nullable
-  private OSProcessHandler createProcess(GeneralCommandLine command, String title) {
-    if (!inProgress.compareAndSet(null, command)) {
-      return null;
-    }
-    DartPlugin.setPubActionInProgress(true);
-
-    final OSProcessHandler handler;
-    try {
-      handler = new OSProcessHandler(command);
-      handler.addProcessListener(new ProcessAdapter() {
-        @Override
-        public void processTerminated(final ProcessEvent event) {
-          inProgress.set(null);
-          DartPlugin.setPubActionInProgress(false);
-        }
-      });
-      return handler;
-    }
-    catch (ExecutionException e) {
-      inProgress.set(null);
-      DartPlugin.setPubActionInProgress(false);
-      FlutterMessages.showError(
-        title,
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-      return null;
-    }
+  @NotNull
+  public VirtualFile getHome() {
+    return myHome;
   }
 
   @NotNull
   public String getHomePath() {
-    return myHomePath;
+    return myHome.getPath();
   }
 
   /**
-   * Returns the Flutter Version as captured in the VERSION file.  This version is very coarse grained and not meant for presentation and
+   * Returns the Flutter Version as captured in the VERSION file. This version is very coarse grained and not meant for presentation and
    * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
    */
   @NotNull
@@ -331,27 +284,10 @@ public class FlutterSdk {
     for (String url : urls) {
       if (url.endsWith(DART_CORE_SUFFIX)) {
         final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
-        final VirtualFile file = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
-        return file == null ? null : new FlutterSdk(file.getPath());
+        final VirtualFile home = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
+        return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
       }
     }
     return null;
-  }
-
-  public enum Command {
-    CREATE("Flutter create", "create"),
-    DOCTOR("Flutter doctor", "doctor"),
-    PACKAGES_GET("Flutter packages get", "packages", "get"),
-    PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
-    UPGRADE("Flutter upgrade", "upgrade"),
-    VERSION("Flutter version", "--version");
-
-    final public String title;
-    final String[] command;
-
-    Command(String title, String... command) {
-      this.title = title;
-      this.command = command;
-    }
   }
 }

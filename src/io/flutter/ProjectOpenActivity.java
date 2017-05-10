@@ -5,7 +5,6 @@
  */
 package io.flutter;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;
@@ -15,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
@@ -75,7 +75,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
           return process.exitValue() == 0;
         }
       }
-      catch (ExecutionException | InterruptedException e) {
+      catch (InterruptedException e) {
         FlutterMessages.showError("Error opening", e.getMessage());
       }
       return false;
@@ -84,7 +84,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       // We have a .packages file, but need to run a flutter command to download the Dart SDK.
       final boolean ok = sdk.sync(project);
       if (!ok) {
-        LOG.warn("failed to sync flutter SDK");
+        FlutterMessages.showError("Error opening project", "Failed to download Dart SDK for Flutter");
       }
       return ok;
     } else {
@@ -108,24 +108,23 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       addAction(new AnAction("Run 'flutter packages get'") {
         @Override
         public void actionPerformed(AnActionEvent event) {
+          // TODO(skybrian) analytics for the action? (The command is logged.)
           expire();
 
           final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
           if (sdk == null) {
+            Messages.showErrorDialog(project, "Flutter SDK not found", "Error");
             return;
           }
 
           final PubRoot root = PubRoot.forProjectWithRefresh(project);
           if (root == null) {
+            Messages.showErrorDialog("Pub root not found", "Error");
             return;
           }
 
-          try {
-            // TODO(skybrian) analytics?
-            sdk.startPackagesGet(root, project);
-          }
-          catch (ExecutionException e) {
-            FlutterMessages.showError("Error opening", e.getMessage());
+          if (sdk.startPackagesGet(root, project) == null) {
+            Messages.showErrorDialog("Unable to run 'flutter packages get'", "Error");
           }
         }
       });

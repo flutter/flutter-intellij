@@ -15,6 +15,6 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterUpgradeAction extends FlutterSdkAction {
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) throws ExecutionException {
-    sdk.startProcessWithoutModule(project, "Flutter upgrade", "upgrade");
+    sdk.flutterUpgrade().startInConsole(project);
   }
 }

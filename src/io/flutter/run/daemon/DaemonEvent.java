@@ -57,6 +57,8 @@ abstract class DaemonEvent {
       switch (eventName) {
         case "daemon.logMessage":
           return GSON.fromJson(params, LogMessage.class);
+        case "daemon.showMessage":
+          return GSON.fromJson(params, ShowMessage.class);
         case "app.start":
           return GSON.fromJson(params, AppStarting.class);
         case "app.debugPort":
@@ -104,6 +106,8 @@ abstract class DaemonEvent {
 
     default void onDaemonLogMessage(LogMessage event) {}
 
+    default void onDaemonShowMessage(ShowMessage event) {}
+
     // app domain
 
     default void onAppStarting(AppStarting event) {}
@@ -131,13 +135,25 @@ abstract class DaemonEvent {
 
   @SuppressWarnings("unused")
   static class LogMessage extends DaemonEvent {
-    // "event":"daemon.eventLogMessage"
+    // "event":"daemon.logMessage"
     String level;
     String message;
     String stackTrace;
 
     void accept(Listener listener) {
       listener.onDaemonLogMessage(this);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  static class ShowMessage extends DaemonEvent {
+    // "event":"daemon.showMessage"
+    String level;
+    String title;
+    String message;
+
+    void accept(Listener listener) {
+      listener.onDaemonShowMessage(this);
     }
   }
 

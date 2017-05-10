@@ -13,11 +13,14 @@ import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
+import io.flutter.android.AndroidSdk;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
@@ -107,6 +110,10 @@ public class FlutterInitializer implements StartupActivity {
 
     final PubRoot root = PubRoot.forProjectWithRefresh(project);
     if (root != null) {
+      if (root.hasAndroidModule(project)) {
+        ensureAndroidSdk(project);
+      }
+
       FlutterModuleUtils.autoCreateRunConfig(project, root);
       FlutterModuleUtils.autoShowMain(project, root);
     }
@@ -157,5 +164,21 @@ public class FlutterInitializer implements StartupActivity {
       final Analytics analytics = getAnalytics();
       ToolWindowTracker.track(project, analytics);
     }
+  }
+
+  /**
+   * Automatically set Android SDK based on ANDROID_HOME.
+   */
+  private void ensureAndroidSdk(@NotNull Project project) {
+    if (ProjectRootManager.getInstance(project).getProjectSdk() != null) {
+      return; // Don't override user's settings.
+    }
+
+    final AndroidSdk wanted = AndroidSdk.fromEnvironment();
+    if (wanted == null) {
+      return; // ANDROID_HOME not set or Android SDK not created in IDEA; not clear what to do.
+    }
+
+    ApplicationManager.getApplication().runWriteAction(() -> wanted.setCurrent(project));
   }
 }

@@ -6,7 +6,6 @@
 package io.flutter.module;
 
 import com.google.common.collect.ImmutableList;
-import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
@@ -27,7 +26,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
-import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -89,6 +87,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final FlutterSdk sdk = myStep.getFlutterSdk();
+    if (sdk == null) {
+      Messages.showErrorDialog("Flutter SDK not found", "Error");
+      return null;
+    }
     final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project);
     if (root == null) {
       Messages.showErrorDialog("Flutter create command was unsuccessful", "Error");
@@ -219,66 +221,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
-      result.set(runFlutterCreate(sdk, baseDir, null));
+      result.set(sdk.createFiles(baseDir, null));
     }, "Creating Flutter Project", false, project);
 
     return result.get();
-  }
-
-  /**
-   * Runs flutter create. If the module parameter isn't null, shows output in a console.
-   * <p>
-   * Returns the PubRoot if successful.
-   */
-  @Nullable
-  private static PubRoot runFlutterCreate(@NotNull FlutterSdk sdk,
-                                          @NotNull VirtualFile baseDir,
-                                          @Nullable Module module) {
-    // Create files.
-    try {
-      final Process process =
-        sdk.startProcess(FlutterSdk.Command.CREATE, module, baseDir, null, baseDir.getPath());
-      if (process == null) {
-        return null;
-      }
-
-      // Wait for process to finish. (We overwrite some files, so make sure we lose the race.)
-      final int exitCode = process.waitFor();
-      if (exitCode != 0) {
-        return null;
-      }
-    }
-    catch (ExecutionException | InterruptedException e) {
-      LOG.warn(e);
-      return null;
-    }
-
-    baseDir.refresh(false, true);
-    return PubRoot.forDirectory(baseDir);
-  }
-
-  /**
-   * Set up a "small IDE" project. (For example, WebStorm.)
-   */
-  public static void setupSmallProject(@NotNull Project project, ModifiableRootModel model, VirtualFile baseDir, String flutterSdkPath)
-    throws ConfigurationException {
-    final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
-    if (sdk == null) {
-      throw new ConfigurationException(flutterSdkPath + " is not a valid Flutter SDK");
-    }
-    model.addContentEntry(baseDir);
-
-    final PubRoot root = runFlutterCreate(sdk, baseDir, model.getModule());
-    if (root != null) {
-      FlutterModuleUtils.autoShowMain(project, root);
-    }
-    final String dartSdkPath = sdk.getDartSdkPath();
-    if (dartSdkPath == null) {
-      throw new ConfigurationException("unable to get Dart SDK"); // shouldn't happen; we just created it.
-    }
-
-    DartPlugin.ensureDartSdkConfigured(model.getProject(), sdk.getDartSdkPath());
-    FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
@@ -311,6 +257,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     public void dispose() {
     }
 
+    @Nullable
     public FlutterSdk getFlutterSdk() {
       return FlutterSdk.forPath(peer.getSdkComboPath());
     }

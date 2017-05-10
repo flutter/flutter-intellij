@@ -67,7 +67,7 @@ class FlutterConsole {
   /**
    * Starts displaying the output of a different process.
    */
-  void watchProcess(OSProcessHandler process) {
+  void watchProcess(@NotNull OSProcessHandler process) {
     if (cancelProcessSubscription != null) {
       cancelProcessSubscription.run();
       cancelProcessSubscription = null;
@@ -75,7 +75,6 @@ class FlutterConsole {
 
     view.clear();
     view.attachToProcess(process);
-    process.startNotify();
 
     // Print exit code.
     final ProcessAdapter listener = new ProcessAdapter() {

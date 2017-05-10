@@ -16,6 +16,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterMessages;
+import io.flutter.android.AndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -64,7 +66,7 @@ class DeviceDaemon {
 
   /**
    * Returns the current devices.
-   *
+   * <p>
    * <p>This is calculated based on add and remove events seen since the process started.
    */
   ImmutableList<FlutterDevice> getDevices() {
@@ -90,20 +92,23 @@ class DeviceDaemon {
 
   /**
    * Returns the appropriate command to start the device daemon, if any.
-   *
+   * <p>
    * A null means the device daemon should be shut down.
    */
-  static @Nullable Command chooseCommand(Project project) {
+  static @Nullable
+  Command chooseCommand(Project project) {
     if (!usesFlutter(project)) {
       return null;
     }
+
+    final String androidHome = AndroidSdk.chooseAndroidHome(project);
 
     // See if the Bazel workspace provides a script.
     final Workspace w = WorkspaceCache.getInstance(project).getNow();
     if (w != null) {
       final String script = w.getDaemonScript();
       if (script != null) {
-        return new Command(w.getRoot().getPath(), script, ImmutableList.of());
+        return new Command(w.getRoot().getPath(), script, ImmutableList.of(), androidHome);
       }
     }
 
@@ -115,7 +120,7 @@ class DeviceDaemon {
 
     try {
       final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-      return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"));
+      return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"), androidHome);
     }
     catch (ExecutionException e) {
       LOG.warn("Unable to calculate command to watch Flutter devices", e);
@@ -127,14 +132,15 @@ class DeviceDaemon {
     final Workspace w = WorkspaceCache.getInstance(p).getNow();
     if (w != null) {
       return w.usesFlutter(p);
-    } else {
+    }
+    else {
       return FlutterModuleUtils.hasFlutterModule(p);
     }
   }
 
   /**
    * The command used to start the daemon.
-   *
+   * <p>
    * <p>Comparing two Commands lets us detect configuration changes that require a restart.
    */
   static class Command {
@@ -145,10 +151,17 @@ class DeviceDaemon {
     private final @NotNull String command;
     private final @NotNull ImmutableList<String> parameters;
 
-    private Command(@NotNull String workDir, @NotNull String command, @NotNull ImmutableList<String> parameters) {
+    /**
+     * The value of ANDROID_HOME to use when launching the command.
+     */
+    private final @Nullable String androidHome;
+
+    private Command(@NotNull String workDir, @NotNull String command, @NotNull ImmutableList<String> parameters,
+                    @Nullable String androidHome) {
       this.workDir = workDir;
       this.command = command;
       this.parameters = parameters;
+      this.androidHome = androidHome;
     }
 
     /**
@@ -193,7 +206,8 @@ class DeviceDaemon {
             throw new ExecutionException(e.getCause());
           }
         }
-      } finally {
+      }
+      finally {
         if (!succeeded) {
           process.destroyProcess();
         }
@@ -208,12 +222,13 @@ class DeviceDaemon {
       final Command other = (Command)obj;
       return Objects.equal(workDir, other.workDir)
              && Objects.equal(command, other.command)
-             && Objects.equal(parameters, other.parameters);
+             && Objects.equal(parameters, other.parameters)
+             && Objects.equal(androidHome, other.androidHome);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(workDir, command, parameters);
+      return Objects.hashCode(workDir, command, parameters, androidHome);
     }
 
     private GeneralCommandLine toCommandLine() {
@@ -221,6 +236,9 @@ class DeviceDaemon {
       result.setCharset(CharsetToolkit.UTF8_CHARSET);
       result.setExePath(FileUtil.toSystemDependentName(command));
       result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+      if (androidHome != null) {
+        result.withEnvironment("ANDROID_HOME", androidHome);
+      }
       for (String param : parameters) {
         result.addParameter(param);
       }
@@ -241,7 +259,7 @@ class DeviceDaemon {
 
   /**
    * Handles events sent by the device daemon process.
-   *
+   * <p>
    * <p>Updates the device list based on incoming events.
    */
   private static class Listener implements DaemonEvent.Listener {
@@ -260,6 +278,19 @@ class DeviceDaemon {
     @Override
     public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
       LOG.info("flutter device watcher: " + message.message);
+    }
+
+    @Override
+    public void onDaemonShowMessage(@NotNull DaemonEvent.ShowMessage event) {
+      if ("error".equals(event.level)) {
+        FlutterMessages.showError(event.title, event.message);
+      }
+      else if ("warning".equals(event.level)) {
+        FlutterMessages.showWarning(event.title, event.message);
+      }
+      else {
+        FlutterMessages.showInfo(event.title, event.message);
+      }
     }
 
     // device domain

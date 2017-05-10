@@ -30,9 +30,10 @@ public class FlutterConsoles {
    *
    * @param module if not null, show in this module's console.
    */
-  public static void displayProcess(@NotNull OSProcessHandler process,
-                                    @NotNull Project project,
-                                    @Nullable Module module) {
+  public static void displayProcessLater(@NotNull OSProcessHandler process,
+                                         @NotNull Project project,
+                                         @Nullable Module module,
+                                         @NotNull Runnable onReady) {
 
     // Getting a MessageView has to happen on the UI thread.
     ApplicationManager.getApplication().invokeLater(() -> {
@@ -45,6 +46,7 @@ public class FlutterConsoles {
         }
         console.watchProcess(process);
         console.bringToFront();
+        onReady.run();
       });
     });
   }

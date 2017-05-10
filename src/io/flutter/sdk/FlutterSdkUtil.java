@@ -14,7 +14,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -29,14 +28,14 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class FlutterSdkUtil {
-  /** The environment variable to use to tell the flutter tool which app is driving it. */
+  /**
+   * The environment variable to use to tell the flutter tool which app is driving it.
+   */
   public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST_ENV";
 
-  private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
 
@@ -63,40 +62,46 @@ public class FlutterSdkUtil {
     // Add the new value first; this ensures that it's the 'default' flutter sdk.
     allPaths.add(newPath);
 
+
+    final PropertiesComponent props = PropertiesComponent.getInstance();
+
     // Add the existing known paths.
-    final String[] oldPaths = PropertiesComponent.getInstance().getValues(propertyKey);
+    final String[] oldPaths = props.getValues(propertyKey);
     if (oldPaths != null) {
       allPaths.addAll(Arrays.asList(oldPaths));
     }
 
     // Store the values back.
     if (allPaths.isEmpty()) {
-      PropertiesComponent.getInstance().unsetValue(propertyKey);
+      props.unsetValue(propertyKey);
     }
     else {
-      PropertiesComponent.getInstance().setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
+      props.setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
     }
   }
 
+  /**
+   * Adds the current path and other known paths to the combo, most recently used first.
+   */
   public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
-    final Set<String> validPathsForUI = new HashSet<>();
-    final String currentPath = combo.getEditor().getItem().toString().trim();
+    final Set<String> pathsToShow = new LinkedHashSet<>();
 
+    final String currentPath = combo.getEditor().getItem().toString().trim();
     if (!currentPath.isEmpty()) {
-      validPathsForUI.add(currentPath);
+      pathsToShow.add(currentPath);
     }
 
     final String[] knownPaths = getKnownFlutterSdkPaths();
-    if (knownPaths != null && knownPaths.length > 0) {
+    if (knownPaths != null) {
       for (String path : knownPaths) {
         if (FlutterSdk.forPath(path) != null) {
-          validPathsForUI.add(FileUtil.toSystemDependentName(path));
+          pathsToShow.add(FileUtil.toSystemDependentName(path));
         }
       }
     }
 
     //noinspection unchecked
-    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(validPathsForUI)));
+    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(pathsToShow)));
 
     if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
       combo.setSelectedIndex(0);
@@ -140,22 +145,17 @@ public class FlutterSdkUtil {
   }
 
   public static boolean isFlutterSdkHome(@NotNull final String path) {
-    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterPubspecFile = new File(path + "/packages/flutter/pubspec.yaml");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterVersionFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
+    return flutterPubspecFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
   }
 
   private static boolean isFlutterSdkHomeWithoutDartSdk(@NotNull final String path) {
-    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterPubspecFile = new File(path + "/packages/flutter/pubspec.yaml");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterVersionFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
-  }
-
-  @NotNull
-  public static String versionPath(@NotNull String sdkHomePath) {
-    return sdkHomePath + "/VERSION";
+    return flutterPubspecFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
 
   /**
@@ -169,40 +169,6 @@ public class FlutterSdkUtil {
 
   public static boolean hasFlutterModules(@NotNull Project project) {
     return FlutterModuleUtils.hasFlutterModule(project);
-  }
-
-  @Nullable
-  public static String getSdkVersion(@NotNull String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile()) {
-      final String cachedVersion = ourVersions.get(Pair.create(versionFile, versionFile.lastModified()));
-      if (cachedVersion != null) return cachedVersion;
-    }
-
-    final String version = readVersionFile(sdkHomePath);
-    if (version != null) {
-      ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
-      return version;
-    }
-
-    LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
-    return null;
-  }
-
-  private static String readVersionFile(String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile() && versionFile.length() < 1000) {
-      try {
-        final String content = FileUtil.loadFile(versionFile).trim();
-        final int index = content.lastIndexOf('\n');
-        if (index < 0) return content;
-        return content.substring(index + 1).trim();
-      }
-      catch (IOException e) {
-        /* ignore */
-      }
-    }
-    return null;
   }
 
   @Nullable
