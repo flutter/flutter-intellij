@@ -68,11 +68,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     }
 
     final Project project = importProvider.doOpenProject(file, projectToClose, forceOpenInNewFrame);
-    if (project == null) {
-      return null;
-    }
-
-    if (!FlutterModuleUtils.hasFlutterModule(project)) {
+    if (project != null && !project.isDisposed() && !FlutterModuleUtils.hasFlutterModule(project)) {
       convertToFlutterProject(project);
     }
     return project;
