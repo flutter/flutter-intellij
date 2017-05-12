@@ -49,7 +49,7 @@ class FlutterAppListener implements DaemonEvent.Listener {
   }
 
   @Override
-  public void processTerminated() {
+  public void processTerminated(int exitCode) {
     progress.cancel();
     app.changeState(FlutterApp.State.TERMINATED);
   }

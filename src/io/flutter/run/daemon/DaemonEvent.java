@@ -100,7 +100,7 @@ abstract class DaemonEvent {
 
     default void processWillTerminate() {}
 
-    default void processTerminated() {}
+    default void processTerminated(int exitCode) {}
 
     // daemon domain
 

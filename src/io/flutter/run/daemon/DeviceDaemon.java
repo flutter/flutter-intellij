@@ -33,7 +33,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -41,6 +44,13 @@ import java.util.stream.Stream;
  * A process running 'flutter daemon' to watch for devices.
  */
 class DeviceDaemon {
+  private static final AtomicInteger nextDaemonId = new AtomicInteger();
+
+  /**
+   * A unique id used to log device daemon actions.
+   */
+  private final int id;
+
   /**
    * The command used to start this daemon.
    */
@@ -48,13 +58,19 @@ class DeviceDaemon {
 
   private final @NotNull ProcessHandler process;
 
+  private final @NotNull Listener listener;
+
   private final @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices;
 
-  private DeviceDaemon(@NotNull Command command, @NotNull ProcessHandler process,
+  private DeviceDaemon(int id,
+                       @NotNull Command command, @NotNull ProcessHandler process, @NotNull Listener listener,
                        @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices) {
+    this.id = id;
     this.command = command;
     this.process = process;
+    this.listener = listener;
     this.devices = devices;
+    listener.running.set(true);
   }
 
   /**
@@ -83,10 +99,13 @@ class DeviceDaemon {
   }
 
   /**
-   * Kills the process.
+   * Kills the process. (Normal shutdown.)
    */
   void shutdown() {
-    LOG.info("shutting down Flutter device poller: " + command.toString());
+    if (!process.isProcessTerminated()) {
+      LOG.info("shutting down Flutter device daemon #" + id + ": " + command.toString());
+    }
+    listener.running.set(false);
     process.destroyProcess();
   }
 
@@ -166,16 +185,24 @@ class DeviceDaemon {
 
     /**
      * Launches the daemon.
+     *
+     * @param isCancelled    will be polled during startup to see if startup is cancelled.
+     * @param deviceChanged  will be called whenever a device is added or removed from the returned DeviceDaemon.
+     * @param processStopped will be called if the process exits unexpectedly after this method returns.
      */
-    DeviceDaemon start(Supplier<Boolean> isCancelled, Runnable deviceChanged) throws ExecutionException {
-      LOG.info("starting Flutter device poller: " + toString());
+    DeviceDaemon start(Supplier<Boolean> isCancelled,
+                       Runnable deviceChanged,
+                       Consumer<String> processStopped) throws ExecutionException {
+      final int daemonId = nextDaemonId.incrementAndGet();
+      LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
       final ProcessHandler process = new OSProcessHandler(toCommandLine());
       boolean succeeded = false;
       try {
         final AtomicReference<ImmutableList<FlutterDevice>> devices = new AtomicReference<>(ImmutableList.of());
 
         final DaemonApi api = new DaemonApi(process);
-        api.listen(process, new Listener(api, devices, deviceChanged));
+        final Listener listener = new Listener(daemonId, api, devices, deviceChanged, processStopped);
+        api.listen(process, listener);
 
         final Future ready = api.enableDeviceEvents();
 
@@ -183,6 +210,16 @@ class DeviceDaemon {
         while (true) {
           if (isCancelled.get()) {
             throw new CancellationException();
+          }
+          else if (process.isProcessTerminated()) {
+            final Integer exitCode = process.getExitCode();
+            throw new ExecutionException(
+              "Flutter device daemon #" +
+              daemonId +
+              ": process exited during startup. Exit code: " +
+              exitCode +
+              ", stderr:\n" +
+              api.getStderrTail());
           }
 
           try {
@@ -194,7 +231,7 @@ class DeviceDaemon {
             Thread.sleep(4200);
 
             succeeded = true;
-            return new DeviceDaemon(this, process, devices);
+            return new DeviceDaemon(daemonId, this, process, listener, devices);
           }
           catch (TimeoutException e) {
             // Check for cancellation and try again.
@@ -263,21 +300,31 @@ class DeviceDaemon {
    * <p>Updates the device list based on incoming events.
    */
   private static class Listener implements DaemonEvent.Listener {
+    private final int daemonId;
     private final DaemonApi api;
     private final AtomicReference<ImmutableList<FlutterDevice>> devices;
     private final Runnable deviceChanged;
+    private final Consumer<String> processStopped;
 
-    Listener(DaemonApi api, AtomicReference<ImmutableList<FlutterDevice>> devices, Runnable deviceChanged) {
+    private final AtomicBoolean running = new AtomicBoolean(false);
+
+    Listener(int daemonId,
+             DaemonApi api,
+             AtomicReference<ImmutableList<FlutterDevice>> devices,
+             Runnable deviceChanged,
+             Consumer<String> processStopped) {
+      this.daemonId = daemonId;
       this.api = api;
       this.devices = devices;
       this.deviceChanged = deviceChanged;
+      this.processStopped = processStopped;
     }
 
     // daemon domain
 
     @Override
     public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
-      LOG.info("flutter device watcher: " + message.message);
+      LOG.info("flutter device daemon #" + daemonId + ": " + message.message);
     }
 
     @Override
@@ -313,6 +360,15 @@ class DeviceDaemon {
     public void onDeviceRemoved(@NotNull DaemonEvent.DeviceRemoved event) {
       devices.updateAndGet((old) -> removeDevice(old.stream(), event.id));
       deviceChanged.run();
+    }
+
+    @Override
+    public void processTerminated(int exitCode) {
+      if (running.get()) {
+        processStopped.accept(
+          "Daemon #" + daemonId + " exited. Exit code: " + exitCode + ". Stderr:\n" +
+          api.getStderrTail());
+      }
     }
 
     // helpers
