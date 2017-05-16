@@ -185,7 +185,7 @@ public class DeviceService {
     }
 
     // Report this so the user can send it to us, without restarting.
-    LOG.error("A Flutter device daemon stopped unexpectedly.\n" + details);
+    LOG.error("A Flutter device daemon stopped unexpectedly.", details);
   }
 
   /**
