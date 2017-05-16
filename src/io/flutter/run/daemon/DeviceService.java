@@ -23,6 +23,8 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -39,6 +41,8 @@ public class DeviceService {
   private final AtomicReference<DeviceSelection> deviceSelection = new AtomicReference<>(DeviceSelection.EMPTY);
 
   private final AtomicReference<ImmutableSet<Runnable>> listeners = new AtomicReference<>(ImmutableSet.of());
+
+  private final AtomicLong lastRestartTime = new AtomicLong(0);
 
   public static
   @NotNull
@@ -159,6 +163,31 @@ public class DeviceService {
     deviceDaemon.refresh(this::chooseNextDaemon);
   }
 
+  private void daemonStopped(String details) {
+    if (project.isDisposed()) return;
+
+    final DeviceDaemon current = deviceDaemon.getNow();
+    if (current == null || current.isRunning()) {
+      // The active daemon didn't die, so it must be some older process.
+      // Just log it.
+      LOG.info("A Flutter device daemon stopped.\n" + details);
+      return;
+    }
+
+    // If we haven't tried restarting recently, try again.
+    final long now = System.currentTimeMillis();
+    final long millisSinceLastRestart = now - lastRestartTime.get();
+    if (millisSinceLastRestart > TimeUnit.MINUTES.toMillis(5)) {
+      LOG.info("A Flutter device daemon stopped. Automatically restarting it.\n" + details);
+      refreshDeviceDaemon();
+      lastRestartTime.set(now);
+      return;
+    }
+
+    // Report this so the user can send it to us, without restarting.
+    LOG.error("A Flutter device daemon stopped unexpectedly.", details);
+  }
+
   /**
    * Returns the device daemon that should be running.
    * <p>
@@ -188,10 +217,10 @@ public class DeviceService {
     }
 
     try {
-      return nextCommand.start(request::isCancelled, this::refreshDeviceSelection);
+      return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);
     }
     catch (ExecutionException e) {
-      LOG.error("Unable to start process to watch Flutter devices", e);
+      LOG.error(e);
       return previous; // Couldn't start a new one so don't shut it down.
     }
   }

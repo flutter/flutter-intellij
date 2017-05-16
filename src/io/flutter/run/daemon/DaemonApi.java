@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -38,10 +40,16 @@ import java.util.function.Function;
  */
 public class DaemonApi {
   private static final boolean DEBUG_LOG = false;
+  private static final int STDERR_LINES_TO_KEEP = 100;
 
   private final @NotNull Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
+
+  /**
+   * A ring buffer holding the last few lines that the process sent to stderr.
+   */
+  private final Deque<String> stderr = new ArrayDeque<>();
 
   /**
    * Creates an Api that sends JSON to a callback.
@@ -90,8 +98,24 @@ public class DaemonApi {
 
       @Override
       public void onTextAvailable(ProcessEvent event, Key outputType) {
-        if (!outputType.equals(ProcessOutputTypes.STDOUT)) {
-          return; // TODO(skybrian) capture stderr if device daemon dies?
+        if (outputType.equals(ProcessOutputTypes.STDERR)) {
+          // Append text to last line in buffer.
+          final String last = stderr.peekLast();
+          if (last != null && !last.endsWith("\n")) {
+            stderr.removeLast();
+            stderr.add(last + event.getText());
+          } else {
+            stderr.add(event.getText());
+          }
+
+          // Trim buffer size.
+          while (stderr.size() > STDERR_LINES_TO_KEEP) {
+            stderr.removeFirst();
+          }
+
+          return;
+        } else if (!outputType.equals(ProcessOutputTypes.STDOUT)) {
+          return; // Not sure what this is.
         }
 
         final String text = event.getText().trim();
@@ -115,7 +139,7 @@ public class DaemonApi {
 
       @Override
       public void processTerminated(ProcessEvent event) {
-        listener.processTerminated();
+        listener.processTerminated(event.getExitCode());
       }
     });
 
@@ -232,6 +256,14 @@ public class DaemonApi {
     final OutputStream stdin = processHandler.getProcessInput();
     if (stdin == null) return null;
     return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
+  }
+
+  /**
+   * Returns the last lines written to stderr.
+   */
+  public String getStderrTail() {
+    final String[] lines = stderr.toArray(new String[] {});
+    return String.join("", lines);
   }
 
   @SuppressWarnings("unused")
