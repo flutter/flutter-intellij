@@ -176,18 +176,17 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      // Allow 5 minutes to connect to the observatory; the user can cancel manually in the interim.
+      // Allow 5 minutes for flutter run to start; the user can cancel manually in the interim.
       final long timeout = (long)5 * 60 * 1000;
-      long startTime = System.currentTimeMillis();
+      final long startTime = System.currentTimeMillis();
 
+      // Wait for "flutter run" to give us a websocket.
       String url = myConnector.getWebSocketUrl();
       while (url == null) {
         if (getSession().isStopped()) return;
 
         if (System.currentTimeMillis() > startTime + timeout) {
-          final String message = "Observatory connection never became ready.\n";
-          getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
-          getSession().stop();
+          onConnectFailed("Observatory connection never became ready.");
           return;
         }
         else {
@@ -200,43 +199,42 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         return;
       }
 
-      startTime = System.currentTimeMillis();
-
+      // "Flutter run" has given us a websocket; we can assume it's ready immediately,
+      // because "flutter run" has already connected to it.
+      final VmService vmService;
       try {
-        while (true) {
-          try {
-            connect(url);
-            break;
-          }
-          catch (IOException e) {
-            if (System.currentTimeMillis() > startTime + timeout) {
-              throw e;
-            }
-            else {
-              TimeoutUtil.sleep(50);
-            }
-          }
-        }
+        vmService = VmService.connect(url);
       }
       catch (IOException e) {
-        final StringBuilder message = new StringBuilder("Failed to connect to the VM observatory service: " + e.toString() + "\n");
-        Throwable cause = e.getCause();
-        while (cause != null) {
-          message.append("Caused by: ").append(cause.toString()).append("\n");
-          final Throwable cause1 = cause.getCause();
-          if (cause1 != cause) {
-            cause = cause1;
-          }
-        }
-
-        getSession().getConsoleView().print(message.toString(), ConsoleViewContentType.ERROR_OUTPUT);
-        getSession().stop();
+        onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
+                        + e.toString() + "\n" +
+                        formatStackTraces(e));
+        return;
       }
+      onConnectSucceeded(vmService);
     });
   }
 
-  private void connect(@NotNull String websocketUrl) throws IOException {
-    final VmService vmService = VmService.connect(websocketUrl);
+  @NotNull
+  private String formatStackTraces(Throwable e) {
+    final StringBuilder out = new StringBuilder();
+    Throwable cause = e.getCause();
+    while (cause != null) {
+      out.append("Caused by: ").append(cause.toString()).append("\n");
+      cause = cause.getCause();
+    }
+    return out.toString();
+  }
+
+  private void onConnectFailed(@NotNull String message) {
+    if (!message.endsWith("\n")) {
+      message = message + "\n";
+    }
+    getSession().getConsoleView().print(message, ConsoleViewContentType.ERROR_OUTPUT);
+    getSession().stop();
+  }
+
+  private void onConnectSucceeded(VmService vmService) {
     final DartVmServiceListener vmServiceListener =
       new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
