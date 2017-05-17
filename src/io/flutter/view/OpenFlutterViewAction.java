@@ -42,7 +42,7 @@ public class OpenFlutterViewAction extends DumbAwareAction {
 
     final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(FlutterView.TOOL_WINDOW_ID);
     if (toolWindow == null) {
-      FlutterMessages.showError("Error Opening Flutter View", "Unable to find Flutter tool window");
+      FlutterMessages.showError("Unable to open view", "Unable to open the Flutter tool window - no Flutter modules found");
     } else {
       toolWindow.show(null);
     }
