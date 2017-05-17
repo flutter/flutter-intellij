@@ -13,6 +13,7 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("ComponentNotRegistered")
@@ -39,7 +40,11 @@ public class OpenFlutterViewAction extends DumbAwareAction {
 
     FlutterInitializer.sendAnalyticsAction(this);
 
-    final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Flutter");
-    toolWindow.show(null);
+    final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(FlutterView.TOOL_WINDOW_ID);
+    if (toolWindow == null) {
+      FlutterMessages.showError("Error Opening Flutter View", "Unable to find Flutter tool window");
+    } else {
+      toolWindow.show(null);
+    }
   }
 }
