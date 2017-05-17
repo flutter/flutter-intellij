@@ -8,6 +8,8 @@ An IntelliJ plugin for [Flutter](https://flutter.io/) development. For documenta
 
 See [flutter.io/setup](https://flutter.io/setup/) for instructions about installing the Flutter SDK, configuring your machine for Flutter development, and installing and configuring the IntelliJ plugins.
 
+See [flutter.io/intellij-ide](https://flutter.io/intellij-ide/) for more detailed instructions about developing Flutter apps using IntelliJ.
+
 ## Quick-start
 
 A very brief summary of the getting started guide linked from above:
