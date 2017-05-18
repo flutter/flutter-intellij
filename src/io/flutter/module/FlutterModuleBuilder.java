@@ -5,7 +5,6 @@
  */
 package io.flutter.module;
 
-import com.google.common.collect.ImmutableList;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
@@ -17,7 +16,6 @@ import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
-import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -35,7 +33,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static java.util.Arrays.asList;
@@ -76,7 +73,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Nullable
   @Override
-  public List<Module> commit(@NotNull Project project, @Nullable ModifiableModuleModel model, ModulesProvider modulesProvider) {
+  public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
     final String basePath = getModuleFileDirectory();
     if (basePath == null) {
       Messages.showErrorDialog("Module path not set", "Internal Error");
@@ -101,35 +98,28 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
 
     // Create the Flutter module. This indirectly calls setupRootModule, etc.
-    final List<Module> result = super.commit(project, model, modulesProvider);
-    if (result == null || result.size() != 1) {
-      return result;
+    final Module flutter = super.commitModule(project, model);
+    if (flutter == null) {
+      return null;
     }
-    final Module flutter = result.get(0);
 
     FlutterModuleUtils.autoShowMain(project, root);
 
-    final Module android = addAndroidModule(project, model, basePath, flutter.getName());
-    if (android != null) {
-      return ImmutableList.of(flutter, android);
-    }
-    else {
-      return ImmutableList.of(flutter);
-    }
+    addAndroidModule(project, model, basePath, flutter.getName());
+    return flutter;
   }
 
-  @Nullable
-  private Module addAndroidModule(@NotNull Project project,
+  private void addAndroidModule(@NotNull Project project,
                                   @Nullable ModifiableModuleModel model,
                                   @NotNull String baseDirPath,
                                   @NotNull String flutterModuleName) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
-      return null;
+      return;
     }
 
     final VirtualFile androidFile = findAndroidModuleFile(baseDir, flutterModuleName);
-    if (androidFile == null) return null;
+    if (androidFile == null) return;
 
     try {
       final ModifiableModuleModel toCommit;
@@ -141,20 +131,14 @@ public class FlutterModuleBuilder extends ModuleBuilder {
         toCommit = null;
       }
 
-      final Module androidModule = model.loadModule(androidFile.getPath());
+      model.loadModule(androidFile.getPath());
 
       if (toCommit != null) {
         WriteAction.run(toCommit::commit);
       }
-
-      return androidModule;
     }
-    catch (ModuleWithNameAlreadyExists exists) {
-      return null;
-    }
-    catch (IOException e) {
+    catch (ModuleWithNameAlreadyExists | IOException e) {
       LOG.warn(e);
-      return null;
     }
   }
 
