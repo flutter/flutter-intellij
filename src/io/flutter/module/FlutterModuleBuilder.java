@@ -38,6 +38,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static java.util.Arrays.asList;
+
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
@@ -107,7 +109,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     FlutterModuleUtils.autoShowMain(project, root);
 
-    final Module android = addAndroidModule(project, model, basePath);
+    final Module android = addAndroidModule(project, model, basePath, flutter.getName());
     if (android != null) {
       return ImmutableList.of(flutter, android);
     }
@@ -119,17 +121,15 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Nullable
   private Module addAndroidModule(@NotNull Project project,
                                   @Nullable ModifiableModuleModel model,
-                                  @NotNull String baseDirPath) {
+                                  @NotNull String baseDirPath,
+                                  @NotNull String flutterModuleName) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
       return null;
     }
 
-    final String androidPath = baseDirPath + "/android.iml";
-    final VirtualFile androidFile = LocalFileSystem.getInstance().refreshAndFindFileByPath(androidPath);
-    if (androidFile == null) {
-      return null;
-    }
+    final VirtualFile androidFile = findAndroidModuleFile(baseDir, flutterModuleName);
+    if (androidFile == null) return null;
 
     try {
       final ModifiableModuleModel toCommit;
@@ -156,6 +156,18 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       LOG.warn(e);
       return null;
     }
+  }
+
+  @Nullable
+  private VirtualFile findAndroidModuleFile(@NotNull VirtualFile baseDir, String flutterModuleName) {
+    baseDir.refresh(false, false);
+    for (String name : asList(flutterModuleName + "_android.iml", "android.iml")) {
+      final VirtualFile candidate = baseDir.findChild(name);
+      if (candidate != null && candidate.exists()) {
+        return candidate;
+      }
+    }
+    return null;
   }
 
   @Override
