@@ -158,14 +158,14 @@ public class DaemonEventTest {
   }
 
   @Test
-  public void canRecieveAppStopped() {
+  public void canReceiveAppStopped() {
     send("app.stop", curly("appId:42"));
     checkLog("AppStopped: 42");
   }
 
   @Test
-  public void canRecieveAppStoppedWithError() {
-    send("app.stop", curly("appId:42", "error:foobar"));
+  public void canReceiveAppStoppedWithError() {
+    send("app.stop", curly("appId:42", "error:\"foobar\""));
     checkLog("AppStopped: 42, foobar");
   }
 
