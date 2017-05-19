@@ -47,6 +47,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel<String> myPrivacyPolicy;
+  private JCheckBox myEnableVerboseLoggingCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -114,8 +115,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    //noinspection RedundantIfStatement
     if (FlutterInitializer.getCanReportAnalytics() != myReportUsageInformationCheckBox.isSelected()) {
+      return true;
+    }
+
+    //noinspection RedundantIfStatement
+    if (FlutterInitializer.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
 
@@ -138,6 +143,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
+    FlutterInitializer.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -154,6 +160,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     updateVersionText();
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
+    myEnableVerboseLoggingCheckBox.setSelected(FlutterInitializer.isVerboseLogging());
   }
 
   private void updateVersionText() {

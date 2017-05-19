@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,7 +40,6 @@ import java.util.function.Function;
  * >The Flutter Daemon Mode</a>.
  */
 public class DaemonApi {
-  private static final boolean DEBUG_LOG = false;
   private static final int STDERR_LINES_TO_KEEP = 100;
 
   private final @NotNull Consumer<String> callback;
@@ -120,8 +120,8 @@ public class DaemonApi {
 
         final String text = event.getText().trim();
 
-        if (DEBUG_LOG) {
-          System.out.println("[<-- " + text + "]");
+        if (FlutterInitializer.isVerboseLogging()) {
+          LOG.info("[<-- " + text + "]");
         }
 
         if (!text.startsWith("[{") || !text.endsWith("}]")) {
@@ -242,8 +242,8 @@ public class DaemonApi {
     stdin.write(json);
     stdin.write("]\n");
 
-    if (DEBUG_LOG) {
-      System.out.println("[--> " + json + "]");
+    if (FlutterInitializer.isVerboseLogging()) {
+      LOG.info("[--> " + json + "]");
     }
 
     if (stdin.checkError()) {

@@ -351,5 +351,4 @@
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
   </extensions>
-
 </idea-plugin>
