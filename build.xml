@@ -11,7 +11,7 @@
   <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
-  <property name="idea.version" value="2017.1.2"/>
+  <property name="idea.version" value="2017.1.3"/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
