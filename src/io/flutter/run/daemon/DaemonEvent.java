@@ -251,6 +251,7 @@ abstract class DaemonEvent {
   static class AppStopped extends DaemonEvent {
     // "event":"app.stop"
     String appId;
+    String error;
 
     void accept(Listener listener) {
       listener.onAppStopped(this);

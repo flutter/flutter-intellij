@@ -99,7 +99,7 @@ class FlutterAppListener implements DaemonEvent.Listener {
   public void onAppLog(@NotNull DaemonEvent.AppLog message) {
     final ConsoleView console = app.getConsole();
     if (console == null) return;
-    console.print(message.log + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+    console.print(message.log + "\n", message.error ? ConsoleViewContentType.ERROR_OUTPUT : ConsoleViewContentType.NORMAL_OUTPUT);
   }
 
   @Override
@@ -134,6 +134,9 @@ class FlutterAppListener implements DaemonEvent.Listener {
 
   @Override
   public void onAppStopped(@NotNull DaemonEvent.AppStopped stopped) {
+    if (stopped.error != null && app.getConsole() != null) {
+      app.getConsole().print("Finished with error: " + stopped.error + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+    }
     progress.cancel();
     app.getProcessHandler().destroyProcess();
   }
