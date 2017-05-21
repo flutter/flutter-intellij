@@ -24,6 +24,7 @@
 
 14.0:
 <ul>
+  <li>user toggleable option to enable more verbose debug logging of Flutter app runs</li>
   <li>fixes to the new Flutter Module workflow</li>
   <li>improved console logging on Flutter app termination</li>
   <li>improved error reporting on Observatory connection and Flutter View open failures</li>
