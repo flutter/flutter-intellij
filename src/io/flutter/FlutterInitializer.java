@@ -42,6 +42,7 @@ public class FlutterInitializer implements StartupActivity {
   private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
   private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
+  private static final String verboseLoggingKey = "io.flutter.verboseLogging";
 
   private static Analytics analytics;
 
@@ -98,6 +99,16 @@ public class FlutterInitializer implements StartupActivity {
 
   public static void sendAnalyticsAction(@NotNull String name) {
     getAnalytics().sendEvent("intellij", name);
+  }
+
+  public static boolean isVerboseLogging() {
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    return properties.getBoolean(verboseLoggingKey, false);
+  }
+
+  public static void setVerboseLogging(boolean value) {
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    properties.setValue(verboseLoggingKey, value);
   }
 
   @Override
