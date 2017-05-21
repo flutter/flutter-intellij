@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import io.flutter.FlutterInitializer;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterDevice;
@@ -127,6 +128,9 @@ public class FlutterSdk {
 
     final List<String> args = new ArrayList<>();
     args.add("--machine");
+    if (FlutterInitializer.isVerboseLogging()) {
+      args.add("--verbose");
+    }
     if (device != null) {
       args.add("--device-id=" + device.deviceId());
     }

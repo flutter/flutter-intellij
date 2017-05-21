@@ -296,9 +296,7 @@ public class LaunchState extends CommandLineState {
       // Else, launch the app.
       return launchState.launch(env);
     }
-
   }
-
 
   /**
    * Returns the currently running app for the given RunConfig, if any.

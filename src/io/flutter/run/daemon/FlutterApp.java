@@ -35,7 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * A running Flutter app.
  */
 public class FlutterApp {
-
+  private static final Logger LOG = Logger.getInstance(FlutterApp.class);
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
   private final @NotNull RunMode myMode;
@@ -119,6 +119,8 @@ public class FlutterApp {
                                  @NotNull String analyticsStart,
                                  @NotNull String analyticsStop)
     throws ExecutionException {
+    LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
+    LOG.info(command.toString());
 
     final ProcessHandler process = new OSProcessHandler(command);
     Disposer.register(project, process::destroyProcess);
@@ -128,6 +130,7 @@ public class FlutterApp {
     process.addProcessListener(new ProcessAdapter() {
       @Override
       public void processTerminated(ProcessEvent event) {
+        LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
         FlutterInitializer.sendAnalyticsAction(analyticsStop);
       }
     });
@@ -326,6 +329,4 @@ public class FlutterApp {
   }
 
   public enum State {STARTING, STARTED, TERMINATING, TERMINATED}
-
-  private static final Logger LOG = Logger.getInstance(FlutterApp.class);
 }

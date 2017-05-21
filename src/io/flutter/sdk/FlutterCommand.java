@@ -21,7 +21,6 @@ import io.flutter.FlutterMessages;
 import io.flutter.android.AndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
-import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +33,8 @@ import java.util.function.Consumer;
  * A Flutter command to run, with its arguments.
  */
 public class FlutterCommand {
+  private static final Logger LOG = Logger.getInstance(FlutterCommand.class);
+
   @NotNull
   private final FlutterSdk sdk;
 
@@ -166,7 +167,9 @@ public class FlutterCommand {
 
     final OSProcessHandler handler;
     try {
-      handler = new OSProcessHandler(createGeneralCommandLine(project));
+      final GeneralCommandLine commandLine = createGeneralCommandLine(project);
+      LOG.info(commandLine.toString());
+      handler = new OSProcessHandler(commandLine);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(final ProcessEvent event) {
@@ -234,6 +237,4 @@ public class FlutterCommand {
       FlutterInitializer.getAnalytics().sendEvent("flutter", action);
     }
   }
-
-  private static final Logger LOG = Logger.getInstance(FlutterApp.class);
 }
