@@ -11,7 +11,6 @@ import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.SettingsEditor;
@@ -44,8 +43,6 @@ import org.jetbrains.annotations.Nullable;
  */
 public class SdkRunConfig extends LocatableConfigurationBase
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
-  private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
-
   private @NotNull SdkFields fields = new SdkFields();
 
   SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {

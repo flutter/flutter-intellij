@@ -119,7 +119,9 @@ public class FlutterApp {
                                  @NotNull String analyticsStart,
                                  @NotNull String analyticsStop)
     throws ExecutionException {
+    LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
+
     final ProcessHandler process = new OSProcessHandler(command);
     Disposer.register(project, process::destroyProcess);
 
@@ -128,7 +130,7 @@ public class FlutterApp {
     process.addProcessListener(new ProcessAdapter() {
       @Override
       public void processTerminated(ProcessEvent event) {
-        LOG.info("finished " + project.getName() + " " + mode.mode());
+        LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
         FlutterInitializer.sendAnalyticsAction(analyticsStop);
       }
     });
