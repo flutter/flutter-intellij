@@ -33,6 +33,7 @@ Dart IntelliJ releated issues, you can use JetBrains'
 
 Please note the following known issues:
 
+* We are seeing occasional timeouts when trying to connect to Observatory when debugging against the iOS simulator; restarting the simulator should get you back on track.
 * The 2017.1 release of the Dart plugin has added the ability to have Dart SDKs configured on a
   per-project basis (previously an SDK had been configured globally). This is great for the Flutter
   plugin as users can now use separate Dart SDKs for Flutter and Dart for web projects. However,
