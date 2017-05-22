@@ -28,9 +28,9 @@
   <li>fixes to the new Flutter Module workflow</li>
   <li>improved console logging on Flutter app termination</li>
   <li>improved error reporting on Observatory connection and Flutter View open failures</li>
-  <li>removed (meaningless) Flutter SDK settings from default projects</li>
+  <li>removed Flutter SDK settings from default projects</li>
   <li>improved project name validation (to align with checks in `flutter create`)</li>
-  <li>console hyperlinks for xcode resources</li>
+  <li>console hyperlinks for XCode resources</li>
   <li>fix to inherit Android JDK setting when creating Flutter projects</li>
   <li>fix to ensure Flutter console filtering is only applied to Flutter consoles</li>
   <li>improved device daemon interop</li>
