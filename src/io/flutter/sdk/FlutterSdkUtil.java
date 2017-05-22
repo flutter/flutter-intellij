@@ -14,16 +14,13 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
-import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterConstants;
 import io.flutter.dart.DartPlugin;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,15 +28,14 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
-
 public class FlutterSdkUtil {
-  /** The environment variable to use to tell the flutter tool which app is driving it. */
+  /**
+   * The environment variable to use to tell the flutter tool which app is driving it.
+   */
   public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST_ENV";
 
-  private static final Map<Pair<File, Long>, String> ourVersions = new HashMap<>();
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
 
@@ -61,51 +57,69 @@ public class FlutterSdkUtil {
 
   private static void updateKnownPaths(@SuppressWarnings("SameParameterValue") @NotNull final String propertyKey,
                                        @NotNull final String newPath) {
-    final Set<String> known = new THashSet<>();
+    final Set<String> allPaths = new LinkedHashSet<>();
 
-    final String[] oldKnownPaths = PropertiesComponent.getInstance().getValues(propertyKey);
-    if (oldKnownPaths != null) {
-      known.addAll(Arrays.asList(oldKnownPaths));
+    // Add the new value first; this ensures that it's the 'default' flutter sdk.
+    allPaths.add(newPath);
+
+
+    final PropertiesComponent props = PropertiesComponent.getInstance();
+
+    // Add the existing known paths.
+    final String[] oldPaths = props.getValues(propertyKey);
+    if (oldPaths != null) {
+      allPaths.addAll(Arrays.asList(oldPaths));
     }
 
-    known.add(newPath);
-
-    if (known.isEmpty()) {
-      PropertiesComponent.getInstance().unsetValue(propertyKey);
+    // Store the values back.
+    if (allPaths.isEmpty()) {
+      props.unsetValue(propertyKey);
     }
     else {
-      PropertiesComponent.getInstance().setValues(propertyKey, ArrayUtil.toStringArray(known));
+      props.setValues(propertyKey, ArrayUtil.toStringArray(allPaths));
     }
   }
 
+  /**
+   * Adds the current path and other known paths to the combo, most recently used first.
+   */
   public static void addKnownSDKPathsToCombo(@NotNull JComboBox combo) {
-    final Set<String> validPathsForUI = new HashSet<>();
-    final String currentPath = combo.getEditor().getItem().toString().trim();
+    final Set<String> pathsToShow = new LinkedHashSet<>();
 
+    final String currentPath = combo.getEditor().getItem().toString().trim();
     if (!currentPath.isEmpty()) {
-      validPathsForUI.add(currentPath);
+      pathsToShow.add(currentPath);
     }
 
-    final String[] knownPaths = PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
-    if (knownPaths != null && knownPaths.length > 0) {
+    final String[] knownPaths = getKnownFlutterSdkPaths();
+    if (knownPaths != null) {
       for (String path : knownPaths) {
         if (FlutterSdk.forPath(path) != null) {
-          validPathsForUI.add(FileUtil.toSystemDependentName(path));
+          pathsToShow.add(FileUtil.toSystemDependentName(path));
         }
       }
     }
 
     //noinspection unchecked
-    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(validPathsForUI)));
+    combo.setModel(new DefaultComboBoxModel(ArrayUtil.toStringArray(pathsToShow)));
 
     if (combo.getSelectedIndex() == -1 && combo.getItemCount() > 0) {
       combo.setSelectedIndex(0);
     }
   }
 
+  @Nullable
+  public static String[] getKnownFlutterSdkPaths() {
+    return PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
+  }
+
   @NotNull
   public static String pathToFlutterTool(@NotNull String sdkPath) throws ExecutionException {
-    return sdkRelativePathTo(sdkPath, "bin", flutterScriptName());
+    final String path = findDescendant(sdkPath, "/bin/" + flutterScriptName());
+    if (path == null) {
+      throw new ExecutionException("Flutter SDK is not configured");
+    }
+    return path;
   }
 
   @NotNull
@@ -113,41 +127,35 @@ public class FlutterSdkUtil {
     return SystemInfo.isWindows ? "flutter.bat" : "flutter";
   }
 
-  @NotNull
-  public static String pathToDartSdk(@NotNull String sdkPath) throws ExecutionException {
-    return sdkRelativePathTo(sdkPath, "bin", "cache", "dart-sdk");
+  /**
+   * Returns the path to the Dart SDK within a Flutter SDK, or null if it doesn't exist.
+   */
+  @Nullable
+  public static String pathToDartSdk(@NotNull String flutterSdkPath) {
+    return findDescendant(flutterSdkPath, "/bin/cache/dart-sdk");
   }
 
-  @NotNull
-  private static String sdkRelativePathTo(@NotNull String sdkPath, @NotNull String... segments) throws ExecutionException {
-    VirtualFile child = LocalFileSystem.getInstance().findFileByPath(sdkPath);
-    if (child == null) throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-    for (String segment : segments) {
-      child = child.findChild(segment);
-      if (child == null) {
-        throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
-      }
+  @Nullable
+  private static String findDescendant(@NotNull String flutterSdkPath, @NotNull String path) {
+    final VirtualFile file = LocalFileSystem.getInstance().refreshAndFindFileByPath(flutterSdkPath + path);
+    if (file == null || !file.exists()) {
+      return null;
     }
-    return child.getPath();
+    return file.getPath();
   }
 
   public static boolean isFlutterSdkHome(@NotNull final String path) {
-    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterPubspecFile = new File(path + "/packages/flutter/pubspec.yaml");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterVersionFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
+    return flutterPubspecFile.isFile() && flutterToolFile.isFile() && dartLibFolder.isDirectory();
   }
 
   private static boolean isFlutterSdkHomeWithoutDartSdk(@NotNull final String path) {
-    final File flutterVersionFile = new File(path + "/VERSION");
+    final File flutterPubspecFile = new File(path + "/packages/flutter/pubspec.yaml");
     final File flutterToolFile = new File(path + "/bin/flutter");
     final File dartLibFolder = new File(path + "/bin/cache/dart-sdk/lib");
-    return flutterVersionFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
-  }
-
-  @NotNull
-  public static String versionPath(@NotNull String sdkHomePath) {
-    return sdkHomePath + "/VERSION";
+    return flutterPubspecFile.isFile() && flutterToolFile.isFile() && !dartLibFolder.isDirectory();
   }
 
   /**
@@ -164,40 +172,6 @@ public class FlutterSdkUtil {
   }
 
   @Nullable
-  public static String getSdkVersion(@NotNull String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile()) {
-      final String cachedVersion = ourVersions.get(Pair.create(versionFile, versionFile.lastModified()));
-      if (cachedVersion != null) return cachedVersion;
-    }
-
-    final String version = readVersionFile(sdkHomePath);
-    if (version != null) {
-      ourVersions.put(Pair.create(versionFile, versionFile.lastModified()), version);
-      return version;
-    }
-
-    LOG.warn("Unable to find Flutter SDK version at " + sdkHomePath);
-    return null;
-  }
-
-  private static String readVersionFile(String sdkHomePath) {
-    final File versionFile = new File(versionPath(sdkHomePath));
-    if (versionFile.isFile() && versionFile.length() < 1000) {
-      try {
-        final String content = FileUtil.loadFile(versionFile).trim();
-        final int index = content.lastIndexOf('\n');
-        if (index < 0) return content;
-        return content.substring(index + 1).trim();
-      }
-      catch (IOException e) {
-        /* ignore */
-      }
-    }
-    return null;
-  }
-
-  @Nullable
   public static String getErrorMessageIfWrongSdkRootPath(final @NotNull String sdkRootPath) {
     if (sdkRootPath.isEmpty()) {
       return null;
@@ -210,13 +184,6 @@ public class FlutterSdkUtil {
     if (!isFlutterSdkHome(sdkRootPath)) return FlutterBundle.message("error.sdk.not.found.in.specified.location");
 
     return null;
-  }
-
-  public static boolean isFlutterProjectDir(@Nullable VirtualFile dir) {
-    if (dir == null || !dir.isDirectory()) return false;
-
-    final VirtualFile pubspec = dir.findChild(FlutterConstants.PUBSPEC_YAML);
-    return FlutterModuleUtils.declaresFlutterDependency(pubspec);
   }
 
   public static void setFlutterSdkPath(@NotNull final Project project, @NotNull final String flutterSdkPath) {

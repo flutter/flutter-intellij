@@ -8,9 +8,9 @@
 
   <category>Custom Languages</category>
 
-  <version>12.1</version>
+  <version>13.1</version>
 
-  <idea-version since-build="171.1" until-build="171.*"/>
+  <idea-version since-build="171.1" until-build="172.*"/>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
@@ -21,6 +21,30 @@
 
   <change-notes>
     <![CDATA[
+
+13.1:
+<ul>
+  <li>project opening improvements</li>
+  <li>new action to open the Flutter view</li>
+  <li>module name validation on creation</li>
+  <li>fix to ensure all open files are saved to disk before running Flutter actions</li>
+  <li>improved progress reporting during calls to 'flutter create'</li>
+  <li>miscellaneous fixes and analytics improvements</li>
+</ul>
+
+13.0:
+<ul>
+  <li>small IDE support improvements</li>
+  <li>android module enablement on project creation</li>
+  <li>project explorer icon customizations</li>
+  <li>support for Flutter drop frame debugging</li>
+  <li>hot reload UX improvements</li>
+  <li>Bazel run config refinements</li>
+  <li>support for toggling OS in the Flutter View</li>
+  <li>Flutter CLI interop fixes (proper env setup)</li>
+  <li>color icon improvements</li>
+  <li>bump to require 2017.1+</li>
+</ul>
 
 12.1:
 <ul>
@@ -234,30 +258,25 @@
     </group>
 
     <!-- main toolbar run actions -->
-    <group id="Flutter.MainToolbarActions.Run">
-      <separator/>
-      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
-              description="Reload"
-              icon="FlutterIcons.HotReload">
-        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
-        <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
-      </action>
-      <separator/>
-      <add-to-group group-id="RunContextGroup" anchor="last"/>
-      <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
-    </group>
+    <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
+            description="Reload"
+            icon="FlutterIcons.HotReload">
+      <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
+    </action>
+
+    <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">
       <separator/>
-      <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
-              description="Reload"
-              icon="FlutterIcons.HotReload">
-      </action>
+      <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
               icon="AllIcons.Actions.Restart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
       </action>
+      <!-- Disabled pending fix (see #930)
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Profile"
               icon="AllIcons.Actions.Profile">
@@ -266,6 +285,7 @@
               description="Release"
               icon="AllIcons.Actions.Execute">
       </action>
+      -->
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
@@ -274,11 +294,10 @@
     <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
       <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
     </action>
-
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
-    <consoleInputFilterProvider implementation="io.flutter.run.daemon.DaemonJsonInputFilterProvider"/>?
+    <postStartupActivity implementation="io.flutter.ProjectOpenActivity"/>
     <postStartupActivity implementation="io.flutter.FlutterInitializer"/>
     <projectService serviceInterface="io.flutter.run.daemon.DeviceService"
                     serviceImplementation="io.flutter.run.daemon.DeviceService"/>
@@ -303,10 +322,6 @@
 
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
-    <!-- Plugin service with SmallIDE default, optionally overridden by product-specific implementations -->
-    <projectService serviceInterface="io.flutter.sdk.FlutterSdkService"
-                    serviceImplementation="io.flutter.sdk.FlutterSmallIDESdkService"
-                    overrides="false"/>
     <projectService serviceInterface="io.flutter.settings.FlutterSettings"
                     serviceImplementation="io.flutter.settings.FlutterSettings"
                     overrides="false"/>
@@ -314,7 +329,7 @@
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
 
     <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
-                         id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle"/>
+                         id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
@@ -331,10 +346,13 @@
                      implementationClass="io.flutter.inspections.FlutterDependencyInspection"/>
 
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
 
     <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
                     serviceImplementation="io.flutter.run.FlutterReloadManager"
                     overrides="false"/>
-  </extensions>
 
+    <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
+  </extensions>
 </idea-plugin>

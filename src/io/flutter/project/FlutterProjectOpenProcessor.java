@@ -5,12 +5,6 @@
  */
 package io.flutter.project;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.module.Module;
@@ -20,35 +14,20 @@ import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
-import io.flutter.actions.FlutterPackagesGetAction;
-import io.flutter.actions.FlutterSdkAction;
-import io.flutter.sdk.FlutterSdk;
-import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.ProjectOpenActivity;
+import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.text.MessageFormat;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class.getName());
-
-  private static void doPerform(@NotNull FlutterSdkAction action, @NotNull Project project) throws ExecutionException {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null) {
-      // Lack of SDK will be flagged elsewhere by inspection.
-      return;
-    }
-
-    action.perform(sdk, project, null);
-  }
 
   private static void handleError(@NotNull Exception e) {
     FlutterMessages.showError("Error opening", e.getMessage());
@@ -66,9 +45,18 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Override
   public boolean canOpenProject(@Nullable VirtualFile file) {
-    return FlutterSdkUtil.isFlutterProjectDir(file);
+    if (file == null) return false;
+    final PubRoot root = PubRoot.forDirectory(file);
+    return root != null && root.declaresFlutter();
   }
 
+  /**
+   * Runs when a project is opened by selecting the project directly, possibly for import.
+   * <p>
+   * Doesn't run when a project is opened via recent projects menu (and so on). Actions that
+   * should run every time a project is opened should be in
+   * {@link ProjectOpenActivity} or {@link io.flutter.FlutterInitializer}.
+   */
   @Nullable
   @Override
   public Project doOpenProject(@NotNull VirtualFile file, @Nullable Project projectToClose, boolean forceOpenInNewFrame) {
@@ -80,55 +68,10 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     }
 
     final Project project = importProvider.doOpenProject(file, projectToClose, forceOpenInNewFrame);
-
-    // Once open, process.
-    doPostOpenProcessing(project);
-
+    if (project != null && !project.isDisposed() && !FlutterModuleUtils.hasFlutterModule(project)) {
+      convertToFlutterProject(project);
+    }
     return project;
-  }
-
-  private void doPostOpenProcessing(@Nullable Project project) {
-    if (project == null) {
-      return;
-    }
-
-    if (!FlutterModuleUtils.hasFlutterModule(project)) {
-      if (FlutterModuleUtils.usesFlutter(project)) {
-        final List<Module> modules = FlutterModuleUtils.findModulesWithFlutterContents(project);
-        if (modules.isEmpty()) {
-          LOG.warn(MessageFormat.format("No module found for {0}", project.getName()));
-          return;
-        }
-        else if (modules.size() > 1) {
-          LOG.warn(MessageFormat.format("{0} contains {1} modules.", project.getName(), modules.size()));
-        }
-
-        final Module module = modules.get(0);
-
-        final FlutterModuleUtils.FileWithContext main = FlutterModuleUtils.findFlutterMain(module);
-        if (main != null) {
-          FlutterModuleUtils.createRunConfig(project, main.file);
-        }
-
-        FlutterModuleUtils.setFlutterModuleAndReload(module, project);
-      }
-    }
-
-    try {
-      final VirtualFile packagesFile = FlutterModuleUtils.findPackagesFileFrom(project, null);
-      if (!FlutterUtils.exists(packagesFile)) {
-        doPerform(new FlutterPackagesGetAction(), project);
-      }
-      else {
-        final VirtualFile pubspecFile = FlutterModuleUtils.findPubspecFrom(project, null);
-        if (FlutterUtils.exists(pubspecFile) && pubspecFile.getTimeStamp() > packagesFile.getTimeStamp()) {
-          Notifications.Bus.notify(new PackagesOutOfDateNotification(project));
-        }
-      }
-    }
-    catch (ExecutionException e) {
-      handleError(e);
-    }
   }
 
   @Nullable
@@ -138,40 +81,27 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     ).findFirst().orElse(null);
   }
 
+  /**
+   * Sets up a project that doesn't have any Flutter modules.
+   * <p>
+   * (It probably wasn't created with "flutter create" and probably didn't have any IntelliJ configuration before.)
+   */
+  private void convertToFlutterProject(@NotNull Project project) {
+    final PubRoot root = PubRoot.forProjectWithRefresh(project);
+    if (root == null) {
+      return; // Either no pub roots, or more than one.
+    }
+
+    final Module module = root.getModule(project);
+    if (module == null) {
+      return; // Shouldn't happen or root would have been null.
+    }
+
+    FlutterModuleUtils.setFlutterModuleAndReload(module, project);
+  }
+
   @Override
   public boolean isStrongProjectInfoHolder() {
     return true;
-  }
-
-  private static class PackagesOutOfDateNotification extends Notification {
-
-    @NotNull
-    private final Project myProject;
-
-    public PackagesOutOfDateNotification(final @NotNull Project project) {
-      super("Flutter Packages", FlutterIcons.Flutter, "Flutter packages get.",
-            null, "The pubspec.yaml file has been modified since " +
-                  "the last time 'flutter packages get' was run.",
-            NotificationType.INFORMATION, null);
-
-      myProject = project;
-
-      addAction(new AnAction("Run 'flutter packages get'") {
-        @Override
-        public void actionPerformed(AnActionEvent event) {
-          expire();
-
-          try {
-            final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-            if (sdk != null) {
-              new FlutterPackagesGetAction().perform(sdk, project, null);
-            }
-          }
-          catch (ExecutionException e) {
-            handleError(e);
-          }
-        }
-      });
-    }
   }
 }

@@ -5,196 +5,257 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessListener;
-import com.intellij.execution.ui.ConsoleView;
-import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
+import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.content.MessageView;
-import com.intellij.util.ArrayUtil;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterMessages;
-import io.flutter.FlutterUtils;
-import io.flutter.console.FlutterConsoleHelper;
 import io.flutter.dart.DartPlugin;
-import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.pub.PubRoot;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
+
+  private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
+
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
-  private static final AtomicBoolean inProgress = new AtomicBoolean(false);
-  private final @NotNull String myHomePath;
+
+  private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
 
-  private FlutterSdk(@NotNull final String homePath, @Nullable final String version) {
-    myHomePath = homePath;
-    myVersion = FlutterSdkVersion.forVersionString(version);
-  }
-
-  private FlutterSdk(@NotNull final String homePath) {
-    this(homePath, FlutterSdkUtil.getSdkVersion(homePath));
+  private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
+    myHome = home;
+    myVersion = version;
   }
 
   /**
    * Return the FlutterSdk for the given project.
+   * <p>
+   * Returns null if the Dart SDK is not set or does not exist.
    */
   @Nullable
   public static FlutterSdk getFlutterSdk(@NotNull final Project project) {
-    return project.isDisposed() ? null : getFlutterSdkByDartSdk(DartPlugin.getDartSdk(project));
+    if (project.isDisposed()) {
+      return null;
+    }
+    final DartSdk dartSdk = DartPlugin.getDartSdk(project);
+    if (dartSdk == null) {
+      return null;
+    }
+
+    final String dartPath = dartSdk.getHomePath();
+    final String suffix = "/bin/cache/dart-sdk";
+    if (!dartPath.endsWith(suffix)) {
+      return null;
+    }
+    return forPath(dartPath.substring(0, dartPath.length() - suffix.length()));
+  }
+
+  /**
+   * Returns the Flutter SDK for a project that has a possibly broken "Dart SDK" project library.
+   * <p>
+   * (This can happen for a newly-cloned Flutter SDK where the Dart SDK is not cached yet.)
+   */
+  @Nullable
+  public static FlutterSdk getIncomplete(@NotNull final Project project) {
+    if (project.isDisposed()) {
+      return null;
+    }
+    final Library lib = getDartSdkLibrary(project);
+    if (lib == null) {
+      return null;
+    }
+    return getFlutterFromDartSdkLibrary(lib, project.getBaseDir());
   }
 
   @Nullable
-  private static FlutterSdk getFlutterSdkByDartSdk(@Nullable final DartSdk dartSdk) {
-    final String suffix = "/bin/cache/dart-sdk";
-    final String dartPath = dartSdk == null ? null : dartSdk.getHomePath();
-    return dartPath != null && dartPath.endsWith(suffix) ? forPath(dartPath.substring(0, dartPath.length() - suffix.length()))
-                                                         : null;
-  }
-
   public static FlutterSdk forPath(@NotNull final String path) {
-    return FlutterSdkUtil.isFlutterSdkHome(path) ? new FlutterSdk(path) : null;
+    final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
+    if (home == null) {
+      return null;
+    } else if (!FlutterSdkUtil.isFlutterSdkHome(path)) {
+      return null;
+    } else {
+      return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
+    }
   }
 
-  private static void printExitMessage(@Nullable Project project, @Nullable Module module, int exitCode) {
-    if (project == null && module == null) {
-      return;
+  public FlutterCommand flutterVersion() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.VERSION);
+  }
+
+  public FlutterCommand flutterUpgrade() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.UPGRADE);
+  }
+
+  public FlutterCommand flutterDoctor() {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
+  }
+
+  public FlutterCommand flutterCreate(@NotNull VirtualFile appDir) {
+    return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, appDir.getName());
+  }
+
+  public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_GET);
+  }
+
+  public FlutterCommand flutterPackagesUpgrade(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
+  }
+
+  public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
+                                   @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
+    if (!root.contains(main)) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
     }
 
-    final Project p = project == null ? module.getProject() : project;
-    MessageView.SERVICE.getInstance(p).runWhenInitialized(() -> {
-      final ConsoleView console = FlutterConsoleHelper.findConsoleView(p, module);
-      if (console != null) {
-        console.print(
-          FlutterBundle.message("finished.with.exit.code.text.message", exitCode), ConsoleViewContentType.SYSTEM_OUTPUT);
-      }
-    });
+    final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    if (FlutterInitializer.isVerboseLogging()) {
+      args.add("--verbose");
+    }
+    if (device != null) {
+      args.add("--device-id=" + device.deviceId());
+    }
+    if (mode == RunMode.DEBUG) {
+      args.add("--start-paused");
+    }
+    if (!mode.isReloadEnabled()) {
+      args.add("--no-hot");
+    }
+    args.addAll(asList(additionalArgs));
+
+    // Make the path to main relative (to make the command line prettier).
+    assert main.getPath().startsWith(root.getPath());
+    assert !root.getPath().endsWith("/");
+    final String mainPath = main.getPath().substring(root.getPath().length() + 1);
+    args.add(FileUtil.toSystemDependentName(mainPath));
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  private static void start(@NotNull OSProcessHandler handler) {
-    DartPlugin.setPubActionInProgress(true);
+  /**
+   * Runs "flutter --version" and waits for it to complete.
+   * <p>
+   * This ensures that the Dart SDK exists and is up to date.
+   * <p>
+   * If project is not null, displays output in a console.
+   *
+   * @return true if successful (the Dart SDK exists).
+   */
+  public boolean sync(@NotNull Project project) {
     try {
-      handler.startNotify();
+      final Process process = flutterVersion().startInConsole(project);
+      if (process == null) {
+        return false;
+      }
+      process.waitFor();
+      if (process.exitValue() != 0) {
+        return false;
+      }
+      final VirtualFile flutterBin = myHome.findChild("bin");
+      if (flutterBin == null) {
+        return false;
+      }
+      flutterBin.refresh(false, true);
+      return flutterBin.findFileByRelativePath("cache/dart-sdk") != null;
     }
-    finally {
-      DartPlugin.setPubActionInProgress(false);
+    catch (InterruptedException e) {
+      LOG.warn(e);
+      return false;
     }
   }
+  
+  /**
+   * Runs flutter create and waits for it to finish.
+   * <p>
+   * Shows output in a console unless the module parameter is null.
+   * <p>
+   * Returns the PubRoot if successful.
+   */
+  @Nullable
+  public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module) {
 
-  public void run(@NotNull Command cmd,
-                  @Nullable Module module,
-                  @Nullable VirtualFile workingDir,
-                  @Nullable ProcessListener listener,
-                  @NotNull String... args)
-    throws ExecutionException {
-    final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
-    final String dirPath = workingDir == null ? null : workingDir.getPath();
-    final GeneralCommandLine command = new GeneralCommandLine().withWorkDirectory(dirPath);
-    command.setCharset(CharsetToolkit.UTF8_CHARSET);
-    command.setExePath(flutterPath);
-    command.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-    // Example: [create, foo_bar]
-    String[] toolArgs = ArrayUtil.mergeArrays(cmd.command, args);
-    toolArgs = ArrayUtil.prepend("--no-color", toolArgs);
-    command.addParameters(toolArgs);
+    final Process process;
+    if (module == null) {
+      process = flutterCreate(baseDir).start(null);
+    } else {
+      process = flutterCreate(baseDir).startInModuleConsole(module, null);
+    }
+    if (process == null) {
+      return null;
+    }
 
     try {
-      if (inProgress.compareAndSet(false, true)) {
-        final OSProcessHandler handler = new OSProcessHandler(command);
-        if (listener != null) {
-          handler.addProcessListener(listener);
-        }
-        handler.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(final ProcessEvent event) {
-            inProgress.set(false);
-            cmd.onTerminate(module, workingDir, event.getExitCode(), args);
-          }
-        });
-
-        if (cmd.attachToConsole() && module != null) {
-          FlutterConsoleHelper.attach(module, handler, cmd.runOnConsoleActivation());
-        }
-
-        cmd.onStart(module, workingDir, args);
-        start(handler);
-
-        // Send the command to analytics.
-        String commandName = StringUtil.join(cmd.command, "_");
-        commandName = commandName.replaceAll("-", "");
-        FlutterInitializer.getAnalytics().sendEvent("flutter", commandName);
+      if (process.waitFor() != 0) {
+        return null;
       }
     }
-    catch (ExecutionException e) {
-      inProgress.set(false);
-      FlutterMessages.showError(
-        cmd.title,
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+    catch (InterruptedException e) {
+      LOG.warn(e);
+      return null;
     }
+
+    baseDir.refresh(false, true);
+    return PubRoot.forDirectory(baseDir);
+  }
+  
+  /**
+   * Starts running 'flutter packages get' on the given pub root provided it's in one of this project's modules.
+   * <p>
+   * Shows output in the console associated with the given module.
+   * <p>
+   * Returns the process if successfully started.
+   */
+  public Process startPackagesGet(@NotNull PubRoot root, @NotNull Project project) {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+    // Refresh afterwards to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
+    return flutterPackagesGet(root).startInModuleConsole(module, root::refresh);
   }
 
-  public void runProject(@NotNull Project project,
-                         @NotNull String title,
-                         @NotNull String... args)
-    throws ExecutionException {
-    final String flutterPath = FlutterSdkUtil.pathToFlutterTool(getHomePath());
-    final GeneralCommandLine command = new GeneralCommandLine();
-    command.setCharset(CharsetToolkit.UTF8_CHARSET);
-    command.setExePath(flutterPath);
-    command.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-    // Example: [create, foo_bar]
-    final String[] toolArgs = ArrayUtil.prepend("--no-color", args);
-    command.addParameters(toolArgs);
+  /**
+   * Starts running 'flutter packages upgrade' on the given pub root.
+   * <p>
+   * Shows output in the console associated with the given module.
+   * <p>
+   * Returns the process if successfully started.
+   */
+  public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+    return flutterPackagesUpgrade(root).startInModuleConsole(module, root::refresh);
+  }
 
-    try {
-      if (inProgress.compareAndSet(false, true)) {
-        final OSProcessHandler handler = new OSProcessHandler(command);
-        handler.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(final ProcessEvent event) {
-            inProgress.set(false);
-            printExitMessage(project, null, event.getExitCode());
-          }
-        });
-
-        FlutterConsoleHelper.attach(project, handler, () -> start(handler));
-
-        // Send the command to analytics.
-        FlutterInitializer.getAnalytics().sendEvent("flutter", args[0]);
-      }
-    }
-    catch (ExecutionException e) {
-      inProgress.set(false);
-      FlutterMessages.showError(
-        title,
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-    }
+  @NotNull
+  public VirtualFile getHome() {
+    return myHome;
   }
 
   @NotNull
   public String getHomePath() {
-    return myHomePath;
+    return myHome.getPath();
   }
 
   /**
-   * Returns the Flutter Version as captured in the VERSION file.  This version is very coarse grained and not meant for presentation and
+   * Returns the Flutter Version as captured in the VERSION file. This version is very coarse grained and not meant for presentation and
    * rather only for sanity-checking the presence of baseline features (e.g, hot-reload).
    */
   @NotNull
@@ -202,113 +263,35 @@ public class FlutterSdk {
     return myVersion;
   }
 
-  @NotNull
-  public String getDartSdkPath() throws ExecutionException {
+  /**
+   * Returns the path to the Dart SDK cached within the Flutter SDK, or null if it doesn't exist.
+   */
+  @Nullable
+  public String getDartSdkPath() {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
   }
 
-  public enum Command {
-
-    CREATE("Flutter create", "create") {
-      @Override
-      void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-        // Enable Dart.
-        if (module != null) {
-          ApplicationManager.getApplication()
-            .invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> DartPlugin.enableDartSdk(module)));
-        }
-      }
-
-      @Override
-      @SuppressWarnings("UnusedParameters")
-      void onTerminate(@Nullable Module module,
-                       @Nullable VirtualFile workingDir,
-                       int exitCode,
-                       @NotNull String... args) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-          if (workingDir != null && module != null && !module.isDisposed()) {
-            final Project project = module.getProject();
-            final FileEditorManager manager = FileEditorManager.getInstance(project);
-
-            // Find main.
-            final VirtualFile main = LocalFileSystem.getInstance().refreshAndFindFileByPath(workingDir.getPath() + "/lib/main.dart");
-
-            FlutterModuleUtils.createRunConfig(project, main);
-
-            super.onTerminate(module, workingDir, exitCode, args);
-
-            // Open main for editing.
-            if (FlutterUtils.exists(main)) {
-              manager.openFile(main, true);
-            }
-            else {
-              LOG.warn("Unable to find (and open) created `main` file.");
-            }
-          }
-        });
-      }
-    },
-    DOCTOR("Flutter doctor", "doctor"),
-    PACKAGES_GET("Flutter packages get", "packages", "get"),
-    PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
-    UPGRADE("Flutter upgrade", "upgrade"),
-    VERSION("Flutter version", "--version") {
-      @Override
-      boolean attachToConsole() {
-        return false;
-      }
-    };
-
-    final public String title;
-    final String[] command;
-
-    Command(String title, String... command) {
-      this.title = title;
-      this.command = command;
-    }
-
-    /**
-     * Whether to attach to a console view (defaults to true).
-     */
-    @SuppressWarnings("SameReturnValue")
-    boolean attachToConsole() {
-      return true;
-    }
-
-    /**
-     * An (optional) action to perform once the console is active.
-     */
-    @SuppressWarnings("SameReturnValue")
-    @Nullable
-    Runnable runOnConsoleActivation() {
-      return null;
-    }
-
-    /**
-     * Invoked on command start (before process spawning).
-     *
-     * @param module     the target module
-     * @param workingDir the working directory for the command
-     * @param args       any arguments passed into the command
-     */
-    @SuppressWarnings("UnusedParameters")
-    void onStart(@Nullable Module module, @Nullable VirtualFile workingDir, @NotNull String... args) {
-      // Default is a no-op.
-    }
-
-    /**
-     * Invoked after the command terminates.
-     *
-     * @param module     the target module
-     * @param workingDir the working directory for the command
-     * @param exitCode   the command process's exit code
-     * @param args       any arguments passed into the command
-     */
-    @SuppressWarnings("UnusedParameters")
-    void onTerminate(@Nullable Module module, @Nullable VirtualFile workingDir, int exitCode, @NotNull String... args) {
-      if (module != null) {
-        printExitMessage(null, module, exitCode);
+  @Nullable
+  private static Library getDartSdkLibrary(@NotNull Project project) {
+    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
+    for (Library lib : libraries) {
+      if ("Dart SDK".equals(lib.getName())) {
+        return lib;
       }
     }
+    return null;
+  }
+
+  @Nullable
+  private static FlutterSdk getFlutterFromDartSdkLibrary(Library lib, VirtualFile projectDir) {
+    final String[] urls = lib.getUrls(OrderRootType.CLASSES);
+    for (String url : urls) {
+      if (url.endsWith(DART_CORE_SUFFIX)) {
+        final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
+        final VirtualFile home = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
+        return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
+      }
+    }
+    return null;
   }
 }

@@ -74,7 +74,7 @@ public class TestDir extends ExternalResource {
   /**
    * Given a path relative to the temp directory, returns the absolute path.
    */
-  public String pathAt(String path) throws Exception {
+  public String pathAt(String path) {
     return fixture.getTempDirPath() + "/" + path;
   }
 }

@@ -37,6 +37,11 @@ public class DaemonEventTest {
         logEvent(event, event.level, event.message, event.stackTrace);
       }
 
+      @Override
+      public void onDaemonShowMessage(DaemonEvent.ShowMessage event) {
+        logEvent(event, event.level, event.title, event.message);
+      }
+
       // app domain
 
       @Override
@@ -71,7 +76,12 @@ public class DaemonEventTest {
 
       @Override
       public void onAppStopped(DaemonEvent.AppStopped event) {
-        logEvent(event, event.appId);
+        if (event.error != null) {
+          logEvent(event, event.appId, event.error);
+        }
+        else {
+          logEvent(event, event.appId);
+        }
       }
 
       // device domain
@@ -97,9 +107,15 @@ public class DaemonEventTest {
   // daemon domain
 
   @Test
-  public void canReceiveDaemonMessage() {
+  public void canReceiveLogMessage() {
     send("daemon.logMessage", curly("level:\"spam\"", "message:\"Make money fast\"", "stackTrace:\"Las Vegas\""));
     checkLog("LogMessage: spam, Make money fast, Las Vegas");
+  }
+
+  @Test
+  public void canReceiveShowMessage() {
+    send("daemon.showMessage", curly("level:\"info\"", "title:\"Spam\"", "message:\"Make money fast\""));
+    checkLog("ShowMessage: info, Spam, Make money fast");
   }
 
   // app domain
@@ -142,9 +158,15 @@ public class DaemonEventTest {
   }
 
   @Test
-  public void canRecieveAppStopped() {
+  public void canReceiveAppStopped() {
     send("app.stop", curly("appId:42"));
     checkLog("AppStopped: 42");
+  }
+
+  @Test
+  public void canReceiveAppStoppedWithError() {
+    send("app.stop", curly("appId:42", "error:\"foobar\""));
+    checkLog("AppStopped: 42, foobar");
   }
 
   // device domain

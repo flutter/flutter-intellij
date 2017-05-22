@@ -16,6 +16,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterMessages;
+import io.flutter.android.AndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -31,7 +33,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -39,6 +44,13 @@ import java.util.stream.Stream;
  * A process running 'flutter daemon' to watch for devices.
  */
 class DeviceDaemon {
+  private static final AtomicInteger nextDaemonId = new AtomicInteger();
+
+  /**
+   * A unique id used to log device daemon actions.
+   */
+  private final int id;
+
   /**
    * The command used to start this daemon.
    */
@@ -46,13 +58,19 @@ class DeviceDaemon {
 
   private final @NotNull ProcessHandler process;
 
+  private final @NotNull Listener listener;
+
   private final @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices;
 
-  private DeviceDaemon(@NotNull Command command, @NotNull ProcessHandler process,
+  private DeviceDaemon(int id,
+                       @NotNull Command command, @NotNull ProcessHandler process, @NotNull Listener listener,
                        @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices) {
+    this.id = id;
     this.command = command;
     this.process = process;
+    this.listener = listener;
     this.devices = devices;
+    listener.running.set(true);
   }
 
   /**
@@ -64,7 +82,7 @@ class DeviceDaemon {
 
   /**
    * Returns the current devices.
-   *
+   * <p>
    * <p>This is calculated based on add and remove events seen since the process started.
    */
   ImmutableList<FlutterDevice> getDevices() {
@@ -81,29 +99,35 @@ class DeviceDaemon {
   }
 
   /**
-   * Kills the process.
+   * Kills the process. (Normal shutdown.)
    */
   void shutdown() {
-    LOG.info("shutting down Flutter device poller: " + command.toString());
+    if (!process.isProcessTerminated()) {
+      LOG.info("shutting down Flutter device daemon #" + id + ": " + command.toString());
+    }
+    listener.running.set(false);
     process.destroyProcess();
   }
 
   /**
    * Returns the appropriate command to start the device daemon, if any.
-   *
+   * <p>
    * A null means the device daemon should be shut down.
    */
-  static @Nullable Command chooseCommand(Project project) {
+  static @Nullable
+  Command chooseCommand(Project project) {
     if (!usesFlutter(project)) {
       return null;
     }
+
+    final String androidHome = AndroidSdk.chooseAndroidHome(project);
 
     // See if the Bazel workspace provides a script.
     final Workspace w = WorkspaceCache.getInstance(project).getNow();
     if (w != null) {
       final String script = w.getDaemonScript();
       if (script != null) {
-        return new Command(w.getRoot().getPath(), script, ImmutableList.of());
+        return new Command(w.getRoot().getPath(), script, ImmutableList.of(), androidHome);
       }
     }
 
@@ -115,7 +139,7 @@ class DeviceDaemon {
 
     try {
       final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-      return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"));
+      return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"), androidHome);
     }
     catch (ExecutionException e) {
       LOG.warn("Unable to calculate command to watch Flutter devices", e);
@@ -127,14 +151,15 @@ class DeviceDaemon {
     final Workspace w = WorkspaceCache.getInstance(p).getNow();
     if (w != null) {
       return w.usesFlutter(p);
-    } else {
+    }
+    else {
       return FlutterModuleUtils.hasFlutterModule(p);
     }
   }
 
   /**
    * The command used to start the daemon.
-   *
+   * <p>
    * <p>Comparing two Commands lets us detect configuration changes that require a restart.
    */
   static class Command {
@@ -145,24 +170,39 @@ class DeviceDaemon {
     private final @NotNull String command;
     private final @NotNull ImmutableList<String> parameters;
 
-    private Command(@NotNull String workDir, @NotNull String command, @NotNull ImmutableList<String> parameters) {
+    /**
+     * The value of ANDROID_HOME to use when launching the command.
+     */
+    private final @Nullable String androidHome;
+
+    private Command(@NotNull String workDir, @NotNull String command, @NotNull ImmutableList<String> parameters,
+                    @Nullable String androidHome) {
       this.workDir = workDir;
       this.command = command;
       this.parameters = parameters;
+      this.androidHome = androidHome;
     }
 
     /**
      * Launches the daemon.
+     *
+     * @param isCancelled    will be polled during startup to see if startup is cancelled.
+     * @param deviceChanged  will be called whenever a device is added or removed from the returned DeviceDaemon.
+     * @param processStopped will be called if the process exits unexpectedly after this method returns.
      */
-    DeviceDaemon start(Supplier<Boolean> isCancelled, Runnable deviceChanged) throws ExecutionException {
-      LOG.info("starting Flutter device poller: " + toString());
+    DeviceDaemon start(Supplier<Boolean> isCancelled,
+                       Runnable deviceChanged,
+                       Consumer<String> processStopped) throws ExecutionException {
+      final int daemonId = nextDaemonId.incrementAndGet();
+      LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
       final ProcessHandler process = new OSProcessHandler(toCommandLine());
       boolean succeeded = false;
       try {
         final AtomicReference<ImmutableList<FlutterDevice>> devices = new AtomicReference<>(ImmutableList.of());
 
         final DaemonApi api = new DaemonApi(process);
-        api.listen(process, new Listener(api, devices, deviceChanged));
+        final Listener listener = new Listener(daemonId, api, devices, deviceChanged, processStopped);
+        api.listen(process, listener);
 
         final Future ready = api.enableDeviceEvents();
 
@@ -170,6 +210,16 @@ class DeviceDaemon {
         while (true) {
           if (isCancelled.get()) {
             throw new CancellationException();
+          }
+          else if (process.isProcessTerminated()) {
+            final Integer exitCode = process.getExitCode();
+            throw new ExecutionException(
+              "Flutter device daemon #" +
+              daemonId +
+              ": process exited during startup. Exit code: " +
+              exitCode +
+              ", stderr:\n" +
+              api.getStderrTail());
           }
 
           try {
@@ -181,7 +231,7 @@ class DeviceDaemon {
             Thread.sleep(4200);
 
             succeeded = true;
-            return new DeviceDaemon(this, process, devices);
+            return new DeviceDaemon(daemonId, this, process, listener, devices);
           }
           catch (TimeoutException e) {
             // Check for cancellation and try again.
@@ -193,7 +243,8 @@ class DeviceDaemon {
             throw new ExecutionException(e.getCause());
           }
         }
-      } finally {
+      }
+      finally {
         if (!succeeded) {
           process.destroyProcess();
         }
@@ -208,12 +259,13 @@ class DeviceDaemon {
       final Command other = (Command)obj;
       return Objects.equal(workDir, other.workDir)
              && Objects.equal(command, other.command)
-             && Objects.equal(parameters, other.parameters);
+             && Objects.equal(parameters, other.parameters)
+             && Objects.equal(androidHome, other.androidHome);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(workDir, command, parameters);
+      return Objects.hashCode(workDir, command, parameters, androidHome);
     }
 
     private GeneralCommandLine toCommandLine() {
@@ -221,6 +273,9 @@ class DeviceDaemon {
       result.setCharset(CharsetToolkit.UTF8_CHARSET);
       result.setExePath(FileUtil.toSystemDependentName(command));
       result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+      if (androidHome != null) {
+        result.withEnvironment("ANDROID_HOME", androidHome);
+      }
       for (String param : parameters) {
         result.addParameter(param);
       }
@@ -241,25 +296,48 @@ class DeviceDaemon {
 
   /**
    * Handles events sent by the device daemon process.
-   *
+   * <p>
    * <p>Updates the device list based on incoming events.
    */
   private static class Listener implements DaemonEvent.Listener {
+    private final int daemonId;
     private final DaemonApi api;
     private final AtomicReference<ImmutableList<FlutterDevice>> devices;
     private final Runnable deviceChanged;
+    private final Consumer<String> processStopped;
 
-    Listener(DaemonApi api, AtomicReference<ImmutableList<FlutterDevice>> devices, Runnable deviceChanged) {
+    private final AtomicBoolean running = new AtomicBoolean(false);
+
+    Listener(int daemonId,
+             DaemonApi api,
+             AtomicReference<ImmutableList<FlutterDevice>> devices,
+             Runnable deviceChanged,
+             Consumer<String> processStopped) {
+      this.daemonId = daemonId;
       this.api = api;
       this.devices = devices;
       this.deviceChanged = deviceChanged;
+      this.processStopped = processStopped;
     }
 
     // daemon domain
 
     @Override
     public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
-      LOG.info("flutter device watcher: " + message.message);
+      LOG.info("flutter device daemon #" + daemonId + ": " + message.message);
+    }
+
+    @Override
+    public void onDaemonShowMessage(@NotNull DaemonEvent.ShowMessage event) {
+      if ("error".equals(event.level)) {
+        FlutterMessages.showError(event.title, event.message);
+      }
+      else if ("warning".equals(event.level)) {
+        FlutterMessages.showWarning(event.title, event.message);
+      }
+      else {
+        FlutterMessages.showInfo(event.title, event.message);
+      }
     }
 
     // device domain
@@ -282,6 +360,15 @@ class DeviceDaemon {
     public void onDeviceRemoved(@NotNull DaemonEvent.DeviceRemoved event) {
       devices.updateAndGet((old) -> removeDevice(old.stream(), event.id));
       deviceChanged.run();
+    }
+
+    @Override
+    public void processTerminated(int exitCode) {
+      if (running.get()) {
+        processStopped.accept(
+          "Daemon #" + daemonId + " exited. Exit code: " + exitCode + ". Stderr:\n" +
+          api.getStderrTail());
+      }
     }
 
     // helpers

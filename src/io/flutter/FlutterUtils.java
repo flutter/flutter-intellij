@@ -13,12 +13,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
+import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 public class FlutterUtils {
+  private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
+  private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]+([_]?[a-z0-9]+)*)+$");
+
   private FlutterUtils() {
   }
 
@@ -35,11 +40,7 @@ public class FlutterUtils {
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean isFlutteryFile(@NotNull VirtualFile file) {
-    return isDartFile(file) || isPubspecFile(file);
-  }
-
-  public static boolean isPubspecFile(@NotNull VirtualFile file) {
-    return Objects.equals(file.getName(), FlutterConstants.PUBSPEC_YAML);
+    return isDartFile(file) || PubRoot.isPubspec(file);
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
@@ -57,5 +58,39 @@ public class FlutterUtils {
 
   public static void openFlutterSettings(@Nullable Project project) {
     ShowSettingsUtilImpl.showSettingsDialog(project, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID, "");
+  }
+
+  /**
+   * Checks whether a given string is a Dart keyword.
+   *
+   * @param string the string to check
+   * @return true if a keyword, false oetherwise
+   */
+  public static boolean isDartKeword(@NotNull String string) {
+    return FlutterConstants.DART_KEYWORDS.contains(string);
+  }
+
+  /**
+   * Checks whether a given string is a valid Dart identifier.
+   * <p>
+   * See: https://www.dartlang.org/guides/language/spec
+   *
+   * @param id the string to check
+   * @return true if a valid identifer, false otherwise.
+   */
+  public static boolean isValidDartIdentifier(@NotNull String id) {
+    return VALID_ID.matcher(id).matches();
+  }
+
+  /**
+   * Checks whether a given string is a valid Dart package name.
+   * <p>
+   * See: https://www.dartlang.org/tools/pub/pubspec#name
+   *
+   * @param name the string to check
+   * @return true if a valid package name, false otherwise.
+   */
+  public static boolean isValidPackageName(@NotNull String name) {
+    return VALID_PACKAGE.matcher(name).matches();
   }
 }

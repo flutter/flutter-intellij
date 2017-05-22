@@ -3,6 +3,7 @@
 <!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
+<!--suppress AntResolveInspection -->
 <project name="flutter-intellij" default="build">
   <property environment="env"/>
 
@@ -10,7 +11,7 @@
   <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
-  <property name="idea.version" value="2017.1"/>
+  <property name="idea.version" value="2017.1.3"/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
