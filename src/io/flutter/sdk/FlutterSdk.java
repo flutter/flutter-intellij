@@ -87,9 +87,7 @@ public class FlutterSdk {
   @Nullable
   public static FlutterSdk forPath(@NotNull final String path) {
     final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
-    if (home == null) {
-      return null;
-    } else if (!FlutterSdkUtil.isFlutterSdkHome(path)) {
+    if (home == null || !FlutterSdkUtil.isFlutterSdkHome(path)) {
       return null;
     } else {
       return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
