@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>13.1</version>
+  <version>14.0</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,21 @@
 
   <change-notes>
     <![CDATA[
+
+14.0:
+<ul>
+  <li>user toggleable option to enable more verbose debug logging of Flutter app runs</li>
+  <li>fixes to the new Flutter Module workflow</li>
+  <li>improved console logging on Flutter app termination</li>
+  <li>improved error reporting on Observatory connection and Flutter View open failures</li>
+  <li>removed Flutter SDK settings from default projects</li>
+  <li>improved project name validation (to align with checks in `flutter create`)</li>
+  <li>console hyperlinks for Xcode resources</li>
+  <li>fix to inherit Android JDK setting when creating Flutter projects</li>
+  <li>fix to ensure Flutter console filtering is only applied to Flutter consoles</li>
+  <li>improved device daemon interop</li>
+  <li>improved SDK version checking</li>
+</ul>
 
 13.1:
 <ul>
