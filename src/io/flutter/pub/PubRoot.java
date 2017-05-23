@@ -100,18 +100,18 @@ public class PubRoot {
   public static PubRoot forEventWithRefresh(@NotNull final AnActionEvent event) {
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(event.getDataContext());
     if (psiFile != null) {
-      final PubRoot root = PubRoot.forPsiFile(psiFile);
+      final PubRoot root = forPsiFile(psiFile);
       return root == null ? null : root.refresh();
     }
 
     final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
     if (module != null) {
-      return PubRoot.forModuleWithRefresh(module);
+      return forModuleWithRefresh(module);
     }
 
     final Project project = event.getData(CommonDataKeys.PROJECT);
     if (project != null) {
-      return PubRoot.forProjectWithRefresh(project);
+      return forProjectWithRefresh(project);
     }
 
     return null;
