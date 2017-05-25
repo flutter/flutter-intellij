@@ -229,9 +229,7 @@ class DebugDrawAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.debugPaint", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaint", isSelected(event));
   }
 }
 
@@ -241,9 +239,7 @@ class PerformanceOverlayAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.showPerformanceOverlay", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected(event));
   }
 }
 
@@ -283,9 +279,7 @@ class RepaintRainbowAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.repaintRainbow", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected(event));
   }
 }
 
@@ -308,9 +302,7 @@ class HideSlowBannerAction extends AbstractToggleableAction {
 
   @Override
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", !isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.debugAllowBanner", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected(event));
   }
 }
 
@@ -321,9 +313,7 @@ class ShowPaintBaselinesAction extends AbstractToggleableAction {
 
   @Override
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.debugPaintBaselinesEnabled", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected(event));
   }
 }
 
