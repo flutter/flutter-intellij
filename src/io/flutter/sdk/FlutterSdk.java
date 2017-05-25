@@ -146,15 +146,12 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device) {
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile main) {
 
     // We don't have machine mode yet, so just run it normally and show the output in the console.
     final List<String> args = new ArrayList<>();
     if (FlutterInitializer.isVerboseLogging()) {
       args.add("--verbose");
-    }
-    if (device != null) {
-      args.add("--device-id=" + device.deviceId());
     }
 
     // Make the path to main relative (to make the command line prettier).
