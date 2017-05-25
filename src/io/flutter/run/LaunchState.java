@@ -197,7 +197,9 @@ public class LaunchState extends CommandLineState {
   @Override
   protected @NotNull
   ProcessHandler startProcess() throws ExecutionException {
-    throw new ExecutionException("not implemented"); // Not used; callback does this.
+    // This can happen if there isn't a custom runner defined in plugin.xml.
+    // The runner should extend LaunchState.Runner (below).
+    throw new ExecutionException("need to implement LaunchState.Runner for " + runConfig.getClass());
   }
 
   /**

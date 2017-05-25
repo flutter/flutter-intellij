@@ -78,6 +78,10 @@ public class DartPlugin {
     return type.getId().equals("DartCommandLineRunConfigurationType");
   }
 
+  public static boolean isDartTestConfiguration(ConfigurationType type) {
+    return type.getId().equals("DartTestRunConfigurationType");
+  }
+
   /**
    * @return the minimum required version of the Dart Plugin
    */
