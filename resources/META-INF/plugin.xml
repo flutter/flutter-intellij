@@ -286,9 +286,6 @@
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
     </group>
 
-
-
-
     <!-- main toolbar run actions -->
     <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"
             description="Reload"
