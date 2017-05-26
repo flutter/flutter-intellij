@@ -7,7 +7,6 @@ package io.flutter.view;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
@@ -32,9 +31,6 @@ public class FlutterViewFactory implements ToolWindowFactory {
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    //noinspection CodeBlock2Expr
-    DumbService.getInstance(project).runWhenSmart(() -> {
-      (ServiceManager.getService(project, FlutterView.class)).initToolWindow(toolWindow);
-    });
+    (ServiceManager.getService(project, FlutterView.class)).initToolWindow(toolWindow);
   }
 }

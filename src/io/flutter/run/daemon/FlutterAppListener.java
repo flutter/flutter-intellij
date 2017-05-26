@@ -105,8 +105,20 @@ class FlutterAppListener implements DaemonEvent.Listener {
   @Override
   public void onAppProgressStarting(@NotNull DaemonEvent.AppProgress event) {
     progress.start(event.message);
+
     if (event.getType().startsWith("hot.")) {
+      // We clear the console view in order to help indicate that a reload is happening.
+      if (app.getConsole() != null) {
+        if (!FlutterInitializer.isVerboseLogging()) {
+          app.getConsole().clear();
+        }
+      }
+
       stopwatch.set(Stopwatch.createStarted());
+    }
+
+    if (app.getConsole() != null) {
+      app.getConsole().print(event.message + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
     }
   }
 
