@@ -42,7 +42,6 @@ public class FlutterModuleType extends ModuleType<FlutterModuleBuilder> {
     return FlutterBundle.message("flutter.project.description");
   }
 
-  @Override
   public Icon getBigIcon() {
     return FlutterIcons.Flutter_2x;
   }
