@@ -12,7 +12,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.MainFile;
-import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSdk;
 import org.jdom.Element;
@@ -81,7 +80,7 @@ public class TestFields {
   /**
    * Starts running the tests.
    */
-  ProcessHandler run(Project project, FlutterDevice device, RunMode mode) throws ExecutionException {
+  ProcessHandler run(Project project, RunMode mode) throws ExecutionException {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       throw new ExecutionException("The Flutter SDK is not configured");
@@ -93,7 +92,7 @@ public class TestFields {
       throw new ExecutionException("Test file isn't within a Flutter pub root");
     }
 
-    return sdk.flutterTest(root, main.getFile(), device).startProcess(project);
+    return sdk.flutterTest(root, main.getFile()).startProcess(project);
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {

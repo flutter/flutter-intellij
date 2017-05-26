@@ -16,8 +16,6 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.run.daemon.DeviceService;
-import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -57,7 +55,7 @@ public class TestConfig extends LocatableConfigurationBase {
 
   @Override
   public RunConfiguration clone() {
-    TestConfig result = (TestConfig) super.clone();
+    final TestConfig result = (TestConfig) super.clone();
     result.fields = fields;
     return result;
   }
@@ -72,7 +70,7 @@ public class TestConfig extends LocatableConfigurationBase {
   @Override
   public String suggestedName() {
     final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(fields.getTestFile());
-    return file == null ? null : file.getName();
+    return file == null ? null : "tests in " + file.getName();
   }
 
   @Override
@@ -98,9 +96,8 @@ public class TestConfig extends LocatableConfigurationBase {
       @NotNull
       @Override
       protected ProcessHandler startProcess() throws ExecutionException {
-        final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
         final RunMode mode = RunMode.fromEnv(env);
-        return fields.run(env.getProject(), device, mode);
+        return fields.run(env.getProject(), mode);
       }
     };
   }

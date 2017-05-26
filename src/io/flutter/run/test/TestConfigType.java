@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 public class TestConfigType extends ConfigurationTypeBase {
   protected TestConfigType() {
     super("FlutterTestConfigType", "Flutter Test",
-          "description", FlutterIcons.Flutter);
+          "description", FlutterIcons.Flutter_test);
     addFactory(new Factory(this));
   }
 
