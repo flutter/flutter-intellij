@@ -252,8 +252,8 @@
               text="Flutter Packages Upgrade"
               description="Run 'flutter packages upgrade'"/>
       <separator/>
-      <action id="flutter.xcode.open" class="io.flutter.actions.OpenXcodeAction"
-              text="Open in Xcode"
+      <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
+              text="Open in Xcode..."
               description="Open project in Xcode"/>
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
@@ -269,12 +269,25 @@
         <reference ref="flutter.packages.get"/> 
         <reference ref="flutter.packages.upgrade"/> 
         <separator/>
+        <reference ref="flutter.xcode.open"/> 
+        <separator/>
         <reference ref="flutter.upgrade"/> 
         <reference ref="flutter.doctor"/> 
       </group>
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
     </group>
+    <group id="FlutterExternalIdeExplorerActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup"> 
+      <separator/>
+      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
+        <reference ref="flutter.xcode.open"/> 
+      </group>
+      <separator/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+    </group>
+
+
+
 
     <!-- main toolbar run actions -->
     <action id="Flutter.Toolbar.ReloadAction" class="io.flutter.actions.ReloadFlutterAppRetarget"

@@ -279,6 +279,13 @@ public class PubRoot {
     return root.findChild("android");
   }
 
+  /**
+   * Returns the ios subdirectory if it exists.
+   */
+  @Nullable
+  public VirtualFile getiOsDir() {
+    return root.findChild("ios");
+  }
 
   /**
    * Returns true if the project has a module for the "android" directory.
