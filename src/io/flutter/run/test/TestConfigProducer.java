@@ -11,7 +11,9 @@ import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
+import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,10 +31,17 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+    final DartFile file = FlutterRunConfigurationProducer.getDartFile(context);
+    if (file == null) return false;
+
+    final PubRoot root = PubRoot.forPsiFile(file);
+    if (root == null) return false;
+
     final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false);
-    if (candidate == null || !candidate.getName().endsWith("_test.dart")) {
-      return false;
-    }
+    if (candidate == null) return false;
+
+    final String relativePath = root.getRelativePath(candidate);
+    if (relativePath == null || !relativePath.startsWith("test/")) return false;
 
     config.setFields(new TestFields(candidate.getPath()));
     config.setGeneratedName();
