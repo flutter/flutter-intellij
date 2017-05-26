@@ -19,6 +19,7 @@ import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.module.FlutterModuleType;
 import io.flutter.pub.PubRoot;
@@ -63,6 +64,22 @@ public class FlutterModuleUtils {
     }
 
     return false;
+  }
+
+
+  @Nullable
+  public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
+    for (PubRoot root : PubRoots.forProject(project)) {
+      final VirtualFile dir = root.getiOsDir();
+      if (dir != null) {
+        for (VirtualFile child : dir.getChildren()) {
+          if (FlutterUtils.isXcodeProjectFileName(child.getName())) {
+            return child;
+          }
+        }
+      }
+    }
+    return null;
   }
 
   @NotNull

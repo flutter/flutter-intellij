@@ -252,6 +252,10 @@
               text="Flutter Packages Upgrade"
               description="Run 'flutter packages upgrade'"/>
       <separator/>
+      <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
+              text="Open Project in Xcode…"
+              description="Open project in Xcode"/>
+      <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
               text="Submit Feedback…"
               description="Provide feedback for the Flutter plugin"/>
@@ -265,8 +269,18 @@
         <reference ref="flutter.packages.get"/> 
         <reference ref="flutter.packages.upgrade"/> 
         <separator/>
+        <reference ref="flutter.xcode.open"/> 
+        <separator/>
         <reference ref="flutter.upgrade"/> 
         <reference ref="flutter.doctor"/> 
+      </group>
+      <separator/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+    </group>
+    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup"> 
+      <separator/>
+      <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
+        <reference ref="flutter.xcode.open"/> 
       </group>
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>

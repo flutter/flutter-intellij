@@ -93,4 +93,32 @@ public class FlutterUtils {
   public static boolean isValidPackageName(@NotNull String name) {
     return VALID_PACKAGE.matcher(name).matches();
   }
+
+  /**
+   * Checks whether a given filename is an Xcode metadata file, suitable for opening externally.
+   * @param name the name to check
+   * @return true if an xcode project filename
+   */
+  public static boolean isXcodeFileName(@NotNull String name) {
+    return isXcodeProjectFileName(name) || isXcodeWorkspaceFileName(name);
+  }
+
+  /**
+   * Checks whether a given file name is an Xcode project filename.
+   * @param name the name to check
+   * @return true if an xcode project filename
+   */
+  public static boolean isXcodeProjectFileName(@NotNull String name) {
+    return name.endsWith(".xcodeproj");
+  }
+
+  /**
+   * Checks whether a given name is an Xcode workspace filename.
+   * @param name the name to check
+   * @return true if an xcode workspace filename
+   */
+  public static boolean isXcodeWorkspaceFileName(@NotNull String name) {
+    return name.endsWith(".xcworkspace");
+  }
+
 }

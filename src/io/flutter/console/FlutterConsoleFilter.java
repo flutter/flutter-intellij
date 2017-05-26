@@ -21,6 +21,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -88,7 +89,7 @@ public class FlutterConsoleFilter implements Filter {
     if (pathPart.startsWith("open ")) {
       final String[] parts = pathPart.split(" ");
       if (parts.length > 1) {
-        if (parts[1].endsWith(".xcworkspace")) {
+        if (FlutterUtils.isXcodeFileName(parts[1])) {
           pathPart = parts[1];
           openAsExternalFile = true;
         }
