@@ -5,18 +5,18 @@
  */
 package io.flutter.view;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.project.DumbAwareAction;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class AbstractToggleableAction extends AnAction implements Toggleable {
+abstract class AbstractToggleableAction extends DumbAwareAction implements Toggleable {
   @NotNull final FlutterView view;
   private boolean selected = false;
 
