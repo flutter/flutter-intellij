@@ -109,7 +109,9 @@ class FlutterAppListener implements DaemonEvent.Listener {
     if (event.getType().startsWith("hot.")) {
       // We clear the console view in order to help indicate that a reload is happening.
       if (app.getConsole() != null) {
-        app.getConsole().clear();
+        if (!FlutterInitializer.isVerboseLogging()) {
+          app.getConsole().clear();
+        }
       }
 
       stopwatch.set(Stopwatch.createStarted());

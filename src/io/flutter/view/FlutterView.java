@@ -9,7 +9,9 @@ import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Separator;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
@@ -162,65 +164,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   }
 }
 
-abstract class AbstractToggleableAction extends AnAction implements Toggleable {
-  @NotNull final FlutterView view;
-  private boolean selected = false;
-
-  AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text) {
-    super(text);
-
-    this.view = view;
-  }
-
-  AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
-    super(text, description, icon);
-
-    this.view = view;
-  }
-
-  @Override
-  public final void update(AnActionEvent e) {
-    final boolean hasFlutterApp = view.getFlutterApp() != null;
-    if (!hasFlutterApp) {
-      selected = false;
-    }
-
-    // selected
-    final boolean selected = this.isSelected(e);
-    final Presentation presentation = e.getPresentation();
-    presentation.putClientProperty("selected", selected);
-
-    // enabled
-    e.getPresentation().setEnabled(hasFlutterApp);
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent event) {
-    if (view.getFlutterApp() == null) {
-      return;
-    }
-
-    this.setSelected(event, !isSelected(event));
-    final Presentation presentation = event.getPresentation();
-    presentation.putClientProperty("selected", isSelected(event));
-
-    FlutterInitializer.sendAnalyticsAction(this);
-    perform(event);
-  }
-
-  protected abstract void perform(AnActionEvent event);
-
-  public boolean isSelected(AnActionEvent var1) {
-    return selected;
-  }
-
-  public void setSelected(AnActionEvent event, boolean selected) {
-    this.selected = selected;
-
-    ApplicationManager.getApplication().invokeLater(() -> this.update(event));
-  }
-}
-
 class DebugDrawAction extends AbstractToggleableAction {
   DebugDrawAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
@@ -242,7 +185,7 @@ class PerformanceOverlayAction extends AbstractToggleableAction {
   }
 }
 
-class TogglePlatformAction extends AbstractFlutterAction {
+class TogglePlatformAction extends FlutterViewAction {
   TogglePlatformAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.togglePlatform.text"), FlutterBundle.message("flutter.view.togglePlatform.description"),
           AllIcons.RunConfigurations.Application);
@@ -316,28 +259,7 @@ class ShowPaintBaselinesAction extends AbstractToggleableAction {
   }
 }
 
-abstract class AbstractFlutterAction extends AnAction {
-  @NotNull final FlutterView view;
-
-  AbstractFlutterAction(@NotNull FlutterView view, @Nullable String text) {
-    super(text);
-
-    this.view = view;
-  }
-
-  AbstractFlutterAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
-    super(text, description, icon);
-
-    this.view = view;
-  }
-
-  @Override
-  public final void update(AnActionEvent e) {
-    e.getPresentation().setEnabled(view.getFlutterApp() != null);
-  }
-}
-
-class ObservatoryTimelineAction extends AbstractFlutterAction {
+class ObservatoryTimelineAction extends FlutterViewAction {
   ObservatoryTimelineAction(@NotNull FlutterView view) {
     super(view, "Open Observatory Timeline");
   }
