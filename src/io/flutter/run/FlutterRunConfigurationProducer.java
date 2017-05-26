@@ -121,7 +121,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   /**
    * Returns the Dart file at the current location, or null if not a match.
    */
-  private static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
+  public static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
     final PsiElement elt = context.getPsiLocation();
     if (elt == null) return null;
 
