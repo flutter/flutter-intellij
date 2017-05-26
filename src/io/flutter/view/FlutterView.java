@@ -13,7 +13,6 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
@@ -163,7 +162,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   }
 }
 
-abstract class AbstractToggleableAction extends DumbAwareAction implements Toggleable {
+abstract class AbstractToggleableAction extends AnAction implements Toggleable {
   @NotNull final FlutterView view;
   private boolean selected = false;
 
@@ -317,7 +316,7 @@ class ShowPaintBaselinesAction extends AbstractToggleableAction {
   }
 }
 
-abstract class AbstractFlutterAction extends DumbAwareAction {
+abstract class AbstractFlutterAction extends AnAction {
   @NotNull final FlutterView view;
 
   AbstractFlutterAction(@NotNull FlutterView view, @Nullable String text) {

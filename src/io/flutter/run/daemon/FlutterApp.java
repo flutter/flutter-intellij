@@ -187,8 +187,10 @@ public class FlutterApp {
       LOG.warn("cannot restart Flutter app because app id is not set");
       return;
     }
+
+    changeState(State.RELOADING);
     myDaemonApi.restartApp(myAppId, true, false)
-      .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
+      .thenRunAsync(() -> changeState(State.STARTED));
   }
 
   /**
@@ -199,8 +201,10 @@ public class FlutterApp {
       LOG.warn("cannot reload Flutter app because app id is not set");
       return;
     }
+
+    changeState(State.RELOADING);
     myDaemonApi.restartApp(myAppId, false, pauseAfterRestart)
-      .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
+      .thenRunAsync(() -> changeState(State.STARTED));
   }
 
   public CompletableFuture<Boolean> togglePlatform() {
@@ -338,5 +342,5 @@ public class FlutterApp {
     void stateChanged(State newState);
   }
 
-  public enum State {STARTING, STARTED, TERMINATING, TERMINATED}
+  public enum State {STARTING, STARTED, RELOADING, TERMINATING, TERMINATED}
 }
