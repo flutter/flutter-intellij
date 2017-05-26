@@ -277,7 +277,7 @@
       <separator/>
       <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
     </group>
-    <group id="FlutterExternalIdeExplorerActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup"> 
+    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup"> 
       <separator/>
       <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <reference ref="flutter.xcode.open"/> 
