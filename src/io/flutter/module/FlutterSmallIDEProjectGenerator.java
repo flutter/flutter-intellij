@@ -1,5 +1,6 @@
 package io.flutter.module;
 
+import com.intellij.execution.OutputListener;
 import com.intellij.ide.util.projectWizard.WebProjectTemplate;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
@@ -55,9 +56,12 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     }
 
     // Run "flutter create".
-    final PubRoot root = sdk.createFiles(baseDir, module);
+    OutputListener listener = new OutputListener();
+    final PubRoot root = sdk.createFiles(baseDir, module, listener);
     if (root == null) {
-      FlutterMessages.showError("Error creating project", "Failed to run flutter create.");
+      final String stderr = listener.getOutput().getStderr();
+      final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
+      FlutterMessages.showError("Error creating project", msg);
       return;
     }
 
