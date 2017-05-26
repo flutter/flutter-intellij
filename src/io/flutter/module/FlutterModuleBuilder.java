@@ -54,7 +54,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterBundle.message("flutter.module.name");
   }
 
-  @Override
   public Icon getBigIcon() {
     return FlutterIcons.Flutter_2x;
   }
