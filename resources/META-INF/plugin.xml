@@ -253,7 +253,7 @@
               description="Run 'flutter packages upgrade'"/>
       <separator/>
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
-              text="Open in Xcode..."
+              text="Open Project in Xcode…"
               description="Open project in Xcode"/>
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
