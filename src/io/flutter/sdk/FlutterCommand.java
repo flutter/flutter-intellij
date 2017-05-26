@@ -204,7 +204,7 @@ public class FlutterCommand {
    */
   @NotNull
   public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
-    final GeneralCommandLine line = new GeneralCommandLine().withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.NONE);
+    final GeneralCommandLine line = new GeneralCommandLine();
     line.setCharset(CharsetToolkit.UTF8_CHARSET);
 
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
