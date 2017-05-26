@@ -42,6 +42,7 @@ public class PubRoot {
   private final VirtualFile lib;
 
   private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec, @Nullable VirtualFile packages, @Nullable VirtualFile lib) {
+    assert(!root.getPath().endsWith("/"));
     this.root = root;
     this.pubspec = pubspec;
     this.packages = packages;
@@ -100,18 +101,18 @@ public class PubRoot {
   public static PubRoot forEventWithRefresh(@NotNull final AnActionEvent event) {
     final PsiFile psiFile = CommonDataKeys.PSI_FILE.getData(event.getDataContext());
     if (psiFile != null) {
-      final PubRoot root = PubRoot.forPsiFile(psiFile);
+      final PubRoot root = forPsiFile(psiFile);
       return root == null ? null : root.refresh();
     }
 
     final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
     if (module != null) {
-      return PubRoot.forModuleWithRefresh(module);
+      return forModuleWithRefresh(module);
     }
 
     final Project project = event.getData(CommonDataKeys.PROJECT);
     if (project != null) {
-      return PubRoot.forProjectWithRefresh(project);
+      return forProjectWithRefresh(project);
     }
 
     return null;
@@ -189,6 +190,21 @@ public class PubRoot {
     final VirtualFile lib = root.getLib();
     if (lib != null) lib.refresh(false, false);
     return root;
+  }
+
+  /**
+   * Returns the relative path to a file within this PubRoot.
+   * <p>
+   * Returns null if not within the pubroot.
+   */
+  @Nullable
+  public String getRelativePath(@NotNull VirtualFile file) {
+    final String root = this.root.getPath();
+    final String path = file.getPath();
+    if (!path.startsWith(root) || path.length() < root.length() + 2) {
+      return null;
+    }
+    return path.substring(root.length() + 1);
   }
 
   /**

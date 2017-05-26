@@ -159,7 +159,7 @@ public class FlutterCommand {
    * Returns the handler if successfully started.
    */
   @Nullable
-  private OSProcessHandler startProcess(@Nullable Project project) {
+  public OSProcessHandler startProcess(@Nullable Project project) {
     if (!inProgress.compareAndSet(null, this)) {
       return null;
     }
@@ -222,7 +222,8 @@ public class FlutterCommand {
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
-    RUN("Flutter run", "run");
+    RUN("Flutter run", "run"),
+    TEST("Flutter test", "test");
 
     final public String title;
     final ImmutableList<String> subCommand;

@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -33,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -83,19 +85,24 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     //Disposer.register(this, toolWindowPanel);
     toolContent.setCloseable(false);
 
-    final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(new DebugDrawAction(this));
-    toolbarGroup.add(new RepaintRainbowAction(this));
-    toolbarGroup.add(new PerformanceOverlayAction(this));
-    toolbarGroup.add(new TimeDilationAction(this));
-    toolbarGroup.add(new TogglePlatformAction(this));
-    toolbarGroup.addSeparator();
-    toolbarGroup.add(new ObservatoryTimelineAction(this));
-
     final JPanel mainContent = new JPanel(new BorderLayout());
-
-    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
     toolWindowPanel.setContent(mainContent);
+
+    final ToolWindowEx toolWindowEx = (ToolWindowEx)toolWindow;
+    toolWindowEx.setTitleActions(
+      new DebugDrawAction(this),
+      new PerformanceOverlayAction(this),
+      new TogglePlatformAction(this)
+    );
+
+    toolWindowEx.setAdditionalGearActions(new DefaultActionGroup(Arrays.asList(
+      new ShowPaintBaselinesAction(this),
+      new RepaintRainbowAction(this),
+      new TimeDilationAction(this),
+      new HideSlowBannerAction(this),
+      new Separator(),
+      new ObservatoryTimelineAction(this)
+    )));
 
     final ContentManager contentManager = toolWindow.getContentManager();
     contentManager.addContent(toolContent);
@@ -141,10 +148,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       if (toolWindow == null) return;
 
       if (app == null) {
-        toolWindow.setIcon(FlutterIcons.Flutter);
+        toolWindow.setIcon(FlutterIcons.Flutter_13);
       }
       else {
-        toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter));
+        toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
       }
     });
   }
@@ -160,6 +167,12 @@ abstract class AbstractToggleableAction extends DumbAwareAction implements Toggl
   @NotNull final FlutterView view;
   private boolean selected = false;
 
+  AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text) {
+    super(text);
+
+    this.view = view;
+  }
+
   AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
     super(text, description, icon);
 
@@ -168,17 +181,26 @@ abstract class AbstractToggleableAction extends DumbAwareAction implements Toggl
 
   @Override
   public final void update(AnActionEvent e) {
-    // enabled
-    e.getPresentation().setEnabled(view.getFlutterApp() != null);
+    final boolean hasFlutterApp = view.getFlutterApp() != null;
+    if (!hasFlutterApp) {
+      selected = false;
+    }
 
     // selected
     final boolean selected = this.isSelected(e);
     final Presentation presentation = e.getPresentation();
     presentation.putClientProperty("selected", selected);
+
+    // enabled
+    e.getPresentation().setEnabled(hasFlutterApp);
   }
 
   @Override
   public void actionPerformed(AnActionEvent event) {
+    if (view.getFlutterApp() == null) {
+      return;
+    }
+
     this.setSelected(event, !isSelected(event));
     final Presentation presentation = event.getPresentation();
     presentation.putClientProperty("selected", isSelected(event));
@@ -207,48 +229,17 @@ class DebugDrawAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.debugPaint", params);
-  }
-}
-
-class RepaintRainbowAction extends AbstractToggleableAction {
-  RepaintRainbowAction(@NotNull FlutterView view) {
-    super(view, FlutterBundle.message("flutter.view.repaintRainbow.text"), FlutterBundle.message("flutter.view.repaintRainbow.description"),
-          AllIcons.Gutter.Colors);
-  }
-
-  protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.repaintRainbow", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaint", isSelected(event));
   }
 }
 
 class PerformanceOverlayAction extends AbstractToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterView view) {
-    super(view, FlutterBundle.message("flutter.view.performanceOverlay.text"),
-          FlutterBundle.message("flutter.view.performanceOverlay.description"), AllIcons.General.LocateHover);
+    super(view, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.General.LocateHover);
   }
 
   protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("enabled", isSelected(event));
-    view.getFlutterApp().callServiceExtension("ext.flutter.showPerformanceOverlay", params);
-  }
-}
-
-class TimeDilationAction extends AbstractToggleableAction {
-  TimeDilationAction(@NotNull FlutterView view) {
-    super(view, FlutterBundle.message("flutter.view.slowAnimations.text"), FlutterBundle.message("flutter.view.slowAnimations.description"),
-          AllIcons.General.MessageHistory);
-  }
-
-  protected void perform(AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("timeDilation", isSelected(event) ? 5.0 : 1.0);
-    view.getFlutterApp().callServiceExtension("ext.flutter.timeDilation", params);
+    view.getFlutterApp().callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected(event));
   }
 }
 
@@ -261,6 +252,9 @@ class TogglePlatformAction extends AbstractFlutterAction {
   @Override
   public void actionPerformed(AnActionEvent event) {
     final FlutterApp app = view.getFlutterApp();
+    if (app == null) {
+      return;
+    }
 
     app.togglePlatform().thenAccept(isAndroid -> {
       if (isAndroid == null) {
@@ -279,8 +273,58 @@ class TogglePlatformAction extends AbstractFlutterAction {
   }
 }
 
+class RepaintRainbowAction extends AbstractToggleableAction {
+  RepaintRainbowAction(@NotNull FlutterView view) {
+    super(view, "Enable Repaint Rainbow");
+  }
+
+  protected void perform(AnActionEvent event) {
+    view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected(event));
+  }
+}
+
+class TimeDilationAction extends AbstractToggleableAction {
+  TimeDilationAction(@NotNull FlutterView view) {
+    super(view, "Enable Slow Animations");
+  }
+
+  protected void perform(AnActionEvent event) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("timeDilation", isSelected(event) ? 5.0 : 1.0);
+    view.getFlutterApp().callServiceExtension("ext.flutter.timeDilation", params);
+  }
+}
+
+class HideSlowBannerAction extends AbstractToggleableAction {
+  HideSlowBannerAction(@NotNull FlutterView view) {
+    super(view, "Hide Slow Mode Banner");
+  }
+
+  @Override
+  protected void perform(AnActionEvent event) {
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected(event));
+  }
+}
+
+class ShowPaintBaselinesAction extends AbstractToggleableAction {
+  ShowPaintBaselinesAction(@NotNull FlutterView view) {
+    super(view, "Show Paint Baselines");
+  }
+
+  @Override
+  protected void perform(AnActionEvent event) {
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected(event));
+  }
+}
+
 abstract class AbstractFlutterAction extends DumbAwareAction {
   @NotNull final FlutterView view;
+
+  AbstractFlutterAction(@NotNull FlutterView view, @Nullable String text) {
+    super(text);
+
+    this.view = view;
+  }
 
   AbstractFlutterAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
     super(text, description, icon);
@@ -296,9 +340,7 @@ abstract class AbstractFlutterAction extends DumbAwareAction {
 
 class ObservatoryTimelineAction extends AbstractFlutterAction {
   ObservatoryTimelineAction(@NotNull FlutterView view) {
-    super(view, FlutterBundle.message("flutter.view.observatoryTimeline.text"),
-          FlutterBundle.message("flutter.view.observatoryTimeline.description"),
-          AllIcons.Debugger.Value);
+    super(view, "Open Observatory Timeline");
   }
 
   @Override

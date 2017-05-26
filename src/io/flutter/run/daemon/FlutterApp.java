@@ -242,6 +242,16 @@ public class FlutterApp {
     return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
   }
 
+  @SuppressWarnings("UnusedReturnValue")
+  public CompletableFuture<Boolean> callBooleanExtension(String methodName, boolean enabled) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("enabled", enabled);
+    return callServiceExtension(methodName, params).thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj == null ? null : obj.get("enabled").getAsBoolean();
+    });
+  }
+
   public void setConsole(@Nullable ConsoleView console) {
     myConsole = console;
   }

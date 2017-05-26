@@ -87,9 +87,7 @@ public class FlutterSdk {
   @Nullable
   public static FlutterSdk forPath(@NotNull final String path) {
     final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
-    if (home == null) {
-      return null;
-    } else if (!FlutterSdkUtil.isFlutterSdkHome(path)) {
+    if (home == null || !FlutterSdkUtil.isFlutterSdkHome(path)) {
       return null;
     } else {
       return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
@@ -122,10 +120,6 @@ public class FlutterSdk {
 
   public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
                                    @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
-    if (!root.contains(main)) {
-      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
-    }
-
     final List<String> args = new ArrayList<>();
     args.add("--machine");
     if (FlutterInitializer.isVerboseLogging()) {
@@ -143,12 +137,31 @@ public class FlutterSdk {
     args.addAll(asList(additionalArgs));
 
     // Make the path to main relative (to make the command line prettier).
-    assert main.getPath().startsWith(root.getPath());
-    assert !root.getPath().endsWith("/");
-    final String mainPath = main.getPath().substring(root.getPath().length() + 1);
+    final String mainPath = root.getRelativePath(main);
+    if (mainPath == null) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+  }
+
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile main) {
+
+    // We don't have machine mode yet, so just run it normally and show the output in the console.
+    final List<String> args = new ArrayList<>();
+    if (FlutterInitializer.isVerboseLogging()) {
+      args.add("--verbose");
+    }
+
+    // Make the path to main relative (to make the command line prettier).
+    final String mainPath = root.getRelativePath(main);
+    if (mainPath == null) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    }
+    args.add(FileUtil.toSystemDependentName(mainPath));
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
   }
 
   /**

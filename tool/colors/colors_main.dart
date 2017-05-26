@@ -38,7 +38,7 @@ void main() {
   buf.writeln();
 
   // primaries + grey
-  final Map<String, ColorSwatch> primaryMap = <String, ColorSwatch> {
+  final Map<String, ColorSwatch> primaryMap = <String, ColorSwatch>{
     'red': Colors.red,
     'pink': Colors.pink,
     'purple': Colors.purple,
@@ -107,7 +107,20 @@ void _writeColorSet(StringBuffer buf, String name, ColorSwatch colorSwatch) {
   buf.writeln('${name}.primary=${mainColor.toString()}');
 
   // write the individual colors
-  for (int index in [50, 100, 200, 300, 350, 400, 500, 600, 700, 800, 850, 900]) {
+  for (int index in [
+    50,
+    100,
+    200,
+    300,
+    350,
+    400,
+    500,
+    600,
+    700,
+    800,
+    850,
+    900
+  ]) {
     Color color = colorSwatch[index];
     if (color != null) {
       buf.writeln('${name}[${index}]=${color.toString()}');
@@ -119,4 +132,30 @@ class Color {
   final int value;
   const Color(this.value);
   String toString() => '${value.toRadixString(16).padLeft(8, '0')}';
+}
+
+int hashValues(Object arg01, Object arg02, Object arg03) {
+  int result = 0;
+  result = _Jenkins.combine(result, arg01);
+  result = _Jenkins.combine(result, arg02);
+  result = _Jenkins.combine(result, arg03);
+  return _Jenkins.finish(result);
+}
+
+/// Jenkins hash function, optimized for small integers.
+//
+// Borrowed from the dart sdk: sdk/lib/math/jenkins_smi_hash.dart.
+class _Jenkins {
+  static int combine(int hash, Object o) {
+    assert(o is! Iterable);
+    hash = 0x1fffffff & (hash + o.hashCode);
+    hash = 0x1fffffff & (hash + ((0x0007ffff & hash) << 10));
+    return hash ^ (hash >> 6);
+  }
+
+  static int finish(int hash) {
+    hash = 0x1fffffff & (hash + ((0x03ffffff & hash) << 3));
+    hash = hash ^ (hash >> 11);
+    return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
+  }
 }
