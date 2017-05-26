@@ -25,6 +25,6 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
 
   private boolean isXcodeFile(AnActionEvent e) {
     final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-    return file != null && file.exists() && FlutterUtils.isXcodeProjectFileName(file);
+    return file != null && file.exists() && FlutterUtils.isXcodeProjectFileName(file.getName());
   }
 }
