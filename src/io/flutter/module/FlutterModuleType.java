@@ -42,6 +42,8 @@ public class FlutterModuleType extends ModuleType<FlutterModuleBuilder> {
     return FlutterBundle.message("flutter.project.description");
   }
 
+  // This method does not exist in 2017.2.
+  @SuppressWarnings("override")
   public Icon getBigIcon() {
     return FlutterIcons.Flutter_2x;
   }
