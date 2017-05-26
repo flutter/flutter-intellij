@@ -175,7 +175,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       final String stdout = output.getStdout();
       final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
       ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, htmlText), modalityState);
-    });
+    }, null);
   }
 
   /***

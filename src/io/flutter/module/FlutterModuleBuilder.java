@@ -5,6 +5,8 @@
  */
 package io.flutter.module;
 
+import com.intellij.execution.OutputListener;
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
@@ -91,9 +93,13 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       Messages.showErrorDialog("Flutter SDK not found", "Error");
       return null;
     }
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project);
+
+    final OutputListener listener = new OutputListener();
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener);
     if (root == null) {
-      Messages.showErrorDialog("Flutter create command was unsuccessful", "Error");
+      final String stderr = listener.getOutput().getStderr();
+      final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
+      Messages.showErrorDialog(msg, "Error");
       return null;
     }
     FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
@@ -111,9 +117,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   private void addAndroidModule(@NotNull Project project,
-                                  @Nullable ModifiableModuleModel model,
-                                  @NotNull String baseDirPath,
-                                  @NotNull String flutterModuleName) {
+                                @Nullable ModifiableModuleModel model,
+                                @NotNull String baseDirPath,
+                                @NotNull String flutterModuleName) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
       return;
@@ -166,7 +172,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     // See: https://www.dartlang.org/tools/pub/pubspec#name
 
     if (!FlutterUtils.isValidPackageName(moduleName)) {
-      throw new ConfigurationException("Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
+      throw new ConfigurationException(
+        "Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
     }
 
     if (FlutterUtils.isDartKeword(moduleName)) {
@@ -216,13 +223,14 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Nullable
   private static PubRoot runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
                                                       @NotNull FlutterSdk sdk,
-                                                      @NotNull Project project) {
+                                                      @NotNull Project project,
+                                                      @Nullable ProcessListener processListener) {
     final ProgressManager progress = ProgressManager.getInstance();
     final AtomicReference<PubRoot> result = new AtomicReference<>(null);
 
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
-      result.set(sdk.createFiles(baseDir, null));
+      result.set(sdk.createFiles(baseDir, null, processListener));
     }, "Creating Flutter Project", false, project);
 
     return result.get();
