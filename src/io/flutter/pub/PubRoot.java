@@ -119,28 +119,27 @@ public class PubRoot {
   }
 
   /**
-   * Returns the most appropriate pub root for a PsiFile.
+   * Returns the pub root for a PsiFile, if any.
    * <p>
-   * If the file is within a content root and it contains a pubspec.yaml file, use that one.
-   * Otherwise, use the pubspec.yaml file for the project (if unique).
+   * The file must be within a content root that has a pubspec.yaml file.
    * <p>
    * Based on the filesystem cache; doesn't refresh anything.
    */
   @Nullable
   public static PubRoot forPsiFile(@NotNull PsiFile file) {
-    final ProjectFileIndex index = ProjectRootManager.getInstance(file.getProject()).getFileIndex();
-    final VirtualFile root = index.getContentRootForFile(file.getVirtualFile());
-    if (root != null) {
-      return forDirectory(root);
-    }
+    return forDescendant(file.getVirtualFile(), file.getProject());
+  }
 
-    // Fall back to using the unique pub root for this project (if any).
-    final List<PubRoot> roots = PubRoots.forProject(file.getProject());
-    if (roots.size() != 1) {
-      return null;
-    }
-
-    return roots.get(0);
+  /**
+   * Returns the pub root for the content root containing a file or directory.
+   * <p>
+   * Based on the filesystem cache; doesn't refresh anything.
+   */
+  @Nullable
+  public static PubRoot forDescendant(VirtualFile fileOrDir, Project project) {
+    final ProjectFileIndex index = ProjectRootManager.getInstance(project).getFileIndex();
+    final VirtualFile root = index.getContentRootForFile(fileOrDir);
+    return forDirectory(root);
   }
 
   /**
@@ -193,9 +192,9 @@ public class PubRoot {
   }
 
   /**
-   * Returns the relative path to a file within this PubRoot.
+   * Returns the relative path to a file or directory within this PubRoot.
    * <p>
-   * Returns null if not within the pubroot.
+   * Returns null for the pub root directory, or it not within the pub root.
    */
   @Nullable
   public String getRelativePath(@NotNull VirtualFile file) {
@@ -205,6 +204,26 @@ public class PubRoot {
       return null;
     }
     return path.substring(root.length() + 1);
+  }
+
+  /**
+   * Returns true if the given file is a directory that contains tests.
+   */
+  public boolean hasTests(@NotNull VirtualFile dir) {
+    if (!dir.isDirectory()) return false;
+
+    // We can run tests in the pub root. (It will look in the test dir.)
+    if (getRoot().equals(dir)) return true;
+
+    // Any directory in the test dir or below is also okay.
+    final VirtualFile wanted = getTestDir();
+    if (wanted == null) return false;
+
+    while (dir != null) {
+      if (wanted.equals(dir)) return true;
+      dir = dir.getParent();
+    }
+    return false;
   }
 
   /**
@@ -269,6 +288,11 @@ public class PubRoot {
   @Nullable
   public VirtualFile getLibMain() {
     return lib == null ? null : lib.findChild("main.dart");
+  }
+
+  @Nullable
+  public VirtualFile getTestDir() {
+    return root.findChild("test");
   }
 
   /**

@@ -14,8 +14,6 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
-import com.intellij.openapi.vfs.LocalFileSystem;
-import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -26,18 +24,19 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TestConfig extends LocatableConfigurationBase {
   @NotNull
-  private TestFields fields = new TestFields("");
+  private TestFields fields = TestFields.forFile("");
 
   protected TestConfig(@NotNull Project project,
                        @NotNull ConfigurationFactory factory, String name) {
     super(project, factory, name);
   }
 
+  @NotNull
   TestFields getFields() {
     return fields;
   }
 
-  void setFields(TestFields fields) {
+  void setFields(@NotNull TestFields fields) {
     this.fields = fields;
   }
 
@@ -69,8 +68,7 @@ public class TestConfig extends LocatableConfigurationBase {
   @Nullable
   @Override
   public String suggestedName() {
-    final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(fields.getTestFile());
-    return file == null ? null : "tests in " + file.getName();
+    return fields.getSuggestedName(getProject(), "Flutter Tests");
   }
 
   @Override

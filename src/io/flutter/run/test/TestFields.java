@@ -10,12 +10,15 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSdk;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,23 +27,120 @@ import java.util.Map;
  * Settings for running a Flutter test.
  */
 public class TestFields {
-  @NotNull
+  @Nullable
   private final String testFile;
 
-  TestFields(@NotNull String testFile) {
+  @Nullable
+  private final String testDir;
+
+  private TestFields(@Nullable String testFile, @Nullable String testDir) {
+    if (testFile == null && testDir == null) {
+      throw new IllegalArgumentException("either testFile or testDir must be non-null");
+    } else if (testFile != null && testDir != null) {
+      throw new IllegalArgumentException("either testFile or testDir must be null");
+    }
     this.testFile = testFile;
+    this.testDir = testDir;
   }
 
   /**
-   * The Dart file containing the tests to run.
+   * Creates settings for running all the tests in a Dart file.
+   */
+  public static TestFields forFile(String path) {
+    return new TestFields(path, null);
+  }
+
+  /**
+   * Creates settings for running all the tests in directory.
+   */
+  public static TestFields forDir(String path) {
+    return new TestFields(null, path);
+  }
+
+  /**
+   * Returns a value indicating whether we're running tests in a file or in a directory.
    */
   @NotNull
+  public Scope getScope() {
+    return testFile != null ? Scope.FILE : Scope.DIRECTORY;
+  }
+
+  /**
+   * The Dart file containing the tests to run, or null if we are running tests in a directory.
+   */
+  @Nullable
   public String getTestFile() {
     return testFile;
   }
 
+  /**
+   * The directory containing the tests to run, or null if we are running tests in a file.
+   */
+  @Nullable
+  public String getTestDir() {
+    return testDir;
+  }
+
+  /**
+   * Returns the file or directory containing the tests to run, or null if it doesn't exist.
+   */
+  @Nullable
+  public VirtualFile getFileOrDir() {
+    final String path = testFile != null ? testFile : testDir;
+    if (path == null) return null;
+    return LocalFileSystem.getInstance().findFileByPath(path);
+  }
+
+  /**
+   * Returns the PubRoot containing the file or directory being tested, or null if none.
+   */
+  @Nullable
+  public PubRoot getPubRoot(@NotNull Project project) {
+    final VirtualFile dir = getFileOrDir();
+    return (dir == null) ? null : PubRoot.forDescendant(dir, project);
+  }
+
+  /**
+   * Returns the relative path to the file or directory from the pub root, or null if not in a pub root.
+   */
+  @Nullable
+  public String getRelativePath(@NotNull Project project) {
+    final PubRoot root = getPubRoot(project);
+    if (root == null) return null;
+
+    final VirtualFile fileOrDir = getFileOrDir();
+    if (fileOrDir == null) return null;
+
+    return root.getRelativePath(fileOrDir);
+  }
+
+  /**
+   * Generates a name for these test settings, if they are valid.
+   */
+  @NotNull
+  public String getSuggestedName(@NotNull Project project, @NotNull String defaultName) {
+
+    switch (getScope()) {
+      case FILE:
+        final VirtualFile file = getFileOrDir();
+        if (file == null) return defaultName;
+        return "tests in " + file.getName();
+      case DIRECTORY:
+        final String relativePath = getRelativePath(project);
+        if (relativePath != null) return "tests in " + relativePath;
+
+        // check if it's the pub root itself.
+        final PubRoot root = getPubRoot(project);
+        if (root != null && root.getRoot().equals(getFileOrDir())) {
+          return "All tests in " + root.getRoot().getName();
+        }
+    }
+    return defaultName;
+  }
+
   void writeTo(Element elt) {
     addOption(elt, "testFile", testFile);
+    addOption(elt, "testDir", testDir);
   }
 
   /**
@@ -51,11 +151,12 @@ public class TestFields {
     final Map<String, String> options = readOptions(elt);
 
     final String testFile = options.get("testFile");
-    if (testFile == null) {
-      throw new InvalidDataException("can't read testFile option in run configuration");
+    final String testDir = options.get("testDir");
+    try {
+      return new TestFields(testFile, testDir);
+    } catch (IllegalArgumentException e) {
+      throw new InvalidDataException(e.getMessage());
     }
-
-    return new TestFields(testFile);
   }
 
   /**
@@ -65,16 +166,7 @@ public class TestFields {
    */
   void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {
     checkSdk(project);
-
-    final MainFile.Result main = MainFile.verify(testFile, project);
-    if (!main.canLaunch()) {
-      throw new RuntimeConfigurationError(main.getError());
-    }
-
-    final PubRoot root = PubRoot.forDirectory(main.get().getAppDir());
-    if (root == null) {
-      throw new RuntimeConfigurationError("Test file isn't within a Flutter pub root");
-    }
+    getScope().checkRunnable(this, project);
   }
 
   /**
@@ -86,13 +178,17 @@ public class TestFields {
       throw new ExecutionException("The Flutter SDK is not configured");
     }
 
-    final MainFile main = MainFile.verify(testFile, project).get();
-    final PubRoot root = PubRoot.forDirectory(main.getAppDir());
+    final VirtualFile fileOrDir = getFileOrDir();
+    if (fileOrDir == null) {
+      throw new ExecutionException("File or directory not found");
+    }
+
+    final PubRoot root = getPubRoot(project);
     if (root == null) {
       throw new ExecutionException("Test file isn't within a Flutter pub root");
     }
 
-    return sdk.flutterTest(root, main.getFile()).startProcess(project);
+    return sdk.flutterTest(root, fileOrDir).startProcess(project);
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {
@@ -101,7 +197,9 @@ public class TestFields {
     }
   }
 
-  private void addOption(Element elt, String name, String value) {
+  private void addOption(@NotNull Element elt, @NotNull String name, @Nullable String value) {
+    if (value == null) return;
+
     final Element child = new Element("option");
     child.setAttribute("name", name);
     child.setAttribute("value", value);
@@ -120,5 +218,50 @@ public class TestFields {
       }
     }
     return result;
+  }
+
+  /**
+   * Selects which tests to run.
+   */
+  public enum Scope {
+    FILE("All in file") {
+      @Override
+      public void checkRunnable(@NotNull TestFields fields, @NotNull Project project) throws RuntimeConfigurationError {
+        final MainFile.Result main = MainFile.verify(fields.testFile, project);
+        if (!main.canLaunch()) {
+          throw new RuntimeConfigurationError(main.getError());
+        }
+        final PubRoot root = PubRoot.forDirectory(main.get().getAppDir());
+        if (root == null) {
+          throw new RuntimeConfigurationError("Test file isn't within a Flutter pub root");
+        }
+      }
+    },
+
+    DIRECTORY("All in directory") {
+      @Override
+      public void checkRunnable(@NotNull TestFields fields, @NotNull Project project) throws RuntimeConfigurationError {
+        final VirtualFile dir = fields.getFileOrDir();
+        if (dir == null) {
+          throw new RuntimeConfigurationError("Directory not found");
+        }
+        final PubRoot root = PubRoot.forDescendant(dir, project);
+        if (root == null) {
+          throw new RuntimeConfigurationError("Directory is not in a pub root");
+        }
+      }
+    };
+
+    private final String displayName;
+
+    Scope(String displayName) {
+      this.displayName = displayName;
+    }
+
+    public String getDisplayName() {
+      return displayName;
+    }
+
+    public abstract void checkRunnable(@NotNull TestFields fields, @NotNull Project project) throws RuntimeConfigurationError;
   }
 }

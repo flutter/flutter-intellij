@@ -10,6 +10,7 @@ import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.dart.DartPlugin;
@@ -28,12 +29,21 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
 
   /**
    * If the current file looks like a Flutter test, initializes the run config to run it.
+   * <p>
+   * Returns true if successfully set up.
    */
   @Override
   protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
     final DartFile file = FlutterRunConfigurationProducer.getDartFile(context);
-    if (file == null) return false;
+    if (file != null) {
+      return setupForDartFile(config, context, file);
+    }
 
+    final PsiElement elt = context.getPsiLocation();
+    return elt instanceof PsiDirectory && setupForDirectory(config, (PsiDirectory)elt);
+  }
+
+  private boolean setupForDartFile(TestConfig config, ConfigurationContext context, DartFile file) {
     final PubRoot root = PubRoot.forPsiFile(file);
     if (root == null) return false;
 
@@ -43,9 +53,20 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     final String relativePath = root.getRelativePath(candidate);
     if (relativePath == null || !relativePath.startsWith("test/")) return false;
 
-    config.setFields(new TestFields(candidate.getPath()));
+    config.setFields(TestFields.forFile(candidate.getPath()));
     config.setGeneratedName();
 
+    return true;
+  }
+
+  private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
+    final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
+    if (root == null) return false;
+
+    if (!root.hasTests(dir.getVirtualFile())) return false;
+
+    config.setFields(TestFields.forDir(dir.getVirtualFile().getPath()));
+    config.setGeneratedName();
     return true;
   }
 
@@ -54,8 +75,15 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   public boolean isConfigurationFromContext(TestConfig config, ConfigurationContext context) {
-    final String testFile = config.getFields().getTestFile();
-    return FlutterRunConfigurationProducer.hasDartFile(context, testFile);
+    final VirtualFile fileOrDir = config.getFields().getFileOrDir();
+    if (fileOrDir == null) return false;
+
+    final PsiElement target = context.getPsiLocation();
+    if (target instanceof  PsiDirectory) {
+      return ((PsiDirectory)target).getVirtualFile().equals(fileOrDir);
+    } else {
+      return FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath());
+    }
   }
 
   @Override
