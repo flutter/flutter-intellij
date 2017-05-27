@@ -5,14 +5,14 @@
  */
 package io.flutter.view;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.project.DumbAwareAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class FlutterViewAction extends AnAction {
+abstract class FlutterViewAction extends DumbAwareAction {
   @NotNull final FlutterView view;
 
   FlutterViewAction(@NotNull FlutterView view, @Nullable String text) {

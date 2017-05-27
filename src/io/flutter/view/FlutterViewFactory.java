@@ -7,12 +7,14 @@ package io.flutter.view;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterViewFactory implements ToolWindowFactory {
+public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
   public static void init(@NotNull Project project) {
     //noinspection CodeBlock2Expr
     project.getMessageBus().connect().subscribe(
@@ -31,6 +33,9 @@ public class FlutterViewFactory implements ToolWindowFactory {
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    (ServiceManager.getService(project, FlutterView.class)).initToolWindow(toolWindow);
+    //noinspection CodeBlock2Expr
+    DumbService.getInstance(project).runWhenSmart(() -> {
+      (ServiceManager.getService(project, FlutterView.class)).initToolWindow(toolWindow);
+    });
   }
 }
