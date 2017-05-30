@@ -147,7 +147,7 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile main) {
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir) {
 
     // We don't have machine mode yet, so just run it normally and show the output in the console.
     final List<String> args = new ArrayList<>();
@@ -155,12 +155,14 @@ public class FlutterSdk {
       args.add("--verbose");
     }
 
-    // Make the path to main relative (to make the command line prettier).
-    final String mainPath = root.getRelativePath(main);
-    if (mainPath == null) {
-      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    if (!root.getRoot().equals(fileOrDir)) {
+      // Make the path to main relative (to make the command line prettier).
+      final String mainPath = root.getRelativePath(fileOrDir);
+      if (mainPath == null) {
+        throw new IllegalArgumentException("main isn't within the pub root: " + fileOrDir.getPath());
+      }
+      args.add(FileUtil.toSystemDependentName(mainPath));
     }
-    args.add(FileUtil.toSystemDependentName(mainPath));
 
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
   }
