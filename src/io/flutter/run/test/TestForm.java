@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 import java.awt.event.ActionEvent;
+import java.io.File;
 
 import static com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse;
 import static io.flutter.run.test.TestFields.Scope.DIRECTORY;
@@ -36,9 +37,15 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private JLabel testFileLabel;
   private TextFieldWithBrowseButton testFile;
 
+  private Scope displayedScope;
+
   TestForm(@NotNull Project project) {
     scope.setModel(new DefaultComboBoxModel<>(new Scope[]{DIRECTORY, FILE}));
-    scope.addActionListener((ActionEvent e) -> render());
+    scope.addActionListener((ActionEvent e) -> {
+      final Scope next = getScope();
+      updateFields(next);
+      render(next);
+    });
     scope.setRenderer(new ListCellRendererWrapper<Scope>() {
       @Override
       public void customize(final JList list,
@@ -64,8 +71,9 @@ public class TestForm extends SettingsEditor<TestConfig> {
   @Override
   protected void resetEditorFrom(@NotNull TestConfig config) {
     final TestFields fields = config.getFields();
-    scope.setSelectedItem(fields.getScope());
-    switch (fields.getScope()) {
+    final Scope next = fields.getScope();
+    scope.setSelectedItem(next);
+    switch (next) {
       case FILE:
         testFile.setText(fields.getTestFile());
         break;
@@ -73,7 +81,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
         testDir.setText(fields.getTestDir());
         break;
     }
-    render();
+    render(next);
   }
 
   @Override
@@ -97,11 +105,41 @@ public class TestForm extends SettingsEditor<TestConfig> {
     return (Scope)scope.getSelectedItem();
   }
 
-  private void render() {
-    testDirLabel.setVisible(getScope() == Scope.DIRECTORY);
-    testDir.setVisible(getScope() == Scope.DIRECTORY);
+  /**
+   * When switching between file and directory scope, update the next field to
+   * a suitable default.
+   */
+  private void updateFields(Scope next) {
+    if (next == Scope.DIRECTORY && displayedScope == Scope.FILE) {
+      final String sep = String.valueOf(File.separatorChar);
 
-    testFileLabel.setVisible(getScope() == Scope.FILE);
-    testFile.setVisible(getScope() == Scope.FILE);
+      final String path = testFile.getText();
+      if (path.contains(sep) && path.endsWith(".dart")) {
+        // Remove the last part of the path to get a directory.
+        testDir.setText(path.substring(0, path.lastIndexOf(sep) + 1));
+      } else if (testDir.getText().isEmpty()) {
+        // Keep the same path; better than starting blank.
+        testDir.setText(path);
+      }
+
+    } else if (next == Scope.FILE && displayedScope == Scope.DIRECTORY) {
+      if (testFile.getText().isEmpty()) {
+        testFile.setText(testDir.getText());
+      }
+    }
+  }
+
+  /**
+   * Show and hide fields as appropriate for the next scope.
+   */
+  private void render(Scope next) {
+
+    testDirLabel.setVisible(next == Scope.DIRECTORY);
+    testDir.setVisible(next == Scope.DIRECTORY);
+
+    testFileLabel.setVisible(next == Scope.FILE);
+    testFile.setVisible(next == Scope.FILE);
+
+    displayedScope = next;
   }
 }
