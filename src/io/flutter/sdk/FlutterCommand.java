@@ -73,11 +73,15 @@ public class FlutterCommand {
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
    */
-  public Process start(@Nullable Consumer<ProcessOutput> onDone) {
+  public Process start(@Nullable Consumer<ProcessOutput> onDone, @Nullable ProcessListener processListener) {
     // TODO(skybrian) add Project parameter if it turns out later that we need to set ANDROID_HOME.
     final OSProcessHandler handler = startProcess(null);
     if (handler == null) {
       return null;
+    }
+
+    if (processListener != null) {
+      handler.addProcessListener(processListener);
     }
 
     // Capture all process output if requested.
@@ -123,10 +127,13 @@ public class FlutterCommand {
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
    */
-  public Process startInModuleConsole(Module module, Runnable onDone) {
+  public Process startInModuleConsole(Module module, Runnable onDone, @Nullable ProcessListener processListener) {
     final OSProcessHandler handler = startProcess(module.getProject());
     if (handler == null) {
       return null;
+    }
+    if (processListener != null) {
+      handler.addProcessListener(processListener);
     }
     handler.addProcessListener(new ProcessAdapter() {
       @Override
@@ -159,7 +166,7 @@ public class FlutterCommand {
    * Returns the handler if successfully started.
    */
   @Nullable
-  private OSProcessHandler startProcess(@Nullable Project project) {
+  public OSProcessHandler startProcess(@Nullable Project project) {
     if (!inProgress.compareAndSet(null, this)) {
       return null;
     }
@@ -222,7 +229,8 @@ public class FlutterCommand {
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
-    RUN("Flutter run", "run");
+    RUN("Flutter run", "run"),
+    TEST("Flutter test", "test");
 
     final public String title;
     final ImmutableList<String> subCommand;

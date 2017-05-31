@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import com.intellij.execution.process.ProcessListener;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -87,9 +88,7 @@ public class FlutterSdk {
   @Nullable
   public static FlutterSdk forPath(@NotNull final String path) {
     final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
-    if (home == null) {
-      return null;
-    } else if (!FlutterSdkUtil.isFlutterSdkHome(path)) {
+    if (home == null || !FlutterSdkUtil.isFlutterSdkHome(path)) {
       return null;
     } else {
       return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
@@ -122,10 +121,6 @@ public class FlutterSdk {
 
   public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
                                    @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
-    if (!root.contains(main)) {
-      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
-    }
-
     final List<String> args = new ArrayList<>();
     args.add("--machine");
     if (FlutterInitializer.isVerboseLogging()) {
@@ -143,12 +138,33 @@ public class FlutterSdk {
     args.addAll(asList(additionalArgs));
 
     // Make the path to main relative (to make the command line prettier).
-    assert main.getPath().startsWith(root.getPath());
-    assert !root.getPath().endsWith("/");
-    final String mainPath = main.getPath().substring(root.getPath().length() + 1);
+    final String mainPath = root.getRelativePath(main);
+    if (mainPath == null) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    }
     args.add(FileUtil.toSystemDependentName(mainPath));
 
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+  }
+
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir) {
+
+    // We don't have machine mode yet, so just run it normally and show the output in the console.
+    final List<String> args = new ArrayList<>();
+    if (FlutterInitializer.isVerboseLogging()) {
+      args.add("--verbose");
+    }
+
+    if (!root.getRoot().equals(fileOrDir)) {
+      // Make the path to main relative (to make the command line prettier).
+      final String mainPath = root.getRelativePath(fileOrDir);
+      if (mainPath == null) {
+        throw new IllegalArgumentException("main isn't within the pub root: " + fileOrDir.getPath());
+      }
+      args.add(FileUtil.toSystemDependentName(mainPath));
+    }
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.TEST, args.toArray(new String[]{}));
   }
 
   /**
@@ -188,16 +204,19 @@ public class FlutterSdk {
    * <p>
    * Shows output in a console unless the module parameter is null.
    * <p>
+   * Notifies process listener if one is specified.
+   * <p>
+   *
    * Returns the PubRoot if successful.
    */
   @Nullable
-  public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module) {
+  public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module, @Nullable ProcessListener listener) {
 
     final Process process;
     if (module == null) {
-      process = flutterCreate(baseDir).start(null);
+      process = flutterCreate(baseDir).start(null, listener);
     } else {
-      process = flutterCreate(baseDir).startInModuleConsole(module, null);
+      process = flutterCreate(baseDir).startInModuleConsole(module, null, listener);
     }
     if (process == null) {
       return null;
@@ -228,7 +247,7 @@ public class FlutterSdk {
     final Module module = root.getModule(project);
     if (module == null) return null;
     // Refresh afterwards to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
-    return flutterPackagesGet(root).startInModuleConsole(module, root::refresh);
+    return flutterPackagesGet(root).startInModuleConsole(module, root::refresh, null);
   }
 
   /**
@@ -241,7 +260,7 @@ public class FlutterSdk {
   public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
-    return flutterPackagesUpgrade(root).startInModuleConsole(module, root::refresh);
+    return flutterPackagesUpgrade(root).startInModuleConsole(module, root::refresh, null);
   }
 
   @NotNull

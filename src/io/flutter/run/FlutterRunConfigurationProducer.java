@@ -46,7 +46,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   protected boolean setupConfigurationFromContext(final @NotNull SdkRunConfig config,
                                                   final @NotNull ConfigurationContext context,
                                                   final @NotNull Ref<PsiElement> sourceElement) {
-    final VirtualFile main = getFlutterEntryFile(context);
+    final VirtualFile main = getFlutterEntryFile(context, true);
     if (main == null) return false;
 
     config.setFields(new SdkFields(main, context.getProject()));
@@ -65,13 +65,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   @Override
   public boolean isConfigurationFromContext(final @NotNull SdkRunConfig configuration,
                                             final @NotNull ConfigurationContext context) {
-    final DartFile dart = getDartFile(context);
-    if (dart == null) {
-      return false;
-    }
-
-    final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
-    return virtual != null && virtual.getPath().equals(configuration.getFields().getFilePath());
+    return hasDartFile(context, configuration.getFields().getFilePath());
   }
 
   /**
@@ -88,12 +82,14 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
    * Returns the file containing a Flutter app's main() function, or null if not a match.
    */
   @Nullable
-  private static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context) {
+  public static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context, boolean requireFlutterImport) {
     final DartFile dart = getDartFile(context);
     if (dart == null) return null;
 
     if (DartResolveUtil.getMainFunction(dart) == null) return null;
-    if (findImportUrls(dart).noneMatch((url) -> url.startsWith("package:flutter/"))) return null;
+    if (requireFlutterImport && findImportUrls(dart).noneMatch((url) -> url.startsWith("package:flutter/"))) {
+      return null;
+    }
 
     final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
     if (virtual == null) return null;
@@ -110,9 +106,22 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   }
 
   /**
+   * Returns true if the context points to the given file and it's a Dart file.
+   */
+  public static boolean hasDartFile(@NotNull ConfigurationContext context, String dartPath) {
+    final DartFile dart = getDartFile(context);
+    if (dart == null) {
+      return false;
+    }
+
+    final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
+    return virtual != null && virtual.getPath().equals(dartPath);
+  }
+
+  /**
    * Returns the Dart file at the current location, or null if not a match.
    */
-  private static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
+  public static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
     final PsiElement elt = context.getPsiLocation();
     if (elt == null) return null;
 

@@ -187,8 +187,10 @@ public class FlutterApp {
       LOG.warn("cannot restart Flutter app because app id is not set");
       return;
     }
+
+    changeState(State.RELOADING);
     myDaemonApi.restartApp(myAppId, true, false)
-      .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
+      .thenRunAsync(() -> changeState(State.STARTED));
   }
 
   /**
@@ -199,8 +201,10 @@ public class FlutterApp {
       LOG.warn("cannot reload Flutter app because app id is not set");
       return;
     }
+
+    changeState(State.RELOADING);
     myDaemonApi.restartApp(myAppId, false, pauseAfterRestart)
-      .thenRunAsync(() -> changeState(FlutterApp.State.STARTED));
+      .thenRunAsync(() -> changeState(State.STARTED));
   }
 
   public CompletableFuture<Boolean> togglePlatform() {
@@ -240,6 +244,16 @@ public class FlutterApp {
       return CompletableFuture.completedFuture(null);
     }
     return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
+  }
+
+  @SuppressWarnings("UnusedReturnValue")
+  public CompletableFuture<Boolean> callBooleanExtension(String methodName, boolean enabled) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("enabled", enabled);
+    return callServiceExtension(methodName, params).thenApply(obj -> {
+      //noinspection CodeBlock2Expr
+      return obj == null ? null : obj.get("enabled").getAsBoolean();
+    });
   }
 
   public void setConsole(@Nullable ConsoleView console) {
@@ -328,5 +342,5 @@ public class FlutterApp {
     void stateChanged(State newState);
   }
 
-  public enum State {STARTING, STARTED, TERMINATING, TERMINATED}
+  public enum State {STARTING, STARTED, RELOADING, TERMINATING, TERMINATED}
 }
