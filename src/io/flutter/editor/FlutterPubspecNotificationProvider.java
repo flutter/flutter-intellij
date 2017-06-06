@@ -76,10 +76,34 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       icon(FlutterIcons.Flutter);
       text("Flutter commands");
 
-      HyperlinkLabel label = createActionLabel("Packages get", "flutter.packages.get");
+      // "flutter.packages.get"
+      HyperlinkLabel label = createActionLabel("Packages get", () -> {
+        // We can assert below since we know we're on a pubspec.yaml file in a project, with a valid Flutter SDK.
+        final Project project = ProjectLocator.getInstance().guessProjectForFile(myFile);
+        assert (project != null);
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+        assert (sdk != null);
+
+        final PubRoot root = PubRoot.forDirectory(myFile.getParent());
+        if (root != null) {
+          sdk.startPackagesGet(root, project);
+        }
+      });
       label.setToolTipText("Install referenced packages");
 
-      label = createActionLabel("Packages upgrade", "flutter.packages.upgrade");
+      // "flutter.packages.upgrade"
+      label = createActionLabel("Packages upgrade", () -> {
+        // We can assert below since we know we're on a pubspec.yaml file in a project, with a valid Flutter SDK.
+        final Project project = ProjectLocator.getInstance().guessProjectForFile(myFile);
+        assert (project != null);
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+        assert (sdk != null);
+
+        final PubRoot root = PubRoot.forDirectory(myFile.getParent());
+        if (root != null) {
+          sdk.startPackagesUpgrade(root, project);
+        }
+      });
       label.setToolTipText("Upgrade referenced packages to the latest versions");
 
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
