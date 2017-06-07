@@ -77,33 +77,11 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       text("Flutter commands");
 
       // "flutter.packages.get"
-      HyperlinkLabel label = createActionLabel("Packages get", () -> {
-        // We can assert below since we know we're on a pubspec.yaml file in a project, with a valid Flutter SDK.
-        final Project project = ProjectLocator.getInstance().guessProjectForFile(myFile);
-        assert (project != null);
-        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-        assert (sdk != null);
-
-        final PubRoot root = PubRoot.forDirectory(myFile.getParent());
-        if (root != null) {
-          sdk.startPackagesGet(root, project);
-        }
-      });
+      HyperlinkLabel label = createActionLabel("Packages get", () -> runPackagesGet(false));
       label.setToolTipText("Install referenced packages");
 
       // "flutter.packages.upgrade"
-      label = createActionLabel("Packages upgrade", () -> {
-        // We can assert below since we know we're on a pubspec.yaml file in a project, with a valid Flutter SDK.
-        final Project project = ProjectLocator.getInstance().guessProjectForFile(myFile);
-        assert (project != null);
-        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-        assert (sdk != null);
-
-        final PubRoot root = PubRoot.forDirectory(myFile.getParent());
-        if (root != null) {
-          sdk.startPackagesUpgrade(root, project);
-        }
-      });
+      label = createActionLabel("Packages upgrade", () -> runPackagesGet(true));
       label.setToolTipText("Upgrade referenced packages to the latest versions");
 
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
@@ -113,6 +91,24 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       myLinksPanel.add(new JSeparator(SwingConstants.VERTICAL));
       label = createActionLabel("Flutter doctor", "flutter.doctor");
       label.setToolTipText("Validate installed tools and their versions");
+    }
+
+    private void runPackagesGet(boolean upgrade) {
+      // We can assert below since we know we're on a pubspec.yaml file in a project, with a valid Flutter SDK.
+      final Project project = ProjectLocator.getInstance().guessProjectForFile(myFile);
+      assert (project != null);
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      assert (sdk != null);
+
+      final PubRoot root = PubRoot.forDirectory(myFile.getParent());
+      if (root != null) {
+        if (!upgrade) {
+          sdk.startPackagesGet(root, project);
+        }
+        else {
+          sdk.startPackagesUpgrade(root, project);
+        }
+      }
     }
   }
 }

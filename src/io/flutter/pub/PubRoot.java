@@ -128,6 +128,9 @@ public class PubRoot {
   @Nullable
   public static PubRoot forPsiFile(@NotNull PsiFile psiFile) {
     final VirtualFile file = psiFile.getVirtualFile();
+    if (file == null) {
+      return null;
+    }
     if (isPubspec(file)) {
       return forDirectory(file.getParent());
     }
