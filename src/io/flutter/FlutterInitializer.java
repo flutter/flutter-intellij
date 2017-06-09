@@ -159,7 +159,10 @@ public class FlutterInitializer implements StartupActivity {
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
           final Analytics analytics = getAnalytics();
-          ToolWindowTracker.track(project, analytics);
+          // We only track for flutter projects.
+          if (FlutterModuleUtils.usesFlutter(project)) {
+            ToolWindowTracker.track(project, analytics);
+          }
         }
       });
       notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.decline")) {
@@ -172,8 +175,10 @@ public class FlutterInitializer implements StartupActivity {
       Notifications.Bus.notify(notification);
     }
     else {
-      final Analytics analytics = getAnalytics();
-      ToolWindowTracker.track(project, analytics);
+      // We only track for flutter projects.
+      if (FlutterModuleUtils.usesFlutter(project)) {
+        ToolWindowTracker.track(project, getAnalytics());
+      }
     }
   }
 
