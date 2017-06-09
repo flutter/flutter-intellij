@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ex.ToolWindowManagerAdapter;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -19,10 +18,7 @@ import org.jetbrains.annotations.NotNull;
 public class ToolWindowTracker extends ToolWindowManagerAdapter {
 
   public static void track(@NotNull Project project, @NotNull Analytics analytics) {
-    // We only track for flutter projects.
-    if (FlutterModuleUtils.usesFlutter(project)) {
-      new ToolWindowTracker(project, analytics);
-    }
+    new ToolWindowTracker(project, analytics);
   }
 
   private final Analytics myAnalytics;
