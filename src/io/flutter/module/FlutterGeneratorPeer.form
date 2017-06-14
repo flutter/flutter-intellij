@@ -90,7 +90,7 @@
               <horizontalAlignment value="0"/>
               <horizontalTextPosition value="4"/>
               <iconTextGap value="0"/>
-              <text value="Install..."/>
+              <text value=""/>
               <toolTipText value="Install the Flutter SDK"/>
             </properties>
           </component>

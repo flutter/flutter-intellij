@@ -68,6 +68,7 @@ public class FlutterGeneratorPeer {
     });
 
     myInstallActionLink.setIcon(null);
+    myInstallActionLink.setText(ourInstallAction.getLinkText());
     myInstallActionLink.setListener((label, linkUrl) -> {
         ourInstallAction.actionPerformed(null);
     }, null);
