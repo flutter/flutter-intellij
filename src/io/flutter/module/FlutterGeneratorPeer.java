@@ -15,8 +15,10 @@ import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.actions.InstallSdkAction;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,11 +31,13 @@ public class FlutterGeneratorPeer {
 
   private JPanel myMainPanel;
   private ComboboxWithBrowseButton mySdkPathComboWithBrowse;
-  private JBLabel myVersionLabel;
   private JBLabel myVersionContent;
   private JLabel errorIcon;
   private JTextPane errorText;
   private JScrollPane errorPane;
+  private LinkLabel myInstallActionLink;
+
+  private static final InstallSdkAction ourInstallAction = new InstallSdkAction();
 
   public FlutterGeneratorPeer() {
     errorIcon.setText("");
@@ -41,14 +45,13 @@ public class FlutterGeneratorPeer {
     Messages.installHyperlinkSupport(errorText);
 
     // Hide pending real content.
-    myVersionLabel.setVisible(false);
     myVersionContent.setVisible(false);
 
-    initSdkCombo();
+    init();
     validate();
   }
 
-  private void initSdkCombo() {
+  private void init() {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
 
@@ -63,6 +66,13 @@ public class FlutterGeneratorPeer {
         validate();
       }
     });
+
+    myInstallActionLink.setIcon(null);
+    myInstallActionLink.setText(ourInstallAction.getLinkText());
+    myInstallActionLink.setListener((label, linkUrl) -> {
+        ourInstallAction.actionPerformed(null);
+    }, null);
+
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -85,6 +95,7 @@ public class FlutterGeneratorPeer {
     }
     errorIcon.setVisible(info != null);
     errorPane.setVisible(info != null);
+    myInstallActionLink.setVisible(info != null || getSdkComboPath().trim().isEmpty());
 
     return info == null;
   }
