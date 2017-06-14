@@ -24,6 +24,7 @@ import io.flutter.view.FlutterViewMessages;
 import io.flutter.view.OpenFlutterViewAction;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
@@ -110,19 +111,26 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
 
   @Override
   public void sessionInitialized() {
-    // If running outside a Debug launch, suppress debug views (e.g., variables and frames).
     if (app.getMode() != RunMode.DEBUG) {
-      final RunnerLayoutUi ui = getSession().getUI();
-      if (ui != null) {
-        for (Content c : ui.getContents()) {
-          if (!Objects.equals(c.getTabName(), "Console")) {
-            try {
-              GuiUtils.runOrInvokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
-            }
-            catch (InvocationTargetException | InterruptedException e) {
-              LOG.warn(e);
-            }
-          }
+      suppressDebugViews(getSession().getUI());
+    }
+  }
+
+  /**
+   * Turn off debug-only views (variables and frames).
+   */
+  private static void suppressDebugViews(@Nullable RunnerLayoutUi ui) {
+    if (ui == null) {
+      return;
+    }
+
+    for (Content c : ui.getContents()) {
+      if (!Objects.equals(c.getTabName(), "Console")) {
+        try {
+          GuiUtils.runOrInvokeAndWait(() -> ui.removeContent(c, false /* dispose? */));
+        }
+        catch (InvocationTargetException | InterruptedException e) {
+          LOG.warn(e);
         }
       }
     }

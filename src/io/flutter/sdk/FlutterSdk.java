@@ -147,10 +147,14 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir) {
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @NotNull RunMode mode) {
 
     // We don't have machine mode yet, so just run it normally and show the output in the console.
     final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    if (mode == RunMode.DEBUG) {
+      args.add("--start-paused");
+    }
     if (FlutterInitializer.isVerboseLogging()) {
       args.add("--verbose");
     }
