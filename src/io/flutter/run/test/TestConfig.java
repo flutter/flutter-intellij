@@ -8,13 +8,11 @@ package io.flutter.run.test;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
-import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
-import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -79,24 +77,6 @@ public class TestConfig extends LocatableConfigurationBase {
   @NotNull
   @Override
   public CommandLineState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    final Project project = env.getProject();
-
-    final TestFields fields = this.fields;
-    try {
-      fields.checkRunnable(env.getProject());
-    }
-    catch (RuntimeConfigurationError e) {
-      throw new ExecutionException(e);
-    }
-
-    // We aren't using LaunchState yet because "flutter test" doesn't support machine mode yet.
-    return new CommandLineState(env) {
-      @NotNull
-      @Override
-      protected ProcessHandler startProcess() throws ExecutionException {
-        final RunMode mode = RunMode.fromEnv(env);
-        return fields.run(env.getProject(), mode);
-      }
-    };
+    return TestLaunchState.create(env, fields);
   }
 }

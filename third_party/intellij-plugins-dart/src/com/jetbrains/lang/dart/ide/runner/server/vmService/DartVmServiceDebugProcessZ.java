@@ -110,11 +110,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     return remoteDebug;
   }
 
-  @NotNull
-  public ObservatoryConnector getConnector() {
-    return myConnector;
-  }
-
   public VmServiceWrapper getVmServiceWrapper() {
     return myVmServiceWrapper;
   }
