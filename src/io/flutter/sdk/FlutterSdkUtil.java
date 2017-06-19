@@ -34,7 +34,7 @@ public class FlutterSdkUtil {
   /**
    * The environment variable to use to tell the flutter tool which app is driving it.
    */
-  public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST_ENV";
+  public static final String FLUTTER_HOST_ENV = "FLUTTER_HOST";
 
   private static final String FLUTTER_SDK_KNOWN_PATHS = "FLUTTER_SDK_KNOWN_PATHS";
   private static final Logger LOG = Logger.getInstance(FlutterSdkUtil.class);
