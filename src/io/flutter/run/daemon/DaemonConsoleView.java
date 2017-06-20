@@ -81,12 +81,6 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       return;
     }
 
-    // "flutter test" prints this when using --start-paused.
-    // (We should probably change it to stop printing it in machine mode.)
-    if (trimmed.startsWith("You should first set appropriate breakpoints, then resume the test in the debugger.")) {
-      return;
-    }
-
     super.print(text, contentType);
   }
 }
