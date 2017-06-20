@@ -26,6 +26,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,13 +46,16 @@ class TestLaunchState extends CommandLineState  {
   @NotNull
   private final PubRoot pubRoot;
 
+  private final boolean testConsoleEnabled;
+
   private TestLaunchState(@NotNull ExecutionEnvironment env, @NotNull TestConfig config, @NotNull VirtualFile testFileOrDir,
-                         @NotNull PubRoot pubRoot) {
+                         @NotNull PubRoot pubRoot, boolean testConsoleEnabled) {
     super(env);
     this.config = config;
     this.fields = config.getFields();
     this.testFileOrDir = testFileOrDir;
     this.pubRoot = pubRoot;
+    this.testConsoleEnabled = testConsoleEnabled;
   }
 
   static TestLaunchState create(@NotNull ExecutionEnvironment env, @NotNull TestConfig config) throws ExecutionException {
@@ -69,7 +73,11 @@ class TestLaunchState extends CommandLineState  {
     final PubRoot pubRoot = fields.getPubRoot(env.getProject());
     assert(pubRoot != null);
 
-    final TestLaunchState launcher = new TestLaunchState(env, config, fileOrDir, pubRoot);
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(env.getProject());
+    assert(sdk != null);
+    final boolean testConsoleEnabled = sdk.getVersion().flutterTestSupportsMachineMode();
+
+    final TestLaunchState launcher = new TestLaunchState(env, config, fileOrDir, pubRoot, testConsoleEnabled);
     DaemonConsoleView.install(launcher, env, pubRoot.getRoot());
     return launcher;
   }
@@ -84,7 +92,10 @@ class TestLaunchState extends CommandLineState  {
   @Nullable
   @Override
   protected ConsoleView createConsole(@NotNull Executor executor) throws ExecutionException {
-    // Create the UI showing the test tree.
+    if (!testConsoleEnabled) {
+      return super.createConsole(executor);
+    }
+    // Create a console showing a test tree.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(getEnvironment().getProject(), testFileOrDir);
     final ConsoleProps props = new ConsoleProps(config, executor, resolver);
     return SMTestRunnerConnectionUtil.createConsole("FlutterTestRunner", props);
