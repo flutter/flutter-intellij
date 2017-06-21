@@ -99,7 +99,6 @@ public class InstallSdkAction extends DumbAwareAction {
           final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
             GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir).withExePath("bin/flutter")
             .withParameters("doctor");
-
           runCommand(cmd, new CommandListener("Running Flutter doctor…") {
             @Override
             void onTextAvailable(ProcessEvent event, Key outputType) {
