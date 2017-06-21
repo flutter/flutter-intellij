@@ -77,6 +77,6 @@ public class TestConfig extends LocatableConfigurationBase {
   @NotNull
   @Override
   public CommandLineState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    return TestLaunchState.create(env, fields);
+    return TestLaunchState.create(env, this);
   }
 }

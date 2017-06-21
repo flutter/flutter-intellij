@@ -26,6 +26,11 @@ public class FlutterSdkVersion {
   private static final FlutterSdkVersion MIN_SUPPORTED_SDK = new FlutterSdkVersion("0.0.3");
 
   /**
+   * The minimum version where the 'flutter test' supports --machine.
+   */
+  private static final FlutterSdkVersion MIN_TEST_MACHINE_MODE = new FlutterSdkVersion("0.0.11");
+
+  /**
    * Cache from version file and its modification date to its contents.
    */
   private static final Map<Pair<File, Long>, FlutterSdkVersion> cache = new HashMap<>();
@@ -62,6 +67,10 @@ public class FlutterSdkVersion {
 
   public boolean isSupported() {
     return version.compareTo(MIN_SUPPORTED_SDK.version) >= 0;
+  }
+
+  public boolean flutterTestSupportsMachineMode() {
+    return version.compareTo(MIN_TEST_MACHINE_MODE.version) >= 0;
   }
 
   @Override

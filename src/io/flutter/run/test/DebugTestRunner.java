@@ -25,6 +25,7 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.PositionMapper;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,6 +45,12 @@ public class DebugTestRunner extends GenericProgramRunner {
     if (!DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) || !(profile instanceof TestConfig)) {
       return false;
     }
+
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(((TestConfig)profile).getProject());
+    if (sdk == null || !sdk.getVersion().flutterTestSupportsMachineMode()) {
+      return false;
+    }
+
     final TestConfig config = (TestConfig) profile;
     return config.getFields().getScope() == TestFields.Scope.FILE;
   }
