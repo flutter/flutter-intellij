@@ -28,7 +28,7 @@ import org.jetbrains.annotations.NotNull;
 public class DaemonConsoleView extends ConsoleViewImpl {
   private static final Logger LOG = Logger.getInstance(DaemonConsoleView.class);
 
-  public DaemonConsoleView(Project project, GlobalSearchScope searchScope) {
+  public DaemonConsoleView(@NotNull final Project project, @NotNull final GlobalSearchScope searchScope) {
     super(project, searchScope, true, false);
   }
 

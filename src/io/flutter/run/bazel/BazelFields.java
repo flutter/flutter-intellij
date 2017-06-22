@@ -125,10 +125,11 @@ public class BazelFields {
     return new BazelFields(this);
   }
 
-  BazelFields copyTemplateToNonTemplate(Project project) {
-    final Workspace w = WorkspaceCache.getInstance(project).getNow();
-    if (w == null) return new BazelFields(this);
-    return new BazelFields(this, w);
+  @NotNull
+  BazelFields copyTemplateToNonTemplate(@NotNull final Project project) {
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace == null) return new BazelFields(this);
+    return new BazelFields(this, workspace);
   }
 
   /**
