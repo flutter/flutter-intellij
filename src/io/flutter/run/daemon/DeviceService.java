@@ -31,7 +31,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Provides the list of available devices (mobile phones or emulators) that appears in the dropdown menu.
  */
 public class DeviceService {
-  private final Project project;
+  @NotNull private final Project project;
 
   /**
    * The process used to watch for device list changes (for the device menu). May be null if not running.
@@ -46,11 +46,11 @@ public class DeviceService {
 
   public static
   @NotNull
-  DeviceService getInstance(@NotNull Project project) {
+  DeviceService getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, DeviceService.class);
   }
 
-  private DeviceService(@NotNull Project project) {
+  private DeviceService(@NotNull final Project project) {
     this.project = project;
 
     deviceDaemon.setDisposeParent(project);

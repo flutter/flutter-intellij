@@ -100,7 +100,8 @@ class PluginConfig {
     return ApplicationManager.getApplication().runReadAction(readAction);
   }
 
-  private static @Nullable List<Pattern> compilePatterns(@Nullable Iterable<String> patterns) {
+  @Nullable
+  private static List<Pattern> compilePatterns(@Nullable Iterable<String> patterns) {
     if (patterns == null) return null;
 
     final ImmutableList.Builder<Pattern> result = ImmutableList.builder();

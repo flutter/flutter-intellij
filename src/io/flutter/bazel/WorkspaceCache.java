@@ -11,23 +11,24 @@ import com.intellij.openapi.project.Project;
 import io.flutter.project.ProjectWatch;
 import io.flutter.utils.FileWatch;
 import io.flutter.utils.Refreshable;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Holds the current Bazel workspace for a Project.
- *
+ * <p>
  * <p>Automatically reloads the workspace when out of date.
  */
 public class WorkspaceCache {
-  private final Project project;
-  private final Refreshable<Workspace> cache;
+  @NotNull private final Project project;
+  @NotNull private final Refreshable<Workspace> cache;
 
-  private WorkspaceCache(Project project) {
+  private WorkspaceCache(@NotNull final Project project) {
     this.project = project;
 
-    this.cache = new Refreshable<>();
+    cache = new Refreshable<>();
     cache.setDisposeParent(project);
 
     // Trigger a reload when file dependencies change.
@@ -53,19 +54,21 @@ public class WorkspaceCache {
     refreshAsync();
   }
 
-  public static WorkspaceCache getInstance(Project project) {
+  @Nullable
+  public static WorkspaceCache getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, WorkspaceCache.class);
   }
 
   /**
    * Returns the Workspace in the cache.
-   *
+   * <p>
    * <p>Returning a null means there is no current workspace for this project.
-   *
+   * <p>
    * <p>If the cache hasn't loaded yet, blocks until it's ready.
    * Otherwise doesn't block.
    */
-  public @Nullable Workspace getNow() {
+  @Nullable
+  public Workspace getNow() {
     return cache.getNow();
   }
 
@@ -74,7 +77,8 @@ public class WorkspaceCache {
    *
    * @throws IllegalStateException if called on the Swing dispatch thread.
    */
-  public @Nullable Workspace getWhenReady() {
+  @Nullable
+  public Workspace getWhenReady() {
     return cache.getWhenReady();
   }
 
@@ -94,7 +98,7 @@ public class WorkspaceCache {
 
   /**
    * Triggers a cache refresh.
-   *
+   * <p>
    * If a refresh is already in progress, schedules another one.
    */
   private void refreshAsync() {

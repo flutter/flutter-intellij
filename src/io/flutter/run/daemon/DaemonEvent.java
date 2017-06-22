@@ -52,7 +52,8 @@ abstract class DaemonEvent {
     event.accept(listener);
   }
 
-  private static @Nullable DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
+  @Nullable
+  private static DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
     try {
       switch (eventName) {
         case "daemon.logMessage":
