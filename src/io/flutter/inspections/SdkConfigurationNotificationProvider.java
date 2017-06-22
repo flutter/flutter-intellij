@@ -20,6 +20,8 @@ import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
 import io.flutter.FlutterBundle;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.FlutterModuleUtils;
@@ -31,7 +33,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
   private static final Logger LOG = Logger.getInstance(SdkConfigurationNotificationProvider.class);
 
-  private final Project project;
+  @NotNull private final Project project;
 
   public SdkConfigurationNotificationProvider(@NotNull Project project) {
     this.project = project;
@@ -56,25 +58,27 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   }
 
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
+  public EditorNotificationPanel createNotificationPanel(@NotNull final VirtualFile file, @NotNull final FileEditor fileEditor) {
+
+    // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace != null && workspace.usesFlutter(project)) {
+      return null;
+    }
+
     if (file.getFileType() != DartFileType.INSTANCE) return null;
 
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
-    if (psiFile == null) return null;
-
-    if (psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
+    if (psiFile == null || psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
 
     final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
-    if (module == null) return null;
-
-    if (!FlutterModuleUtils.isFlutterModule(module)) return null;
+    if (module == null || !FlutterModuleUtils.isFlutterModule(module)) return null;
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
       return createNoFlutterSdkPanel();
     }
-
-    if (!flutterSdk.getVersion().isSupported()) {
+    else if (!flutterSdk.getVersion().isSupported()) {
       return createOutOfDateFlutterSdkPanel(flutterSdk);
     }
 
