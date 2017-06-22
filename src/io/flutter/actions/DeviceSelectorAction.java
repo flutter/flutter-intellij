@@ -23,7 +23,7 @@ import javax.swing.*;
 import java.util.*;
 
 public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
-  final private List<AnAction> actions = new ArrayList<>();
+  private final List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
   @NotNull

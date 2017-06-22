@@ -181,7 +181,8 @@ public class BazelFields {
     throws ExecutionException {
     try {
       checkRunnable(project);
-    } catch (RuntimeConfigurationError e) {
+    }
+    catch (RuntimeConfigurationError e) {
       throw new ExecutionException(e);
     }
 
