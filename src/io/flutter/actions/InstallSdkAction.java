@@ -62,6 +62,7 @@ public class InstallSdkAction extends DumbAwareAction {
 
     @Override
     void perform() {
+      //TODO(pq): consider prompting w a sensible default location (~/flutter)?
       @SuppressWarnings("DialogTitleCapitalization") final FileChooserDescriptor descriptor =
         new FileChooserDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
           @Override
@@ -98,8 +99,8 @@ public class InstallSdkAction extends DumbAwareAction {
 
           final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
             GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir).withExePath("bin/flutter")
-            .withParameters("doctor");
-          runCommand(cmd, new CommandListener("Running Flutter doctor…") {
+            .withParameters("precache");
+          runCommand(cmd, new CommandListener("Running 'flutter precache'…") {
             @Override
             void onTextAvailable(ProcessEvent event, Key outputType) {
               //TODO(pq): filter less useful / truncated messages.
@@ -211,7 +212,7 @@ public class InstallSdkAction extends DumbAwareAction {
 
   @SuppressWarnings("SameReturnValue")
   private static boolean hasGit() {
-    // Flow bypassed by default; return true for testing.
+    //TODO(pq): Flow bypassed by default; return true for testing.
     return false;  //SystemInfo.isMac;
   }
 
