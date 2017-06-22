@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.ValidationInfo;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.JBProgressBar;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.xml.util.XmlStringUtil;
@@ -36,16 +37,23 @@ public class FlutterGeneratorPeer {
   private JTextPane errorText;
   private JScrollPane errorPane;
   private LinkLabel myInstallActionLink;
+  private JBProgressBar myProgressBar;
+  private JTextPane myProgressText;
+  private JScrollPane myProgressScrollPane;
 
-  private static final InstallSdkAction ourInstallAction = new InstallSdkAction();
+  private final InstallSdkAction myInstallSdkAction;
 
   public FlutterGeneratorPeer() {
+    myInstallSdkAction = new InstallSdkAction(this);
+
     errorIcon.setText("");
     errorIcon.setIcon(AllIcons.Actions.Lightning);
     Messages.installHyperlinkSupport(errorText);
 
     // Hide pending real content.
     myVersionContent.setVisible(false);
+    myProgressBar.setVisible(false);
+    myProgressText.setVisible(false);
 
     init();
     validate();
@@ -59,7 +67,7 @@ public class FlutterGeneratorPeer {
                                                      FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                                      TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-    final JTextComponent editorComponent = (JTextComponent)mySdkPathComboWithBrowse.getComboBox().getEditor().getEditorComponent();
+    final JTextComponent editorComponent = (JTextComponent)getSdkEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(DocumentEvent e) {
@@ -68,11 +76,9 @@ public class FlutterGeneratorPeer {
     });
 
     myInstallActionLink.setIcon(null);
-    myInstallActionLink.setText(ourInstallAction.getLinkText());
-    myInstallActionLink.setListener((label, linkUrl) -> {
-        ourInstallAction.actionPerformed(null);
-    }, null);
-
+    myInstallActionLink.setText(myInstallSdkAction.getLinkText());
+    //noinspection unchecked
+    myInstallActionLink.setListener((label, linkUrl) -> myInstallSdkAction.actionPerformed(null), null);
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -113,6 +119,28 @@ public class FlutterGeneratorPeer {
 
   @NotNull
   public String getSdkComboPath() {
-    return FileUtilRt.toSystemIndependentName(mySdkPathComboWithBrowse.getComboBox().getEditor().getItem().toString().trim());
+    return FileUtilRt.toSystemIndependentName(getSdkEditor().getItem().toString().trim());
+  }
+
+  @NotNull
+  public ComboBoxEditor getSdkEditor() {
+    return mySdkPathComboWithBrowse.getComboBox().getEditor();
+  }
+
+  public void setSdkPath(@NotNull String sdkPath) {
+    getSdkEditor().setItem(sdkPath);
+  }
+
+  public JBProgressBar getProgressBar() {
+    return myProgressBar;
+  }
+
+  public JTextPane getProgressText() {
+    return myProgressText;
+  }
+
+  public void hideErrorDetails() {
+    errorIcon.setVisible(false);
+    errorPane.setVisible(false);
   }
 }
