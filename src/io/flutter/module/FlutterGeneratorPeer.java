@@ -6,7 +6,6 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -20,6 +19,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBProgressBar;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.actions.InstallSdkAction;
@@ -33,6 +33,8 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class FlutterGeneratorPeer {
   private final WizardContext myContext;
@@ -190,8 +192,17 @@ public class FlutterGeneratorPeer {
 
   public void requestNextStep() {
     final AbstractWizard wizard = myContext.getWizard();
-    if (wizard instanceof AbstractProjectWizard) {
-      ((AbstractProjectWizard)wizard).doNextAction();
+    if (wizard != null) {
+      // AbstractProjectWizard makes `doNextAction` public but we can't reference it directly since it does not exist in WebStorm.
+      final Method nextAction = ReflectionUtil.getMethod(wizard.getClass(), "doNextAction");
+      if (nextAction != null) {
+        try {
+          nextAction.invoke(wizard);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          // Ignore.
+        }
+      }
     }
   }
 }
