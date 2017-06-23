@@ -6,6 +6,9 @@
 package io.flutter.module;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
+import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.ide.wizard.AbstractWizard;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
@@ -27,9 +30,12 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class FlutterGeneratorPeer {
-
+  private final WizardContext myContext;
   private JPanel myMainPanel;
   private ComboboxWithBrowseButton mySdkPathComboWithBrowse;
   private JBLabel myVersionContent;
@@ -40,10 +46,13 @@ public class FlutterGeneratorPeer {
   private JBProgressBar myProgressBar;
   private JTextPane myProgressText;
   private JScrollPane myProgressScrollPane;
+  private JLabel myCancelProgressButton;
 
   private final InstallSdkAction myInstallSdkAction;
+  private InstallSdkAction.CancelActionListener myListener;
 
-  public FlutterGeneratorPeer() {
+  public FlutterGeneratorPeer(WizardContext context) {
+    myContext = context;
     myInstallSdkAction = new InstallSdkAction(this);
 
     errorIcon.setText("");
@@ -54,6 +63,7 @@ public class FlutterGeneratorPeer {
     myVersionContent.setVisible(false);
     myProgressBar.setVisible(false);
     myProgressText.setVisible(false);
+    myCancelProgressButton.setVisible(false);
 
     init();
     validate();
@@ -75,10 +85,20 @@ public class FlutterGeneratorPeer {
       }
     });
 
-    myInstallActionLink.setIcon(null);
+    myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
     myInstallActionLink.setText(myInstallSdkAction.getLinkText());
+
     //noinspection unchecked
     myInstallActionLink.setListener((label, linkUrl) -> myInstallSdkAction.actionPerformed(null), null);
+
+    // Some feedback on hover.
+    myCancelProgressButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    myCancelProgressButton.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        myListener.actionCanceled();
+      }
+    });
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -127,6 +147,11 @@ public class FlutterGeneratorPeer {
     return mySdkPathComboWithBrowse.getComboBox().getEditor();
   }
 
+  @NotNull
+  public ComboboxWithBrowseButton getSdkComboBox() {
+    return mySdkPathComboWithBrowse;
+  }
+
   public void setSdkPath(@NotNull String sdkPath) {
     getSdkEditor().setItem(sdkPath);
   }
@@ -135,12 +160,38 @@ public class FlutterGeneratorPeer {
     return myProgressBar;
   }
 
+  public LinkLabel getInstallActionLink() {
+    return myInstallActionLink;
+  }
+
   public JTextPane getProgressText() {
     return myProgressText;
   }
 
-  public void hideErrorDetails() {
-    errorIcon.setVisible(false);
-    errorPane.setVisible(false);
+  public JLabel getCancelProgressButton() {
+    return myCancelProgressButton;
+  }
+
+  /**
+   * Set error details (pass null to hide).
+   */
+  public void setErrorDetails(@Nullable String details) {
+    final boolean makeVisible = details != null;
+    if (makeVisible) {
+      errorText.setText(details);
+    }
+    errorIcon.setVisible(makeVisible);
+    errorPane.setVisible(makeVisible);
+  }
+
+  public void addCancelActionListener(InstallSdkAction.CancelActionListener listener) {
+    myListener = listener;
+  }
+
+  public void requestNextStep() {
+    final AbstractWizard wizard = myContext.getWizard();
+    if (wizard instanceof AbstractProjectWizard) {
+      ((AbstractProjectWizard)wizard).doNextAction();
+    }
   }
 }
