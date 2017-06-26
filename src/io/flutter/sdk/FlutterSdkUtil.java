@@ -28,7 +28,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
-import java.util.*;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class FlutterSdkUtil {
   /**
@@ -61,7 +63,6 @@ public class FlutterSdkUtil {
 
     // Add the new value first; this ensures that it's the 'default' flutter sdk.
     allPaths.add(newPath);
-
 
     final PropertiesComponent props = PropertiesComponent.getInstance();
 

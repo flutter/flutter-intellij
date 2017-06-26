@@ -21,6 +21,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.AndroidSdk;
+import io.flutter.dart.DartfmtSettings;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
@@ -130,6 +131,13 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     FlutterRunNotifications.init(project);
+
+    // Do a one-time set for the default value of the whole file dartfmt setting.
+    if (DartfmtSettings.dartPluginHasSetting()) {
+      if (!DartfmtSettings.hasBeenOneTimeSet()) {
+        DartfmtSettings.setDartfmtValue();
+      }
+    }
 
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(
