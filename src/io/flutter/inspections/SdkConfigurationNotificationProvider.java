@@ -19,7 +19,9 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -40,14 +42,12 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   }
 
   @SuppressWarnings("SameReturnValue")
-  private static EditorNotificationPanel createNoFlutterSdkPanel() {
+  private static EditorNotificationPanel createNoFlutterSdkPanel(Project project) {
     final EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.icon(FlutterIcons.Flutter);
     panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> panel.setVisible(false));
-
-    // TODO(skybrian) we should add a link to go to the Dart SDK panel.
-    // However, not yet because this will change with 2017.1 to be project-specific.
-
+    panel.createActionLabel("Open Flutter settings", () -> FlutterUtils.openFlutterSettings(project));
     return panel;
   }
 
@@ -76,7 +76,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
-      return createNoFlutterSdkPanel();
+      return createNoFlutterSdkPanel(project);
     }
     else if (!flutterSdk.getVersion().isSupported()) {
       return createOutOfDateFlutterSdkPanel(flutterSdk);
@@ -86,11 +86,11 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   }
 
   private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
-
     final FlutterUIConfig settings = FlutterUIConfig.getInstance();
     if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
 
     final EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.icon(FlutterIcons.Flutter);
     panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> {
       settings.setIgnoreOutOfDateFlutterSdks();
