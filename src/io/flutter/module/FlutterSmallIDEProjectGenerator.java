@@ -56,7 +56,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     }
 
     // Run "flutter create".
-    OutputListener listener = new OutputListener();
+    final OutputListener listener = new OutputListener();
     final PubRoot root = sdk.createFiles(baseDir, module, listener);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
