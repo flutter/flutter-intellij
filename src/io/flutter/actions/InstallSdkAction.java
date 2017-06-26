@@ -20,6 +20,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterGeneratorPeer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +30,9 @@ import java.io.File;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
+
+  //TODO(pq): add support for "git.exe"
+  private static final String GIT_EXECUTABLE = "git";
 
   public interface CancelActionListener {
     void actionCanceled();
@@ -153,8 +157,11 @@ public class InstallSdkAction extends DumbAwareAction {
     private void installTo(final @NotNull VirtualFile directory) {
       final String installPath = directory.getPath();
 
+      final String sdkDir = new File(installPath, "flutter").getPath();
+      setSdkPath(new File(installPath, "flutter").getPath());
+
       final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
-        GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(installPath).withExePath("git")
+        GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(installPath).withExePath(GIT_EXECUTABLE)
         .withParameters("clone", "https://github.com/flutter/flutter.git");
       runCommand(cmd, new CommandListener("Cloning Flutter repository…") {
         @Override
@@ -169,7 +176,6 @@ public class InstallSdkAction extends DumbAwareAction {
 
         @Override
         protected void onSuccess(@NotNull ProcessEvent event) {
-          final String sdkDir = new File(directory.getPath(), "flutter").getPath();
 
           final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
             GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir).withExePath("bin/flutter")
@@ -189,7 +195,6 @@ public class InstallSdkAction extends DumbAwareAction {
 
             @Override
             void onSuccess(@NotNull ProcessEvent event) {
-              setSdkPath(sdkDir);
               requestNextStep();
             }
           });
@@ -287,10 +292,8 @@ public class InstallSdkAction extends DumbAwareAction {
     return hasGit() ? new GitCloneAction(peer) : new ViewDocsAction(peer);
   }
 
-  @SuppressWarnings("SameReturnValue")
   private static boolean hasGit() {
-    //TODO(pq): Flow bypassed by default; return true for testing.
-    return false;  //SystemInfo.isMac;
+    return FlutterUtils.isOnPath(GIT_EXECUTABLE);
   }
 
   @Override
