@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.actions;
+package io.flutter.module;
 
 
 import com.intellij.execution.ExecutionException;
@@ -21,7 +21,6 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
-import io.flutter.module.FlutterGeneratorPeer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
