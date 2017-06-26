@@ -20,7 +20,7 @@ public class OpenSimulatorAction extends AnAction {
   final boolean enabled;
 
   public OpenSimulatorAction(boolean enabled) {
-    super("iOS: Open Simulator");
+    super("Open iOS Simulator");
 
     this.enabled = enabled;
   }

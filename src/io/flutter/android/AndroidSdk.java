@@ -5,11 +5,20 @@
  */
 package io.flutter.android;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
+import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EnvironmentUtil;
@@ -17,18 +26,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
  * An Android SDK and its home directory.
  */
 public class AndroidSdk {
+  private static final Logger LOG = Logger.getInstance(AndroidSdk.class);
+
   @NotNull
   private final Sdk sdk;
 
   @NotNull
   private final VirtualFile home;
-  private List<AndroidEmulator> myEmulators;
 
   private AndroidSdk(@NotNull Sdk sdk, @NotNull VirtualFile home) {
     this.sdk = sdk;
@@ -79,6 +90,16 @@ public class AndroidSdk {
     }
 
     return fromHome(file);
+  }
+
+  /**
+   * Choose the best possible Android SDK value. Check if one is set for the current project; use that
+   * if possible, else fall back to checking the 'ANDROID_HOME' environment variable.
+   */
+  @Nullable
+  public static AndroidSdk chooseBestSdk(@NotNull Project project) {
+    final AndroidSdk sdk = fromProject(project);
+    return sdk == null ? fromEnvironment() : sdk;
   }
 
   /**
@@ -138,14 +159,68 @@ public class AndroidSdk {
     return new AndroidSdk(candidate, home);
   }
 
+  @Nullable
+  public VirtualFile getEmulatorToolExecutable() {
+    // Look for $ANDROID_HOME/tools/emulator.
+    return home.findFileByRelativePath("tools/" + (SystemInfo.isWindows ? "emulator.exe" : "emulator"));
+  }
+
+  @NotNull
   public List<AndroidEmulator> getEmulators() {
-    // TODO: execute $ANDROID_HOME/tools/emulator -list-avds, parse the results
-    // Nexus_5X_API_23_x86_64
-    // Nexus_5X_API_N
-    // Nexus_S_API_N
+    // Execute $ANDROID_HOME/tools/emulator -list-avds and parse the results.
+    final VirtualFile emulator = getEmulatorToolExecutable();
+    if (emulator == null) {
+      return Collections.emptyList();
+    }
 
-    // TODO: and the windows path name...
+    final String emulatorPath = emulator.getCanonicalPath();
+    assert (emulatorPath != null);
 
-    return myEmulators;
+    final GeneralCommandLine cmd = new GeneralCommandLine()
+      .withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+      .withWorkDirectory(home.getCanonicalPath())
+      .withExePath(emulatorPath)
+      .withParameters("-list-avds");
+
+    try {
+      final StringBuilder stringBuilder = new StringBuilder();
+      final OSProcessHandler process = new OSProcessHandler(cmd);
+      process.addProcessListener(new ProcessAdapter() {
+        @Override
+        public void onTextAvailable(ProcessEvent event, Key outputType) {
+          if (outputType == ProcessOutputTypes.STDOUT) {
+            stringBuilder.append(event.getText());
+          }
+        }
+      });
+      process.startNotify();
+
+      // We wait a maximum of 2000ms.
+      if (!process.waitFor(2000)) {
+        return Collections.emptyList();
+      }
+
+      final Integer exitCode = process.getExitCode();
+      if (exitCode == null || process.getExitCode() != 0) {
+        return Collections.emptyList();
+      }
+
+      // 'emulator -list-avds' results are in the form "foo\nbar\nbaz\n".
+      final List<AndroidEmulator> emulators = new ArrayList<>();
+
+      for (String str : stringBuilder.toString().split("\n")) {
+        str = str.trim();
+        if (str.isEmpty()) {
+          continue;
+        }
+        emulators.add(new AndroidEmulator(this, str));
+      }
+
+      return emulators;
+    }
+    catch (ExecutionException | RuntimeException e) {
+      LOG.warn("Error listing android emulators", e);
+      return Collections.emptyList();
+    }
   }
 }
