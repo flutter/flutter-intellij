@@ -54,7 +54,7 @@ public class WorkspaceCache {
     refreshAsync();
   }
 
-  @Nullable
+  @NotNull
   public static WorkspaceCache getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, WorkspaceCache.class);
   }
