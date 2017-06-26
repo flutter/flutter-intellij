@@ -268,7 +268,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     @Nullable
-    public FlutterSdk getFlutterSdk() {
+    private FlutterSdk getFlutterSdk() {
       final String sdkPath = myPeer.getSdkComboPath();
 
       //Ensure the local filesystem has caught up to external processes (e.g., git clone).
