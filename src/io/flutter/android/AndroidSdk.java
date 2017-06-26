@@ -28,6 +28,7 @@ public class AndroidSdk {
 
   @NotNull
   private final VirtualFile home;
+  private List<AndroidEmulator> myEmulators;
 
   private AndroidSdk(@NotNull Sdk sdk, @NotNull VirtualFile home) {
     this.sdk = sdk;
@@ -135,5 +136,16 @@ public class AndroidSdk {
     }
 
     return new AndroidSdk(candidate, home);
+  }
+
+  public List<AndroidEmulator> getEmulators() {
+    // TODO: execute $ANDROID_HOME/tools/emulator -list-avds, parse the results
+    // Nexus_5X_API_23_x86_64
+    // Nexus_5X_API_N
+    // Nexus_S_API_N
+
+    // TODO: and the windows path name...
+
+    return myEmulators;
   }
 }
