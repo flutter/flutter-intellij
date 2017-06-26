@@ -268,8 +268,20 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     @Nullable
-    public FlutterSdk getFlutterSdk() {
-      return FlutterSdk.forPath(myPeer.getSdkComboPath());
+    private FlutterSdk getFlutterSdk() {
+      final String sdkPath = myPeer.getSdkComboPath();
+
+      //Ensure the local filesystem has caught up to external processes (e.g., git clone).
+      if (!sdkPath.isEmpty()) {
+        try {
+          LocalFileSystem
+            .getInstance().refreshAndFindFileByPath(sdkPath);
+        }
+        catch (Throwable e) {
+          // It's possible that the refresh will fail in which case we just want to trap and ignore.
+        }
+      }
+      return FlutterSdk.forPath(sdkPath);
     }
   }
 }

@@ -17,12 +17,16 @@ import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
   private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]+([_]?[a-z0-9]+)*)+$");
+  private static final Pattern PATH_SEPARATOR = Pattern.compile(Pattern.quote(File.pathSeparator));
 
   private FlutterUtils() {
   }
@@ -96,6 +100,7 @@ public class FlutterUtils {
 
   /**
    * Checks whether a given filename is an Xcode metadata file, suitable for opening externally.
+   *
    * @param name the name to check
    * @return true if an xcode project filename
    */
@@ -105,6 +110,7 @@ public class FlutterUtils {
 
   /**
    * Checks whether a given file name is an Xcode project filename.
+   *
    * @param name the name to check
    * @return true if an xcode project filename
    */
@@ -114,6 +120,7 @@ public class FlutterUtils {
 
   /**
    * Checks whether a given name is an Xcode workspace filename.
+   *
    * @param name the name to check
    * @return true if an xcode workspace filename
    */
@@ -121,4 +128,14 @@ public class FlutterUtils {
     return name.endsWith(".xcworkspace");
   }
 
+  /**
+   * Checks whether the given executable can be found on the System PATH.
+   *
+   * @param executable the executable name
+   * @return true if the executable is on the path
+   */
+  public static boolean isOnPath(@NotNull String executable) {
+    return PATH_SEPARATOR.splitAsStream(System.getenv("PATH")).map(Paths::get)
+      .anyMatch(path -> Files.exists(path.resolve(executable)));
+  }
 }
