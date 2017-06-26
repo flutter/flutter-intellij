@@ -11,6 +11,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.fileChooser.FileChooser;
@@ -19,7 +20,6 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.ui.JBProgressBar;
 import io.flutter.module.FlutterGeneratorPeer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -30,18 +30,76 @@ import java.io.File;
 @SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
 
-  private static abstract class InstallAction {
+  public interface CancelActionListener {
+    void actionCanceled();
+  }
+
+  private static abstract class InstallAction implements CancelActionListener {
+
+    @Override
+    public void actionCanceled() {
+    }
+
+    @NotNull
+    private final FlutterGeneratorPeer myPeer;
+
+    InstallAction(@NotNull FlutterGeneratorPeer peer) {
+      peer.addCancelActionListener(this);
+      myPeer = peer;
+    }
+
     abstract void perform();
+
+    abstract Icon getLinkIcon();
 
     abstract String getLinkText();
 
-    void showError(@NotNull String title, @NotNull String message) {
-      //TODO(pq): implement
-      System.out.println("Error: " + title + ", Message: " + message);
+    void showError(@NotNull String message) {
+      setErrorDetails(message);
+    }
+
+    void setProgressText(String text) {
+      myPeer.getProgressText().setText(text);
+    }
+
+    void setSdkPath(String path) {
+      myPeer.setSdkPath(path);
+    }
+
+    void validatePeer() {
+      myPeer.validate();
+    }
+
+    void cancelAction() {
+      myPeer.getCancelProgressButton().setEnabled(false);
+    }
+
+    void requestNextStep() {
+      myPeer.requestNextStep();
+    }
+
+    void setProgressVisible(boolean visible) {
+      myPeer.getInstallActionLink().setVisible(!visible);
+      myPeer.getCancelProgressButton().setVisible(visible);
+      myPeer.getCancelProgressButton().setEnabled(visible);
+      myPeer.getProgressBar().setVisible(visible);
+      myPeer.getProgressText().setVisible(visible);
+    }
+
+    void setErrorDetails(String details) {
+      myPeer.setErrorDetails(details);
+    }
+
+    void setSdkComboEnablement(boolean enabled) {
+      myPeer.getSdkComboBox().setEnabled(enabled);
     }
   }
 
   private static class ViewDocsAction extends InstallAction {
+    ViewDocsAction(FlutterGeneratorPeer peer) {
+      super(peer);
+    }
+
     @Override
     void perform() {
       BrowserUtil.browse("https://flutter.io/setup/");
@@ -51,18 +109,23 @@ public class InstallSdkAction extends DumbAwareAction {
     String getLinkText() {
       return "View setup docs…";
     }
+
+    @Override
+    Icon getLinkIcon() {
+      return AllIcons.General.Web;
+    }
   }
 
   private static class GitCloneAction extends InstallAction {
-    private final FlutterGeneratorPeer myPeer;
+    OSProcessHandler handler;
 
-    public GitCloneAction(FlutterGeneratorPeer peer) {
-      myPeer = peer;
+    GitCloneAction(FlutterGeneratorPeer peer) {
+      super(peer);
     }
 
     @Override
     void perform() {
-      //TODO(pq): consider prompting w a sensible default location (~/flutter)?
+      // Defaults to ~/flutter
       @SuppressWarnings("DialogTitleCapitalization") final FileChooserDescriptor descriptor =
         new FileChooserDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
           @Override
@@ -81,7 +144,13 @@ public class InstallSdkAction extends DumbAwareAction {
       }
     }
 
-    private void installTo(final @NotNull VirtualFile directory)  {
+    @Override
+    public void actionCanceled() {
+      handler.destroyProcess();
+      validatePeer();
+    }
+
+    private void installTo(final @NotNull VirtualFile directory) {
       final String installPath = directory.getPath();
 
       final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
@@ -90,7 +159,12 @@ public class InstallSdkAction extends DumbAwareAction {
       runCommand(cmd, new CommandListener("Cloning Flutter repository…") {
         @Override
         void onError(@NotNull ExecutionException exception) {
-          showError("Error Cloning Flutter Repository", exception.getMessage());
+          showError("Error cloning Flutter repository: " + exception.getMessage());
+        }
+
+        @Override
+        void onError(@NotNull ProcessEvent event) {
+          showError("Flutter SDK download canceled.");
         }
 
         @Override
@@ -103,25 +177,24 @@ public class InstallSdkAction extends DumbAwareAction {
           runCommand(cmd, new CommandListener("Running 'flutter precache'…") {
             @Override
             void onTextAvailable(ProcessEvent event, Key outputType) {
-              //TODO(pq): filter less useful / truncated messages.
-              getProgressText().setText(event.getText());
+              final String details = event.getText();
+              // Filter out long messages and ones w/ leading whitespace.
+              // Conveniently, these are also the unfriendly ones.  For example:
+              // 6 57.9M    6 3838k    0     0  2978k      0  0:00:19  0:00:01  0:00:18 2978k
+              //TODO(pq): consider a more robust approach to filtering.
+              if (!details.startsWith(" ") && details.length() < 70) {
+                setProgressText(details);
+              }
             }
 
             @Override
             void onSuccess(@NotNull ProcessEvent event) {
-              myPeer.setSdkPath(sdkDir);
+              setSdkPath(sdkDir);
+              requestNextStep();
             }
           });
         }
       });
-    }
-
-    private JBProgressBar getProgress() {
-      return myPeer.getProgressBar();
-    }
-
-    private JTextPane getProgressText() {
-      return myPeer.getProgressText();
     }
 
     @Override
@@ -129,8 +202,12 @@ public class InstallSdkAction extends DumbAwareAction {
       return "Install SDK…";
     }
 
+    @Override
+    Icon getLinkIcon() {
+      return AllIcons.Actions.Download;
+    }
+
     private void runCommand(@NotNull GeneralCommandLine cmd, @NotNull CommandListener listener) {
-      final OSProcessHandler handler;
       try {
         handler = new OSProcessHandler(cmd);
       }
@@ -146,7 +223,7 @@ public class InstallSdkAction extends DumbAwareAction {
     private abstract class CommandListener {
 
       CommandListener(@Nullable String title) {
-        getProgressText().setText(title);
+        setProgressText(title);
       }
 
       final void registerTo(OSProcessHandler handler) {
@@ -166,7 +243,7 @@ public class InstallSdkAction extends DumbAwareAction {
               onSuccess(event);
             }
             else {
-              onError(new ExecutionException(event.getText()));
+              onError(event);
             }
           }
 
@@ -177,11 +254,13 @@ public class InstallSdkAction extends DumbAwareAction {
         });
       }
 
-
       void onSuccess(@NotNull ProcessEvent event) {
       }
 
       void onError(@NotNull ExecutionException event) {
+      }
+
+      void onError(@NotNull ProcessEvent event) {
       }
 
       void onTextAvailable(ProcessEvent event, Key outputType) {
@@ -190,13 +269,11 @@ public class InstallSdkAction extends DumbAwareAction {
 
     private void setInProgress(boolean visible) {
       if (visible) {
-        getProgress().setIndeterminate(true);
-        myPeer.hideErrorDetails();
-        //TODO(pq): Disable Next button.
+        setErrorDetails(null);
       }
 
-      getProgress().setVisible(visible);
-      getProgressText().setVisible(visible);
+      setSdkComboEnablement(!visible);
+      setProgressVisible(visible);
     }
   }
 
@@ -207,7 +284,7 @@ public class InstallSdkAction extends DumbAwareAction {
   }
 
   private static InstallAction createInstallAction(FlutterGeneratorPeer peer) {
-    return hasGit() ? new GitCloneAction(peer) : new ViewDocsAction();
+    return hasGit() ? new GitCloneAction(peer) : new ViewDocsAction(peer);
   }
 
   @SuppressWarnings("SameReturnValue")
@@ -219,6 +296,10 @@ public class InstallSdkAction extends DumbAwareAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     myInstallAction.perform();
+  }
+
+  public Icon getLinkIcon() {
+    return myInstallAction.getLinkIcon();
   }
 
   public String getLinkText() {
