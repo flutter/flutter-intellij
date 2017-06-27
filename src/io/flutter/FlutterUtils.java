@@ -5,6 +5,9 @@
  */
 package io.flutter;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -17,16 +20,12 @@ import io.flutter.pub.PubRoot;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
   private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]+([_]?[a-z0-9]+)*)+$");
-  private static final Pattern PATH_SEPARATOR = Pattern.compile(Pattern.quote(File.pathSeparator));
 
   private FlutterUtils() {
   }
@@ -129,13 +128,18 @@ public class FlutterUtils {
   }
 
   /**
-   * Checks whether the given executable can be found on the System PATH.
+   * Checks whether the given commandline executes cleanly.
    *
-   * @param executable the executable name
-   * @return true if the executable is on the path
+   * @param cmd the command
+   * @return true if the command runs cleanly
    */
-  public static boolean isOnPath(@NotNull String executable) {
-    return PATH_SEPARATOR.splitAsStream(System.getenv("PATH")).map(Paths::get)
-      .anyMatch(path -> Files.exists(path.resolve(executable)));
+  public static boolean runsCleanly(@NotNull GeneralCommandLine cmd) {
+    try {
+      return ExecUtil.execAndGetOutput(cmd).getExitCode() == 0;
+    }
+    catch (ExecutionException e) {
+      return false;
+    }
   }
+
 }

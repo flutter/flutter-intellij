@@ -33,6 +33,11 @@ class InstallSdkAction extends DumbAwareAction {
   //TODO(pq): add support for "git.exe"
   private static final String GIT_EXECUTABLE = "git";
 
+  private static GeneralCommandLine gitCommandBase() {
+    return new GeneralCommandLine().withParentEnvironmentType(
+      GeneralCommandLine.ParentEnvironmentType.CONSOLE).withExePath(GIT_EXECUTABLE);
+  }
+
   public interface CancelActionListener {
     void actionCanceled();
   }
@@ -159,8 +164,7 @@ class InstallSdkAction extends DumbAwareAction {
       final String sdkDir = new File(installPath, "flutter").getPath();
       setSdkPath(new File(installPath, "flutter").getPath());
 
-      final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
-        GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(installPath).withExePath(GIT_EXECUTABLE)
+      final GeneralCommandLine cmd = gitCommandBase().withWorkDirectory(installPath)
         .withParameters("clone", "https://github.com/flutter/flutter.git");
       runCommand(cmd, new CommandListener("Cloning Flutter repository…") {
         @Override
@@ -292,7 +296,7 @@ class InstallSdkAction extends DumbAwareAction {
   }
 
   private static boolean hasGit() {
-    return FlutterUtils.isOnPath(GIT_EXECUTABLE);
+    return FlutterUtils.runsCleanly(gitCommandBase().withParameters("version"));
   }
 
   @Override
