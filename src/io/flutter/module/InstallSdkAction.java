@@ -19,6 +19,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
@@ -30,8 +31,7 @@ import java.io.File;
 @SuppressWarnings("ComponentNotRegistered")
 class InstallSdkAction extends DumbAwareAction {
 
-  //TODO(pq): add support for "git.exe"
-  private static final String GIT_EXECUTABLE = "git";
+  private static final String GIT_EXECUTABLE = SystemInfo.isWindows ? " git.exe" : "git";
 
   public interface CancelActionListener {
     void actionCanceled();
