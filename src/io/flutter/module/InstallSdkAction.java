@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.actions;
+package io.flutter.module;
 
 
 import com.intellij.execution.ExecutionException;
@@ -21,7 +21,6 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
-import io.flutter.module.FlutterGeneratorPeer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,7 +28,7 @@ import javax.swing.*;
 import java.io.File;
 
 @SuppressWarnings("ComponentNotRegistered")
-public class InstallSdkAction extends DumbAwareAction {
+class InstallSdkAction extends DumbAwareAction {
 
   //TODO(pq): add support for "git.exe"
   private static final String GIT_EXECUTABLE = "git";
