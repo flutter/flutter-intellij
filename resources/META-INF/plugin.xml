@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>14.0</version>
+  <version>15.0</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,18 @@
 
   <change-notes>
     <![CDATA[
+
+15.0:
+<ul>
+  <li>UI for starting android emulators from the device pull-down</li>
+  <li>workflow for installing a Flutter SDK from the New Flutter Project wizard</li>
+  <li>Flutter SDK configuration inspection improvements</li>
+  <li>improved error reporting on project creation failures</li>
+  <li>improved app reload feedback</li>
+  <li>Flutter View toolbar tweaks</li>
+  <li>initial support for running unit tests with `flutter test`</li>
+  <li>new action to open iOS resources in Xcode</li>
+</ul>
 
 14.0:
 <ul>
