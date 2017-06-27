@@ -16,6 +16,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -47,6 +48,8 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     final PubRoot root = PubRoot.forPsiFile(file);
     if (root == null) return false;
 
+    if (!FlutterModuleUtils.isFlutterModule(context.getModule())) return false;
+
     final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false);
     if (candidate == null) return false;
 
@@ -62,6 +65,8 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
     final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
     if (root == null) return false;
+    
+    if (!FlutterModuleUtils.hasFlutterModule(dir.getProject())) return false;
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
 
