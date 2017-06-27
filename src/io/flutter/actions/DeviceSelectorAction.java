@@ -124,6 +124,13 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new OpenSimulatorAction(!simulatorOpen));
     }
 
+    // Add Open Android emulators actions.
+    final List<OpenEmulatorAction> emulatorActions = OpenEmulatorAction.getEmulatorActions(project);
+    if (!emulatorActions.isEmpty()) {
+      actions.add(new Separator());
+      actions.addAll(emulatorActions);
+    }
+
     final FlutterDevice selectedDevice = service.getSelectedDevice();
     for (AnAction action : actions) {
       if (action instanceof SelectDeviceAction) {
@@ -141,7 +148,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     if (devices.isEmpty()) {
       presentation.setText("<no devices>");
-    } else {
+    }
+    else {
       presentation.setText(null);
     }
   }
