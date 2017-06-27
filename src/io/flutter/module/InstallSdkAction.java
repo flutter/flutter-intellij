@@ -28,7 +28,7 @@ import javax.swing.*;
 import java.io.File;
 
 @SuppressWarnings("ComponentNotRegistered")
-public class InstallSdkAction extends DumbAwareAction {
+class InstallSdkAction extends DumbAwareAction {
 
   //TODO(pq): add support for "git.exe"
   private static final String GIT_EXECUTABLE = "git";
