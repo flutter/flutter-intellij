@@ -72,11 +72,8 @@ Validate device selection.
 ### macOS only
 
 * Verify that the simulator can be opened.
-  * Disconnect all devices and quit the iOS simulator.
-  * Ensure that a menu item to open the iOS simulator is enabled in the device pull
-    down menu.
-  * Select "Open iOS Simulator".
-  * Verify that the simulator opens.
+  * Quit any open iOS simulator.
+  * From the device pull-down, select "Open iOS Simulator" and verify that the simulator opens.
 
 ## Run / Debug
 
