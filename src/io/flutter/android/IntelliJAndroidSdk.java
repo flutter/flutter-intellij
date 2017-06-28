@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An Android SDK and its home directory.
+ * An Android SDK and its home directory; this references an IntelliJ @{@link Sdk} instance.
  */
 public class IntelliJAndroidSdk {
   private static final Logger LOG = Logger.getInstance(IntelliJAndroidSdk.class);
