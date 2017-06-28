@@ -66,7 +66,7 @@ Validate device selection.
   * Ensure that a menu item appears in the device pull down for the device.
   
 * Emulated Android device
-  * Start an Android emulator (using the AVD manager in Android Studio)
+  * Start an Android emulator
   * Ensure that a menu item appears in the device pull down for the device.  
 
 ### macOS only
