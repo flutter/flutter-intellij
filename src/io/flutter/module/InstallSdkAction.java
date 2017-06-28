@@ -187,9 +187,10 @@ class InstallSdkAction extends DumbAwareAction {
 
         @Override
         protected void onSuccess(@NotNull ProcessEvent event) {
+          final String flutterTool = FileUtil.toSystemDependentName(sdkDir + "/bin/" + FlutterSdkUtil.flutterScriptName());
           final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
             GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir)
-            .withExePath(FileUtil.toSystemDependentName("bin/" + FlutterSdkUtil.flutterScriptName()))
+            .withExePath(flutterTool)
             .withParameters("precache");
           runCommand(cmd, new CommandListener("Running 'flutter precache'…") {
             @Override
