@@ -19,9 +19,11 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -185,9 +187,10 @@ class InstallSdkAction extends DumbAwareAction {
 
         @Override
         protected void onSuccess(@NotNull ProcessEvent event) {
-
+          final String flutterTool = FileUtil.toSystemDependentName(sdkDir + "/bin/" + FlutterSdkUtil.flutterScriptName());
           final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
-            GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir).withExePath("bin/flutter")
+            GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir)
+            .withExePath(flutterTool)
             .withParameters("precache");
           runCommand(cmd, new CommandListener("Running 'flutter precache'…") {
             @Override
@@ -205,6 +208,16 @@ class InstallSdkAction extends DumbAwareAction {
             @Override
             void onSuccess(@NotNull ProcessEvent event) {
               requestNextStep();
+            }
+
+            @Override
+            void onError(@NotNull ExecutionException event) {
+              showError("Error installing Flutter: " + event.getMessage());
+            }
+
+            @Override
+            void onError(@NotNull ProcessEvent event) {
+              showError("Error installing Flutter: " + event.getText() + " returned " + event.getExitCode());
             }
           });
         }
