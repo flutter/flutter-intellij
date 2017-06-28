@@ -20,7 +20,7 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
-import io.flutter.android.AndroidSdk;
+import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.dart.DartfmtSettings;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunNotifications;
@@ -198,7 +198,7 @@ public class FlutterInitializer implements StartupActivity {
       return; // Don't override user's settings.
     }
 
-    final AndroidSdk wanted = AndroidSdk.fromEnvironment();
+    final IntelliJAndroidSdk wanted = IntelliJAndroidSdk.fromEnvironment();
     if (wanted == null) {
       return; // ANDROID_HOME not set or Android SDK not created in IDEA; not clear what to do.
     }

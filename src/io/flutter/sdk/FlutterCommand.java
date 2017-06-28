@@ -18,7 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
-import io.flutter.android.AndroidSdk;
+import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -209,7 +209,7 @@ public class FlutterCommand {
 
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
 
-    final String androidHome = AndroidSdk.chooseAndroidHome(project);
+    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);
     }
