@@ -15,7 +15,7 @@ See [flutter.io/intellij-ide](https://flutter.io/intellij-ide/) for more detaile
 A very brief summary of the getting started guide linked from above:
 
 - install the Flutter SDK (see [flutter.io/setup](https://flutter.io/setup/)); run `flutter doctor` from the command line to verify your installation
-- ensure you have a supported IntelliJ development environment (IntelliJ 2016.2+, Ultimate or Community)
+- ensure you have a supported IntelliJ development environment (IntelliJ 2017.1+, Ultimate or Community)
 - open the plugin preferences (Preferences>Plugins on macOS, File>Settings>Plugins on Linux, select "Browse repositories…")
 - search for and install the 'Dart' plugin; search for and install the 'Flutter' plugin
 - choose the option to restart IntelliJ
