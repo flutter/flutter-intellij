@@ -2,6 +2,7 @@ out/
 artifacts/
 build/
 flutter-intellij.jar
+flutter-intellij.zip
 packages
 .DS_Store
 .packages

@@ -19,7 +19,7 @@ import static java.util.stream.Collectors.toList;
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenEmulatorAction extends AnAction {
   public static List<OpenEmulatorAction> getEmulatorActions(Project project) {
-    final AndroidSdk sdk = AndroidSdk.chooseBestSdk(project);
+    final AndroidSdk sdk = AndroidSdk.createFromProject(project);
     if (sdk == null) {
       return Collections.emptyList();
     }

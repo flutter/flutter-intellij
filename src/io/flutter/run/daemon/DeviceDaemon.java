@@ -17,7 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterMessages;
-import io.flutter.android.AndroidSdk;
+import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -120,7 +120,7 @@ class DeviceDaemon {
       return null;
     }
 
-    final String androidHome = AndroidSdk.chooseAndroidHome(project);
+    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
 
     // See if the Bazel workspace provides a script.
     final Workspace w = WorkspaceCache.getInstance(project).getNow();
