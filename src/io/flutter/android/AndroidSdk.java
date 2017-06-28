@@ -25,7 +25,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * A wrapper around an Android sdk on disk.
+ * A wrapper around an Android SDK on disk.
  */
 public class AndroidSdk {
   private static final Logger LOG = Logger.getInstance(AndroidSdk.class);
