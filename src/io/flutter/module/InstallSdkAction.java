@@ -20,6 +20,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -104,12 +105,15 @@ class InstallSdkAction extends DumbAwareAction {
   }
 
   private static class ViewDocsAction extends InstallAction {
+    private static final String ANALYTICS_KEY = "InstallSdkViewDocsAction";
+
     ViewDocsAction(FlutterGeneratorPeer peer) {
       super(peer);
     }
 
     @Override
     void perform() {
+      FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
       BrowserUtil.browse("https://flutter.io/setup/");
     }
 
@@ -125,7 +129,8 @@ class InstallSdkAction extends DumbAwareAction {
   }
 
   private static class GitCloneAction extends InstallAction {
-    OSProcessHandler handler;
+    private static final String ANALYTICS_KEY = "InstallSdkRunGitAction";
+    private OSProcessHandler handler;
 
     GitCloneAction(FlutterGeneratorPeer peer) {
       super(peer);
@@ -148,6 +153,7 @@ class InstallSdkAction extends DumbAwareAction {
 
       final VirtualFile installTarget = FileChooser.chooseFile(descriptor, null, null);
       if (installTarget != null) {
+        FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
         installTo(installTarget);
       }
     }
