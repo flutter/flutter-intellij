@@ -97,10 +97,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
 
     scheduleConnectNew();
-
-    // We disable the service protocol library logger because of a user facing NPE in a
-    // DartVmServiceListener from the Dart plugin.
-    Logging.setLogger(org.dartlang.vm.service.logging.Logger.NULL);
   }
 
   @Override
