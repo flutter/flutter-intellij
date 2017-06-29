@@ -24,27 +24,27 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
+// TODO(devoncarew) WebProjectGenerator.GeneratorPeer is deprecated and will be removed in 2017.3.
+
 public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.GeneratorPeer<String> {
-  private ComboboxWithBrowseButton sdkPathComboWithBrowse;
+  private JPanel myMainPanel;
+  private final ComboboxWithBrowseButton sdkPathComboWithBrowse;
 
   public FlutterSmallIDEGeneratorPeer() {
-    createUIComponents();
-  }
-
-  private void createUIComponents() {
     sdkPathComboWithBrowse = new ComboboxWithBrowseButton(new ComboBox<>());
     sdkPathComboWithBrowse.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(sdkPathComboWithBrowse.getComboBox());
 
-    sdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
-                                                   FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                   TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+    sdkPathComboWithBrowse.addBrowseFolderListener(
+      FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
+      FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+      TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
   }
 
   @NotNull
   @Override
   public JComponent getComponent() {
-    return sdkPathComboWithBrowse;
+    return myMainPanel;
   }
 
   @Override
@@ -87,6 +87,10 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
         stateListener.stateChanged(validate() == null);
       }
     });
+
+    if (validate() != null) {
+      stateListener.stateChanged(false);
+    }
   }
 
   @NotNull
