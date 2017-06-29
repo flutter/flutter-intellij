@@ -102,12 +102,12 @@ class TestLaunchState extends CommandLineState  {
   }
 
   @NotNull
-  VirtualFile getTestFileOrDir() throws ExecutionException {
+  VirtualFile getTestFileOrDir() {
     return testFileOrDir;
   }
 
   @NotNull
-  PubRoot getPubRoot() throws ExecutionException {
+  PubRoot getPubRoot() {
     return pubRoot;
   }
 

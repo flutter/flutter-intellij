@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.project.Project;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
@@ -14,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterUpgradeAction extends FlutterSdkAction {
   @Override
-  public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) throws ExecutionException {
+  public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {
     sdk.flutterUpgrade().startInConsole(project);
   }
 }

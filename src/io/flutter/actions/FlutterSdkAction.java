@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -37,20 +36,12 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
       return;
     }
 
-    try {
-      FlutterInitializer.sendAnalyticsAction(this);
-      FileDocumentManager.getInstance().saveAllDocuments();
-      startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
-    }
-    catch (ExecutionException e) {
-      FlutterMessages.showError(
-        FlutterBundle.message("flutter.command.exception.title"),
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-      LOG.warn(e);
-    }
+    FlutterInitializer.sendAnalyticsAction(this);
+    FileDocumentManager.getInstance().saveAllDocuments();
+    startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
   }
 
-  public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) throws ExecutionException;
+  public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root);
 
   private static void showMissingSdkDialog(Project project) {
     final int response = FlutterMessages.showDialog(project, FlutterBundle.message("flutter.sdk.notAvailable.message"),
