@@ -34,22 +34,16 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/171.4006/Dart.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/171.4694.29/Dart.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES>
-          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/gen" />
-          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/src" />
-          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/testSrc" />
-          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/thirdPartySrc/analysisServer" />
-          <root url="file://$MODULE_DIR$/../intellij-plugins/Dart/thirdPartySrc/vmServiceDrivers" />
-        </SOURCES>
+        <SOURCES />
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/171.4006/resources_en.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/171.4694.29/resources_en.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
