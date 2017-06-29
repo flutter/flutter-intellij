@@ -127,7 +127,7 @@ public class FlutterCommand {
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
    */
-  public Process startInModuleConsole(Module module, Runnable onDone, @Nullable ProcessListener processListener) {
+  public Process startInModuleConsole(@NotNull Module module, @Nullable Runnable onDone, @Nullable ProcessListener processListener) {
     final OSProcessHandler handler = startProcess(module.getProject());
     if (handler == null) {
       return null;
@@ -138,7 +138,9 @@ public class FlutterCommand {
     handler.addProcessListener(new ProcessAdapter() {
       @Override
       public void processTerminated(ProcessEvent event) {
-        onDone.run();
+        if (onDone != null) {
+          onDone.run();
+        }
       }
     });
 

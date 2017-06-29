@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
+// TODO(devoncarew): It would be nice to show a hyperlink in the upper right of this wizard.
+
 public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> {
   @NotNull
   @Override
@@ -66,7 +68,6 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-
       // Set up Dart SDK.
       final String dartSdkPath = sdk.getDartSdkPath();
       if (dartSdkPath == null) {
