@@ -173,7 +173,7 @@ class InstallSdkAction extends DumbAwareAction {
       setSdkPath(new File(installPath, "flutter").getPath());
 
       final GeneralCommandLine cmd = gitCommandBase().withWorkDirectory(installPath)
-        .withParameters("clone", "https://github.com/flutter/flutter.git");
+        .withParameters("clone", "-b", "alpha", "https://github.com/flutter/flutter.git");
       runCommand(cmd, new CommandListener("Cloning Flutter repository…") {
         @Override
         void onError(@NotNull ExecutionException exception) {
