@@ -25,7 +25,6 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
@@ -33,7 +32,6 @@ import java.io.File;
 @SuppressWarnings("ComponentNotRegistered")
 class InstallSdkAction extends DumbAwareAction {
 
-  //TODO(pq): add support for "git.exe"
   private static final String GIT_EXECUTABLE = "git";
 
   private static GeneralCommandLine gitCommandBase() {
@@ -168,60 +166,10 @@ class InstallSdkAction extends DumbAwareAction {
 
     private void installTo(final @NotNull VirtualFile directory) {
       final String installPath = directory.getPath();
-
       final String sdkDir = new File(installPath, "flutter").getPath();
-      setSdkPath(new File(installPath, "flutter").getPath());
 
-      final GeneralCommandLine cmd = gitCommandBase().withWorkDirectory(installPath)
-        .withParameters("clone", "-b", "alpha", "https://github.com/flutter/flutter.git");
-      runCommand(cmd, new CommandListener("Cloning Flutter repository…") {
-        @Override
-        void onError(@NotNull ExecutionException exception) {
-          showError("Error cloning Flutter repository: " + exception.getMessage());
-        }
-
-        @Override
-        void onError(@NotNull ProcessEvent event) {
-          showError("Flutter SDK download canceled.");
-        }
-
-        @Override
-        protected void onSuccess(@NotNull ProcessEvent event) {
-          final String flutterTool = FileUtil.toSystemDependentName(sdkDir + "/bin/" + FlutterSdkUtil.flutterScriptName());
-          final GeneralCommandLine cmd = new GeneralCommandLine().withParentEnvironmentType(
-            GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(sdkDir)
-            .withExePath(flutterTool)
-            .withParameters("precache");
-          runCommand(cmd, new CommandListener("Running 'flutter precache'…") {
-            @Override
-            void onTextAvailable(ProcessEvent event, Key outputType) {
-              final String details = event.getText();
-              // Filter out long messages and ones w/ leading whitespace.
-              // Conveniently, these are also the unfriendly ones.  For example:
-              // 6 57.9M    6 3838k    0     0  2978k      0  0:00:19  0:00:01  0:00:18 2978k
-              //TODO(pq): consider a more robust approach to filtering.
-              if (!details.startsWith(" ") && details.length() < 70) {
-                setProgressText(details);
-              }
-            }
-
-            @Override
-            void onSuccess(@NotNull ProcessEvent event) {
-              requestNextStep();
-            }
-
-            @Override
-            void onError(@NotNull ExecutionException event) {
-              showError("Error installing Flutter: " + event.getMessage());
-            }
-
-            @Override
-            void onError(@NotNull ProcessEvent event) {
-              showError("Error installing Flutter: " + event.getText() + " returned " + event.getExitCode());
-            }
-          });
-        }
-      });
+      setSdkPath(sdkDir);
+      runCommand(new GitCloneCommand(installPath, sdkDir));
     }
 
     @Override
@@ -234,28 +182,32 @@ class InstallSdkAction extends DumbAwareAction {
       return AllIcons.Actions.Download;
     }
 
-    private void runCommand(@NotNull GeneralCommandLine cmd, @NotNull CommandListener listener) {
+    private void runCommand(@NotNull InstallCommand cmd) {
       try {
-        handler = new OSProcessHandler(cmd);
+        handler = new OSProcessHandler(cmd.getCommandLine());
       }
       catch (ExecutionException e) {
-        listener.onError(e);
+        cmd.onError(e);
         return;
       }
-      listener.registerTo(handler);
+      cmd.registerTo(handler);
 
       handler.startNotify();
     }
 
-    private abstract class CommandListener {
-
-      CommandListener(@Nullable String title) {
-        setProgressText(title);
+    private abstract class InstallCommand {
+      InstallCommand() {
+        setProgressText(getTitle());
       }
+
+      @NotNull
+      abstract String getTitle();
+
+      @NotNull
+      abstract GeneralCommandLine getCommandLine();
 
       final void registerTo(OSProcessHandler handler) {
         handler.addProcessListener(new ProcessAdapter() {
-
           @Override
           public void startNotified(ProcessEvent event) {
             setInProgress(true);
@@ -276,7 +228,7 @@ class InstallSdkAction extends DumbAwareAction {
 
           @Override
           public void onTextAvailable(ProcessEvent event, Key outputType) {
-            CommandListener.this.onTextAvailable(event, outputType);
+            InstallCommand.this.onTextAvailable(event, outputType);
           }
         });
       }
@@ -291,6 +243,95 @@ class InstallSdkAction extends DumbAwareAction {
       }
 
       void onTextAvailable(ProcessEvent event, Key outputType) {
+      }
+    }
+
+    private class GitCloneCommand extends InstallCommand {
+      @NotNull private final String myInstallPath;
+      @NotNull private final String mySdkDir;
+
+      GitCloneCommand(final @NotNull String installPath, final @NotNull String sdkDir) {
+        myInstallPath = installPath;
+        mySdkDir = sdkDir;
+      }
+
+      @NotNull
+      @Override
+      GeneralCommandLine getCommandLine() {
+        return gitCommandBase().withWorkDirectory(myInstallPath)
+          .withParameters("clone", "-b", "alpha", "https://github.com/flutter/flutter.git");
+      }
+
+      @NotNull
+      @Override
+      String getTitle() {
+        return "Cloning Flutter repository…";
+      }
+
+      @Override
+      void onError(@NotNull ExecutionException exception) {
+        showError("Error cloning Flutter repository: " + exception.getMessage());
+      }
+
+      @Override
+      void onError(@NotNull ProcessEvent event) {
+        showError("Flutter SDK download canceled.");
+      }
+
+      @Override
+      protected void onSuccess(@NotNull ProcessEvent event) {
+        runCommand(new FlutterPrecacheCommand(mySdkDir));
+      }
+    }
+
+    private class FlutterPrecacheCommand extends InstallCommand {
+      @NotNull private final String mySdkDir;
+
+      FlutterPrecacheCommand(final @NotNull String sdkDir) {
+        mySdkDir = sdkDir;
+      }
+
+      @NotNull
+      @Override
+      GeneralCommandLine getCommandLine() {
+        final String flutterTool = FileUtil.toSystemDependentName(mySdkDir + "/bin/" + FlutterSdkUtil.flutterScriptName());
+        return new GeneralCommandLine().withParentEnvironmentType(
+          GeneralCommandLine.ParentEnvironmentType.CONSOLE).withWorkDirectory(mySdkDir)
+          .withExePath(flutterTool)
+          .withParameters("precache");
+      }
+
+      @NotNull
+      @Override
+      String getTitle() {
+        return "Running 'flutter precache'…";
+      }
+
+      @Override
+      void onTextAvailable(ProcessEvent event, Key outputType) {
+        final String details = event.getText();
+        // Filter out long messages and ones w/ leading whitespace.
+        // Conveniently, these are also the unfriendly ones.  For example:
+        // 6 57.9M    6 3838k    0     0  2978k      0  0:00:19  0:00:01  0:00:18 2978k
+        //TODO(pq): consider a more robust approach to filtering.
+        if (!details.startsWith(" ") && details.length() < 70) {
+          setProgressText(details);
+        }
+      }
+
+      @Override
+      void onSuccess(@NotNull ProcessEvent event) {
+        requestNextStep();
+      }
+
+      @Override
+      void onError(@NotNull ExecutionException event) {
+        showError("Error installing Flutter: " + event.getMessage());
+      }
+
+      @Override
+      void onError(@NotNull ProcessEvent event) {
+        showError("Error installing Flutter: " + event.getText() + " returned " + event.getExitCode());
       }
     }
 
