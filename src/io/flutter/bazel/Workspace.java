@@ -48,16 +48,6 @@ public class Workspace {
   }
 
   /**
-   * Returns true for a project that uses Flutter code within this workspace.
-   */
-  public boolean usesFlutter(@NotNull final Project project) {
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      if (usesFlutter(module)) return true;
-    }
-    return false;
-  }
-
-  /**
    * Returns true for a module that uses flutter code within this workspace.
    *
    * <p>This is determined by looking for content roots that match a pattern.

@@ -148,11 +148,7 @@ class DeviceDaemon {
   }
 
   private static boolean usesFlutter(@NotNull final Project project) {
-    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
-    if (workspace != null) {
-      return workspace.usesFlutter(project);
-    }
-    return FlutterModuleUtils.hasFlutterModule(project);
+    return FlutterModuleUtils.isFlutterBazelProject(project) || FlutterModuleUtils.hasFlutterModule(project);
   }
 
   /**

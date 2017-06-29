@@ -61,10 +61,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   public EditorNotificationPanel createNotificationPanel(@NotNull final VirtualFile file, @NotNull final FileEditor fileEditor) {
 
     // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
-    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
-    if (workspace != null && workspace.usesFlutter(project)) {
-      return null;
-    }
+    if (FlutterModuleUtils.isFlutterBazelProject(project)) return null;
 
     if (file.getFileType() != DartFileType.INSTANCE) return null;
 

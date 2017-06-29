@@ -7,7 +7,6 @@ package io.flutter.project;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IconProvider;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -15,8 +14,8 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
-import io.flutter.module.FlutterModuleType;
 import io.flutter.pub.PubRoot;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -30,8 +29,9 @@ public class FlutterIconProvider extends IconProvider {
 
   @Nullable
   public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
+    final boolean hasFlutterModule = FlutterModuleUtils.hasFlutterModule(element.getProject());
     // Directories.
-    if (element instanceof PsiDirectory && ModuleUtil.hasModulesOfType(element.getProject(), FlutterModuleType.getInstance())) {
+    if (hasFlutterModule && element instanceof PsiDirectory) {
       final VirtualFile file = ((PsiDirectory)element).getVirtualFile();
       if (!file.isInLocalFileSystem()) return null;
 
@@ -43,8 +43,8 @@ public class FlutterIconProvider extends IconProvider {
     }
 
     // Files.
-    if (element instanceof DartFile && ModuleUtil.hasModulesOfType(element.getProject(), FlutterModuleType.getInstance())) {
-      DartFile dartFile = (DartFile)element;
+    if (hasFlutterModule && element instanceof DartFile) {
+      final DartFile dartFile = (DartFile)element;
       final VirtualFile file = dartFile.getVirtualFile();
       if (!file.isInLocalFileSystem()) return null;
 

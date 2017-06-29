@@ -115,6 +115,9 @@ public class FlutterInitializer implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
+    // Convert all modules of deprecated type FlutterModuleType.
+    FlutterModuleUtils.convertFromDeprecatedModuleType(project);
+
     // Start watching for devices.
     DeviceService.getInstance(project);
 

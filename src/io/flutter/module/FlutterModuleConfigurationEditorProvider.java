@@ -11,17 +11,16 @@ import com.intellij.openapi.module.ModuleType;
 import com.intellij.openapi.roots.ui.configuration.CommonContentEntriesEditor;
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationEditorProvider;
 import com.intellij.openapi.roots.ui.configuration.ModuleConfigurationState;
+import io.flutter.utils.FlutterModuleUtils;
 
 public class FlutterModuleConfigurationEditorProvider implements ModuleConfigurationEditorProvider {
   @Override
   public ModuleConfigurationEditor[] createEditors(ModuleConfigurationState state) {
     final Module module = state.getRootModel().getModule();
 
-    if (ModuleType.get(module) != FlutterModuleType.getInstance()) {
+    if (ModuleType.get(module) != FlutterModuleUtils.getModuleTypeForFlutter()) {
       return ModuleConfigurationEditor.EMPTY;
     }
-    else {
-      return new ModuleConfigurationEditor[]{new CommonContentEntriesEditor(module.getName(), state)};
-    }
+    return new ModuleConfigurationEditor[]{new CommonContentEntriesEditor(module.getName(), state)};
   }
 }

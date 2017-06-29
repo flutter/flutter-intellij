@@ -365,9 +365,9 @@
     <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
 
     <!-- IDEA only -->
-    <moduleType id="FLUTTER_MODULE_TYPE" implementationClass="io.flutter.module.FlutterModuleType"/>
+    <moduleBuilder builderClass="io.flutter.module.FlutterModuleBuilder"/>
 
-    <!-- Small IDE support -->
+    <!-- Small IDE support (ex: WebStorm) -->
     <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>
 
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
@@ -397,7 +397,6 @@
 
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
-    <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
 
     <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
                     serviceImplementation="io.flutter.run.FlutterReloadManager"
