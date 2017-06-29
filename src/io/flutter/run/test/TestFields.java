@@ -28,33 +28,46 @@ import java.util.Map;
  */
 public class TestFields {
   @Nullable
+  private final String testName;
+
+  @Nullable
   private final String testFile;
 
   @Nullable
   private final String testDir;
 
-  private TestFields(@Nullable String testFile, @Nullable String testDir) {
+  private TestFields(@Nullable String testName, @Nullable String testFile, @Nullable String testDir) {
     if (testFile == null && testDir == null) {
       throw new IllegalArgumentException("either testFile or testDir must be non-null");
     } else if (testFile != null && testDir != null) {
       throw new IllegalArgumentException("either testFile or testDir must be null");
+    } else if (testName != null && testFile == null) {
+      throw new IllegalArgumentException("testName can only be specified along with a testFile");
     }
+    this.testName = testName;
     this.testFile = testFile;
     this.testDir = testDir;
+  }
+
+  /**
+   * Creates settings for running tests with the given name within a Dart file.
+   */
+  public static TestFields forTestName(String testName, String path) {
+    return new TestFields(testName, path, null);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
   public static TestFields forFile(String path) {
-    return new TestFields(path, null);
+    return new TestFields(null, path, null);
   }
 
   /**
    * Creates settings for running all the tests in directory.
    */
   public static TestFields forDir(String path) {
-    return new TestFields(null, path);
+    return new TestFields(null, null, path);
   }
 
   /**
@@ -62,7 +75,21 @@ public class TestFields {
    */
   @NotNull
   public Scope getScope() {
-    return testFile != null ? Scope.FILE : Scope.DIRECTORY;
+    if (testName != null) {
+      return Scope.NAME;
+    } else if (testFile != null) {
+        return Scope.FILE;
+    } else {
+        return Scope.DIRECTORY;
+    }
+  }
+
+  /**
+   * If not null, tests will only be run if their name contains this string.
+   */
+  @Nullable
+  public String getTestName() {
+    return testName;
   }
 
   /**
@@ -139,6 +166,7 @@ public class TestFields {
   }
 
   void writeTo(Element elt) {
+    addOption(elt, "testName", testName);
     addOption(elt, "testFile", testFile);
     addOption(elt, "testDir", testDir);
   }
@@ -150,10 +178,11 @@ public class TestFields {
   static TestFields readFrom(Element elt) throws InvalidDataException {
     final Map<String, String> options = readOptions(elt);
 
+    final String testName = options.get("testName");
     final String testFile = options.get("testFile");
     final String testDir = options.get("testDir");
     try {
-      return new TestFields(testFile, testDir);
+      return new TestFields(testName, testFile, testDir);
     } catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());
     }
@@ -183,12 +212,14 @@ public class TestFields {
       throw new ExecutionException("File or directory not found");
     }
 
+    final String testName = getTestName();
+
     final PubRoot root = getPubRoot(project);
     if (root == null) {
       throw new ExecutionException("Test file isn't within a Flutter pub root");
     }
 
-    return sdk.flutterTest(root, fileOrDir, mode).startProcess(project);
+    return sdk.flutterTest(root, fileOrDir, testName, mode).startProcess(project);
   }
 
   private void checkSdk(@NotNull Project project) throws RuntimeConfigurationError {
@@ -224,6 +255,17 @@ public class TestFields {
    * Selects which tests to run.
    */
   public enum Scope {
+    NAME("Tests in file, filtered by name") {
+      @Override
+      public void checkRunnable(@NotNull TestFields fields, @NotNull Project project) throws RuntimeConfigurationError {
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+        if (sdk != null && !sdk.getVersion().flutterTestSupportsFiltering()) {
+          throw new RuntimeConfigurationError("Flutter SDK is too old to filter tests by name");
+        }
+        FILE.checkRunnable(fields, project);
+      }
+    },
+
     FILE("All in file") {
       @Override
       public void checkRunnable(@NotNull TestFields fields, @NotNull Project project) throws RuntimeConfigurationError {

@@ -17,7 +17,20 @@ import static org.junit.Assert.assertEquals;
 public class TestFieldsTest {
 
   @Test
-  public void shouldReadFileFieldsFromXml() {
+  public void shouldReadNameScopeFieldsFromXml() {
+    final Element elt = new Element("test");
+    addOption(elt, "testName", "should work");
+    addOption(elt, "testFile", "hello_test.dart");
+
+    final TestFields after = TestFields.readFrom(elt);
+    assertEquals(Scope.NAME, after.getScope());
+    assertEquals("should work", after.getTestName());
+    assertEquals("hello_test.dart", after.getTestFile());
+    assertEquals(null, after.getTestDir());
+  }
+
+  @Test
+  public void shouldReadFileScopeFieldsFromXml() {
     final Element elt = new Element("test");
     addOption(elt, "testFile", "hello_test.dart");
 
@@ -28,7 +41,7 @@ public class TestFieldsTest {
   }
 
   @Test
-  public void shouldReadDirectoryFieldsFromXml() {
+  public void shouldReadDirectoryScopeFieldsFromXml() {
     final Element elt = new Element("test");
     addOption(elt, "testDir", "test/dir");
 
@@ -39,7 +52,19 @@ public class TestFieldsTest {
   }
 
   @Test
-  public void roundTripShouldPreserveFileSettings() {
+  public void roundTripShouldPreserveNameScopeSettings() {
+    final Element elt = new Element("test");
+    TestFields.forTestName("should work", "hello_test.dart").writeTo(elt);
+
+    final TestFields after = TestFields.readFrom(elt);
+    assertEquals(Scope.NAME, after.getScope());
+    assertEquals("should work", after.getTestName());
+    assertEquals("hello_test.dart", after.getTestFile());
+    assertEquals(null, after.getTestDir());
+  }
+
+  @Test
+  public void roundTripShouldPreserveFileScopeSettings() {
     final Element elt = new Element("test");
     TestFields.forFile("hello_test.dart").writeTo(elt);
 
@@ -50,7 +75,7 @@ public class TestFieldsTest {
   }
 
   @Test
-  public void roundTripShouldPreserveDirectorySettings() {
+  public void roundTripShouldPreserveDirectoryScopeSettings() {
     final Element elt = new Element("test");
     TestFields.forDir("test/dir").writeTo(elt);
 
