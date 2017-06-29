@@ -25,6 +25,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 
 // TODO(devoncarew) WebProjectGenerator.GeneratorPeer is deprecated and will be removed in 2017.3.
+// (and replaced with DirectoryProjectGenerator)
 
 public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.GeneratorPeer<String> {
   private JPanel myMainPanel;
