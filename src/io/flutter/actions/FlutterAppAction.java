@@ -19,8 +19,8 @@ import javax.swing.*;
 abstract public class FlutterAppAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(FlutterAppAction.class);
 
-  private final @NotNull FlutterApp myApp;
-  private final Computable<Boolean> myIsApplicable;
+  @NotNull private final FlutterApp myApp;
+  @NotNull private final Computable<Boolean> myIsApplicable;
   private final FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
@@ -30,10 +30,10 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   private boolean myIsListening = false;
 
   public FlutterAppAction(@NotNull FlutterApp app,
-                          String text,
-                          String description,
-                          Icon icon,
-                          Computable<Boolean> isApplicable,
+                          @NotNull String text,
+                          @NotNull String description,
+                          @NotNull Icon icon,
+                          @NotNull Computable<Boolean> isApplicable,
                           @NotNull String actionId) {
     super(text, description, icon);
     myApp = app;
@@ -70,7 +70,8 @@ abstract public class FlutterAppAction extends DumbAwareAction {
     }
   }
 
-  @NotNull FlutterApp getApp() {
+  @NotNull
+  FlutterApp getApp() {
     return myApp;
   }
 }

@@ -14,6 +14,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterApp;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
 
@@ -23,7 +24,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
   public static final String TEXT = FlutterBundle.message("app.reload.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.reload.action.description");
 
-  public ReloadFlutterApp(FlutterApp app, Computable<Boolean> isApplicable) {
+  public ReloadFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
     super(app, TEXT, DESCRIPTION, FlutterIcons.HotReload, isApplicable, ID);
     // Shortcut is associated with toolbar action.
     copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAction"));

@@ -123,11 +123,11 @@ class DeviceDaemon {
     final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
 
     // See if the Bazel workspace provides a script.
-    final Workspace w = WorkspaceCache.getInstance(project).getNow();
-    if (w != null) {
-      final String script = w.getDaemonScript();
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace != null) {
+      final String script = workspace.getDaemonScript();
       if (script != null) {
-        return new Command(w.getRoot().getPath(), script, ImmutableList.of(), androidHome);
+        return new Command(workspace.getRoot().getPath(), script, ImmutableList.of(), androidHome);
       }
     }
 
@@ -152,9 +152,7 @@ class DeviceDaemon {
     if (workspace != null) {
       return workspace.usesFlutter(project);
     }
-    else {
-      return FlutterModuleUtils.hasFlutterModule(project);
-    }
+    return FlutterModuleUtils.hasFlutterModule(project);
   }
 
   /**
