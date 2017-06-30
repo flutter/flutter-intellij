@@ -7,7 +7,6 @@ package io.flutter.inspections;
 
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
 import com.intellij.codeInspection.*;
-import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -18,7 +17,6 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.psi.DartFile;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
@@ -83,7 +81,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
   }
 
   private interface SdkAction {
-    void run(FlutterSdk sdk, @NotNull PubRoot root, @NotNull Project project) throws ExecutionException;
+    void run(FlutterSdk sdk, @NotNull PubRoot root, @NotNull Project project);
   }
 
   private static class PackageUpdateFix extends IntentionAndQuickFixAction {
@@ -120,12 +118,8 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
       final PubRoot root = PubRoot.forPsiFile(psiFile);
       if (root == null) return;
 
-      try {
-        // TODO(skybrian) analytics?
-        mySdkAction.run(sdk, root, project);
-      } catch (ExecutionException e) {
-        FlutterMessages.showError("Error performing action", e.getMessage());
-      }
+      // TODO(skybrian) analytics?
+      mySdkAction.run(sdk, root, project);
     }
   }
 
