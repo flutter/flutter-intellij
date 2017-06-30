@@ -39,9 +39,11 @@ public class TestFields {
   private TestFields(@Nullable String testName, @Nullable String testFile, @Nullable String testDir) {
     if (testFile == null && testDir == null) {
       throw new IllegalArgumentException("either testFile or testDir must be non-null");
-    } else if (testFile != null && testDir != null) {
+    }
+    else if (testFile != null && testDir != null) {
       throw new IllegalArgumentException("either testFile or testDir must be null");
-    } else if (testName != null && testFile == null) {
+    }
+    else if (testName != null && testFile == null) {
       throw new IllegalArgumentException("testName can only be specified along with a testFile");
     }
     this.testName = testName;
@@ -77,10 +79,12 @@ public class TestFields {
   public Scope getScope() {
     if (testName != null) {
       return Scope.NAME;
-    } else if (testFile != null) {
-        return Scope.FILE;
-    } else {
-        return Scope.DIRECTORY;
+    }
+    else if (testFile != null) {
+      return Scope.FILE;
+    }
+    else {
+      return Scope.DIRECTORY;
     }
   }
 
@@ -148,6 +152,10 @@ public class TestFields {
   public String getSuggestedName(@NotNull Project project, @NotNull String defaultName) {
 
     switch (getScope()) {
+      case NAME:
+        final String name = getTestName();
+        if (name == null) return defaultName;
+        return name;
       case FILE:
         final VirtualFile file = getFileOrDir();
         if (file == null) return defaultName;
@@ -159,7 +167,7 @@ public class TestFields {
         // check if it's the pub root itself.
         final PubRoot root = getPubRoot(project);
         if (root != null && root.getRoot().equals(getFileOrDir())) {
-          return "All tests in " + root.getRoot().getName();
+          return "all tests in " + root.getRoot().getName();
         }
     }
     return defaultName;
@@ -183,7 +191,8 @@ public class TestFields {
     final String testDir = options.get("testDir");
     try {
       return new TestFields(testName, testFile, testDir);
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());
     }
   }
