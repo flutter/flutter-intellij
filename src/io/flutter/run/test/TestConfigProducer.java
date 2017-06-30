@@ -65,7 +65,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
     final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
     if (root == null) return false;
-    
+
     if (!FlutterModuleUtils.hasFlutterModule(dir.getProject())) return false;
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
@@ -80,7 +80,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   public boolean isConfigurationFromContext(TestConfig config, ConfigurationContext context) {
-    if ( config.getFields().getScope() == TestFields.Scope.NAME) {
+    if (config.getFields().getScope() == TestFields.Scope.NAME) {
       return false;
     }
 
@@ -88,9 +88,10 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     if (fileOrDir == null) return false;
 
     final PsiElement target = context.getPsiLocation();
-    if (target instanceof  PsiDirectory) {
+    if (target instanceof PsiDirectory) {
       return ((PsiDirectory)target).getVirtualFile().equals(fileOrDir);
-    } else {
+    }
+    else {
       return FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath());
     }
   }

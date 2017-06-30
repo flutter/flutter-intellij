@@ -33,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * A launcher that starts a process to run flutter tests, created from a run configuration.
  */
-class TestLaunchState extends CommandLineState  {
+class TestLaunchState extends CommandLineState {
   @NotNull
   private final TestConfig config;
 
@@ -49,7 +49,7 @@ class TestLaunchState extends CommandLineState  {
   private final boolean testConsoleEnabled;
 
   private TestLaunchState(@NotNull ExecutionEnvironment env, @NotNull TestConfig config, @NotNull VirtualFile testFileOrDir,
-                         @NotNull PubRoot pubRoot, boolean testConsoleEnabled) {
+                          @NotNull PubRoot pubRoot, boolean testConsoleEnabled) {
     super(env);
     this.config = config;
     this.fields = config.getFields();
@@ -68,13 +68,13 @@ class TestLaunchState extends CommandLineState  {
     }
 
     final VirtualFile fileOrDir = fields.getFileOrDir();
-    assert(fileOrDir != null);
+    assert (fileOrDir != null);
 
     final PubRoot pubRoot = fields.getPubRoot(env.getProject());
-    assert(pubRoot != null);
+    assert (pubRoot != null);
 
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(env.getProject());
-    assert(sdk != null);
+    assert (sdk != null);
     final boolean testConsoleEnabled = sdk.getVersion().flutterTestSupportsMachineMode();
 
     final TestLaunchState launcher = new TestLaunchState(env, config, fileOrDir, pubRoot, testConsoleEnabled);
@@ -145,5 +145,4 @@ class TestLaunchState extends CommandLineState  {
       return null; // TODO(skybrian) implement
     }
   }
-
 }

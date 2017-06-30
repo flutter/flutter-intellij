@@ -51,7 +51,7 @@ public class DebugTestRunner extends GenericProgramRunner {
       return false;
     }
 
-    final TestConfig config = (TestConfig) profile;
+    final TestConfig config = (TestConfig)profile;
     return config.getFields().getScope() == TestFields.Scope.FILE;
   }
 
@@ -59,7 +59,7 @@ public class DebugTestRunner extends GenericProgramRunner {
   @Override
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
     throws ExecutionException {
-    return runInDebugger((TestLaunchState) state, env);
+    return runInDebugger((TestLaunchState)state, env);
   }
 
   protected RunContentDescriptor runInDebugger(@NotNull TestLaunchState launcher, @NotNull ExecutionEnvironment env)

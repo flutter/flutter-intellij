@@ -77,7 +77,9 @@ public class WrongModuleTypeNotificationProvider extends EditorNotifications.Pro
   public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
     if (!FlutterUtils.isFlutteryFile(file)) return null;
     final Module module = ModuleUtilCore.findModuleForFile(file, myProject);
-    if (module == null || FlutterModuleUtils.isFlutterModule(module) || getIgnoredModules(myProject).contains(module.getName())) return null;
+    if (module == null || FlutterModuleUtils.isFlutterModule(module) || getIgnoredModules(myProject).contains(module.getName())) {
+      return null;
+    }
     return FlutterModuleUtils.usesFlutter(module) ? createPanel(myProject, module) : null;
   }
 }

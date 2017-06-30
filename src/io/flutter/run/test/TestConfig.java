@@ -52,7 +52,7 @@ public class TestConfig extends LocatableConfigurationBase {
 
   @Override
   public RunConfiguration clone() {
-    final TestConfig result = (TestConfig) super.clone();
+    final TestConfig result = (TestConfig)super.clone();
     result.fields = fields;
     return result;
   }
