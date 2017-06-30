@@ -52,7 +52,7 @@ public class DebugTestRunner extends GenericProgramRunner {
     }
 
     final TestConfig config = (TestConfig) profile;
-    return config.getFields().getScope() == TestFields.Scope.FILE;
+    return config.getFields().getScope() != TestFields.Scope.DIRECTORY;
   }
 
   @Nullable
