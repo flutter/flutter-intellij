@@ -22,6 +22,7 @@ import java.io.File;
 import static com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse;
 import static io.flutter.run.test.TestFields.Scope.DIRECTORY;
 import static io.flutter.run.test.TestFields.Scope.FILE;
+import static io.flutter.run.test.TestFields.Scope.NAME;
 
 /**
  * Settings editor for running Flutter tests.
@@ -37,10 +38,13 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private JLabel testFileLabel;
   private TextFieldWithBrowseButton testFile;
 
+  private JLabel testNameLabel;
+  private JTextField testName;
+
   private Scope displayedScope;
 
   TestForm(@NotNull Project project) {
-    scope.setModel(new DefaultComboBoxModel<>(new Scope[]{DIRECTORY, FILE}));
+    scope.setModel(new DefaultComboBoxModel<>(new Scope[]{DIRECTORY, FILE, NAME}));
     scope.addActionListener((ActionEvent e) -> {
       final Scope next = getScope();
       updateFields(next);
@@ -74,6 +78,9 @@ public class TestForm extends SettingsEditor<TestConfig> {
     final Scope next = fields.getScope();
     scope.setSelectedItem(next);
     switch (next) {
+      case NAME:
+        testName.setText(fields.getTestName());
+        // fallthrough
       case FILE:
         testFile.setText(fields.getTestFile());
         break;
@@ -88,6 +95,9 @@ public class TestForm extends SettingsEditor<TestConfig> {
   protected void applyEditorTo(@NotNull TestConfig config) throws ConfigurationException {
     final TestFields fields;
     switch (getScope()) {
+      case NAME:
+        fields = TestFields.forTestName(testName.getText(), testFile.getText());
+        break;
       case FILE:
         fields = TestFields.forFile(testFile.getText());
         break;
@@ -110,7 +120,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
    * a suitable default.
    */
   private void updateFields(Scope next) {
-    if (next == Scope.DIRECTORY && displayedScope == Scope.FILE) {
+    if (next == Scope.DIRECTORY && displayedScope != Scope.DIRECTORY) {
       final String sep = String.valueOf(File.separatorChar);
 
       final String path = testFile.getText();
@@ -122,7 +132,7 @@ public class TestForm extends SettingsEditor<TestConfig> {
         testDir.setText(path);
       }
 
-    } else if (next == Scope.FILE && displayedScope == Scope.DIRECTORY) {
+    } else if (next != Scope.DIRECTORY && displayedScope == Scope.DIRECTORY) {
       if (testFile.getText().isEmpty()) {
         testFile.setText(testDir.getText());
       }
@@ -137,8 +147,11 @@ public class TestForm extends SettingsEditor<TestConfig> {
     testDirLabel.setVisible(next == Scope.DIRECTORY);
     testDir.setVisible(next == Scope.DIRECTORY);
 
-    testFileLabel.setVisible(next == Scope.FILE);
-    testFile.setVisible(next == Scope.FILE);
+    testFileLabel.setVisible(next != Scope.DIRECTORY);
+    testFile.setVisible(next != Scope.DIRECTORY);
+
+    testNameLabel.setVisible(next == Scope.NAME);
+    testName.setVisible(next == Scope.NAME);
 
     displayedScope = next;
   }

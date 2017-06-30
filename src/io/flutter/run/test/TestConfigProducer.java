@@ -80,6 +80,10 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   public boolean isConfigurationFromContext(TestConfig config, ConfigurationContext context) {
+    if ( config.getFields().getScope() == TestFields.Scope.NAME) {
+      return false;
+    }
+
     final VirtualFile fileOrDir = config.getFields().getFileOrDir();
     if (fileOrDir == null) return false;
 

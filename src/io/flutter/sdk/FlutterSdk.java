@@ -147,7 +147,8 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @NotNull RunMode mode) {
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
+                                    @NotNull RunMode mode) {
 
     final List<String> args = new ArrayList<>();
     if (myVersion.flutterTestSupportsMachineMode()) {
@@ -162,6 +163,13 @@ public class FlutterSdk {
     }
     if (FlutterInitializer.isVerboseLogging()) {
       args.add("--verbose");
+    }
+    if (testNameSubstring != null) {
+      if (!myVersion.flutterTestSupportsFiltering()) {
+        throw new IllegalStateException("Flutter SDK is too old to select tests by name");
+      }
+      args.add("--plain-name");
+      args.add(testNameSubstring);
     }
 
     if (!root.getRoot().equals(fileOrDir)) {
