@@ -12,10 +12,9 @@ import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.jetbrains.lang.dart.DartTokenTypes;
 import com.jetbrains.lang.dart.psi.*;
 import io.flutter.dart.DartPlugin;
+import io.flutter.dart.DartSyntax;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
@@ -60,56 +59,15 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    * Returns the name of the test containing this element, or null if it can't be calculated.
    */
   private String findTestName(@Nullable PsiElement elt) {
-    while (elt != null) {
-      // Look for a call expression: test("something", ...);
-      if (elt instanceof DartCallExpression) {
-        final DartCallExpression call = (DartCallExpression) elt;
-        final String name = getCalledFunctionName(call);
-        if (name != null && name.equals("test")) {
-          final DartStringLiteralExpression lit = getFirstArgumentIfStringLiteral(call);
-          if (lit == null) return null;
-          return getStringIfNotTemplate(lit);
-        }
-      }
-      elt = elt.getParent();
-    }
-    return null; // not found
-  }
+    if (elt == null) return null;
 
-  @Nullable
-  private String getCalledFunctionName(@NotNull DartCallExpression call) {
-    if (!(call.getFirstChild() instanceof DartReference)) return null;
-    return call.getFirstChild().getText();
-  }
+    final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(elt, "test");
+    if (call == null) return null;
 
-  @Nullable
-  private DartStringLiteralExpression getFirstArgumentIfStringLiteral(@NotNull DartCallExpression call) {
-    if (call.getArguments() == null) return null;
+    final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
+    if (lit == null) return null;
 
-    final DartArgumentList list = call.getArguments().getArgumentList();
-    if (list == null) return null;
-
-    final DartExpression first = list.getExpressionList().get(0);
-    if (first instanceof DartStringLiteralExpression) {
-      return (DartStringLiteralExpression)first;
-    }
-    return null;
-  }
-
-  @Nullable
-  private String getStringIfNotTemplate(@NotNull DartStringLiteralExpression expr) {
-    if (!expr.getShortTemplateEntryList().isEmpty() || !expr.getLongTemplateEntryList().isEmpty()) {
-      return null; // is a template
-    }
-    // We expect a quote, string part, quote.
-    if (expr.getFirstChild() == null) return null;
-    final PsiElement second = expr.getFirstChild().getNextSibling();
-    if (second.getNextSibling() != expr.getLastChild()) return null; // not three items
-    if (!(second instanceof LeafPsiElement)) return null;
-    final LeafPsiElement leaf = (LeafPsiElement) second;
-
-    if (leaf.getElementType() != DartTokenTypes.REGULAR_STRING_PART) return null;
-    return leaf.getText();
+    return DartSyntax.unquote(lit);
   }
 
   private boolean setupForSingleTest(TestConfig config, ConfigurationContext context, DartFile file, String testName) {
