@@ -13,6 +13,7 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
+import io.flutter.sdk.FlutterSdk;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,6 +73,11 @@ public class TestConfig extends LocatableConfigurationBase {
   @Override
   public void checkConfiguration() throws RuntimeConfigurationException {
     fields.checkRunnable(getProject());
+  }
+
+  @Nullable
+  public FlutterSdk getSdk() {
+    return FlutterSdk.getFlutterSdk(getProject());
   }
 
   @NotNull

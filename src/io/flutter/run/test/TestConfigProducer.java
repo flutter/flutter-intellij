@@ -12,11 +12,14 @@ import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.lang.dart.psi.*;
+import com.jetbrains.lang.dart.psi.DartCallExpression;
+import com.jetbrains.lang.dart.psi.DartFile;
+import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartPlugin;
 import io.flutter.dart.DartSyntax;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,12 +50,18 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
       return false;
     }
 
-    final String testName = findTestName(elt);
-    if (testName != null) {
-      return setupForSingleTest(config, context, file, testName);
+    if (supportsFiltering(config.getSdk())) {
+      final String testName = findTestName(elt);
+      if (testName != null) {
+        return setupForSingleTest(config, context, file, testName);
+      }
     }
 
     return setupForDartFile(config, context, file);
+  }
+
+  private boolean supportsFiltering(@Nullable FlutterSdk sdk) {
+    return sdk != null && sdk.getVersion().flutterTestSupportsFiltering();
   }
 
   /**
@@ -108,7 +117,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
     final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
     if (root == null) return false;
-    
+
     if (!FlutterModuleUtils.hasFlutterModule(dir.getProject())) return false;
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
@@ -136,7 +145,8 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     final String testName = findTestName(context.getPsiLocation());
     if (config.getFields().getScope() == TestFields.Scope.NAME) {
       if (testName == null || !testName.equals(config.getFields().getTestName())) return false;
-    } else {
+    }
+    else {
       if (testName != null) return false;
     }
 
