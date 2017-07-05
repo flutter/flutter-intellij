@@ -78,6 +78,7 @@ public class FlutterSdkVersion {
     return version.compareTo(MIN_TEST_MACHINE_MODE.version) >= 0;
   }
 
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean flutterTestSupportsFiltering() {
     return version.compareTo(MIN_TEST_FILTERING.version) >= 0;
   }
