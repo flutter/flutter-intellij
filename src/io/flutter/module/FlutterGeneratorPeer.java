@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.ComboBox;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.ValidationInfo;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
@@ -88,6 +89,8 @@ public class FlutterGeneratorPeer {
     });
 
     myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
+    myInstallActionLink.setDisabledIcon(IconLoader.getDisabledIcon(myInstallSdkAction.getLinkIcon()));
+
     myInstallActionLink.setText(myInstallSdkAction.getLinkText());
 
     //noinspection unchecked
@@ -125,7 +128,8 @@ public class FlutterGeneratorPeer {
     }
     errorIcon.setVisible(info != null);
     errorPane.setVisible(info != null);
-    myInstallActionLink.setVisible(info != null || getSdkComboPath().trim().isEmpty());
+
+    myInstallActionLink.setEnabled(info != null || getSdkComboPath().trim().isEmpty());
 
     return info == null;
   }
