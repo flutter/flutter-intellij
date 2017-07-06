@@ -107,6 +107,9 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.add(new NoDevicesAction(message));
     }
 
+    // Show simulator and emulator actions.
+    final List<AnAction> additionalActions = new ArrayList<>();
+
     // Show the 'Open iOS Simulator' action.
     if (SystemInfo.isMac) {
       boolean simulatorOpen = false;
@@ -120,15 +123,20 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
         }
       }
 
-      actions.add(new Separator());
-      actions.add(new OpenSimulatorAction(!simulatorOpen));
+      additionalActions.add(new OpenSimulatorAction(!simulatorOpen));
     }
 
     // Add Open Android emulators actions.
     final List<OpenEmulatorAction> emulatorActions = OpenEmulatorAction.getEmulatorActions(project);
     if (!emulatorActions.isEmpty()) {
+      final DefaultActionGroup group = new DefaultActionGroup("Open Android Emulators", true);
+      group.addAll(emulatorActions);
+      additionalActions.add(group);
+    }
+
+    if (!additionalActions.isEmpty()) {
       actions.add(new Separator());
-      actions.addAll(emulatorActions);
+      actions.addAll(additionalActions);
     }
 
     final FlutterDevice selectedDevice = service.getSelectedDevice();
