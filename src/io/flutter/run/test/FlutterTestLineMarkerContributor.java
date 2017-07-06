@@ -13,19 +13,16 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.Function;
 import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.lang.dart.psi.DartCallExpression;
 import io.flutter.dart.DartSyntax;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Objects;
 
 
 public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    if (isTestCall(element)) {
+    if (DartSyntax.isTestCall(element)) {
       final AnAction[] actions = ExecutorAction.getActions();
       final Function<PsiElement, String> tooltipProvider =
         psiElement -> StringUtil.join(ContainerUtil.mapNotNull(actions, action -> getText(action, element)), "\n");
@@ -33,13 +30,5 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
     }
 
     return null;
-  }
-
-  private static boolean isTestCall(PsiElement element) {
-    //TODO(pq): ensure we're in a 'package:test' context.
-    //TODO(pq): add support for "testWidgets".
-    if (!(element instanceof DartCallExpression)) return false;
-    final String name = DartSyntax.getCalledFunctionName((DartCallExpression)element);
-    return Objects.equals(name, "test");
   }
 }
