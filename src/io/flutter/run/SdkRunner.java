@@ -5,8 +5,6 @@
  */
 package io.flutter.run;
 
-import com.intellij.openapi.project.Project;
-import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +25,6 @@ public class SdkRunner extends LaunchState.Runner<SdkRunConfig> {
 
   @Override
   public boolean canRun(SdkRunConfig config) {
-    final Project project = config.getProject();
-    return FlutterSdk.getFlutterSdk(project) != null && DeviceService.getInstance(project).getSelectedDevice() != null;
+    return FlutterSdk.getFlutterSdk(config.getProject()) != null;
   }
 }
