@@ -63,7 +63,7 @@ public class FlutterUtils {
 
     if (!FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()))) return false;
 
-    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(file, false);
+    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(file, false, false);
     if (candidate == null) return false;
 
     final String relativePath = root.getRelativePath(candidate);

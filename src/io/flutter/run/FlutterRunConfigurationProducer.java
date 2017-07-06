@@ -84,14 +84,14 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   @Nullable
   public static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context, boolean requireFlutterImport, boolean omitTests) {
     final DartFile dart = getDartFile(context);
-    return getFlutterEntryFile(dart, requireFlutterImport);
+    return getFlutterEntryFile(dart, requireFlutterImport, omitTests);
   }
 
   /**
    * Returns the corresponding virtual file containing a Flutter app's main() function, or null if not a match.
    */
   @Nullable
-  public static VirtualFile getFlutterEntryFile(final @Nullable DartFile dart , boolean requireFlutterImport) {
+  public static VirtualFile getFlutterEntryFile(final @Nullable DartFile dart , boolean requireFlutterImport, boolean omitTests) {
     if (dart == null) return null;
 
     if (DartResolveUtil.getMainFunction(dart) == null) return null;
