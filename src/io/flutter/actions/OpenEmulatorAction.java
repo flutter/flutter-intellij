@@ -25,6 +25,7 @@ public class OpenEmulatorAction extends AnAction {
     }
 
     final List<AndroidEmulator> emulators = sdk.getEmulators();
+    emulators.sort((emulator1, emulator2) -> emulator1.getName().compareToIgnoreCase(emulator2.getName()));
     return emulators.stream().map(OpenEmulatorAction::new).collect(toList());
   }
 
