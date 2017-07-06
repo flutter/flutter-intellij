@@ -7,6 +7,7 @@ package io.flutter.run.daemon;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -223,6 +224,19 @@ public class DeviceService {
       LOG.error(e);
       return previous; // Couldn't start a new one so don't shut it down.
     }
+  }
+
+  public void restart() {
+    if (project.isDisposed()) return;
+
+    deviceDaemon.refresh(this::shutDownDaemon);
+
+    JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 1, TimeUnit.SECONDS);
+  }
+
+  private DeviceDaemon shutDownDaemon(Refreshable.Request<DeviceDaemon> request) {
+    // Return null to indicate that a shutdown is requested.
+    return null;
   }
 
   public enum State {INACTIVE, LOADING, READY}

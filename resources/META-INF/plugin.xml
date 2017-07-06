@@ -246,7 +246,7 @@
     <group id="FlutterToolsActionGroup" class="io.flutter.actions.FlutterToolsActionGroup" popup="true"
            text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter">
       <add-to-group group-id="ToolsMenu" anchor="last"/>
-      <action id="flutter.gettingStarted" class="io.flutter.actions.FlutterGettingStarted"
+      <action id="flutter.gettingStarted" class="io.flutter.actions.FlutterGettingStartedAction"
               text="Getting Started"
               description="View the online getting started documentation"/>
       <separator/>
@@ -332,8 +332,12 @@
     </group>
 
     <!-- help menu -->
-    <action class="io.flutter.actions.FlutterGettingStarted" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
+    <action class="io.flutter.actions.FlutterGettingStartedAction" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
       <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
+    </action>
+
+    <action id="io.flutter.RestartDaemon" class="io.flutter.actions.RestartFlutterDaemonAction"
+            text="Restart Flutter Daemon" description="Restart Flutter Daemon" icon="FlutterIcons.Flutter">
     </action>
   </actions>
 

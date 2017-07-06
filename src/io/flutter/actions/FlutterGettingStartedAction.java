@@ -11,7 +11,7 @@ import com.intellij.openapi.project.DumbAwareAction;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
-public class FlutterGettingStarted extends DumbAwareAction {
+public class FlutterGettingStartedAction extends DumbAwareAction {
   @Override
   public void actionPerformed(@NotNull final AnActionEvent e) {
     FlutterInitializer.sendAnalyticsAction(this);
