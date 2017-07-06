@@ -103,9 +103,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     final PubRoot root = PubRoot.forPsiFile(file);
     if (root == null) return null;
 
-    if (!FlutterModuleUtils.isFlutterModule(context.getModule())) return null;
-
-    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false);
+    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
     final String relativePath = root.getRelativePath(candidate);
