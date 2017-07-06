@@ -86,7 +86,7 @@ public class DartSyntax {
   }
 
   @Nullable
-  private static String getCalledFunctionName(@NotNull DartCallExpression call) {
+  public static String getCalledFunctionName(@NotNull DartCallExpression call) {
     if (!(call.getFirstChild() instanceof DartReference)) return null;
     return call.getFirstChild().getText();
   }
