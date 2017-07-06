@@ -70,7 +70,6 @@ public class FlutterUtils {
     return relativePath != null && relativePath.startsWith("test/");
   }
 
-
   @Nullable
   public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
