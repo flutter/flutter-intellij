@@ -21,11 +21,21 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class DartSyntaxTest {
 
   @Rule
   public final ProjectFixture fixture = Testing.makeCodeInsightModule();
+
+  @Test
+  public void isTestCall() throws Exception {
+    Testing.runOnDispatchThread(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { test('my first test', () {} ); }", "test", LeafPsiElement.class);
+      final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(testIdentifier, "test");
+      assertTrue(DartSyntax.isTestCall(call));
+    });
+  }
 
   @Test
   public void shouldFindEnclosingFunctionCall() throws Exception {

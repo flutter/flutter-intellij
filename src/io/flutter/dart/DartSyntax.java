@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Finds Dart PSI elements in IntelliJ's syntax tree.
@@ -62,6 +63,20 @@ public class DartSyntax {
     catch (ClassCastException e) {
       return null;
     }
+  }
+
+  /**
+   * Check if the given element is a call to a flutter test.
+   *
+   * @param element the element to check
+   * @return true if the given element is a test call, false otherwise
+   */
+  public static boolean isTestCall(@Nullable PsiElement element) {
+    //TODO(pq): ensure we're in a 'package:test' context.
+    //TODO(pq): add support for "testWidgets".
+    if (!(element instanceof DartCallExpression)) return false;
+    final String name = getCalledFunctionName((DartCallExpression)element);
+    return Objects.equals(name, "test");
   }
 
   /**

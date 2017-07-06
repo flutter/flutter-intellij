@@ -16,7 +16,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
+import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.FlutterRunConfigurationProducer;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +55,19 @@ public class FlutterUtils {
 
   public static boolean exists(@Nullable VirtualFile file) {
     return file != null && file.exists();
+  }
+
+  public static boolean isInTestDir(DartFile file) {
+    final PubRoot root = PubRoot.forPsiFile(file);
+    if (root == null) return false;
+
+    if (!FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()))) return false;
+
+    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(file, false, false);
+    if (candidate == null) return false;
+
+    final String relativePath = root.getRelativePath(candidate);
+    return relativePath != null && relativePath.startsWith("test/");
   }
 
   @Nullable

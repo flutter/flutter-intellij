@@ -84,6 +84,14 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
   @Nullable
   public static VirtualFile getFlutterEntryFile(final @NotNull ConfigurationContext context, boolean requireFlutterImport, boolean omitTests) {
     final DartFile dart = getDartFile(context);
+    return getFlutterEntryFile(dart, requireFlutterImport, omitTests);
+  }
+
+  /**
+   * Returns the corresponding virtual file containing a Flutter app's main() function, or null if not a match.
+   */
+  @Nullable
+  public static VirtualFile getFlutterEntryFile(final @Nullable DartFile dart, boolean requireFlutterImport, boolean omitTests) {
     if (dart == null) return null;
 
     if (DartResolveUtil.getMainFunction(dart) == null) return null;
@@ -104,7 +112,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
     final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
     if (virtual == null) return null;
 
-    if (!ProjectRootManager.getInstance(context.getProject()).getFileIndex().isInContent(virtual)) {
+    if (!ProjectRootManager.getInstance(dart.getProject()).getFileIndex().isInContent(virtual)) {
       return null;
     }
 
@@ -132,7 +140,13 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
    * Returns the Dart file at the current location, or null if not a match.
    */
   public static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
-    final PsiElement elt = context.getPsiLocation();
+    return getDartFile(context.getPsiLocation());
+  }
+
+  /**
+   * Returns the Dart file for the given PsiElement, or null if not a match.
+   */
+  public static @Nullable DartFile getDartFile(final @Nullable PsiElement elt) {
     if (elt == null) return null;
 
     final PsiFile psiFile = elt.getContainingFile();
