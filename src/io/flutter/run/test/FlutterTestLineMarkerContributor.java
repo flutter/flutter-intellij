@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
 
-  private static final int TEST_LIMIT = 1024;
+  private static final int SCANNED_TEST_RESULT_LIMIT = 1024;
 
   @Nullable
   @Override
@@ -52,6 +52,7 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
     return null;
   }
 
+  @NotNull
   private static Icon getTestStateIcon(@NotNull PsiElement element) {
 
     // SMTTestProxy maps test run data to a URI derived from a location hint produced by `package:test`.
@@ -81,8 +82,9 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
       final TestStateStorage storage = TestStateStorage.getInstance(project);
       if (storage != null) {
         final Map<String, TestStateStorage.Record> tests =
-          storage.getRecentTests(TEST_LIMIT, getSinceDate());
+          storage.getRecentTests(SCANNED_TEST_RESULT_LIMIT, getSinceDate());
         if (tests != null) {
+          //TODO(pq): investigate performance implications.
           for (Map.Entry<String, TestStateStorage.Record> entry : tests.entrySet()) {
             if (entry.getKey().startsWith(testLocationPrefix)) {
               final TestStateStorage.Record state = entry.getValue();
