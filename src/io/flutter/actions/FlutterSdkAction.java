@@ -14,6 +14,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
@@ -30,18 +32,35 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
 
-    final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
-    if (sdk == null) {
-      showMissingSdkDialog(project);
-      return;
-    }
+    if(enableActionInBazelContext() && project != null) {
+      // See if the Bazel workspace provides a script.
+      final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+      if (workspace != null) {
+          FlutterInitializer.sendAnalyticsAction(this);
+          FileDocumentManager.getInstance().saveAllDocuments();
+          startCommandInBazelContext(project, workspace);
+      }
+    } else {
+      final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
+      if (sdk == null) {
+        showMissingSdkDialog(project);
+        return;
+      }
 
-    FlutterInitializer.sendAnalyticsAction(this);
-    FileDocumentManager.getInstance().saveAllDocuments();
-    startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
+      FlutterInitializer.sendAnalyticsAction(this);
+      FileDocumentManager.getInstance().saveAllDocuments();
+      startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
+    }
   }
 
   public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root);
+
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
+  }
+
+  public boolean enableActionInBazelContext() {
+    return false;
+  }
 
   private static void showMissingSdkDialog(Project project) {
     final int response = FlutterMessages.showDialog(project, FlutterBundle.message("flutter.sdk.notAvailable.message"),
