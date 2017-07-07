@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>15.0</version>
+  <version>15.1</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,11 @@
 
   <change-notes>
     <![CDATA[
+
+15.1:
+<ul>
+  <li>Fix for a file watching related NPE on build systems using Bazel (#1191)</li>
+</ul>
 
 15.0:
 <ul>
