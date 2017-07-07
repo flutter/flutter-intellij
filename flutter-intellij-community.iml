@@ -25,5 +25,7 @@
     <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module" module-name="testFramework" scope="TEST" />
     <orderEntry type="library" name="Velocity" level="project" />
+    <orderEntry type="module" module-name="smRunner" />
+    <orderEntry type="module" module-name="xml" />
   </component>
 </module>
