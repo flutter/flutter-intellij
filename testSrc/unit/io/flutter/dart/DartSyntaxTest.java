@@ -33,7 +33,7 @@ public class DartSyntaxTest {
     Testing.runOnDispatchThread(() -> {
       final PsiElement testIdentifier = setUpDartElement("main() { test('my first test', () {} ); }", "test", LeafPsiElement.class);
       final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(testIdentifier, "test");
-      assertTrue(DartSyntax.isTestCall(call));
+      assertTrue(DartSyntax.isCallToFunctionNamed(call, "test"));
     });
   }
 

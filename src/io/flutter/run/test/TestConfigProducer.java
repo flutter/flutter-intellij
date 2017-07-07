@@ -12,11 +12,8 @@ import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartFile;
-import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartPlugin;
-import io.flutter.dart.DartSyntax;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.sdk.FlutterSdk;
@@ -51,7 +48,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     }
 
     if (supportsFiltering(config.getSdk())) {
-      final String testName = findTestName(elt);
+      final String testName = TestConfigUtils.findTestName(elt);
       if (testName != null) {
         return setupForSingleTest(config, context, file, testName);
       }
@@ -62,21 +59,6 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
 
   private boolean supportsFiltering(@Nullable FlutterSdk sdk) {
     return sdk != null && sdk.getVersion().flutterTestSupportsFiltering();
-  }
-
-  /**
-   * Returns the name of the test containing this element, or null if it can't be calculated.
-   */
-  private String findTestName(@Nullable PsiElement elt) {
-    if (elt == null) return null;
-
-    final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(elt, "test");
-    if (call == null) return null;
-
-    final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
-    if (lit == null) return null;
-
-    return DartSyntax.unquote(lit);
   }
 
   private boolean setupForSingleTest(TestConfig config, ConfigurationContext context, DartFile file, String testName) {
@@ -140,7 +122,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
 
     if (!FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath())) return false;
 
-    final String testName = findTestName(context.getPsiLocation());
+    final String testName = TestConfigUtils.findTestName(context.getPsiLocation());
     if (config.getFields().getScope() == TestFields.Scope.NAME) {
       if (testName == null || !testName.equals(config.getFields().getTestName())) return false;
     }

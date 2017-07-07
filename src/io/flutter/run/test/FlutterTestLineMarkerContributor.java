@@ -11,21 +11,14 @@ import com.intellij.execution.lineMarker.RunLineMarkerContributor;
 import com.intellij.execution.testframework.TestIconMapper;
 import com.intellij.execution.testframework.sm.runner.states.TestStateInfo;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
-import com.intellij.util.containers.ContainerUtil;
-import com.jetbrains.lang.dart.psi.DartFile;
-import io.flutter.FlutterUtils;
-import io.flutter.dart.DartSyntax;
-import io.flutter.run.FlutterRunConfigurationProducer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,19 +34,19 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    if (isTestCall(element)) {
-      final Icon icon = getTestStateIcon(element);
-      final AnAction[] actions = ExecutorAction.getActions();
+    final TestConfigUtils.TestType testCall = TestConfigUtils.asTestCall(element);
+    if (testCall != null) {
+      final Icon icon = getTestStateIcon(element, testCall.getIcon());
       final Function<PsiElement, String> tooltipProvider =
-        psiElement -> StringUtil.join(ContainerUtil.mapNotNull(actions, action -> getText(action, element)), "\n");
-      return new Info(icon, tooltipProvider, actions);
+        psiElement -> testCall.getTooltip(element);
+      return new Info(icon, tooltipProvider, ExecutorAction.getActions());
     }
 
     return null;
   }
 
   @NotNull
-  private static Icon getTestStateIcon(@NotNull PsiElement element) {
+  private static Icon getTestStateIcon(@NotNull PsiElement element, @NotNull Icon defaultIcon) {
 
     // SMTTestProxy maps test run data to a URI derived from a location hint produced by `package:test`.
     // If we can find corresponding data, we can provide state-aware icons.  If not, we default to
@@ -108,14 +101,7 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
       }
     }
 
-    return AllIcons.RunConfigurations.TestState.Run;
-  }
-
-  private static boolean isTestCall(@NotNull PsiElement element) {
-    if (!DartSyntax.isTestCall(element)) return false;
-
-    final DartFile file = FlutterRunConfigurationProducer.getDartFile(element);
-    return file != null && FlutterUtils.isInTestDir(file);
+    return defaultIcon;
   }
 
   private static Date getSinceDate() {

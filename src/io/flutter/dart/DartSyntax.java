@@ -66,17 +66,25 @@ public class DartSyntax {
   }
 
   /**
-   * Check if the given element is a call to a flutter test.
+   * Check if an element is a call to a function with the given name.
    *
-   * @param element the element to check
-   * @return true if the given element is a test call, false otherwise
+   * @return true if the given element is a call to function, false otherwise
    */
-  public static boolean isTestCall(@Nullable PsiElement element) {
-    //TODO(pq): ensure we're in a 'package:test' context.
-    //TODO(pq): add support for "testWidgets".
+  public static boolean isCallToFunctionNamed(@Nullable PsiElement element, @NotNull String function) {
     if (!(element instanceof DartCallExpression)) return false;
     final String name = getCalledFunctionName((DartCallExpression)element);
-    return Objects.equals(name, "test");
+    return Objects.equals(name, function);
+  }
+
+  /**
+   * Check if an element is a declaration of a function with the given name.
+   *
+   * @return true if the given element is a declaration, false otherwise
+   */
+  public static boolean isFunctionDeclarationNamed(@Nullable PsiElement element, @NotNull String name) {
+    if (!(element instanceof DartFunctionDeclarationWithBodyOrNative)) return false;
+    final String functionName = ((DartFunctionDeclarationWithBodyOrNative)element).getComponentName().getId().getText();
+    return Objects.equals(functionName, name);
   }
 
   /**
@@ -105,4 +113,6 @@ public class DartSyntax {
     if (!(call.getFirstChild() instanceof DartReference)) return null;
     return call.getFirstChild().getText();
   }
+
+
 }
