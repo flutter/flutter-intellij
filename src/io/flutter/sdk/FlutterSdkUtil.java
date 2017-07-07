@@ -225,7 +225,6 @@ public class FlutterSdkUtil {
    */
   @Nullable
   public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
-    // TODO: add a test
     final PubRoot pubRoot = PubRoot.forModuleWithRefresh(module);
     if (pubRoot == null) {
       return null;
