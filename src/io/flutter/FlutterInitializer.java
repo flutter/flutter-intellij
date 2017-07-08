@@ -20,10 +20,11 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
-import io.flutter.android.AndroidSdk;
+import io.flutter.android.IntelliJAndroidSdk;
+import io.flutter.dart.DartfmtSettings;
 import io.flutter.pub.PubRoot;
-import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.FlutterReloadManager;
+import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
@@ -135,6 +136,13 @@ public class FlutterInitializer implements StartupActivity {
     // Watch save actions.
     FlutterReloadManager.getInstance(project);
 
+    // Do a one-time set for the default value of the whole file dartfmt setting.
+    if (DartfmtSettings.dartPluginHasSetting()) {
+      if (!DartfmtSettings.hasBeenOneTimeSet()) {
+        DartfmtSettings.setDartfmtValue();
+      }
+    }
+
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(
       Analytics.GROUP_DISPLAY_ID,
@@ -163,7 +171,10 @@ public class FlutterInitializer implements StartupActivity {
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
           final Analytics analytics = getAnalytics();
-          ToolWindowTracker.track(project, analytics);
+          // We only track for flutter projects.
+          if (FlutterModuleUtils.usesFlutter(project)) {
+            ToolWindowTracker.track(project, analytics);
+          }
         }
       });
       notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.decline")) {
@@ -176,8 +187,10 @@ public class FlutterInitializer implements StartupActivity {
       Notifications.Bus.notify(notification);
     }
     else {
-      final Analytics analytics = getAnalytics();
-      ToolWindowTracker.track(project, analytics);
+      // We only track for flutter projects.
+      if (FlutterModuleUtils.usesFlutter(project)) {
+        ToolWindowTracker.track(project, getAnalytics());
+      }
     }
   }
 
@@ -189,7 +202,7 @@ public class FlutterInitializer implements StartupActivity {
       return; // Don't override user's settings.
     }
 
-    final AndroidSdk wanted = AndroidSdk.fromEnvironment();
+    final IntelliJAndroidSdk wanted = IntelliJAndroidSdk.fromEnvironment();
     if (wanted == null) {
       return; // ANDROID_HOME not set or Android SDK not created in IDEA; not clear what to do.
     }

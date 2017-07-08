@@ -45,7 +45,7 @@ public class Workspace {
   /**
    * Returns true for a project that uses Flutter code within this workspace.
    */
-  public boolean usesFlutter(Project project) {
+  public boolean usesFlutter(@NotNull final Project project) {
     for (Module module : ModuleManager.getInstance(project).getModules()) {
       if (usesFlutter(module)) return true;
     }
@@ -59,7 +59,7 @@ public class Workspace {
    * By default, any path containing 'flutter' will match, but this can be configured
    * using the 'directoryPatterns' variable in flutter.json.
    */
-  public boolean usesFlutter(Module module) {
+  public boolean usesFlutter(@NotNull final Module module) {
     for (String path : getContentPaths(module)) {
       if (withinFlutterDirectory(path)) return true;
     }
@@ -71,7 +71,8 @@ public class Workspace {
    *
    * <p>Each path will be relative to the workspace root directory.
    */
-  public ImmutableSet<String> getContentPaths(Module module) {
+  @NotNull
+  public ImmutableSet<String> getContentPaths(@NotNull final Module module) {
     // Find all the content roots within this workspace.
     final VirtualFile[] contentRoots = ModuleRootManager.getInstance(module).getContentRoots();
     final ImmutableSet.Builder<String> result = ImmutableSet.builder();
@@ -89,7 +90,8 @@ public class Workspace {
    *
    * <p>Returns null for the workspace root or anything outside the workspace.
    */
-  public @Nullable String getRelativePath(@Nullable VirtualFile file) {
+  @Nullable
+  public String getRelativePath(@Nullable VirtualFile file) {
     final List<String> path = new ArrayList<>();
     while (file != null) {
       if (file.equals(root)) {
@@ -121,21 +123,24 @@ public class Workspace {
   /**
    * Returns the directory containing the WORKSPACE file.
    */
-  public @NotNull VirtualFile getRoot() {
+  @NotNull
+  public VirtualFile getRoot() {
     return root;
   }
 
   /**
    * Returns the script that starts 'flutter daemon', or null if not configured.
    */
-  public @Nullable String getDaemonScript() {
+  @Nullable
+  public String getDaemonScript() {
     return daemonScript;
   }
 
   /**
    * Returns the script that runs the bazel target for a Flutter app, or null if not configured.
    */
-  public @Nullable String getLaunchScript() {
+  @Nullable
+  public String getLaunchScript() {
     return (config == null) ? null : config.getLaunchScript();
   }
 
@@ -151,7 +156,8 @@ public class Workspace {
    *
    * <p>When they change, the Workspace should be reloaded.
    */
-  public @NotNull Set<String> getDependencies() {
+  @NotNull
+  public Set<String> getDependencies() {
     return ImmutableSet.of("WORKSPACE", PLUGIN_CONFIG_PATH);
   }
 
@@ -176,7 +182,8 @@ public class Workspace {
    *
    * @return the Workspace, or null if there is none.
    */
-  public static @Nullable Workspace load(@NotNull Project project) {
+  @Nullable
+  public static Workspace load(@NotNull Project project) {
     final VirtualFile workspaceFile = findWorkspaceFile(project);
     if (workspaceFile == null) return null;
 
@@ -213,7 +220,8 @@ public class Workspace {
    * At least one content root must be within the workspace, and the project cannot have
    * content roots in more than one workspace.
    */
-  private static @Nullable VirtualFile findWorkspaceFile(@NotNull Project p) {
+  @Nullable
+  private static VirtualFile findWorkspaceFile(@NotNull Project p) {
     final Computable<VirtualFile> readAction = () -> {
       final Map<String, VirtualFile> candidates = new HashMap<>();
       for (VirtualFile contentRoot : ProjectRootManager.getInstance(p).getContentRoots()) {
@@ -236,7 +244,8 @@ public class Workspace {
   /**
    * Returns the closest WORKSPACE file within or above the given directory, or null if not found.
    */
-  private static @Nullable VirtualFile findContainingWorkspaceFile(@NotNull VirtualFile dir) {
+  @Nullable
+  private static VirtualFile findContainingWorkspaceFile(@NotNull VirtualFile dir) {
     while (dir != null) {
       final VirtualFile child = dir.findChild("WORKSPACE");
       if (child != null && child.exists() && !child.isDirectory()) {

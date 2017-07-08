@@ -19,7 +19,11 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.DartLanguage;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.FlutterModuleUtils;
@@ -31,21 +35,19 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
 
   private static final Logger LOG = Logger.getInstance(SdkConfigurationNotificationProvider.class);
 
-  private final Project project;
+  @NotNull private final Project project;
 
   public SdkConfigurationNotificationProvider(@NotNull Project project) {
     this.project = project;
   }
 
   @SuppressWarnings("SameReturnValue")
-  private static EditorNotificationPanel createNoFlutterSdkPanel() {
+  private static EditorNotificationPanel createNoFlutterSdkPanel(Project project) {
     final EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.icon(FlutterIcons.Flutter);
     panel.setText(FlutterBundle.message("flutter.no.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> panel.setVisible(false));
-
-    // TODO(skybrian) we should add a link to go to the Dart SDK panel.
-    // However, not yet because this will change with 2017.1 to be project-specific.
-
+    panel.createActionLabel("Open Flutter settings", () -> FlutterUtils.openFlutterSettings(project));
     return panel;
   }
 
@@ -56,25 +58,27 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   }
 
   @Override
-  public EditorNotificationPanel createNotificationPanel(@NotNull VirtualFile file, @NotNull FileEditor fileEditor) {
+  public EditorNotificationPanel createNotificationPanel(@NotNull final VirtualFile file, @NotNull final FileEditor fileEditor) {
+
+    // If this is a Bazel configured Flutter project, exit immediately, neither of the notifications should be shown for this project type.
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace != null && workspace.usesFlutter(project)) {
+      return null;
+    }
+
     if (file.getFileType() != DartFileType.INSTANCE) return null;
 
     final PsiFile psiFile = PsiManager.getInstance(project).findFile(file);
-    if (psiFile == null) return null;
-
-    if (psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
+    if (psiFile == null || psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
 
     final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
-    if (module == null) return null;
-
-    if (!FlutterModuleUtils.isFlutterModule(module)) return null;
+    if (module == null || !FlutterModuleUtils.isFlutterModule(module)) return null;
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
-      return createNoFlutterSdkPanel();
+      return createNoFlutterSdkPanel(project);
     }
-
-    if (!flutterSdk.getVersion().isSupported()) {
+    else if (!flutterSdk.getVersion().isSupported()) {
       return createOutOfDateFlutterSdkPanel(flutterSdk);
     }
 
@@ -82,11 +86,11 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
   }
 
   private EditorNotificationPanel createOutOfDateFlutterSdkPanel(@NotNull FlutterSdk sdk) {
-
     final FlutterUIConfig settings = FlutterUIConfig.getInstance();
     if (settings.shouldIgnoreOutOfDateFlutterSdks()) return null;
 
     final EditorNotificationPanel panel = new EditorNotificationPanel();
+    panel.icon(FlutterIcons.Flutter);
     panel.setText(FlutterBundle.message("flutter.old.sdk.warning"));
     panel.createActionLabel("Dismiss", () -> {
       settings.setIgnoreOutOfDateFlutterSdks();

@@ -147,12 +147,29 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir) {
+  public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
+                                    @NotNull RunMode mode) {
 
-    // We don't have machine mode yet, so just run it normally and show the output in the console.
     final List<String> args = new ArrayList<>();
+    if (myVersion.flutterTestSupportsMachineMode()) {
+      args.add("--machine");
+      // Otherwise, just run it normally and show the output in a non-test console.
+    }
+    if (mode == RunMode.DEBUG) {
+      if (!myVersion.flutterTestSupportsMachineMode()) {
+        throw new IllegalStateException("Flutter SDK is too old to debug tests");
+      }
+      args.add("--start-paused");
+    }
     if (FlutterInitializer.isVerboseLogging()) {
       args.add("--verbose");
+    }
+    if (testNameSubstring != null) {
+      if (!myVersion.flutterTestSupportsFiltering()) {
+        throw new IllegalStateException("Flutter SDK is too old to select tests by name");
+      }
+      args.add("--plain-name");
+      args.add(testNameSubstring);
     }
 
     if (!root.getRoot().equals(fileOrDir)) {

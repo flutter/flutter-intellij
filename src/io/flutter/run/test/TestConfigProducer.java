@@ -16,7 +16,10 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Determines when we can run a test using "flutter test".
@@ -34,34 +37,68 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-    final DartFile file = FlutterRunConfigurationProducer.getDartFile(context);
-    if (file != null) {
-      return setupForDartFile(config, context, file);
+    final PsiElement elt = context.getPsiLocation();
+    if (elt instanceof PsiDirectory) {
+      return setupForDirectory(config, (PsiDirectory)elt);
     }
 
-    final PsiElement elt = context.getPsiLocation();
-    return elt instanceof PsiDirectory && setupForDirectory(config, (PsiDirectory)elt);
+    final DartFile file = FlutterRunConfigurationProducer.getDartFile(context);
+    if (file == null) {
+      return false;
+    }
+
+    if (supportsFiltering(config.getSdk())) {
+      final String testName = TestConfigUtils.findTestName(elt);
+      if (testName != null) {
+        return setupForSingleTest(config, context, file, testName);
+      }
+    }
+
+    return setupForDartFile(config, context, file);
   }
 
-  private boolean setupForDartFile(TestConfig config, ConfigurationContext context, DartFile file) {
-    final PubRoot root = PubRoot.forPsiFile(file);
-    if (root == null) return false;
+  private boolean supportsFiltering(@Nullable FlutterSdk sdk) {
+    return sdk != null && sdk.getVersion().flutterTestSupportsFiltering();
+  }
 
-    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false);
-    if (candidate == null) return false;
+  private boolean setupForSingleTest(TestConfig config, ConfigurationContext context, DartFile file, String testName) {
+    final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
+    if (testFile == null) return false;
 
-    final String relativePath = root.getRelativePath(candidate);
-    if (relativePath == null || !relativePath.startsWith("test/")) return false;
-
-    config.setFields(TestFields.forFile(candidate.getPath()));
+    config.setFields(TestFields.forTestName(testName, testFile.getPath()));
     config.setGeneratedName();
 
     return true;
   }
 
+  private boolean setupForDartFile(TestConfig config, ConfigurationContext context, DartFile file) {
+    final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
+    if (testFile == null) return false;
+
+    config.setFields(TestFields.forFile(testFile.getPath()));
+    config.setGeneratedName();
+
+    return true;
+  }
+
+  private VirtualFile verifyFlutterTestFile(TestConfig config, ConfigurationContext context, DartFile file) {
+    final PubRoot root = PubRoot.forPsiFile(file);
+    if (root == null) return null;
+
+    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
+    if (candidate == null) return null;
+
+    final String relativePath = root.getRelativePath(candidate);
+    if (relativePath == null || !relativePath.startsWith("test/")) return null;
+
+    return candidate;
+  }
+
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
     final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
     if (root == null) return false;
+
+    if (!FlutterModuleUtils.hasFlutterModule(dir.getProject())) return false;
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
 
@@ -79,11 +116,21 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     if (fileOrDir == null) return false;
 
     final PsiElement target = context.getPsiLocation();
-    if (target instanceof  PsiDirectory) {
+    if (target instanceof PsiDirectory) {
       return ((PsiDirectory)target).getVirtualFile().equals(fileOrDir);
-    } else {
-      return FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath());
     }
+
+    if (!FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath())) return false;
+
+    final String testName = TestConfigUtils.findTestName(context.getPsiLocation());
+    if (config.getFields().getScope() == TestFields.Scope.NAME) {
+      if (testName == null || !testName.equals(config.getFields().getTestName())) return false;
+    }
+    else {
+      if (testName != null) return false;
+    }
+
+    return true;
   }
 
   @Override

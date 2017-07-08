@@ -66,17 +66,14 @@ Validate device selection.
   * Ensure that a menu item appears in the device pull down for the device.
   
 * Emulated Android device
-  * Start an Android emulator (using the AVD manager in Android Studio)
+  * Start an Android emulator
   * Ensure that a menu item appears in the device pull down for the device.  
 
 ### macOS only
 
 * Verify that the simulator can be opened.
-  * Disconnect all devices and quit the iOS simulator.
-  * Ensure that a menu item to open the iOS simulator is enabled in the device pull
-    down menu.
-  * Select "Open iOS Simulator".
-  * Verify that the simulator opens.
+  * Quit any open iOS simulator.
+  * From the device pull-down, select "Open iOS Simulator" and verify that the simulator opens.
 
 ## Run / Debug
 
@@ -97,19 +94,22 @@ In the newly created app:
 Validate basic hot reload functionality.
 
 Assuming the app state from above (i.e., leave the Debug session running):
-* change the `'Button tapped ... times.'` line to end in an exclamation point
+* modify the text for the `'You have pushed the button this many times:'` line
 * change the `_counter++` line to `_counter--`
 * hit the hot reload button in the debugger UI
 * validate that
   1. the state persisted (the same number of clicks in the UI), and
   2. the text changed to end in an exclamation point
   3. the + button decreases the value
-* change the text and counter line back
-* hit the `Full Application Restart` button
-* validate that the text and state resets, and count increases
 
 Keybindings:
 * verify that the hot reload keybinding works (on a mac: `cmd-option-;` or `cmd-\`)
+  
+## Hot Restart
+
+* change the text and counter line back
+* hit the `Full Application Restart` button (or hit the Debug button again)
+* validate that the text and state resets, and count increases
 
 ## Debugging Sessions
 

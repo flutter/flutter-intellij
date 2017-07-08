@@ -204,7 +204,9 @@ public class FileWatch {
       delivery.enable(!byFile.isEmpty());
     }
 
-    synchronized void addWatchesForFile(Set<FileWatch> out, VirtualFile f) {
+    synchronized void addWatchesForFile(@NotNull Set<FileWatch> out, @Nullable VirtualFile f) {
+      if (f == null) return;
+
       for (FileWatch w : byFile.get(f.getName())) {
         if (w.matches(f)) {
           out.add(w);

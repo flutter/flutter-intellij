@@ -20,6 +20,9 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
+// TODO(devoncarew): It would be nice to show a hyperlink in the upper right of this wizard.
+// https://youtrack.jetbrains.com/issue/WEB-27537
+
 public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> {
   @NotNull
   @Override
@@ -56,7 +59,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     }
 
     // Run "flutter create".
-    OutputListener listener = new OutputListener();
+    final OutputListener listener = new OutputListener();
     final PubRoot root = sdk.createFiles(baseDir, module, listener);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
@@ -66,7 +69,6 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
     }
 
     ApplicationManager.getApplication().runWriteAction(() -> {
-
       // Set up Dart SDK.
       final String dartSdkPath = sdk.getDartSdkPath();
       if (dartSdkPath == null) {

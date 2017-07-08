@@ -200,7 +200,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Nullable
   @Override
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
-    myStep = new FlutterModuleWizardStep();
+    myStep = new FlutterModuleWizardStep(context);
     Disposer.register(parentDisposable, myStep);
     return myStep;
   }
@@ -237,16 +237,17 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
-    private final FlutterGeneratorPeer peer;
+    private final FlutterGeneratorPeer myPeer;
     private FlutterSdk myFlutterSdk;
 
-    public FlutterModuleWizardStep() {
-      this.peer = new FlutterGeneratorPeer();
+    public FlutterModuleWizardStep(@NotNull WizardContext context) {
+      //TODO(pq): find a way to listen to wizard cancelation and propogate to peer.
+      myPeer = new FlutterGeneratorPeer(context);
     }
 
     @Override
     public JComponent getComponent() {
-      return peer.getComponent();
+      return myPeer.getComponent();
     }
 
     @Override
@@ -255,9 +256,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
     @Override
     public boolean validate() throws ConfigurationException {
-      final boolean valid = peer.validate();
+      final boolean valid = myPeer.validate();
       if (valid) {
-        peer.apply();
+        myPeer.apply();
       }
       return valid;
     }
@@ -267,8 +268,20 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     @Nullable
-    public FlutterSdk getFlutterSdk() {
-      return FlutterSdk.forPath(peer.getSdkComboPath());
+    private FlutterSdk getFlutterSdk() {
+      final String sdkPath = myPeer.getSdkComboPath();
+
+      //Ensure the local filesystem has caught up to external processes (e.g., git clone).
+      if (!sdkPath.isEmpty()) {
+        try {
+          LocalFileSystem
+            .getInstance().refreshAndFindFileByPath(sdkPath);
+        }
+        catch (Throwable e) {
+          // It's possible that the refresh will fail in which case we just want to trap and ignore.
+        }
+      }
+      return FlutterSdk.forPath(sdkPath);
     }
   }
 }

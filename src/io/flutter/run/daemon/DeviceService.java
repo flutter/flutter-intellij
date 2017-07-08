@@ -7,6 +7,7 @@ package io.flutter.run.daemon;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -31,7 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Provides the list of available devices (mobile phones or emulators) that appears in the dropdown menu.
  */
 public class DeviceService {
-  private final Project project;
+  @NotNull private final Project project;
 
   /**
    * The process used to watch for device list changes (for the device menu). May be null if not running.
@@ -46,11 +47,11 @@ public class DeviceService {
 
   public static
   @NotNull
-  DeviceService getInstance(@NotNull Project project) {
+  DeviceService getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, DeviceService.class);
   }
 
-  private DeviceService(@NotNull Project project) {
+  private DeviceService(@NotNull final Project project) {
     this.project = project;
 
     deviceDaemon.setDisposeParent(project);
@@ -223,6 +224,19 @@ public class DeviceService {
       LOG.error(e);
       return previous; // Couldn't start a new one so don't shut it down.
     }
+  }
+
+  public void restart() {
+    if (project.isDisposed()) return;
+
+    deviceDaemon.refresh(this::shutDownDaemon);
+
+    JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 1, TimeUnit.SECONDS);
+  }
+
+  private DeviceDaemon shutDownDaemon(Refreshable.Request<DeviceDaemon> request) {
+    // Return null to indicate that a shutdown is requested.
+    return null;
   }
 
   public enum State {INACTIVE, LOADING, READY}

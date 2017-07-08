@@ -18,7 +18,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
-import io.flutter.android.AndroidSdk;
+import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -127,7 +127,7 @@ public class FlutterCommand {
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
    */
-  public Process startInModuleConsole(Module module, Runnable onDone, @Nullable ProcessListener processListener) {
+  public Process startInModuleConsole(@NotNull Module module, @Nullable Runnable onDone, @Nullable ProcessListener processListener) {
     final OSProcessHandler handler = startProcess(module.getProject());
     if (handler == null) {
       return null;
@@ -138,7 +138,9 @@ public class FlutterCommand {
     handler.addProcessListener(new ProcessAdapter() {
       @Override
       public void processTerminated(ProcessEvent event) {
-        onDone.run();
+        if (onDone != null) {
+          onDone.run();
+        }
       }
     });
 
@@ -209,7 +211,7 @@ public class FlutterCommand {
 
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
 
-    final String androidHome = AndroidSdk.chooseAndroidHome(project);
+    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);
     }

@@ -14,6 +14,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
+import org.jetbrains.annotations.NotNull;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class RestartFlutterApp extends FlutterAppAction {
@@ -21,7 +22,7 @@ public class RestartFlutterApp extends FlutterAppAction {
   public static final String TEXT = FlutterBundle.message("app.restart.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.restart.action.description");
 
-  public RestartFlutterApp(FlutterApp app, Computable<Boolean> isApplicable) {
+  public RestartFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
     super(app, TEXT, DESCRIPTION, AllIcons.Actions.Restart, isApplicable, ID);
     // Shortcut is associated with toolbar action.
     copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.RestartAction"));

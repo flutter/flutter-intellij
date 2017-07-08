@@ -42,7 +42,7 @@ public class PubRoot {
   private final VirtualFile lib;
 
   private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec, @Nullable VirtualFile packages, @Nullable VirtualFile lib) {
-    assert(!root.getPath().endsWith("/"));
+    assert (!root.getPath().endsWith("/"));
     this.root = root;
     this.pubspec = pubspec;
     this.packages = packages;
@@ -126,8 +126,17 @@ public class PubRoot {
    * Based on the filesystem cache; doesn't refresh anything.
    */
   @Nullable
-  public static PubRoot forPsiFile(@NotNull PsiFile file) {
-    return forDescendant(file.getVirtualFile(), file.getProject());
+  public static PubRoot forPsiFile(@NotNull PsiFile psiFile) {
+    final VirtualFile file = psiFile.getVirtualFile();
+    if (file == null) {
+      return null;
+    }
+    if (isPubspec(file)) {
+      return forDirectory(file.getParent());
+    }
+    else {
+      return forDescendant(file, psiFile.getProject());
+    }
   }
 
   /**

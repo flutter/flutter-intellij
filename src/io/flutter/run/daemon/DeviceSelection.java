@@ -17,8 +17,8 @@ import java.util.*;
 class DeviceSelection {
   static final DeviceSelection EMPTY = new DeviceSelection(ImmutableList.of(), null);
 
-  private final @NotNull ImmutableList<FlutterDevice> devices;
-  private final @Nullable FlutterDevice selection;
+  @NotNull private final ImmutableList<FlutterDevice> devices;
+  @Nullable private final FlutterDevice selection;
 
   private DeviceSelection(@NotNull ImmutableList<FlutterDevice> devices, @Nullable FlutterDevice selected) {
     this.devices = devices;
@@ -36,7 +36,8 @@ class DeviceSelection {
   /**
    * Returns a new snapshot with the devices changed and the selection updated appropriately.
    */
-  @NotNull DeviceSelection withDevices(@NotNull List<FlutterDevice> newDevices) {
+  @NotNull
+  DeviceSelection withDevices(@NotNull List<FlutterDevice> newDevices) {
     final String selectedId = selection == null ? null : selection.deviceId();
     final Optional<FlutterDevice> selectedDevice = findById(newDevices, selectedId);
     // If there is only one device, default to it.
@@ -47,7 +48,8 @@ class DeviceSelection {
   /**
    * Returns a new snapshot with the given device id selected, if possible.
    */
-  @NotNull DeviceSelection withSelection(@Nullable String id) {
+  @NotNull
+  DeviceSelection withSelection(@Nullable String id) {
     return new DeviceSelection(devices, findById(devices, id).orElse(selection));
   }
 

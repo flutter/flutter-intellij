@@ -97,10 +97,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
 
     scheduleConnectNew();
-
-    // We disable the service protocol library logger because of a user facing NPE in a
-    // DartVmServiceListener from the Dart plugin.
-    Logging.setLogger(org.dartlang.vm.service.logging.Logger.NULL);
   }
 
   @Override
@@ -108,11 +104,6 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // The flutter plugin doesn't do remote debugging, but we set this value to
     // whatever is needed to fake out the superclass.
     return remoteDebug;
-  }
-
-  @NotNull
-  public ObservatoryConnector getConnector() {
-    return myConnector;
   }
 
   public VmServiceWrapper getVmServiceWrapper() {

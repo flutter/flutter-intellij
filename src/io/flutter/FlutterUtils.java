@@ -5,6 +5,9 @@
  */
 package io.flutter;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -13,7 +16,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
+import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.FlutterRunConfigurationProducer;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -49,6 +55,19 @@ public class FlutterUtils {
 
   public static boolean exists(@Nullable VirtualFile file) {
     return file != null && file.exists();
+  }
+
+  public static boolean isInTestDir(DartFile file) {
+    final PubRoot root = PubRoot.forPsiFile(file);
+    if (root == null) return false;
+
+    if (!FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()))) return false;
+
+    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(file, false, false);
+    if (candidate == null) return false;
+
+    final String relativePath = root.getRelativePath(candidate);
+    return relativePath != null && relativePath.startsWith("test/");
   }
 
   @Nullable
@@ -96,6 +115,7 @@ public class FlutterUtils {
 
   /**
    * Checks whether a given filename is an Xcode metadata file, suitable for opening externally.
+   *
    * @param name the name to check
    * @return true if an xcode project filename
    */
@@ -105,6 +125,7 @@ public class FlutterUtils {
 
   /**
    * Checks whether a given file name is an Xcode project filename.
+   *
    * @param name the name to check
    * @return true if an xcode project filename
    */
@@ -114,11 +135,27 @@ public class FlutterUtils {
 
   /**
    * Checks whether a given name is an Xcode workspace filename.
+   *
    * @param name the name to check
    * @return true if an xcode workspace filename
    */
   public static boolean isXcodeWorkspaceFileName(@NotNull String name) {
     return name.endsWith(".xcworkspace");
+  }
+
+  /**
+   * Checks whether the given commandline executes cleanly.
+   *
+   * @param cmd the command
+   * @return true if the command runs cleanly
+   */
+  public static boolean runsCleanly(@NotNull GeneralCommandLine cmd) {
+    try {
+      return ExecUtil.execAndGetOutput(cmd).getExitCode() == 0;
+    }
+    catch (ExecutionException e) {
+      return false;
+    }
   }
 
 }

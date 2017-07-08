@@ -42,7 +42,7 @@ import java.util.function.Function;
 public class DaemonApi {
   private static final int STDERR_LINES_TO_KEEP = 100;
 
-  private final @NotNull Consumer<String> callback;
+  @NotNull private final Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
 
@@ -329,13 +329,13 @@ public class DaemonApi {
   }
 
   private abstract static class Params<T> {
-    abstract @Nullable
-    T parseResult(@Nullable JsonElement result);
+    @Nullable
+    abstract T parseResult(@Nullable JsonElement result);
   }
 
   @SuppressWarnings("unused")
   private static class AppRestart extends Params<RestartResult> {
-    final String appId;
+    @NotNull final String appId;
     final boolean fullRestart;
     final boolean pause;
 
@@ -353,7 +353,7 @@ public class DaemonApi {
 
   @SuppressWarnings("unused")
   private static class AppStop extends Params<Boolean> {
-    final String appId;
+    @NotNull final String appId;
 
     AppStop(@NotNull String appId) {
       this.appId = appId;

@@ -17,7 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterMessages;
-import io.flutter.android.AndroidSdk;
+import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
@@ -54,13 +54,13 @@ class DeviceDaemon {
   /**
    * The command used to start this daemon.
    */
-  private final @NotNull Command command;
+  @NotNull private final Command command;
 
-  private final @NotNull ProcessHandler process;
+  @NotNull private final ProcessHandler process;
 
-  private final @NotNull Listener listener;
+  @NotNull private final Listener listener;
 
-  private final @NotNull AtomicReference<ImmutableList<FlutterDevice>> devices;
+  @NotNull private final AtomicReference<ImmutableList<FlutterDevice>> devices;
 
   private DeviceDaemon(int id,
                        @NotNull Command command, @NotNull ProcessHandler process, @NotNull Listener listener,
@@ -114,20 +114,20 @@ class DeviceDaemon {
    * <p>
    * A null means the device daemon should be shut down.
    */
-  static @Nullable
-  Command chooseCommand(Project project) {
+  @Nullable
+  static Command chooseCommand(@NotNull final Project project) {
     if (!usesFlutter(project)) {
       return null;
     }
 
-    final String androidHome = AndroidSdk.chooseAndroidHome(project);
+    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
 
     // See if the Bazel workspace provides a script.
-    final Workspace w = WorkspaceCache.getInstance(project).getNow();
-    if (w != null) {
-      final String script = w.getDaemonScript();
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace != null) {
+      final String script = workspace.getDaemonScript();
       if (script != null) {
-        return new Command(w.getRoot().getPath(), script, ImmutableList.of(), androidHome);
+        return new Command(workspace.getRoot().getPath(), script, ImmutableList.of(), androidHome);
       }
     }
 
@@ -147,14 +147,12 @@ class DeviceDaemon {
     }
   }
 
-  private static boolean usesFlutter(Project p) {
-    final Workspace w = WorkspaceCache.getInstance(p).getNow();
-    if (w != null) {
-      return w.usesFlutter(p);
+  private static boolean usesFlutter(@NotNull final Project project) {
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace != null) {
+      return workspace.usesFlutter(project);
     }
-    else {
-      return FlutterModuleUtils.hasFlutterModule(p);
-    }
+    return FlutterModuleUtils.hasFlutterModule(project);
   }
 
   /**
@@ -166,14 +164,14 @@ class DeviceDaemon {
     /**
      * Path to working directory for running the script. Should be an absolute path.
      */
-    private final @NotNull String workDir;
-    private final @NotNull String command;
-    private final @NotNull ImmutableList<String> parameters;
+    @NotNull private final String workDir;
+    @NotNull private final String command;
+    @NotNull private final ImmutableList<String> parameters;
 
     /**
      * The value of ANDROID_HOME to use when launching the command.
      */
-    private final @Nullable String androidHome;
+    @Nullable private final String androidHome;
 
     private Command(@NotNull String workDir, @NotNull String command, @NotNull ImmutableList<String> parameters,
                     @Nullable String androidHome) {
