@@ -15,7 +15,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import org.jetbrains.annotations.Nullable;
 
-public class Which {
+public class System {
   /**
    * Locate a given command-line tool given its name.
    */

@@ -27,7 +27,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
-import io.flutter.utils.Which;
+import io.flutter.utils.System;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +55,7 @@ public class FlutterSdkUtil {
    */
   public static String getFlutterHostEnvValue() {
     final String clientId = ApplicationNamesInfo.getInstance().getFullProductName().replaceAll(" ", "-");
-    final String existingVar = System.getenv(FLUTTER_HOST_ENV);
+    final String existingVar = java.lang.System.getenv(FLUTTER_HOST_ENV);
     return existingVar == null ? clientId : (existingVar + ":" + clientId);
   }
 
@@ -280,7 +280,7 @@ public class FlutterSdkUtil {
    */
   @Nullable
   public static String locateSdkFromPath() {
-    final String flutterBinPath = Which.which("flutter");
+    final String flutterBinPath = System.which("flutter");
     if (flutterBinPath == null) {
       return null;
     }
