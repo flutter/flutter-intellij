@@ -184,21 +184,41 @@ public class FlutterModuleUtils {
     if (DartPlugin.isDartSdkEnabled(module)) {
       return;
     }
-    final String[] flutterSdkPaths = FlutterSdkUtil.getKnownFlutterSdkPaths();
-    if (flutterSdkPaths == null || flutterSdkPaths.length == 0) {
-      return;
+
+    // parse the .packages file
+    String sdkPath = FlutterSdkUtil.guessFlutterSdkFromPackagesFile(module);
+    if (sdkPath != null) {
+      FlutterSdkUtil.updateKnownSdkPaths(sdkPath);
     }
-    final FlutterSdk flutterSdk = FlutterSdk.forPath(flutterSdkPaths[0]);
-    if (flutterSdk == null) {
-      return;
+
+    // try and locate flutter on the path
+    if (sdkPath == null) {
+      sdkPath = FlutterSdkUtil.locateSdkFromPath();
+      if (sdkPath != null) {
+        FlutterSdkUtil.updateKnownSdkPaths(sdkPath);
+      }
     }
-    final String dartSdkPath = flutterSdk.getDartSdkPath();
-    if (dartSdkPath == null) {
-      return; // Not cached. TODO(skybrian) call flutterSdk.sync() here?
+
+    if (sdkPath == null) {
+      final String[] flutterSdkPaths = FlutterSdkUtil.getKnownFlutterSdkPaths();
+      if (flutterSdkPaths != null && flutterSdkPaths.length > 0) {
+        sdkPath = flutterSdkPaths[0];
+      }
     }
-    ApplicationManager.getApplication().runWriteAction(() -> {
-      DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
-      DartPlugin.enableDartSdk(module);
-    });
+
+    if (sdkPath != null) {
+      final FlutterSdk flutterSdk = FlutterSdk.forPath(sdkPath);
+      if (flutterSdk == null) {
+        return;
+      }
+      final String dartSdkPath = flutterSdk.getDartSdkPath();
+      if (dartSdkPath == null) {
+        return; // Not cached. TODO(skybrian) call flutterSdk.sync() here?
+      }
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);
+        DartPlugin.enableDartSdk(module);
+      });
+    }
   }
 }

@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -19,15 +20,20 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ArrayUtil;
+import com.intellij.util.Url;
+import com.intellij.util.Urls;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
+import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.System;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -49,7 +55,7 @@ public class FlutterSdkUtil {
    */
   public static String getFlutterHostEnvValue() {
     final String clientId = ApplicationNamesInfo.getInstance().getFullProductName().replaceAll(" ", "-");
-    final String existingVar = System.getenv(FLUTTER_HOST_ENV);
+    final String existingVar = java.lang.System.getenv(FLUTTER_HOST_ENV);
     return existingVar == null ? clientId : (existingVar + ":" + clientId);
   }
 
@@ -212,5 +218,74 @@ public class FlutterSdkUtil {
     if (modules.length == 1) {
       DartPlugin.enableDartSdk(modules[0]);
     }
+  }
+
+  /**
+   * Parse any .packages file and infer the location of the Flutter SDK from that.
+   */
+  @Nullable
+  public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
+    final PubRoot pubRoot = PubRoot.forModuleWithRefresh(module);
+    if (pubRoot == null) {
+      return null;
+    }
+
+    final VirtualFile packagesFile = pubRoot.getPackages();
+    if (packagesFile == null) {
+      return null;
+    }
+
+    // parse it
+    try {
+      final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
+      return parseFlutterSdkPath(contents);
+    }
+    catch (IOException e) {
+      return null;
+    }
+  }
+
+  @VisibleForTesting
+  public static String parseFlutterSdkPath(String packagesFileContent) {
+    for (String line : packagesFileContent.split("\n")) {
+      // flutter:file:///Users/.../flutter/packages/flutter/lib/
+      line = line.trim();
+
+      if (line.isEmpty() || line.startsWith("#")) {
+        continue;
+      }
+
+      final String flutterPrefix = "flutter:";
+      if (line.startsWith(flutterPrefix)) {
+        final String urlString = line.substring(flutterPrefix.length());
+
+        if (urlString.startsWith("file:")) {
+          final Url url = Urls.parseEncoded(urlString);
+          if (url == null) {
+            continue;
+          }
+          final String path = url.getPath();
+          // go up three levels
+          final File file = new File(url.getPath());
+          return file.getParentFile().getParentFile().getParentFile().getPath();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Locate the Flutter SDK using the user's PATH.
+   */
+  @Nullable
+  public static String locateSdkFromPath() {
+    final String flutterBinPath = System.which("flutter");
+    if (flutterBinPath == null) {
+      return null;
+    }
+
+    final File flutterBinFile = new File(flutterBinPath);
+    return flutterBinFile.getParentFile().getParentFile().getPath();
   }
 }
