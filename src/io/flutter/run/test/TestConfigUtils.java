@@ -18,29 +18,40 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Arrays;
+import java.util.List;
 
 public class TestConfigUtils {
 
   enum TestType {
-    GROUP(AllIcons.RunConfigurations.TestState.Run_run),
+    GROUP(AllIcons.RunConfigurations.TestState.Run_run, "group"),
     MAIN(AllIcons.RunConfigurations.TestState.Run_run) {
       @NotNull
       String getTooltip(@NotNull PsiElement element) {
         return "Run Tests";
       }
     },
-    SINGLE(AllIcons.RunConfigurations.TestState.Run);
+    SINGLE(AllIcons.RunConfigurations.TestState.Run, "test"
+           //TODO(pq): add to enable support for widget tests (pending fixing location issues).
+           //,  "testWidgets"
+    );
 
     @NotNull
     private final Icon myIcon;
+    private final List<String> myTestFunctionNames;
 
-    TestType(@NotNull Icon icon) {
+    TestType(@NotNull Icon icon, String... testFunctionNames) {
       myIcon = icon;
+      myTestFunctionNames = Arrays.asList(testFunctionNames);
     }
 
     @NotNull
     Icon getIcon() {
       return myIcon;
+    }
+
+    boolean matchesFunction(@NotNull PsiElement element) {
+      return myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
     }
 
     @NotNull
@@ -52,14 +63,37 @@ public class TestConfigUtils {
 
       return "Run Test";
     }
+
+    @Nullable
+    public DartCallExpression findCorrespondingCall(@NotNull PsiElement element) {
+      for (String name : myTestFunctionNames) {
+        final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(element, name);
+        if (call != null) {
+          return call;
+        }
+      }
+      return null;
+    }
+
+    @Nullable
+    public static DartCallExpression findTestCall(@NotNull PsiElement element) {
+      for (TestType type : TestType.values()) {
+        final DartCallExpression call = type.findCorrespondingCall(element);
+        if (call != null) return call;
+      }
+      return null;
+    }
   }
 
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
     final DartFile file = FlutterRunConfigurationProducer.getDartFile(element);
     if (file != null && FlutterUtils.isInTestDir(file)) {
-      if (DartSyntax.isCallToFunctionNamed(element, "test")) return TestType.SINGLE;
-      if (DartSyntax.isCallToFunctionNamed(element, "group")) return TestType.GROUP;
+      // Named tests.
+      for (TestType type : TestType.values()) {
+        if (type.matchesFunction(element)) return type;
+      }
+      // Main.
       if (DartSyntax.isFunctionDeclarationNamed(element, "main")) return TestType.MAIN;
     }
 
@@ -74,10 +108,7 @@ public class TestConfigUtils {
   public static String findTestName(@Nullable PsiElement elt) {
     if (elt == null) return null;
 
-    DartCallExpression call = DartSyntax.findEnclosingFunctionCall(elt, "test");
-    if (call == null) {
-      call = DartSyntax.findEnclosingFunctionCall(elt, "group");
-    }
+    final DartCallExpression call = TestType.findTestCall(elt);
     if (call == null) return null;
 
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
