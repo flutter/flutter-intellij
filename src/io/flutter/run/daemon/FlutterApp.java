@@ -204,7 +204,6 @@ public class FlutterApp {
   /**
    * Perform a full restart of the the app.
    */
-  @SuppressWarnings("UnusedReturnValue")
   public CompletableFuture<DaemonApi.RestartResult> performRestartApp() {
     if (myAppId == null) {
       LOG.warn("cannot restart Flutter app because app id is not set");
