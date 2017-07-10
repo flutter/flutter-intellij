@@ -83,10 +83,11 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final MainFile main = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
+    final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
 
     final LaunchState.Callback callback = (device) -> {
       final GeneralCommandLine command = fields.createFlutterSdkRunCommand(project, device, mode);
-      final FlutterApp app = FlutterApp.start(project, mode, command,
+      final FlutterApp app = FlutterApp.start(project, module, mode, command,
                                               StringUtil.capitalize(mode.mode()) + "App",
                                               "StopApp");
 
@@ -109,7 +110,6 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();
     builder.addFilter(new DartConsoleFilter(env.getProject(), main.getFile()));
 
-    final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
     if (module != null) {
       builder.addFilter(new FlutterConsoleFilter(module));
     }

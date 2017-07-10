@@ -10,6 +10,8 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
@@ -65,10 +67,11 @@ public class BazelRunConfig extends RunConfigurationBase
 
     final MainFile main = MainFile.verify(launchFields.getEntryFile(), env.getProject()).get();
     final RunMode mode = RunMode.fromEnv(env);
+    final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
 
     final LaunchState.Callback callback = (device) -> {
       final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
-      return FlutterApp.start(env.getProject(), mode, command,
+      return FlutterApp.start(env.getProject(), module, mode, command,
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
