@@ -32,15 +32,15 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
 
-    if(enableActionInBazelContext() && project != null) {
-      // See if the Bazel workspace provides a script.
-      final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
-      if (workspace != null) {
-          FlutterInitializer.sendAnalyticsAction(this);
-          FileDocumentManager.getInstance().saveAllDocuments();
-          startCommandInBazelContext(project, workspace);
-      }
-    } else {
+    // See if the Bazel workspace exists for this project.
+    final Workspace workspace = project != null ? WorkspaceCache.getInstance(project).getNow() : null;
+
+    if (enableActionInBazelContext() && workspace != null) {
+      FlutterInitializer.sendAnalyticsAction(this);
+      FileDocumentManager.getInstance().saveAllDocuments();
+      startCommandInBazelContext(project, workspace);
+    }
+    else {
       final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
       if (sdk == null) {
         showMissingSdkDialog(project);
@@ -55,9 +55,16 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
 
   public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root);
 
+  /**
+   * Implemented by actions which are used in the Bazel context ({@link #enableActionInBazelContext()} returns true), by default this method
+   * is a no-op.
+   */
   public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
   }
 
+  /**
+   * By default this method returns false. For actions which can be used in the Bazel context this method should return true.
+   */
   public boolean enableActionInBazelContext() {
     return false;
   }
