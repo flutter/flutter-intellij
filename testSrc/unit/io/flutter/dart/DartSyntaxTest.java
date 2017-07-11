@@ -10,8 +10,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiFileFactory;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.DartLanguage;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
+import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
@@ -19,9 +21,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Rule;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class DartSyntaxTest {
 
@@ -34,6 +34,16 @@ public class DartSyntaxTest {
       final PsiElement testIdentifier = setUpDartElement("main() { test('my first test', () {} ); }", "test", LeafPsiElement.class);
       final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(testIdentifier, "test");
       assertTrue(DartSyntax.isCallToFunctionNamed(call, "test"));
+    });
+  }
+
+  @Test
+  public void isMainFunctionDeclaration() throws Exception {
+    Testing.runOnDispatchThread(() -> {
+      final PsiElement mainIdentifier = setUpDartElement("main() { test('my first test', () {} ); }", "main", LeafPsiElement.class);
+      final PsiElement main =
+        PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
+      assertTrue(DartSyntax.isMainFunctionDeclaration(main));
     });
   }
 
