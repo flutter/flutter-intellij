@@ -80,7 +80,8 @@ public class FlutterUtils {
   /**
    * Returns the Dart file for the given PsiElement, or null if not a match.
    */
-  public static @Nullable DartFile getDartFile(final @Nullable PsiElement elt) {
+  @Nullable
+  public static DartFile getDartFile(final @Nullable PsiElement elt) {
     if (elt == null) return null;
 
     final PsiFile psiFile = elt.getContainingFile();
@@ -171,5 +172,4 @@ public class FlutterUtils {
       return false;
     }
   }
-
 }
