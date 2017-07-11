@@ -13,7 +13,6 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartSyntax;
-import io.flutter.run.FlutterRunConfigurationProducer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +49,7 @@ public class TestConfigUtils {
       return myIcon;
     }
 
-    boolean matchesFunction(@NotNull PsiElement element) {
+    boolean matchesFunction(@NotNull DartCallExpression element) {
       return myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
     }
 
@@ -87,19 +86,21 @@ public class TestConfigUtils {
 
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
-    final DartFile file = FlutterRunConfigurationProducer.getDartFile(element);
+    final DartFile file = FlutterUtils.getDartFile(element);
     if (file != null && FlutterUtils.isInTestDir(file)) {
       // Named tests.
-      for (TestType type : TestType.values()) {
-        if (type.matchesFunction(element)) return type;
+      if (element instanceof DartCallExpression) {
+        DartCallExpression call = (DartCallExpression)element;
+        for (TestType type : TestType.values()) {
+          if (type.matchesFunction(call)) return type;
+        }
       }
       // Main.
-      if (DartSyntax.isFunctionDeclarationNamed(element, "main")) return TestType.MAIN;
+      if (DartSyntax.isMainFunctionDeclaration(element)) return TestType.MAIN;
     }
 
     return null;
   }
-
 
   /**
    * Returns the name of the test containing this element, or null if it can't be calculated.
