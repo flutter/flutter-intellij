@@ -14,6 +14,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
@@ -30,6 +32,17 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
 
+    if (enableActionInBazelContext()) {
+      // See if the Bazel workspace exists for this project.
+      final Workspace workspace = project != null ? WorkspaceCache.getInstance(project).getNow() : null;
+      if (workspace != null) {
+        FlutterInitializer.sendAnalyticsAction(this);
+        FileDocumentManager.getInstance().saveAllDocuments();
+        startCommandInBazelContext(project, workspace);
+        return;
+      }
+    }
+
     final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
     if (sdk == null) {
       showMissingSdkDialog(project);
@@ -42,6 +55,21 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   }
 
   public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root);
+
+  /**
+   * Implemented by actions which are used in the Bazel context ({@link #enableActionInBazelContext()} returns true), by default this method
+   * throws an {@link Error}.
+   */
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
+    throw new Error("This method should not be called directly, but should be overridden.");
+  }
+
+  /**
+   * By default this method returns false. For actions which can be used in the Bazel context this method should return true.
+   */
+  public boolean enableActionInBazelContext() {
+    return false;
+  }
 
   private static void showMissingSdkDialog(Project project) {
     final int response = FlutterMessages.showDialog(project, FlutterBundle.message("flutter.sdk.notAvailable.message"),

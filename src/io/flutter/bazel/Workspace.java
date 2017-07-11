@@ -32,14 +32,19 @@ import java.util.*;
 public class Workspace {
   private static final String PLUGIN_CONFIG_PATH = "dart/config/intellij-plugins/flutter.json";
 
-  private @NotNull final VirtualFile root;
-  private @Nullable final PluginConfig config;
-  private @Nullable final String daemonScript;
+  @NotNull private final VirtualFile root;
+  @Nullable private final PluginConfig config;
+  @Nullable private final String daemonScript;
+  @Nullable private final String doctorScript;
 
-  private Workspace(@NotNull VirtualFile root, @Nullable PluginConfig config, @Nullable String daemonScript) {
+  private Workspace(@NotNull VirtualFile root,
+                    @Nullable PluginConfig config,
+                    @Nullable String daemonScript,
+                    @Nullable String doctorScript) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
+    this.doctorScript = doctorScript;
   }
 
   /**
@@ -137,6 +142,14 @@ public class Workspace {
   }
 
   /**
+   * Returns the script that starts 'flutter doctor', or null if not configured.
+   */
+  @Nullable
+  public String getDoctorScript() {
+    return doctorScript;
+  }
+
+  /**
    * Returns the script that runs the bazel target for a Flutter app, or null if not configured.
    */
   @Nullable
@@ -211,7 +224,22 @@ public class Workspace {
       }
     }
 
-    return new Workspace(root, config, daemonScript);
+    final String doctorScript;
+    if (config == null || config.getDoctorScript() == null) {
+      doctorScript = null;
+    } else {
+      final String script = config.getDoctorScript();
+      final String readonlyScript = readonlyPath + "/" + script;
+      if (root.findFileByRelativePath(script) != null) {
+        doctorScript = script;
+      } else if (root.findFileByRelativePath(readonlyScript) != null) {
+        doctorScript = readonlyScript;
+      } else {
+        doctorScript = null;
+      }
+    }
+
+    return new Workspace(root, config, daemonScript, doctorScript);
   }
 
   /**

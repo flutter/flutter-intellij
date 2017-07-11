@@ -57,6 +57,10 @@ class PluginConfig {
     return fields.daemonScript;
   }
 
+  @Nullable String getDoctorScript() {
+    return fields.doctorScript;
+  }
+
   @Nullable String getLaunchScript() {
     return fields.launchScript;
   }
@@ -130,6 +134,12 @@ class PluginConfig {
     private String daemonScript;
 
     /**
+     * The script to run to start 'flutter doctor'.
+     */
+    @SerializedName("doctorScript")
+    private String doctorScript;
+
+    /**
      *
      */
     @SerializedName("launchScript")
@@ -143,12 +153,13 @@ class PluginConfig {
       final Fields other = (Fields)obj;
       return Objects.equal(directoryPatterns, other.directoryPatterns)
              && Objects.equal(daemonScript, other.daemonScript)
+             && Objects.equal(doctorScript, other.doctorScript)
              && Objects.equal(launchScript, other.launchScript);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(directoryPatterns, daemonScript, launchScript);
+      return Objects.hashCode(directoryPatterns, daemonScript, doctorScript, launchScript);
     }
   }
 
