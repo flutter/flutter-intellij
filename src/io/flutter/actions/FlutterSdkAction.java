@@ -32,34 +32,36 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   public void actionPerformed(AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
 
-    // See if the Bazel workspace exists for this project.
-    final Workspace workspace = project != null ? WorkspaceCache.getInstance(project).getNow() : null;
-
-    if (enableActionInBazelContext() && workspace != null) {
-      FlutterInitializer.sendAnalyticsAction(this);
-      FileDocumentManager.getInstance().saveAllDocuments();
-      startCommandInBazelContext(project, workspace);
-    }
-    else {
-      final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
-      if (sdk == null) {
-        showMissingSdkDialog(project);
+    if (enableActionInBazelContext()) {
+      // See if the Bazel workspace exists for this project.
+      final Workspace workspace = project != null ? WorkspaceCache.getInstance(project).getNow() : null;
+      if (workspace != null) {
+        FlutterInitializer.sendAnalyticsAction(this);
+        FileDocumentManager.getInstance().saveAllDocuments();
+        startCommandInBazelContext(project, workspace);
         return;
       }
-
-      FlutterInitializer.sendAnalyticsAction(this);
-      FileDocumentManager.getInstance().saveAllDocuments();
-      startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
     }
+
+    final FlutterSdk sdk = project != null ? FlutterSdk.getFlutterSdk(project) : null;
+    if (sdk == null) {
+      showMissingSdkDialog(project);
+      return;
+    }
+
+    FlutterInitializer.sendAnalyticsAction(this);
+    FileDocumentManager.getInstance().saveAllDocuments();
+    startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
   }
 
   public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root);
 
   /**
    * Implemented by actions which are used in the Bazel context ({@link #enableActionInBazelContext()} returns true), by default this method
-   * is a no-op.
+   * throws an {@link Error}.
    */
   public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
+    throw new Error("This method should not be called directly, but should be overridden.");
   }
 
   /**
