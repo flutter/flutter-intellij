@@ -14,5 +14,5 @@ To set up a development environment:
     - intellij-plugins/Dart/Dart-community.iml
     - flutter-intellij/flutter-intellij-community.iml
     - flutter-intellij/flutter-studio/flutter-studio.iml
-6. Select the `community-main` project and add module
-   dependencies to the three modules just imported.
+6. Select the `community-main` module and add a module
+   dependency to `flutter-studio`.

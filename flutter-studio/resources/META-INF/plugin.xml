@@ -1,0 +1,12 @@
+<idea-plugin>
+  <name>Flutter for Android Studio</name>
+  <id>io.flutter.studio</id>
+  <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
+  <module value="flutter-studio"/>
+
+  <extensions defaultExtensionNs="com.intellij">
+
+    <postStartupActivity implementation="io.flutter.startup.FlutterStudioInitializer"/>
+
+  </extensions>
+</idea-plugin>
