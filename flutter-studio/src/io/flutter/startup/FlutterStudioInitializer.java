@@ -19,6 +19,7 @@ public class FlutterStudioInitializer implements StartupActivity {
     NewProjectAction newProject = new NewProjectAction();
     newProject.getTemplatePresentation().setText("New &Project...", true);
     newProject.getTemplatePresentation().setDescription("Create a new project from scratch");
+    // TODO(messick): Design a New Project wizard for Android Studio + Flutter.
     replaceAction("NewProject", newProject);
   }
 
