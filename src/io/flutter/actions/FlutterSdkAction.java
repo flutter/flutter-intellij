@@ -35,7 +35,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     if (enableActionInBazelContext()) {
       // See if the Bazel workspace exists for this project.
       final Workspace workspace = project != null ? WorkspaceCache.getInstance(project).getNow() : null;
-      if (workspace != null) {
+      if (workspace != null && workspace.usesFlutter(project)) {
         FlutterInitializer.sendAnalyticsAction(this);
         FileDocumentManager.getInstance().saveAllDocuments();
         startCommandInBazelContext(project, workspace);
