@@ -4,7 +4,11 @@
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
 <!--suppress AntResolveInspection -->
-<project name="flutter-intellij" default="build">
+<project
+    name="flutter-intellij"
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+    default="build">
   <property environment="env"/>
 
   <!-- defaults -->
@@ -113,6 +117,8 @@
         <include name="resources"/>
         <include name="gen"/>
         <include name="third_party/intellij-plugins-dart/src"/>
+        <include if:true="${studio}" name="flutter-studio/src"/>
+        <include if:true="${studio}" name="flutter-studio/resources"/>
       </dirset>
     </path>
 
@@ -156,6 +162,14 @@
         <type type="file"/>
       </fileset>
       <fileset dir="third_party/intellij-plugins-dart/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset if:true="${studio}" dir="flutter-studio/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset if:true="${studio}" dir="flutter-studio/resources">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>

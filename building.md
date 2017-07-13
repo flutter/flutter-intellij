@@ -21,6 +21,7 @@ build/flutter-intellij.jar
 - `ant build` - build the plugin and associated tests
 - `ant test` - run the unit tests
 - `ant all` - build the plugin and tests, and run the tests
+- `ant -Dstudio=true` - build the plugin for Android Studio
 
 ## The build pre-reqs
 
