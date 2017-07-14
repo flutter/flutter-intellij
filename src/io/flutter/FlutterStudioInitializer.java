@@ -1,12 +1,17 @@
 package io.flutter;
 
-import com.intellij.ide.actions.NewProjectAction;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 public class FlutterStudioInitializer {
+  private static final Logger LOG = Logger.getInstance(FlutterStudioInitializer.class.getName());
 
   public static void initializeAndroidStudio(@NotNull Project project) {
     try {
@@ -29,10 +34,22 @@ public class FlutterStudioInitializer {
   }
 
   public static void runActivity(@NotNull Project project) {
-    NewProjectAction newProject = new NewProjectAction();
-    newProject.getTemplatePresentation().setText("New &Project...", true);
-    newProject.getTemplatePresentation().setDescription("Create a new project from scratch");
-    // TODO(messick): Design a New Project wizard for Android Studio + Flutter.
-    replaceAction("NewProject", newProject);
+    try {
+      @SuppressWarnings("unchecked")
+      Class<AnAction> clazz = (Class<AnAction>)Class.forName("com.intellij.ide.actions.NewProjectAction");
+      AnAction newProject = clazz.newInstance();
+      Method method = clazz.getMethod("getTemplatePresentation");
+      Presentation present = (Presentation)method.invoke(newProject);
+      present.setText("New &Project...", true);
+      present.setDescription("Create a new project from scratch");
+      // TODO(messick): Design a New Project wizard for Android Studio + Flutter.
+      replaceAction("NewProject", newProject);
+    }
+    catch (ClassNotFoundException ex) {
+      // WebStorm doesn't have the class.
+    }
+    catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+      LOG.error(e);
+    }
   }
 }
