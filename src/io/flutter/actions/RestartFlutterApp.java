@@ -8,10 +8,11 @@ package io.flutter.actions;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,11 +30,13 @@ public class RestartFlutterApp extends FlutterAppAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    final Project project = getEventProject(e);
+    if (project == null) {
+      return;
+    }
+
     FlutterInitializer.sendAnalyticsAction(this);
 
-    if (getApp().isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
-      getApp().performRestartApp();
-    }
+    FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp());
   }
 }

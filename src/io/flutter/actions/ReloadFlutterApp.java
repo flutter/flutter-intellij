@@ -7,12 +7,12 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
-import com.jetbrains.lang.dart.DartPluginCapabilities;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,23 +32,23 @@ public class ReloadFlutterApp extends FlutterAppAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    final Project project = getEventProject(e);
+    if (project == null) {
+      return;
+    }
+
     FlutterInitializer.sendAnalyticsAction(this);
 
-    if (getApp().isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
+    // If the shift key is held down, perform a restart. We check to see if we're being invoked from the
+    // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go to action dialog.
+    final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
 
-      // If the shift key is held down, perform a restart. We check to see if we're being invoked from the
-      // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go to action dialog.
-      final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
-
-      if (shouldRestart) {
-        getApp().performRestartApp();
-      }
-      else {
-        // Else perform a hot reload.
-        final boolean pauseAfterRestart = DartPluginCapabilities.isSupported("supports.pausePostRequest");
-        getApp().performHotReload(pauseAfterRestart);
-      }
+    if (shouldRestart) {
+      FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp());
+    }
+    else {
+      // Else perform a hot reload.
+      FlutterReloadManager.getInstance(project).saveAllAndReload(getApp());
     }
   }
 }

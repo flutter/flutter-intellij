@@ -75,6 +75,7 @@ public class MainFile {
    * <p>
    * If there is an error, {@link Result#canLaunch} will return false and the error is available via {@link Result#getError}
    */
+  @NotNull
   public static MainFile.Result verify(@Nullable String path, Project project) {
     if (!ApplicationManager.getApplication().isReadAccessAllowed()) {
       throw new IllegalStateException("need read access");

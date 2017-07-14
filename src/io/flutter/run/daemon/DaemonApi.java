@@ -266,21 +266,25 @@ public class DaemonApi {
     return String.join("", lines);
   }
 
-  @SuppressWarnings("unused")
   public static class RestartResult {
     private int code;
     private String message;
 
-    boolean ok() {
+    public boolean ok() {
       return code == 0;
     }
 
-    int getCode() {
+    public int getCode() {
       return code;
     }
 
-    String getMessage() {
+    public String getMessage() {
       return message;
+    }
+
+    @Override
+    public String toString() {
+      return getCode() + ":" + getMessage();
     }
   }
 

@@ -399,6 +399,10 @@
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.WrongModuleTypeNotificationProvider"/>
 
+    <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
+                    serviceImplementation="io.flutter.run.FlutterReloadManager"
+                    overrides="false"/>
+
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
   </extensions>
 </idea-plugin>

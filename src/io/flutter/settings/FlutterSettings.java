@@ -38,6 +38,18 @@ public class FlutterSettings implements PersistentStateComponent<FlutterSettings
     listeners.remove(listener);
   }
 
+  private boolean reloadOnSave = false;
+
+  public boolean isReloadOnSave() {
+    return reloadOnSave;
+  }
+
+  public void setReloadOnSave(boolean value) {
+    this.reloadOnSave = value;
+  }
+
+  // PersistentStateComponent interface
+
   public FlutterSettings getState() {
     return this;
   }

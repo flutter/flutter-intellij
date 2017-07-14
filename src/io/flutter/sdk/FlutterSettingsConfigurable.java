@@ -26,6 +26,7 @@ import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -47,6 +48,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
   private LinkLabel<String> myPrivacyPolicy;
+  private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private final @NotNull Project myProject;
 
@@ -108,6 +110,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Override
   public boolean isModified() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
+    final FlutterSettings settings = FlutterSettings.getInstance(myProject);
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
@@ -116,6 +119,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     if (FlutterInitializer.getCanReportAnalytics() != myReportUsageInformationCheckBox.isSelected()) {
+      return true;
+    }
+
+    if (settings.isReloadOnSave() != myHotReloadOnSaveCheckBox.isSelected()) {
       return true;
     }
 
@@ -145,6 +152,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
     FlutterInitializer.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
 
+    final FlutterSettings settings = FlutterSettings.getInstance(myProject);
+    settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
+
     reset(); // because we rely on remembering initial state
   }
 
@@ -159,7 +169,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
 
     updateVersionText();
+
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
+
+    final FlutterSettings settings = FlutterSettings.getInstance(myProject);
+    myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myEnableVerboseLoggingCheckBox.setSelected(FlutterInitializer.isVerboseLogging());
   }
 

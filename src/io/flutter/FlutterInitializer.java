@@ -23,6 +23,7 @@ import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.dart.DartfmtSettings;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.utils.FlutterModuleUtils;
@@ -131,6 +132,9 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     FlutterRunNotifications.init(project);
+
+    // Watch save actions.
+    FlutterReloadManager.init(project);
 
     // Do a one-time set for the default value of the whole file dartfmt setting.
     if (DartfmtSettings.dartPluginHasSetting()) {

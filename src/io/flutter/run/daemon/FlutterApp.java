@@ -15,12 +15,18 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentIterator;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +44,8 @@ public class FlutterApp {
   private static final Logger LOG = Logger.getInstance(FlutterApp.class);
   private static final Key<FlutterApp> FLUTTER_APP_KEY = new Key<>("FLUTTER_APP_KEY");
 
+  private final @NotNull Project myProject;
+  private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull DaemonApi myDaemonApi;
@@ -57,9 +65,15 @@ public class FlutterApp {
 
   private final ObservatoryConnector myConnector;
 
-  FlutterApp(@NotNull RunMode mode,
+  private long myLastReload;
+
+  FlutterApp(@NotNull Project project,
+             @Nullable Module module,
+             @NotNull RunMode mode,
              @NotNull ProcessHandler processHandler,
              @NotNull DaemonApi daemonApi) {
+    myProject = project;
+    myModule = module;
     myMode = mode;
     myProcessHandler = processHandler;
     myProcessHandler.putUserData(FLUTTER_APP_KEY, this);
@@ -101,6 +115,8 @@ public class FlutterApp {
         myResume = null;
       }
     };
+
+    myLastReload = System.currentTimeMillis();
   }
 
   @Nullable
@@ -114,7 +130,9 @@ public class FlutterApp {
    * (Assumes we are launching it in --machine mode.)
    */
   @NotNull
-  public static FlutterApp start(Project project, @NotNull RunMode mode,
+  public static FlutterApp start(@NotNull Project project,
+                                 @Nullable Module module,
+                                 @NotNull RunMode mode,
                                  @NotNull GeneralCommandLine command,
                                  @NotNull String analyticsStart,
                                  @NotNull String analyticsStop)
@@ -136,7 +154,7 @@ public class FlutterApp {
     });
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(mode, process, api);
+    final FlutterApp app = new FlutterApp(project, module, mode, process, api);
     api.listen(process, new FlutterAppListener(app, project));
     return app;
   }
@@ -167,6 +185,10 @@ public class FlutterApp {
     return myState.get() == State.STARTED;
   }
 
+  public boolean isReloading() {
+    return myState.get() == State.RELOADING;
+  }
+
   void setAppId(@NotNull String id) {
     myAppId = id;
   }
@@ -182,29 +204,53 @@ public class FlutterApp {
   /**
    * Perform a full restart of the the app.
    */
-  public void performRestartApp() {
+  public CompletableFuture<DaemonApi.RestartResult> performRestartApp() {
     if (myAppId == null) {
       LOG.warn("cannot restart Flutter app because app id is not set");
-      return;
+
+      final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
+      result.completeExceptionally(new IllegalStateException("cannot restart Flutter app because app id is not set"));
+      return result;
     }
 
+    final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
-    myDaemonApi.restartApp(myAppId, true, false)
-      .thenRunAsync(() -> changeState(State.STARTED));
+
+    final CompletableFuture<DaemonApi.RestartResult> future =
+      myDaemonApi.restartApp(myAppId, true, false);
+    future.thenAccept(result -> {
+      changeState(State.STARTED);
+      if (result.ok()) {
+        myLastReload = reloadTimestamp;
+      }
+    });
+    return future;
   }
 
   /**
    * Perform a hot reload of the app.
    */
-  public void performHotReload(boolean pauseAfterRestart) {
+  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart) {
     if (myAppId == null) {
       LOG.warn("cannot reload Flutter app because app id is not set");
-      return;
+
+      final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
+      result.completeExceptionally(new IllegalStateException("cannot reload Flutter app because app id is not set"));
+      return result;
     }
 
+    final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
-    myDaemonApi.restartApp(myAppId, false, pauseAfterRestart)
-      .thenRunAsync(() -> changeState(State.STARTED));
+
+    final CompletableFuture<DaemonApi.RestartResult> future =
+      myDaemonApi.restartApp(myAppId, false, pauseAfterRestart);
+    future.thenAccept(result -> {
+      changeState(State.STARTED);
+      if (result.ok()) {
+        myLastReload = reloadTimestamp;
+      }
+    });
+    return future;
   }
 
   public CompletableFuture<Boolean> togglePlatform() {
@@ -336,6 +382,33 @@ public class FlutterApp {
 
   public void removeStateListener(@NotNull StateListener listener) {
     myListeners.remove(listener);
+  }
+
+  public boolean hasChangesSinceLastReload() {
+    final long[] latest = new long[1];
+
+    final ContentIterator iterator = file -> {
+      if (file.isDirectory()) {
+        return true;
+      }
+      if (FlutterUtils.isFlutteryFile(file) || ".packages".equals(file.getName())) {
+        latest[0] = Math.max(latest[0], file.getTimeStamp());
+      }
+      return true;
+    };
+
+    if (myModule != null) {
+      ModuleRootManager.getInstance(myModule).getFileIndex().iterateContent(iterator);
+    }
+    else {
+      for (Module module : ModuleManager.getInstance(myProject).getModules()) {
+        if (FlutterModuleUtils.isFlutterModule(module)) {
+          ModuleRootManager.getInstance(module).getFileIndex().iterateContent(iterator);
+        }
+      }
+    }
+
+    return latest[0] > myLastReload;
   }
 
   public interface StateListener {
