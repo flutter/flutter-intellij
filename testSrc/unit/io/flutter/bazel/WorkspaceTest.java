@@ -50,14 +50,17 @@ public class WorkspaceTest {
 
     tmp.ensureDir("abc/dart/config/intellij-plugins");
     tmp.writeFile("abc/dart/config/intellij-plugins/flutter.json",
-                  "{\"daemonScript\": \"something.sh\"}");
-    tmp.writeFile("abc/something.sh", "");
+                  "{\"daemonScript\": \"something_daemon.sh\"," +
+                  "\"doctorScript\": \"something_doctor.sh\"}");
+    tmp.writeFile("abc/something_daemon.sh", "");
+    tmp.writeFile("abc/something_doctor.sh", "");
 
     final Workspace w = Workspace.load(fixture.getProject());
 
     assertNotNull("expected a workspace", w);
     assertEquals(expectedRoot, w.getRoot());
-    assertEquals("something.sh", w.getDaemonScript());
+    assertEquals("something_daemon.sh", w.getDaemonScript());
+    assertEquals("something_doctor.sh", w.getDoctorScript());
   }
 
   @Test
@@ -71,15 +74,18 @@ public class WorkspaceTest {
 
     tmp.ensureDir("READONLY/abc/dart/config/intellij-plugins");
     tmp.writeFile("READONLY/abc/dart/config/intellij-plugins/flutter.json",
-                  "{\"daemonScript\": \"scripts/startDaemon.sh\"}");
+                  "{\"daemonScript\": \"scripts/flutter_daemon.sh\"," +
+                  "\"doctorScript\": \"scripts/flutter_doctor.sh\"}");
     tmp.ensureDir("READONLY/abc/scripts");
-    tmp.writeFile("READONLY/abc/scripts/startDaemon.sh", "");
+    tmp.writeFile("READONLY/abc/scripts/flutter_daemon.sh", "");
+    tmp.writeFile("READONLY/abc/scripts/flutter_doctor.sh", "");
 
     final Workspace w = Workspace.load(fixture.getProject());
 
     assertNotNull("expected a workspace", w);
     assertEquals(expectedRoot, w.getRoot());
-    assertEquals("../READONLY/abc/scripts/startDaemon.sh", w.getDaemonScript());
+    assertEquals("../READONLY/abc/scripts/flutter_daemon.sh", w.getDaemonScript());
+    assertEquals("../READONLY/abc/scripts/flutter_doctor.sh", w.getDoctorScript());
   }
 
   @Test

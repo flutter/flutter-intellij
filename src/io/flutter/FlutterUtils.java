@@ -14,6 +14,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
@@ -73,6 +74,20 @@ public class FlutterUtils {
   @Nullable
   public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
+  }
+
+
+  /**
+   * Returns the Dart file for the given PsiElement, or null if not a match.
+   */
+  @Nullable
+  public static DartFile getDartFile(final @Nullable PsiElement elt) {
+    if (elt == null) return null;
+
+    final PsiFile psiFile = elt.getContainingFile();
+    if (!(psiFile instanceof DartFile)) return null;
+
+    return (DartFile)psiFile;
   }
 
   public static void openFlutterSettings(@Nullable Project project) {
@@ -157,5 +172,4 @@ public class FlutterUtils {
       return false;
     }
   }
-
 }

@@ -17,6 +17,7 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElement;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
 import io.flutter.FlutterUtils;
@@ -43,11 +44,15 @@ public class FlutterModuleUtils {
     // If not IntelliJ, assume a small IDE (no multi-module project support).
     // Look for a module with a flutter-like file structure.
     if (!PlatformUtils.isIntelliJ()) {
-      return module != null && FlutterModuleUtils.usesFlutter(module);
+      return module != null && usesFlutter(module);
     }
     else {
       return module != null && ModuleType.is(module, FlutterModuleType.getInstance());
     }
+  }
+
+  public static boolean isInFlutterModule(@NotNull PsiElement element) {
+    return isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
   }
 
   public static boolean hasFlutterModule(@NotNull Project project) {

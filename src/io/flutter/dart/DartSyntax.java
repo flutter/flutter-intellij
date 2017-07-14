@@ -70,21 +70,20 @@ public class DartSyntax {
    *
    * @return true if the given element is a call to function, false otherwise
    */
-  public static boolean isCallToFunctionNamed(@Nullable PsiElement element, @NotNull String function) {
-    if (!(element instanceof DartCallExpression)) return false;
-    final String name = getCalledFunctionName((DartCallExpression)element);
+  public static boolean isCallToFunctionNamed(@NotNull DartCallExpression element, @NotNull String function) {
+    final String name = getCalledFunctionName(element);
     return Objects.equals(name, function);
   }
 
   /**
-   * Check if an element is a declaration of a function with the given name.
+   * Check if an element is a declaration of "main".
    *
-   * @return true if the given element is a declaration, false otherwise
+   * @return true if the given element is a main declaration, false otherwise
    */
-  public static boolean isFunctionDeclarationNamed(@Nullable PsiElement element, @NotNull String name) {
+  public static boolean isMainFunctionDeclaration(@Nullable PsiElement element) {
     if (!(element instanceof DartFunctionDeclarationWithBodyOrNative)) return false;
     final String functionName = ((DartFunctionDeclarationWithBodyOrNative)element).getComponentName().getId().getText();
-    return Objects.equals(functionName, name);
+    return Objects.equals(functionName, "main");
   }
 
   /**
@@ -113,6 +112,5 @@ public class DartSyntax {
     if (!(call.getFirstChild() instanceof DartReference)) return null;
     return call.getFirstChild().getText();
   }
-
 
 }

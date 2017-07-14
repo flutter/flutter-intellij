@@ -9,7 +9,6 @@ import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ui.ColorIcon;
@@ -56,7 +55,7 @@ public class FlutterEditorAnnotator implements Annotator {
     // TODO(devoncarew): Use a DartVisitor instead of calling element.getText()?
 
     if (element instanceof DartReferenceExpression || element instanceof DartArrayAccessExpression) {
-      if (!isInFlutterModule(element)) {
+      if (!FlutterModuleUtils.isInFlutterModule(element)) {
         return;
       }
 
@@ -132,10 +131,6 @@ public class FlutterEditorAnnotator implements Annotator {
         }
       }
     }
-  }
-
-  private static boolean isInFlutterModule(@NotNull PsiElement element) {
-    return FlutterModuleUtils.isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
   }
 
   private Icon getIcon(String id) {

@@ -5,15 +5,56 @@
  */
 package io.flutter.actions;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.bazel.Workspace;
+import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
+
+  private static final Logger LOG = Logger.getInstance(FlutterDoctorAction.class.getName());
+
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {
     sdk.flutterDoctor().startInConsole(project);
+  }
+
+  @Override
+  public void startCommandInBazelContext(@NotNull Project project, @NotNull Workspace workspace) {
+    final String doctorScript = workspace.getDoctorScript();
+    if (doctorScript != null) {
+      runWorkspaceFlutterDoctorScript(project, workspace.getRoot().getPath(), doctorScript);
+    } else {
+      LOG.error("No \"doctorScript\" script in the flutter.json file.");
+    }
+  }
+
+  private void runWorkspaceFlutterDoctorScript(@NotNull Project project, @NotNull String workDir, @NotNull String doctorScript) {
+    final GeneralCommandLine cmdLine = new GeneralCommandLine().withWorkDirectory(workDir);
+    cmdLine.setCharset(CharsetToolkit.UTF8_CHARSET);
+    cmdLine.setExePath(FileUtil.toSystemDependentName(doctorScript));
+
+    final OSProcessHandler handler;
+    try {
+      handler = new OSProcessHandler(cmdLine);
+      FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
+    }
+    catch (ExecutionException e) {
+      LOG.error(e);
+    }
+  }
+
+  @Override
+  public boolean enableActionInBazelContext() {
+    return true;
   }
 }

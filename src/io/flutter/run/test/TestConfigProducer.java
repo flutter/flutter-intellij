@@ -30,6 +30,11 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
     super(TestConfigType.getInstance());
   }
 
+  private static boolean isFlutterContext(@NotNull ConfigurationContext context) {
+    final PsiElement location = context.getPsiLocation();
+    return location != null && FlutterModuleUtils.isInFlutterModule(location);
+  }
+
   /**
    * If the current file looks like a Flutter test, initializes the run config to run it.
    * <p>
@@ -37,6 +42,9 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+
+    if (!isFlutterContext(context)) return false;
+
     final PsiElement elt = context.getPsiLocation();
     if (elt instanceof PsiDirectory) {
       return setupForDirectory(config, (PsiDirectory)elt);
@@ -97,8 +105,6 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
     final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
     if (root == null) return false;
-
-    if (!FlutterModuleUtils.hasFlutterModule(dir.getProject())) return false;
 
     if (!root.hasTests(dir.getVirtualFile())) return false;
 

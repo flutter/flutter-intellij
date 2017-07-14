@@ -12,12 +12,12 @@ import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.ide.DartWritingAccessProvider;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -140,19 +140,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
    * Returns the Dart file at the current location, or null if not a match.
    */
   public static @Nullable DartFile getDartFile(final @NotNull ConfigurationContext context) {
-    return getDartFile(context.getPsiLocation());
-  }
-
-  /**
-   * Returns the Dart file for the given PsiElement, or null if not a match.
-   */
-  public static @Nullable DartFile getDartFile(final @Nullable PsiElement elt) {
-    if (elt == null) return null;
-
-    final PsiFile psiFile = elt.getContainingFile();
-    if (!(psiFile instanceof DartFile)) return null;
-
-    return (DartFile)psiFile;
+    return FlutterUtils.getDartFile(context.getPsiLocation());
   }
 
   /**
