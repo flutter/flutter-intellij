@@ -10,7 +10,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
-import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProviderZ;
+import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.TIntLongHashMap;
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor;
@@ -455,7 +455,7 @@ public abstract class DartTestEventsConverterZ extends OutputToGeneralTestEvents
     }
 
     if (loc != null) {
-      String nameList = GSON.toJson(item.nameList(), DartTestLocationProviderZ.STRING_LIST_TYPE);
+      String nameList = GSON.toJson(item.nameList(), DartTestLocationProvider.STRING_LIST_TYPE);
       location = loc + "," + item.getLine() + "," + item.getColumn() + "," + nameList;
     }
 
