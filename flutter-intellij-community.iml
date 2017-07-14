@@ -28,5 +28,6 @@
     <orderEntry type="library" name="Velocity" level="project" />
     <orderEntry type="module" module-name="smRunner" />
     <orderEntry type="module" module-name="xml" />
+    <orderEntry type="module" module-name="idea-ui" />
   </component>
 </module>

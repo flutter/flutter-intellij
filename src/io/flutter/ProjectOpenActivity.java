@@ -35,6 +35,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
+    FlutterStudioInitializer.initializeAndroidStudio(project);
     PubRoot root = PubRoot.forProjectWithRefresh(project);
     if (root == null) {
       return;
