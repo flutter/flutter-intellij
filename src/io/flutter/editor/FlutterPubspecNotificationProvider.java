@@ -29,6 +29,12 @@ import javax.swing.*;
 public class FlutterPubspecNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.pubspec");
 
+  @NotNull private final Project project;
+
+  public FlutterPubspecNotificationProvider(@NotNull Project project) {
+    this.project = project;
+  }
+
   @NotNull
   @Override
   public Key<EditorNotificationPanel> getKey() {
@@ -42,13 +48,9 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       return null;
     }
 
+    // The Bazel workspace condition is handled by this check, pubspecs are not used.
+    // TODO(jwren) Add additional check to exit if this is a Flutter Bazel workspace (in the event that some pubspec.yaml file is opened).
     if (!PubRoot.isPubspec(file)) {
-      return null;
-    }
-
-    // Check for a flutter sdk.
-    final Project project = ProjectLocator.getInstance().guessProjectForFile(file);
-    if (project == null) {
       return null;
     }
 
