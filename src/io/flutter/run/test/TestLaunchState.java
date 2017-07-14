@@ -20,7 +20,6 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.sm.runner.SMTestLocator;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.lang.dart.ide.runner.test.DartTestEventsConverter;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.pub.PubRoot;
@@ -136,7 +135,7 @@ class TestLaunchState extends CommandLineState  {
     @Override
     public OutputToGeneralTestEventsConverter createTestEventsConverter(@NotNull String testFrameworkName,
                                                                         @NotNull TestConsoleProperties props) {
-      return new DartTestEventsConverter(testFrameworkName, props, resolver);
+      return new FlutterTestEventsConverter(testFrameworkName, props, resolver);
     }
 
     @Nullable
