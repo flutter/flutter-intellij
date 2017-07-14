@@ -38,8 +38,7 @@ public class FlutterStudioInitializer {
       @SuppressWarnings("unchecked")
       Class<AnAction> clazz = (Class<AnAction>)Class.forName("com.intellij.ide.actions.NewProjectAction");
       AnAction newProject = clazz.newInstance();
-      Method method = clazz.getMethod("getTemplatePresentation");
-      Presentation present = (Presentation)method.invoke(newProject);
+      Presentation present = newProject.getTemplatePresentation();
       present.setText("New &Project...", true);
       present.setDescription("Create a new project from scratch");
       // TODO(messick): Design a New Project wizard for Android Studio + Flutter.
@@ -48,7 +47,7 @@ public class FlutterStudioInitializer {
     catch (ClassNotFoundException ex) {
       // WebStorm doesn't have the class.
     }
-    catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException e) {
+    catch (IllegalAccessException | InstantiationException e) {
       LOG.error(e);
     }
   }
