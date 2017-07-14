@@ -47,6 +47,14 @@ public class FlutterReloadManager {
   private final @NotNull Project myProject;
   private final FlutterSettings mySettings;
 
+  /**
+   * Initialize the reload manager for the given project.
+   */
+  public static void init(@NotNull Project project) {
+    // Call getInstance() will init FlutterReloadManager for the given project.
+    getInstance(project);
+  }
+
   public static FlutterReloadManager getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, FlutterReloadManager.class);
   }

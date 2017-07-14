@@ -134,7 +134,7 @@ public class FlutterInitializer implements StartupActivity {
     FlutterRunNotifications.init(project);
 
     // Watch save actions.
-    FlutterReloadManager.getInstance(project);
+    FlutterReloadManager.init(project);
 
     // Do a one-time set for the default value of the whole file dartfmt setting.
     if (DartfmtSettings.dartPluginHasSetting()) {
