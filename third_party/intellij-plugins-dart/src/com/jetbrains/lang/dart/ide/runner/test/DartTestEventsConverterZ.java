@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
  * convert a successful test into a failure. That case is not being handled.
  */
 @SuppressWarnings({"Duplicates", "FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
-public abstract class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
+public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
   private static final Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class.getName());
 
   private static final String TYPE_START = "start";
@@ -146,7 +146,9 @@ public abstract class DartTestEventsConverterZ extends OutputToGeneralTestEvents
   /**
    * Hook to process arrays.
    */
-  abstract protected boolean process(JsonArray array);
+  protected boolean process(JsonArray array) {
+    return false;
+  }
 
   private boolean doProcessServiceMessages(@NotNull final String text) throws ParseException {
     LOG.debug(">>> " + text);
@@ -272,8 +274,6 @@ public abstract class DartTestEventsConverterZ extends OutputToGeneralTestEvents
 
   private boolean handleGroup(JsonObject obj) throws ParseException {
     Group group = getGroup(obj.getAsJsonObject(DEF_GROUP));
-
-    System.out.println("handling group: " + group);
 
     // From spec: The implicit group at the root of each test suite has null name and parentID attributes.
     if (group.getParent() == null && group.getTestCount() > 0) {
