@@ -90,9 +90,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     }
 
     // Add actions common to the run and debug windows.
-
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
-    final Computable<Boolean> canReload = () -> app.getMode().isReloadEnabled() && isSessionActive.compute();
+    final Computable<Boolean> canReload = () -> app.getMode().isReloadEnabled() && isSessionActive.compute() && !app.isReloading();
 
     if (app.getMode() == RunMode.DEBUG) {
       topToolbar.addSeparator();

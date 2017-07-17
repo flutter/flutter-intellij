@@ -60,6 +60,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     }
 
     presentation.setVisible(true);
+    presentation.setEnabled(false);
 
     // Retargeted actions defer to their targets for presentation updates.
     final AnAction action = getAction();
@@ -70,9 +71,6 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
         presentation.setText(text, true);
       }
       action.update(e);
-    }
-    else {
-      presentation.setEnabled(false);
     }
   }
 
