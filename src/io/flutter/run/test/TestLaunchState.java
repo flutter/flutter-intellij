@@ -18,8 +18,10 @@ import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil;
 import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter;
 import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties;
 import com.intellij.execution.testframework.sm.runner.SMTestLocator;
+import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.test.DartTestEventsConverter;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
@@ -98,7 +100,14 @@ class TestLaunchState extends CommandLineState  {
     // Create a console showing a test tree.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(getEnvironment().getProject(), testFileOrDir);
     final ConsoleProps props = new ConsoleProps(config, executor, resolver);
-    return SMTestRunnerConnectionUtil.createConsole("FlutterTestRunner", props);
+    final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole("FlutterTestRunner", props);
+    console.addMessageFilter(new DartRelativePathsConsoleFilter(config.getProject(), getBaseDir()));
+    return console;
+  }
+
+  private String getBaseDir() {
+    final PubRoot root = config.getFields().getPubRoot(config.getProject());
+    return root != null ? root.getPath() : config.getProject().getBaseDir().getPath();
   }
 
   @NotNull
