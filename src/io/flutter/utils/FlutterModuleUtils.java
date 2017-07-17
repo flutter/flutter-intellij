@@ -214,12 +214,15 @@ public class FlutterModuleUtils {
     return CollectionUtils.filter(getModules(project), m -> isFlutterModule(m) || usesFlutter(m));
   }
 
-  public static void convertFromDeprecatedModuleType(@NotNull Project project) {
+  public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
+    boolean modulesConverted = false;
     for (Module module : getModules(project)) {
       if (isDeprecatedFlutterModuleType(module)) {
         setFlutterModuleType(module);
+        modulesConverted = true;
       }
     }
+    return modulesConverted;
   }
 
   public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {

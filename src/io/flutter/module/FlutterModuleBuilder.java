@@ -219,7 +219,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Override
   @NotNull
   public String getBuilderId() {
-    // The builder id is used to distingish between different builders with the same module type, see
+    // The builder id is used to distinguish between different builders with the same module type, see
     // com.intellij.ide.projectWizard.ProjectTypeStep for an example.
     return StringUtil.notNullize(super.getBuilderId()) + "_" + FlutterModuleBuilder.class.getCanonicalName();
   }
