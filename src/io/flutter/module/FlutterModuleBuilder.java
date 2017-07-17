@@ -20,6 +20,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
@@ -42,7 +43,7 @@ import static java.util.Arrays.asList;
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
-  private static final String DART_GROUP_NAME = "Static Web";
+  private static final String DART_GROUP_NAME = "Static Web"; // == WebModuleBuilder.GROUP_NAME
 
   private FlutterModuleWizardStep myStep;
 
@@ -54,6 +55,11 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Override
   public String getPresentableName() {
     return FlutterBundle.message("flutter.module.name");
+  }
+
+  @Override
+  public String getDescription() {
+    return FlutterBundle.message("flutter.project.description");
   }
 
   // This method does not exist in 2017.2.
@@ -211,8 +217,17 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   @Override
+  @NotNull
+  public String getBuilderId() {
+    // The builder id is used to distinguish between different builders with the same module type, see
+    // com.intellij.ide.projectWizard.ProjectTypeStep for an example.
+    return StringUtil.notNullize(super.getBuilderId()) + "_" + FlutterModuleBuilder.class.getCanonicalName();
+  }
+
+  @Override
+  @NotNull
   public ModuleType getModuleType() {
-    return FlutterModuleType.getInstance();
+    return FlutterModuleUtils.getModuleTypeForFlutter();
   }
 
   /**

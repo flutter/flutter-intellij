@@ -18,6 +18,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,8 +35,8 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
 
     if (enableActionInBazelContext()) {
       // See if the Bazel workspace exists for this project.
-      final Workspace workspace = project != null ? WorkspaceCache.getInstance(project).getNow() : null;
-      if (workspace != null && workspace.usesFlutter(project)) {
+      final Workspace workspace = FlutterModuleUtils.getFlutterBazelWorkspace(project);
+      if (workspace != null) {
         FlutterInitializer.sendAnalyticsAction(this);
         FileDocumentManager.getInstance().saveAllDocuments();
         startCommandInBazelContext(project, workspace);

@@ -33,7 +33,9 @@ import static java.util.Arrays.asList;
 public class FlutterSdk {
   public static final String FLUTTER_SDK_GLOBAL_LIB_NAME = "Flutter SDK";
 
-  private static final String DART_CORE_SUFFIX = "/bin/cache/dart-sdk/lib/core";
+  public static final String DART_SDK_SUFFIX = "/bin/cache/dart-sdk";
+
+  private static final String DART_CORE_SUFFIX = DART_SDK_SUFFIX + "/lib/core";
 
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
 
@@ -61,11 +63,10 @@ public class FlutterSdk {
     }
 
     final String dartPath = dartSdk.getHomePath();
-    final String suffix = "/bin/cache/dart-sdk";
-    if (!dartPath.endsWith(suffix)) {
+    if (!dartPath.endsWith(DART_SDK_SUFFIX)) {
       return null;
     }
-    return forPath(dartPath.substring(0, dartPath.length() - suffix.length()));
+    return forPath(dartPath.substring(0, dartPath.length() - DART_SDK_SUFFIX.length()));
   }
 
   /**

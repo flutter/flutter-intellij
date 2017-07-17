@@ -9,10 +9,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -20,9 +17,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.util.PlatformUtils;
+import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
+import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
-import io.flutter.module.FlutterModuleType;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterRunConfigurationType;
@@ -35,42 +34,85 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
+import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
+
 public class FlutterModuleUtils {
+
+  private static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "FLUTTER_MODULE_TYPE";
 
   private FlutterModuleUtils() {
   }
 
-  public static boolean isFlutterModule(@Nullable Module module) {
+  /**
+   * This provides the {@link ModuleType} for Flutter modules to be assigned by the {@link io.flutter.module.FlutterModuleBuilder} and
+   * elsewhere in the Flutter plugin.
+   * <p/>
+   * For Flutter module detection however, {@link ModuleType}s should not be used to determine Flutterness.
+   */
+  @NotNull
+  public static ModuleType getModuleTypeForFlutter() {
+    return WebModuleType.getInstance();
+  }
+
+  /**
+   * Return true if the passed module is of a Flutter type.  Before version M16 this plugin had its own Flutter {@link ModuleType}. Post M16
+   * a Flutter module is defined by the following:
+   * <p>
+   * <code>
+   * [Flutter support enabled for a module] ===
+   * [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
+   * </code>
+   */
+  public static boolean isFlutterModule(@Nullable final Module module) {
+
+    if (module == null) return false;
+
     // If not IntelliJ, assume a small IDE (no multi-module project support).
     // Look for a module with a flutter-like file structure.
     if (!PlatformUtils.isIntelliJ()) {
-      return module != null && usesFlutter(module);
+      return usesFlutter(module);
     }
     else {
-      return module != null && ModuleType.is(module, FlutterModuleType.getInstance());
+      // [Flutter support enabled for a module] ===
+      // [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
+      final DartSdk dartSdk = DartPlugin.getDartSdk(module.getProject());
+      final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
+      return dartSdkPath != null && dartSdkPath.endsWith(DART_SDK_SUFFIX) && DartPlugin.isDartSdkEnabled(module);
     }
+  }
+
+  public static boolean hasFlutterModule(@NotNull Project project) {
+    return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::isFlutterModule);
   }
 
   public static boolean isInFlutterModule(@NotNull PsiElement element) {
     return isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
   }
 
-  public static boolean hasFlutterModule(@NotNull Project project) {
-    if (ModuleUtil.hasModulesOfType(project, FlutterModuleType.getInstance())) {
-      return true;
-    }
-
-    // If not IntelliJ, assume a small IDE (no multi-module project support).
-    // Look for a module with a flutter-like file structure.
-    if (!PlatformUtils.isIntelliJ()) {
-      if (CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::usesFlutter)) {
-        return true;
+  /**
+   * Return the the Flutter {@link Workspace} if there is atleast module that is determined to be a Flutter module by the workspace, and has
+   * the Dart SDK enabled module.
+   */
+  @Nullable
+  public static Workspace getFlutterBazelWorkspace(@Nullable Project project) {
+    if (project == null) return null;
+    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
+    if (workspace == null) return null;
+    for (Module module : getModules(project)) {
+      if (DartPlugin.isDartSdkEnabled(module) && workspace.usesFlutter(module)) {
+        return workspace;
       }
     }
-
-    return false;
+    return null;
   }
 
+  /**
+   * Return true if the passed {@link Project} is a Bazel Flutter {@link Project}. If the {@link Workspace} is needed after this call,
+   * {@link #getFlutterBazelWorkspace(Project)} should be used.
+   */
+  public static boolean isFlutterBazelProject(@Nullable Project project) {
+    return getFlutterBazelWorkspace(project) != null;
+  }
 
   @Nullable
   public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
@@ -172,8 +214,26 @@ public class FlutterModuleUtils {
     return CollectionUtils.filter(getModules(project), m -> isFlutterModule(m) || usesFlutter(m));
   }
 
+  public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
+    boolean modulesConverted = false;
+    for (Module module : getModules(project)) {
+      if (isDeprecatedFlutterModuleType(module)) {
+        setFlutterModuleType(module);
+        modulesConverted = true;
+      }
+    }
+    return modulesConverted;
+  }
+
+  public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
+    return DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"));
+  }
+
+  /**
+   * Set the passed module to the module type used by Flutter, defined by {@link #getModuleTypeForFlutter()}.
+   */
   public static void setFlutterModuleType(@NotNull Module module) {
-    module.setOption(Module.ELEMENT_TYPE, FlutterModuleType.getInstance().getId());
+    module.setOption(Module.ELEMENT_TYPE, getModuleTypeForFlutter().getId());
   }
 
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {

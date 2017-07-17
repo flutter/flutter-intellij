@@ -49,7 +49,8 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
     }
 
     // The Bazel workspace condition is handled by this check, pubspecs are not used.
-    // TODO(jwren) Add additional check to exit if this is a Flutter Bazel workspace (in the event that some pubspec.yaml file is opened).
+    // If for some reason a pubspec is opened, the next condition, isFlutterModule, will return false,
+    // there is no reason to call FlutterModuleUtils.isFlutterBazelProject().
     if (!PubRoot.isPubspec(file)) {
       return null;
     }
