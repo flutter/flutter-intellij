@@ -145,7 +145,7 @@ class TestLaunchState extends CommandLineState  {
     @Override
     public OutputToGeneralTestEventsConverter createTestEventsConverter(@NotNull String testFrameworkName,
                                                                         @NotNull TestConsoleProperties props) {
-      return new DartTestEventsConverter(testFrameworkName, props, resolver);
+      return new FlutterTestEventsConverter(testFrameworkName, props, resolver);
     }
 
     @Nullable
