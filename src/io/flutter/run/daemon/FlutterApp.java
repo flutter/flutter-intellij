@@ -182,7 +182,8 @@ public class FlutterApp {
   }
 
   public boolean isStarted() {
-    return myState.get() == State.STARTED;
+    final State state = myState.get();
+    return state != State.STARTING && state != State.TERMINATED;
   }
 
   public boolean isReloading() {
