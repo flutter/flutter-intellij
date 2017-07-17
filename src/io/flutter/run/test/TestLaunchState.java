@@ -9,6 +9,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.testframework.TestConsoleProperties;
@@ -20,11 +21,14 @@ import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.execution.testframework.sm.runner.SMTestLocator;
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
-import com.jetbrains.lang.dart.ide.runner.test.DartTestEventsConverter;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
@@ -97,11 +101,18 @@ class TestLaunchState extends CommandLineState  {
     if (!testConsoleEnabled) {
       return super.createConsole(executor);
     }
+
     // Create a console showing a test tree.
-    final DartUrlResolver resolver = DartUrlResolver.getInstance(getEnvironment().getProject(), testFileOrDir);
+    final Project project = getEnvironment().getProject();
+    final DartUrlResolver resolver = DartUrlResolver.getInstance(project, testFileOrDir);
     final ConsoleProps props = new ConsoleProps(config, executor, resolver);
     final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole("FlutterTestRunner", props);
-    console.addMessageFilter(new DartRelativePathsConsoleFilter(config.getProject(), getBaseDir()));
+    final Module module = ModuleUtil.findModuleForFile(testFileOrDir, project);
+    if (module != null) {
+      console.addMessageFilter(new FlutterConsoleFilter(module));
+    }
+    console.addMessageFilter(new DartRelativePathsConsoleFilter(project, getBaseDir()));
+    console.addMessageFilter(new UrlFilter());
     return console;
   }
 
