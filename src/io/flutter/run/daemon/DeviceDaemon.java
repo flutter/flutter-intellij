@@ -120,7 +120,7 @@ class DeviceDaemon {
       return null;
     }
 
-    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
+    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
 
     // See if the Bazel workspace provides a script.
     final Workspace workspace = WorkspaceCache.getInstance(project).getNow();

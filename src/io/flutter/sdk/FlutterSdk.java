@@ -120,6 +120,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
   }
 
+  public FlutterCommand flutterConfig(String... additionalArgs) {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
+  }
+
   public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
                                    @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
     final List<String> args = new ArrayList<>();

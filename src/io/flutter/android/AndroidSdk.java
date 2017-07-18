@@ -32,7 +32,7 @@ public class AndroidSdk {
 
   @Nullable
   public static AndroidSdk createFromProject(@NotNull Project project) {
-    final String sdkPath = IntelliJAndroidSdk.chooseAndroidHome(project);
+    final String sdkPath = IntelliJAndroidSdk.chooseAndroidHome(project, true);
     if (sdkPath == null) {
       return null;
     }
