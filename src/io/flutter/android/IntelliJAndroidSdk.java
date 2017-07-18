@@ -118,7 +118,7 @@ public class IntelliJAndroidSdk {
       return intelliJAndroidSdk.getHome().getPath();
     }
 
-    // ask flutter tools
+    // Ask flutter tools.
     if (askFlutterTools) {
       final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
       if (flutterSdk != null) {
