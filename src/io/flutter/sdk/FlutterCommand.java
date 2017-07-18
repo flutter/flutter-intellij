@@ -24,8 +24,7 @@ import io.flutter.dart.DartPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
@@ -34,6 +33,9 @@ import java.util.function.Consumer;
  */
 public class FlutterCommand {
   private static final Logger LOG = Logger.getInstance(FlutterCommand.class);
+
+  private static final Set<Type> pubRelatedCommands = new HashSet<>(
+    Arrays.asList(Type.PACKAGES_GET, Type.PACKAGES_UPGRADE, Type.UPGRADE));
 
   @NotNull
   private final FlutterSdk sdk;
@@ -66,6 +68,10 @@ public class FlutterCommand {
     words.addAll(type.subCommand);
     words.addAll(args);
     return String.join(" ", words);
+  }
+
+  protected boolean isPubRelatedCommand() {
+    return pubRelatedCommands.contains(type);
   }
 
   /**
@@ -163,16 +169,43 @@ public class FlutterCommand {
   /**
    * Starts a process that runs a flutter command, unless one is already running.
    * <p>
+   * Returns the handler if successfully started.
+   */
+  public OSProcessHandler startProcess(boolean sendAnalytics) {
+    try {
+      final GeneralCommandLine commandLine = createGeneralCommandLine(null);
+      LOG.info(commandLine.toString());
+      final OSProcessHandler handler = new OSProcessHandler(commandLine);
+      if (sendAnalytics) {
+        type.sendAnalyticsEvent();
+      }
+      return handler;
+    }
+    catch (ExecutionException e) {
+      FlutterMessages.showError(
+        type.title,
+        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
+      return null;
+    }
+  }
+
+  /**
+   * Starts a process that runs a flutter command, unless one is already running.
+   * <p>
    * If a project is supplied, it will be used to determine the ANDROID_HOME variable for the subprocess.
    * <p>
    * Returns the handler if successfully started.
    */
   @Nullable
   public OSProcessHandler startProcess(@Nullable Project project) {
+    // TODO(devoncarew): Many flutter commands can legitimately be run in parallel.
     if (!inProgress.compareAndSet(null, this)) {
       return null;
     }
-    DartPlugin.setPubActionInProgress(true);
+
+    if (isPubRelatedCommand()) {
+      DartPlugin.setPubActionInProgress(true);
+    }
 
     final OSProcessHandler handler;
     try {
@@ -183,7 +216,9 @@ public class FlutterCommand {
         @Override
         public void processTerminated(final ProcessEvent event) {
           inProgress.compareAndSet(FlutterCommand.this, null);
-          DartPlugin.setPubActionInProgress(false);
+          if (isPubRelatedCommand()) {
+            DartPlugin.setPubActionInProgress(false);
+          }
         }
       });
       type.sendAnalyticsEvent();
@@ -191,7 +226,9 @@ public class FlutterCommand {
     }
     catch (ExecutionException e) {
       inProgress.compareAndSet(this, null);
-      DartPlugin.setPubActionInProgress(false);
+      if (isPubRelatedCommand()) {
+        DartPlugin.setPubActionInProgress(false);
+      }
       FlutterMessages.showError(
         type.title,
         FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
@@ -211,7 +248,7 @@ public class FlutterCommand {
 
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
 
-    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project);
+    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);
     }
@@ -225,6 +262,7 @@ public class FlutterCommand {
   }
 
   enum Type {
+    CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
     DOCTOR("Flutter doctor", "doctor"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
