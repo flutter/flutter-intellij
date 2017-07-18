@@ -7,9 +7,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class FlutterStudioInitializer {
   private static final Logger LOG = Logger.getInstance(FlutterStudioInitializer.class.getName());
 
@@ -24,8 +21,8 @@ public class FlutterStudioInitializer {
   }
 
   public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
-    ActionManager actionManager = ActionManager.getInstance();
-    AnAction oldAction = actionManager.getAction(actionId);
+    final ActionManager actionManager = ActionManager.getInstance();
+    final AnAction oldAction = actionManager.getAction(actionId);
     if (oldAction != null) {
       newAction.getTemplatePresentation().setIcon(oldAction.getTemplatePresentation().getIcon());
       actionManager.unregisterAction(actionId);
@@ -36,9 +33,9 @@ public class FlutterStudioInitializer {
   public static void runActivity(@NotNull Project project) {
     try {
       @SuppressWarnings("unchecked")
-      Class<AnAction> clazz = (Class<AnAction>)Class.forName("com.intellij.ide.actions.NewProjectAction");
-      AnAction newProject = clazz.newInstance();
-      Presentation present = newProject.getTemplatePresentation();
+      final Class<AnAction> clazz = (Class<AnAction>)Class.forName("com.intellij.ide.actions.NewProjectAction");
+      final AnAction newProject = clazz.newInstance();
+      final Presentation present = newProject.getTemplatePresentation();
       present.setText("New &Project...", true);
       present.setDescription("Create a new project from scratch");
       // TODO(messick): Design a New Project wizard for Android Studio + Flutter.
