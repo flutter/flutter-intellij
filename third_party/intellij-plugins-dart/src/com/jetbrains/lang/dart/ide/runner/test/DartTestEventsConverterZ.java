@@ -78,7 +78,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   private static final String RESULT_ERROR = "error";
 
   private static final String EXPECTED = "Expected: ";
-  private static final Pattern EXPECTED_ACTUAL_RESULT = Pattern.compile("\\nExpected: (.*)\\n  Actual: (.*)\\n *\\^\\n Differ.*\\n");
+  private static final Pattern EXPECTED_ACTUAL_RESULT = Pattern.compile("\\nExpected: (.*)\\n {2}Actual: (.*)\\n *\\^\\n Differ.*\\n");
   private static final String FILE_URL_PREFIX = "dart_location://";
   private static final String LOADING_PREFIX = "loading ";
   private static final String COMPILING_PREFIX = "compiling ";
@@ -218,6 +218,8 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     final ServiceMessageBuilder testStarted = ServiceMessageBuilder.testStarted(test.getBaseName());
     test.myTestStartReported = true;
 
+    preprocessTestStart(test);
+
     addLocationHint(testStarted, test);
     boolean result = finishMessage(testStarted, test.getId(), test.getValidParentId());
 
@@ -229,6 +231,12 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     }
 
     return result;
+  }
+
+  /**
+   *  Hook to preprocess tests before adding location info and generating a service message.
+   */
+  protected void preprocessTestStart(@NotNull Test test) {
   }
 
   private static boolean shouldTestBeHiddenIfPassed(@NotNull final Test test) {
@@ -273,8 +281,11 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   private boolean handleGroup(JsonObject obj) throws ParseException {
-    Group group = getGroup(obj.getAsJsonObject(DEF_GROUP));
+    final Group group = getGroup(obj.getAsJsonObject(DEF_GROUP));
+    return handleGroup(group);
+  }
 
+  protected boolean handleGroup(@NotNull Group group) throws ParseException {
     // From spec: The implicit group at the root of each test suite has null name and parentID attributes.
     if (group.getParent() == null && group.getTestCount() > 0) {
       // com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter.MyServiceMessageVisitor.KEY_TESTS_COUNT
@@ -559,16 +570,19 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     return val.getAsString();
   }
 
-  private static class Item {
+  protected static class Item {
     protected static final String NO_NAME = "<no name>";
     private final int myId;
-    private final String myName;
-    private final Group myParent;
+
+    // Visible and mutable to allow for processing.
+    public String myName;
+    public Group myParent;
+    public String myUrl;
+
     private final Suite mySuite;
     private final Metadata myMetadata;
     private final int myLine;
     private final int myColumn;
-    private final String myUrl;
 
     static int extractInt(JsonObject obj, String memberName) {
       JsonElement elem = obj.get(memberName);
@@ -611,7 +625,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
       return myId;
     }
 
-    String getName() {
+    public String getName() {
       return myName;
     }
 
@@ -651,7 +665,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
       return mySuite != null && mySuite.hasPath();
     }
 
-    Suite getSuite() {
+    public Suite getSuite() {
       return mySuite;
     }
 
@@ -715,7 +729,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     }
   }
 
-  private static class Test extends Item {
+  protected static class Test extends Item {
     private boolean myTestStartReported = false;
     private boolean myTestErrorReported = false;
 
@@ -743,7 +757,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     }
   }
 
-  private static class Group extends Item {
+  protected static class Group extends Item {
     private int myTestCount = 0;
     private int myDoneTestsCount = 0;
 
@@ -784,7 +798,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     }
   }
 
-  private static class Suite extends Item {
+  protected static class Suite extends Item {
     static Metadata NoMetadata = new Metadata();
     static String NONE = "<none>";
 

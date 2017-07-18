@@ -25,6 +25,11 @@ import java.util.List;
 
 public class TestConfigUtils {
 
+  /**
+   * Widget test function as defined in package:flutter_test/src/widget_tester.dart.
+   */
+  public static final String WIDGET_TEST_FUNCTION = "testWidgets";
+
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
     final DartFile file = FlutterUtils.getDartFile(element);
@@ -94,10 +99,7 @@ public class TestConfigUtils {
         return "Run Tests";
       }
     },
-    SINGLE(AllIcons.RunConfigurations.TestState.Run, "test"
-           //TODO(pq): add to enable support for widget tests (pending fixing location issues).
-           //,  "testWidgets"
-    );
+    SINGLE(AllIcons.RunConfigurations.TestState.Run, "test", WIDGET_TEST_FUNCTION);
 
     @NotNull
     private final Icon myIcon;
