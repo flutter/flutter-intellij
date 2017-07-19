@@ -1,0 +1,115 @@
+<?xml version="1.0"?>
+<template
+    format="5"
+    revision="5"
+    name="Android Module"
+    description="Creates a new Android module.">
+
+    <category value="Application" />
+
+    <formfactor value="Mobile" />
+
+    <thumbs>
+        <thumb>template_new_project.png</thumb>
+    </thumbs>
+
+    <parameter
+        id="packageName"
+        name="Package name"
+        type="string"
+        constraints="app_package|nonempty"
+        default="com.mycompany.myapp" />
+
+    <parameter
+        id="appTitle"
+        name="Module title"
+        type="string"
+        constraints="nonempty"
+        default="My Module" />
+
+    <parameter
+        id="minApi"
+        name="Minimum API level"
+        type="string"
+        constraints="apilevel"
+        default="8" />
+
+    <!--
+      Usually the same as minApi, but when minApi is a code name this will be the corresponding
+      API level
+    -->
+    <parameter
+        id="minApiLevel"
+        name="Minimum API level"
+        type="string"
+        constraints="apilevel"
+        default="8" />
+
+    <parameter
+        id="targetApi"
+        name="Target API level"
+        type="string"
+        constraints="apilevel"
+        default="19" />
+
+    <!--
+      Usually the same as targetApi, but when targeting a preview platform this is the code name instead
+    -->
+    <parameter
+        id="targetApiString"
+        name="Target API"
+        type="string"
+        constraints="apilevel"
+        default="19" />
+
+    <parameter
+        id="buildApi"
+        name="Build API level"
+        type="string"
+        constraints="apilevel"
+        default="19" />
+
+    <!--
+      Usually the same as buildApi, but when targeting a preview platform this is the code name instead
+    -->
+    <parameter
+        id="buildApiString"
+        name="Build API level"
+        type="string"
+        constraints="apilevel"
+        default="19" />
+
+    <parameter
+        id="copyIcons"
+        name="Include launcher icons"
+        type="boolean"
+        default="true" />
+
+    <parameter
+        id="makeIgnore"
+        name="Create .gitignore file"
+        type="boolean"
+        default="true" />
+
+    <parameter
+        id="enableProGuard"
+        name="Enable ProGuard"
+        type="boolean"
+        default="true" />
+
+    <parameter
+        id="includeCppSupport"
+        name="Enable C++ Support"
+        type="boolean"
+        default="false" />
+
+    <parameter
+        id="isInstantApp"
+        name="Has Instant App support"
+        type="boolean"
+        default="false" />
+
+    <globals file="globals.xml.ftl" />
+    <execute file="recipe.xml.ftl" />
+
+</template>

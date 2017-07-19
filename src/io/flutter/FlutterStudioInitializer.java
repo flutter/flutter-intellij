@@ -1,3 +1,8 @@
+/*
+ * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 package io.flutter;
 
 import com.intellij.openapi.actionSystem.ActionManager;
@@ -13,7 +18,7 @@ public class FlutterStudioInitializer {
   public static void initializeAndroidStudio(@NotNull Project project) {
     try {
       Class.forName("com.android.tools.idea.startup.AndroidStudioInitializer");
-      runActivity(project);
+      //runActivity(project);
     }
     catch (ClassNotFoundException e) {
       // Do not try initialize it.
@@ -38,7 +43,6 @@ public class FlutterStudioInitializer {
       Presentation present = newProject.getTemplatePresentation();
       present.setText("New &Project...", true);
       present.setDescription("Create a new project from scratch");
-      // TODO(messick): Design a New Project wizard for Android Studio + Flutter.
       replaceAction("NewProject", newProject);
     }
     catch (ClassNotFoundException ex) {

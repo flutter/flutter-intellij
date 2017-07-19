@@ -1,0 +1,4 @@
+
+dependencies {
+    feature project(":${projectName}")
+}
