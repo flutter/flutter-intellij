@@ -38,19 +38,3 @@ Please note the following known issues:
 * [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will read the PATH
   variable just once on startup. Thus, if you change PATH later to include the Flutter SDK path,
   this will not have an affect in IntelliJ until you restart the IDE.
-
-## Working with Andriod Studio
-
-1. Initialize Android Studio sources.
-2. Checkout Flutter plugin sources, tip of tree.
-3. Follow the directions for setting up the Dart plugin sources
-   in intellij-plugins/Dart/README.md with these changes:
-    - you do not need to clone the intellij-community repo
-    - open studio-master-dev/tools/idea in IntelliJ
-    - possibly skip running intellij-community/getPlugins.sh
-4. Checkout Dart plugin sources, branch 171.
-5. Using the Project Structure editor, import
-    - intellij-plugins/Dart/Dart-community.iml
-    - flutter-intellij/flutter-intellij-community.iml
-6. Select the `community-main` module and add a module
-   dependency to `flutter-intellij-community`.
