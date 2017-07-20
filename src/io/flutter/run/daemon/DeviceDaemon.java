@@ -207,13 +207,12 @@ class DeviceDaemon {
           }
           else if (process.isProcessTerminated()) {
             final Integer exitCode = process.getExitCode();
-            throw new ExecutionException(
-              "Flutter device daemon #" +
-              daemonId +
-              ": process exited during startup. Exit code: " +
-              exitCode +
-              ", stderr:\n" +
-              api.getStderrTail());
+            LOG.warn(("Flutter device daemon #" +
+                      daemonId +
+                      ": process exited during startup. Exit code: " +
+                      exitCode +
+                      ", stderr:\n" +
+                      api.getStderrTail()));
           }
 
           try {
@@ -234,7 +233,8 @@ class DeviceDaemon {
             throw new CancellationException();
           }
           catch (java.util.concurrent.ExecutionException e) {
-            throw new ExecutionException(e.getCause());
+            // This is not a user facing crash - we log (and no devices will be discovered).
+            LOG.error(e.getCause());
           }
         }
       }
