@@ -20,5 +20,6 @@
     <orderEntry type="module" module-name="idea-ui" />
     <orderEntry type="module" module-name="android" />
     <orderEntry type="module" module-name="wizard-model" />
+    <orderEntry type="module" module-name="adt-ui" />
   </component>
 </module>

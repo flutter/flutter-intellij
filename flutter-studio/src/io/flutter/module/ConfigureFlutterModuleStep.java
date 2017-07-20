@@ -7,7 +7,7 @@ package io.flutter.module;
 
 import com.android.tools.idea.npw.FormFactor;
 import com.android.tools.idea.npw.module.NewModuleModel;
-import com.android.tools.idea.ui.validation.ValidatorPanel;
+import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
