@@ -15,10 +15,6 @@
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/material-design-icons" />
-      <excludeFolder url="file://$MODULE_DIR$/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/colors/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/icons/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/packages" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
