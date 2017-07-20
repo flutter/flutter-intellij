@@ -80,7 +80,7 @@ public class DebugTestRunner extends GenericProgramRunner {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
-        return new TestDebugProcess(session, executionResult, resolver, connector, mapper);
+        return new TestDebugProcess(env, session, executionResult, resolver, connector, mapper);
       }
     });
 

@@ -71,7 +71,7 @@ public class BazelRunConfig extends RunConfigurationBase
 
     final LaunchState.Callback callback = (device) -> {
       final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
-      return FlutterApp.start(env.getProject(), module, mode, command,
+      return FlutterApp.start(env, env.getProject(), module, mode, command,
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 

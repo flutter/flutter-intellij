@@ -13,6 +13,7 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
@@ -26,6 +27,7 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.run.FlutterLaunchMode;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +50,7 @@ public class FlutterApp {
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
   private final @NotNull ProcessHandler myProcessHandler;
+  private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
 
   private @Nullable String myAppId;
@@ -71,12 +74,14 @@ public class FlutterApp {
              @Nullable Module module,
              @NotNull RunMode mode,
              @NotNull ProcessHandler processHandler,
+             @NotNull ExecutionEnvironment executionEnvironment,
              @NotNull DaemonApi daemonApi) {
     myProject = project;
     myModule = module;
     myMode = mode;
     myProcessHandler = processHandler;
     myProcessHandler.putUserData(FLUTTER_APP_KEY, this);
+    myExecutionEnvironment = executionEnvironment;
     myDaemonApi = daemonApi;
     myConnector = new ObservatoryConnector() {
       @Override
@@ -130,7 +135,8 @@ public class FlutterApp {
    * (Assumes we are launching it in --machine mode.)
    */
   @NotNull
-  public static FlutterApp start(@NotNull Project project,
+  public static FlutterApp start(@NotNull ExecutionEnvironment env,
+                                 @NotNull Project project,
                                  @Nullable Module module,
                                  @NotNull RunMode mode,
                                  @NotNull GeneralCommandLine command,
@@ -154,7 +160,7 @@ public class FlutterApp {
     });
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, process, api);
+    final FlutterApp app = new FlutterApp(project, module, mode, process, env, api);
     api.listen(process, new FlutterAppListener(app, project));
     return app;
   }
@@ -410,6 +416,10 @@ public class FlutterApp {
     }
 
     return latest[0] > myLastReload;
+  }
+
+  public FlutterLaunchMode getLaunchMode() {
+    return FlutterLaunchMode.getMode(myExecutionEnvironment);
   }
 
   public interface StateListener {

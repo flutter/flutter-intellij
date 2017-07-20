@@ -317,16 +317,14 @@
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
       </action>
-      <!-- Disabled pending fix (see #930)
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
-              description="Profile"
+              description="Flutter Run Profile Mode"
               icon="AllIcons.Actions.Profile">
       </action>
       <action id="Flutter.Menu.RunReleaseAction" class="io.flutter.actions.RunReleaseFlutterApp"
-              description="Release"
+              description="Flutter Run Release Mode"
               icon="AllIcons.Actions.Execute">
       </action>
-      -->
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>

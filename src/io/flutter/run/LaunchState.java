@@ -103,7 +103,8 @@ public class LaunchState extends CommandLineState {
       new OpenSimulatorAction(true).actionPerformed(null);
     }
 
-    if (RunMode.fromEnv(getEnvironment()).isReloadEnabled()) {
+    final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
+    if (launchMode.supportsReload()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
     }
     else {
@@ -126,7 +127,7 @@ public class LaunchState extends CommandLineState {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
-        return new FlutterDebugProcess(app, session, executionResult, resolver, mapper);
+        return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
     });
 
@@ -172,7 +173,8 @@ public class LaunchState extends CommandLineState {
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
     actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
-    actions.add(new OpenObservatoryAction(app.getConnector(), () -> !app.getProcessHandler().isProcessTerminated()));
+    actions.add(new OpenObservatoryAction(app.getConnector(), () -> !app.getProcessHandler().isProcessTerminated() &&
+                                                                    app.getConnector().getBrowserUrl() != null));
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));
   }
@@ -281,7 +283,8 @@ public class LaunchState extends CommandLineState {
       if (process != null) {
         final FlutterApp app = FlutterApp.fromProcess(process);
         if (app != null && executorId.equals(app.getMode().mode())) {
-          if (app.getMode().isReloadEnabled() && app.isStarted()) {
+          final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
+          if (launchMode.supportsReload() && app.isStarted()) {
             // Map a re-run action to a flutter full restart.
             FileDocumentManager.getInstance().saveAllDocuments();
             app.performRestartApp();

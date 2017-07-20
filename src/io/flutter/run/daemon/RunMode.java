@@ -17,28 +17,19 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum RunMode {
   @NonNls
-  DEBUG(DefaultDebugExecutor.EXECUTOR_ID, true),
+  DEBUG(DefaultDebugExecutor.EXECUTOR_ID),
 
   @NonNls
-  RUN(DefaultRunExecutor.EXECUTOR_ID, true);
+  RUN(DefaultRunExecutor.EXECUTOR_ID);
 
   private final String myModeString;
-  private final boolean myCanReload;
 
-  RunMode(String modeString, boolean canReload) {
+  RunMode(String modeString) {
     myModeString = modeString;
-    myCanReload = canReload;
   }
 
   public String mode() {
     return myModeString;
-  }
-
-  /**
-   * Returns true if this is a reload/restart enabled mode (run|debug).
-   */
-  public boolean isReloadEnabled() {
-    return myCanReload;
   }
 
   public static RunMode fromEnv(@NotNull ExecutionEnvironment env) throws ExecutionException {
