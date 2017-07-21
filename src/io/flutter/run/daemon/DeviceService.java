@@ -205,10 +205,11 @@ public class DeviceService {
       return previous; // Don't do anything; current daemon is what we want.
     }
 
-    // Wait a bit to see if we get cancelled.
-    // This is to try to avoid starting a process only to immediately kill it.
+    // Wait a bit to see if we get cancelled. This is to try to avoid starting a process only to
+    // immediately kill it. Also, delay a bit in case the flutter tool just upgraded the sdk;
+    // we'll need a bit more time to start up.
     try {
-      Thread.sleep(50);
+      Thread.sleep(2000);
     }
     catch (InterruptedException e) {
       return previous;
