@@ -229,9 +229,12 @@ public class DeviceService {
   public void restart() {
     if (project.isDisposed()) return;
 
-    deviceDaemon.refresh(this::shutDownDaemon);
+    JobScheduler.getScheduler().schedule(this::shutDown, 0, TimeUnit.SECONDS);
+    JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 4, TimeUnit.SECONDS);
+  }
 
-    JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 1, TimeUnit.SECONDS);
+  private void shutDown() {
+    deviceDaemon.refresh(this::shutDownDaemon);
   }
 
   private DeviceDaemon shutDownDaemon(Refreshable.Request<DeviceDaemon> request) {
