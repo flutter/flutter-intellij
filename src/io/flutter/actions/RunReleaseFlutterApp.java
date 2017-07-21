@@ -8,7 +8,7 @@ package io.flutter.actions;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.wm.ToolWindowId;
 import io.flutter.FlutterBundle;
-
+import io.flutter.run.FlutterLaunchMode;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class RunReleaseFlutterApp extends RunFlutterAction {
@@ -17,7 +17,7 @@ public class RunReleaseFlutterApp extends RunFlutterAction {
   private static final String TEXT_DETAIL_MSG_KEY = "app.release.config.action.text";
 
   public RunReleaseFlutterApp() {
-    super(TEXT, TEXT_DETAIL_MSG_KEY, DESCRIPTION, AllIcons.Actions.Profile, "--release", ToolWindowId.RUN
+    super(TEXT, TEXT_DETAIL_MSG_KEY, DESCRIPTION, AllIcons.Actions.Profile, FlutterLaunchMode.RELEASE, ToolWindowId.RUN
     );
   }
 }

@@ -283,10 +283,7 @@ public class BazelFields {
     if (target == null) return null;
     // Append _run[_hot] to bazelTarget.
     if (!target.endsWith("_run") && !target.endsWith(("_hot"))) {
-      target += "_run";
-      if (mode.isReloadEnabled()) {
-        target += "_hot";
-      }
+      target += "_run_hot";
     }
     return target;
   }

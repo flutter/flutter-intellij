@@ -137,9 +137,6 @@ public class FlutterSdk {
     if (mode == RunMode.DEBUG) {
       args.add("--start-paused");
     }
-    if (!mode.isReloadEnabled()) {
-      args.add("--no-hot");
-    }
     args.addAll(asList(additionalArgs));
 
     // Make the path to main relative (to make the command line prettier).

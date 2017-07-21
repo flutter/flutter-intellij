@@ -6,6 +6,7 @@
 package io.flutter.run;
 
 import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunnerLayoutUi;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
@@ -43,11 +44,12 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
   private final @NotNull FlutterApp app;
 
   public FlutterDebugProcess(@NotNull FlutterApp app,
+                             @NotNull ExecutionEnvironment executionEnvironment,
                              @NotNull XDebugSession session,
                              @NotNull ExecutionResult executionResult,
                              @NotNull DartUrlResolver dartUrlResolver,
                              @NotNull PositionMapper mapper) {
-    super(session, executionResult, dartUrlResolver, app.getConnector(), mapper);
+    super(executionEnvironment, session, executionResult, dartUrlResolver, app.getConnector(), mapper);
     this.app = app;
   }
 
@@ -91,7 +93,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
 
     // Add actions common to the run and debug windows.
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
-    final Computable<Boolean> canReload = () -> app.getMode().isReloadEnabled() && isSessionActive.compute() && !app.isReloading();
+    final Computable<Boolean> canReload = () -> app.getLaunchMode().supportsReload() && isSessionActive.compute() && !app.isReloading();
+    final Computable<Boolean> observatoryAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
 
     if (app.getMode() == RunMode.DEBUG) {
       topToolbar.addSeparator();
@@ -103,7 +106,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
     topToolbar.add(new OpenFlutterViewAction(isSessionActive));
-    topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), isSessionActive));
+    topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
 
     // Don't call super since we have our own observatory action.
   }

@@ -1,6 +1,7 @@
 package com.jetbrains.lang.dart.ide.runner.server.vmService;
 
 import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -19,6 +20,7 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSu
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
+import io.flutter.run.FlutterLaunchMode;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
@@ -51,9 +53,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private boolean remoteDebug = false;
 
   @NotNull
+  private final ExecutionEnvironment executionEnvironment;
+
+  @NotNull
   private final PositionMapper mapper;
 
-  public DartVmServiceDebugProcessZ(@NotNull final XDebugSession session,
+  public DartVmServiceDebugProcessZ(@NotNull final ExecutionEnvironment executionEnvironment,
+                                    @NotNull final XDebugSession session,
                                     @NotNull final ExecutionResult executionResult,
                                     @NotNull final DartUrlResolver dartUrlResolver,
                                     @NotNull final ObservatoryConnector connector,
@@ -61,6 +67,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     super(session, "localhost", 0, executionResult, dartUrlResolver, "fakeExecutionIdNotUsed",
           false, 0, null);
 
+    this.executionEnvironment = executionEnvironment;
     this.mapper = mapper;
     myConnector = connector;
 
@@ -240,7 +247,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // We disable the remote debug flag so that handleDebuggerConnected() does not echo the stdout and
     // stderr streams (this would duplicate what we get over daemon logging).
     remoteDebug = false;
-    myVmServiceWrapper.handleDebuggerConnected();
+
+    final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(executionEnvironment);
+    if (launchMode.supportsDebugging()) {
+      myVmServiceWrapper.handleDebuggerConnected();
+    }
+
     // We re-enable the remote debug flag so that the service wrapper will call our guessRemoteProjectRoot()
     // method with the list of loaded libraries for the isolate.
     remoteDebug = true;
