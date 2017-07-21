@@ -218,11 +218,6 @@ class DeviceDaemon {
           try {
             ready.get(100, TimeUnit.MILLISECONDS);
 
-            // Try not to show a partial device list.
-            // It currently takes 4+ seconds for the devices to show up.
-            // Remove when fixed: https://github.com/flutter/flutter/issues/8439
-            Thread.sleep(4200);
-
             succeeded = true;
             return new DeviceDaemon(daemonId, this, process, listener, devices);
           }

@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+// TODO(devoncarew): This class performs blocking work on the UI thread; we should fix.
+
 /**
  * Provides the list of available devices (mobile phones or emulators) that appears in the dropdown menu.
  */
@@ -209,7 +211,7 @@ public class DeviceService {
     // immediately kill it. Also, delay a bit in case the flutter tool just upgraded the sdk;
     // we'll need a bit more time to start up.
     try {
-      Thread.sleep(2000);
+      Thread.sleep(100);
     }
     catch (InterruptedException e) {
       return previous;
@@ -230,9 +232,12 @@ public class DeviceService {
   public void restart() {
     if (project.isDisposed()) return;
 
-    deviceDaemon.refresh(this::shutDownDaemon);
+    JobScheduler.getScheduler().schedule(this::shutDown, 0, TimeUnit.SECONDS);
+    JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 4, TimeUnit.SECONDS);
+  }
 
-    JobScheduler.getScheduler().schedule(this::refreshDeviceDaemon, 1, TimeUnit.SECONDS);
+  private void shutDown() {
+    deviceDaemon.refresh(this::shutDownDaemon);
   }
 
   private DeviceDaemon shutDownDaemon(Refreshable.Request<DeviceDaemon> request) {
