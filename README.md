@@ -1,22 +1,10 @@
-<p align="center">
-  <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter"/>
-</p>
+# <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter" width="26" height="26" /> Flutter Plugin for IntelliJ
 
-<p align="center">
-  An IntelliJ plugin for <a href="https://flutter.io/">Flutter</a> development.
-</p>
+[![Join Gitter Chat Channel -](https://badges.gitter.im/flutter/flutter.svg)](https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
 
-<p align="center">
-  <a href="https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://badges.gitter.im/flutter/flutter.svg" alt="Join Gitter Chat Channel"></a>
-  <a href="https://travis-ci.org/flutter/flutter-intellij"><img src="https://travis-ci.org/flutter/flutter-intellij.svg" alt="Build Status"</a>
-</p>
-
-# Flutter Plugin for IntelliJ
-
-- [Documentation](#documentation)
-- [Fast development](#fast-development)
-- [Quick-start](#quick-start)
-- [Filing issues](#filing-issues)
+An IntelliJ plugin for [Flutter](https://flutter.io/) development. A new mobile app SDK to help
+developers and designers build modern mobile apps for iOS and Android.
 
 ## Documentation
 
