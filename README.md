@@ -16,8 +16,7 @@
 - [Documentation](#documentation)
 - [Fast development](#fast-development)
 - [Quick-start](#quick-start)
-- [Filing issues](#filing-issues), and
-- [Known issues](#known-issues)
+- [Filing issues](#filing-issues)
 
 ## Documentation
 
@@ -59,7 +58,7 @@ for Flutter IntelliJ issues.
 - for more Dart IntelliJ releated issues, you can use JetBrains'
   [YouTrack tracker](https://youtrack.jetbrains.com/issues?q=%23Dart%20%23Unresolved%20)
 
-## Known issues
+### Known issues
 
 Please note the following known issues:
 
