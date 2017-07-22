@@ -1,5 +1,3 @@
-# Flutter Plugin for IntelliJ
-
 <p align="center">
   <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter"/>
 </p>
@@ -9,9 +7,11 @@
 </p>
 
 <p align="center">
-  <a href="https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" alt="Join Gitter Chat Channel">https://badges.gitter.im/flutter/flutter.svg</a>
-  <a href="https://travis-ci.org/flutter/flutter-intellij" alt="Build Status">https://travis-ci.org/flutter/flutter-intellij.svg</a>
+  <a href="https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge"><img src="https://badges.gitter.im/flutter/flutter.svg" alt="Join Gitter Chat Channel"></a>
+  <a href="https://travis-ci.org/flutter/flutter-intellij"><img src="https://travis-ci.org/flutter/flutter-intellij.svg" alt="Build Status"</a>
 </p>
+
+# Flutter Plugin for IntelliJ
 
 - [Documentation](#documentation)
 - [Fast development](#fast-development)
