@@ -3,8 +3,8 @@
 [![Join Gitter Chat Channel -](https://badges.gitter.im/flutter/flutter.svg)](https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
 
-An IntelliJ plugin for [Flutter](https://flutter.io/) development. A new mobile app SDK to help
-developers and designers build modern mobile apps for iOS and Android.
+An IntelliJ plugin for [Flutter](https://flutter.io/) development. Flutter is a new mobile
+app SDK to help developers and designers build modern mobile apps for iOS and Android.
 
 ## Documentation
 
