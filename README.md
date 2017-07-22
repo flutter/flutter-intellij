@@ -10,7 +10,7 @@ app SDK to help developers and designers build modern mobile apps for iOS and An
 
 - [flutter.io](https://flutter.io)
 - [Installing Flutter](https://flutter.io/setup/)
-- [Getting started with IntelliJ](https://flutter.io/intellij-ide/)
+- [Getting Started with IntelliJ](https://flutter.io/intellij-ide/)
 
 ## Fast development
 
