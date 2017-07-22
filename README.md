@@ -1,7 +1,6 @@
 # <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter" width="40" height="40" /> Flutter Plugin for IntelliJ [![Join Gitter Chat Channel -](https://badges.gitter.im/flutter/flutter.svg)](https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
 
-An IntelliJ plugin for [Flutter](https://flutter.io/) development; for user documentation,
-see [flutter.io](https://flutter.io/intellij-ide/).
+An IntelliJ plugin for [Flutter](https://flutter.io/) development.
 
 ## Documentation
 
@@ -24,13 +23,14 @@ A brief summary of the [getting started guide](https://flutter.io/intellij-ide/)
 - install the [Flutter SDK](https://flutter.io/setup/)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported [IntelliJ development environment](https://www.jetbrains.com/idea/download)
-  (IntelliJ 2017.1 or 2017.2, Community or Ultimate)
-- open the plugin preferences (`Preferences > Plugins` on macOS, `File > Settings > Plugins` on Linux, select
-  "Browse repositories…")
+  (IntelliJ 2017.1 or 2017.2, Community or Ultimate Edition)
+- open the plugin preferences
+  - `Preferences > Plugins` on macOS, `File > Settings > Plugins` on Linux, select "Browse repositories…"
 - search for and install the 'Flutter' plugin
 - choose the option to restart IntelliJ
-- configure the Flutter SDK setting (`Preferences` on macOS, `File>Settings` on Linux,
-  select `Languages & Frameworks > Flutter`, and set the path to the root of your flutter repo)
+- configure the Flutter SDK setting
+  - `Preferences` on macOS, `File>Settings` on Linux, select `Languages & Frameworks > Flutter`, and set
+    the path to the root of your flutter repo
 
 ## Filing issues
 
