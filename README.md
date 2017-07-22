@@ -1,6 +1,24 @@
-# <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter" width="40" height="40" /> Flutter Plugin for IntelliJ [![Join Gitter Chat Channel -](https://badges.gitter.im/flutter/flutter.svg)](https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
+<p align="center">
+  <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter"/>
+</p>
 
-An IntelliJ plugin for [Flutter](https://flutter.io/) development.
+<p align="center">
+  <h1>Flutter Plugin for IntelliJ</h1>
+</p>
+
+<p align="center">
+  An IntelliJ plugin for [Flutter](https://flutter.io/) development.
+</p>
+
+<p align="center">
+  [![Join Gitter Chat Channel -](https://badges.gitter.im/flutter/flutter.svg)](https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
+</p>
+
+- [Documentation](#documentation)
+- [Fast development](#fast-development)
+- [Quick-start](#quick-start)
+- [Filing issues](#filing-issues), and
+- [Known issues](#known-issues)
 
 ## Documentation
 
