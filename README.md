@@ -1,6 +1,6 @@
 ## Flutter Plugin for IntelliJ
 
-An IntelliJ plugin for [Flutter](https://flutter.io/) development. For documentation,
+An IntelliJ plugin for [Flutter](https://flutter.io/) development; for user documentation,
 see [flutter.io](https://flutter.io/intellij-ide/).
 
 [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
