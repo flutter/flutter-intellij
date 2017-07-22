@@ -1,17 +1,16 @@
+# Flutter Plugin for IntelliJ
+
 <p align="center">
   <img src="https://flutter.io/images/flutter-mark-square-100.png" alt="Flutter"/>
 </p>
 
 <p align="center">
-  <h1>Flutter Plugin for IntelliJ</h1>
+  An IntelliJ plugin for <a href="https://flutter.io/">Flutter</a> development.
 </p>
 
 <p align="center">
-  An IntelliJ plugin for [Flutter](https://flutter.io/) development.
-</p>
-
-<p align="center">
-  [![Join Gitter Chat Channel -](https://badges.gitter.im/flutter/flutter.svg)](https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Build Status](https://travis-ci.org/flutter/flutter-intellij.svg)](https://travis-ci.org/flutter/flutter-intellij)
+  <a href="https://gitter.im/flutter/flutter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge" alt="Join Gitter Chat Channel">https://badges.gitter.im/flutter/flutter.svg</a>
+  <a href="https://travis-ci.org/flutter/flutter-intellij" alt="Build Status">https://travis-ci.org/flutter/flutter-intellij.svg</a>
 </p>
 
 - [Documentation](#documentation)
