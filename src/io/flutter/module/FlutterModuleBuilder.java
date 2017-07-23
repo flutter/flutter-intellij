@@ -28,6 +28,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
 import io.flutter.module.settings.RadiosForm;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
@@ -51,12 +52,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static final String DART_GROUP_NAME = "Static Web"; // == WebModuleBuilder.GROUP_NAME
 
   private FlutterModuleWizardStep myStep;
-  private RadiosForm projectTypeRadios;
-  private JTextField orgField;
-  private JTextField descriptionField;
-  private RadiosForm androidLanguageRadios;
-  private RadiosForm iosLanguageRadios;
-  private JCheckBox includeDriverTextField;
+  private FlutterCreateAddtionalSettingsFields settingsFields;
 
   @Override
   public String getName() {
@@ -112,7 +108,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, getAddtionalSettings());
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settingsFields.getAddtionalSettings());
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
@@ -219,64 +215,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   public ModuleWizardStep modifySettingsStep(@NotNull SettingsStep settingsStep) {
     ModuleWizardStep wizard = super.modifySettingsStep(settingsStep);
 
-    if (projectTypeRadios == null) {
-      projectTypeRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.type.application"),
-                                         FlutterBundle.message("flutter.module.create.settings.radios.type.plugin"));
-      projectTypeRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.type.tip"));
-
-      orgField = new JTextField();
-      orgField.setText(FlutterBundle.message("flutter.module.create.settings.org.default_text"));
-      orgField.setToolTipText(FlutterBundle.message("flutter.module.create.settings.org.tip"));
-
-      descriptionField = new JTextField();
-      descriptionField.setToolTipText(FlutterBundle.message("flutter.module.create.settings.description.tip"));
-      descriptionField.setText(FlutterBundle.message("flutter.module.create.settings.description.default_text"));
-
-      androidLanguageRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.android.ios"),
-                                             FlutterBundle.message("flutter.module.create.settings.radios.android.kotlin"));
-      androidLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.android.tip"));
-
-      iosLanguageRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.ios.object_c"),
-                                         FlutterBundle.message("flutter.module.create.settings.radios.ios.swift"));
-      iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
-
-      includeDriverTextField = new JCheckBox();
-      includeDriverTextField.setSelected(true);
-      includeDriverTextField.setToolTipText(FlutterBundle.message("flutter.module.create.settings.includedriver.tip"));
+    if (settingsFields == null) {
+      settingsFields = new FlutterCreateAddtionalSettingsFields();
     }
-
-    settingsStep.addSettingsField(" ", new JLabel(" "));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.type.label"),
-                                  projectTypeRadios.getComponent());
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.description.label"), descriptionField);
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
-                                  androidLanguageRadios.getComponent());
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
-                                  iosLanguageRadios.getComponent());
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.includedriver.label"), includeDriverTextField);
-
-    settingsStep.addSettingsField("", new JLabel(" "));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.help.label"), new JLabel(" "));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.help.project_name.label"),
-                                  new JLabel(FlutterBundle.message("flutter.module.create.settings.help.project_name.description")));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.help.org.label"),
-                                  new JLabel(FlutterBundle.message("flutter.module.create.settings.help.org.description")));
+    settingsFields.addSettingsFields(settingsStep);
 
     return wizard;
-  }
-
-  private FlutterCreateAdditionalSettings getAddtionalSettings() {
-    FlutterCreateAdditionalSettings addtionalSettings = new FlutterCreateAdditionalSettings.Builder()
-      .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
-      .setGeneratePlugin(projectTypeRadios.isRadio2Selected() ? true : null)
-      .setIncludeDriverTest(!includeDriverTextField.isSelected() ? null : true)
-      .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
-      .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
-      .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
-      .build();
-
-    return addtionalSettings;
   }
 
   @Nullable

@@ -3,7 +3,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
 package io.flutter.module;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
@@ -16,6 +15,8 @@ import com.intellij.platform.WebProjectGenerator;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import io.flutter.FlutterBundle;
+import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
+import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,6 +30,7 @@ import javax.swing.text.JTextComponent;
 
 public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.GeneratorPeer<String> {
   private final ComboboxWithBrowseButton sdkPathComboWithBrowse;
+  private FlutterCreateAddtionalSettingsFields settingsFields;
 
   public FlutterSmallIDEGeneratorPeer() {
     sdkPathComboWithBrowse = new ComboboxWithBrowseButton(new ComboBox<>());
@@ -50,6 +52,11 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
   @Override
   public void buildUI(@NotNull SettingsStep settingsStep) {
     settingsStep.addSettingsField("Flutter SDK", sdkPathComboWithBrowse);
+
+    if (settingsFields == null) {
+      settingsFields = new FlutterCreateAddtionalSettingsFields();
+    }
+    settingsFields.addSettingsFields(settingsStep);
   }
 
   @NotNull
@@ -91,6 +98,10 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
     if (validate() != null) {
       stateListener.stateChanged(false);
     }
+  }
+
+  public FlutterCreateAdditionalSettings getAddtionalSettings() {
+    return settingsFields.getAddtionalSettings();
   }
 
   @NotNull
