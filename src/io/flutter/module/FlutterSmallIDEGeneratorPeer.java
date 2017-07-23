@@ -28,7 +28,6 @@ import javax.swing.text.JTextComponent;
 // (and replaced with DirectoryProjectGenerator)
 
 public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.GeneratorPeer<String> {
-  private JPanel myMainPanel;
   private final ComboboxWithBrowseButton sdkPathComboWithBrowse;
 
   public FlutterSmallIDEGeneratorPeer() {
@@ -45,7 +44,7 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
   @NotNull
   @Override
   public JComponent getComponent() {
-    return myMainPanel;
+    return null;
   }
 
   @Override

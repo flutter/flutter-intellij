@@ -51,7 +51,6 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
                               @NotNull VirtualFile baseDir,
                               @NotNull String flutterSdkPath,
                               @NotNull Module module) {
-
     final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
     if (sdk == null) {
       FlutterMessages.showError("Error creating project", flutterSdkPath + " is not a valid Flutter SDK");
@@ -60,7 +59,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
 
     // Run "flutter create".
     final OutputListener listener = new OutputListener();
-    final PubRoot root = sdk.createFiles(baseDir, module, listener);
+    final PubRoot root = sdk.createFiles(baseDir, module, listener, null);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
