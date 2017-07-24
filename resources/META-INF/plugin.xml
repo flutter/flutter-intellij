@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>15.1</version>
+  <version>15.2</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,11 @@
 
   <change-notes>
     <![CDATA[
+
+15.2:
+<ul>
+  <li>Fix for an exception in the new project wizard in WebStorm (#1234)</li>
+</ul>
 
 15.1:
 <ul>
