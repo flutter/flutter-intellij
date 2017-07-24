@@ -63,7 +63,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   // This method does not exist in 2017.2.
-  @SuppressWarnings("override")
+  @SuppressWarnings({"override", "SameReturnValue"})
   public Icon getBigIcon() {
     return FlutterIcons.Flutter_2x;
   }
