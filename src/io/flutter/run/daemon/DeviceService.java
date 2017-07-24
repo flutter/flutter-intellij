@@ -240,6 +240,7 @@ public class DeviceService {
     deviceDaemon.refresh(this::shutDownDaemon);
   }
 
+  @SuppressWarnings("SameReturnValue")
   private DeviceDaemon shutDownDaemon(Refreshable.Request<DeviceDaemon> request) {
     // Return null to indicate that a shutdown is requested.
     return null;

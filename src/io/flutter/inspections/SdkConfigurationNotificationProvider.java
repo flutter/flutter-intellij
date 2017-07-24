@@ -22,8 +22,6 @@ import com.jetbrains.lang.dart.DartLanguage;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.FlutterModuleUtils;

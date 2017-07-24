@@ -7,9 +7,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 public class FlutterStudioInitializer {
   private static final Logger LOG = Logger.getInstance(FlutterStudioInitializer.class.getName());
 
