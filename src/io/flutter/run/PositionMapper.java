@@ -27,6 +27,7 @@ import gnu.trove.THashMap;
 import io.flutter.dart.DartPlugin;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.ScriptRef;
+import org.dartlang.vm.service.element.Script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -223,17 +224,34 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
    */
   @Nullable
   public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
+    return getSourcePosition(isolateId, scriptRef.getId(), scriptRef.getUri(), tokenPos);
+  }
+
+  /**
+   * Returns the local position (to display to the user) corresponding to a token position in Observatory.
+   */
+  @Nullable
+  public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final Script script, int tokenPos) {
+    return getSourcePosition(isolateId, script.getId(), script.getUri(), tokenPos);
+  }
+
+  /**
+   * Returns the local position (to display to the user) corresponding to a token position in Observatory.
+   */
+  @Nullable
+  private XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final String scriptId,
+                                            @NotNull final String scriptUri, int tokenPos) {
     if (scriptProvider == null) {
       LOG.warn("attempted to get source position before connected to observatory");
       return null;
     }
 
-    final VirtualFile local = findLocalFile(scriptRef);
+    final VirtualFile local = findLocalFile(scriptUri);
 
     final ObservatoryFile.Cache cache =
       fileCache.computeIfAbsent(isolateId, (id) -> new ObservatoryFile.Cache(id, scriptProvider));
 
-    final ObservatoryFile remote = cache.downloadOrGet(scriptRef.getId(), local == null);
+    final ObservatoryFile remote = cache.downloadOrGet(scriptId, local == null);
     if (remote == null) return null;
 
     return remote.createPosition(local, tokenPos);
@@ -250,9 +268,25 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
    */
   @Nullable
   private VirtualFile findLocalFile(@NotNull ScriptRef scriptRef) {
+    return findLocalFile(scriptRef.getUri());
+  }
+
+  /**
+   * Attempt to find a local Dart file corresponding to a script in Observatory.
+   */
+  @Nullable
+  private VirtualFile findLocalFile(@NotNull Script script) {
+    return findLocalFile(script.getUri());
+  }
+
+  /**
+   * Attempt to find a local Dart file corresponding to a script in Observatory.
+   */
+  @Nullable
+  private VirtualFile findLocalFile(@NotNull String uri) {
     return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
       // This can be a remote file or URI.
-      final String remote = scriptRef.getUri();
+      final String remote = uri;
 
       if (remoteSourceRoot != null && remote.startsWith(remoteSourceRoot)) {
         final String rootUri = StringUtil.trimEnd(resolver.getDartUrlForFile(sourceRoot), '/');

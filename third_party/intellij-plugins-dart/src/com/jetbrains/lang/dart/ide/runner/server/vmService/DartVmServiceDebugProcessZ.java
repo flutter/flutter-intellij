@@ -405,6 +405,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     return mapper.getSourcePosition(isolateId, scriptRef, tokenPos);
   }
 
+  @Nullable
+  public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final Script script, int tokenPos) {
+    return mapper.getSourcePosition(isolateId, script, tokenPos);
+  }
+
   public boolean getVmConnected() {
     return myVmConnected;
   }
@@ -438,6 +443,11 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
      * Returns the local position (to display to the user) corresponding to a token position in Observatory.
      */
     XSourcePosition getSourcePosition(String isolateId, ScriptRef scriptRef, int tokenPos);
+
+    /**
+     * Returns the local position (to display to the user) corresponding to a token position in Observatory.
+     */
+    XSourcePosition getSourcePosition(String isolateId, Script script, int tokenPos);
 
     void shutdown();
   }
