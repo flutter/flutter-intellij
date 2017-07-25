@@ -121,7 +121,7 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterCreate(@NotNull VirtualFile appDir, @Nullable FlutterCreateAdditionalSettings additionalSettings) {
-    List<String> args = new ArrayList<String>();
+    final List<String> args = new ArrayList<>();
     if (additionalSettings != null) {
       args.addAll(additionalSettings.getArgs());
     }
@@ -129,7 +129,7 @@ public class FlutterSdk {
     // keep as the last argument
     args.add(appDir.getName());
 
-    String[] vargs = args.stream().toArray(String[]::new);
+    final String[] vargs = args.stream().toArray(String[]::new);
 
     return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, vargs);
   }

@@ -13,12 +13,12 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 public class FlutterCreateAddtionalSettingsFields {
-  private RadiosForm projectTypeRadios;
-  private JTextField orgField;
-  private JTextField descriptionField;
-  private RadiosForm androidLanguageRadios;
-  private RadiosForm iosLanguageRadios;
-  private JCheckBox includeDriverTextField;
+  private final RadiosForm projectTypeRadios;
+  private final JTextField orgField;
+  private final JTextField descriptionField;
+  private final RadiosForm androidLanguageRadios;
+  private final RadiosForm iosLanguageRadios;
+  private final JCheckBox includeDriverTextField;
 
   public FlutterCreateAddtionalSettingsFields() {
     projectTypeRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.type.application"),
@@ -58,12 +58,7 @@ public class FlutterCreateAddtionalSettingsFields {
                                   iosLanguageRadios.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.includedriver.label"), includeDriverTextField);
 
-    settingsStep.addSettingsField("", new JLabel(" "));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.help.label"), new JLabel(" "));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.help.project_name.label"),
-                                  new JLabel(FlutterBundle.message("flutter.module.create.settings.help.project_name.description")));
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.help.org.label"),
-                                  new JLabel(FlutterBundle.message("flutter.module.create.settings.help.org.description")));
+    settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
   }
 
   public FlutterCreateAdditionalSettings getAddtionalSettings() {

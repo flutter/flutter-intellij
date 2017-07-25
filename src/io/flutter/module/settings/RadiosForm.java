@@ -23,7 +23,7 @@ public class RadiosForm {
 
     radio2.setText(label2);
 
-    ButtonGroup radioGroup = new ButtonGroup();
+    final ButtonGroup radioGroup = new ButtonGroup();
     radioGroup.add(radio1);
     radioGroup.add(radio2);
   }

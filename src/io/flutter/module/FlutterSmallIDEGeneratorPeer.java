@@ -30,7 +30,7 @@ import javax.swing.text.JTextComponent;
 
 public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.GeneratorPeer<String> {
   private final ComboboxWithBrowseButton sdkPathComboWithBrowse;
-  private FlutterCreateAddtionalSettingsFields settingsFields;
+  private final FlutterCreateAddtionalSettingsFields settingsFields;
 
   public FlutterSmallIDEGeneratorPeer() {
     sdkPathComboWithBrowse = new ComboboxWithBrowseButton(new ComboBox<>());
@@ -41,6 +41,8 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
       FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
       FileChooserDescriptorFactory.createSingleFolderDescriptor(),
       TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
+
+    settingsFields = new FlutterCreateAddtionalSettingsFields();
   }
 
   @NotNull
@@ -53,9 +55,6 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
   public void buildUI(@NotNull SettingsStep settingsStep) {
     settingsStep.addSettingsField("Flutter SDK", sdkPathComboWithBrowse);
 
-    if (settingsFields == null) {
-      settingsFields = new FlutterCreateAddtionalSettingsFields();
-    }
     settingsFields.addSettingsFields(settingsStep);
   }
 
@@ -100,6 +99,7 @@ public class FlutterSmallIDEGeneratorPeer implements WebProjectGenerator.Generat
     }
   }
 
+  @NotNull
   public FlutterCreateAdditionalSettings getAddtionalSettings() {
     return settingsFields.getAddtionalSettings();
   }

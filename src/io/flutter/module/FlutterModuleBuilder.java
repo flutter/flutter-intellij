@@ -213,7 +213,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Nullable
   @Override
   public ModuleWizardStep modifySettingsStep(@NotNull SettingsStep settingsStep) {
-    ModuleWizardStep wizard = super.modifySettingsStep(settingsStep);
+    final ModuleWizardStep wizard = super.modifySettingsStep(settingsStep);
 
     if (settingsFields == null) {
       settingsFields = new FlutterCreateAddtionalSettingsFields();
