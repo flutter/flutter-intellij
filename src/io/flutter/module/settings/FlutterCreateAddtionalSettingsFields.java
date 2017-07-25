@@ -47,7 +47,6 @@ public class FlutterCreateAddtionalSettingsFields {
   }
 
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
-    settingsStep.addSettingsField("", new JLabel(" "));
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.type.label"),
                                   projectTypeRadios.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
