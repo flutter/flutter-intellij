@@ -10,7 +10,6 @@ import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.validator.ModuleValidator;
 import com.android.tools.idea.ui.properties.BindingsManager;
 import com.android.tools.idea.ui.properties.ListenerManager;
-import com.android.tools.idea.ui.properties.adapters.OptionalToValuePropertyAdapter;
 import com.android.tools.idea.ui.properties.core.ObjectValueProperty;
 import com.android.tools.idea.ui.properties.core.ObservableBool;
 import com.android.tools.idea.ui.properties.expressions.Expression;
@@ -47,7 +46,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private FlutterModuleBuilder.FlutterModuleWizardStep oldStep;
   private JPanel myPanel;
   private ComboboxWithBrowseButton myFlutterSdkPath;
-  private JPanel myModulePanel;
+  private JPanel myModulePanel; // Used by form; do not delete until layout is fixed.
   private ModuleNameLocationComponent myModuleNameLocationComponent;
 
   public FlutterPackageStep(@NotNull FlutterModuleModel model, @NotNull String title, @NotNull Icon icon) {
@@ -90,7 +89,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     };
     myValidatorPanel.registerTest(isStepValid, "");
     // TODO(messick): Fix validation.
-    // Also, even if the modeule wizard is canceled a new directory is added to the project.
 
     myRootPanel = new StudioWizardStepPanel(myValidatorPanel, FlutterBundle.message("module.wizard.package_step_body"));
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
@@ -148,6 +146,5 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myModuleNameLocationComponent.bindModuleSettings(namePathComponent);
     FlutterModuleModel model = getModel();
     model.setModuleComponent(myModuleNameLocationComponent);
-    model.setNameComponent(namePathComponent);
   }
 }

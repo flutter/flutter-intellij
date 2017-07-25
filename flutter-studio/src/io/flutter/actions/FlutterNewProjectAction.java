@@ -25,6 +25,7 @@ public class FlutterNewProjectAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    // TODO(messick): Figure out how to eliminate all project types except Flutter.
     ModulesProvider MODULES_PROVIDER = new ModulesProvider() {
       @Override
       @NotNull
