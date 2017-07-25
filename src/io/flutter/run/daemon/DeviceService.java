@@ -47,9 +47,8 @@ public class DeviceService {
 
   private final AtomicLong lastRestartTime = new AtomicLong(0);
 
-  public static
   @NotNull
-  DeviceService getInstance(@NotNull final Project project) {
+  public static DeviceService getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, DeviceService.class);
   }
 
@@ -122,9 +121,8 @@ public class DeviceService {
    * <p>
    * <p>When there is no device list (perhaps because the daemon isn't running), this will be null.
    */
-  public
   @Nullable
-  FlutterDevice getSelectedDevice() {
+  public FlutterDevice getSelectedDevice() {
     return deviceSelection.get().getSelection();
   }
 

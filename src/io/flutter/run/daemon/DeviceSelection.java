@@ -40,8 +40,8 @@ class DeviceSelection {
   DeviceSelection withDevices(@NotNull List<FlutterDevice> newDevices) {
     final String selectedId = selection == null ? null : selection.deviceId();
     final Optional<FlutterDevice> selectedDevice = findById(newDevices, selectedId);
-    // If there is only one device, default to it.
-    final FlutterDevice selectionOrDefault = selectedDevice.orElse(newDevices.size() == 1 ? newDevices.get(0) : null);
+    // If there's no selected device, default to the first one in the list.
+    final FlutterDevice selectionOrDefault = selectedDevice.orElse(newDevices.size() > 0 ? newDevices.get(0) : null);
     return new DeviceSelection(ImmutableList.copyOf(newDevices), selectionOrDefault);
   }
 
