@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>15.0</version>
+  <version>16.0</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,39 @@
 
   <change-notes>
     <![CDATA[
+
+16.0:
+<ul>
+  <li>device list refresh fixes</li>
+  <li>support for flutter run in profile and release modes</li>
+  <li>support for reading the android sdk location from flutter tools</li>
+  <li>support for discovering and running Flutter widget tests</li>
+  <li>Flutter test console improvements</li>
+  <li>support for running flutter doctor in a Bazel workspace</li>
+  <li>test file icon annotations</li>
+  <li>support for locating a missing flutter SDK in .packages files</li>
+  <li>open emulator action sorting</li>
+  <li>test state icons for Flutter tests</li>
+  <li>editor line markers for Flutter tests</li>
+  <li>added a new restart daemon action</li>
+  <li>open emulator action sorting</li>
+  <li>run/debug button enablement improvements</li>
+  <li>fix to ensure the `Install SDK…` action is always visible</li>
+  <li>support for running a single Flutter test, by name</li>
+  <li>install creation progress UI fixes</li>
+  <li>project creation fixes for smalll IDEs</li>
+  <li>fixes to android emulator launching</li>
+</ul>
+
+15.2:
+<ul>
+  <li>fix for an exception in the new project wizard in WebStorm (#1234)</li>
+</ul>
+
+15.1:
+<ul>
+  <li>fix for a file watching related NPE on build systems using Bazel (#1191)</li>
+</ul>
 
 15.0:
 <ul>
