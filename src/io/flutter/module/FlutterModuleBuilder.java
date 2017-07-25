@@ -269,7 +269,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return result.get();
   }
 
-  private static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
+  public void setFlutterSdkPath(String s) {
+    ComboBoxEditor combo = myStep.myPeer.getSdkEditor();
+    combo.setItem(s);
+  }
+
+  public static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer myPeer;
     private FlutterSdk myFlutterSdk;
 
@@ -315,6 +320,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
         }
       }
       return FlutterSdk.forPath(sdkPath);
+    }
+
+    public String getValidationMessage() {
+      return myPeer.getErrorDetails();
     }
   }
 }

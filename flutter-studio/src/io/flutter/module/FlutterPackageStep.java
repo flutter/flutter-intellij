@@ -10,19 +10,22 @@ import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.validator.ModuleValidator;
 import com.android.tools.idea.ui.properties.BindingsManager;
 import com.android.tools.idea.ui.properties.ListenerManager;
+import com.android.tools.idea.ui.properties.adapters.OptionalToValuePropertyAdapter;
+import com.android.tools.idea.ui.properties.core.ObjectValueProperty;
 import com.android.tools.idea.ui.properties.core.ObservableBool;
-import com.android.tools.idea.ui.properties.core.StringProperty;
+import com.android.tools.idea.ui.properties.expressions.Expression;
 import com.android.tools.idea.ui.properties.swing.SelectedItemProperty;
-import com.android.tools.idea.ui.properties.swing.TextProperty;
-import com.android.tools.idea.ui.validation.validators.PathValidator;
 import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
-import com.android.tools.idea.wizard.model.WizardModel;
 import com.android.tools.swing.util.FormScalingUtil;
+import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
+import com.intellij.ide.util.projectWizard.NamePathComponent;
+import com.intellij.ide.util.projectWizard.WizardContext;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -30,60 +33,64 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.JTextComponent;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import static com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse;
-
-public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> {
+public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> implements Disposable {
 
   @NotNull private final BindingsManager myBindings = new BindingsManager();
   @NotNull private final ListenerManager myListeners = new ListenerManager();
   @NotNull private final ValidatorPanel myValidatorPanel;
-  private JPanel myPanel;
-  private JTextField myPackageName;
-  private TextFieldWithBrowseButton myContentRoot;
-  private TextFieldWithBrowseButton myPackageFileLocation;
-  private ComboboxWithBrowseButton myFlutterSdkPath;
   // TODO(messick): Update the root panel with whatever the latest and greatest is.
   @NotNull private final StudioWizardStepPanel myRootPanel;
+  private FlutterModuleBuilder myBuilder;
+  private FlutterModuleBuilder.FlutterModuleWizardStep oldStep;
+  private JPanel myPanel;
+  private ComboboxWithBrowseButton myFlutterSdkPath;
+  private JPanel myModulePanel;
+  private ModuleNameLocationComponent myModuleNameLocationComponent;
 
   public FlutterPackageStep(@NotNull FlutterModuleModel model, @NotNull String title, @NotNull Icon icon) {
     super(model, title, icon);
-    myBindings.bindTwoWay(new TextProperty(myPackageName), model.packageName());
-    myBindings.bindTwoWay(new TextProperty(myContentRoot.getTextField()), model.contentRoot());
-    myBindings.bindTwoWay(new TextProperty(myContentRoot.getTextField()), model.packageFileLocation());
-    myBindings.bindTwoWay(new TextProperty(myPackageFileLocation.getTextField()), model.packageFileLocation());
-    initDartFileTextWithBrowse(model.getProject(), myContentRoot);
-    initDartFileTextWithBrowse(model.getProject(), myPackageFileLocation);
+    model.setBuilder(myBuilder);
     myFlutterSdkPath.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
-                                                     FileChooserDescriptorFactory.createSingleFolderDescriptor(),
-                                                     TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
-    myFlutterSdkPath.getComboBox().addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        model.flutterSdk().set((String)myFlutterSdkPath.getComboBox().getSelectedItem());
-      }
-    });
+                                             FileChooserDescriptorFactory.createSingleFolderDescriptor(),
+                                             TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
+    myBindings.bind(model.flutterSdk(), new SelectedItemProperty<>(myFlutterSdkPath.getComboBox()));
     myValidatorPanel = new ValidatorPanel(this, myPanel);
-    myValidatorPanel.registerValidator(model.packageName(), new ModuleValidator(model.getProject()));
-    myValidatorPanel.registerValidator(model.contentRoot(), contentRoot ->
-      !contentRoot.isEmpty()
-      ? Validator.Result.OK
-      : new Validator.Result(Validator.Severity.ERROR, FlutterBundle.message("flutter.wizard.please_select_content_root")));
-    myValidatorPanel.registerValidator(model.packageFileLocation(), packageFileLocation ->
-      !packageFileLocation.isEmpty()
-      ? Validator.Result.OK
-      : new Validator.Result(Validator.Severity.ERROR, FlutterBundle.message("flutter.wizard.please_select_package_file_location")));
-    // TODO(messick): Finish validator initialization.
+    myValidatorPanel.registerValidator(model.flutterSdk(), value -> validateStep());
+    myValidatorPanel.registerValidator(model.moduleName(), new ModuleValidator(model.getProject()));
+    Expression<Boolean> isPanelValid = new Expression<Boolean>(new ObjectValueProperty<>(myModuleNameLocationComponent)) {
+      @NotNull
+      @Override
+      public Boolean get() {
+        try {
+          return myModuleNameLocationComponent.validate();
+        }
+        catch (ConfigurationException e) {
+          return false;
+        }
+      }
+    };
+    myValidatorPanel.registerTest(isPanelValid, "");
+    Expression<Boolean> isStepValid = new Expression<Boolean>(new ObjectValueProperty<>(oldStep)) {
+      @NotNull
+      @Override
+      public Boolean get() {
+        try {
+          return oldStep.validate();
+        }
+        catch (ConfigurationException e) {
+          return false;
+        }
+      }
+    };
+    myValidatorPanel.registerTest(isStepValid, "");
+    // TODO(messick): Fix validation.
+    // Also, even if the modeule wizard is canceled a new directory is added to the project.
 
     myRootPanel = new StudioWizardStepPanel(myValidatorPanel, FlutterBundle.message("module.wizard.package_step_body"));
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
@@ -98,7 +105,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   @Nullable
   @Override
   protected JComponent getPreferredFocusComponent() {
-    return myPackageName;
+    return myModuleNameLocationComponent.getModuleNameField();
   }
 
   @Override
@@ -117,5 +124,30 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   @Override
   protected ObservableBool canGoForward() {
     return myValidatorPanel.hasErrors().not();
+  }
+
+  private Validator.Result validateStep() {
+    try {
+      return oldStep.validate() ? Validator.Result.OK : Validator.Result.fromNullableMessage(oldStep.getValidationMessage());
+    }
+    catch (ConfigurationException e) {
+      return Validator.Result.fromNullableMessage(e.getMessage());
+    }
+  }
+
+  private void createUIComponents() {
+    // This is called by the form builder before the constructor runs.
+    WizardContext wizardContext = new WizardContext(getModel().getProject(), null);
+    myBuilder = new FlutterModuleBuilder();
+    wizardContext.setProjectBuilder(myBuilder);
+    oldStep = (FlutterModuleBuilder.FlutterModuleWizardStep)myBuilder.getCustomOptionsStep(wizardContext, this);
+    NamePathComponent namePathComponent = NamePathComponent.initNamePathComponent(wizardContext);
+    namePathComponent.setShouldBeAbsolute(true);
+    myModuleNameLocationComponent = new ModuleNameLocationComponent(wizardContext);
+    myModuleNameLocationComponent.updateDataModel();
+    myModuleNameLocationComponent.bindModuleSettings(namePathComponent);
+    FlutterModuleModel model = getModel();
+    model.setModuleComponent(myModuleNameLocationComponent);
+    model.setNameComponent(namePathComponent);
   }
 }
