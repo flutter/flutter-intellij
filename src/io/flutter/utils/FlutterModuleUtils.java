@@ -9,7 +9,10 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleType;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -44,14 +47,14 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * This provides the {@link ModuleType} for Flutter modules to be assigned by the {@link io.flutter.module.FlutterModuleBuilder} and
+   * This provides the {@link ModuleType} ID for Flutter modules to be assigned by the {@link io.flutter.module.FlutterModuleBuilder} and
    * elsewhere in the Flutter plugin.
    * <p/>
    * For Flutter module detection however, {@link ModuleType}s should not be used to determine Flutterness.
    */
   @NotNull
-  public static ModuleType getModuleTypeForFlutter() {
-    return WebModuleType.getInstance();
+  public static String getModuleTypeIDForFlutter() {
+    return "WEB_MODULE";
   }
 
   /**
@@ -230,10 +233,10 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Set the passed module to the module type used by Flutter, defined by {@link #getModuleTypeForFlutter()}.
+   * Set the passed module to the module type used by Flutter, defined by {@link #getModuleTypeIDForFlutter()}.
    */
   public static void setFlutterModuleType(@NotNull Module module) {
-    module.setOption(Module.ELEMENT_TYPE, getModuleTypeForFlutter().getId());
+    module.setOption(Module.ELEMENT_TYPE, getModuleTypeIDForFlutter());
   }
 
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
