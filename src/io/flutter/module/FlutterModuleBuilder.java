@@ -227,7 +227,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Override
   @NotNull
   public ModuleType getModuleType() {
-    return FlutterModuleUtils.getModuleTypeForFlutter();
+    return ModuleTypeManager.getInstance().findByID(FlutterModuleUtils.getModuleTypeIDForFlutter());
   }
 
   /**

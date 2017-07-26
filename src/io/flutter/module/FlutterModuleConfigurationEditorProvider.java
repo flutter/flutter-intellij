@@ -17,10 +17,12 @@ public class FlutterModuleConfigurationEditorProvider implements ModuleConfigura
   @Override
   public ModuleConfigurationEditor[] createEditors(ModuleConfigurationState state) {
     final Module module = state.getRootModel().getModule();
+    final ModuleType moduleType = ModuleType.get(module);
 
-    if (ModuleType.get(module) != FlutterModuleUtils.getModuleTypeForFlutter()) {
+    if (!moduleType.getId().equals(FlutterModuleUtils.getModuleTypeIDForFlutter())) {
       return ModuleConfigurationEditor.EMPTY;
     }
+
     return new ModuleConfigurationEditor[]{new CommonContentEntriesEditor(module.getName(), state)};
   }
 }
