@@ -5,13 +5,15 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.execution.process.ProcessListener;
+import com.google.gson.*;
+import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,7 +28,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 
@@ -91,7 +95,8 @@ public class FlutterSdk {
     final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
     if (home == null || !FlutterSdkUtil.isFlutterSdkHome(path)) {
       return null;
-    } else {
+    }
+    else {
       return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
     }
   }
@@ -217,7 +222,7 @@ public class FlutterSdk {
       return false;
     }
   }
-  
+
   /**
    * Runs flutter create and waits for it to finish.
    * <p>
@@ -225,7 +230,6 @@ public class FlutterSdk {
    * <p>
    * Notifies process listener if one is specified.
    * <p>
-   *
    * Returns the PubRoot if successful.
    */
   @Nullable
@@ -234,7 +238,8 @@ public class FlutterSdk {
     final Process process;
     if (module == null) {
       process = flutterCreate(baseDir).start(null, listener);
-    } else {
+    }
+    else {
       process = flutterCreate(baseDir).startInModuleConsole(module, null, listener);
     }
     if (process == null) {
@@ -254,7 +259,7 @@ public class FlutterSdk {
     baseDir.refresh(false, true);
     return PubRoot.forDirectory(baseDir);
   }
-  
+
   /**
    * Starts running 'flutter packages get' on the given pub root provided it's in one of this project's modules.
    * <p>
@@ -330,6 +335,77 @@ public class FlutterSdk {
         return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
       }
     }
+    return null;
+  }
+
+  /**
+   * Query 'flutter config' for the given key, and optionally use any existing cached value.
+   */
+  @Nullable
+  public String queryFlutterConfig(String key, boolean useCachedValue) {
+    if (useCachedValue && cachedConfigValues.containsKey(key)) {
+      return cachedConfigValues.get(key);
+    }
+
+    cachedConfigValues.put(key, queryFlutterConfigImpl(key));
+    return cachedConfigValues.get(key);
+  }
+
+  private final Map<String, String> cachedConfigValues = new HashMap<>();
+
+  private String queryFlutterConfigImpl(String key) {
+    final FlutterCommand command = flutterConfig("--machine");
+    final OSProcessHandler process = command.startProcess(false);
+    final StringBuilder stdout = new StringBuilder();
+    process.addProcessListener(new ProcessAdapter() {
+      boolean hasSeenStartingBrace = false;
+
+      @Override
+      public void onTextAvailable(ProcessEvent event, Key outputType) {
+        // {"android-studio-dir":"/Applications/Android Studio 3.0 Preview.app/Contents"}
+        if (outputType == ProcessOutputTypes.STDOUT) {
+          // Ignore any non-json starting lines (like "Building flutter tool...").
+          if (event.getText().startsWith("{")) {
+            hasSeenStartingBrace = true;
+          }
+          if (hasSeenStartingBrace) {
+            stdout.append(event.getText());
+          }
+        }
+      }
+    });
+
+    LOG.info("Calling config --machine");
+    final long start = System.currentTimeMillis();
+
+    process.startNotify();
+
+    if (process.waitFor(5000)) {
+      final long duration = System.currentTimeMillis() - start;
+      LOG.info("flutter config --machine: " + duration + "ms");
+
+      final Integer code = process.getExitCode();
+      if (code != null && code == 0) {
+        try {
+          final JsonParser jp = new JsonParser();
+          final JsonElement elem = jp.parse(stdout.toString());
+          final JsonObject obj = elem.getAsJsonObject();
+          final JsonPrimitive primitive = obj.getAsJsonPrimitive(key);
+          if (primitive != null) {
+            return primitive.getAsString();
+          }
+        }
+        catch (JsonSyntaxException ignored) {
+        }
+      }
+      else {
+        LOG.info("Exit code from flutter config --machine: " + code);
+      }
+    }
+    else {
+      LOG.info("Timeout when calling flutter config --machine");
+    }
+
     return null;
   }
 }
