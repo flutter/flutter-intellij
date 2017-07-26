@@ -43,6 +43,8 @@ public class FlutterSdk {
 
   private static final Logger LOG = Logger.getInstance(FlutterSdk.class);
 
+  private static final Map<String, FlutterSdk> projectSdkCache = new HashMap<>();
+
   private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
 
@@ -70,7 +72,12 @@ public class FlutterSdk {
     if (!dartPath.endsWith(DART_SDK_SUFFIX)) {
       return null;
     }
-    return forPath(dartPath.substring(0, dartPath.length() - DART_SDK_SUFFIX.length()));
+
+    final String sdkPath = dartPath.substring(0, dartPath.length() - DART_SDK_SUFFIX.length());
+
+    // Cache based on the project and path ('e41cfa3d:/Users/devoncarew/projects/flutter/flutter').
+    final String cacheKey = project.getLocationHash() + ":" + sdkPath;
+    return projectSdkCache.computeIfAbsent(cacheKey, s -> forPath(sdkPath));
   }
 
   /**
