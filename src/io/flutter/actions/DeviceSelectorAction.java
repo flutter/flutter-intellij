@@ -68,8 +68,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
   private void update(Project project, Presentation presentation) {
     FlutterUtils.invokeAndWait(() -> {
-      updateVisibility(project, presentation);
       updateActions(project, presentation);
+      updateVisibility(project, presentation);
     });
   }
 
@@ -77,11 +77,12 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     final boolean visible = isSelectorVisible(project);
     presentation.setVisible(visible);
 
-    final JComponent button = (JComponent)presentation.getClientProperty("customComponent");
-    if (button != null) {
-      button.setVisible(visible);
-      if (button.getParent() != null) {
-        button.getParent().doLayout();
+    final JComponent component = (JComponent)presentation.getClientProperty("customComponent");
+    if (component != null) {
+      component.setVisible(visible);
+      if (component.getParent() != null) {
+        component.getParent().doLayout();
+        component.getParent().repaint();
       }
     }
   }

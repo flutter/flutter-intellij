@@ -5,22 +5,15 @@
  */
 package io.flutter.android;
 
-import com.google.gson.*;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.projectRoots.ProjectJdkTable;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ProjectRootManager;
-import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EnvironmentUtil;
-import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -122,56 +115,9 @@ public class IntelliJAndroidSdk {
     if (askFlutterTools) {
       final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
       if (flutterSdk != null) {
-        final FlutterCommand command = flutterSdk.flutterConfig("--machine");
-        final OSProcessHandler process = command.startProcess(false);
-        final StringBuilder stdout = new StringBuilder();
-        process.addProcessListener(new ProcessAdapter() {
-          boolean hasSeenStartingBrace = false;
-
-          @Override
-          public void onTextAvailable(ProcessEvent event, Key outputType) {
-            // {"android-studio-dir":"/Applications/Android Studio 3.0 Preview.app/Contents"}
-            if (outputType == ProcessOutputTypes.STDOUT) {
-              // Ignore any non-json starting lines (like "Building flutter tool...").
-              if (event.getText().startsWith("{")) {
-                hasSeenStartingBrace = true;
-              }
-              if (hasSeenStartingBrace) {
-                stdout.append(event.getText());
-              }
-            }
-          }
-        });
-
-        LOG.info("Calling config --machine");
-        final long start = System.currentTimeMillis();
-
-        process.startNotify();
-
-        if (process.waitFor(5000)) {
-          final long duration = System.currentTimeMillis() - start;
-          LOG.info("flutter config --machine: " + duration + "ms");
-
-          final Integer code = process.getExitCode();
-          if (code != null && code == 0) {
-            try {
-              final JsonParser jp = new JsonParser();
-              final JsonElement elem = jp.parse(stdout.toString());
-              final JsonObject obj = elem.getAsJsonObject();
-              final JsonPrimitive primitive = obj.getAsJsonPrimitive("android-sdk");
-              if (primitive != null) {
-                return primitive.getAsString();
-              }
-            }
-            catch (JsonSyntaxException ignored) {
-            }
-          }
-          else {
-            LOG.info("Exit code from flutter config --machine: " + code);
-          }
-        }
-        else {
-          LOG.info("Timeout when calling flutter config --machine");
+        final String androidSdkLocation = flutterSdk.queryFlutterConfig("android-sdk", true);
+        if (androidSdkLocation != null) {
+          return androidSdkLocation;
         }
       }
     }
