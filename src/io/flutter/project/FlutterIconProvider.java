@@ -7,11 +7,11 @@ package io.flutter.project;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IconProvider;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiInvalidElementAccessException;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import icons.FlutterIcons;
@@ -33,8 +33,8 @@ public class FlutterIconProvider extends IconProvider {
 
   @Nullable
   public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
-    final boolean hasFlutterModule = FlutterModuleUtils.hasFlutterModule(element.getProject());
-    if (!hasFlutterModule) return null;
+    final Project project = element.getProject();
+    if (!FlutterModuleUtils.hasFlutterModule(project)) return null;
 
     // Directories.
     if (element instanceof PsiDirectory) {
@@ -42,12 +42,8 @@ public class FlutterIconProvider extends IconProvider {
       if (!file.isInLocalFileSystem()) return null;
 
       // Project root.
-      try {
-        if (Objects.equals(file.getPath(), element.getProject().getBaseDir().getPath())) {
-          return FlutterIcons.Flutter;
-        }
-      } catch (PsiInvalidElementAccessException e) {
-        // In the unlikely event that we get an exception accessing the element's project, just move on.
+      if (Objects.equals(file.getPath(), project.getBaseDir().getPath())) {
+        return FlutterIcons.Flutter;
       }
 
       final PubRoot root = PubRoot.forDirectory(file.getParent());
