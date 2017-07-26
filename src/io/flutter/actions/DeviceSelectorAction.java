@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.SystemInfo;
 import icons.FlutterIcons;
@@ -132,12 +133,16 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.addAll(emulatorActions);
     }
 
+    selectedDeviceAction = null;
+
     final FlutterDevice selectedDevice = service.getSelectedDevice();
     for (AnAction action : actions) {
       if (action instanceof SelectDeviceAction) {
         final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
 
         if (Objects.equals(deviceAction.device, selectedDevice)) {
+          selectedDeviceAction = deviceAction;
+
           final Presentation template = action.getTemplatePresentation();
           presentation.setIcon(template.getIcon());
           presentation.setText(template.getText());
@@ -153,6 +158,14 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     else {
       presentation.setText(null);
     }
+  }
+
+  private SelectDeviceAction selectedDeviceAction;
+
+  // Show the current device as selected when the combo box menu opens.
+  @Override
+  protected Condition<AnAction> getPreselectCondition() {
+    return action -> action == selectedDeviceAction;
   }
 
   // It's not clear if we need TransparentUpdate, but apparently it will make the UI refresh
