@@ -7,12 +7,14 @@ package io.flutter.project;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.IconProvider;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Iconable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
+import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
@@ -20,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.Objects;
 
 import static com.intellij.psi.impl.ElementBase.overlayIcons;
 
@@ -27,13 +30,21 @@ public class FlutterIconProvider extends IconProvider {
 
   private static final Icon TEST_FILE = overlayIcons(DartFileType.INSTANCE.getIcon(), AllIcons.Nodes.JunitTestMark);
 
+
   @Nullable
   public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
-    final boolean hasFlutterModule = FlutterModuleUtils.hasFlutterModule(element.getProject());
+    final Project project = element.getProject();
+    if (!FlutterModuleUtils.hasFlutterModule(project)) return null;
+
     // Directories.
-    if (hasFlutterModule && element instanceof PsiDirectory) {
+    if (element instanceof PsiDirectory) {
       final VirtualFile file = ((PsiDirectory)element).getVirtualFile();
       if (!file.isInLocalFileSystem()) return null;
+
+      // Project root.
+      if (Objects.equals(file.getPath(), project.getBaseDir().getPath())) {
+        return FlutterIcons.Flutter;
+      }
 
       final PubRoot root = PubRoot.forDirectory(file.getParent());
       if (root == null) return null;
@@ -43,7 +54,7 @@ public class FlutterIconProvider extends IconProvider {
     }
 
     // Files.
-    if (hasFlutterModule && element instanceof DartFile) {
+    if (element instanceof DartFile) {
       final DartFile dartFile = (DartFile)element;
       final VirtualFile file = dartFile.getVirtualFile();
       if (!file.isInLocalFileSystem()) return null;
