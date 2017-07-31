@@ -100,13 +100,11 @@
             <properties/>
             <border type="none"/>
             <children>
-              <component id="26e7" class="javax.swing.JTextPane" binding="gettingStartedUrl">
+              <component id="6a451" class="com.intellij.ui.components.labels.LinkLabel" binding="gettingStartedUrl">
                 <constraints>
                   <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
                 </constraints>
                 <properties>
-                  <contentType value="text/html"/>
-                  <editable value="false"/>
                   <opaque value="false"/>
                 </properties>
               </component>
