@@ -1,3 +1,8 @@
+/*
+ * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 package io.flutter.module;
 
 import com.intellij.execution.OutputListener;
@@ -24,6 +29,8 @@ import javax.swing.*;
 // https://youtrack.jetbrains.com/issue/WEB-27537
 
 public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> {
+  private FlutterSmallIDEGeneratorPeer generatorPeer;
+
   @NotNull
   @Override
   public String getName() {
@@ -38,7 +45,8 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
   @NotNull
   @Override
   public GeneratorPeer<String> createPeer() {
-    return new FlutterSmallIDEGeneratorPeer();
+    generatorPeer = new FlutterSmallIDEGeneratorPeer();
+    return generatorPeer;
   }
 
   @Override
@@ -51,7 +59,6 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
                               @NotNull VirtualFile baseDir,
                               @NotNull String flutterSdkPath,
                               @NotNull Module module) {
-
     final FlutterSdk sdk = FlutterSdk.forPath(flutterSdkPath);
     if (sdk == null) {
       FlutterMessages.showError("Error creating project", flutterSdkPath + " is not a valid Flutter SDK");
@@ -60,7 +67,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
 
     // Run "flutter create".
     final OutputListener listener = new OutputListener();
-    final PubRoot root = sdk.createFiles(baseDir, module, listener);
+    final PubRoot root = sdk.createFiles(baseDir, module, listener, generatorPeer.getAddtionalSettings());
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;

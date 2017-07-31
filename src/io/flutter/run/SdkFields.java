@@ -99,7 +99,6 @@ public class SdkFields {
   public GeneralCommandLine createFlutterSdkRunCommand(@NotNull Project project,
                                                        @Nullable FlutterDevice device,
                                                        @NotNull RunMode mode) throws ExecutionException {
-
     final MainFile main = MainFile.verify(filePath, project).get();
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);

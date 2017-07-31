@@ -9,6 +9,7 @@ import com.intellij.execution.OutputListener;
 import com.intellij.execution.process.ProcessListener;
 import com.intellij.ide.util.projectWizard.ModuleBuilder;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.WriteAction;
@@ -27,7 +28,10 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
+import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
+import io.flutter.module.settings.RadiosForm;
 import io.flutter.pub.PubRoot;
+import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
@@ -35,6 +39,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -46,6 +52,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static final String DART_GROUP_NAME = "Static Web"; // == WebModuleBuilder.GROUP_NAME
 
   private FlutterModuleWizardStep myStep;
+  private FlutterCreateAddtionalSettingsFields settingsFields;
 
   @Override
   public String getName() {
@@ -101,7 +108,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener);
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settingsFields.getAddtionalSettings());
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
@@ -172,11 +179,11 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return myStep.getFlutterSdk() != null;
   }
 
+  /**
+   * @See: https://www.dartlang.org/tools/pub/pubspec#name
+   */
   @Override
   public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {
-
-    // See: https://www.dartlang.org/tools/pub/pubspec#name
-
     if (!FlutterUtils.isValidPackageName(moduleName)) {
       throw new ConfigurationException(
         "Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
@@ -201,6 +208,19 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     return super.validateModuleName(moduleName);
+  }
+
+  @Nullable
+  @Override
+  public ModuleWizardStep modifySettingsStep(@NotNull SettingsStep settingsStep) {
+    final ModuleWizardStep wizard = super.modifySettingsStep(settingsStep);
+
+    if (settingsFields == null) {
+      settingsFields = new FlutterCreateAddtionalSettingsFields();
+    }
+    settingsFields.addSettingsFields(settingsStep);
+
+    return wizard;
   }
 
   @Nullable
@@ -239,13 +259,14 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static PubRoot runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
                                                       @NotNull FlutterSdk sdk,
                                                       @NotNull Project project,
-                                                      @Nullable ProcessListener processListener) {
+                                                      @Nullable ProcessListener processListener,
+                                                      @Nullable FlutterCreateAdditionalSettings additionalSettings) {
     final ProgressManager progress = ProgressManager.getInstance();
     final AtomicReference<PubRoot> result = new AtomicReference<>(null);
 
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
-      result.set(sdk.createFiles(baseDir, null, processListener));
+      result.set(sdk.createFiles(baseDir, null, processListener, additionalSettings));
     }, "Creating Flutter Project", false, project);
 
     return result.get();

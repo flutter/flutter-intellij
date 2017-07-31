@@ -120,8 +120,18 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
   }
 
-  public FlutterCommand flutterCreate(@NotNull VirtualFile appDir) {
-    return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, appDir.getName());
+  public FlutterCommand flutterCreate(@NotNull VirtualFile appDir, @Nullable FlutterCreateAdditionalSettings additionalSettings) {
+    final List<String> args = new ArrayList<>();
+    if (additionalSettings != null) {
+      args.addAll(additionalSettings.getArgs());
+    }
+
+    // keep as the last argument
+    args.add(appDir.getName());
+
+    final String[] vargs = args.stream().toArray(String[]::new);
+
+    return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, vargs);
   }
 
   public FlutterCommand flutterPackagesGet(@NotNull PubRoot root) {
@@ -240,14 +250,13 @@ public class FlutterSdk {
    * Returns the PubRoot if successful.
    */
   @Nullable
-  public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module, @Nullable ProcessListener listener) {
-
+  public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module, @Nullable ProcessListener listener,
+                             @Nullable FlutterCreateAdditionalSettings additionalSettings) {
     final Process process;
     if (module == null) {
-      process = flutterCreate(baseDir).start(null, listener);
-    }
-    else {
-      process = flutterCreate(baseDir).startInModuleConsole(module, null, listener);
+      process = flutterCreate(baseDir, additionalSettings).start(null, listener);
+    } else {
+      process = flutterCreate(baseDir, additionalSettings).startInModuleConsole(module, null, listener);
     }
     if (process == null) {
       return null;
