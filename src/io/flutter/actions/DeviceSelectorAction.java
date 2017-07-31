@@ -99,8 +99,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     final Collection<FlutterDevice> devices = service.getConnectedDevices();
 
-    for (FlutterDevice item : devices) {
-      actions.add(new SelectDeviceAction(item));
+    for (FlutterDevice device : devices) {
+      actions.add(new SelectDeviceAction(device, devices));
     }
 
     if (actions.isEmpty()) {
@@ -145,7 +145,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
           final Presentation template = action.getTemplatePresentation();
           presentation.setIcon(template.getIcon());
-          presentation.setText(template.getText());
+          presentation.setText(deviceAction.deviceName());
           presentation.setEnabled(true);
           return;
         }
@@ -187,9 +187,13 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     @NotNull
     private final FlutterDevice device;
 
-    SelectDeviceAction(@NotNull FlutterDevice device) {
-      super(device.deviceName(), null, FlutterIcons.Phone);
+    SelectDeviceAction(@NotNull FlutterDevice device, @NotNull Collection<FlutterDevice> devices) {
+      super(device.getUniqueName(devices), null, FlutterIcons.Phone);
       this.device = device;
+    }
+
+    public String deviceName() {
+      return device.deviceName();
     }
 
     @Override

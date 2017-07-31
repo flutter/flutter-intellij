@@ -8,6 +8,7 @@ package io.flutter.run.daemon;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
 import java.util.Objects;
 
 public class FlutterDevice {
@@ -23,15 +24,18 @@ public class FlutterDevice {
     myEmulator = emulator;
   }
 
-  public @NotNull String deviceId() {
+  @NotNull
+  public String deviceId() {
     return myDeviceId;
   }
 
-  public @NotNull String deviceName() {
+  @NotNull
+  public String deviceName() {
     return myDeviceName;
   }
 
-  public @Nullable String platform() {
+  @Nullable
+  public String platform() {
     return myPlatform;
   }
 
@@ -64,5 +68,20 @@ public class FlutterDevice {
   @Override
   public String toString() {
     return myDeviceName;
+  }
+
+  /**
+   * Given a collection of devices, return a unique name for this device.
+   */
+  public String getUniqueName(Collection<FlutterDevice> devices) {
+    for (final FlutterDevice other : devices) {
+      if (other == this) {
+        continue;
+      }
+      if (other.deviceName().equals(deviceName())) {
+        return deviceName() + " (" + deviceId() + ")";
+      }
+    }
+    return deviceName();
   }
 }
