@@ -52,6 +52,7 @@ public class FlutterModuleUtils {
    * <p/>
    * For Flutter module detection however, {@link ModuleType}s should not be used to determine Flutterness.
    */
+  @SuppressWarnings("SameReturnValue")
   @NotNull
   public static String getModuleTypeIDForFlutter() {
     return "WEB_MODULE";

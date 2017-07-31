@@ -129,7 +129,7 @@ public class FlutterSdk {
     // keep as the last argument
     args.add(appDir.getName());
 
-    final String[] vargs = args.stream().toArray(String[]::new);
+    final String[] vargs = args.toArray(new String[0]);
 
     return new FlutterCommand(this, appDir.getParent(), FlutterCommand.Type.CREATE, vargs);
   }
