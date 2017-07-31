@@ -61,7 +61,7 @@ public class FlutterCreateAddtionalSettingsFields {
   }
 
   public FlutterCreateAdditionalSettings getAddtionalSettings() {
-    FlutterCreateAdditionalSettings addtionalSettings = new FlutterCreateAdditionalSettings.Builder()
+    return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setGeneratePlugin(projectTypeRadios.isRadio2Selected() ? true : null)
       .setIncludeDriverTest(!includeDriverTextField.isSelected() ? null : true)
@@ -69,7 +69,5 @@ public class FlutterCreateAddtionalSettingsFields {
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
       .build();
-
-    return addtionalSettings;
   }
 }

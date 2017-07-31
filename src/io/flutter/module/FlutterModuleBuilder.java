@@ -29,7 +29,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
-import io.flutter.module.settings.RadiosForm;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
@@ -39,8 +38,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 

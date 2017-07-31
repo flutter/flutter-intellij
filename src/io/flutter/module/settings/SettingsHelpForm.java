@@ -60,10 +60,8 @@ public class SettingsHelpForm {
             try {
               URI uri = new URI("https://flutter.io/getting-started/");
               desktop.browse(uri);
-            } catch (IOException ex) {
+            } catch (IOException | URISyntaxException ex) {
               // do nothing
-            } catch (URISyntaxException ex) {
-              //do nothing
             }
           } else {
             //do nothing
