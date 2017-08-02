@@ -35,7 +35,8 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
 
   public static final DartTestLocationProviderZ
     INSTANCE = new DartTestLocationProviderZ();
-  public static final Type STRING_LIST_TYPE = new TypeToken<List<String>>() {}.getType();
+  public static final Type STRING_LIST_TYPE = new TypeToken<List<String>>() {
+  }.getType();
 
   @NotNull
   @Override
@@ -76,7 +77,7 @@ public class DartTestLocationProviderZ implements SMTestLocator, DumbAware {
   }
 
   @Nullable
-  private static Location<PsiElement> getLocationByLineAndColumn(@NotNull final PsiFile file, final int line, final int column) {
+  protected Location<PsiElement> getLocationByLineAndColumn(@NotNull final PsiFile file, final int line, final int column) {
     final Document document = PsiDocumentManager.getInstance(file.getProject()).getDocument(file);
     if (document == null) return null;
 
