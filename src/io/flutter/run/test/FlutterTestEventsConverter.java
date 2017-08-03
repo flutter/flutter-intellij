@@ -35,9 +35,13 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
    * Checks if the given group is one created dynamically by flutter_test in the widget_tester
    * widget test wrapper.
    */
-  private static boolean isSyntheticWidgetTestGroup(@NotNull Group group) {
-    return Objects.equals(group.getUrl(), "package:flutter_test/src/widget_tester.dart") &&
-           Objects.equals(group.getName(), SYNTHETIC_WIDGET_GROUP_NAME);
+  private static boolean isSyntheticWidgetTestGroup(@Nullable Item item) {
+    return item instanceof Group && Objects.equals(item.getUrl(), "package:flutter_test/src/widget_tester.dart") &&
+           isSyntheticWidgetGroupName(item.getName());
+  }
+
+  private static boolean isSyntheticWidgetGroupName(@Nullable String name) {
+    return name != null && name.endsWith(SYNTHETIC_WIDGET_GROUP_NAME);
   }
 
   @Nullable
@@ -75,23 +79,34 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
     // This (and the special treatment in #handleGroup()):
     //   * gets rid of a needless extra group in the result tree, and
     //   * properly wires up the test's location URL
-    if (isSyntheticWidgetTestGroup(test.myParent)) {
-      // Skip the synthetic parent -- For example,
-      //   my_test.dart
-      //    "-"
-      //       "my first test"
-      // becomes:
-      //   my_test.dart
-      //     "my first test"
-      test.myParent = test.myParent.myParent;
-      // Fix the URL to point to local source (and not the wrapped call in
-      // "package:flutter_test/src/widget_tester.dart")
-      test.myUrl = test.getSuite().myUrl;
-      // Doctor the test name which is prefixed with the bogus group.
-      if (test.myName.startsWith(SYNTHETIC_WIDGET_GROUP_NAME)) {
-        // e.g., "- my first test" => "my first test"
-        test.myName = test.myName.substring(2);
+    Item item = test;
+    while (item != null) {
+      if (isSyntheticWidgetTestGroup(item.myParent)) {
+        // Skip the synthetic parent -- For example,
+        //   my_test.dart
+        //    "-"
+        //       "my first test"
+        // becomes:
+        //   my_test.dart
+        //     "my first test"
+        item.myParent = item.myParent.myParent;
+        // Fix the URL to point to local source (and not the wrapped call in
+        // "package:flutter_test/src/widget_tester.dart")
+        item.myUrl = item.getSuite().myUrl;
+
+        // Doctor the test name which is prefixed with the bogus group.
+        final int groupNameIndex = item.myName.lastIndexOf(SYNTHETIC_WIDGET_GROUP_NAME);
+        if (groupNameIndex != -1) {
+          // e.g.,
+          //     "- my first test" => "my first test"
+          //     "foo group - Counter increments smoke test" => "foo group Counter increments smoke test"
+          final StringBuilder sb = new StringBuilder(item.myName);
+          sb.replace(groupNameIndex, groupNameIndex + SYNTHETIC_WIDGET_GROUP_NAME.length() + 1, "");
+          item.myName = sb.toString();
+        }
       }
+
+      item = item.myParent;
     }
   }
 
