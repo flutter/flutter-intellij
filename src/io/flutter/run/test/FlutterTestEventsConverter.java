@@ -35,9 +35,13 @@ public class FlutterTestEventsConverter extends DartTestEventsConverterZ {
    * Checks if the given group is one created dynamically by flutter_test in the widget_tester
    * widget test wrapper.
    */
-  private static boolean isSyntheticWidgetTestGroup(@Nullable Item group) {
-    return group instanceof Group && Objects.equals(group.getUrl(), "package:flutter_test/src/widget_tester.dart") &&
-           group.getName().endsWith(SYNTHETIC_WIDGET_GROUP_NAME);
+  private static boolean isSyntheticWidgetTestGroup(@Nullable Item item) {
+    return item instanceof Group && Objects.equals(item.getUrl(), "package:flutter_test/src/widget_tester.dart") &&
+           isSyntheticWidgetGroupName(item.getName());
+  }
+
+  private static boolean isSyntheticWidgetGroupName(@Nullable String name) {
+    return name != null && name.endsWith(SYNTHETIC_WIDGET_GROUP_NAME);
   }
 
   @Nullable
