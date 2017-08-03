@@ -13,17 +13,16 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 public class FlutterCreateAddtionalSettingsFields {
-  private final RadiosForm projectTypeRadios;
+
   private final JTextField orgField;
   private final JTextField descriptionField;
   private final RadiosForm androidLanguageRadios;
   private final RadiosForm iosLanguageRadios;
-  private final JCheckBox includeDriverTextField;
+  private final ProjectType projectTypeForm;
+
 
   public FlutterCreateAddtionalSettingsFields() {
-    projectTypeRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.type.application"),
-                                       FlutterBundle.message("flutter.module.create.settings.radios.type.plugin"));
-    projectTypeRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.type.tip"));
+    projectTypeForm = new ProjectType();
 
     orgField = new JTextField();
     orgField.setText(FlutterBundle.message("flutter.module.create.settings.org.default_text"));
@@ -40,31 +39,24 @@ public class FlutterCreateAddtionalSettingsFields {
     iosLanguageRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.ios.object_c"),
                                        FlutterBundle.message("flutter.module.create.settings.radios.ios.swift"));
     iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
-
-    includeDriverTextField = new JCheckBox();
-    includeDriverTextField.setSelected(true);
-    includeDriverTextField.setToolTipText(FlutterBundle.message("flutter.module.create.settings.includedriver.tip"));
   }
 
   public void addSettingsFields(@NotNull SettingsStep settingsStep) {
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.type.label"),
-                                  projectTypeRadios.getComponent());
+    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.type.label"),
+                                  projectTypeForm.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.org.label"), orgField);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.description.label"), descriptionField);
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.android.label"),
                                   androidLanguageRadios.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
                                   iosLanguageRadios.getComponent());
-    settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.includedriver.label"), includeDriverTextField);
-
     settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
   }
 
   public FlutterCreateAdditionalSettings getAddtionalSettings() {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
-      .setGeneratePlugin(projectTypeRadios.isRadio2Selected() ? true : null)
-      .setIncludeDriverTest(!includeDriverTextField.isSelected() ? null : true)
+      .setGeneratePlugin(projectTypeForm.isPluginSelected() ? true : null)
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
