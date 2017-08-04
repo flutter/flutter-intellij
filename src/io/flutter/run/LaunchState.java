@@ -27,6 +27,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -39,6 +40,9 @@ import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -103,6 +107,31 @@ public class LaunchState extends CommandLineState {
       new OpenSimulatorAction(true).actionPerformed(null);
     }
 
+    // Check for and display any analysis errors when we launch an app.
+    if (env.getRunProfile() instanceof SdkRunConfig) {
+      final Class dartExecutionHelper = classForName("com.jetbrains.lang.dart.ide.runner.DartExecutionHelper");
+      if (dartExecutionHelper != null) {
+        final String message = ("<a href='open.dart.analysis'>Analysis issues</a> may affect " +
+                                "the execution of '" + env.getRunProfile().getName() + "'.");
+        final SdkRunConfig config = (SdkRunConfig)env.getRunProfile();
+        final SdkFields sdkFields = config.getFields();
+        final MainFile mainFile = MainFile.verify(sdkFields.getFilePath(), env.getProject()).get();
+
+        // TODO(devoncarew): Remove the use of reflection when we rev our min version to 2017.2.
+        //DartExecutionHelper.displayIssues(project, mainFile.getFile(), message, env.getRunProfile().getIcon());
+        try {
+          final Method displayIssues =
+            ReflectionUtil.getMethod(dartExecutionHelper, "displayIssues", Project.class, VirtualFile.class, String.class, Icon.class);
+          if (displayIssues != null) {
+            displayIssues.invoke(null, project, mainFile.getFile(), message, env.getRunProfile().getIcon());
+          }
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          // ignore
+        }
+      }
+    }
+
     final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
     if (launchMode.supportsReload()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
@@ -110,6 +139,15 @@ public class LaunchState extends CommandLineState {
     else {
       // Not used yet. See https://github.com/flutter/flutter-intellij/issues/410
       return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
+    }
+  }
+
+  private static Class classForName(String className) {
+    try {
+      return Class.forName(className);
+    }
+    catch (ClassNotFoundException e) {
+      return null;
     }
   }
 
