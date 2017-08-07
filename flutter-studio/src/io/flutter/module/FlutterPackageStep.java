@@ -25,13 +25,17 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextComponentAccessor;
+import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ComboboxWithBrowseButton;
+import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -66,12 +70,15 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
       @NotNull
       @Override
       public Boolean get() {
+        // Only call this validate() when proceeding -- it creates the directory. Not good during initialization!
+        // return myModuleNameLocationComponent.validate();
         try {
-          return myModuleNameLocationComponent.validate();
+          invokePrivateMethod("validateExistingModuleName");
         }
         catch (ConfigurationException e) {
           return false;
         }
+        return true;
       }
     };
     myValidatorPanel.registerTest(isPanelValid, "");
@@ -146,5 +153,18 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myModuleNameLocationComponent.bindModuleSettings(namePathComponent);
     FlutterModuleModel model = getModel();
     model.setModuleComponent(myModuleNameLocationComponent);
+  }
+
+  private Object invokePrivateMethod(@NotNull String methodName) throws ConfigurationException {
+    Method method =
+      ReflectionUtil // Invoking a private method.
+        .getDeclaredMethod(ModuleNameLocationComponent.class, methodName);
+    try {
+      assert method != null;
+      return method.invoke(myModuleNameLocationComponent);
+    }
+    catch (IllegalAccessException | InvocationTargetException e) {
+      return null;
+    }
   }
 }

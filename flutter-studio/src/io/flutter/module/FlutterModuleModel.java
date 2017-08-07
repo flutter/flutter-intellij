@@ -26,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 
 // TODO list
-// 1. Stop creating 'untitled' directory when wizard is canceled.
+// 1. (done) Stop creating 'untitled' directory when wizard is canceled.
 // 2. Fix layout to make the inner panel fill the outer.
 // 3. Make a proper module icon for the wizard selection pane.
 // 4. Verify ModuleNameLocationComponent fields update correctly.
@@ -70,6 +70,13 @@ public class FlutterModuleModel extends WizardModel {
 
   @Override
   protected void handleFinished() {
+    myModuleComponent.updateDataModel();
+    try {
+      myModuleComponent.validate();
+    }
+    catch (ConfigurationException e) {
+      // ignore it
+    }
     myBuilder.setName(myModuleComponent.getModuleNameField().getText());
     String filePath = fetchPrivateField("myModuleContentRoot");
     if (filePath == null) {
