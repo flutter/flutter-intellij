@@ -17,7 +17,7 @@ import com.android.tools.idea.ui.properties.swing.SelectedItemProperty;
 import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
-import com.android.tools.swing.util.FormScalingUtil;
+import com.android.tools.adtui.util.FormScalingUtil;
 import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
 import com.intellij.ide.util.projectWizard.NamePathComponent;
 import com.intellij.ide.util.projectWizard.WizardContext;
