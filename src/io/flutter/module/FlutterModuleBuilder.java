@@ -49,7 +49,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static final String DART_GROUP_NAME = "Static Web"; // == WebModuleBuilder.GROUP_NAME
 
   private FlutterModuleWizardStep myStep;
-  private FlutterCreateAddtionalSettingsFields settingsFields;
+  @Nullable private FlutterCreateAddtionalSettingsFields settingsFields;
 
   @Override
   public String getName() {
@@ -105,7 +105,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settingsFields.getAddtionalSettings());
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settingsFields == null ? null : settingsFields.getAddtionalSettings());
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
