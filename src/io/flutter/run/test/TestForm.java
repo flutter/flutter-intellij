@@ -112,7 +112,10 @@ public class TestForm extends SettingsEditor<TestConfig> {
 
   @NotNull
   private Scope getScope() {
-    return (Scope)scope.getSelectedItem();
+    final Object item = scope.getSelectedItem();
+    // Set in resetEditorForm.
+    assert (item != null);
+    return (Scope)item;
   }
 
   /**
