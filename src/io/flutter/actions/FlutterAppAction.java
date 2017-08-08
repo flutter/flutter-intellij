@@ -21,6 +21,8 @@ abstract public class FlutterAppAction extends DumbAwareAction {
 
   @NotNull private final FlutterApp myApp;
   @NotNull private final Computable<Boolean> myIsApplicable;
+  @NotNull private final String myActionId;
+
   private final FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
@@ -36,26 +38,39 @@ abstract public class FlutterAppAction extends DumbAwareAction {
                           @NotNull Computable<Boolean> isApplicable,
                           @NotNull String actionId) {
     super(text, description, icon);
+
     myApp = app;
     myIsApplicable = isApplicable;
-    registerAction(actionId);
+    myActionId = actionId;
+
+    updateActionRegistration(myIsApplicable.compute());
   }
 
-  private void registerAction(@NotNull String actionId) {
+  private void updateActionRegistration(boolean isConnected) {
     final ActionManager actionManager = ActionManager.getInstance();
-    final AnAction action = actionManager.getAction(actionId);
-    // New debug sessions create new actions, requiring us to overwrite existing ones in the registry.
-    // TODO(pq): consider moving actions to our own registry for lookup.
-    if (action != null) {
-      actionManager.unregisterAction(actionId);
+    final AnAction action = actionManager.getAction(myActionId);
+
+    if (!isConnected) {
+      // Unregister ourselves if we're the current action.
+      if (actionManager.getAction(myActionId) == this) {
+        actionManager.unregisterAction(myActionId);
+      }
     }
-    actionManager.registerAction(actionId, this);
+    else {
+      // We have to unregister the previous action, otherwise we get an exception from the framework.
+      if (actionManager.getAction(myActionId) != this) {
+        actionManager.unregisterAction(myActionId);
+        actionManager.registerAction(myActionId, this);
+      }
+    }
   }
 
   @Override
   public void update(@NotNull final AnActionEvent e) {
     final boolean isConnected = myIsApplicable.compute();
+    updateActionRegistration(isConnected);
     e.getPresentation().setEnabled(myApp.isStarted() && isConnected);
+
     if (isConnected) {
       if (!myIsListening) {
         getApp().addStateListener(myListener);
