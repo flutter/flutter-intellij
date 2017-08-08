@@ -1,4 +1,0 @@
-
-dependencies {
-    feature project(":${projectName}")
-}

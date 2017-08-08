@@ -27,12 +27,14 @@ import java.io.IOException;
 
 // TODO list
 // 1. (done) Stop creating 'untitled' directory when wizard is canceled.
-// 2. Fix layout to make the inner panel fill the outer.
-// 3. Make a proper module icon for the wizard selection pane.
-// 4. Verify ModuleNameLocationComponent fields update correctly.
+// 2. (done) Fix layout to make the inner panel fill the outer.
+// 3. (done) Make a proper module icon for the wizard selection pane.
+// 4. (done) Verify ModuleNameLocationComponent fields update correctly.
 // 5. Fix validation for all four entries.
 // 6. Verify module content is created correctly.
 // 7. On start-up, check the Dart plugin version; that code appears to not be running.
+// 8. Investigate 'New Module' name. Always appears as 'Flutter' in Project Structure.
+// 9. Automatically perform Android framework configuraiton to add additional files to module.
 public class FlutterModuleModel extends WizardModel {
   @NotNull private final OptionalValueProperty<String> myFlutterSdk = new OptionalValueProperty<>();
   @NotNull private final Project myProject;

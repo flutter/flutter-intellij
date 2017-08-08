@@ -5,6 +5,7 @@
  */
 package io.flutter.module;
 
+import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.validator.ModuleValidator;
@@ -17,7 +18,6 @@ import com.android.tools.idea.ui.properties.swing.SelectedItemProperty;
 import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
-import com.android.tools.adtui.util.FormScalingUtil;
 import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
 import com.intellij.ide.util.projectWizard.NamePathComponent;
 import com.intellij.ide.util.projectWizard.WizardContext;
@@ -25,7 +25,6 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterBundle;
@@ -50,7 +49,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private FlutterModuleBuilder.FlutterModuleWizardStep oldStep;
   private JPanel myPanel;
   private ComboboxWithBrowseButton myFlutterSdkPath;
-  private JPanel myModulePanel; // Used by form; do not delete until layout is fixed.
   private ModuleNameLocationComponent myModuleNameLocationComponent;
 
   public FlutterPackageStep(@NotNull FlutterModuleModel model, @NotNull String title, @NotNull Icon icon) {
@@ -155,6 +153,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     model.setModuleComponent(myModuleNameLocationComponent);
   }
 
+  @SuppressWarnings("ALL")
   private Object invokePrivateMethod(@NotNull String methodName) throws ConfigurationException {
     Method method =
       ReflectionUtil // Invoking a private method.
