@@ -4,10 +4,12 @@ import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.util.BitUtil;
@@ -304,8 +306,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                 ApplicationManager.getApplication().runWriteAction(() -> {
                   info.navigate(project);
 
-                  // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
-                  focusProject(project);
+                  if (SystemInfo.isLinux) {
+                    // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
+                    focusProject(project);
+                  } else {
+                    ProjectUtil.focusProjectWindow(project, true);
+                  }
                 });
               });
             }
@@ -325,7 +331,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     });
   }
 
-  private void focusProject(@NotNull Project project) {
+  private static void focusProject(@NotNull Project project) {
     final JFrame projectFrame = WindowManager.getInstance().getFrame(project);
     final int frameState = projectFrame.getExtendedState();
 

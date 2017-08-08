@@ -1,8 +1,14 @@
+/*
+ * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
 package com.jetbrains.lang.dart.ide.runner.server.vmService;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.openapi.diagnostic.Logger;
 import de.roderick.weberknecht.WebSocket;
 import de.roderick.weberknecht.WebSocketEventHandler;
 import de.roderick.weberknecht.WebSocketException;
@@ -21,6 +27,7 @@ import java.util.List;
  * This class manages the openSourceLocation VM service registration and exposes the request as an event to listeners.
  */
 public class VmOpenSourceLocationListener {
+  private static final Logger LOG = Logger.getInstance(VmOpenSourceLocationListener.class.getName());
 
   private interface MessageSender {
     void sendMessage(JsonObject message);
@@ -66,8 +73,7 @@ public class VmOpenSourceLocationListener {
           webSocket.send(message.toString());
         }
         catch (WebSocketException e) {
-          // ignore
-          e.printStackTrace();
+          LOG.warn(e);
         }
       }
 
@@ -77,8 +83,7 @@ public class VmOpenSourceLocationListener {
           webSocket.close();
         }
         catch (WebSocketException e) {
-          // ignore
-          e.printStackTrace();
+          LOG.warn(e);
         }
       }
     });
@@ -141,11 +146,15 @@ public class VmOpenSourceLocationListener {
   }
 
   private void onMessage(@NotNull final JsonObject message) {
-    final JsonElement id;
+    final JsonElement id = message.get("id");
     final String isolateId;
     final String scriptId;
     final int tokenPos;
     try {
+      if (id != null && !id.isJsonPrimitive()) {
+        return;
+      }
+
       final String jsonrpc = message.get("jsonrpc").getAsString();
       if (!"2.0".equals(jsonrpc)) {
         return;
@@ -153,11 +162,6 @@ public class VmOpenSourceLocationListener {
 
       final String method = message.get("method").getAsString();
       if (!"openSourceLocation".equals(method)) {
-        return;
-      }
-
-      id = message.get("id");
-      if (id == null || !id.isJsonPrimitive()) {
         return;
       }
 
@@ -178,18 +182,22 @@ public class VmOpenSourceLocationListener {
 
       tokenPos = params.get("tokenPos").getAsInt();
 
-    } finally {}
+      for (Listener listener : listeners) {
+        listener.onRequest(isolateId, scriptId, tokenPos);
+      }
 
-    final JsonObject response = new JsonObject();
-    response.addProperty("jsonrpc", "2.0");
-    response.add("id", id);
-    final JsonObject result = new JsonObject();
-    result.addProperty("type", "Success");
-    response.add("result", result);
-    sender.sendMessage(response);
+    } catch (Exception e) {
+      LOG.warn(e);
+    }
 
-    for (Listener listener : listeners) {
-      listener.onRequest(isolateId, scriptId, tokenPos);
+    if (id != null) {
+      final JsonObject response = new JsonObject();
+      response.addProperty("jsonrpc", "2.0");
+      response.add("id", id);
+      final JsonObject result = new JsonObject();
+      result.addProperty("type", "Success");
+      response.add("result", result);
+      sender.sendMessage(response);
     }
   }
 
