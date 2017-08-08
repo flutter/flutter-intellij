@@ -282,11 +282,7 @@ public class LaunchState extends CommandLineState {
           return false;
         }
 
-        String selectedDeviceId = null;
-        final FlutterDevice selectedDevice = DeviceService.getInstance(config.getProject()).getSelectedDevice();
-        if (selectedDevice != null) {
-          selectedDeviceId = selectedDevice.deviceId();
-        }
+        final String selectedDeviceId = getSelectedDeviceId(config.getProject());
 
         // Only continue checks for this app if the launched device is the same as the selected one.
         if (StringUtils.equals(app.deviceId(), selectedDeviceId)) {
@@ -334,12 +330,7 @@ public class LaunchState extends CommandLineState {
       final ProcessHandler process = getRunningAppProcess(launchState.runConfig);
       if (process != null) {
         final FlutterApp app = FlutterApp.fromProcess(process);
-
-        String selectedDeviceId = null;
-        final FlutterDevice selectedDevice = DeviceService.getInstance(env.getProject()).getSelectedDevice();
-        if (selectedDevice != null) {
-          selectedDeviceId = selectedDevice.deviceId();
-        }
+        final String selectedDeviceId = getSelectedDeviceId(env.getProject());
 
         if (app != null && StringUtil.equals(app.deviceId(), selectedDeviceId)) {
           if (executorId.equals(app.getMode().mode())) {
@@ -357,6 +348,12 @@ public class LaunchState extends CommandLineState {
 
       // Else, launch the app.
       return launchState.launch(env);
+    }
+
+    @Nullable
+    private String getSelectedDeviceId(@NotNull Project project) {
+      final FlutterDevice selectedDevice = DeviceService.getInstance(project).getSelectedDevice();
+      return selectedDevice == null ? null : selectedDevice.deviceId();
     }
   }
 
