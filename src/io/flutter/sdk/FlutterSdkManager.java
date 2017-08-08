@@ -108,6 +108,7 @@ public class FlutterSdkManager {
   }
 
   // Listens for changes in Flutter Library configuration state in the Library table.
+  @SuppressWarnings("NullableProblems") //TODO(pq): replace w/ @NotNull annotations when we move to 2017.2
   private final class LibraryTableListener implements LibraryTable.Listener {
     @Override
     public void afterLibraryAdded(Library newLibrary) {

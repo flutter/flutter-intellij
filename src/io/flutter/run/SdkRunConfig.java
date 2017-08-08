@@ -86,6 +86,8 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final Module module = ModuleUtil.findModuleForFile(mainFile.getFile(), env.getProject());
 
     final LaunchState.Callback callback = (device) -> {
+      if (device == null) return null;
+
       final GeneralCommandLine command = fields.createFlutterSdkRunCommand(project, device, mode);
       final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
                                               StringUtil.capitalize(mode.mode()) + "App",
