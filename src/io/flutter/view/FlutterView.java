@@ -92,7 +92,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     final ToolWindowEx toolWindowEx = (ToolWindowEx)toolWindow;
     toolWindowEx.setTitleActions(
       new DebugDrawAction(this),
-      new PerformanceOverlayAction(this),
       new ToggleInspectModeAction(this),
       new TogglePlatformAction(this)
     );
