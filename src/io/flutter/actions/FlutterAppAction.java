@@ -48,7 +48,6 @@ abstract public class FlutterAppAction extends DumbAwareAction {
 
   private void updateActionRegistration(boolean isConnected) {
     final ActionManager actionManager = ActionManager.getInstance();
-    final AnAction action = actionManager.getAction(myActionId);
 
     if (!isConnected) {
       // Unregister ourselves if we're the current action.
