@@ -87,7 +87,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
 
     final LaunchState.Callback callback = (device) -> {
       final GeneralCommandLine command = fields.createFlutterSdkRunCommand(project, device, mode);
-      final FlutterApp app = FlutterApp.start(env, project, module, mode, command,
+      final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
                                               StringUtil.capitalize(mode.mode()) + "App",
                                               "StopApp");
 

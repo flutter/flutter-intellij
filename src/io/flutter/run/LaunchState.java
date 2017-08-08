@@ -26,6 +26,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XDebugProcess;
@@ -37,6 +38,7 @@ import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
+import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -237,7 +239,7 @@ public class LaunchState extends CommandLineState {
    * The callback knows the appropriate command line arguments (bazel versus non-bazel).
    */
   public interface Callback {
-    FlutterApp createApp(@Nullable FlutterDevice selection) throws ExecutionException;
+    FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;
   }
 
   /**
@@ -276,15 +278,27 @@ public class LaunchState extends CommandLineState {
       final ProcessHandler process = getRunningAppProcess(config);
       if (process != null) {
         final FlutterApp app = FlutterApp.fromProcess(process);
-
-        // Disable if no app or this isn't the mode that app was launched in.
-        if (app == null || !executorId.equals(app.getMode().mode())) {
+        if (app == null) {
           return false;
         }
 
-        // Disable the run/debug buttons if the app is starting up.
-        if (app.getState() == FlutterApp.State.STARTING || app.getState() == FlutterApp.State.RELOADING) {
-          return false;
+        String selectedDeviceId = null;
+        final FlutterDevice selectedDevice = DeviceService.getInstance(config.getProject()).getSelectedDevice();
+        if (selectedDevice != null) {
+          selectedDeviceId = selectedDevice.deviceId();
+        }
+
+        // Only continue checks for this app if the launched device is the same as the selected one.
+        if (StringUtils.equals(app.deviceId(), selectedDeviceId)) {
+          // Disable if no app or this isn't the mode that app was launched in.
+          if (!executorId.equals(app.getMode().mode())) {
+            return false;
+          }
+
+          // Disable the run/debug buttons if the app is starting up.
+          if (app.getState() == FlutterApp.State.STARTING || app.getState() == FlutterApp.State.RELOADING) {
+            return false;
+          }
         }
       }
 
@@ -320,16 +334,25 @@ public class LaunchState extends CommandLineState {
       final ProcessHandler process = getRunningAppProcess(launchState.runConfig);
       if (process != null) {
         final FlutterApp app = FlutterApp.fromProcess(process);
-        if (app != null && executorId.equals(app.getMode().mode())) {
-          final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
-          if (launchMode.supportsReload() && app.isStarted()) {
-            // Map a re-run action to a flutter full restart.
-            FileDocumentManager.getInstance().saveAllDocuments();
-            app.performRestartApp();
-          }
+
+        String selectedDeviceId = null;
+        final FlutterDevice selectedDevice = DeviceService.getInstance(env.getProject()).getSelectedDevice();
+        if (selectedDevice != null) {
+          selectedDeviceId = selectedDevice.deviceId();
         }
 
-        return null;
+        if (app != null && StringUtil.equals(app.deviceId(), selectedDeviceId)) {
+          if (executorId.equals(app.getMode().mode())) {
+            final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
+            if (launchMode.supportsReload() && app.isStarted()) {
+              // Map a re-run action to a flutter full restart.
+              FileDocumentManager.getInstance().saveAllDocuments();
+              app.performRestartApp();
+            }
+          }
+
+          return null;
+        }
       }
 
       // Else, launch the app.

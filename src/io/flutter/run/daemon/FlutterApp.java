@@ -49,6 +49,7 @@ public class FlutterApp {
   private final @NotNull Project myProject;
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
+  private final @NotNull String myDeviceId;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
@@ -73,12 +74,14 @@ public class FlutterApp {
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
              @NotNull RunMode mode,
+             @NotNull String deviceId,
              @NotNull ProcessHandler processHandler,
              @NotNull ExecutionEnvironment executionEnvironment,
              @NotNull DaemonApi daemonApi) {
     myProject = project;
     myModule = module;
     myMode = mode;
+    myDeviceId = deviceId;
     myProcessHandler = processHandler;
     myProcessHandler.putUserData(FLUTTER_APP_KEY, this);
     myExecutionEnvironment = executionEnvironment;
@@ -139,6 +142,7 @@ public class FlutterApp {
                                  @NotNull Project project,
                                  @Nullable Module module,
                                  @NotNull RunMode mode,
+                                 @NotNull FlutterDevice device,
                                  @NotNull GeneralCommandLine command,
                                  @NotNull String analyticsStart,
                                  @NotNull String analyticsStop)
@@ -160,7 +164,7 @@ public class FlutterApp {
     });
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, process, env, api);
+    final FlutterApp app = new FlutterApp(project, module, mode, device.deviceId(), process, env, api);
     api.listen(process, new FlutterAppListener(app, project));
     return app;
   }
@@ -420,6 +424,10 @@ public class FlutterApp {
 
   public FlutterLaunchMode getLaunchMode() {
     return FlutterLaunchMode.getMode(myExecutionEnvironment);
+  }
+
+  public String deviceId() {
+    return myDeviceId;
   }
 
   public interface StateListener {
