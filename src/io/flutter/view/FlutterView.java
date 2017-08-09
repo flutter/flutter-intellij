@@ -97,6 +97,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     );
 
     toolWindowEx.setAdditionalGearActions(new DefaultActionGroup(Arrays.asList(
+      new PerformanceOverlayAction(this),
       new ShowPaintBaselinesAction(this),
       new RepaintRainbowAction(this),
       new TimeDilationAction(this),
