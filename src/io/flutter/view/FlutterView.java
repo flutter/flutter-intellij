@@ -92,11 +92,12 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     final ToolWindowEx toolWindowEx = (ToolWindowEx)toolWindow;
     toolWindowEx.setTitleActions(
       new DebugDrawAction(this),
-      new PerformanceOverlayAction(this),
+      new ToggleInspectModeAction(this),
       new TogglePlatformAction(this)
     );
 
     toolWindowEx.setAdditionalGearActions(new DefaultActionGroup(Arrays.asList(
+      new PerformanceOverlayAction(this),
       new ShowPaintBaselinesAction(this),
       new RepaintRainbowAction(this),
       new TimeDilationAction(this),
@@ -234,6 +235,16 @@ class TimeDilationAction extends AbstractToggleableAction {
     final Map<String, Object> params = new HashMap<>();
     params.put("timeDilation", isSelected(event) ? 5.0 : 1.0);
     view.getFlutterApp().callServiceExtension("ext.flutter.timeDilation", params);
+  }
+}
+
+class ToggleInspectModeAction extends AbstractToggleableAction {
+  ToggleInspectModeAction(@NotNull FlutterView view) {
+    super(view, "Toggle Inspect Mode", "Toggle Inspect Mode", AllIcons.Actions.Menu_find);
+  }
+
+  protected void perform(AnActionEvent event) {
+    view.getFlutterApp().callBooleanExtension("ext.flutter.widgetInspector", isSelected(event));
   }
 }
 
