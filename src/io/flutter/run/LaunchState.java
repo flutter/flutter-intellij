@@ -38,7 +38,6 @@ import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
-import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -167,6 +166,7 @@ public class LaunchState extends CommandLineState {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
+
         return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
     });
@@ -285,7 +285,7 @@ public class LaunchState extends CommandLineState {
         final String selectedDeviceId = getSelectedDeviceId(config.getProject());
 
         // Only continue checks for this app if the launched device is the same as the selected one.
-        if (StringUtils.equals(app.deviceId(), selectedDeviceId)) {
+        if (StringUtil.equals(app.deviceId(), selectedDeviceId)) {
           // Disable if no app or this isn't the mode that app was launched in.
           if (!executorId.equals(app.getMode().mode())) {
             return false;
