@@ -42,7 +42,7 @@ public class FlutterModuleFixture extends ExternalResource {
     testRoot.dispose();
   }
 
-  Module getModule() {
+  public Module getModule() {
     return parent.getModule();
   }
 }
