@@ -218,7 +218,7 @@ public class LaunchState extends CommandLineState {
     actions.add(new Separator());
     actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
     actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    if (FlutterInitializer.isMemoryDashboard()) {
+    if (FlutterInitializer.isMemoryDashboardEnabled()) {
       actions.add(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
     }
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));

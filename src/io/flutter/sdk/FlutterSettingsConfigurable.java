@@ -127,7 +127,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (FlutterInitializer.isMemoryDashboard() != myEnableMemoryDashboardCheckBox.isSelected()) {
+    if (FlutterInitializer.isMemoryDashboardEnabled() != myEnableMemoryDashboardCheckBox.isSelected()) {
       return true;
     }
 
@@ -156,7 +156,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
     FlutterInitializer.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    FlutterInitializer.setMemoryDashboard(myEnableMemoryDashboardCheckBox.isSelected());
+    FlutterInitializer.setMemoryDashboardEnabled(myEnableMemoryDashboardCheckBox.isSelected());
 
     final FlutterSettings settings = FlutterSettings.getInstance(myProject);
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
@@ -181,7 +181,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSettings settings = FlutterSettings.getInstance(myProject);
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myEnableVerboseLoggingCheckBox.setSelected(FlutterInitializer.isVerboseLogging());
-    myEnableMemoryDashboardCheckBox.setSelected(FlutterInitializer.isMemoryDashboard());
+    myEnableMemoryDashboardCheckBox.setSelected(FlutterInitializer.isMemoryDashboardEnabled());
   }
 
   private void updateVersionText() {

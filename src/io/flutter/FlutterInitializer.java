@@ -114,12 +114,12 @@ public class FlutterInitializer implements StartupActivity {
     properties.setValue(verboseLoggingKey, value);
   }
 
-  public static boolean isMemoryDashboard() {
+  public static boolean isMemoryDashboardEnabled() {
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     return properties.getBoolean(memoryDashboardKey, false);
   }
 
-  public static void setMemoryDashboard(boolean value) {
+  public static void setMemoryDashboardEnabled(boolean value) {
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     properties.setValue(memoryDashboardKey, value);
   }
