@@ -321,9 +321,5 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       }
       return FlutterSdk.forPath(sdkPath);
     }
-
-    public String getValidationMessage() {
-      return myPeer.getErrorDetails();
-    }
   }
 }

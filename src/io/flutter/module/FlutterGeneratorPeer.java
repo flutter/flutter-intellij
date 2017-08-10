@@ -192,10 +192,6 @@ public class FlutterGeneratorPeer {
     errorPane.setVisible(makeVisible);
   }
 
-  public String getErrorDetails() {
-    return errorText.getText();
-  }
-
   public void addCancelActionListener(InstallSdkAction.CancelActionListener listener) {
     myListener = listener;
   }
