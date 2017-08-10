@@ -96,7 +96,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
     final Computable<Boolean> canReload = () -> app.getLaunchMode().supportsReload() && isSessionActive.compute() && !app.isReloading();
     final Computable<Boolean> observatoryAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
-    final Computable<Boolean> memoryDashboardAvailable = () -> observatoryAvailable.compute();
 
     if (app.getMode() == RunMode.DEBUG) {
       topToolbar.addSeparator();
@@ -110,7 +109,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.add(new OpenFlutterViewAction(isSessionActive));
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
     if (FlutterInitializer.isMemoryDashboard()) {
-      topToolbar.addAction(new OpenMemoryDashboardAction(app.getConnector(), memoryDashboardAvailable));
+      topToolbar.addAction(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
     }
 
     // Don't call super since we have our own observatory action.

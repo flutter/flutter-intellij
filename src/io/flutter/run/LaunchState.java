@@ -25,6 +25,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -34,6 +35,7 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterInitializer;
 import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.*;
@@ -209,13 +211,16 @@ public class LaunchState extends CommandLineState {
     // Add observatory actions.
     // These actions are effectively added only to the Run tool window.
     // For Debug see FlutterDebugProcess.registerAdditionalActions()
+    final Computable<Boolean> observatoryAvailable = () -> !app.getProcessHandler().isProcessTerminated() &&
+                                                           app.getConnector().getBrowserUrl() != null;
     final List<AnAction> actions = new ArrayList<>(Arrays.asList(
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
     actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
-    actions.add(new OpenObservatoryAction(app.getConnector(), () -> !app.getProcessHandler().isProcessTerminated() &&
-                                                                    app.getConnector().getBrowserUrl() != null));
-
+    actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
+    if (FlutterInitializer.isMemoryDashboard()) {
+      actions.add(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
+    }
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));
   }
 
