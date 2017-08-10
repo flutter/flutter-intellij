@@ -103,7 +103,8 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       new TimeDilationAction(this),
       new HideSlowBannerAction(this),
       new Separator(),
-      new ObservatoryTimelineAction(this)
+      new ObservatoryTimelineAction(this),
+      new MemoryDashboardAction(this)
     )));
 
     final ContentManager contentManager = toolWindow.getContentManager();
@@ -282,6 +283,22 @@ class ObservatoryTimelineAction extends FlutterViewAction {
     final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
     if (httpUrl != null) {
       OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/timeline");
+    }
+  }
+}
+
+class MemoryDashboardAction extends FlutterViewAction {
+  MemoryDashboardAction(@NotNull FlutterView view) {
+    super(view, "Open Memory Dashboard");
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    FlutterInitializer.sendAnalyticsAction(this);
+
+    final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
+    if (httpUrl != null) {
+      OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/memory-dashboard");
     }
   }
 }

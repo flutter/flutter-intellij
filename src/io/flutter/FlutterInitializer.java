@@ -45,6 +45,7 @@ public class FlutterInitializer implements StartupActivity {
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
   private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
+  private static final String memoryDashboardKey = "io.flutter.memoryDashboard";
 
   private static Analytics analytics;
 
@@ -111,6 +112,16 @@ public class FlutterInitializer implements StartupActivity {
   public static void setVerboseLogging(boolean value) {
     final PropertiesComponent properties = PropertiesComponent.getInstance();
     properties.setValue(verboseLoggingKey, value);
+  }
+
+  public static boolean isMemoryDashboard() {
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    return properties.getBoolean(memoryDashboardKey, false);
+  }
+
+  public static void setMemoryDashboard(boolean value) {
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    properties.setValue(memoryDashboardKey, value);
   }
 
   @Override

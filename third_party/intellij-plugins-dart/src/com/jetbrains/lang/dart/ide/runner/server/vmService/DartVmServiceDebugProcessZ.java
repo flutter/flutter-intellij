@@ -1,14 +1,23 @@
 package com.jetbrains.lang.dart.ide.runner.server.vmService;
 
 import com.intellij.execution.ExecutionResult;
+import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.wm.WindowManager;
+import com.intellij.util.BitUtil;
 import com.intellij.util.TimeoutUtil;
-import com.intellij.xdebugger.*;
+import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XDebugSessionListener;
+import com.intellij.xdebugger.XDebuggerBundle;
+import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.frame.XStackFrame;
@@ -22,11 +31,17 @@ import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;
 import io.flutter.run.FlutterLaunchMode;
 import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
+import java.awt.Frame;
+import java.awt.*;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -44,6 +59,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   @NotNull private final XBreakpointHandler[] myBreakpointHandlers;
   private final IsolatesInfo myIsolatesInfo;
   private VmServiceWrapper myVmServiceWrapper;
+  private VmOpenSourceLocationListener myVmOpenSourceLocationListener;
 
   @NotNull private final Set<String> mySuspendedIsolateIds = Collections.synchronizedSet(new THashSet<String>());
   private String myLatestCurrentIsolateId;
@@ -200,8 +216,10 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       // "Flutter run" has given us a websocket; we can assume it's ready immediately,
       // because "flutter run" has already connected to it.
       final VmService vmService;
+      final VmOpenSourceLocationListener vmOpenSourceLocationListener;
       try {
         vmService = VmService.connect(url);
+        vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
       }
       catch (IOException e) {
         onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
@@ -209,7 +227,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                         formatStackTraces(e));
         return;
       }
-      onConnectSucceeded(vmService);
+      onConnectSucceeded(vmService, vmOpenSourceLocationListener);
     });
   }
 
@@ -232,11 +250,13 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     getSession().stop();
   }
 
-  private void onConnectSucceeded(VmService vmService) {
+  private void onConnectSucceeded(VmService vmService,
+                                  VmOpenSourceLocationListener vmOpenSourceLocationListener) {
     final DartVmServiceListener vmServiceListener =
       new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
 
+    myVmOpenSourceLocationListener = vmOpenSourceLocationListener;
     myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
 
     final ScriptProvider provider =
@@ -258,10 +278,101 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     remoteDebug = true;
 
     vmService.addVmServiceListener(vmServiceListener);
+    myVmOpenSourceLocationListener.addListener(new VmOpenSourceLocationListener.Listener() {
+      @Override
+      public void onRequest(@NotNull String isolateId, @NotNull String scriptId, int tokenPos) {
+        onOpenSourceLocationRequest(isolateId, scriptId, tokenPos);
+      }
+    });
 
     myVmConnected = true;
     getSession().rebuildViews();
     onVmConnected(vmService);
+  }
+
+  private void onOpenSourceLocationRequest(@NotNull String isolateId, @NotNull String scriptId, int tokenPos) {
+    myVmServiceWrapper.getObject(isolateId, scriptId, new GetObjectConsumer() {
+      @Override
+      public void received(Obj response) {
+        if (response != null && response instanceof Script) {
+          ApplicationManager.getApplication().executeOnPooledThread(() -> {
+            final XSourcePosition source =
+              getSourcePosition(isolateId, (Script)response, tokenPos);
+            if (source != null) {
+              final Project project = getSession().getProject();
+              final OpenFileHyperlinkInfo
+                info = new OpenFileHyperlinkInfo(project, source.getFile(), source.getLine());
+              ApplicationManager.getApplication().invokeLater(() -> {
+                ApplicationManager.getApplication().runWriteAction(() -> {
+                  info.navigate(project);
+
+                  if (SystemInfo.isLinux) {
+                    // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
+                    focusProject(project);
+                  } else {
+                    ProjectUtil.focusProjectWindow(project, true);
+                  }
+                });
+              });
+            }
+          });
+        }
+      }
+
+      @Override
+      public void received(Sentinel response) {
+        // ignore
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        // ignore
+      }
+    });
+  }
+
+  private static void focusProject(@NotNull Project project) {
+    final JFrame projectFrame = WindowManager.getInstance().getFrame(project);
+    final int frameState = projectFrame.getExtendedState();
+
+    if (BitUtil.isSet(frameState, Frame.ICONIFIED)) {
+      // restore the frame if it is minimized
+      projectFrame.setExtendedState(frameState ^ Frame.ICONIFIED);
+      projectFrame.toFront();
+    } else {
+      final JFrame anchor = new JFrame();
+      anchor.setType(Window.Type.UTILITY);
+      anchor.setUndecorated(true);
+      anchor.setSize(0,0);
+      anchor.addWindowListener(new WindowListener() {
+        @Override
+        public void windowOpened(WindowEvent e) {}
+
+        @Override
+        public void windowClosing(WindowEvent e) {}
+
+        @Override
+        public void windowClosed(WindowEvent e) {}
+
+        @Override
+        public void windowIconified(WindowEvent e) {}
+
+        @Override
+        public void windowDeiconified(WindowEvent e) {}
+
+        @Override
+        public void windowActivated(WindowEvent e) {
+          projectFrame.setVisible(true);
+          anchor.dispose();
+        }
+
+        @Override
+        public void windowDeactivated(WindowEvent e) {}
+      });
+      anchor.pack();
+      anchor.setVisible(true);
+      anchor.toFront();
+    }
   }
 
   /**

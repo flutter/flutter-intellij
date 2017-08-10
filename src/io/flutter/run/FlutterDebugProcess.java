@@ -17,6 +17,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterInitializer;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
@@ -95,6 +96,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
     final Computable<Boolean> canReload = () -> app.getLaunchMode().supportsReload() && isSessionActive.compute() && !app.isReloading();
     final Computable<Boolean> observatoryAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
+    final Computable<Boolean> memoryDashboardAvailable = () -> observatoryAvailable.compute();
 
     if (app.getMode() == RunMode.DEBUG) {
       topToolbar.addSeparator();
@@ -107,6 +109,9 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addSeparator();
     topToolbar.add(new OpenFlutterViewAction(isSessionActive));
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
+    if (FlutterInitializer.isMemoryDashboard()) {
+      topToolbar.addAction(new OpenMemoryDashboardAction(app.getConnector(), memoryDashboardAvailable));
+    }
 
     // Don't call super since we have our own observatory action.
   }

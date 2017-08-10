@@ -63,20 +63,17 @@
         <border type="none"/>
         <children/>
       </grid>
-      <grid id="e885c" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e885c" layout-manager="GridLayoutManager" row-count="6" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title="General"/>
         <children>
           <component id="6304a" class="javax.swing.JCheckBox" binding="myReportUsageInformationCheckBox">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="&amp;Report usage information to Google Analytics"/>
@@ -85,12 +82,12 @@
           </component>
           <vspacer id="4a2f0">
             <constraints>
-              <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+              <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
           <component id="abbab" class="com.intellij.ui.components.labels.LinkLabel" binding="myPrivacyPolicy">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="3" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="3" use-parent-layout="false"/>
             </constraints>
             <properties>
               <horizontalAlignment value="2"/>
@@ -101,7 +98,7 @@
           </component>
           <component id="be19f" class="javax.swing.JCheckBox" binding="myEnableVerboseLoggingCheckBox" default-binding="true">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Enable &amp;verbose logging"/>
@@ -115,6 +112,15 @@
             <properties>
               <text value="Perform hot reload on save (experimental)"/>
               <toolTipText value="On save, hot reload changes into running Flutter apps."/>
+            </properties>
+          </component>
+          <component id="7ec6e" class="javax.swing.JCheckBox" binding="myEnableMemoryDashboardCheckBox">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Enable memory dashboard (experimental)"/>
+              <toolTipText value="A tool for the analysis of memory usage of your application"/>
             </properties>
           </component>
         </children>
