@@ -7,7 +7,6 @@ package io.flutter.module;
 
 import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
-import com.android.tools.idea.npw.module.ModuleTemplateGalleryEntry;
 import com.android.tools.idea.npw.module.NewModuleModel;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.intellij.openapi.diagnostic.Logger;

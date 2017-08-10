@@ -5,19 +5,20 @@
  */
 package io.flutter.actions;
 
-import com.intellij.facet.FacetManager;
-import com.intellij.facet.FacetModel;
 import com.intellij.ide.impl.NewProjectUtil;
 import com.intellij.ide.projectWizard.NewProjectWizard;
+import com.intellij.ide.projectWizard.ProjectTypeStep;
+import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.roots.ModuleRootManager;
-import com.intellij.openapi.roots.ModuleRootModel;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
-import org.jetbrains.annotations.NotNull;
+import com.intellij.ui.CollectionListModel;
+import com.intellij.ui.components.JBList;
+import com.intellij.util.ReflectionUtil;
 
 public class FlutterNewProjectAction extends AnAction {
+
+  private ProjectTypeStep myProjectTypeStep;
 
   public FlutterNewProjectAction() {
     super("New Flutter Project...");
@@ -25,30 +26,35 @@ public class FlutterNewProjectAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    // TODO(messick): Figure out how to eliminate all project types except Flutter.
-    ModulesProvider MODULES_PROVIDER = new ModulesProvider() {
-      @Override
-      @NotNull
-      public Module[] getModules() {
-        return Module.EMPTY_ARRAY;
+    NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
+    ModuleWizardStep firstStep = wizard.getSequence().getAllSteps().get(0);
+    myProjectTypeStep = (ProjectTypeStep)firstStep;
+    // Using a private field messes up type analysis for generics. Can't be helped...
+    JBList projectTypeList = fetchPrivateField("myProjectTypeList");
+    CollectionListModel dataModel = (CollectionListModel)projectTypeList.getModel();
+    Object flutterItem = null;
+    for (Object item : dataModel.getItems()) {
+      if (item.toString().equals("Flutter")) {
+        flutterItem = item;
+        break;
       }
-
-      @Override
-      public Module getModule(String name) {
-        return null;
+    }
+    // Remove all project types except Flutter. Need to verify that this does not cause a memory leak.
+    if (flutterItem != null) {
+      projectTypeList.setSelectedValue(flutterItem, false);
+      // The list cannot be cleared because an empty list causes an NPE when the selected template is updated.
+      for (Object item : dataModel.getItems().toArray()) {
+        if (item != flutterItem) {
+          //noinspection unchecked
+          dataModel.remove(item);
+        }
       }
-
-      @Override
-      public ModuleRootModel getRootModel(@NotNull Module module) {
-        return ModuleRootManager.getInstance(module);
-      }
-
-      @Override
-      public FacetModel getFacetModel(@NotNull Module module) {
-        return FacetManager.getInstance(module);
-      }
-    };
-    NewProjectWizard wizard = new NewProjectWizard(null, MODULES_PROVIDER, null);
+    }
     NewProjectUtil.createNewProject(getEventProject(e), wizard);
+  }
+
+  private JBList fetchPrivateField(@SuppressWarnings("SameParameterValue") String fieldName) {
+    return ReflectionUtil // Fetching a private field.
+      .getField(ProjectTypeStep.class, myProjectTypeStep, JBList.class, fieldName);
   }
 }
