@@ -108,7 +108,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addSeparator();
     topToolbar.add(new OpenFlutterViewAction(isSessionActive));
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    if (FlutterInitializer.isMemoryDashboard()) {
+    if (FlutterInitializer.isMemoryDashboardEnabled()) {
       topToolbar.addAction(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
     }
 
