@@ -16,6 +16,7 @@ import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.ReflectionUtil;
 
+// TODO(messick): Replace this with a wizard that does not include the first step of this wizard.
 public class FlutterNewProjectAction extends AnAction {
 
   private ProjectTypeStep myProjectTypeStep;

@@ -5,8 +5,8 @@
  */
 package io.flutter.module;
 
-import com.android.tools.idea.ui.properties.core.OptionalValueProperty;
-import com.android.tools.idea.ui.properties.swing.TextProperty;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
 import com.intellij.openapi.application.ApplicationManager;
