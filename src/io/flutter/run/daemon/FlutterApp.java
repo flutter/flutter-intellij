@@ -17,25 +17,18 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ContentIterator;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
+import com.intellij.util.ObjectUtils;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterLaunchMode;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -68,8 +61,6 @@ public class FlutterApp {
   private final List<StateListener> myListeners = new ArrayList<>();
 
   private final ObservatoryConnector myConnector;
-
-  private long myLastReload;
 
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
@@ -123,8 +114,6 @@ public class FlutterApp {
         myResume = null;
       }
     };
-
-    myLastReload = System.currentTimeMillis();
   }
 
   @Nullable
@@ -200,6 +189,10 @@ public class FlutterApp {
     return myState.get() == State.RELOADING;
   }
 
+  public boolean isConnected() {
+    return myState.get() != State.TERMINATING && myState.get() != State.TERMINATED;
+  }
+
   void setAppId(@NotNull String id) {
     myAppId = id;
   }
@@ -229,13 +222,12 @@ public class FlutterApp {
 
     final CompletableFuture<DaemonApi.RestartResult> future =
       myDaemonApi.restartApp(myAppId, true, false);
-    future.thenAccept(result -> {
-      changeState(State.STARTED);
-      if (result.ok()) {
-        myLastReload = reloadTimestamp;
-      }
-    });
+    future.thenAccept(result -> changeState(State.STARTED));
     return future;
+  }
+
+  public boolean isSameModule(@Nullable final Module other) {
+    return Objects.equals(myModule, other);
   }
 
   /**
@@ -255,12 +247,7 @@ public class FlutterApp {
 
     final CompletableFuture<DaemonApi.RestartResult> future =
       myDaemonApi.restartApp(myAppId, false, pauseAfterRestart);
-    future.thenAccept(result -> {
-      changeState(State.STARTED);
-      if (result.ok()) {
-        myLastReload = reloadTimestamp;
-      }
-    });
+    future.thenAccept(result -> changeState(State.STARTED));
     return future;
   }
 
@@ -393,33 +380,6 @@ public class FlutterApp {
 
   public void removeStateListener(@NotNull StateListener listener) {
     myListeners.remove(listener);
-  }
-
-  public boolean hasChangesSinceLastReload() {
-    final long[] latest = new long[1];
-
-    final ContentIterator iterator = file -> {
-      if (file.isDirectory()) {
-        return true;
-      }
-      if (FlutterUtils.isFlutteryFile(file) || ".packages".equals(file.getName())) {
-        latest[0] = Math.max(latest[0], file.getTimeStamp());
-      }
-      return true;
-    };
-
-    if (myModule != null) {
-      ModuleRootManager.getInstance(myModule).getFileIndex().iterateContent(iterator);
-    }
-    else {
-      for (Module module : ModuleManager.getInstance(myProject).getModules()) {
-        if (FlutterModuleUtils.isFlutterModule(module)) {
-          ModuleRootManager.getInstance(module).getFileIndex().iterateContent(iterator);
-        }
-      }
-    }
-
-    return latest[0] > myLastReload;
   }
 
   public FlutterLaunchMode getLaunchMode() {
