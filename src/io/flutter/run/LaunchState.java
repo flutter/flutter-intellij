@@ -35,10 +35,10 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.FlutterInitializer;
 import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.*;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -218,7 +218,7 @@ public class LaunchState extends CommandLineState {
     actions.add(new Separator());
     actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
     actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    if (FlutterInitializer.isMemoryDashboardEnabled()) {
+    if (FlutterSettings.getInstance().isMemoryDashboardEnabled()) {
       actions.add(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
     }
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));

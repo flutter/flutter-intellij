@@ -19,11 +19,11 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import io.flutter.FlutterInitializer;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -150,7 +150,7 @@ public class FlutterSdk {
                                    @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
-    if (FlutterInitializer.isVerboseLogging()) {
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
       args.add("--verbose");
     }
     if (device != null) {
@@ -185,7 +185,7 @@ public class FlutterSdk {
       }
       args.add("--start-paused");
     }
-    if (FlutterInitializer.isVerboseLogging()) {
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
       args.add("--verbose");
     }
     if (testNameSubstring != null) {

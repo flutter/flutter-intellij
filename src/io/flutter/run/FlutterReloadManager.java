@@ -8,10 +8,14 @@ package io.flutter.run;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
+import com.intellij.concurrency.JobScheduler;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.SaveAllAction;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationGroup;
 import com.intellij.notification.NotificationType;
+import com.intellij.notification.Notifications;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
@@ -40,6 +44,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.analyzer.DartServerData;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import icons.FlutterIcons;
+import io.flutter.FlutterMessages;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
@@ -53,6 +58,7 @@ import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -60,7 +66,11 @@ import java.util.stream.Collectors;
  * Handle the mechanics of performing a hot reload on file save.
  */
 public class FlutterReloadManager {
+  public static final String RELOAD_ON_SAVE_FEEDBACK_URL = "https://goo.gl/Pab4Li";
+
   private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class.getName());
+
+  private static final String reloadSaveFeedbackKey = "io.flutter.askedUserReloadSaveFeedback";
 
   private final @NotNull Project myProject;
   private final FlutterSettings mySettings;
@@ -79,7 +89,7 @@ public class FlutterReloadManager {
 
   private FlutterReloadManager(@NotNull Project project) {
     this.myProject = project;
-    this.mySettings = FlutterSettings.getInstance(myProject);
+    this.mySettings = FlutterSettings.getInstance();
 
     ActionManagerEx.getInstanceEx().addAnActionListener(new AnActionListener.Adapter() {
       @Override
@@ -94,9 +104,34 @@ public class FlutterReloadManager {
         }
       }
     }, project);
+
+    FlutterSettings.getInstance().addListener(new FlutterSettings.Listener() {
+      boolean reloadOnSave = FlutterSettings.getInstance().isReloadOnSave();
+
+      @Override
+      public void settingsChanged() {
+        final boolean newReloadOnSave = FlutterSettings.getInstance().isReloadOnSave();
+        if (reloadOnSave && !newReloadOnSave) {
+          // The user is turning off reload on save; see if we should ask why.
+          final PropertiesComponent properties = PropertiesComponent.getInstance();
+          if (!properties.getBoolean(reloadSaveFeedbackKey, false)) {
+            properties.setValue(reloadSaveFeedbackKey, true);
+
+            JobScheduler.getScheduler().schedule(() -> showDisableReloadSaveNotification(), 1, TimeUnit.SECONDS);
+          }
+        }
+        reloadOnSave = newReloadOnSave;
+      }
+    });
   }
 
+  private boolean handleingSave = false;
+
   private void handleSaveAllNotification(AnActionEvent event) {
+    if (handleingSave) {
+      return;
+    }
+
     if (!mySettings.isReloadOnSave()) {
       return;
     }
@@ -136,21 +171,31 @@ public class FlutterReloadManager {
       return;
     }
 
-    if (hasErrors(project, module, editor.getDocument())) {
-      showNotification(editor, "Reload not performed", true);
-      showAnalysisNotification("Analysis issues found");
-    }
-    else {
-      final LightweightHint hint = showNotification(editor, "Reloading…", false);
+    // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
+    // small pause to return error results in the (relatively infrequent) case where the user makes a bad
+    // edit and immediately hits save.
+    final int reloadDelayMs = 125;
 
-      app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
-        hint.hide();
+    handleingSave = true;
 
-        if (!result.ok()) {
-          showNotification(editor, result.getMessage(), true);
-        }
-      });
-    }
+    JobScheduler.getScheduler().schedule(() -> {
+      handleingSave = false;
+
+      if (hasErrors(project, module, editor.getDocument())) {
+        showAnalysisNotification("Reload not performed", "Analysis issues found", true);
+      }
+      else {
+        final Notification notification = showRunNotification(app, null, "Reloading…", false);
+
+        app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
+          notification.expire();
+
+          if (!result.ok()) {
+            showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
+          }
+        });
+      }
+    }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
   public void saveAllAndReload(@NotNull FlutterApp app) {
@@ -158,7 +203,7 @@ public class FlutterReloadManager {
       FileDocumentManager.getInstance().saveAllDocuments();
       app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
         if (!result.ok()) {
-          showRunNotificationError(app, "Hot Reload", result.getMessage());
+          showRunNotification(app, "Hot Reload", result.getMessage(), true);
         }
       });
     }
@@ -169,7 +214,7 @@ public class FlutterReloadManager {
       FileDocumentManager.getInstance().saveAllDocuments();
       app.performRestartApp().thenAccept(result -> {
         if (!result.ok()) {
-          showRunNotificationError(app, "Full Restart", result.getMessage());
+          showRunNotification(app, "Full Restart", result.getMessage(), true);
         }
       });
     }
@@ -183,22 +228,30 @@ public class FlutterReloadManager {
     return null;
   }
 
-  private void showAnalysisNotification(String message) {
+  private void showAnalysisNotification(String title, String content, boolean isError) {
     final NotificationGroup notificationGroup =
       NotificationGroup.toolWindowGroup(FlutterRunNotifications.GROUP_DISPLAY_ID, DartProblemsView.TOOLWINDOW_ID, false);
-    final Notification notification = notificationGroup.createNotification(message, NotificationType.ERROR);
+    final Notification notification =
+      notificationGroup.createNotification(title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION, null);
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
   }
 
-  private void showRunNotificationError(FlutterApp app, String title, String message) {
+  private Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
     final String toolWindowId = app.getMode() == RunMode.RUN ? ToolWindowId.RUN : ToolWindowId.DEBUG;
     final NotificationGroup notificationGroup =
       NotificationGroup.toolWindowGroup(FlutterRunNotifications.GROUP_DISPLAY_ID, toolWindowId, false);
-
-    final Notification notification = notificationGroup.createNotification(title, message, NotificationType.ERROR, null);
+    final Notification notification;
+    if (title == null) {
+      notification = notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
+    }
+    else {
+      notification =
+        notificationGroup.createNotification(title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION, null);
+    }
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
+    return notification;
   }
 
   private FlutterApp getApp() {
@@ -238,7 +291,7 @@ public class FlutterReloadManager {
     }
   }
 
-  private LightweightHint showNotification(@NotNull Editor editor, String message, boolean isError) {
+  private LightweightHint showEditorHint(@NotNull Editor editor, String message, boolean isError) {
     final AtomicReference<LightweightHint> ref = new AtomicReference<>();
 
     ApplicationManager.getApplication().invokeAndWait(() -> {
@@ -254,5 +307,27 @@ public class FlutterReloadManager {
     });
 
     return ref.get();
+  }
+
+  private void showDisableReloadSaveNotification() {
+    final Notification notification = new Notification(
+      FlutterMessages.FLUTTER_NOTIFICATION_GOUP_ID,
+      "Flutter Reload on Save",
+      "Disabling reload on save; consider providing feedback on this feature to help us improve future versions.",
+      NotificationType.INFORMATION);
+    notification.addAction(new AnAction("Provide Feedback") {
+      @Override
+      public void actionPerformed(AnActionEvent event) {
+        notification.expire();
+        BrowserUtil.browse(RELOAD_ON_SAVE_FEEDBACK_URL);
+      }
+    });
+    notification.addAction(new AnAction("No thanks") {
+      @Override
+      public void actionPerformed(AnActionEvent event) {
+        notification.expire();
+      }
+    });
+    Notifications.Bus.notify(notification);
   }
 }

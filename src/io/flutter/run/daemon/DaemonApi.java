@@ -13,7 +13,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
-import io.flutter.FlutterInitializer;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -120,7 +120,7 @@ public class DaemonApi {
 
         final String text = event.getText().trim();
 
-        if (FlutterInitializer.isVerboseLogging()) {
+        if (FlutterSettings.getInstance().isVerboseLogging()) {
           LOG.info("[<-- " + text + "]");
         }
 
@@ -242,7 +242,7 @@ public class DaemonApi {
     stdin.write(json);
     stdin.write("]\n");
 
-    if (FlutterInitializer.isVerboseLogging()) {
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
       LOG.info("[--> " + json + "]");
     }
 

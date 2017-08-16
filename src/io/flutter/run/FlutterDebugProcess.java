@@ -17,11 +17,11 @@ import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.FlutterInitializer;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.view.FlutterViewMessages;
 import io.flutter.view.OpenFlutterViewAction;
 import org.dartlang.vm.service.VmService;
@@ -108,7 +108,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addSeparator();
     topToolbar.add(new OpenFlutterViewAction(isSessionActive));
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    if (FlutterInitializer.isMemoryDashboardEnabled()) {
+    if (FlutterSettings.getInstance().isMemoryDashboardEnabled()) {
       topToolbar.addAction(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
     }
 
