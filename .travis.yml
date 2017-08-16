@@ -18,8 +18,8 @@ before_script:
 # Testing product matrix - see gs://flutter_infra/flutter/intellij/.
 # IDEA_PRODUCT can be one of ideaIC, WebStorm, or android-studio-ide.
 env:
-  # Android Studio 3.0 Canary 7
-  - IDEA_PRODUCT=android-studio-ide IDEA_VERSION=171.4182969 DART_PLUGIN_VERSION=171.4424.10
+  # Android Studio 3.0 Beta 2
+  - IDEA_PRODUCT=android-studio-ide IDEA_VERSION=171.4263559 DART_PLUGIN_VERSION=171.4424.10
 
   # IntelliJ CE internal version
   # TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
