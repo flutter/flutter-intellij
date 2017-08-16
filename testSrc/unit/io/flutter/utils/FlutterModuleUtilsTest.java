@@ -5,10 +5,8 @@
  */
 package io.flutter.utils;
 
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
 import io.flutter.testing.ProjectFixture;
-import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
 import org.junit.Rule;
 import org.junit.Test;

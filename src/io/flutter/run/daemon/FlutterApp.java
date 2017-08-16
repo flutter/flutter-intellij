@@ -20,7 +20,6 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
-import com.intellij.util.ObjectUtils;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;

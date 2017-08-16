@@ -111,7 +111,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @Override
   public boolean isModified() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
-    final FlutterSettings settings = FlutterSettings.getInstance(myProject);
+    final FlutterSettings settings = FlutterSettings.getInstance();
     final String sdkPathInModel = sdk == null ? "" : sdk.getHomePath();
     final String sdkPathInUI = FileUtilRt.toSystemIndependentName(getSdkPathText());
 
@@ -127,12 +127,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (FlutterInitializer.isMemoryDashboardEnabled() != myEnableMemoryDashboardCheckBox.isSelected()) {
+    if (settings.isMemoryDashboardEnabled() != myEnableMemoryDashboardCheckBox.isSelected()) {
       return true;
     }
 
     //noinspection RedundantIfStatement
-    if (FlutterInitializer.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
+    if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
 
@@ -155,10 +155,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
-    FlutterInitializer.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    FlutterInitializer.setMemoryDashboardEnabled(myEnableMemoryDashboardCheckBox.isSelected());
 
-    final FlutterSettings settings = FlutterSettings.getInstance(myProject);
+    final FlutterSettings settings = FlutterSettings.getInstance();
+    settings.setMemoryDashboardEnabled(myEnableMemoryDashboardCheckBox.isSelected());
+    settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -178,10 +178,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
 
-    final FlutterSettings settings = FlutterSettings.getInstance(myProject);
+    final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
-    myEnableVerboseLoggingCheckBox.setSelected(FlutterInitializer.isVerboseLogging());
-    myEnableMemoryDashboardCheckBox.setSelected(FlutterInitializer.isMemoryDashboardEnabled());
+    myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
+    myEnableMemoryDashboardCheckBox.setSelected(settings.isMemoryDashboardEnabled());
   }
 
   private void updateVersionText() {

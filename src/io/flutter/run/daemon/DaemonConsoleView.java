@@ -19,7 +19,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
-import io.flutter.FlutterInitializer;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -56,7 +56,7 @@ public class DaemonConsoleView extends ConsoleViewImpl {
 
   @Override
   public void print(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
-    if (FlutterInitializer.isVerboseLogging()) {
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
       super.print(text, contentType);
       return;
     }

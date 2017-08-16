@@ -26,6 +26,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
@@ -44,8 +45,6 @@ public class FlutterInitializer implements StartupActivity {
   private static final String analyticsClientIdKey = "io.flutter.analytics.clientId";
   private static final String analyticsOptOutKey = "io.flutter.analytics.optOut";
   private static final String analyticsToastShown = "io.flutter.analytics.toastShown";
-  private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String memoryDashboardKey = "io.flutter.memoryDashboard";
 
   private static Analytics analytics;
 
@@ -70,6 +69,8 @@ public class FlutterInitializer implements StartupActivity {
 
       // Send initial loading hit.
       analytics.sendScreenView("main");
+
+      FlutterSettings.getInstance().sendSettingsToAnalytics(analytics);
     }
 
     return analytics;
@@ -102,26 +103,6 @@ public class FlutterInitializer implements StartupActivity {
 
   public static void sendAnalyticsAction(@NotNull String name) {
     getAnalytics().sendEvent("intellij", name);
-  }
-
-  public static boolean isVerboseLogging() {
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    return properties.getBoolean(verboseLoggingKey, false);
-  }
-
-  public static void setVerboseLogging(boolean value) {
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    properties.setValue(verboseLoggingKey, value);
-  }
-
-  public static boolean isMemoryDashboardEnabled() {
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    return properties.getBoolean(memoryDashboardKey, false);
-  }
-
-  public static void setMemoryDashboardEnabled(boolean value) {
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    properties.setValue(memoryDashboardKey, value);
   }
 
   @Override
@@ -174,7 +155,7 @@ public class FlutterInitializer implements StartupActivity {
 
       final Notification notification = new Notification(
         Analytics.GROUP_DISPLAY_ID,
-        FlutterBundle.message("flutter.analytics.notification.title"),
+        "Welcome to Flutter!",
         FlutterBundle.message("flutter.analytics.notification.content"),
         NotificationType.INFORMATION,
         (notification1, event) -> {
@@ -184,7 +165,7 @@ public class FlutterInitializer implements StartupActivity {
             }
           }
         });
-      notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.accept")) {
+      notification.addAction(new AnAction("Sounds good!") {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
@@ -195,7 +176,7 @@ public class FlutterInitializer implements StartupActivity {
           }
         }
       });
-      notification.addAction(new AnAction(FlutterBundle.message("flutter.analytics.notification.decline")) {
+      notification.addAction(new AnAction("No thanks") {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();

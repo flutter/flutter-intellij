@@ -403,7 +403,7 @@
 
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
-    <projectService serviceInterface="io.flutter.settings.FlutterSettings"
+    <applicationService serviceInterface="io.flutter.settings.FlutterSettings"
                     serviceImplementation="io.flutter.settings.FlutterSettings"
                     overrides="false"/>
 

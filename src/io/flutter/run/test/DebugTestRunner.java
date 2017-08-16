@@ -23,9 +23,9 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.FlutterInitializer;
 import io.flutter.run.PositionMapper;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,7 +103,7 @@ public class DebugTestRunner extends GenericProgramRunner {
           }
 
           final String text = event.getText().trim();
-          if (FlutterInitializer.isVerboseLogging()) {
+          if (FlutterSettings.getInstance().isVerboseLogging()) {
             LOG.info("[<-- " + text + "]");
           }
 

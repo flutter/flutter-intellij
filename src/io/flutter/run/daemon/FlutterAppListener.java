@@ -11,6 +11,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import io.flutter.FlutterInitializer;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -109,7 +110,7 @@ class FlutterAppListener implements DaemonEvent.Listener {
     if (event.getType().startsWith("hot.")) {
       // We clear the console view in order to help indicate that a reload is happening.
       if (app.getConsole() != null) {
-        if (!FlutterInitializer.isVerboseLogging()) {
+        if (!FlutterSettings.getInstance().isVerboseLogging()) {
           app.getConsole().clear();
         }
       }
