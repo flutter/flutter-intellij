@@ -62,12 +62,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-// TODO: show toast on first disable
-
 /**
  * Handle the mechanics of performing a hot reload on file save.
  */
 public class FlutterReloadManager {
+  public static final String RELOAD_ON_SAVE_FEEDBACK_URL = "https://goo.gl/Pab4Li";
+
   private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class.getName());
 
   private static final String reloadSaveFeedbackKey = "io.flutter.askedUserReloadSaveFeedback";
@@ -319,7 +319,7 @@ public class FlutterReloadManager {
       @Override
       public void actionPerformed(AnActionEvent event) {
         notification.expire();
-        BrowserUtil.browse("https://goo.gl/Pab4Li");
+        BrowserUtil.browse(RELOAD_ON_SAVE_FEEDBACK_URL);
       }
     });
     notification.addAction(new AnAction("No thanks") {

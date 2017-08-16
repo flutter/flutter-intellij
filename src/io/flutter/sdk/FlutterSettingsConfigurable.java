@@ -26,6 +26,7 @@ import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.run.FlutterReloadManager;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +52,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myEnableMemoryDashboardCheckBox;
+  private LinkLabel<String> reloadOnSaveFeedbackUrl;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -84,6 +86,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       catch (URISyntaxException ignore) {
       }
     }, FlutterBundle.message("flutter.analytics.privacyUrl"));
+
+    reloadOnSaveFeedbackUrl.setIcon(null);
+    reloadOnSaveFeedbackUrl.setListener((label, linkUrl) -> {
+      try {
+        BrowserLauncher.getInstance().browse(new URI(linkUrl));
+      }
+      catch (URISyntaxException ignore) {
+      }
+    }, FlutterReloadManager.RELOAD_ON_SAVE_FEEDBACK_URL);
   }
 
   private void createUIComponents() {
