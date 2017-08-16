@@ -171,7 +171,11 @@ public class FlutterReloadManager {
       return;
     }
 
-    // Add an arbitrary 125ms delay to allow analysis to catch up.
+    // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
+    // small pause to return error results in the (relatively infrequent) case where the user makes a bad
+    // edit and immediately hits save.
+    final int reloadDelayMs = 125;
+
     handleingSave = true;
 
     JobScheduler.getScheduler().schedule(() -> {
@@ -191,7 +195,7 @@ public class FlutterReloadManager {
           }
         });
       }
-    }, 100, TimeUnit.MILLISECONDS);
+    }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
   public void saveAllAndReload(@NotNull FlutterApp app) {
@@ -315,8 +319,7 @@ public class FlutterReloadManager {
       @Override
       public void actionPerformed(AnActionEvent event) {
         notification.expire();
-        // TODO: replace with the real url
-        BrowserUtil.browse("http://www.cheese.com/");
+        BrowserUtil.browse("https://goo.gl/Pab4Li");
       }
     });
     notification.addAction(new AnAction("No thanks") {
