@@ -19,6 +19,12 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="adt-branding" />
+    <orderEntry type="module" module-name="android" />
+    <orderEntry type="module" module-name="wizard-model" />
+    <orderEntry type="module" module-name="adt-ui" />
+    <orderEntry type="module" module-name="observable" />
+    <orderEntry type="module" module-name="observable-ui" />
     <orderEntry type="module" module-name="Dart-community" />
     <orderEntry type="module" module-name="platform-api" />
     <orderEntry type="module" module-name="lang-api" />
@@ -33,6 +39,15 @@
       <library>
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/dart-plugin/deps/weberknecht-0.1.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library name="android-libs">
+        <CLASSES>
+          <root url="jar://$APPLICATION_HOME_DIR$/plugins/android/lib/android.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

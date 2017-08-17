@@ -153,7 +153,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
     <echo message="travis_fold:start:ant.properties"/>
     <echoproperties/>
     <echo message="travis_fold:end:ant.properties"/>
-    <echo>${toString:javac2.nestedformdirs}</echo>
   </target>
 
   <target name="build.src" depends="paths">
