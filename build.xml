@@ -3,8 +3,8 @@
 <!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
-<!--
-ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=android-studio-ide -Dstudio=true -Dstudio.src=/Volumes/android/studio-master-dev/tools/idea/
+<!-- Shell command to build AS version
+ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=android-studio-ide -Dstudio=true
 -->
 
 <!--suppress AntResolveInspection -->
@@ -20,8 +20,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
   <property name="idea.version" value="2017.1.3"/>
-  <!-- path to Android Studio source (.../studio-master-dev/tools/idea) -->
-  <property name="studio.src" value=""/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
@@ -97,16 +95,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
 
     <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
     <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
-    <typedef name="prefixedpath" classname="com.intellij.ant.PrefixedPath" classpathref="javac2.classpath"/>
-
-    <unjar src="${idea.home}/lib/idea.jar" dest="${idea.home}/lib/idea-unjar"/>
-    <!-- Location of ModuleNameLocationComponent -->
-    <prefixedpath id="javac2.nestedformdirs" prefix="com/intellij/ide/projectWizard">
-      <dirset dir="${studio.src}">
-        <include name="java/idea-ui/src"/>
-      </dirset>
-    </prefixedpath>
-
   </target>
 
   <target name="paths" depends="properties">
@@ -139,7 +127,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
         <include name="gen"/>
         <include name="third_party/intellij-plugins-dart/src"/>
         <include if:true="${studio}" name="flutter-studio/src"/>
-        <include if:true="${studio}" name="flutter-studio/resources"/>
       </dirset>
     </path>
 
@@ -167,9 +154,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
       </classpath>
       <src refid="src.sourcepath"/>
       <patternset refid="ignored.files"/>
-      <nestedformdirs>
-        <prefixedpath refid="javac2.nestedformdirs"/>
-      </nestedformdirs>
     </javac2>
 
     <copy todir="build/src">
@@ -190,10 +174,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
         <type type="file"/>
       </fileset>
       <fileset if:true="${studio}" dir="flutter-studio/src">
-        <patternset refid="compiler.resources"/>
-        <type type="file"/>
-      </fileset>
-      <fileset if:true="${studio}" dir="flutter-studio/resources">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>

@@ -9,16 +9,15 @@ import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.validator.ModuleValidator;
-import com.android.tools.idea.observable.BindingsManager;
-import com.android.tools.idea.observable.ListenerManager;
-import com.android.tools.idea.observable.core.ObservableBool;
-import com.android.tools.idea.observable.ui.SelectedItemProperty;
+import com.android.tools.idea.ui.properties.BindingsManager;
+import com.android.tools.idea.ui.properties.ListenerManager;
+import com.android.tools.idea.ui.properties.core.ObservableBool;
+import com.android.tools.idea.ui.properties.swing.SelectedItemProperty;
 import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.highlighter.ModuleFileType;
-import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
 import com.intellij.ide.util.BrowseFilesListener;
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
@@ -49,6 +48,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
+/**
+ * Do not sort the content of this file. Code>Rearrange Code will cause confusion for maintainers.
+ */
 @SuppressWarnings("Duplicates")
 public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> implements Disposable {
 
@@ -69,6 +71,13 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private JTextField myModuleName;
   private TextFieldWithBrowseButton myModuleContentRoot;
   private TextFieldWithBrowseButton myModuleFileLocation;
+  private boolean myModuleNameChangedByUser = false;
+  private boolean myModuleNameDocListenerEnabled = true;
+  private boolean myContentRootChangedByUser = false;
+  private boolean myContentRootDocListenerEnabled = true;
+  private boolean myImlLocationChangedByUser = false;
+  private boolean myImlLocationDocListenerEnabled = true;
+  private boolean myUpdatePathsWhenNameIsChanged;
 
   public FlutterPackageStep(@NotNull FlutterModuleModel model, @NotNull String title, @NotNull Icon icon) {
     super(model, title, icon);
@@ -82,7 +91,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     model.setModuleComponent(this);
 
     model.setBuilder(myBuilder);
-    myBuilder.getCustomOptionsStep(myWizardContext, this);
+    myBuilder.getCustomOptionsStep(myWizardContext, this); // 'this' may be the wrong disposer; getting a memory leak somewhere.
     myFlutterSdkPath.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
@@ -141,6 +150,24 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     return Validator.Result.fromNullableMessage("Invalid path for " + descr.toLowerCase());
   }
 
+  private static String getDefaultBaseDir(WizardContext wizardContext, NamePathComponent namePathComponent) {
+    if (wizardContext.isCreatingNewProject()) {
+      return namePathComponent.getPath();
+    }
+    else {
+      final Project project = wizardContext.getProject();
+      assert project != null;
+      final VirtualFile baseDir = project.getBaseDir();
+      if (baseDir != null) {
+        return baseDir.getPath();
+      }
+      return "";
+    }
+  }
+
+  /// The remainder was copied from ModuleNameLocationComponent in the new project wizard.
+  /// DO NOT SORT
+
   @NotNull
   @Override
   protected JComponent getComponent() {
@@ -195,18 +222,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
       return Validator.Result.fromNullableMessage(e.getMessage());
     }
   }
-
-
-  private boolean myModuleNameChangedByUser = false;
-  private boolean myModuleNameDocListenerEnabled = true;
-
-  private boolean myContentRootChangedByUser = false;
-  private boolean myContentRootDocListenerEnabled = true;
-
-  private boolean myImlLocationChangedByUser = false;
-  private boolean myImlLocationDocListenerEnabled = true;
-
-  private boolean myUpdatePathsWhenNameIsChanged;
 
   @Nullable
   private AbstractModuleBuilder getModuleBuilder() {
@@ -419,37 +434,16 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     return myModuleContentRoot.getText();
   }
 
-  private static String getDefaultBaseDir(WizardContext wizardContext, NamePathComponent namePathComponent) {
-    if (wizardContext.isCreatingNewProject()) {
-      return namePathComponent.getPath();
-    }
-    else {
-      final Project project = wizardContext.getProject();
-      assert project != null;
-      final VirtualFile baseDir = project.getBaseDir();
-      if (baseDir != null) {
-        return baseDir.getPath();
-      }
-      return "";
-    }
-  }
-
-  private void setImlFileLocation(final String path) {
-    myImlLocationDocListenerEnabled = false;
-    myModuleFileLocation.setText(FileUtil.toSystemDependentName(path));
-    myImlLocationDocListenerEnabled = true;
-  }
-
   private void setModuleContentRoot(final String path) {
     myContentRootDocListenerEnabled = false;
     myModuleContentRoot.setText(FileUtil.toSystemDependentName(path));
     myContentRootDocListenerEnabled = true;
   }
 
-  public void setModuleName(String moduleName) {
-    myModuleNameDocListenerEnabled = false;
-    myModuleName.setText(moduleName);
-    myModuleNameDocListenerEnabled = true;
+  private void setImlFileLocation(final String path) {
+    myImlLocationDocListenerEnabled = false;
+    myModuleFileLocation.setText(FileUtil.toSystemDependentName(path));
+    myImlLocationDocListenerEnabled = true;
   }
 
   public JTextField getModuleNameField() {
@@ -460,4 +454,9 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     return myModuleName.getText().trim();
   }
 
+  public void setModuleName(String moduleName) {
+    myModuleNameDocListenerEnabled = false;
+    myModuleName.setText(moduleName);
+    myModuleNameDocListenerEnabled = true;
+  }
 }
