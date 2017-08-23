@@ -99,6 +99,7 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
     <taskdef name="instrumentIdeaExtensions" classname="com.intellij.ant.InstrumentIdeaExtensions" classpathref="javac2.classpath"/>
     <typedef name="prefixedpath" classname="com.intellij.ant.PrefixedPath" classpathref="javac2.classpath"/>
 
+    <unjar src="${idea.home}/lib/idea.jar" dest="${idea.home}/lib/idea-unjar"/>
     <!-- Location of ModuleNameLocationComponent -->
     <prefixedpath id="javac2.nestedformdirs" prefix="com/intellij/ide/projectWizard">
       <dirset dir="${studio.src}">

@@ -2,11 +2,13 @@
 <idea-plugin>
 
   <extensions defaultExtensionNs="com.android">
+    <!-- Add Flutter module types to the New Module wizard -->
     <moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/>
   </extensions>
 
   <actions>
 
+    <!-- Define the 'New Flutter Project' menu item -->
     <action id="flutter.NewProject" class="io.flutter.actions.FlutterNewProjectAction"
             text="New Flutter Project..."
             description="Create a new Flutter project">
