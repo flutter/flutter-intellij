@@ -5,10 +5,9 @@
  */
 package io.flutter.module;
 
-import com.android.tools.idea.observable.core.OptionalValueProperty;
-import com.android.tools.idea.observable.ui.TextProperty;
+import com.android.tools.idea.ui.properties.core.OptionalValueProperty;
+import com.android.tools.idea.ui.properties.swing.TextProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
-import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -17,8 +16,6 @@ import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.util.ReflectionUtil;
 import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,6 +27,8 @@ import java.io.IOException;
 // 2. Externalize strings.
 // 3. Hide project type list in new project wizard.
 // 4. Add ability to create Flutter project to welcome screen.
+// 5. Investigage UI testing. See module android-uitests for examples.
+// 6. Add new fields (language choices, etc) to the new module definition page in the wizard.
 public class FlutterModuleModel extends WizardModel {
   private static final Logger LOG = Logger.getInstance(FlutterModuleModel.class.getName());
 
