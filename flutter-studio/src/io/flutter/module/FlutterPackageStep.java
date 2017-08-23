@@ -48,9 +48,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
 
-/**
- * Do not sort the content of this file. Code>Rearrange Code will cause confusion for maintainers.
- */
 @SuppressWarnings("Duplicates")
 public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> implements Disposable {
 
@@ -91,7 +88,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     model.setModuleComponent(this);
 
     model.setBuilder(myBuilder);
-    myBuilder.getCustomOptionsStep(myWizardContext, this); // 'this' may be the wrong disposer; getting a memory leak somewhere.
+    myBuilder.getCustomOptionsStep(myWizardContext, this); // TODO 'this' may be the wrong disposer; getting a memory leak somewhere.
     myFlutterSdkPath.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
@@ -164,9 +161,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
       return "";
     }
   }
-
-  /// The remainder was copied from ModuleNameLocationComponent in the new project wizard.
-  /// DO NOT SORT
 
   @NotNull
   @Override
