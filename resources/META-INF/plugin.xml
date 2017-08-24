@@ -261,6 +261,9 @@
 
   <!-- Contributes IDEA-specific features and implementations. -->
   <depends optional="true" config-file="idea-contribs.xml">com.intellij.modules.java</depends>
+  <!-- Contributes Android Studio-specific features and implementations. -->
+  <!-- depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends -->
+  <depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends>
 
   <!-- Everything following should be SmallIDE-friendly.-->
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->

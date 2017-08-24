@@ -5,10 +5,9 @@
  */
 package io.flutter.module;
 
-import com.android.tools.idea.observable.core.OptionalValueProperty;
-import com.android.tools.idea.observable.ui.TextProperty;
+import com.android.tools.idea.ui.properties.core.OptionalValueProperty;
+import com.android.tools.idea.ui.properties.swing.TextProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
-import com.intellij.ide.projectWizard.ModuleNameLocationComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.ModifiableModuleModel;
@@ -17,8 +16,6 @@ import com.intellij.openapi.module.ModuleWithNameAlreadyExists;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
-import com.intellij.util.ReflectionUtil;
 import org.jdom.JDOMException;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,23 +23,19 @@ import java.io.File;
 import java.io.IOException;
 
 // TODO list
-// 1. (done) Stop creating 'untitled' directory when wizard is canceled.
-// 2. (done) Fix layout to make the inner panel fill the outer.
-// 3. (done) Make a proper module icon for the wizard selection pane.
-// 4. (done) Verify ModuleNameLocationComponent fields update correctly.
-// 5. (done) Fix validation for all four entries.
-// 6. (done) Verify module content is created correctly.
-// 7. (done) On start-up, check the Dart plugin version; that code appears to not be running.
-// 8. (done) Investigate 'New Module' name. Always appears as 'Flutter' in Project Structure.
-// 9. Automatically perform Android framework configuraiton to add additional files to module.
-//10. Externalize strings.
+// 1. Automatically perform Android framework configuraiton to add additional files to module.
+// 2. Externalize strings.
+// 3. Hide project type list in new project wizard.
+// 4. Add ability to create Flutter project to welcome screen.
+// 5. Investigage UI testing. See module android-uitests for examples.
+// 6. Add new fields (language choices, etc) to the new module definition page in the wizard.
 public class FlutterModuleModel extends WizardModel {
   private static final Logger LOG = Logger.getInstance(FlutterModuleModel.class.getName());
 
   @NotNull private final OptionalValueProperty<String> myFlutterSdk = new OptionalValueProperty<>();
   @NotNull private final Project myProject;
   private FlutterModuleBuilder myBuilder;
-  private ModuleNameLocationComponent myModuleComponent;
+  private FlutterPackageStep myModuleComponent;
   private TextProperty myModuleName;
   private TextProperty myModuleContentRoot;
   private TextProperty myModuleFileLocation;
@@ -55,11 +48,11 @@ public class FlutterModuleModel extends WizardModel {
     myBuilder = builder;
   }
 
-  public void setModuleComponent(@NotNull ModuleNameLocationComponent component) {
+  public void setModuleComponent(@NotNull FlutterPackageStep component) {
     myModuleComponent = component;
     myModuleName = new TextProperty(component.getModuleNameField());
-    myModuleContentRoot = new TextProperty(fetchPrivateField("myModuleContentRoot").getTextField());
-    myModuleFileLocation = new TextProperty(fetchPrivateField("myModuleFileLocation").getTextField());
+    myModuleContentRoot = new TextProperty(component.getModuleContentRootField());
+    myModuleFileLocation = new TextProperty(component.getModuleFileLocationField());
   }
 
   @NotNull
@@ -141,10 +134,5 @@ public class FlutterModuleModel extends WizardModel {
     String filePath = myModuleContentRoot.get().trim();
     //noinspection ResultOfMethodCallIgnored
     new File(filePath).delete();
-  }
-
-  private TextFieldWithBrowseButton fetchPrivateField(String fieldName) {
-    return ReflectionUtil // Fetching a private field.
-      .getField(ModuleNameLocationComponent.class, myModuleComponent, TextFieldWithBrowseButton.class, fieldName);
   }
 }

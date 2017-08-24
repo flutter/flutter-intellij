@@ -3,8 +3,16 @@
 <!-- TODO(devoncarew): We can run non-IntelliJ tests, but we need to install the Dart
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
+<!-- Shell command to build AS version
+ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=android-studio-ide -Dstudio=true
+-->
+
 <!--suppress AntResolveInspection -->
-<project name="flutter-intellij" default="build">
+<project
+    name="flutter-intellij"
+    xmlns:if="ant:if"
+    xmlns:unless="ant:unless"
+    default="build">
   <property environment="env"/>
 
   <!-- defaults -->
@@ -79,7 +87,9 @@
     <path id="javac2.classpath">
       <pathelement location="${javac2.home}/javac2.jar"/>
       <pathelement location="${javac2.home}/jdom.jar"/>
+      <pathelement location="${javac2.home}/asm.jar"/>
       <pathelement location="${javac2.home}/asm-all.jar"/>
+      <pathelement location="${javac2.home}/asm-commons.jar"/>
       <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
     </path>
 
@@ -94,6 +104,9 @@
       </fileset>
       <fileset dir="${idea.home}/plugins/Dart/lib">
         <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins">
+        <include name="**/lib/*.jar"/>
       </fileset>
     </path>
 
@@ -113,6 +126,7 @@
         <include name="resources"/>
         <include name="gen"/>
         <include name="third_party/intellij-plugins-dart/src"/>
+        <include if:true="${studio}" name="flutter-studio/src"/>
       </dirset>
     </path>
 
@@ -156,6 +170,10 @@
         <type type="file"/>
       </fileset>
       <fileset dir="third_party/intellij-plugins-dart/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+      <fileset if:true="${studio}" dir="flutter-studio/src">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>

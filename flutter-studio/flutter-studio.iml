@@ -10,6 +10,11 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="adt-branding" />
+    <orderEntry type="module" module-name="android" />
+    <orderEntry type="module" module-name="wizard-model" />
+    <orderEntry type="module" module-name="adt-ui" />
+    <orderEntry type="module" module-name="observable" />
+    <orderEntry type="module" module-name="observable-ui" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
     <orderEntry type="module" module-name="Dart-community" />
     <orderEntry type="module" module-name="platform-api" />
@@ -18,10 +23,5 @@
     <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module" module-name="testFramework" scope="TEST" />
     <orderEntry type="module" module-name="idea-ui" />
-    <orderEntry type="module" module-name="android" />
-    <orderEntry type="module" module-name="wizard-model" />
-    <orderEntry type="module" module-name="adt-ui" />
-    <orderEntry type="module" module-name="observable" />
-    <orderEntry type="module" module-name="observable-ui" />
   </component>
 </module>
