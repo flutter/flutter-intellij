@@ -4,14 +4,12 @@
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
 <!-- Shell command to build AS version
-ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=android-studio-ide -Dstudio=true
+ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=android-studio-ide
 -->
 
 <!--suppress AntResolveInspection -->
 <project
     name="flutter-intellij"
-    xmlns:if="ant:if"
-    xmlns:unless="ant:unless"
     default="build">
   <property environment="env"/>
 
@@ -126,7 +124,12 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
         <include name="resources"/>
         <include name="gen"/>
         <include name="third_party/intellij-plugins-dart/src"/>
-        <include if:true="${studio}" name="flutter-studio/src"/>
+      </dirset>
+    </path>
+
+    <path id="studioSrc.sourcepath">
+      <dirset dir="flutter-studio">
+        <include name="src"/>
       </dirset>
     </path>
 
@@ -173,10 +176,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
-      <fileset if:true="${studio}" dir="flutter-studio/src">
-        <patternset refid="compiler.resources"/>
-        <type type="file"/>
-      </fileset>
     </copy>
 
     <jar destfile="build/flutter-intellij.jar" duplicate="preserve">
@@ -188,6 +187,59 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
     </jar>
 
     <length file="build/flutter-intellij.jar"/>
+  </target>
+
+  <target name="build.studioSrc" depends="paths" if="extract.with.zip">
+    <echo message="Building against target ${idea.home}"/>
+
+    <mkdir dir="build/studioSrc"/>
+    <javac2 destdir="build/studioSrc" memorymaximumsize="1000m" fork="true" includeantruntime="false">
+      <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
+      <classpath>
+        <path refid="idea.jars"/>
+        <path refid="dartplugin.jars"/>
+        <path location="build/src"/>
+      </classpath>
+      <src refid="studioSrc.sourcepath"/>
+      <patternset refid="ignored.files"/>
+    </javac2>
+
+    <copy todir="build/studioSrc">
+      <fileset dir="flutter-studio/src">
+        <patternset refid="compiler.resources"/>
+        <type type="file"/>
+      </fileset>
+    </copy>
+
+    <jar destfile="build/flutter-studio.jar" duplicate="preserve">
+      <zipfileset dir="build/studioSrc"/>
+      <manifest>
+        <attribute name="Created-By" value="IntelliJ IDEA"/>
+        <attribute name="Manifest-Version" value="1.0"/>
+      </manifest>
+    </jar>
+
+    <length file="build/flutter-studio.jar"/>
+  </target>
+
+  <target name="build.distro" if="extract.with.zip">
+    <echo message="Build zip file plugin"/>
+
+    <mkdir dir="build/flutter-intellij/lib"/>
+    <copy todir="build/flutter-intellij/lib">
+      <fileset dir="build">
+        <include name="flutter-intellij.jar"/>
+        <include name="flutter-studio.jar"/>
+      </fileset>
+    </copy>
+
+    <zip destfile="build/flutter-intellij.zip">
+      <zipfileset dir="build">
+        <include name="flutter-intellij/lib/**"/>
+      </zipfileset>
+    </zip>
+
+    <length file="build/flutter-intellij.zip"/>
   </target>
 
   <target name="build.testSrc" depends="paths, build.src">
@@ -220,7 +272,7 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4263559 -Didea.product=
     <length file="build/flutter-intellij-tests.jar"/>
   </target>
 
-  <target name="build" depends="build.src"/>
+  <target name="build" depends="build.src, build.studioSrc, build.distro"/>
 
   <target name="test" depends="build.testSrc">
     <!-- create a Dart plugin directory -->
