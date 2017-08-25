@@ -6,12 +6,22 @@
 package io.flutter.actions;
 
 import com.intellij.ide.impl.NewProjectUtil;
+import com.intellij.ide.projectView.ProjectView;
+import com.intellij.ide.projectView.impl.ProjectViewPane;
 import com.intellij.ide.projectWizard.NewProjectWizard;
 import com.intellij.ide.projectWizard.ProjectTypeStep;
+import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectBundle;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
+import com.intellij.openapi.startup.StartupManager;
 import com.intellij.ui.CollectionListModel;
 import com.intellij.ui.components.JBList;
 import com.intellij.util.ReflectionUtil;
@@ -23,6 +33,24 @@ public class FlutterNewProjectAction extends AnAction {
 
   public FlutterNewProjectAction() {
     super("New Flutter Project...");
+  }
+
+  private static void createNewProject(Project projectToClose, AbstractProjectWizard wizard) {
+    final boolean proceed = ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+      ProjectManager.getInstance().getDefaultProject(); //warm up components
+    }, ProjectBundle.message("project.new.wizard.progress.title"), true, null);
+    if (!proceed) return;
+    if (!wizard.showAndGet()) {
+      return;
+    }
+
+    final Project newProject = NewProjectUtil.createFromWizard(wizard, projectToClose);
+    StartupManager.getInstance(newProject).registerPostStartupActivity(() -> {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
+        ProjectView.getInstance(newProject).changeView(ProjectViewPane.ID);
+      }, ModalityState.NON_MODAL);
+    });
   }
 
   @Override
@@ -51,7 +79,8 @@ public class FlutterNewProjectAction extends AnAction {
         }
       }
     }
-    NewProjectUtil.createNewProject(getEventProject(e), wizard);
+    // NewProjectUtil.createNewProject() does not return the project, so it is inlined below.
+    createNewProject(getEventProject(e), wizard);
   }
 
   private JBList fetchPrivateField(@SuppressWarnings("SameParameterValue") String fieldName) {
