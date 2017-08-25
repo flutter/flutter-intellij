@@ -35,6 +35,24 @@ public class FlutterNewProjectAction extends AnAction {
     super("New Flutter Project...");
   }
 
+  private static void createNewProject(Project projectToClose, AbstractProjectWizard wizard) {
+    final boolean proceed = ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
+      ProjectManager.getInstance().getDefaultProject(); //warm up components
+    }, ProjectBundle.message("project.new.wizard.progress.title"), true, null);
+    if (!proceed) return;
+    if (!wizard.showAndGet()) {
+      return;
+    }
+
+    final Project newProject = NewProjectUtil.createFromWizard(wizard, projectToClose);
+    StartupManager.getInstance(newProject).registerPostStartupActivity(() -> {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
+        ProjectView.getInstance(newProject).changeView(ProjectViewPane.ID);
+      }, ModalityState.NON_MODAL);
+    });
+  }
+
   @Override
   public void actionPerformed(AnActionEvent e) {
     NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
@@ -61,28 +79,12 @@ public class FlutterNewProjectAction extends AnAction {
         }
       }
     }
+    // NewProjectUtil.createNewProject() does not return the project, so it is inlined below.
     createNewProject(getEventProject(e), wizard);
   }
 
   private JBList fetchPrivateField(@SuppressWarnings("SameParameterValue") String fieldName) {
     return ReflectionUtil // Fetching a private field.
       .getField(ProjectTypeStep.class, myProjectTypeStep, JBList.class, fieldName);
-  }
-
-  private static void createNewProject(Project projectToClose, AbstractProjectWizard wizard) {
-    final boolean proceed = ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
-      ProjectManager.getInstance().getDefaultProject(); //warm up components
-    }, ProjectBundle.message("project.new.wizard.progress.title"), true, null);
-    if (!proceed) return;
-    if (!wizard.showAndGet()) {
-      return;
-    }
-
-    final Project newProject = NewProjectUtil.createFromWizard(wizard, projectToClose);
-    StartupManager.getInstance(newProject).registerPostStartupActivity(() -> {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        ProjectView.getInstance(newProject).changeView(ProjectViewPane.ID);
-      }, ModalityState.NON_MODAL);
-    });
   }
 }
