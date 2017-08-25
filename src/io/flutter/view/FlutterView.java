@@ -9,9 +9,9 @@ import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.Separator;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
+import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
@@ -19,7 +19,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -28,6 +27,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.OpenObservatoryAction;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.settings.FlutterSettings;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +35,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -86,26 +85,21 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     //Disposer.register(this, toolWindowPanel);
     toolContent.setCloseable(false);
 
+    final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+    toolbarGroup.add(new DebugDrawAction(this));
+    toolbarGroup.add(new ToggleInspectModeAction(this));
+    toolbarGroup.add(new TogglePlatformAction(this));
+    toolbarGroup.addSeparator();
+    if (FlutterSettings.getInstance().isMemoryDashboardEnabled()) {
+      toolbarGroup.add(new MemoryDashboardAction(this));
+    }
+    toolbarGroup.add(new ObservatoryTimelineAction(this));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(new OverflowActionsAction(this));
+
     final JPanel mainContent = new JPanel(new BorderLayout());
     toolWindowPanel.setContent(mainContent);
-
-    final ToolWindowEx toolWindowEx = (ToolWindowEx)toolWindow;
-    toolWindowEx.setTitleActions(
-      new DebugDrawAction(this),
-      new ToggleInspectModeAction(this),
-      new TogglePlatformAction(this)
-    );
-
-    toolWindowEx.setAdditionalGearActions(new DefaultActionGroup(Arrays.asList(
-      new PerformanceOverlayAction(this),
-      new ShowPaintBaselinesAction(this),
-      new RepaintRainbowAction(this),
-      new TimeDilationAction(this),
-      new HideSlowBannerAction(this),
-      new Separator(),
-      new ObservatoryTimelineAction(this),
-      new MemoryDashboardAction(this)
-    )));
+    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
     final ContentManager contentManager = toolWindow.getContentManager();
     contentManager.addContent(toolContent);
@@ -179,7 +173,7 @@ class DebugDrawAction extends AbstractToggleableAction {
 
 class PerformanceOverlayAction extends AbstractToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterView view) {
-    super(view, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.General.LocateHover);
+    super(view, "Show Performance Overlay");
   }
 
   protected void perform(AnActionEvent event) {
@@ -241,11 +235,11 @@ class TimeDilationAction extends AbstractToggleableAction {
 
 class ToggleInspectModeAction extends AbstractToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterView view) {
-    super(view, "Toggle Inspect Mode", "Toggle Inspect Mode", AllIcons.Actions.Menu_find);
+    super(view, "Toggle Inspect Mode", "Toggle Inspect Mode", AllIcons.General.LocateHover);
   }
 
   protected void perform(AnActionEvent event) {
-    view.getFlutterApp().callBooleanExtension("ext.flutter.widgetInspector", isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected(event));
   }
 }
 
@@ -273,7 +267,7 @@ class ShowPaintBaselinesAction extends AbstractToggleableAction {
 
 class ObservatoryTimelineAction extends FlutterViewAction {
   ObservatoryTimelineAction(@NotNull FlutterView view) {
-    super(view, "Open Observatory Timeline");
+    super(view, "Observatory Timeline", "Open Observatory Timeline", FlutterIcons.OpenObservatory);
   }
 
   @Override
@@ -289,7 +283,7 @@ class ObservatoryTimelineAction extends FlutterViewAction {
 
 class MemoryDashboardAction extends FlutterViewAction {
   MemoryDashboardAction(@NotNull FlutterView view) {
-    super(view, "Open Memory Dashboard");
+    super(view, "Memory Dashboard", "Open Memory Dashboard", FlutterIcons.OpenMemoryDashboard);
   }
 
   @Override
@@ -300,5 +294,63 @@ class MemoryDashboardAction extends FlutterViewAction {
     if (httpUrl != null) {
       OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/memory-dashboard");
     }
+  }
+}
+
+class OverflowActionsAction extends AnAction implements CustomComponentAction {
+  private final @NotNull FlutterView view;
+  private final DefaultActionGroup myActionGroup;
+
+  public OverflowActionsAction(@NotNull FlutterView view) {
+    super("Additional actions", null, AllIcons.General.Settings);
+
+    this.view = view;
+
+    myActionGroup = createPopupActionGroup(view);
+  }
+
+  @Override
+  public final void update(AnActionEvent e) {
+    final boolean hasFlutterApp = view.getFlutterApp() != null;
+    e.getPresentation().setEnabled(hasFlutterApp);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    final Presentation presentation = e.getPresentation();
+    final JComponent button = (JComponent)presentation.getClientProperty("button");
+    if (button == null) {
+      return;
+    }
+    final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
+      ActionPlaces.UNKNOWN,
+      myActionGroup);
+    popupMenu.getComponent().show(button, button.getWidth(), 0);
+  }
+
+  @Override
+  public JComponent createCustomComponent(Presentation presentation) {
+    final ActionButton button = new ActionButton(
+      this,
+      presentation,
+      ActionPlaces.UNKNOWN,
+      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    );
+    presentation.putClientProperty("button", button);
+    return button;
+  }
+
+  private static DefaultActionGroup createPopupActionGroup(FlutterView view) {
+    final DefaultActionGroup group = new DefaultActionGroup();
+
+    group.add(new PerformanceOverlayAction(view));
+    group.add(new ShowPaintBaselinesAction(view));
+    group.addSeparator();
+    group.add(new RepaintRainbowAction(view));
+    group.add(new TimeDilationAction(view));
+    group.addSeparator();
+    group.add(new HideSlowBannerAction(view));
+
+    return group;
   }
 }
