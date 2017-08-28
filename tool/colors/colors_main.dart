@@ -14,7 +14,7 @@ void main() {
   buf.writeln();
 
   // colors
-  final Map<String, Color> colors = <String, ColorSwatch>{
+  final Map<String, Color> colors = <String, Color>{
     'transparent': Colors.transparent,
     'black': Colors.black,
     'black87': Colors.black87,
@@ -130,8 +130,19 @@ void _writeColorSet(StringBuffer buf, String name, ColorSwatch colorSwatch) {
 
 class Color {
   final int value;
+
   const Color(this.value);
+
   String toString() => '${value.toRadixString(16).padLeft(8, '0')}';
+}
+
+class ColorSwatch<T> extends Color {
+  final Map<T, Color> swatch;
+
+  const ColorSwatch(int primary, this.swatch) : super(primary);
+
+  /// Returns an element of the swatch table.
+  Color operator [](T index) => swatch[index];
 }
 
 int hashValues(Object arg01, Object arg02, Object arg03) {
