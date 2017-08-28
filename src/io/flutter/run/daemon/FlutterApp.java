@@ -51,6 +51,9 @@ public class FlutterApp {
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
 
+  private int reloadCount;
+  private int restartCount;
+
   /**
    * Non-null when the debugger is paused.
    */
@@ -143,17 +146,24 @@ public class FlutterApp {
 
     // Send analytics for the start and stop events.
     FlutterInitializer.sendAnalyticsAction(analyticsStart);
+
+    final DaemonApi api = new DaemonApi(process);
+    final FlutterApp app = new FlutterApp(project, module, mode, device.deviceId(), process, env, api);
+
     process.addProcessListener(new ProcessAdapter() {
       @Override
       public void processTerminated(ProcessEvent event) {
         LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
         FlutterInitializer.sendAnalyticsAction(analyticsStop);
+
+        // Send analytics about whether this session used the reload workflow, the restart workflow, or neither.
+        final String workflowType = app.reloadCount > 0 ? "reload" : (app.restartCount > 0 ? "restart" : "none");
+        FlutterInitializer.getAnalytics().sendEvent("workflow", workflowType);
       }
     });
 
-    final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, device.deviceId(), process, env, api);
     api.listen(process, new FlutterAppListener(app, project));
+
     return app;
   }
 
@@ -216,6 +226,8 @@ public class FlutterApp {
       return result;
     }
 
+    restartCount++;
+
     final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
 
@@ -240,6 +252,8 @@ public class FlutterApp {
       result.completeExceptionally(new IllegalStateException("cannot reload Flutter app because app id is not set"));
       return result;
     }
+
+    reloadCount++;
 
     final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
