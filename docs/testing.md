@@ -19,10 +19,10 @@ IntelliJ; we should have testers assigned to each for each roll.
 Validate basic project creation.
 
 * Create a simple project (`File > New > Project...`, pick `Flutter`).
+  * (select an `Application` type project)
 * Confirm that:
   * Project contents are created.
-    * Verify that a run configuration (`main.dart`) is enabled in the
-      run/debug selector.
+    * Verify that a run configuration (`main.dart`) is enabled in the run/debug selector.
   * Navigation works.
     * Open `lib/main.dart` and navigate to `ThemeData`.
   * There are no analysis errors or warnings.
@@ -109,7 +109,7 @@ Keybindings:
 
 * change the text and counter line back
 * hit the `Full Application Restart` button (or hit the Debug button again)
-* validate that the text and state resets, and count increases
+* validate that the text and state resets, and the count increases
 
 ## Debugging Sessions
 
