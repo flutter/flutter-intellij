@@ -100,6 +100,10 @@ public class FlutterEditorAnnotator implements Annotator {
       if (text.startsWith("const IconData(") && text.endsWith(")")) {
         String val = text.substring("const IconData(".length());
         val = val.substring(0, val.length() - 1);
+        final int index = val.indexOf(',');
+        if (index != -1) {
+          val = val.substring(0, index);
+        }
         try {
           final int value = val.startsWith("0x")
                             ? Integer.parseInt(val.substring(2), 16)

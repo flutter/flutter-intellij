@@ -23,7 +23,10 @@ api() {
   Map<String, List<String>> usages = {};
 
   imports.split('\n').forEach((String line) {
-    if (line.trim().isEmpty) return;
+    if (line
+        .trim()
+        .isEmpty)
+      return;
 
     int index = line.indexOf(':');
     String place = line.substring(0, index);
@@ -68,7 +71,8 @@ colors() async {
   // Remove an import and define the Color class.
   String str = data.join('');
   str = str.replaceFirst(
-      "import 'dart:ui' show Color, hashValues;", "import 'colors_main.dart';");
+      "import 'dart:ui' show Color;", "import 'colors_main.dart';");
+  str = str.replaceFirst("import 'package:flutter/painting.dart';", '');
   File file = new File('tool/colors/colors.dart');
   file.writeAsStringSync(str);
 
