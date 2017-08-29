@@ -27,11 +27,10 @@
   <li>improved new project wizard</li>
   <li>improvements to the reload-on-save behavior</li>
   <li>improved and reorganized the Flutter view's toolbar</li>
-  <li>fixes to the flutter icon decorations in the editor ruler</li>
+  <li>fixes to the Flutter icon decorations in the editor ruler</li>
   <li>fixes to group handling for widget tests</li>
-  <li>display a ballon toast if there are analysis issues wen running apps</li>
+  <li>display a ballon toast if there are analysis issues when running apps</li>
   <li>added a toggle inspect mode toolbar button</li>
-  <li>added an experimental preference to show the (WIP) memory view</li>
   <li>speed improvements to the device switcher pulldown</li>
 </ul>
 
