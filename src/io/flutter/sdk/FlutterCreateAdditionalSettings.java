@@ -6,6 +6,7 @@
 package io.flutter.sdk;
 
 import com.intellij.openapi.util.text.StringUtil;
+import io.flutter.module.FlutterProjectType;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -15,7 +16,7 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   private Boolean includeDriverTest;
   @Nullable
-  private Boolean generatePlugin;
+  private FlutterProjectType type;
   @Nullable
   private String description;
   @Nullable
@@ -25,13 +26,13 @@ public class FlutterCreateAdditionalSettings {
   @Nullable
   private Boolean kotlin;
   private FlutterCreateAdditionalSettings(@Nullable Boolean includeDriverTest,
-                                          @Nullable Boolean generatePlugin,
+                                          @Nullable FlutterProjectType type,
                                           @Nullable String description,
                                           @Nullable String org,
                                           @Nullable Boolean swift,
                                           @Nullable Boolean kotlin) {
     this.includeDriverTest = includeDriverTest;
-    this.generatePlugin = generatePlugin;
+    this.type = type;
     this.description = description;
     this.org = org;
     this.swift = swift;
@@ -45,8 +46,9 @@ public class FlutterCreateAdditionalSettings {
       args.add("--with-driver-test");
     }
 
-    if (Boolean.TRUE.equals(generatePlugin)) {
-      args.add("--plugin");
+    if (type != null) {
+      args.add("--template");
+      args.add(type.arg);
     }
 
     if (!StringUtil.isEmptyOrSpaces(description)) {
@@ -76,7 +78,7 @@ public class FlutterCreateAdditionalSettings {
     @Nullable
     private Boolean includeDriverTest;
     @Nullable
-    private Boolean generatePlugin;
+    private FlutterProjectType type;
     @Nullable
     private String description;
     @Nullable
@@ -94,8 +96,8 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
-    public Builder setGeneratePlugin(@Nullable Boolean generatePlugin) {
-      this.generatePlugin = generatePlugin;
+    public Builder setType(@Nullable FlutterProjectType type) {
+      this.type = type;
       return this;
     }
 
@@ -120,7 +122,7 @@ public class FlutterCreateAdditionalSettings {
     }
 
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, generatePlugin, description, org, swift, kotlin);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin);
     }
   }
 }

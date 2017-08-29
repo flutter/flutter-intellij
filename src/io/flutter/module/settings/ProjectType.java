@@ -6,7 +6,9 @@
 package io.flutter.module.settings;
 
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.ui.EnumComboBoxModel;
 import io.flutter.FlutterBundle;
+import io.flutter.module.FlutterProjectType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -17,10 +19,7 @@ public class ProjectType {
 
   private void createUIComponents() {
     projectTypeCombo = new ComboBox<>();
-    //noinspection unchecked
-    projectTypeCombo.setModel(new DefaultComboBoxModel(new String[]{
-      FlutterBundle.message("flutter.module.create.settings.type.application"),
-      FlutterBundle.message("flutter.module.create.settings.type.plugin")}));
+    projectTypeCombo.setModel(new EnumComboBoxModel<>(FlutterProjectType.class));
     projectTypeCombo.setToolTipText(FlutterBundle.message("flutter.module.create.settings.type.tip"));
   }
 
@@ -29,7 +28,7 @@ public class ProjectType {
     return projectTypePanel;
   }
 
-  public boolean isPluginSelected() {
-    return projectTypeCombo.getSelectedIndex() == 1;
+  public FlutterProjectType getType() {
+    return (FlutterProjectType) projectTypeCombo.getSelectedItem();
   }
 }

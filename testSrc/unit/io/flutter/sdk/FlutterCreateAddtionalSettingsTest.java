@@ -5,6 +5,7 @@
  */
 package io.flutter.sdk;
 
+import io.flutter.module.FlutterProjectType;
 import org.junit.Test;
 
 import java.util.List;
@@ -35,21 +36,29 @@ public class FlutterCreateAddtionalSettingsTest {
   @Test
   public void generatePluginPropertyTest() {
     final FlutterCreateAdditionalSettings addtionalSettings1 =
-      new FlutterCreateAdditionalSettings.Builder().setGeneratePlugin(true).build();
+      new FlutterCreateAdditionalSettings.Builder().setType(FlutterProjectType.APP).build();
     final FlutterCreateAdditionalSettings addtionalSettings2 =
-      new FlutterCreateAdditionalSettings.Builder().setGeneratePlugin(false).build();
+      new FlutterCreateAdditionalSettings.Builder().setType(FlutterProjectType.PLUGIN).build();
     final FlutterCreateAdditionalSettings addtionalSettings3 =
-      new FlutterCreateAdditionalSettings.Builder().setGeneratePlugin(null).build();
+      new FlutterCreateAdditionalSettings.Builder().setType(FlutterProjectType.PACKAGE).build();
+    final FlutterCreateAdditionalSettings addtionalSettings4 =
+      new FlutterCreateAdditionalSettings.Builder().setType(null).build();
 
     final List<String> args1 = addtionalSettings1.getArgs();
     final List<String> args2 = addtionalSettings2.getArgs();
     final List<String> args3 = addtionalSettings3.getArgs();
+    final List<String> args4 = addtionalSettings4.getArgs();
 
-    assertEquals(1, args1.size());
-    assertEquals("--plugin", args1.get(0));
+    assertEquals(2, args1.size());
+    assertEquals("app", args1.get(1));
 
-    assertEquals(0, args2.size());
-    assertEquals(0, args3.size());
+    assertEquals(2, args2.size());
+    assertEquals("plugin", args2.get(1));
+
+    assertEquals(2, args3.size());
+    assertEquals("package", args3.get(1));
+
+    assertEquals(0, args4.size());
   }
 
   @Test
@@ -128,7 +137,7 @@ public class FlutterCreateAddtionalSettingsTest {
   public void testMultipleProperties() {
     final FlutterCreateAdditionalSettings addtionalSettings = new FlutterCreateAdditionalSettings.Builder()
       .setOrg("tld.domain")
-      .setGeneratePlugin(true)
+      .setType(FlutterProjectType.PLUGIN)
       .setDescription("a b c")
       .setSwift(true)
       .setKotlin(true)
@@ -138,7 +147,7 @@ public class FlutterCreateAddtionalSettingsTest {
 
     final String line = String.join(" ", args);
 
-    assertEquals(9, args.size());
-    assertEquals("--plugin --description a b c --org tld.domain --ios-language swift --android-language kotlin", line);
+    assertEquals(10, args.size());
+    assertEquals("--template plugin --description a b c --org tld.domain --ios-language swift --android-language kotlin", line);
   }
 }

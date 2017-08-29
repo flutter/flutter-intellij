@@ -28,6 +28,7 @@ public class SettingsHelpForm {
   private JLabel projectTypeLabel;
   private JLabel projectTypeDescriptionForApp;
   private JLabel projectTypeDescriptionForPlugin;
+  private JLabel projectTypeDescriptionForPackage;
 
   private JLabel orgLabel;
   private JLabel orgDescription;
@@ -43,6 +44,7 @@ public class SettingsHelpForm {
     projectTypeLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.project_type.label"));
     projectTypeDescriptionForApp.setText(FlutterBundle.message("flutter.module.create.settings.help.project_type.description.app"));
     projectTypeDescriptionForPlugin.setText(FlutterBundle.message("flutter.module.create.settings.help.project_type.description.plugin"));
+    projectTypeDescriptionForPackage.setText(FlutterBundle.message("flutter.module.create.settings.help.project_type.description.package"));
 
     orgLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.org.label"));
     orgDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.org.description"));

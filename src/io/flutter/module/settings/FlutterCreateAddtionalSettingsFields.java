@@ -56,7 +56,7 @@ public class FlutterCreateAddtionalSettingsFields {
   public FlutterCreateAdditionalSettings getAddtionalSettings() {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
-      .setGeneratePlugin(projectTypeForm.isPluginSelected() ? true : null)
+      .setType(projectTypeForm.getType())
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
