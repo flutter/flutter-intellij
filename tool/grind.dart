@@ -25,9 +25,8 @@ api() {
   imports.split('\n').forEach((String line) {
     if (line
         .trim()
-        .isEmpty) {
+        .isEmpty)
       return;
-    }
 
     int index = line.indexOf(':');
     String place = line.substring(0, index);
