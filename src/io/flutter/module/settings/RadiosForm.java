@@ -8,6 +8,7 @@ package io.flutter.module.settings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.ItemListener;
 
 /**
  * A panel with two radios in a group.
@@ -16,6 +17,7 @@ public class RadiosForm {
   private JRadioButton radio1;
   private JRadioButton radio2;
   private JPanel radiosPanel;
+  private ButtonGroup radioGroup;
 
   public RadiosForm(String label1, String label2) {
     radio1.setText(label1);
@@ -23,9 +25,14 @@ public class RadiosForm {
 
     radio2.setText(label2);
 
-    final ButtonGroup radioGroup = new ButtonGroup();
+    radioGroup = new ButtonGroup();
     radioGroup.add(radio1);
     radioGroup.add(radio2);
+  }
+
+  @NotNull
+  public ButtonGroup getGroup() {
+    return radioGroup;
   }
 
   @NotNull
@@ -39,5 +46,9 @@ public class RadiosForm {
 
   public boolean isRadio2Selected() {
     return radio2.isSelected();
+  }
+
+  public void addItemListener(ItemListener listener) {
+    radio1.addItemListener(listener);
   }
 }
