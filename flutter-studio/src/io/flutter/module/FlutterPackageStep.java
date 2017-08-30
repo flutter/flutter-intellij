@@ -9,10 +9,10 @@ import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.validator.ModuleValidator;
-import com.android.tools.idea.ui.properties.BindingsManager;
-import com.android.tools.idea.ui.properties.ListenerManager;
-import com.android.tools.idea.ui.properties.core.ObservableBool;
-import com.android.tools.idea.ui.properties.swing.SelectedItemProperty;
+import com.android.tools.idea.observable.BindingsManager;
+import com.android.tools.idea.observable.ListenerManager;
+import com.android.tools.idea.observable.core.ObservableBool;
+import com.android.tools.idea.observable.ui.SelectedItemProperty;
 import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
@@ -37,6 +37,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import io.flutter.FlutterBundle;
+import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
+import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -89,6 +91,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
 
     model.setBuilder(myBuilder);
     myBuilder.getCustomOptionsStep(myWizardContext, this); // TODO 'this' may be the wrong disposer; getting a memory leak somewhere.
+    myBuilder.getAdditionalSettings().setType(FlutterProjectType.PACKAGE);
     myFlutterSdkPath.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
