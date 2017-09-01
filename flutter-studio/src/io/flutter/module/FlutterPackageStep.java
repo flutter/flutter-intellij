@@ -21,6 +21,7 @@ import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.intellij.ide.IdeBundle;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.highlighter.ModuleFileType;
 import com.intellij.ide.util.BrowseFilesListener;
 import com.intellij.ide.util.projectWizard.*;
@@ -40,6 +41,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -48,6 +50,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -76,6 +79,12 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private AdditionalLanguageSettings myAdditionalSettings;
   private JLabel myModuleLocationLabel;
   private JTextField myDescription;
+  private LinkLabel<String> myFlutterDocsUrl;
+  private JLabel myProjectNameDescription;
+  private JLabel myOrgDescription;
+  private JLabel myOrgLabel;
+  private JLabel myProjectNameLabel;
+  private JLabel myModuleDescription;
   private boolean myModuleNameChangedByUser = false;
   private boolean myModuleNameDocListenerEnabled = true;
   private boolean myContentRootChangedByUser = false;
@@ -105,6 +114,8 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     }
     else {
       myAdditionalSettings.getComponent().setVisible(false);
+      myOrgLabel.setVisible(false);
+      myOrgDescription.setVisible(false);
     }
 
     model.setBuilder(myBuilder);
@@ -178,6 +189,22 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myValidatorPanel.registerValidator(model.moduleName(), this::validateFlutterModuleName);
     myValidatorPanel.registerValidator(model.moduleContentRoot(), FlutterPackageStep::validateFlutterModuleContentRoot);
     myValidatorPanel.registerValidator(model.moduleFileLocation(), FlutterPackageStep::validateFlutterModuleFileLocation);
+
+    myFlutterDocsUrl.setText(FlutterBundle.message("flutter.module.create.settings.help.packages_and_plugins_text"));
+    myFlutterDocsUrl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    myFlutterDocsUrl.setIcon(null);
+    myFlutterDocsUrl
+      .setListener((label, linkUrl) -> BrowserLauncher.getInstance().browse("https://flutter.io/developing-packages/", null), null);
+
+    myProjectNameLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.module_name.label"));
+    myProjectNameDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.module_name.description"));
+    if (isPlugin) {
+      myModuleDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.type.plugin"));
+      myOrgLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.org.label"));
+      myOrgDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.org.description"));
+    } else {
+      myModuleDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.type.package"));
+    }
 
     String header = isPlugin
                     ? FlutterBundle.message("module.wizard.plugin_step_body")
