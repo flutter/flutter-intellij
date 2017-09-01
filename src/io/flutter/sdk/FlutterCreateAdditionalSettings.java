@@ -46,15 +46,16 @@ public class FlutterCreateAdditionalSettings {
     this.kotlin = kotlin;
   }
 
-  public void setType(FlutterProjectType value) {
+  public void setType(@Nullable FlutterProjectType value) {
     type = value;
   }
 
-  public void setDescription(String value) {
-    description = value;
+  @Nullable
+  public String getOrg() {
+    return org;
   }
 
-  public void setOrg(String value) {
+  public void setOrg(@Nullable String value) {
     org = value;
   }
 
@@ -99,6 +100,25 @@ public class FlutterCreateAdditionalSettings {
     }
 
     return args;
+  }
+
+  @Nullable
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(@Nullable String value) {
+    description = value;
+  }
+
+  @Nullable
+  public Boolean getKotlin() {
+    return kotlin;
+  }
+
+  @Nullable
+  public Boolean getSwift() {
+    return swift;
   }
 
   public static class Builder {

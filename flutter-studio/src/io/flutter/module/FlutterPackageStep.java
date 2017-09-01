@@ -9,10 +9,14 @@ import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.validator.ModuleValidator;
-import com.android.tools.idea.ui.properties.BindingsManager;
-import com.android.tools.idea.ui.properties.ListenerManager;
-import com.android.tools.idea.ui.properties.core.ObservableBool;
-import com.android.tools.idea.ui.properties.swing.SelectedItemProperty;
+import com.android.tools.idea.observable.BindingsManager;
+import com.android.tools.idea.observable.ListenerManager;
+import com.android.tools.idea.observable.core.BoolProperty;
+import com.android.tools.idea.observable.core.ObservableBool;
+import com.android.tools.idea.observable.core.StringProperty;
+import com.android.tools.idea.observable.ui.SelectedItemProperty;
+import com.android.tools.idea.observable.ui.SelectedProperty;
+import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.wizard.deprecated.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
@@ -37,7 +41,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import io.flutter.FlutterBundle;
-import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
@@ -70,6 +73,9 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private JTextField myModuleName;
   private TextFieldWithBrowseButton myModuleContentRoot;
   private TextFieldWithBrowseButton myModuleFileLocation;
+  private AdditionalLanguageSettings myAdditionalSettings;
+  private JLabel myModuleLocationLabel;
+  private JTextField myDescription;
   private boolean myModuleNameChangedByUser = false;
   private boolean myModuleNameDocListenerEnabled = true;
   private boolean myContentRootChangedByUser = false;
@@ -78,20 +84,86 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private boolean myImlLocationDocListenerEnabled = true;
   private boolean myUpdatePathsWhenNameIsChanged;
 
-  public FlutterPackageStep(@NotNull FlutterModuleModel model, @NotNull String title, @NotNull Icon icon) {
+  public FlutterPackageStep(@NotNull FlutterModuleModel model,
+                            @NotNull String title,
+                            @NotNull Icon icon,
+                            @NotNull FlutterProjectType projectType) {
     super(model, title, icon);
+    boolean isPlugin = projectType == FlutterProjectType.PLUGIN;
     myWizardContext = new WizardContext(getModel().getProject(), null);
     myBuilder = new FlutterModuleBuilder();
+    final FlutterCreateAdditionalSettings settings = myBuilder.getAdditionalSettings();
     myWizardContext.setProjectBuilder(myBuilder);
     NamePathComponent namePathComponent = NamePathComponent.initNamePathComponent(myWizardContext);
     namePathComponent.setShouldBeAbsolute(true);
     updateDataModel();
     bindModuleSettings(namePathComponent);
     model.setModuleComponent(this);
+    if (isPlugin) {
+      myAdditionalSettings.setLabelWidth(myModuleLocationLabel.getPreferredSize());
+      myAdditionalSettings.setInitialValues(settings);
+    }
+    else {
+      myAdditionalSettings.getComponent().setVisible(false);
+    }
 
     model.setBuilder(myBuilder);
     myBuilder.getCustomOptionsStep(myWizardContext, this); // TODO 'this' may be the wrong disposer; getting a memory leak somewhere.
-    myBuilder.getAdditionalSettings().setType(FlutterProjectType.PACKAGE);
+    settings.setType(projectType);
+
+    myDescription.setText(settings.getDescription());
+    myBindings.bind(new StringProperty() {
+      @NotNull
+      @Override
+      public String get() {
+        return settings.getDescription() == null ? "" : settings.getDescription();
+      }
+
+      @Override
+      protected void setDirectly(@NotNull String value) {
+        settings.setDescription(value);
+      }
+    }, new TextProperty(myDescription));
+
+    if (isPlugin) {
+      myBindings.bind(new StringProperty() {
+        @NotNull
+        @Override
+        public String get() {
+          return settings.getOrg() == null ? "" : settings.getOrg();
+        }
+
+        @Override
+        protected void setDirectly(@NotNull String value) {
+          settings.setOrg(value);
+        }
+      }, new TextProperty(myAdditionalSettings.getOrganizationField()));
+      myBindings.bind(new BoolProperty() {
+        @NotNull
+        @Override
+        public Boolean get() {
+          return settings.getKotlin() == null ? false : settings.getKotlin();
+        }
+
+        @Override
+        protected void setDirectly(@NotNull Boolean value) {
+          settings.setKotlin(value);
+        }
+      }, new SelectedProperty(myAdditionalSettings.getKotlinRadioButton()));
+      myBindings.bind(new BoolProperty() {
+        @NotNull
+        @Override
+        public Boolean get() {
+          return settings.getSwift() == null ? false : settings.getSwift();
+        }
+
+        @Override
+        protected void setDirectly(@NotNull Boolean value) {
+          settings.setSwift(value);
+        }
+      }, new SelectedProperty(myAdditionalSettings.getSwiftRadioButton()));
+    }
+
     myFlutterSdkPath.getComboBox().setEditable(true);
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
@@ -99,6 +171,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
                                              TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
     myBindings.bind(model.flutterSdk(), new SelectedItemProperty<>(myFlutterSdkPath.getComboBox()));
+
     myModuleValidator = new ModuleValidator(model.getProject());
     myValidatorPanel = new ValidatorPanel(this, myPanel);
     myValidatorPanel.registerValidator(model.flutterSdk(), FlutterPackageStep::validateFlutterSdk);
@@ -106,8 +179,11 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myValidatorPanel.registerValidator(model.moduleContentRoot(), FlutterPackageStep::validateFlutterModuleContentRoot);
     myValidatorPanel.registerValidator(model.moduleFileLocation(), FlutterPackageStep::validateFlutterModuleFileLocation);
 
+    String header = isPlugin
+                    ? FlutterBundle.message("module.wizard.plugin_step_body")
+                    : FlutterBundle.message("module.wizard.package_step_body");
     //noinspection deprecation
-    myRootPanel = new StudioWizardStepPanel(myValidatorPanel, FlutterBundle.message("module.wizard.package_step_body"));
+    myRootPanel = new StudioWizardStepPanel(myValidatorPanel, header);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
   }
 

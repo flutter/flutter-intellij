@@ -25,8 +25,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
   @Override
   public Collection<? extends ModuleGalleryEntry> getDescriptions() {
     ArrayList<ModuleGalleryEntry> res = new ArrayList<>();
+    res.add(new FlutterPluginGalleryEntry());
     res.add(new FlutterPackageGalleryEntry());
-    // TODO(messick): Add Flutter plugin entry.
     return res;
   }
 
@@ -56,7 +56,37 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       return new FlutterPackageStep(
         new FlutterModuleModel(model.getProject().getValue()),
         FlutterBundle.message("module.wizard.package_step_title"),
-        FlutterIcons.Flutter_64);
+        FlutterIcons.Flutter_64, FlutterProjectType.PACKAGE);
+    }
+  }
+
+  private static class FlutterPluginGalleryEntry implements ModuleGalleryEntry {
+
+    @Nullable
+    @Override
+    public Icon getIcon() {
+      return FlutterIcons.AndroidStudioNewModule;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+      return FlutterBundle.message("module.wizard.plugin_title");
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+      return FlutterBundle.message("module.wizard.plugin_description");
+    }
+
+    @NotNull
+    @Override
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      return new FlutterPackageStep(
+        new FlutterModuleModel(model.getProject().getValue()),
+        FlutterBundle.message("module.wizard.plugin_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.PLUGIN);
     }
   }
 }
