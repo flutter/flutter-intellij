@@ -12,6 +12,7 @@ import io.flutter.module.FlutterProjectType;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.event.ItemListener;
 
 public class ProjectType {
   private JPanel projectTypePanel;
@@ -19,6 +20,7 @@ public class ProjectType {
 
   private void createUIComponents() {
     projectTypeCombo = new ComboBox<>();
+    //noinspection unchecked
     projectTypeCombo.setModel(new EnumComboBoxModel<>(FlutterProjectType.class));
     projectTypeCombo.setToolTipText(FlutterBundle.message("flutter.module.create.settings.type.tip"));
   }
@@ -30,5 +32,9 @@ public class ProjectType {
 
   public FlutterProjectType getType() {
     return (FlutterProjectType) projectTypeCombo.getSelectedItem();
+  }
+
+  public void addListener(ItemListener listener) {
+    projectTypeCombo.addItemListener(listener);
   }
 }

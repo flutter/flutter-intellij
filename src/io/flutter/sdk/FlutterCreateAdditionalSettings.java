@@ -25,6 +25,13 @@ public class FlutterCreateAdditionalSettings {
   private Boolean swift;
   @Nullable
   private Boolean kotlin;
+
+  public FlutterCreateAdditionalSettings() {
+    type = FlutterProjectType.APP;
+    description = "";
+    org = "";
+  }
+
   private FlutterCreateAdditionalSettings(@Nullable Boolean includeDriverTest,
                                           @Nullable FlutterProjectType type,
                                           @Nullable String description,
@@ -37,6 +44,26 @@ public class FlutterCreateAdditionalSettings {
     this.org = org;
     this.swift = swift;
     this.kotlin = kotlin;
+  }
+
+  public void setType(FlutterProjectType value) {
+    type = value;
+  }
+
+  public void setDescription(String value) {
+    description = value;
+  }
+
+  public void setOrg(String value) {
+    org = value;
+  }
+
+  public void setSwift(boolean value) {
+    swift = value;
+  }
+
+  public void setKotlin(boolean value) {
+    kotlin = value;
   }
 
   public List<String> getArgs() {

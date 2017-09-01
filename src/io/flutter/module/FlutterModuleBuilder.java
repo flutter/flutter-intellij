@@ -49,7 +49,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static final String DART_GROUP_NAME = "Static Web"; // == WebModuleBuilder.GROUP_NAME
 
   private FlutterModuleWizardStep myStep;
-  @Nullable private FlutterCreateAddtionalSettingsFields settingsFields;
+  @NotNull
+  private FlutterCreateAdditionalSettings myAdditionalSettings = new FlutterCreateAdditionalSettings();
+  @NotNull
+  private FlutterCreateAddtionalSettingsFields mySettingsFields = new FlutterCreateAddtionalSettingsFields(myAdditionalSettings);
 
   @Override
   public String getName() {
@@ -105,7 +108,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, settingsFields == null ? null : settingsFields.getAddtionalSettings());
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, myAdditionalSettings);
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
@@ -126,7 +129,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return flutter;
   }
 
-  private void addAndroidModule(@NotNull Project project,
+  private static void addAndroidModule(@NotNull Project project,
                                 @Nullable ModifiableModuleModel model,
                                 @NotNull String baseDirPath,
                                 @NotNull String flutterModuleName) {
@@ -142,6 +145,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       final ModifiableModuleModel toCommit;
       if (model == null) {
         toCommit = ModuleManager.getInstance(project).getModifiableModel();
+        //noinspection AssignmentToMethodParameter
         model = toCommit;
       }
       else {
@@ -160,7 +164,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   @Nullable
-  private VirtualFile findAndroidModuleFile(@NotNull VirtualFile baseDir, String flutterModuleName) {
+  private static VirtualFile findAndroidModuleFile(@NotNull VirtualFile baseDir, String flutterModuleName) {
     baseDir.refresh(false, false);
     for (String name : asList(flutterModuleName + "_android.iml", "android.iml")) {
       final VirtualFile candidate = baseDir.findChild(name);
@@ -207,16 +211,16 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return super.validateModuleName(moduleName);
   }
 
+  @NotNull
+  public FlutterCreateAdditionalSettings getAdditionalSettings() {
+    return myAdditionalSettings;
+  }
+
   @Nullable
   @Override
   public ModuleWizardStep modifySettingsStep(@NotNull SettingsStep settingsStep) {
     final ModuleWizardStep wizard = super.modifySettingsStep(settingsStep);
-
-    if (settingsFields == null) {
-      settingsFields = new FlutterCreateAddtionalSettingsFields();
-    }
-    settingsFields.addSettingsFields(settingsStep);
-
+    mySettingsFields.addSettingsFields(settingsStep);
     return wizard;
   }
 
@@ -276,7 +280,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   public static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer myPeer;
-    private FlutterSdk myFlutterSdk;
 
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
       //TODO(pq): find a way to listen to wizard cancelation and propogate to peer.
