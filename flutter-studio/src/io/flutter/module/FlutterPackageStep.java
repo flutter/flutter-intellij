@@ -74,10 +74,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private ComboboxWithBrowseButton myFlutterSdkPath;
   private JPanel myModulePanel;
   private JTextField myModuleName;
-  private TextFieldWithBrowseButton myModuleContentRoot;
-  private TextFieldWithBrowseButton myModuleFileLocation;
   private AdditionalLanguageSettings myAdditionalSettings;
-  private JLabel myModuleLocationLabel;
   private JTextField myDescription;
   private LinkLabel<String> myFlutterDocsUrl;
   private JLabel myProjectNameDescription;
@@ -85,13 +82,8 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private JLabel myOrgLabel;
   private JLabel myProjectNameLabel;
   private JLabel myModuleDescription;
-  private boolean myModuleNameChangedByUser = false;
-  private boolean myModuleNameDocListenerEnabled = true;
-  private boolean myContentRootChangedByUser = false;
-  private boolean myContentRootDocListenerEnabled = true;
-  private boolean myImlLocationChangedByUser = false;
-  private boolean myImlLocationDocListenerEnabled = true;
-  private boolean myUpdatePathsWhenNameIsChanged;
+  private JLabel mySdkPathLabel;
+  private String myModuleContentPath = "";
 
   public FlutterPackageStep(@NotNull FlutterModuleModel model,
                             @NotNull String title,
@@ -109,7 +101,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     bindModuleSettings(namePathComponent);
     model.setModuleComponent(this);
     if (isPlugin) {
-      myAdditionalSettings.setLabelWidth(myModuleLocationLabel.getPreferredSize());
+      mySdkPathLabel.setPreferredSize(myAdditionalSettings.getLabelColumnSize());
       myAdditionalSettings.setInitialValues(settings);
     }
     else {
@@ -187,8 +179,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myValidatorPanel = new ValidatorPanel(this, myPanel);
     myValidatorPanel.registerValidator(model.flutterSdk(), FlutterPackageStep::validateFlutterSdk);
     myValidatorPanel.registerValidator(model.moduleName(), this::validateFlutterModuleName);
-    myValidatorPanel.registerValidator(model.moduleContentRoot(), FlutterPackageStep::validateFlutterModuleContentRoot);
-    myValidatorPanel.registerValidator(model.moduleFileLocation(), FlutterPackageStep::validateFlutterModuleFileLocation);
 
     myFlutterDocsUrl.setText(FlutterBundle.message("flutter.module.create.settings.help.packages_and_plugins_text"));
     myFlutterDocsUrl.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -274,16 +264,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     return myRootPanel;
   }
 
-  @NotNull
-  JTextField getModuleContentRootField() {
-    return myModuleContentRoot.getTextField();
-  }
-
-  @NotNull
-  JTextField getModuleFileLocationField() {
-    return myModuleFileLocation.getTextField();
-  }
-
   @Nullable
   @Override
   protected JComponent getPreferredFocusComponent() {
@@ -349,8 +329,8 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     final String moduleName = getModuleName();
     moduleBuilder.setName(moduleName);
     moduleBuilder.setModuleFilePath(
-      FileUtil.toSystemIndependentName(myModuleFileLocation.getText()) + "/" + moduleName + ModuleFileType.DOT_DEFAULT_EXTENSION);
-    moduleBuilder.setContentEntryPath(FileUtil.toSystemIndependentName(getModuleContentRoot()));
+      FileUtil.toSystemIndependentName(getModuleContentPath()) + "/" + moduleName + ModuleFileType.DOT_DEFAULT_EXTENSION);
+    moduleBuilder.setContentEntryPath(FileUtil.toSystemIndependentName(getModuleContentPath()));
   }
 
   public JPanel getModulePanel() {
@@ -358,104 +338,20 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   }
 
   private void bindModuleSettings(final NamePathComponent namePathComponent) {
-    namePathComponent.getNameComponent().getDocument().addDocumentListener(new DocumentAdapter() {
-      @Override
-      protected void textChanged(final DocumentEvent e) {
-        if (!myModuleNameChangedByUser) {
-          setModuleName(namePathComponent.getNameValue());
-        }
-      }
-    });
-
-    myModuleContentRoot.addBrowseFolderListener(ProjectBundle.message("project.new.wizard.module.content.root.chooser.title"),
-                                                ProjectBundle.message("project.new.wizard.module.content.root.chooser.description"),
-                                                myWizardContext.getProject(), BrowseFilesListener.SINGLE_DIRECTORY_DESCRIPTOR);
-
-    namePathComponent.getPathComponent().getDocument().addDocumentListener(new DocumentAdapter() {
-      @Override
-      protected void textChanged(final DocumentEvent e) {
-        if (!myContentRootChangedByUser) {
-          setModuleContentRoot(namePathComponent.getPath());
-        }
-      }
-    });
     myModuleName.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(final DocumentEvent e) {
-        if (!myUpdatePathsWhenNameIsChanged) {
-          return;
-        }
-
-        if (myModuleNameDocListenerEnabled) {
-          myModuleNameChangedByUser = true;
-        }
         String path = getDefaultBaseDir(myWizardContext, namePathComponent);
         final String moduleName = getModuleName();
         if (!path.isEmpty() && !Comparing.strEqual(moduleName, namePathComponent.getNameValue())) {
           path += "/" + moduleName;
         }
-        if (!myContentRootChangedByUser) {
-          final boolean f = myModuleNameChangedByUser;
-          myModuleNameChangedByUser = true;
           setModuleContentRoot(path);
-          myModuleNameChangedByUser = f;
-        }
-        if (!myImlLocationChangedByUser) {
-          setImlFileLocation(path);
-        }
       }
     });
-    myModuleContentRoot.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
-      @Override
-      protected void textChanged(final DocumentEvent e) {
-        if (myContentRootDocListenerEnabled) {
-          myContentRootChangedByUser = true;
-        }
-        if (!myImlLocationChangedByUser) {
-          setImlFileLocation(getModuleContentRoot());
-        }
-        if (!myModuleNameChangedByUser) {
-          final String path = FileUtil.toSystemIndependentName(getModuleContentRoot());
-          final int idx = path.lastIndexOf('/');
-
-          boolean f = myContentRootChangedByUser;
-          myContentRootChangedByUser = true;
-
-          boolean i = myImlLocationChangedByUser;
-          myImlLocationChangedByUser = true;
-
-          setModuleName(idx >= 0 ? path.substring(idx + 1) : "");
-
-          myContentRootChangedByUser = f;
-          myImlLocationChangedByUser = i;
-        }
-      }
-    });
-
-    myModuleFileLocation.addBrowseFolderListener(ProjectBundle.message("project.new.wizard.module.file.chooser.title"),
-                                                 ProjectBundle.message("project.new.wizard.module.file.description"),
-                                                 myWizardContext.getProject(), BrowseFilesListener.SINGLE_DIRECTORY_DESCRIPTOR);
-    myModuleFileLocation.getTextField().getDocument().addDocumentListener(new DocumentAdapter() {
-      @Override
-      protected void textChanged(final DocumentEvent e) {
-        if (myImlLocationDocListenerEnabled) {
-          myImlLocationChangedByUser = true;
-        }
-      }
-    });
-    namePathComponent.getPathComponent().getDocument().addDocumentListener(new DocumentAdapter() {
-      @Override
-      protected void textChanged(final DocumentEvent e) {
-        if (!myImlLocationChangedByUser) {
-          setImlFileLocation(namePathComponent.getPath());
-        }
-      }
-    });
-    myUpdatePathsWhenNameIsChanged = true;
     if (myWizardContext.isCreatingNewProject()) {
       setModuleName(namePathComponent.getNameValue());
       setModuleContentRoot(namePathComponent.getPath());
-      setImlFileLocation(namePathComponent.getPath());
     }
     else {
       final Project project = myWizardContext.getProject();
@@ -471,11 +367,9 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
           moduleName =
             ProjectWizardUtil.findNonExistingFileName(myWizardContext.getProjectFileDirectory(), myWizardContext.getProjectName(), "");
           contentRoot = myWizardContext.getProjectFileDirectory();
-          myUpdatePathsWhenNameIsChanged = !myWizardContext.isProjectFileDirectorySetExplicitly();
         }
         setModuleName(moduleName);
         setModuleContentRoot(contentRoot);
-        setImlFileLocation(contentRoot);
         myModuleName.select(0, moduleName.length());
       }
     }
@@ -501,7 +395,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
 
   private boolean validateModulePaths() throws ConfigurationException {
     final String moduleName = getModuleName();
-    final String moduleFileDirectory = myModuleFileLocation.getText();
+    final String moduleFileDirectory = getModuleContentPath();
     if (moduleFileDirectory.isEmpty()) {
       throw new ConfigurationException("Enter module file location");
     }
@@ -510,11 +404,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     }
 
     if (!ProjectWizardUtil.createDirectoryIfNotExists(IdeBundle.message("directory.module.file"), moduleFileDirectory,
-                                                      myImlLocationChangedByUser)) {
-      return false;
-    }
-    if (!ProjectWizardUtil.createDirectoryIfNotExists(IdeBundle.message("directory.module.content.root"), myModuleContentRoot.getText(),
-                                                      myContentRootChangedByUser)) {
+                                                      false)) {
       return false;
     }
 
@@ -530,20 +420,12 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     return true;
   }
 
-  private String getModuleContentRoot() {
-    return myModuleContentRoot.getText();
+  public String getModuleContentPath() {
+    return myModuleContentPath;
   }
 
   private void setModuleContentRoot(final String path) {
-    myContentRootDocListenerEnabled = false;
-    myModuleContentRoot.setText(FileUtil.toSystemDependentName(path));
-    myContentRootDocListenerEnabled = true;
-  }
-
-  private void setImlFileLocation(final String path) {
-    myImlLocationDocListenerEnabled = false;
-    myModuleFileLocation.setText(FileUtil.toSystemDependentName(path));
-    myImlLocationDocListenerEnabled = true;
+    myModuleContentPath = path;
   }
 
   public JTextField getModuleNameField() {
@@ -555,8 +437,6 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   }
 
   public void setModuleName(String moduleName) {
-    myModuleNameDocListenerEnabled = false;
     myModuleName.setText(moduleName);
-    myModuleNameDocListenerEnabled = true;
   }
 }

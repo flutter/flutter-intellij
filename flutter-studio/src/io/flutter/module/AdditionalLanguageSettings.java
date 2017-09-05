@@ -62,8 +62,8 @@ public class AdditionalLanguageSettings {
     return myPanel;
   }
 
-  public void setLabelWidth(Dimension width) {
-    myAndroidLanguageLabel.setPreferredSize(width);
+  public Dimension getLabelColumnSize() {
+    return myAndroidLanguageLabel.getPreferredSize();
   }
 
   public void setInitialValues(FlutterCreateAdditionalSettings settings) {
