@@ -15,6 +15,7 @@
  */
 package io.flutter.module;
 
+import io.flutter.FlutterBundle;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 
 import javax.swing.*;
@@ -28,6 +29,7 @@ public class AdditionalLanguageSettings {
   private JRadioButton myObjectiveCRadioButton;
   private JRadioButton mySwiftRadioButton;
   private JLabel myAndroidLanguageLabel;
+  private JLabel myOrgDescription;
 
   public AdditionalLanguageSettings() {
     ButtonGroup group = new ButtonGroup();
@@ -36,6 +38,7 @@ public class AdditionalLanguageSettings {
     group = new ButtonGroup();
     group.add(myObjectiveCRadioButton);
     group.add(mySwiftRadioButton);
+    myOrgDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.org.description"));
   }
 
   public JTextField getOrganizationField() {

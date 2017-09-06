@@ -78,11 +78,9 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   private JTextField myDescription;
   private LinkLabel<String> myFlutterDocsUrl;
   private JLabel myProjectNameDescription;
-  private JLabel myOrgDescription;
-  private JLabel myOrgLabel;
-  private JLabel myProjectNameLabel;
   private JLabel myModuleDescription;
   private JLabel mySdkPathLabel;
+  private JLabel myModuleNameLabel;
   private String myModuleContentPath = "";
 
   public FlutterPackageStep(@NotNull FlutterModuleModel model,
@@ -101,13 +99,13 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     bindModuleSettings(namePathComponent);
     model.setModuleComponent(this);
     if (isPlugin) {
+      myModuleNameLabel.setPreferredSize(myAdditionalSettings.getLabelColumnSize());
       mySdkPathLabel.setPreferredSize(myAdditionalSettings.getLabelColumnSize());
       myAdditionalSettings.setInitialValues(settings);
     }
     else {
+      myModuleNameLabel.setPreferredSize(mySdkPathLabel.getPreferredSize());
       myAdditionalSettings.getComponent().setVisible(false);
-      myOrgLabel.setVisible(false);
-      myOrgDescription.setVisible(false);
     }
 
     model.setBuilder(myBuilder);
@@ -186,12 +184,9 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myFlutterDocsUrl
       .setListener((label, linkUrl) -> BrowserLauncher.getInstance().browse("https://flutter.io/developing-packages/", null), null);
 
-    myProjectNameLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.module_name.label"));
     myProjectNameDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.module_name.description"));
     if (isPlugin) {
       myModuleDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.type.plugin"));
-      myOrgLabel.setText(FlutterBundle.message("flutter.module.create.settings.help.org.label"));
-      myOrgDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.org.description"));
     } else {
       myModuleDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.type.package"));
     }
