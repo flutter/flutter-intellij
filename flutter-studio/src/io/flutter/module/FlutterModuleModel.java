@@ -5,8 +5,8 @@
  */
 package io.flutter.module;
 
-import com.android.tools.idea.ui.properties.core.OptionalValueProperty;
-import com.android.tools.idea.ui.properties.swing.TextProperty;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -28,7 +28,7 @@ import java.io.IOException;
 // 3. Hide project type list in new project wizard.
 // 4. Add ability to create Flutter project to welcome screen.
 // 5. Investigage UI testing. See module android-uitests for examples.
-// 6. Add new fields (language choices, etc) to the new module definition page in the wizard.
+// done 6. Add new fields (language choices, etc) to the new module definition page in the wizard.
 public class FlutterModuleModel extends WizardModel {
   private static final Logger LOG = Logger.getInstance(FlutterModuleModel.class.getName());
 
@@ -37,8 +37,6 @@ public class FlutterModuleModel extends WizardModel {
   private FlutterModuleBuilder myBuilder;
   private FlutterPackageStep myModuleComponent;
   private TextProperty myModuleName;
-  private TextProperty myModuleContentRoot;
-  private TextProperty myModuleFileLocation;
 
   public FlutterModuleModel(@NotNull Project project) {
     myProject = project;
@@ -51,8 +49,6 @@ public class FlutterModuleModel extends WizardModel {
   public void setModuleComponent(@NotNull FlutterPackageStep component) {
     myModuleComponent = component;
     myModuleName = new TextProperty(component.getModuleNameField());
-    myModuleContentRoot = new TextProperty(component.getModuleContentRootField());
-    myModuleFileLocation = new TextProperty(component.getModuleFileLocationField());
   }
 
   @NotNull
@@ -63,16 +59,6 @@ public class FlutterModuleModel extends WizardModel {
   @NotNull
   public TextProperty moduleName() {
     return myModuleName;
-  }
-
-  @NotNull
-  public TextProperty moduleContentRoot() {
-    return myModuleContentRoot;
-  }
-
-  @NotNull
-  public TextProperty moduleFileLocation() {
-    return myModuleFileLocation;
   }
 
   @NotNull
@@ -131,7 +117,7 @@ public class FlutterModuleModel extends WizardModel {
   }
 
   private void cleanupAfterValidationFailure() {
-    String filePath = myModuleContentRoot.get().trim();
+    String filePath = myModuleComponent.getModuleContentPath().trim();
     //noinspection ResultOfMethodCallIgnored
     new File(filePath).delete();
   }
