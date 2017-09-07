@@ -35,7 +35,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @Nullable
     @Override
     public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule;
+      return FlutterIcons.AndroidStudioNewPackage;
     }
 
     @NotNull
@@ -65,7 +65,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @Nullable
     @Override
     public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule;
+      return FlutterIcons.AndroidStudioNewPlugin;
     }
 
     @NotNull
