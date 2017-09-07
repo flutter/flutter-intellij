@@ -304,6 +304,11 @@ public class PubRoot {
     return root.findChild("test");
   }
 
+  @Nullable
+  public VirtualFile getExampleDir() {
+    return root.findChild("example");
+  }
+
   /**
    * Returns the android subdirectory if it exists.
    */

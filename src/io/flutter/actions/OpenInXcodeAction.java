@@ -36,8 +36,9 @@ public class OpenInXcodeAction extends AnAction {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile != null) {
       openFile(projectFile);
-    } else {
-      FlutterMessages.showError("Error Opening Xcode project", "Project cannot be found");
+    }
+    else {
+      FlutterMessages.showError("Error Opening Xcode", "Project not found.");
     }
   }
 
@@ -76,6 +77,5 @@ public class OpenInXcodeAction extends AnAction {
         "Error Opening",
         "Exception: " + ex.getMessage());
     }
-
   }
 }
