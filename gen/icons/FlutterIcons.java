@@ -29,4 +29,6 @@ public class FlutterIcons {
   public static final Icon BazelRun = load("/icons/bazel_run.png");
 
   public static final Icon AndroidStudioNewModule = load("/icons/template_new_project.png");
+  public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
+  public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
 }
