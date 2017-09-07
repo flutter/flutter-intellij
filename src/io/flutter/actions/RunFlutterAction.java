@@ -64,12 +64,17 @@ public abstract class RunFlutterAction extends AnAction {
     final SdkFields fields = sdkRunConfig.getFields();
     final String additionalArgs = fields.getAdditionalArgs();
     final String runArg = "--" + myLaunchMode.getCliCommand();
+    String flavorArg = "";
+    if (fields.getBuildFlavor() != null) {
+      flavorArg = " --flavor=" + fields.getBuildFlavor();
+    }
+
     if (additionalArgs == null) {
-      fields.setAdditionalArgs(runArg);
+      fields.setAdditionalArgs(runArg + flavorArg);
     }
     else {
       if (!additionalArgs.contains(runArg)) {
-        fields.setAdditionalArgs(additionalArgs + " " + runArg);
+        fields.setAdditionalArgs(additionalArgs + flavorArg + " " + runArg);
       }
     }
 

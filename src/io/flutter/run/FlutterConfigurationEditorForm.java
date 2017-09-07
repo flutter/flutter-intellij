@@ -21,7 +21,8 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   private JPanel myMainPanel;
   private JLabel myDartFileLabel;
   private TextFieldWithBrowseButton myFileField;
-  private JTextField myAdditionalArguments;
+  private JTextField myAdditionalArgumentsField;
+  private JTextField myBuildFlavorField;
 
   public FlutterConfigurationEditorForm(final Project project) {
     initDartFileTextWithBrowse(project, myFileField);
@@ -31,14 +32,16 @@ public class FlutterConfigurationEditorForm extends SettingsEditor<SdkRunConfig>
   protected void resetEditorFrom(@NotNull final SdkRunConfig config) {
     final SdkFields fields = config.getFields();
     myFileField.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getFilePath())));
-    myAdditionalArguments.setText(fields.getAdditionalArgs());
+    myBuildFlavorField.setText(fields.getBuildFlavor());
+    myAdditionalArgumentsField.setText(fields.getAdditionalArgs());
   }
 
   @Override
   protected void applyEditorTo(@NotNull final SdkRunConfig config) throws ConfigurationException {
     final SdkFields fields = new SdkFields();
     fields.setFilePath(StringUtil.nullize(FileUtil.toSystemIndependentName(myFileField.getText().trim()), true));
-    fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArguments.getText().trim()));
+    fields.setBuildFlavor(StringUtil.nullize(myBuildFlavorField.getText().trim()));
+    fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgumentsField.getText().trim()));
     config.setFields(fields);
   }
 
