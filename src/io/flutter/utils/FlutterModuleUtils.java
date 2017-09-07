@@ -120,6 +120,7 @@ public class FlutterModuleUtils {
 
   @Nullable
   public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
+    // Look for an XCode project file in `ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile dir = root.getiOsDir();
       if (dir != null) {
@@ -130,6 +131,20 @@ public class FlutterModuleUtils {
         }
       }
     }
+
+    // Look for an XCode project file in `example/ios/`.
+    for (PubRoot root : PubRoots.forProject(project)) {
+      final VirtualFile exampleDir = root.getExampleDir();
+      final VirtualFile iosDir = exampleDir == null ? null : exampleDir.findChild("ios");
+      if (iosDir != null) {
+        for (VirtualFile child : iosDir.getChildren()) {
+          if (FlutterUtils.isXcodeProjectFileName(child.getName())) {
+            return child;
+          }
+        }
+      }
+    }
+
     return null;
   }
 
