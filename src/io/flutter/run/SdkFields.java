@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
@@ -27,6 +28,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class SdkFields {
   private @Nullable String filePath;
+  private @Nullable String buildFlavor;
   private @Nullable String additionalArgs;
 
   public SdkFields() {
@@ -49,8 +51,17 @@ public class SdkFields {
   }
 
   @Nullable
+  public String getBuildFlavor() {
+    return buildFlavor;
+  }
+
+  @Nullable
   public String getAdditionalArgs() {
     return additionalArgs;
+  }
+
+  public void setBuildFlavor(final @Nullable String buildFlavor) {
+    this.buildFlavor = buildFlavor;
   }
 
   public void setAdditionalArgs(final @Nullable String additionalArgs) {
@@ -111,8 +122,10 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    final String[] args = additionalArgs == null ? new String [] {} : additionalArgs.split(" ");
-
+    String[] args = additionalArgs == null ? new String[]{} : additionalArgs.split(" ");
+    if (buildFlavor != null) {
+      args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
+    }
     final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, mode, args);
     return command.createGeneralCommandLine(project);
   }
