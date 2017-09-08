@@ -312,6 +312,9 @@
               text="Flutter Packages Upgrade"
               description="Run 'flutter packages upgrade'"/>
       <separator/>
+      <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
+              text="Open Project in Android Studio…"
+              description="Open project in Android Studio"/>
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
               text="Open Project in Xcode…"
               description="Open project in Xcode"/>
@@ -326,24 +329,26 @@
       <separator/>
       <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <separator/>
-        <reference ref="flutter.packages.get"/> 
-        <reference ref="flutter.packages.upgrade"/> 
+        <reference ref="flutter.packages.get"/>
+        <reference ref="flutter.packages.upgrade"/>
         <separator/>
-        <reference ref="flutter.xcode.open"/> 
+        <reference ref="flutter.androidstudio.open"/>
+        <reference ref="flutter.xcode.open"/>
         <separator/>
-        <reference ref="flutter.upgrade"/> 
-        <reference ref="flutter.doctor"/> 
+        <reference ref="flutter.upgrade"/>
+        <reference ref="flutter.doctor"/>
       </group>
       <separator/>
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
     </group>
-    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup"> 
+    <group id="FlutterExternalIdeActionGroup" class="io.flutter.actions.FlutterExternalIdeActionGroup">
       <separator/>
       <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
-        <reference ref="flutter.xcode.open"/> 
+        <reference ref="flutter.androidstudio.open"/>
+        <reference ref="flutter.xcode.open"/>
       </group>
       <separator/>
-      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="CutCopyPasteGroup" anchor="before"/>
+      <add-to-group group-id="ProjectViewPopupMenu" relative-to-action="AddToFavorites" anchor="before"/>
     </group>
 
     <!-- main toolbar run actions -->

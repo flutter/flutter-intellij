@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -22,13 +23,19 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 public class OpenInXcodeAction extends AnAction {
-
   @Override
-  public void update(AnActionEvent e) {
+  public void update(AnActionEvent event) {
     // Enable in global menu; action group controls context menu visibility.
-    e.getPresentation().setVisible(SystemInfo.isMac);
+    if (!SystemInfo.isMac) {
+      event.getPresentation().setVisible(false);
+    }
+    else {
+      final Presentation presentation = event.getPresentation();
+      final boolean enabled = findProjectFile(event) != null;
+      presentation.setEnabled(enabled);
+      presentation.setVisible(enabled);
+    }
   }
 
   @Override
@@ -45,9 +52,17 @@ public class OpenInXcodeAction extends AnAction {
   private VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-      if (file != null && file.exists() && FlutterUtils.isXcodeFileName(file.getName())) {
-        return file;
+      if (file != null && file.exists()) {
+        if (FlutterUtils.isXcodeFileName(file.getName())) {
+          return file;
+        }
+
+        // Return null if this is an android folder.
+        if (FlutterExternalIdeActionGroup.isAndroidDirectory(file)) {
+          return null;
+        }
       }
+
       final Project project = e.getProject();
       if (project != null) {
         return FlutterModuleUtils.findXcodeProjectFile(project);
@@ -55,7 +70,6 @@ public class OpenInXcodeAction extends AnAction {
     }
     return null;
   }
-
 
   private static void openFile(@NotNull VirtualFile file) {
     final String path = file.getPath();
