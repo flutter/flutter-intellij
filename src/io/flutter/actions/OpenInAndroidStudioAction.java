@@ -24,8 +24,6 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// TODO: locate the correct .iml file (app vs. plugin)
-
 public class OpenInAndroidStudioAction extends AnAction {
   @Override
   public void update(AnActionEvent event) {
