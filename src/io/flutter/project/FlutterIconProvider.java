@@ -30,7 +30,6 @@ public class FlutterIconProvider extends IconProvider {
 
   private static final Icon TEST_FILE = overlayIcons(DartFileType.INSTANCE.getIcon(), AllIcons.Nodes.JunitTestMark);
 
-
   @Nullable
   public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
     final Project project = element.getProject();
@@ -49,7 +48,12 @@ public class FlutterIconProvider extends IconProvider {
       final PubRoot root = PubRoot.forDirectory(file.getParent());
       if (root == null) return null;
 
+      // TODO(devoncarew): should we just make the folder a source kind?
       if (file.equals(root.getLib())) return AllIcons.Modules.SourceRoot;
+
+      if (Objects.equals(file, root.getAndroidDir())) return AllIcons.Nodes.KeymapTools;
+      if (Objects.equals(file, root.getiOsDir())) return AllIcons.Nodes.KeymapTools;
+
       if (file.isDirectory() && file.getName().equals(".idea")) return AllIcons.Modules.GeneratedFolder;
     }
 
