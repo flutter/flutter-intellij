@@ -53,7 +53,7 @@ public class FlutterSettings {
   }
 
   public boolean isReloadOnSave() {
-    return getPropertiesComponent().getBoolean(reloadOnSaveKey, false);
+    return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
   public void setReloadOnSave(boolean value) {

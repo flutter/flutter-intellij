@@ -302,7 +302,7 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
   private final DefaultActionGroup myActionGroup;
 
   public OverflowActionsAction(@NotNull FlutterView view) {
-    super("Additional actions", null, AllIcons.General.Settings);
+    super("Additional actions", null, AllIcons.General.Gear);
 
     this.view = view;
 
