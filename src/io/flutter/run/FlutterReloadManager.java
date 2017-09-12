@@ -29,6 +29,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.psi.PsiDocumentManager;
@@ -271,9 +272,12 @@ public class FlutterReloadManager {
 
     // TODO(devoncarew): Remove the use of reflection when our minimum revs to 2017.2.
     final Method getErrorsMethod = ReflectionUtil.getMethod(analysisServerService.getClass(), "getErrors", SearchScope.class);
-    if (getErrorsMethod == null) {
-      final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
-      final PsiErrorElement firstError = PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);
+    if (getErrorsMethod == null || true) {
+      final PsiErrorElement firstError = ApplicationManager.getApplication().runReadAction((Computable<PsiErrorElement>)() -> {
+        final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
+        final PsiErrorElement error = PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);
+        return error;
+      });
       return firstError != null;
     }
     else {
