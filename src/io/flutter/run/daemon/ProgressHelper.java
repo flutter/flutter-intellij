@@ -74,8 +74,10 @@ class ProgressHelper {
    */
   public void done() {
     synchronized (myTasks) {
-      myTasks.remove(myTasks.size() - 1);
-      myTasks.notifyAll();
+      if (!myTasks.isEmpty()) {
+        myTasks.remove(myTasks.size() - 1);
+        myTasks.notifyAll();
+      }
     }
   }
 
