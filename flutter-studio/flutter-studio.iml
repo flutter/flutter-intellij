@@ -11,6 +11,7 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="adt-branding" />
     <orderEntry type="module" module-name="android" />
+    <orderEntry type="module" module-name="wizard" />
     <orderEntry type="module" module-name="wizard-model" />
     <orderEntry type="module" module-name="adt-ui" />
     <orderEntry type="module" module-name="observable" />
