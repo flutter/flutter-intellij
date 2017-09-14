@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
@@ -27,14 +28,19 @@ import org.jetbrains.annotations.Nullable;
 public class OpenInAndroidStudioAction extends AnAction {
   @Override
   public void update(AnActionEvent event) {
+    final boolean enabled = !FlutterUtils.isAndroidStudio() && findProjectFile(event) != null;
+
     final Presentation presentation = event.getPresentation();
-    final boolean enabled = findProjectFile(event) != null;
     presentation.setEnabled(enabled);
     presentation.setVisible(enabled);
   }
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    if (FlutterUtils.isAndroidStudio()) {
+      return;
+    }
+
     final String androidStudioPath = findAndroidStudio(e.getProject());
     if (androidStudioPath == null) {
       FlutterMessages.showError("Error Opening Android Studio", "Unable to locate Android Studio.");

@@ -13,9 +13,11 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
@@ -54,6 +56,10 @@ public class FlutterUtils {
     return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }
 
+  public static boolean isAndroidStudio() {
+    return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
+  }
+
   public static boolean exists(@Nullable VirtualFile file) {
     return file != null && file.exists();
   }
@@ -75,7 +81,6 @@ public class FlutterUtils {
   public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
   }
-
 
   /**
    * Returns the Dart file for the given PsiElement, or null if not a match.

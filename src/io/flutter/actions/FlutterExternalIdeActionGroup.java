@@ -34,7 +34,7 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
     return
       isProjectDirectory(file, project) ||
       isIOsDirectory(file) ||
-      isAndroidDirectory(file) ||
+      (isAndroidDirectory(file) && !FlutterUtils.isAndroidStudio()) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 
