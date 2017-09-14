@@ -60,6 +60,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
@@ -126,14 +127,14 @@ public class FlutterReloadManager {
     });
   }
 
-  private boolean handleingSave = false;
+  private final AtomicBoolean handleingSave = new AtomicBoolean(false);
 
   private void handleSaveAllNotification(AnActionEvent event) {
-    if (handleingSave) {
+    if (!mySettings.isReloadOnSave()) {
       return;
     }
 
-    if (!mySettings.isReloadOnSave()) {
+    if (handleingSave.get()) {
       return;
     }
 
@@ -177,12 +178,12 @@ public class FlutterReloadManager {
     // edit and immediately hits save.
     final int reloadDelayMs = 125;
 
-    handleingSave = true;
+    handleingSave.set(true);
 
     JobScheduler.getScheduler().schedule(() -> {
-      handleingSave = false;
-
       if (hasErrors(project, module, editor.getDocument())) {
+        handleingSave.set(false);
+
         showAnalysisNotification("Reload not performed", "Analysis issues found", true);
       }
       else {
@@ -194,6 +195,8 @@ public class FlutterReloadManager {
           if (!result.ok()) {
             showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
           }
+        }).whenComplete((aVoid, throwable) -> {
+          handleingSave.set(false);
         });
       }
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
