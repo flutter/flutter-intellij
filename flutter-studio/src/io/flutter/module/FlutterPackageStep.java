@@ -23,7 +23,6 @@ import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.intellij.ide.IdeBundle;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.highlighter.ModuleFileType;
-import com.intellij.ide.util.BrowseFilesListener;
 import com.intellij.ide.util.projectWizard.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -31,11 +30,9 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectBundle;
 import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.TextComponentAccessor;
-import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -187,7 +184,8 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
     myProjectNameDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.module_name.description"));
     if (isPlugin) {
       myModuleDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.type.plugin"));
-    } else {
+    }
+    else {
       myModuleDescription.setText(FlutterBundle.message("flutter.module.create.settings.help.type.package"));
     }
 
@@ -200,7 +198,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
   }
 
   @NotNull
-  private static Validator.Result validateFlutterSdk(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> sdkPath) {
+  public static Validator.Result validateFlutterSdk(@SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<String> sdkPath) {
     if (sdkPath.isPresent() && !sdkPath.get().isEmpty()) {
       final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath.get());
       if (message != null) {
@@ -341,7 +339,7 @@ public class FlutterPackageStep extends SkippableWizardStep<FlutterModuleModel> 
         if (!path.isEmpty() && !Comparing.strEqual(moduleName, namePathComponent.getNameValue())) {
           path += "/" + moduleName;
         }
-          setModuleContentRoot(path);
+        setModuleContentRoot(path);
       }
     });
     if (myWizardContext.isCreatingNewProject()) {
