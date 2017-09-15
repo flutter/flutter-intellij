@@ -43,7 +43,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
    */
   public interface FlutterGalleryEntry extends ModuleGalleryEntry {
 
-    // TODO: Unify module and project creation so we don't need this method.
+    // TODO(messick): Unify module and project creation so we don't need this method.
     @NotNull
     FlutterProjectStep createFlutterStep(FlutterProjectModel model);
 

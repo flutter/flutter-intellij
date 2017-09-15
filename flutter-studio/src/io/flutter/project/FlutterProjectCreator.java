@@ -14,6 +14,9 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
@@ -85,8 +88,15 @@ public class FlutterProjectCreator {
     RecentProjectsManager.getInstance().setLastProjectCreationLocation(location.getParent());
 
     ProjectOpenedCallback callback = (project, module) -> {
-      FlutterSmallIDEProjectGenerator
-        .generateProject(project, baseDir, myModel.flutterSdk().get(), module, makeAdditionalSettings());
+      ProgressManager.getInstance().run(new Task.Modal(null, "Creating Flutter Project", false) {
+        @Override
+        public void run(@NotNull ProgressIndicator indicator) {
+          indicator.setIndeterminate(true);
+
+          FlutterSmallIDEProjectGenerator
+            .generateProject(project, baseDir, myModel.flutterSdk().get(), module, makeAdditionalSettings());
+        }
+      });
     };
 
     EnumSet<PlatformProjectOpenProcessor.Option> options = EnumSet.noneOf(PlatformProjectOpenProcessor.Option.class);

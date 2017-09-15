@@ -43,7 +43,7 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
   public void actionPerformed(AnActionEvent e) {
     String[] paths = FlutterSdkUtil.getKnownFlutterSdkPaths();
     if (paths == null || paths.length == 0) {
-      // TODO Add a link to download the SDK.
+      // TODO(any): Add a link to download the SDK.
       Messages.showErrorDialog("Please install the Flutter SDK", "No SDK Found");
       return;
     }

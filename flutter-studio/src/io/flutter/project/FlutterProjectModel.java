@@ -8,7 +8,15 @@ package io.flutter.project;
 import com.android.tools.idea.observable.core.*;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationBundle;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
+import com.intellij.openapi.progress.util.ProgressWindow;
+import com.intellij.openapi.progress.util.SmoothProgressAdapter;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFocusManager;
+import com.intellij.openapi.wm.IdeFrame;
 import io.flutter.module.FlutterProjectType;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,11 +26,11 @@ import org.jetbrains.annotations.NotNull;
  * There is some inconsistency in which values are saved and which reset when switching from
  * one project type to another. The AS New Module wizard has similar inconsistencies (as of beta 5).
  *
- * TODO: Add tests to simulate clicking Next/Previous buttons and choosing different project types.
+ * TODO(messick): Add tests to simulate clicking Next/Previous buttons and choosing different project types.
  * Others:
- * Show progress during 'flutter create'.
+ * Make sure new project window is on top. (Plugin & package opened under existing)
+ * Open pliugin.dart/package.dart file in plugin/package project editor.
  * Fix project name collisions.
- * Close old project after opening new?
  * Fix initial values of check boxes.
  */
 public class FlutterProjectModel extends WizardModel {
@@ -141,9 +149,21 @@ public class FlutterProjectModel extends WizardModel {
     assert (!myFlutterSdk.get().isEmpty());
     assert (!location.isEmpty());
     if (!FlutterProjectCreator.finalValidityCheckPassed(location)) {
-      // TODO: Navigate to the step that sets location (if that becomes possible in the AS wizard framework).
+      // TODO(messick): Navigate to the step that sets location (if that becomes possible in the AS wizard framework).
       return;
     }
-    new FlutterProjectCreator(this).createProject();
+    //ProgressManager.getInstance().run(new Task.Backgroundable(null, "Creating Flutter Project", false) {
+    //  @Override
+    //  public void run(@NotNull ProgressIndicator indicator) {
+    //    indicator.setIndeterminate(true);
+        new FlutterProjectCreator(FlutterProjectModel.this).createProject();
+    //  }
+    //});
+
+    //IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
+    //final Project projectToClose = frame != null ? frame.getProject() : null;
+    //final ProgressWindow progressWindow = new ProgressWindow(false, projectToClose);
+    //progressWindow.setIndeterminate(true);
+    //ProgressManager.getInstance().runProcess(() -> new FlutterProjectCreator(this).createProject(), progressWindow);
   }
 }

@@ -8,6 +8,7 @@ package io.flutter.module;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.util.projectWizard.WebProjectTemplate;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableModelsProvider;
@@ -25,11 +26,14 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 
 // TODO(devoncarew): It would be nice to show a hyperlink in the upper right of this wizard.
 // https://youtrack.jetbrains.com/issue/WEB-27537
 
 public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> {
+  private static final Logger LOG = Logger.getInstance(FlutterSmallIDEProjectGenerator.class);
+
   private FlutterSmallIDEGeneratorPeer generatorPeer;
 
   public static void generateProject(@NotNull Project project,
@@ -52,7 +56,21 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       FlutterMessages.showError("Error creating project", msg);
       return;
     }
+    Runnable runnable = () -> applyDartModule(sdk, project, module, root);
+    if (SwingUtilities.isEventDispatchThread()) {
+      runnable.run();
+    }
+    else {
+      try {
+        SwingUtilities.invokeAndWait(runnable);
+      }
+      catch (InvocationTargetException | InterruptedException e) {
+        LOG.error(e);
+      }
+    }
+  }
 
+  private static void applyDartModule(FlutterSdk sdk, Project project, Module module, PubRoot root) {
     ApplicationManager.getApplication().runWriteAction(() -> {
       // Set up Dart SDK.
       final String dartSdkPath = sdk.getDartSdkPath();
