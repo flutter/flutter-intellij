@@ -26,6 +26,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
+import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
@@ -141,6 +142,9 @@ public class FlutterInitializer implements StartupActivity {
         DartfmtSettings.setDartfmtValue();
       }
     }
+
+    // TODO: temp
+    FlutterPluginsLibraryManager.updatePlugins(project);
 
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(

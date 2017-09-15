@@ -454,5 +454,7 @@
                     overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
+
+    <library.type implementation="io.flutter.sdk.FlutterPluginLibraryType"/>
   </extensions>
 </idea-plugin>
