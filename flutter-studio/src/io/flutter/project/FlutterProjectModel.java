@@ -152,18 +152,6 @@ public class FlutterProjectModel extends WizardModel {
       // TODO(messick): Navigate to the step that sets location (if that becomes possible in the AS wizard framework).
       return;
     }
-    //ProgressManager.getInstance().run(new Task.Backgroundable(null, "Creating Flutter Project", false) {
-    //  @Override
-    //  public void run(@NotNull ProgressIndicator indicator) {
-    //    indicator.setIndeterminate(true);
-        new FlutterProjectCreator(FlutterProjectModel.this).createProject();
-    //  }
-    //});
-
-    //IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
-    //final Project projectToClose = frame != null ? frame.getProject() : null;
-    //final ProgressWindow progressWindow = new ProgressWindow(false, projectToClose);
-    //progressWindow.setIndeterminate(true);
-    //ProgressManager.getInstance().runProcess(() -> new FlutterProjectCreator(this).createProject(), progressWindow);
+    new FlutterProjectCreator(FlutterProjectModel.this).createProject();
   }
 }
