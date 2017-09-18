@@ -18,8 +18,10 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.psi.PsiElement;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -28,6 +30,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.inspector.InspectorService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -35,6 +38,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,8 +61,11 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   @Nullable
   FlutterApp app;
 
+  private ArrayList<InspectorPanel> inspectorPanels;
+
   public FlutterView(@NotNull Project project) {
     myProject = project;
+    inspectorPanels = new ArrayList<>();
   }
 
   @Override
@@ -78,9 +85,8 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-
-    final Content toolContent = contentFactory.createContent(null, null, false);
-    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, true);
+    final Content toolContent = contentFactory.createContent(null, "Main", false);
+    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, false);
     toolContent.setComponent(toolWindowPanel);
     //Disposer.register(this, toolWindowPanel);
     toolContent.setCloseable(false);
@@ -103,7 +109,33 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
     final ContentManager contentManager = toolWindow.getContentManager();
     contentManager.addContent(toolContent);
+    addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow);
+    addInspectorPanel("Render Objects", InspectorService.FlutterTreeType.renderObject, toolWindow);
     contentManager.setSelectedContent(toolContent);
+  }
+
+  private void addInspectorPanel(String displayName, InspectorService.FlutterTreeType treeType, @NotNull ToolWindow toolWindow) {
+    {
+      final ContentManager contentManager = toolWindow.getContentManager();
+      final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+      final Computable<Boolean> isSessionActive = () -> {
+        FlutterApp app = getFlutterApp();
+        return app != null && app.isStarted() && app.getFlutterDebugProcess().getVmConnected() &&
+               !app.getFlutterDebugProcess().getSession().isStopped();
+      };
+
+      final Content content = contentFactory.createContent(null, displayName, false);
+      content.setCloseable(true);
+      final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
+      content.setComponent(windowPanel);
+
+      InspectorPanel inspectorPanel = new InspectorPanel(PsiElement.EMPTY_ARRAY, this, isSessionActive, treeType);
+      windowPanel.setContent(inspectorPanel);
+
+      contentManager.addContent(content);
+      inspectorPanels.add(inspectorPanel);
+    }
+    //renderObjectWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
   }
 
   /**
@@ -115,6 +147,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     event.vmService.addVmServiceListener(new VmServiceListener() {
       @Override
       public void connectionOpened() {
+        onAppChanged();
       }
 
       @Override
@@ -124,18 +157,18 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       @Override
       public void connectionClosed() {
         FlutterView.this.app = null;
-        updateIcon();
+        onAppChanged();
       }
     });
 
-    updateIcon();
+    onAppChanged();
   }
 
   FlutterApp getFlutterApp() {
     return app;
   }
 
-  private void updateIcon() {
+  private void onAppChanged() {
     ApplicationManager.getApplication().invokeLater(() -> {
       if (myProject.isDisposed()) {
         return;
@@ -149,6 +182,11 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       }
       else {
         toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+      }
+
+      for (InspectorPanel inspectorPanel : inspectorPanels) {
+        inspectorPanel.onAppChanged();
+        inspectorPanel.setEnabled(app != null);
       }
     });
   }
