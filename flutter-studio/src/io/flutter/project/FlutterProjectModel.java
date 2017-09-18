@@ -8,15 +8,7 @@ package io.flutter.project;
 import com.android.tools.idea.observable.core.*;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.openapi.application.ApplicationBundle;
-import com.intellij.openapi.progress.ProgressIndicator;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.progress.Task;
-import com.intellij.openapi.progress.util.ProgressWindow;
-import com.intellij.openapi.progress.util.SmoothProgressAdapter;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.wm.IdeFocusManager;
-import com.intellij.openapi.wm.IdeFrame;
 import io.flutter.module.FlutterProjectType;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,11 +19,6 @@ import org.jetbrains.annotations.NotNull;
  * one project type to another. The AS New Module wizard has similar inconsistencies (as of beta 5).
  *
  * TODO(messick): Add tests to simulate clicking Next/Previous buttons and choosing different project types.
- * Others:
- * Make sure new project window is on top. (Plugin & package opened under existing)
- * Open pliugin.dart/package.dart file in plugin/package project editor.
- * Fix project name collisions.
- * Fix initial values of check boxes.
  */
 public class FlutterProjectModel extends WizardModel {
   private static final String DEFAULT_DOMAIN = "com.yourcompany"; // Keep this in sync with 'flutter create'.
@@ -89,7 +76,7 @@ public class FlutterProjectModel extends WizardModel {
   }
 
   private static void setInitialSwiftSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_KOTLIN_SUPPORT_KEY, isSupported);
+    PropertiesComponent.getInstance().setValue(PROPERTIES_SWIFT_SUPPORT_KEY, isSupported);
   }
 
   @NotNull
