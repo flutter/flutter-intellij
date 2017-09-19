@@ -16,8 +16,10 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
@@ -47,6 +49,7 @@ public class FlutterSdk {
 
   private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
+  private final Map<String, String> cachedConfigValues = new HashMap<>();
 
   private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;
@@ -106,6 +109,30 @@ public class FlutterSdk {
     else {
       return new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
     }
+  }
+
+  @Nullable
+  private static Library getDartSdkLibrary(@NotNull Project project) {
+    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
+    for (Library lib : libraries) {
+      if ("Dart SDK".equals(lib.getName())) {
+        return lib;
+      }
+    }
+    return null;
+  }
+
+  @Nullable
+  private static FlutterSdk getFlutterFromDartSdkLibrary(Library lib, VirtualFile projectDir) {
+    final String[] urls = lib.getUrls(OrderRootType.CLASSES);
+    for (String url : urls) {
+      if (url.endsWith(DART_CORE_SUFFIX)) {
+        final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
+        final VirtualFile home = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
+        return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
+      }
+    }
+    return null;
   }
 
   public FlutterCommand flutterVersion() {
@@ -255,7 +282,8 @@ public class FlutterSdk {
     final Process process;
     if (module == null) {
       process = flutterCreate(baseDir, additionalSettings).start(null, listener);
-    } else {
+    }
+    else {
       process = flutterCreate(baseDir, additionalSettings).startInModuleConsole(module, null, listener);
     }
     if (process == null) {
@@ -272,7 +300,12 @@ public class FlutterSdk {
       return null;
     }
 
-    baseDir.refresh(false, true);
+    if (EdtInvocationManager.getInstance().isEventDispatchThread()) {
+      VfsUtil.markDirtyAndRefresh(false, true, true, baseDir); // Need this for AS.
+    }
+    else {
+      baseDir.refresh(false, true); // The current thread must NOT be in a read action.
+    }
     return PubRoot.forDirectory(baseDir);
   }
 
@@ -330,30 +363,6 @@ public class FlutterSdk {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
   }
 
-  @Nullable
-  private static Library getDartSdkLibrary(@NotNull Project project) {
-    final Library[] libraries = ProjectLibraryTable.getInstance(project).getLibraries();
-    for (Library lib : libraries) {
-      if ("Dart SDK".equals(lib.getName())) {
-        return lib;
-      }
-    }
-    return null;
-  }
-
-  @Nullable
-  private static FlutterSdk getFlutterFromDartSdkLibrary(Library lib, VirtualFile projectDir) {
-    final String[] urls = lib.getUrls(OrderRootType.CLASSES);
-    for (String url : urls) {
-      if (url.endsWith(DART_CORE_SUFFIX)) {
-        final String flutterUrl = url.substring(0, url.length() - DART_CORE_SUFFIX.length());
-        final VirtualFile home = VirtualFileManager.getInstance().findFileByUrl(flutterUrl);
-        return home == null ? null : new FlutterSdk(home, FlutterSdkVersion.readFromSdk(home));
-      }
-    }
-    return null;
-  }
-
   /**
    * Query 'flutter config' for the given key, and optionally use any existing cached value.
    */
@@ -366,8 +375,6 @@ public class FlutterSdk {
     cachedConfigValues.put(key, queryFlutterConfigImpl(key));
     return cachedConfigValues.get(key);
   }
-
-  private final Map<String, String> cachedConfigValues = new HashMap<>();
 
   private String queryFlutterConfigImpl(String key) {
     final FlutterCommand command = flutterConfig("--machine");

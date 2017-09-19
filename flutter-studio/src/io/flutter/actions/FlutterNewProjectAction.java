@@ -5,86 +5,59 @@
  */
 package io.flutter.actions;
 
-import com.intellij.ide.impl.NewProjectUtil;
-import com.intellij.ide.projectView.ProjectView;
-import com.intellij.ide.projectView.impl.ProjectViewPane;
-import com.intellij.ide.projectWizard.NewProjectWizard;
-import com.intellij.ide.projectWizard.ProjectTypeStep;
-import com.intellij.ide.util.newProjectWizard.AbstractProjectWizard;
-import com.intellij.ide.util.projectWizard.ModuleWizardStep;
+
+import com.android.tools.idea.sdk.wizard.SdkQuickfixUtils;
+import com.android.tools.idea.ui.wizard.StudioWizardDialogBuilder;
+import com.android.tools.idea.wizard.model.ModelWizard;
+import com.android.tools.idea.wizard.model.ModelWizardDialog;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.progress.ProgressManager;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectBundle;
-import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.roots.ui.configuration.ModulesProvider;
-import com.intellij.openapi.startup.StartupManager;
-import com.intellij.ui.CollectionListModel;
-import com.intellij.ui.components.JBList;
-import com.intellij.util.ReflectionUtil;
+import com.intellij.openapi.project.DumbAware;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.wm.impl.welcomeScreen.NewWelcomeScreen;
+import io.flutter.module.FlutterProjectType;
+import io.flutter.project.ChoseProjectTypeStep;
+import io.flutter.project.FlutterProjectModel;
+import io.flutter.sdk.FlutterSdkUtil;
+import org.jetbrains.android.sdk.AndroidSdkUtils;
+import org.jetbrains.annotations.NotNull;
 
-// TODO(messick): Replace this with a wizard that does not include the first step of this wizard.
-public class FlutterNewProjectAction extends AnAction {
-
-  private ProjectTypeStep myProjectTypeStep;
-
+public class FlutterNewProjectAction extends AnAction implements DumbAware {
   public FlutterNewProjectAction() {
-    super("New Flutter Project...");
+    this("New Flutter Project...");
   }
 
-  private static void createNewProject(Project projectToClose, AbstractProjectWizard wizard) {
-    final boolean proceed = ProgressManager.getInstance().runProcessWithProgressSynchronously(() -> {
-      ProjectManager.getInstance().getDefaultProject(); //warm up components
-    }, ProjectBundle.message("project.new.wizard.progress.title"), true, null);
-    if (!proceed) return;
-    if (!wizard.showAndGet()) {
-      return;
-    }
+  public FlutterNewProjectAction(@NotNull String text) {
+    super(text);
+  }
 
-    final Project newProject = NewProjectUtil.createFromWizard(wizard, projectToClose);
-    StartupManager.getInstance(newProject).registerPostStartupActivity(() -> {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
-        ProjectView.getInstance(newProject).changeView(ProjectViewPane.ID);
-      }, ModalityState.NON_MODAL);
-    });
+  @Override
+  public void update(@NotNull AnActionEvent e) {
+    if (NewWelcomeScreen.isNewWelcomeScreen(e)) {
+      e.getPresentation().setIcon(AllIcons.Welcome.CreateNewProject);
+    }
   }
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    NewProjectWizard wizard = new NewProjectWizard(null, ModulesProvider.EMPTY_MODULES_PROVIDER, null);
-    ModuleWizardStep firstStep = wizard.getSequence().getAllSteps().get(0);
-    myProjectTypeStep = (ProjectTypeStep)firstStep;
-    // Using a private field messes up type analysis for generics. Can't be helped...
-    JBList projectTypeList = fetchPrivateField("myProjectTypeList");
-    CollectionListModel dataModel = (CollectionListModel)projectTypeList.getModel();
-    Object flutterItem = null;
-    for (Object item : dataModel.getItems()) {
-      if (item.toString().equals("Flutter")) {
-        flutterItem = item;
-        break;
-      }
+    String[] paths = FlutterSdkUtil.getKnownFlutterSdkPaths();
+    if (paths == null || paths.length == 0) {
+      // TODO(any): Add a link to download the SDK.
+      Messages.showErrorDialog("Please install the Flutter SDK", "No SDK Found");
+      return;
     }
-    // Remove all project types except Flutter. Need to verify that this does not cause a memory leak.
-    if (flutterItem != null) {
-      projectTypeList.setSelectedValue(flutterItem, false);
-      // The list cannot be cleared because an empty list causes an NPE when the selected template is updated.
-      for (Object item : dataModel.getItems().toArray()) {
-        if (item != flutterItem) {
-          //noinspection unchecked
-          dataModel.remove(item);
-        }
-      }
+    if (!AndroidSdkUtils.isAndroidSdkAvailable()) {
+      SdkQuickfixUtils.showSdkMissingDialog();
+      return;
     }
-    // NewProjectUtil.createNewProject() does not return the project, so it is inlined below.
-    createNewProject(getEventProject(e), wizard);
-  }
 
-  private JBList fetchPrivateField(@SuppressWarnings("SameParameterValue") String fieldName) {
-    return ReflectionUtil // Fetching a private field.
-      .getField(ProjectTypeStep.class, myProjectTypeStep, JBList.class, fieldName);
+    FlutterProjectModel model = new FlutterProjectModel(FlutterProjectType.APP);
+    ModelWizard wizard = new ModelWizard.Builder()
+      .addStep(new ChoseProjectTypeStep(model))
+      .build();
+    ModelWizardDialog dialog =
+      new StudioWizardDialogBuilder(wizard, "Create New Flutter Project").setUseNewUx(true).build();
+    dialog.show();
   }
 }
