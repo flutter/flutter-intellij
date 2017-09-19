@@ -296,12 +296,12 @@ public class PubRoot {
    */
   @Nullable
   public VirtualFile getFileToOpen() {
-    VirtualFile main = getLibMain();
+    final VirtualFile main = getLibMain();
     if (main != null) {
       return main;
     }
     if (lib != null) {
-      VirtualFile[] files = lib.getChildren();
+      final VirtualFile[] files = lib.getChildren();
       if (files.length != 0) {
         return files[0];
       }
@@ -324,9 +324,9 @@ public class PubRoot {
     if (lib == null) {
       return null;
     }
-    VirtualFile exampleDir = lib.findChild("example");
+    final VirtualFile exampleDir = lib.findChild("example");
     if (exampleDir != null) {
-      VirtualFile libDir = exampleDir.findChild("lib");
+      final VirtualFile libDir = exampleDir.findChild("lib");
       if (libDir != null) {
         return libDir.findChild("main.dart");
       }
