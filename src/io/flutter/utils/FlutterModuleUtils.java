@@ -166,8 +166,14 @@ public class FlutterModuleUtils {
   public static void autoCreateRunConfig(@NotNull Project project, @NotNull PubRoot root) {
     assert ApplicationManager.getApplication().isReadAccessAllowed();
 
-    final VirtualFile main = root.getLibMain();
-    if (main == null || !main.exists()) return;
+    VirtualFile main = root.getLibMain();
+    if (main == null || !main.exists()) {
+      // Check for example main.dart in plugins
+      main = root.getExampleLibMain();
+      if (main == null || !main.exists()) {
+        return;
+      }
+    }
 
     final FlutterRunConfigurationType configType = FlutterRunConfigurationType.getInstance();
 
@@ -197,7 +203,7 @@ public class FlutterModuleUtils {
    * If no files are open, show lib/main.dart for the given PubRoot.
    */
   public static void autoShowMain(@NotNull Project project, @NotNull PubRoot root) {
-    final VirtualFile main = root.getLibMain();
+    final VirtualFile main = root.getFileToOpen();
     if (main == null) return;
 
     DumbService.getInstance(project).runWhenSmart(() -> {

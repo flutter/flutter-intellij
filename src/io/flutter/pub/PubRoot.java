@@ -292,11 +292,46 @@ public class PubRoot {
   }
 
   /**
+   * Returns a file in lib if it exists.
+   */
+  @Nullable
+  public VirtualFile getFileToOpen() {
+    VirtualFile main = getLibMain();
+    if (main != null) {
+      return main;
+    }
+    if (lib != null) {
+      VirtualFile[] files = lib.getChildren();
+      if (files.length != 0) {
+        return files[0];
+      }
+    }
+    return null;
+  }
+
+  /**
    * Returns lib/main.dart if it exists.
    */
   @Nullable
   public VirtualFile getLibMain() {
     return lib == null ? null : lib.findChild("main.dart");
+  }
+
+  /**
+   * Returns example/lib/main.dart if it exists.
+   */
+  public VirtualFile getExampleLibMain() {
+    if (lib == null) {
+      return null;
+    }
+    VirtualFile exampleDir = lib.findChild("example");
+    if (exampleDir != null) {
+      VirtualFile libDir = exampleDir.findChild("lib");
+      if (libDir != null) {
+        return libDir.findChild("main.dart");
+      }
+    }
+    return null;
   }
 
   @Nullable
