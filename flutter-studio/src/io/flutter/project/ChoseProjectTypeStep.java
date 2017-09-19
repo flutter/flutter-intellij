@@ -56,7 +56,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
     myRootPanel.setLayout(new VerticalFlowLayout());
     myRootPanel.add(createGallery());
 
-    final JPanel section = new JPanel();
+    JPanel section = new JPanel();
     section.setLayout(new VerticalFlowLayout());
     helpLabels = new JLabel[moduleGalleryEntries.size()];
     int idx = 0;
@@ -123,7 +123,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
 
       @Override
       public Dimension getPreferredScrollableViewportSize() {
-        // The default implementations assigns a height as tall as the screen.
+        // The default implementation assigns a height as tall as the screen.
         // When calling setVisibleRowCount(2), the underlying implementation is buggy, and  will have a gap on the right and when the user
         // resizes, it enters on an adjustment loop at some widths (can't decide to fit 3 or for elements, and loops between the two)
         Dimension cellSize = computeCellSize();
