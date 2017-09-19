@@ -19,6 +19,10 @@ import org.jetbrains.annotations.NotNull;
  * one project type to another. The AS New Module wizard has similar inconsistencies (as of beta 5).
  *
  * TODO(messick): Add tests to simulate clicking Next/Previous buttons and choosing different project types.
+ * Add ability to create Flutter project to welcome screen.
+ * Fix layout of New Module; should be similar to New Project.
+ * Rewrite FlutterModuleModel and wizard steps similarly to FlutterProjectModel.
+ * Apply patch in android_project.patch, fix broken test, commit to flutter repos.
  */
 public class FlutterProjectModel extends WizardModel {
   private static final String DEFAULT_DOMAIN = "com.yourcompany"; // Keep this in sync with 'flutter create'.

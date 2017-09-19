@@ -22,13 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 
-// TODO list
-// 1. Automatically perform Android framework configuraiton to add additional files to module.
-// 2. Externalize strings.
-// 3. Hide project type list in new project wizard.
-// 4. Add ability to create Flutter project to welcome screen.
-// 5. Investigage UI testing. See module android-uitests for examples.
-// done 6. Add new fields (language choices, etc) to the new module definition page in the wizard.
 public class FlutterModuleModel extends WizardModel {
   private static final Logger LOG = Logger.getInstance(FlutterModuleModel.class.getName());
 
