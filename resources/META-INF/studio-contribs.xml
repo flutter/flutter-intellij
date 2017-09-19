@@ -6,6 +6,10 @@
     <moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/>
   </extensions>
 
+  <extensions defaultExtensionNs="com.android.project">
+    <projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>
+  </extensions>
+
   <actions>
 
     <!-- Define the 'New Flutter Project' menu item -->

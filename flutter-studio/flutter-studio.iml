@@ -16,6 +16,8 @@
     <orderEntry type="module" module-name="adt-ui" />
     <orderEntry type="module" module-name="observable" />
     <orderEntry type="module" module-name="observable-ui" />
+    <orderEntry type="module" module-name="project-system" />
+    <orderEntry type="module" module-name="project-system-gradle" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
     <orderEntry type="module" module-name="Dart-community" />
     <orderEntry type="module" module-name="platform-api" />
