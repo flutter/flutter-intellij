@@ -19,6 +19,7 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.IconUtil;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
+import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -37,7 +38,7 @@ import static org.jetbrains.android.util.AndroidBundle.message;
 public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private static final Logger LOG = Logger.getInstance(ChoseProjectTypeStep.class.getName());
 
-  private final List<ModuleGalleryEntry> myModuleGalleryEntryList;
+  private final List<FlutterGalleryEntry> myModuleGalleryEntryList;
   private final JComponent myRootPanel;
   private JLabel[] helpLabels;
 
@@ -45,10 +46,10 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private Map<ModuleGalleryEntry, FlutterProjectStep> myModuleDescriptionToStepMap;
 
   public ChoseProjectTypeStep(@NotNull FlutterProjectModel model) {
-    this(model, FlutterDescriptionProvider.getGalleryList(true));
+    this(model, FlutterDescriptionProvider.getGalleryList());
   }
 
-  private ChoseProjectTypeStep(@NotNull FlutterProjectModel model, @NotNull List<ModuleGalleryEntry> moduleGalleryEntries) {
+  private ChoseProjectTypeStep(@NotNull FlutterProjectModel model, @NotNull List<FlutterGalleryEntry> moduleGalleryEntries) {
     super(model, "New Flutter Project");
 
     myModuleGalleryEntryList = moduleGalleryEntries;
@@ -60,8 +61,8 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
     section.setLayout(new VerticalFlowLayout());
     helpLabels = new JLabel[moduleGalleryEntries.size()];
     int idx = 0;
-    for (ModuleGalleryEntry entry : moduleGalleryEntries) {
-      helpLabels[idx] = new JLabel(((FlutterDescriptionProvider.FlutterGalleryEntry)entry).getHelpText());
+    for (FlutterGalleryEntry entry : moduleGalleryEntries) {
+      helpLabels[idx] = new JLabel(entry.getHelpText());
       helpLabels[idx].setEnabled(false);
       section.add(helpLabels[idx++]);
     }
@@ -86,10 +87,6 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
 
   private void toggleLabel(int index) {
     helpLabels[index].setEnabled(!helpLabels[index].isEnabled());
-    // TODO Delete this old code once we decide whether enabling or bolding is the way to emphasize the help text.
-    //boolean isBold = helpLabels[index].getFont().isBold();
-    //Font font = helpLabels[index].getFont().deriveFont(isBold ? Font.PLAIN : Font.BOLD);
-    //helpLabels[index].setFont(font);
   }
 
   @NotNull
@@ -104,7 +101,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
     List<ModelWizardStep> allSteps = Lists.newArrayList();
     myModuleDescriptionToStepMap = new HashMap<>();
     for (ModuleGalleryEntry moduleGalleryEntry : myModuleGalleryEntryList) {
-      FlutterProjectStep step = ((FlutterDescriptionProvider.FlutterGalleryEntry)moduleGalleryEntry).createFlutterStep(getModel());
+      FlutterProjectStep step = ((FlutterGalleryEntry)moduleGalleryEntry).createFlutterStep(getModel());
       allSteps.add(step);
       myModuleDescriptionToStepMap.put(moduleGalleryEntry, step);
     }
