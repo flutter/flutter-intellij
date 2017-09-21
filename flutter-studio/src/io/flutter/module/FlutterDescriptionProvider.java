@@ -8,6 +8,7 @@ package io.flutter.module;
 import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
 import com.android.tools.idea.npw.module.NewModuleModel;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -23,35 +24,52 @@ import java.util.List;
 
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
-  public static List<ModuleGalleryEntry> getGalleryList(boolean includeApp) {
-    ArrayList<ModuleGalleryEntry> res = new ArrayList<>();
-    if (includeApp) {
-      res.add(new FlutterApplicationGalleryEntry());
-    }
-    res.add(new FlutterPluginGalleryEntry());
-    res.add(new FlutterPackageGalleryEntry());
+  public static List<FlutterGalleryEntry> getGalleryList() {
+    OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
+    ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
+    res.add(new FlutterApplicationGalleryEntry(sharedModel));
+    res.add(new FlutterPluginGalleryEntry(sharedModel));
+    res.add(new FlutterPackageGalleryEntry(sharedModel));
     return res;
   }
 
   @Override
   public Collection<? extends ModuleGalleryEntry> getDescriptions() {
-    return getGalleryList(false);
+    return getGalleryList();
   }
 
   /**
-   * Each type of Flutter project is represented by a class that implements this interface.
+   * Each type of Flutter project is represented by a subclass of this class.
    */
-  public interface FlutterGalleryEntry extends ModuleGalleryEntry {
+  public static abstract class FlutterGalleryEntry implements ModuleGalleryEntry {
 
-    // TODO(messick): Unify module and project creation so we don't need this method.
+    // Using an optional value because the model cannot be created until after the gallery entry is initialized.
+    private OptionalValueProperty<FlutterProjectModel> mySharedModel;
+
+    private FlutterGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      mySharedModel = sharedModel;
+    }
+
+    protected FlutterProjectModel model(NewModuleModel npwModel, FlutterProjectType type) {
+      if (!mySharedModel.isPresent().get()) {
+        mySharedModel.setValue(new FlutterModuleModel(type));
+        mySharedModel.getValue().project().setValue(npwModel.getProject().getValue());
+      }
+      return mySharedModel.getValue();
+    }
+
     @NotNull
-    FlutterProjectStep createFlutterStep(FlutterProjectModel model);
+    abstract public FlutterProjectStep createFlutterStep(FlutterProjectModel model);
 
     @Nullable
-    String getHelpText();
+    abstract public String getHelpText();
   }
 
-  private static class FlutterApplicationGalleryEntry implements FlutterGalleryEntry {
+  private static class FlutterApplicationGalleryEntry extends FlutterGalleryEntry {
+
+    private FlutterApplicationGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
 
     @Nullable
     @Override
@@ -80,8 +98,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
-      return new FlutterPackageStep(
-        new FlutterModuleModel(model.getProject().getValue()),
+      return new FlutterModuleStep(
+        model(model, FlutterProjectType.APP),
         FlutterBundle.message("module.wizard.app_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.APP);
     }
@@ -95,7 +113,11 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
   }
 
-  private static class FlutterPackageGalleryEntry implements FlutterGalleryEntry {
+  private static class FlutterPackageGalleryEntry extends FlutterGalleryEntry {
+
+    private FlutterPackageGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
 
     @Nullable
     @Override
@@ -124,8 +146,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
-      return new FlutterPackageStep(
-        new FlutterModuleModel(model.getProject().getValue()),
+      return new FlutterModuleStep(
+        model(model, FlutterProjectType.PACKAGE),
         FlutterBundle.message("module.wizard.package_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PACKAGE);
     }
@@ -139,7 +161,11 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
   }
 
-  private static class FlutterPluginGalleryEntry implements FlutterGalleryEntry {
+  private static class FlutterPluginGalleryEntry extends FlutterGalleryEntry {
+
+    private FlutterPluginGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
 
     @Nullable
     @Override
@@ -168,8 +194,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @NotNull
     @Override
     public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
-      return new FlutterPackageStep(
-        new FlutterModuleModel(model.getProject().getValue()),
+      return new FlutterModuleStep(
+        model(model, FlutterProjectType.PLUGIN),
         FlutterBundle.message("module.wizard.plugin_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PLUGIN);
     }

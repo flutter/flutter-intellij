@@ -87,6 +87,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     model.addInvalidLibrary("Dart SDK", "project");
   }
 
+  protected FlutterSdk getFlutterSdk() {
+    return myStep.getFlutterSdk();
+  }
+
   @Nullable
   @Override
   public Module commitModule(@NotNull Project project, @Nullable ModifiableModuleModel model) {
@@ -101,14 +105,14 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       return null;
     }
 
-    final FlutterSdk sdk = myStep.getFlutterSdk();
+    final FlutterSdk sdk = getFlutterSdk();
     if (sdk == null) {
       Messages.showErrorDialog("Flutter SDK not found", "Error");
       return null;
     }
 
     final OutputListener listener = new OutputListener();
-    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, myAdditionalSettings);
+    final PubRoot root = runFlutterCreateWithProgress(baseDir, sdk, project, listener, getAdditionalSettings());
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;

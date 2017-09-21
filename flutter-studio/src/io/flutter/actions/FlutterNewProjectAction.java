@@ -34,9 +34,7 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
 
   @Override
   public void update(@NotNull AnActionEvent e) {
-    if (NewWelcomeScreen.isNewWelcomeScreen(e)) {
-      e.getPresentation().setIcon(AllIcons.Welcome.CreateNewProject);
-    }
+    // This can be used to change the icon on the welcome screen, if needed.
   }
 
   @Override

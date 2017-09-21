@@ -6,6 +6,15 @@
     <moduleDescriptionProvider implementation="io.flutter.module.FlutterDescriptionProvider"/>
   </extensions>
 
+  <extensions defaultExtensionNs="com.android.project">
+    <!-- projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/ -->
+  </extensions>
+
+  <extensions defaultExtensionNs="com.intellij">
+    <!-- TODO(messick): Remove this extension if the class is never needed. -->
+    <androidStudioInitializer implementation="io.flutter.FlutterStudioInitializer"/>
+  </extensions>
+
   <actions>
 
     <!-- Define the 'New Flutter Project' menu item -->
@@ -13,6 +22,15 @@
             text="New Flutter Project..."
             description="Create a new Flutter project">
       <add-to-group group-id="NewProjectOrModuleGroup" anchor="after" relative-to-action="NewProject"/>
+    </action>
+
+    <!-- The icon isn't being used here, but the same syntax works for menu items -->
+    <!-- We can't change it in a StartupActivity because those don't run until a project is opened -->
+    <action id="flutter.NewProject.welcome" class="io.flutter.actions.FlutterNewProjectAction"
+            text="Start a new Flutter project"
+            icon="FlutterIcons.Flutter"
+            description="Create a new Flutter project">
+      <add-to-group group-id="WelcomeScreen.QuickStart.IDEA" anchor="after" relative-to-action="WelcomeScreen.CreateNewProject"/>
     </action>
 
   </actions>

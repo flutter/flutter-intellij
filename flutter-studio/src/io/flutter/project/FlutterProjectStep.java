@@ -26,6 +26,10 @@ import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.google.common.collect.Lists;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.ComboboxWithBrowseButton;
@@ -51,6 +55,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
   private boolean hasEntered = false;
+  private OptionalValueProperty<FlutterProjectType> myProjectType;
 
   private JPanel myPanel;
   private JTextField myProjectName;
@@ -58,7 +63,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private TextFieldWithBrowseButton myProjectLocation;
   private ComboboxWithBrowseButton myFlutterSdkPath;
   private JLabel myHeading;
-  private OptionalValueProperty<FlutterProjectType> myProjectType;
+  private JPanel myLocationPanel;
 
   public FlutterProjectStep(FlutterProjectModel model, String title, Icon icon, FlutterProjectType type) {
     super(model, title, icon);
@@ -88,7 +93,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
                                               TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
 
     myValidatorPanel.registerValidator(model.flutterSdk(), FlutterProjectStep::validateFlutterSdk);
-    myValidatorPanel.registerValidator(model.projectName(), FlutterProjectStep::validateFlutterModuleName);
+    myValidatorPanel.registerValidator(model.projectName(), this::validateFlutterModuleName);
 
     Expression<File> locationFile = model.projectLocation().transform(File::new);
     myValidatorPanel.registerValidator(locationFile, PathValidator.createDefault("project location"));
@@ -98,7 +103,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   }
 
   @NotNull
-  public static Validator.Result validateFlutterSdk(String sdkPath) {
+  private static Validator.Result validateFlutterSdk(String sdkPath) {
     if (!sdkPath.isEmpty()) {
       final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath);
       if (message != null) {
@@ -127,11 +132,15 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     return projectDirectory.getPath();
   }
 
+  private static Validator.Result errorResult(String message) {
+    return new Validator.Result(Validator.Severity.ERROR, message);
+  }
+
   /**
    * @See: https://www.dartlang.org/tools/pub/pubspec#name
    */
   @NotNull
-  public static Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
+  private Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
     if (moduleName.isEmpty()) {
       return errorResult("Please enter a name for the project");
     }
@@ -153,11 +162,25 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
                          FlutterConstants.MAX_MODULE_NAME_LENGTH +
                          " characters.");
     }
+    if (getModel().project().get().isPresent()) {
+      Project project = getModel().project().getValue();
+      Module module;
+      ProjectStructureConfigurable fromConfigurable = ProjectStructureConfigurable.getInstance(project);
+      if (fromConfigurable != null) {
+        module = fromConfigurable.getModulesConfig().getModule(moduleName);
+      }
+      else {
+        module = ModuleManager.getInstance(project).findModuleByName(moduleName);
+      }
+      if (module != null) {
+        return errorResult("A module with that name already exists in the project.");
+      }
+    }
     return Validator.Result.OK;
   }
 
-  private static Validator.Result errorResult(String message) {
-    return new Validator.Result(Validator.Severity.ERROR, message);
+  protected void hideLocation() {
+    myLocationPanel.setVisible(false);
   }
 
   @Override
