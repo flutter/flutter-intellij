@@ -5,7 +5,6 @@
  */
 package io.flutter.sdk;
 
-import com.android.annotations.NonNull;
 import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -36,7 +35,7 @@ import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
 public class FlutterPluginsLibraryManager {
   private final Project project;
 
-  public FlutterPluginsLibraryManager(@NonNull Project project) {
+  public FlutterPluginsLibraryManager(@NotNull Project project) {
     this.project = project;
   }
 
