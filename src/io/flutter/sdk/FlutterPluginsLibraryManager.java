@@ -5,6 +5,8 @@
  */
 package io.flutter.sdk;
 
+import com.android.annotations.NonNull;
+import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.application.WriteAction;
@@ -20,27 +22,111 @@ import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.*;
+import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
+import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
-// TODO: run this on pubspec file changes and project structure changes (new modules, removed modules, ...)
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-// TODO: or, just watch for changes to the .packages file?
+import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
 
 public class FlutterPluginsLibraryManager {
+  private final Project project;
 
-  public static void updatePlugins(@NotNull final Project project) {
-    final Runnable runnable = () -> {
-      updateFlutterPlugins(project);
-    };
+  public FlutterPluginsLibraryManager(@NonNull Project project) {
+    this.project = project;
+  }
 
+  public void startWatching() {
+    VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileListener() {
+      @Override
+      public void beforePropertyChange(@NotNull VirtualFilePropertyEvent event) {
+        propertyChanged(event);
+      }
+
+      @Override
+      public void propertyChanged(@NotNull VirtualFilePropertyEvent event) {
+        if (VirtualFile.PROP_NAME.equals(event.getPropertyName())) {
+          fileChanged(project, event.getFile());
+        }
+      }
+
+      @Override
+      public void contentsChanged(@NotNull VirtualFileEvent event) {
+        fileChanged(project, event.getFile());
+      }
+
+      @Override
+      public void fileCreated(@NotNull VirtualFileEvent event) {
+        fileChanged(project, event.getFile());
+      }
+
+      @Override
+      public void fileDeleted(@NotNull VirtualFileEvent event) {
+        fileChanged(project, event.getFile());
+      }
+
+      @Override
+      public void fileMoved(@NotNull VirtualFileMoveEvent event) {
+        fileChanged(project, event.getFile());
+      }
+
+      @Override
+      public void fileCopied(@NotNull VirtualFileCopyEvent event) {
+        fileChanged(project, event.getFile());
+      }
+    }, project);
+
+    project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+      @Override
+      public void rootsChanged(ModuleRootEvent event) {
+        scheduleUpdate();
+      }
+    });
+
+    scheduleUpdate();
+  }
+
+  private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
+    if (!DotPackagesFileUtil.DOT_PACKAGES.equals(file.getName())) return;
+    if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
+
+    final VirtualFile parent = file.getParent();
+    final VirtualFile pubspec = parent == null ? null : parent.findChild(PUBSPEC_YAML);
+
+    if (pubspec != null) {
+      scheduleUpdate();
+    }
+  }
+
+  private final AtomicBoolean isUpdating = new AtomicBoolean(false);
+
+  private void scheduleUpdate() {
+    if (isUpdating.get()) {
+      return;
+    }
+
+    final Runnable runnable = this::updateFlutterPlugins;
     DumbService.getInstance(project).smartInvokeLater(runnable, ModalityState.NON_MODAL);
   }
 
-  @NotNull
-  private static Library updateFlutterPlugins(@NotNull final Project project) {
-    // , @NotNull final DartFileListener.DartLibInfo libInfo
+  private void updateFlutterPlugins() {
+    if (!isUpdating.compareAndSet(false, true)) {
+      return;
+    }
 
+    try {
+      updateFlutterPluginsImpl();
+    }
+    finally {
+      isUpdating.set(false);
+    }
+  }
+
+  private void updateFlutterPluginsImpl() {
     final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
     final Library existingLibrary = projectLibraryTable.getLibraryByName(FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME);
     final Library library =
@@ -55,40 +141,76 @@ public class FlutterPluginsLibraryManager {
                                 return lib;
                               });
 
-    final String[] existingUrls = library.getUrls(OrderRootType.CLASSES);
+    final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoot.multipleForProject(project));
+    final Set<String> flutterPluginUrls = new HashSet<>();
+    for (String path : flutterPluginPaths) {
+      flutterPluginUrls.add(VfsUtilCore.pathToUrl(path));
+    }
+    final Set<String> existingUrls = new HashSet<>(Arrays.asList(library.getUrls(OrderRootType.CLASSES)));
 
-    //final Collection<String> libRootUrls = libInfo.getLibRootUrls();
+    if (flutterPluginUrls.containsAll(existingUrls) && existingUrls.containsAll(flutterPluginUrls)) {
+      // No changes needed.
+      return;
+    }
 
-    //if ((!libInfo.isProjectWithoutPubspec() && isBrokenPackageMap(((LibraryEx)library).getProperties())) ||
-    //    existingUrls.length != libRootUrls.size() ||
-    //    !libRootUrls.containsAll(Arrays.asList(existingUrls))) {
     ApplicationManager.getApplication().runWriteAction(() -> {
       final LibraryEx.ModifiableModelEx model = (LibraryEx.ModifiableModelEx)library.getModifiableModel();
 
-      //for (String url : existingUrls) {
-      //  model.removeRoot(url, OrderRootType.CLASSES);
-      //}
-      //
-      ////for (String url : libRootUrls) {
-      ////  model.addRoot(url, OrderRootType.CLASSES);
-      ////}
-      //
-      //final FlutterPluginLibraryProperties properties = new FlutterPluginLibraryProperties();
-      //properties.setPath("/Users/devoncarew/.pub-cache/hosted/pub.dartlang.org/flutter_blue-0.2.2/");
-      //model.setProperties(properties);
+      final Set<String> existingCopy = new HashSet<>(existingUrls);
+      existingUrls.removeAll(flutterPluginUrls);
+      flutterPluginUrls.removeAll(existingCopy);
+
+      for (String url : existingUrls) {
+        model.removeRoot(url, OrderRootType.CLASSES);
+      }
+
+      for (String url : flutterPluginUrls) {
+        model.addRoot(url, OrderRootType.CLASSES);
+      }
 
       model.commit();
     });
-    //}
 
     for (Module module : ModuleManager.getInstance(project).getModules()) {
       if (FlutterModuleUtils.isFlutterModule(module)) {
         addFlutterLibraryDependency(module, library);
       }
-      // TODO: else, remove it?
+      else {
+        removeFlutterLibraryDependency(module, library);
+      }
+    }
+  }
+
+  private Set<String> getFlutterPluginPaths(List<PubRoot> roots) {
+    final Set<String> paths = new HashSet<>();
+
+    for (PubRoot pubRoot : roots) {
+      if (pubRoot.getPackages() == null) {
+        continue;
+      }
+
+      final Map<String, String> map = DotPackagesFileUtil.getPackagesMap(pubRoot.getPackages());
+      if (map == null) {
+        continue;
+      }
+
+      for (String packagePath : map.values()) {
+        final VirtualFile libFolder = LocalFileSystem.getInstance().findFileByPath(packagePath);
+        if (libFolder == null) {
+          continue;
+        }
+        final PubRoot pluginRoot = PubRoot.forDirectory(libFolder.getParent());
+        if (pluginRoot == null) {
+          continue;
+        }
+
+        if (pluginRoot.isFlutterPlugin()) {
+          paths.add(pluginRoot.getPath());
+        }
+      }
     }
 
-    return library;
+    return paths;
   }
 
   private static void addFlutterLibraryDependency(@NotNull final Module module, @NotNull final Library library) {
@@ -106,6 +228,32 @@ public class FlutterPluginsLibraryManager {
       modifiableModel.addLibraryEntry(library);
 
       ApplicationManager.getApplication().runWriteAction(modifiableModel::commit);
+    }
+    finally {
+      if (!modifiableModel.isDisposed()) {
+        modifiableModel.dispose();
+      }
+    }
+  }
+
+  private void removeFlutterLibraryDependency(Module module, Library library) {
+    final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
+
+    try {
+      boolean wasFound = false;
+
+      for (final OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
+        if (orderEntry instanceof LibraryOrderEntry &&
+            LibraryTablesRegistrar.PROJECT_LEVEL.equals(((LibraryOrderEntry)orderEntry).getLibraryLevel()) &&
+            StringUtil.equals(library.getName(), ((LibraryOrderEntry)orderEntry).getLibraryName())) {
+          wasFound = true;
+          modifiableModel.removeOrderEntry(orderEntry);
+        }
+      }
+
+      if (wasFound) {
+        ApplicationManager.getApplication().runWriteAction(modifiableModel::commit);
+      }
     }
     finally {
       if (!modifiableModel.isDisposed()) {

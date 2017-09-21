@@ -35,7 +35,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       return;
     }
 
-    PubRoot root = PubRoot.forProjectWithRefresh(project);
+    PubRoot root = PubRoot.singleForProjectWithRefresh(project);
     if (root == null) {
       return;
     }
@@ -117,7 +117,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
             return;
           }
 
-          final PubRoot root = PubRoot.forProjectWithRefresh(project);
+          final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
           if (root == null) {
             Messages.showErrorDialog("Pub root not found", "Error");
             return;

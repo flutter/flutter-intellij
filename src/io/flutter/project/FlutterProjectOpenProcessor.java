@@ -87,7 +87,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
    * (It probably wasn't created with "flutter create" and probably didn't have any IntelliJ configuration before.)
    */
   private void convertToFlutterProject(@NotNull Project project) {
-    final PubRoot root = PubRoot.forProjectWithRefresh(project);
+    final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
     if (root == null) {
       return; // Either no pub roots, or more than one.
     }

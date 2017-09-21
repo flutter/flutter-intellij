@@ -127,14 +127,14 @@ public class FlutterReloadManager {
     });
   }
 
-  private final AtomicBoolean handleingSave = new AtomicBoolean(false);
+  private final AtomicBoolean handlingSave = new AtomicBoolean(false);
 
   private void handleSaveAllNotification(AnActionEvent event) {
     if (!mySettings.isReloadOnSave()) {
       return;
     }
 
-    if (handleingSave.get()) {
+    if (handlingSave.get()) {
       return;
     }
 
@@ -178,11 +178,11 @@ public class FlutterReloadManager {
     // edit and immediately hits save.
     final int reloadDelayMs = 125;
 
-    handleingSave.set(true);
+    handlingSave.set(true);
 
     JobScheduler.getScheduler().schedule(() -> {
       if (hasErrors(project, module, editor.getDocument())) {
-        handleingSave.set(false);
+        handlingSave.set(false);
 
         showAnalysisNotification("Reload not performed", "Analysis issues found", true);
       }
@@ -196,7 +196,7 @@ public class FlutterReloadManager {
             showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
           }
         }).whenComplete((aVoid, throwable) -> {
-          handleingSave.set(false);
+          handlingSave.set(false);
         });
       }
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
