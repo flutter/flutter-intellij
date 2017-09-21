@@ -41,42 +41,14 @@ public class FlutterPluginsLibraryManager {
   }
 
   public void startWatching() {
-    VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileListener() {
+    VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
       @Override
-      public void beforePropertyChange(@NotNull VirtualFilePropertyEvent event) {
-        propertyChanged(event);
+      protected void onFileChange(@NotNull VirtualFile file) {
+        fileChanged(project, file);
       }
 
       @Override
-      public void propertyChanged(@NotNull VirtualFilePropertyEvent event) {
-        if (VirtualFile.PROP_NAME.equals(event.getPropertyName())) {
-          fileChanged(project, event.getFile());
-        }
-      }
-
-      @Override
-      public void contentsChanged(@NotNull VirtualFileEvent event) {
-        fileChanged(project, event.getFile());
-      }
-
-      @Override
-      public void fileCreated(@NotNull VirtualFileEvent event) {
-        fileChanged(project, event.getFile());
-      }
-
-      @Override
-      public void fileDeleted(@NotNull VirtualFileEvent event) {
-        fileChanged(project, event.getFile());
-      }
-
-      @Override
-      public void fileMoved(@NotNull VirtualFileMoveEvent event) {
-        fileChanged(project, event.getFile());
-      }
-
-      @Override
-      public void fileCopied(@NotNull VirtualFileCopyEvent event) {
-        fileChanged(project, event.getFile());
+      protected void onBeforeFileChange(@NotNull VirtualFile file) {
       }
     }, project);
 
