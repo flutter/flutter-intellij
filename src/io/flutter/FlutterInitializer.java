@@ -26,6 +26,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
+import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterViewFactory;
@@ -120,7 +121,7 @@ public class FlutterInitializer implements StartupActivity {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
 
-    final PubRoot root = PubRoot.forProjectWithRefresh(project);
+    final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
     if (root != null) {
       if (root.hasAndroidModule(project)) {
         ensureAndroidSdk(project);
@@ -141,6 +142,10 @@ public class FlutterInitializer implements StartupActivity {
         DartfmtSettings.setDartfmtValue();
       }
     }
+
+    // Start watching for project structure and .packages file changes.
+    final FlutterPluginsLibraryManager libraryManager = new FlutterPluginsLibraryManager(project);
+    libraryManager.startWatching();
 
     // Initialize the analytics notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(

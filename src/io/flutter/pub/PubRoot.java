@@ -18,10 +18,16 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 /**
  * A snapshot of the root directory of a pub package.
@@ -55,7 +61,7 @@ public class PubRoot {
    * If there is more than one, returns null.
    */
   @Nullable
-  public static PubRoot forProject(@NotNull Project project) {
+  public static PubRoot singleForProject(@NotNull Project project) {
     final List<PubRoot> roots = PubRoots.forProject(project);
     if (roots.size() != 1) {
       return null;
@@ -71,9 +77,14 @@ public class PubRoot {
    * Refreshes the returned pubroot's directory. (Not any others.)
    */
   @Nullable
-  public static PubRoot forProjectWithRefresh(@NotNull Project project) {
-    final PubRoot root = forProject(project);
+  public static PubRoot singleForProjectWithRefresh(@NotNull Project project) {
+    final PubRoot root = singleForProject(project);
     return root == null ? null : root.refresh();
+  }
+
+  @NotNull
+  public static List<PubRoot> multipleForProject(@NotNull Project project) {
+    return PubRoots.forProject(project);
   }
 
   /**
@@ -112,7 +123,7 @@ public class PubRoot {
 
     final Project project = event.getData(CommonDataKeys.PROJECT);
     if (project != null) {
-      return forProjectWithRefresh(project);
+      return singleForProjectWithRefresh(project);
     }
 
     return null;
@@ -264,9 +275,52 @@ public class PubRoot {
    * Returns true if the pubspec declares a flutter dependency.
    */
   public boolean declaresFlutter() {
+    // It uses Flutter if it contains:
+    // dependencies:
+    //   flutter:
+
     try {
       final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
-      return FLUTTER_SDK_DEP.matcher(contents).find();
+      final Map<String, Object> yaml = loadPubspecInfo(contents);
+      if (yaml == null) {
+        return false;
+      }
+
+      final Object flutterEntry = yaml.get("dependencies");
+      //noinspection SimplifiableIfStatement
+      if (flutterEntry instanceof Map) {
+        return ((Map)flutterEntry).containsKey("flutter");
+      }
+
+      return false;
+    }
+    catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if the pubspec indicates that it is a Flutter plugin.
+   */
+  public boolean isFlutterPlugin() {
+    // It's a plugin if it contains:
+    // flutter:
+    //   plugin:
+
+    try {
+      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
+      final Map<String, Object> yaml = loadPubspecInfo(contents);
+      if (yaml == null) {
+        return false;
+      }
+
+      final Object flutterEntry = yaml.get("flutter");
+      //noinspection SimplifiableIfStatement
+      if (flutterEntry instanceof Map) {
+        return ((Map)flutterEntry).containsKey("plugin");
+      }
+
+      return false;
     }
     catch (IOException e) {
       return false;
@@ -379,6 +433,26 @@ public class PubRoot {
     return false;
   }
 
+  private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
+    final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
+      protected void addImplicitResolvers() {
+        this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");
+        this.addImplicitResolver(Tag.NULL, NULL, "~nN\u0000");
+        this.addImplicitResolver(Tag.NULL, EMPTY, null);
+        this.addImplicitResolver(new Tag("tag:yaml.org,2002:value"), VALUE, "=");
+        this.addImplicitResolver(Tag.MERGE, MERGE, "<");
+      }
+    });
+
+    try {
+      //noinspection unchecked
+      return (Map)yaml.load(yamlContents);
+    }
+    catch (Exception var3) {
+      return null;
+    }
+  }
+
   /**
    * Returns the module containing this pub root, if any.
    */
@@ -410,6 +484,4 @@ public class PubRoot {
   public static boolean isPubspec(@NotNull VirtualFile file) {
     return !file.isDirectory() && file.getName().equals("pubspec.yaml");
   }
-
-  private static final Pattern FLUTTER_SDK_DEP = Pattern.compile(".*sdk:\\s*flutter"); //NON-NLS
 }
