@@ -35,6 +35,8 @@ import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
 public class FlutterPluginsLibraryManager {
   private final Project project;
 
+  private final AtomicBoolean isUpdating = new AtomicBoolean(false);
+
   public FlutterPluginsLibraryManager(@NotNull Project project) {
     this.project = project;
   }
@@ -72,8 +74,6 @@ public class FlutterPluginsLibraryManager {
       scheduleUpdate();
     }
   }
-
-  private final AtomicBoolean isUpdating = new AtomicBoolean(false);
 
   private void scheduleUpdate() {
     if (isUpdating.get()) {

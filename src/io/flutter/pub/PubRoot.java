@@ -275,7 +275,7 @@ public class PubRoot {
    * Returns true if the pubspec declares a flutter dependency.
    */
   public boolean declaresFlutter() {
-    // It uses FLutter if it contains:
+    // It uses Flutter if it contains:
     // dependencies:
     //   flutter:
 
