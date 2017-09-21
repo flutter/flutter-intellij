@@ -5,7 +5,6 @@
  */
 package io.flutter.pub;
 
-import com.android.annotations.NonNull;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
@@ -83,7 +82,7 @@ public class PubRoot {
     return root == null ? null : root.refresh();
   }
 
-  @NonNull
+  @NotNull
   public static List<PubRoot> multipleForProject(@NotNull Project project) {
     return PubRoots.forProject(project);
   }
