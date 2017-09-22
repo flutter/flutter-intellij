@@ -435,6 +435,7 @@ public class PubRoot {
 
   private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
     final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
+      @Override
       protected void addImplicitResolvers() {
         this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");
         this.addImplicitResolver(Tag.NULL, NULL, "~nN\u0000");
