@@ -6,6 +6,7 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/testSrc/unit" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
+      <sourceFolder url="file://$MODULE_DIR$/testSrc" isTestSource="true" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -24,5 +25,11 @@
     <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module" module-name="testFramework" scope="TEST" />
     <orderEntry type="module" module-name="idea-ui" />
+    <orderEntry type="module" module-name="uitest-framework" />
+    <orderEntry type="module" module-name="fest-swing" />
+    <orderEntry type="module" module-name="android-test-framework" scope="TEST" />
+    <orderEntry type="module" module-name="external-system-rt" scope="TEST" />
+    <orderEntry type="module" module-name="designer" scope="TEST" />
+    <orderEntry type="module" module-name="gradle" scope="TEST" />
   </component>
 </module>
