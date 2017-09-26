@@ -11,12 +11,9 @@ import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.project.NewProjectModel;
 import com.android.tools.idea.observable.BindingsManager;
 import com.android.tools.idea.observable.ListenerManager;
-import com.android.tools.idea.observable.core.BoolProperty;
-import com.android.tools.idea.observable.core.BoolValueProperty;
-import com.android.tools.idea.observable.core.ObservableBool;
-import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.core.*;
 import com.android.tools.idea.observable.expressions.Expression;
-import com.android.tools.idea.observable.expressions.value.AsValueExpression;
+import com.android.tools.idea.observable.expressions.value.TransformOptionalExpression;
 import com.android.tools.idea.observable.ui.SelectedItemProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.validation.validators.PathValidator;
@@ -32,16 +29,24 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.ui.ComboboxWithBrowseButton;
+import com.intellij.ui.JBProgressBar;
+import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.module.InstallSdkAction;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
@@ -49,13 +54,17 @@ import java.util.List;
 /**
  * Configure Flutter project parameters that are common to all types.
  */
-public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> {
+public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> implements InstallSdkAction.Model {
   private final StudioWizardStepPanel myRootPanel;
   private final ValidatorPanel myValidatorPanel;
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
   private boolean hasEntered = false;
   private OptionalValueProperty<FlutterProjectType> myProjectType;
+  private StringValueProperty myDownloadErrorMessage = new StringValueProperty();
+  private final InstallSdkAction myInstallSdkAction;
+  private InstallSdkAction.CancelActionListener myListener;
+  private String mySdkPathContent = "";
 
   private JPanel myPanel;
   private JTextField myProjectName;
@@ -64,6 +73,10 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private ComboboxWithBrowseButton myFlutterSdkPath;
   private JLabel myHeading;
   private JPanel myLocationPanel;
+  private LinkLabel myInstallActionLink;
+  private JBProgressBar myProgressBar;
+  private JLabel myCancelProgressButton;
+  private JTextPane myProgressText;
 
   public FlutterProjectStep(FlutterProjectModel model, String title, Icon icon, FlutterProjectType type) {
     super(model, title, icon);
@@ -82,7 +95,15 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myBindings.bind(model.description(), new TextProperty(myDescription));
 
     myFlutterSdkPath.getComboBox().setEditable(true);
-    myBindings.bind(model.flutterSdk(), new AsValueExpression<>(new SelectedItemProperty<>(myFlutterSdkPath.getComboBox())));
+    myBindings.bind(
+      model.flutterSdk(),
+      new TransformOptionalExpression<String, String>("", new SelectedItemProperty<>(myFlutterSdkPath.getComboBox())) {
+        @NotNull
+        @Override
+        protected String transform(@NotNull String value) {
+          return value;
+        }
+      });
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
                                              FileChooserDescriptorFactory.createSingleFolderDescriptor(),
@@ -94,9 +115,37 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
     myValidatorPanel.registerValidator(model.flutterSdk(), FlutterProjectStep::validateFlutterSdk);
     myValidatorPanel.registerValidator(model.projectName(), this::validateFlutterModuleName);
+    myValidatorPanel.registerMessageSource(myDownloadErrorMessage);
 
     Expression<File> locationFile = model.projectLocation().transform(File::new);
     myValidatorPanel.registerValidator(locationFile, PathValidator.createDefault("project location"));
+
+    // Initialization of the SDK install UI was copied from FlutterGeneratorPeer.
+
+    // Hide pending real content.
+    myProgressBar.setVisible(false);
+    myProgressText.setVisible(false);
+    myCancelProgressButton.setVisible(false);
+    myInstallSdkAction = new InstallSdkAction(this);
+
+    myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
+    myInstallActionLink.setDisabledIcon(IconLoader.getDisabledIcon(myInstallSdkAction.getLinkIcon()));
+
+    myInstallActionLink.setText(myInstallSdkAction.getLinkText());
+
+    //noinspection unchecked
+    myInstallActionLink.setListener((label, linkUrl) -> myInstallSdkAction.actionPerformed(null), null);
+
+    myProgressText.setFont(UIUtil.getLabelFont(UIUtil.FontSize.NORMAL).deriveFont(Font.ITALIC));
+
+    // Some feedback on hover.
+    myCancelProgressButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    myCancelProgressButton.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        myListener.actionCanceled();
+      }
+    });
 
     myRootPanel = new StudioWizardStepPanel(myValidatorPanel);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
@@ -118,8 +167,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
   @NotNull
   @SuppressWarnings("Duplicates") // Copied from ConfigureAndroidProjectStep
-  private static String findProjectLocation(@NotNull String applicationName) {
-    applicationName = NewProjectModel.sanitizeApplicationName(applicationName);
+  private static String findProjectLocation(@NotNull String appName) {
+    String applicationName = NewProjectModel.sanitizeApplicationName(appName);
     File baseDirectory = WizardUtils.getProjectLocationParent();
     File projectDirectory = new File(baseDirectory, applicationName);
 
@@ -226,6 +275,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
         break;
     }
     myHeading.setText(heading);
+    myDownloadErrorMessage.set("");
 
     // Set default values for text fields, but only do so the first time the page is shown.
     String descrText = "";
@@ -258,5 +308,80 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     }
     allSteps.add(new FlutterSettingsStep(getModel(), getTitle(), getIcon()));
     return allSteps;
+  }
+
+  @Override
+  public void setSdkPath(String path) {
+    mySdkPathContent = (String) myFlutterSdkPath.getComboBox().getEditor().getItem();
+    myFlutterSdkPath.getComboBox().getEditor().setItem(path);
+    myDownloadErrorMessage.set("");
+  }
+
+  @Override
+  public boolean validate() {
+    setSdkPath(mySdkPathContent);
+    ensureComboModelContainsCurrentItem(myFlutterSdkPath.getComboBox());
+    return false;
+  }
+
+  @Override
+  public void requestNextStep() {
+    // Called when the download process completes.
+    ensureComboModelContainsCurrentItem(myFlutterSdkPath.getComboBox());
+  }
+
+  @Override
+  public void setErrorDetails(String details) {
+    // Setting this doesn't do much since the first validation error encountered is displayed, not the most recent.
+    myDownloadErrorMessage.set(details == null ? "" : details);
+  }
+
+  @Override
+  public ComboboxWithBrowseButton getSdkComboBox() {
+    return myFlutterSdkPath;
+  }
+
+  @Override
+  public void addCancelActionListener(InstallSdkAction.CancelActionListener listener) {
+    myListener = listener;
+  }
+
+  @Override
+  public JBProgressBar getProgressBar() {
+    return myProgressBar;
+  }
+
+  @Override
+  public LinkLabel getInstallActionLink() {
+    return myInstallActionLink;
+  }
+
+  @Override
+  public JTextPane getProgressText() {
+    return myProgressText;
+  }
+
+  @Override
+  public JLabel getCancelProgressButton() {
+    return myCancelProgressButton;
+  }
+
+  private static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
+    final Object currentItem = comboBox.getEditor().getItem();
+
+    boolean contains = false;
+    for (int i = 0; i < comboBox.getModel().getSize(); i++) {
+      if (currentItem.equals(comboBox.getModel().getElementAt(i))) {
+        contains = true;
+        break;
+      }
+    }
+
+    if (!contains) {
+      //noinspection unchecked
+      ((DefaultComboBoxModel)comboBox.getModel()).insertElementAt(currentItem, 0);
+      comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
+      comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
+    }
   }
 }

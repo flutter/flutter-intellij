@@ -23,6 +23,8 @@ import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.android.sdk.AndroidSdkUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.NoSuchElementException;
+
 public class FlutterNewProjectAction extends AnAction implements DumbAware {
   public FlutterNewProjectAction() {
     this("New Flutter Project...");
@@ -39,23 +41,16 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    String[] paths = FlutterSdkUtil.getKnownFlutterSdkPaths();
-    if (paths == null || paths.length == 0) {
-      // TODO(any): Add a link to download the SDK.
-      Messages.showErrorDialog("Please install the Flutter SDK", "No SDK Found");
-      return;
-    }
-    if (!AndroidSdkUtils.isAndroidSdkAvailable()) {
-      SdkQuickfixUtils.showSdkMissingDialog();
-      return;
-    }
-
     FlutterProjectModel model = new FlutterProjectModel(FlutterProjectType.APP);
     ModelWizard wizard = new ModelWizard.Builder()
       .addStep(new ChoseProjectTypeStep(model))
       .build();
     ModelWizardDialog dialog =
       new StudioWizardDialogBuilder(wizard, "Create New Flutter Project").setUseNewUx(true).build();
-    dialog.show();
+    try {
+      dialog.show();
+    } catch (NoSuchElementException ex) {
+      // This happens if no Flutter SDK is installed and the user cancels the FlutterProjectStep.
+    }
   }
 }

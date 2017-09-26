@@ -21,6 +21,9 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.ui.ComboboxWithBrowseButton;
+import com.intellij.ui.JBProgressBar;
+import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -30,31 +33,80 @@ import javax.swing.*;
 import java.io.File;
 
 @SuppressWarnings("ComponentNotRegistered")
-class InstallSdkAction extends DumbAwareAction {
+public class InstallSdkAction extends DumbAwareAction {
 
   private static final String GIT_EXECUTABLE = "git";
+  private final InstallAction myInstallAction;
+
+  public InstallSdkAction(Model peer) {
+    myInstallAction = createInstallAction(peer);
+  }
 
   private static GeneralCommandLine gitCommandBase() {
     return new GeneralCommandLine().withParentEnvironmentType(
       GeneralCommandLine.ParentEnvironmentType.CONSOLE).withExePath(GIT_EXECUTABLE);
   }
 
+  private static InstallAction createInstallAction(Model peer) {
+    return hasGit() ? new GitCloneAction(peer) : new ViewDocsAction(peer);
+  }
+
+  private static boolean hasGit() {
+    return FlutterUtils.runsCleanly(gitCommandBase().withParameters("version"));
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    myInstallAction.perform();
+  }
+
+  public Icon getLinkIcon() {
+    return myInstallAction.getLinkIcon();
+  }
+
+  public String getLinkText() {
+    return myInstallAction.getLinkText();
+  }
+
+  public interface Model {
+
+    JTextPane getProgressText();
+
+    void setSdkPath(String path);
+
+    boolean validate();
+
+    JLabel getCancelProgressButton();
+
+    void requestNextStep();
+
+    LinkLabel getInstallActionLink();
+
+    JBProgressBar getProgressBar();
+
+    void setErrorDetails(String details);
+
+    ComboboxWithBrowseButton getSdkComboBox();
+
+    void addCancelActionListener(CancelActionListener action);
+  }
+
   public interface CancelActionListener {
     void actionCanceled();
   }
 
-  private static abstract class InstallAction implements CancelActionListener {
+  public static abstract class InstallAction implements CancelActionListener {
+
+    @NotNull
+    private final Model myPeer;
+
+    InstallAction(@NotNull Model peer) {
+      peer.addCancelActionListener(this);
+      myPeer = peer;
+    }
 
     @Override
     public void actionCanceled() {
-    }
-
-    @NotNull
-    private final FlutterGeneratorPeer myPeer;
-
-    InstallAction(@NotNull FlutterGeneratorPeer peer) {
-      peer.addCancelActionListener(this);
-      myPeer = peer;
     }
 
     abstract void perform();
@@ -107,7 +159,7 @@ class InstallSdkAction extends DumbAwareAction {
   private static class ViewDocsAction extends InstallAction {
     private static final String ANALYTICS_KEY = "InstallSdkViewDocsAction";
 
-    ViewDocsAction(FlutterGeneratorPeer peer) {
+    ViewDocsAction(Model peer) {
       super(peer);
     }
 
@@ -132,7 +184,7 @@ class InstallSdkAction extends DumbAwareAction {
     private static final String ANALYTICS_KEY = "InstallSdkRunGitAction";
     private OSProcessHandler handler;
 
-    GitCloneAction(FlutterGeneratorPeer peer) {
+    GitCloneAction(Model peer) {
       super(peer);
     }
 
@@ -155,12 +207,16 @@ class InstallSdkAction extends DumbAwareAction {
       if (installTarget != null) {
         FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
         installTo(installTarget);
+      } else {
+        // A valid SDK may have been deleted before the FileChooser was cancelled.
+        validatePeer();
       }
     }
 
     @Override
     public void actionCanceled() {
       handler.destroyProcess();
+      // TODO(messick): Delete the partial download.
       validatePeer();
     }
 
@@ -193,6 +249,15 @@ class InstallSdkAction extends DumbAwareAction {
       cmd.registerTo(handler);
 
       handler.startNotify();
+    }
+
+    private void setInProgress(boolean visible) {
+      if (visible) {
+        setErrorDetails(null);
+      }
+
+      setSdkComboEnablement(!visible);
+      setProgressVisible(visible);
     }
 
     private abstract class InstallCommand {
@@ -234,12 +299,14 @@ class InstallSdkAction extends DumbAwareAction {
       }
 
       void onSuccess(@NotNull ProcessEvent event) {
+        validatePeer();
       }
 
       void onError(@NotNull ExecutionException event) {
       }
 
       void onError(@NotNull ProcessEvent event) {
+        validatePeer();
       }
 
       void onTextAvailable(ProcessEvent event, Key outputType) {
@@ -334,41 +401,5 @@ class InstallSdkAction extends DumbAwareAction {
         showError("Error installing Flutter: " + event.getText() + " returned " + event.getExitCode());
       }
     }
-
-    private void setInProgress(boolean visible) {
-      if (visible) {
-        setErrorDetails(null);
-      }
-
-      setSdkComboEnablement(!visible);
-      setProgressVisible(visible);
-    }
-  }
-
-  private final InstallAction myInstallAction;
-
-  public InstallSdkAction(FlutterGeneratorPeer peer) {
-    myInstallAction = createInstallAction(peer);
-  }
-
-  private static InstallAction createInstallAction(FlutterGeneratorPeer peer) {
-    return hasGit() ? new GitCloneAction(peer) : new ViewDocsAction(peer);
-  }
-
-  private static boolean hasGit() {
-    return FlutterUtils.runsCleanly(gitCommandBase().withParameters("version"));
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent e) {
-    myInstallAction.perform();
-  }
-
-  public Icon getLinkIcon() {
-    return myInstallAction.getLinkIcon();
-  }
-
-  public String getLinkText() {
-    return myInstallAction.getLinkText();
   }
 }
