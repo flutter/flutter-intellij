@@ -188,6 +188,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   }
 
   private static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
+    // TODO(messick): Make the original version of this public in the Dart plugin. Cache comboBox.getModel().
     final Object currentItem = comboBox.getEditor().getItem();
 
     boolean contains = false;
