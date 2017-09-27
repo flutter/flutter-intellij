@@ -78,23 +78,25 @@ public class FlutterConstants {
   );
 
   // From: https://github.com/flutter/flutter/blob/master/packages/flutter_tools/lib/src/commands/create.dart
-  public final static List<String> FLUTTER_PACKAGE_DEPENDENCIES = Arrays.asList("args",
-                                                                                "async",
-                                                                                "collection",
-                                                                                "convert",
-                                                                                "flutter",
-                                                                                "html",
-                                                                                "intl",
-                                                                                "logging",
-                                                                                "matcher",
-                                                                                "mime",
-                                                                                "path",
-                                                                                "plugin",
-                                                                                "pool",
-                                                                                "test",
-                                                                                "utf",
-                                                                                "watcher",
-                                                                                "yaml");
+  public final static List<String> FLUTTER_PACKAGE_DEPENDENCIES = Arrays.asList(
+    "args",
+    "async",
+    "collection",
+    "convert",
+    "flutter",
+    "flutter_test",
+    "html",
+    "intl",
+    "logging",
+    "matcher",
+    "mime",
+    "path",
+    "plugin",
+    "pool",
+    "test",
+    "utf",
+    "watcher",
+    "yaml");
 
 
   public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
