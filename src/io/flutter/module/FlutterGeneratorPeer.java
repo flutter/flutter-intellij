@@ -37,7 +37,7 @@ import java.awt.event.MouseEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-public class FlutterGeneratorPeer {
+public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private final WizardContext myContext;
   private JPanel myMainPanel;
   private ComboboxWithBrowseButton mySdkPathComboWithBrowse;
@@ -88,6 +88,7 @@ public class FlutterGeneratorPeer {
       }
     });
 
+    // When this changes the corresponding parts of FlutterProjectStep should also be changed.
     myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
     myInstallActionLink.setDisabledIcon(IconLoader.getDisabledIcon(myInstallSdkAction.getLinkIcon()));
 
@@ -121,6 +122,7 @@ public class FlutterGeneratorPeer {
     mySdkPathComboWithBrowse = new ComboboxWithBrowseButton(new ComboBox<>());
   }
 
+  @Override
   public boolean validate() {
     final ValidationInfo info = validateSdk();
     if (info != null) {
@@ -155,27 +157,33 @@ public class FlutterGeneratorPeer {
     return mySdkPathComboWithBrowse.getComboBox().getEditor();
   }
 
+  @Override
   @NotNull
   public ComboboxWithBrowseButton getSdkComboBox() {
     return mySdkPathComboWithBrowse;
   }
 
+  @Override
   public void setSdkPath(@NotNull String sdkPath) {
     getSdkEditor().setItem(sdkPath);
   }
 
+  @Override
   public JBProgressBar getProgressBar() {
     return myProgressBar;
   }
 
+  @Override
   public LinkLabel getInstallActionLink() {
     return myInstallActionLink;
   }
 
+  @Override
   public JTextPane getProgressText() {
     return myProgressText;
   }
 
+  @Override
   public JLabel getCancelProgressButton() {
     return myCancelProgressButton;
   }
@@ -183,6 +191,7 @@ public class FlutterGeneratorPeer {
   /**
    * Set error details (pass null to hide).
    */
+  @Override
   public void setErrorDetails(@Nullable String details) {
     final boolean makeVisible = details != null;
     if (makeVisible) {
@@ -192,10 +201,12 @@ public class FlutterGeneratorPeer {
     errorPane.setVisible(makeVisible);
   }
 
+  @Override
   public void addCancelActionListener(InstallSdkAction.CancelActionListener listener) {
     myListener = listener;
   }
 
+  @Override
   public void requestNextStep() {
     final AbstractWizard wizard = myContext.getWizard();
     if (wizard != null) {
