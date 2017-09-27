@@ -54,10 +54,6 @@ Please note the following known issues:
   read the PATH variable just once on startup. Thus, if you change PATH later to
   include the Flutter SDK path, this will not have an affect in IntelliJ until you
   restart the IDE.
-- [#1150](https://github.com/flutter/flutter-intellij/issues/1150): the device
-  chooser can open Android emulators (and the iOS simulator on MacOS). However,
-  in order to locate the Android SDK, the Flutter plugin relies on the `ANDROID_HOME`
-  environment variable being set; we're working to relax this requirement.
 - We are seeing occasional timeouts when trying to connect to Observatory when
   debugging against the iOS simulator; restarting the simulator should get you
   back on track.
