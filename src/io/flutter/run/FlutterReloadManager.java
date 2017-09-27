@@ -12,10 +12,7 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.SaveAllAction;
 import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.Notification;
-import com.intellij.notification.NotificationGroup;
-import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
+import com.intellij.notification.*;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
@@ -32,6 +29,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowId;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiFile;
@@ -56,6 +54,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -195,9 +194,7 @@ public class FlutterReloadManager {
           if (!result.ok()) {
             showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
           }
-        }).whenComplete((aVoid, throwable) -> {
-          handlingSave.set(false);
-        });
+        }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
       }
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
@@ -224,19 +221,33 @@ public class FlutterReloadManager {
     }
   }
 
+  @Nullable
   private FlutterApp getApp(AnAction reloadAction) {
     if (reloadAction instanceof FlutterAppAction) {
       return ((FlutterAppAction)reloadAction).getApp();
     }
-
-    return null;
+    else {
+      return null;
+    }
   }
 
-  private void showAnalysisNotification(String title, String content, boolean isError) {
+  private void showAnalysisNotification(@NotNull String title, @NotNull String content, boolean isError) {
+    if (!ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID).isVisible()) {
+      content += " (<a href='open.analysis.view'>view issues</a>)";
+    }
+
     final NotificationGroup notificationGroup =
       NotificationGroup.toolWindowGroup(FlutterRunNotifications.GROUP_DISPLAY_ID, DartProblemsView.TOOLWINDOW_ID, false);
     final Notification notification =
-      notificationGroup.createNotification(title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION, null);
+      notificationGroup.createNotification(
+        title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION,
+        new NotificationListener.Adapter() {
+          @Override
+          protected void hyperlinkActivated(@NotNull final Notification notification, @NotNull final HyperlinkEvent e) {
+            notification.expire();
+            ToolWindowManager.getInstance(myProject).getToolWindow(DartProblemsView.TOOLWINDOW_ID).activate(null);
+          }
+        });
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
   }
@@ -275,11 +286,10 @@ public class FlutterReloadManager {
 
     // TODO(devoncarew): Remove the use of reflection when our minimum revs to 2017.2.
     final Method getErrorsMethod = ReflectionUtil.getMethod(analysisServerService.getClass(), "getErrors", SearchScope.class);
-    if (getErrorsMethod == null || true) {
+    if (getErrorsMethod == null) {
       final PsiErrorElement firstError = ApplicationManager.getApplication().runReadAction((Computable<PsiErrorElement>)() -> {
         final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
-        final PsiErrorElement error = PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);
-        return error;
+        return PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);
       });
       return firstError != null;
     }
