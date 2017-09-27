@@ -95,6 +95,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myBindings.bind(model.description(), new TextProperty(myDescription));
 
     myFlutterSdkPath.getComboBox().setEditable(true);
+    myFlutterSdkPath.getButton().addActionListener((e) -> {
+      myFlutterSdkPath.getComboBox().setSelectedItem(myFlutterSdkPath.getComboBox().getEditor().getItem());
+    });
     myBindings.bind(
       model.flutterSdk(),
       new TransformOptionalExpression<String, String>("", new SelectedItemProperty<>(myFlutterSdkPath.getComboBox())) {
