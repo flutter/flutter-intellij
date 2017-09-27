@@ -59,10 +59,10 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private final ValidatorPanel myValidatorPanel;
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
+  private final InstallSdkAction myInstallSdkAction;
   private boolean hasEntered = false;
   private OptionalValueProperty<FlutterProjectType> myProjectType;
   private StringValueProperty myDownloadErrorMessage = new StringValueProperty();
-  private final InstallSdkAction myInstallSdkAction;
   private InstallSdkAction.CancelActionListener myListener;
   private String mySdkPathContent = "";
 
@@ -95,9 +95,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myBindings.bind(model.description(), new TextProperty(myDescription));
 
     myFlutterSdkPath.getComboBox().setEditable(true);
-    myFlutterSdkPath.getButton().addActionListener((e) -> {
-      myFlutterSdkPath.getComboBox().setSelectedItem(myFlutterSdkPath.getComboBox().getEditor().getItem());
-    });
+    myFlutterSdkPath.getButton()
+      .addActionListener((e) -> myFlutterSdkPath.getComboBox().setSelectedItem(myFlutterSdkPath.getComboBox().getEditor().getItem()));
     myBindings.bind(
       model.flutterSdk(),
       new TransformOptionalExpression<String, String>("", new SelectedItemProperty<>(myFlutterSdkPath.getComboBox())) {
@@ -186,6 +185,25 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
   private static Validator.Result errorResult(String message) {
     return new Validator.Result(Validator.Severity.ERROR, message);
+  }
+
+  private static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
+    final Object currentItem = comboBox.getEditor().getItem();
+
+    boolean contains = false;
+    for (int i = 0; i < comboBox.getModel().getSize(); i++) {
+      if (currentItem.equals(comboBox.getModel().getElementAt(i))) {
+        contains = true;
+        break;
+      }
+    }
+
+    if (!contains) {
+      //noinspection unchecked
+      ((DefaultComboBoxModel)comboBox.getModel()).insertElementAt(currentItem, 0);
+      comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
+      comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
+    }
   }
 
   /**
@@ -279,6 +297,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     }
     myHeading.setText(heading);
     myDownloadErrorMessage.set("");
+    mySdkPathContent = (String)myFlutterSdkPath.getComboBox().getEditor().getItem();
 
     // Set default values for text fields, but only do so the first time the page is shown.
     String descrText = "";
@@ -315,7 +334,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
   @Override
   public void setSdkPath(String path) {
-    mySdkPathContent = (String) myFlutterSdkPath.getComboBox().getEditor().getItem();
+    mySdkPathContent = (String)myFlutterSdkPath.getComboBox().getEditor().getItem();
     myFlutterSdkPath.getComboBox().getEditor().setItem(path);
     myDownloadErrorMessage.set("");
   }
@@ -367,24 +386,5 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @Override
   public JLabel getCancelProgressButton() {
     return myCancelProgressButton;
-  }
-
-  private static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
-    final Object currentItem = comboBox.getEditor().getItem();
-
-    boolean contains = false;
-    for (int i = 0; i < comboBox.getModel().getSize(); i++) {
-      if (currentItem.equals(comboBox.getModel().getElementAt(i))) {
-        contains = true;
-        break;
-      }
-    }
-
-    if (!contains) {
-      //noinspection unchecked
-      ((DefaultComboBoxModel)comboBox.getModel()).insertElementAt(currentItem, 0);
-      comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
-      comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
-    }
   }
 }
