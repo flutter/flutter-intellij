@@ -393,8 +393,6 @@ public class InstallSdkAction extends DumbAwareAction {
 
       @Override
       void onSuccess(@NotNull ProcessEvent event) {
-        EdtExecutorService.getInstance().
-        LocalFileSystem.getInstance().refreshAndFindFileByPath(mySdkDir);
         requestNextStep();
       }
 
