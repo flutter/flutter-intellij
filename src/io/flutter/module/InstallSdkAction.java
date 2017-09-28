@@ -20,10 +20,12 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.JBProgressBar;
 import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.util.concurrency.EdtExecutorService;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -31,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.io.File;
+import java.util.Collections;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
@@ -207,7 +210,9 @@ public class InstallSdkAction extends DumbAwareAction {
       if (installTarget != null) {
         FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
         installTo(installTarget);
-      } else {
+        LocalFileSystem.getInstance().refreshFiles(Collections.singletonList(installTarget), false, true, null);
+      }
+      else {
         // A valid SDK may have been deleted before the FileChooser was cancelled.
         validatePeer();
       }
@@ -388,6 +393,8 @@ public class InstallSdkAction extends DumbAwareAction {
 
       @Override
       void onSuccess(@NotNull ProcessEvent event) {
+        EdtExecutorService.getInstance().
+        LocalFileSystem.getInstance().refreshAndFindFileByPath(mySdkDir);
         requestNextStep();
       }
 
