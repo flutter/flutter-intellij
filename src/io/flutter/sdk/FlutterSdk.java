@@ -29,6 +29,7 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,7 +103,10 @@ public class FlutterSdk {
 
   @Nullable
   public static FlutterSdk forPath(@NotNull final String path) {
-    final VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
+    VirtualFile home = LocalFileSystem.getInstance().findFileByPath(path);
+    if (home == null) {
+      home = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(new File(path));
+    }
     if (home == null || !FlutterSdkUtil.isFlutterSdkHome(path)) {
       return null;
     }
