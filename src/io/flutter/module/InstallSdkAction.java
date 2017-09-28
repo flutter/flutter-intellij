@@ -207,7 +207,8 @@ public class InstallSdkAction extends DumbAwareAction {
       if (installTarget != null) {
         FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
         installTo(installTarget);
-      } else {
+      }
+      else {
         // A valid SDK may have been deleted before the FileChooser was cancelled.
         validatePeer();
       }
