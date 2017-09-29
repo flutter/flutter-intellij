@@ -20,10 +20,12 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.JBProgressBar;
 import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -389,6 +391,7 @@ public class InstallSdkAction extends DumbAwareAction {
 
       @Override
       void onSuccess(@NotNull ProcessEvent event) {
+        UIUtil.invokeAndWaitIfNeeded(() -> LocalFileSystem.getInstance().refreshAndFindFileByPath(mySdkDir));
         requestNextStep();
       }
 
