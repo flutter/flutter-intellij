@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>17.0</version>
+  <version>18.0</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,20 @@
 
   <change-notes>
     <![CDATA[
+
+18.0:
+<ul>
+  <li>Android Studio support</li>
+  <li>for flutter launches, support passing in a --flavor param</li>
+  <li>reload on save now on by default</li>
+  <li>improved and reorganized the Flutter view's toolbar</li>
+  <li>analysis toast provides a new hyperlink to open the analysis view</li>
+  <li>reloads disallowed while another reload is taking place</li>
+  <li>support to open Xcode from a Flutter plugin project</li>
+  <li>support to open Android Studio from a Flutter plugin project</li>
+  <li>support to open Android Studio from a Flutter app project</li>
+  <li>support to show referenced flutter plugin in the project view</li>
+</ul>
 
 17.0:
 <ul>
