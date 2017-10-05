@@ -5,7 +5,12 @@
  */
 package io.flutter.project;
 
+import com.android.builder.model.SourceProvider;
 import com.android.repository.io.FileOpUtils;
+import com.android.tools.idea.gradle.npw.project.GradleAndroidProjectPaths;
+import com.android.tools.idea.npw.project.AndroidSourceSet;
+import com.intellij.facet.FacetManager;
+import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.ide.RecentProjectsManager;
 import com.intellij.ide.highlighter.ModuleFileType;
 import com.intellij.ide.projectView.ProjectView;
@@ -24,10 +29,12 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -36,13 +43,23 @@ import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.platform.PlatformProjectOpenProcessor;
 import com.intellij.projectImport.ProjectOpenedCallback;
 import io.flutter.module.FlutterModuleBuilder;
+import io.flutter.module.FlutterProjectType;
 import io.flutter.module.FlutterSmallIDEProjectGenerator;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.android.facet.AndroidFacet;
+import org.jetbrains.android.facet.AndroidFacetType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.jetbrains.jps.android.model.impl.JpsAndroidModuleProperties;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.EnumSet;
+
+import static com.intellij.openapi.util.io.FileUtilRt.getRelativePath;
+import static com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName;
+import static com.intellij.util.containers.ContainerUtil.getFirstItem;
 
 /**
  * Create a Flutter project.
@@ -56,7 +73,7 @@ import java.util.EnumSet;
  */
 public class FlutterProjectCreator {
   private static final Logger LOG = Logger.getInstance(FlutterProjectModel.class);
-
+  private static final String SEPARATOR = "/";
   @NotNull private final FlutterProjectModel myModel;
 
   public FlutterProjectCreator(@NotNull FlutterProjectModel model) {
@@ -83,6 +100,47 @@ public class FlutterProjectCreator {
       return false;
     }
     return true;
+  }
+
+  private static void deleteDirectoryContents(File location) {
+    File[] files = location.listFiles();
+    if (files != null) {
+      for (File file : files) {
+        if (file.isDirectory()) {
+          deleteDirectoryContents(file);
+        }
+        //noinspection ResultOfMethodCallIgnored
+        file.delete();
+      }
+    }
+  }
+
+  private static void configureFacet(@NotNull AndroidFacet facet, @NotNull FlutterProjectModel androidModel, @NotNull File location) {
+    JpsAndroidModuleProperties facetProperties = facet.getProperties();
+
+    File modulePath = new File(location, "android");
+    AndroidSourceSet sources = GradleAndroidProjectPaths.createDefaultSourceSetAt(modulePath);
+    SourceProvider sourceProvider = sources.toSourceProvider();
+    facetProperties.MANIFEST_FILE_RELATIVE_PATH = relativePath(modulePath, sourceProvider.getManifestFile());
+    facetProperties.RES_FOLDER_RELATIVE_PATH = relativePath(modulePath, sourceProvider.getResDirectories());
+    facetProperties.ASSETS_FOLDER_RELATIVE_PATH = relativePath(modulePath, sourceProvider.getAssetsDirectories());
+  }
+
+  @NotNull
+  private static String relativePath(@NotNull File basePath, @NotNull Collection<File> dirs) {
+    return relativePath(basePath, getFirstItem(dirs));
+  }
+
+  @NotNull
+  private static String relativePath(@NotNull File basePath, @Nullable File file) {
+    String relativePath = null;
+    if (file != null) {
+      relativePath = getRelativePath(basePath, file);
+    }
+    if (relativePath != null && !relativePath.startsWith(SEPARATOR)) {
+      return SEPARATOR + toSystemIndependentName(relativePath);
+    }
+    return "";
   }
 
   public void createModule() {
@@ -135,7 +193,7 @@ public class FlutterProjectCreator {
       }
     };
     builder.setName(myModel.projectName().get());
-    builder.setModuleFilePath(FileUtil.toSystemIndependentName(contentRoot) + "/" + moduleName + ModuleFileType.DOT_DEFAULT_EXTENSION);
+    builder.setModuleFilePath(FileUtilRt.toSystemIndependentName(contentRoot) + "/" + moduleName + ModuleFileType.DOT_DEFAULT_EXTENSION);
     builder.commitModule(project, null);
   }
 
@@ -165,8 +223,24 @@ public class FlutterProjectCreator {
         public void run(@NotNull ProgressIndicator indicator) {
           indicator.setIndeterminate(true);
 
+          // Add an Android facet if needed by the project type.
+          if (myModel.projectType().getValue() != FlutterProjectType.PACKAGE) {
+            ModifiableFacetModel model = FacetManager.getInstance(module).createModifiableModel();
+            AndroidFacetType facetType = AndroidFacet.getFacetType();
+            AndroidFacet facet = facetType.createFacet(module, AndroidFacet.NAME, facetType.createDefaultConfiguration(), null);
+            model.addFacet(facet);
+            configureFacet(facet, myModel, location);
+          }
+
+          // The IDE has already created some files. Fluter won't overwrite them, but we want the versions provided by Flutter.
+          deleteDirectoryContents(location);
+
           FlutterSmallIDEProjectGenerator
             .generateProject(project, baseDir, myModel.flutterSdk().get(), module, makeAdditionalSettings());
+
+          // Reload the project to use the configuration written by Flutter.
+          VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
+          ProjectManager.getInstance().reloadProject(project);
         }
       });
 
