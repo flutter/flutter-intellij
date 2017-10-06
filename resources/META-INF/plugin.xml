@@ -30,9 +30,6 @@
   <li>improved and reorganized the Flutter view's toolbar</li>
   <li>analysis toast provides a new hyperlink to open the analysis view</li>
   <li>reloads disallowed while another reload is taking place</li>
-  <li>support to open Xcode from a Flutter plugin project</li>
-  <li>support to open Android Studio from a Flutter plugin project</li>
-  <li>support to open Android Studio from a Flutter app project</li>
   <li>support to show referenced flutter plugin in the project view</li>
 </ul>
 
