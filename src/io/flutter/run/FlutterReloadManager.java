@@ -95,13 +95,20 @@ public class FlutterReloadManager {
     ActionManagerEx.getInstanceEx().addAnActionListener(new AnActionListener.Adapter() {
       @Override
       public void afterActionPerformed(AnAction action, DataContext dataContext, AnActionEvent event) {
-        if (action instanceof SaveAllAction) {
-          try {
-            handleSaveAllNotification(event);
-          }
-          catch (Throwable t) {
-            LOG.error(t);
-          }
+        if (!(action instanceof SaveAllAction)) {
+          return;
+        }
+
+        // If this save all action is not for the current project, return.
+        if (myProject != CommonDataKeys.PROJECT.getData(event.getDataContext())) {
+          return;
+        }
+
+        try {
+          handleSaveAllNotification(event);
+        }
+        catch (Throwable t) {
+          LOG.error(t);
         }
       }
     }, project);
