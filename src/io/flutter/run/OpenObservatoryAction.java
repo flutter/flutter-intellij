@@ -5,10 +5,7 @@
  */
 package io.flutter.run;
 
-import com.intellij.ide.browsers.BrowserFamily;
 import com.intellij.ide.browsers.BrowserLauncher;
-import com.intellij.ide.browsers.WebBrowser;
-import com.intellij.ide.browsers.WebBrowserManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
@@ -17,8 +14,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
-
-import java.util.List;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenObservatoryAction extends DumbAwareAction {
@@ -44,12 +39,7 @@ public class OpenObservatoryAction extends DumbAwareAction {
 
     final String url = myConnector.getBrowserUrl();
     if (url != null) {
-      openInAnyChromeFamilyBrowser(url);
+      BrowserLauncher.getInstance().browse(url, null);
     }
-  }
-
-  public static void openInAnyChromeFamilyBrowser(@NotNull String url) {
-    final List chromeBrowsers = WebBrowserManager.getInstance().getBrowsers((browser) -> browser.getFamily() == BrowserFamily.CHROME, true);
-    BrowserLauncher.getInstance().browse(url, chromeBrowsers.isEmpty() ? null : (WebBrowser)chromeBrowsers.get(0));
   }
 }

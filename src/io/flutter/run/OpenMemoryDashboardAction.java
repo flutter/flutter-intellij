@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
@@ -38,7 +39,7 @@ public class OpenMemoryDashboardAction extends DumbAwareAction {
 
     final String url = myConnector.getBrowserUrl();
     if (url != null) {
-      OpenObservatoryAction.openInAnyChromeFamilyBrowser(url + "#/memory-dashboard?editor=IntelliJ");
+      BrowserLauncher.getInstance().browse(url + "#/memory-dashboard?editor=IntelliJ", null);
     }
   }
 }
