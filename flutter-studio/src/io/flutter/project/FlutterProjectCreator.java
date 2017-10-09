@@ -193,7 +193,7 @@ public class FlutterProjectCreator {
       }
     };
     builder.setName(myModel.projectName().get());
-    builder.setModuleFilePath(FileUtilRt.toSystemIndependentName(contentRoot) + "/" + moduleName + ModuleFileType.DOT_DEFAULT_EXTENSION);
+    builder.setModuleFilePath(toSystemIndependentName(contentRoot) + "/" + moduleName + ModuleFileType.DOT_DEFAULT_EXTENSION);
     builder.commitModule(project, null);
   }
 
