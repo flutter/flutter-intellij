@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
@@ -25,7 +26,6 @@ import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
-import io.flutter.run.OpenObservatoryAction;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.vm.service.VmServiceListener;
@@ -276,7 +276,7 @@ class ObservatoryTimelineAction extends FlutterViewAction {
 
     final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
     if (httpUrl != null) {
-      OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/timeline");
+      BrowserLauncher.getInstance().browse(httpUrl + "/#/timeline", null);
     }
   }
 }
@@ -292,7 +292,7 @@ class MemoryDashboardAction extends FlutterViewAction {
 
     final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
     if (httpUrl != null) {
-      OpenObservatoryAction.openInAnyChromeFamilyBrowser(httpUrl + "/#/memory-dashboard");
+      BrowserLauncher.getInstance().browse(httpUrl + "/#/memory-dashboard", null);
     }
   }
 }
