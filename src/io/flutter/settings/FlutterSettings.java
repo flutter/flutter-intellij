@@ -57,7 +57,7 @@ public class FlutterSettings {
   }
 
   public void setReloadOnSave(boolean value) {
-    getPropertiesComponent().setValue(reloadOnSaveKey, value);
+    getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
 
     fireEvent();
   }
@@ -67,7 +67,7 @@ public class FlutterSettings {
   }
 
   public void setVerboseLogging(boolean value) {
-    getPropertiesComponent().setValue(verboseLoggingKey, value);
+    getPropertiesComponent().setValue(verboseLoggingKey, value, false);
 
     fireEvent();
   }
@@ -77,7 +77,7 @@ public class FlutterSettings {
   }
 
   public void setMemoryDashboardEnabled(boolean value) {
-    getPropertiesComponent().setValue(memoryDashboardKey, value);
+    getPropertiesComponent().setValue(memoryDashboardKey, value, false);
 
     fireEvent();
   }
