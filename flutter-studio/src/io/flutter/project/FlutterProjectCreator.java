@@ -256,7 +256,7 @@ public class FlutterProjectCreator {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(myModel.description().get().isEmpty() ? null : myModel.description().get())
       .setType(myModel.projectType().getValue())
-      .setOrg(myModel.companyDomain().get().isEmpty() ? null : myModel.companyDomain().get())
+      .setOrg(myModel.packageName().get().isEmpty() ? null : myModel.packageName().get())
       .setKotlin(myModel.useKotlin().get() ? true : null)
       .setSwift(myModel.useSwift().get() ? true : null)
       .build();
