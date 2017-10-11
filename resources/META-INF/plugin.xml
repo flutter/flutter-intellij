@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>18.0</version>
+  <version>18.1</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,12 @@
 
   <change-notes>
     <![CDATA[
+
+18.1:
+<ul>
+  <li>fixed hot reload issue when multiple project windows were open</li>
+  <li>fixed 'Open Observatory timeline' action</li>
+</ul>
 
 18.0:
 <ul>
@@ -284,6 +290,7 @@
 
   <!-- Contributes IDEA-specific features and implementations. -->
   <depends optional="true" config-file="idea-contribs.xml">com.intellij.modules.java</depends>
+
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!-- depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends -->
   <depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends>
