@@ -50,6 +50,7 @@ import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.edt.GuiTask;
 import org.fest.swing.fixture.DialogFixture;
 import org.fest.swing.timing.Wait;
+import org.fest.swing.util.Platform;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -319,7 +320,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
   @NotNull
   private MenuFixture getMenuFixture() {
-    return new MenuFixture(robot(), target());
+    return Platform.isMacintosh() ? new MacMenuFixture(robot(), target()) : new MenuFixture(robot(), target());
   }
 
   @NotNull
