@@ -1,17 +1,7 @@
 /*
- * Copyright (C) 2017 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 package com.android.tools.idea.tests.gui.framework.fixture;
 
@@ -94,21 +84,23 @@ import static org.jetbrains.plugins.gradle.settings.DistributionType.LOCAL;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@SuppressWarnings("Duplicates") // Copied from uitest-framework module, due to private constructor.
-public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameImpl> {
+@SuppressWarnings("Duplicates") // Copied from IdeFrameFixture in uitest-framework module, due to private constructor.
+public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFrameImpl> {
   @NotNull private final GradleProjectEventListener myGradleProjectEventListener;
   @NotNull private final Modules myModules;
+  @NotNull private final IdeFrameFixture myIdeFrameFixture; // Replaces 'this' when creating component fixtures.
 
   private EditorFixture myEditor;
   private boolean myIsClosed;
 
   @NotNull
-  public static IdeFrameFixture find(@NotNull final Robot robot) {
-    return new IdeFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
+  public static IdeaFrameFixture find(@NotNull final Robot robot) {
+    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
   }
 
-  IdeFrameFixture(@NotNull Robot robot, @NotNull IdeFrameImpl target) {
-    super(IdeFrameFixture.class, robot, target);
+  IdeaFrameFixture(@NotNull Robot robot, @NotNull IdeFrameImpl target) {
+    super(IdeaFrameFixture.class, robot, target);
+    myIdeFrameFixture = IdeFrameFixture.find(robot);
     Project project = getProject();
     myModules = new Modules(project);
 
@@ -166,7 +158,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   @NotNull
   public EditorFixture getEditor() {
     if (myEditor == null) {
-      myEditor = new EditorFixture(robot(), this);
+      myEditor = new EditorFixture(robot(), myIdeFrameFixture);
     }
 
     return myEditor;
@@ -217,7 +209,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture invokeProjectMakeAndSimulateFailure(@NotNull String failure) {
+  public IdeaFrameFixture invokeProjectMakeAndSimulateFailure(@NotNull String failure) {
     Runnable failTask = () -> {
       throw new ExternalSystemException(failure);
     };
@@ -264,41 +256,41 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture stopApp() {
+  public IdeaFrameFixture stopApp() {
     return invokeMenuPath("Run", "Stop \'app\'");
   }
 
   @NotNull
-  public IdeFrameFixture stepOver() {
+  public IdeaFrameFixture stepOver() {
     return invokeMenuPath("Run", "Step Over");
   }
 
   @NotNull
-  public IdeFrameFixture smartStepInto() {
+  public IdeaFrameFixture smartStepInto() {
     return invokeMenuPath("Run", "Smart Step Into");
   }
 
   @NotNull
-  public IdeFrameFixture resumeProgram() {
+  public IdeaFrameFixture resumeProgram() {
     return invokeMenuPath("Run", "Resume Program");
   }
 
   @NotNull
   public RunToolWindowFixture getRunToolWindow() {
-    return new RunToolWindowFixture(this);
+    return new RunToolWindowFixture(myIdeFrameFixture);
   }
 
   @NotNull
   public DebugToolWindowFixture getDebugToolWindow() {
-    return new DebugToolWindowFixture(this);
+    return new DebugToolWindowFixture(myIdeFrameFixture);
   }
 
   protected void selectProjectMakeAction() {
     invokeMenuPath("Build", "Make Project");
   }
 
-  /** Selects the item at {@code menuPath} and returns the result of {@code fixtureFunction} applied to this {@link IdeFrameFixture}. */
-  public <T> T openFromMenu(Function<IdeFrameFixture, T> fixtureFunction, @NotNull String... menuPath) {
+  /** Selects the item at {@code menuPath} and returns the result of {@code fixtureFunction} applied to this {@link IdeaFrameFixture}. */
+  public <T> T openFromMenu(Function<IdeaFrameFixture, T> fixtureFunction, @NotNull String... menuPath) {
     getMenuFixture().invokeMenuPath(menuPath);
     return fixtureFunction.apply(this);
   }
@@ -308,7 +300,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
    *
    * @param path the series of menu names, e.g. {@link invokeActionByMenuPath("Build", "Make Project")}
    */
-  public IdeFrameFixture invokeMenuPath(@NotNull String... path) {
+  public IdeaFrameFixture invokeMenuPath(@NotNull String... path) {
     getMenuFixture().invokeMenuPath(path);
     return this;
   }
@@ -318,7 +310,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
    *
    * @param path the series of menu names, e.g. {@link invokeActionByMenuPath("Build", "Make Project")}
    */
-  public IdeFrameFixture waitAndInvokeMenuPath(@NotNull String... path) {
+  public IdeaFrameFixture waitAndInvokeMenuPath(@NotNull String... path) {
     Wait.seconds(10).expecting("Wait until the path " + Arrays.toString(path) + " is ready.")
       .until(() -> getMenuFixture().isMenuPathEnabled(path));
     getMenuFixture().invokeMenuPath(path);
@@ -331,12 +323,12 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture waitForBuildToFinish(@NotNull BuildMode buildMode) {
+  public IdeaFrameFixture waitForBuildToFinish(@NotNull BuildMode buildMode) {
     return waitForBuildToFinish(buildMode, null);
   }
 
   @NotNull
-  public IdeFrameFixture waitForBuildToFinish(@NotNull BuildMode buildMode, @Nullable Wait wait) {
+  public IdeaFrameFixture waitForBuildToFinish(@NotNull BuildMode buildMode, @Nullable Wait wait) {
     Project project = getProject();
     if (buildMode == SOURCE_GEN && !GradleProjectBuilder.getInstance(project).isSourceGenerationEnabled()) {
       return this;
@@ -387,12 +379,12 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture requestProjectSync() {
+  public IdeaFrameFixture requestProjectSync() {
     return requestProjectSync(null);
   }
 
   @NotNull
-  public IdeFrameFixture requestProjectSync(@Nullable Wait wait) {
+  public IdeaFrameFixture requestProjectSync(@Nullable Wait wait) {
     myGradleProjectEventListener.reset();
 
     waitForGradleSyncAction(wait);
@@ -406,12 +398,12 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture waitForGradleProjectSyncToFail() {
+  public IdeaFrameFixture waitForGradleProjectSyncToFail() {
     return waitForGradleProjectSyncToFail(Wait.seconds(10));
   }
 
   @NotNull
-  public IdeFrameFixture waitForGradleProjectSyncToFail(@NotNull Wait waitForSync) {
+  public IdeaFrameFixture waitForGradleProjectSyncToFail(@NotNull Wait waitForSync) {
     try {
       waitForGradleProjectSyncToFinish(waitForSync, true);
       fail("Expecting project sync to fail");
@@ -424,7 +416,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture waitForGradleProjectSyncToStart() {
+  public IdeaFrameFixture waitForGradleProjectSyncToStart() {
     Project project = getProject();
     GradleSyncState syncState = GradleSyncState.getInstance(project);
     if (!syncState.isSyncInProgress()) {
@@ -435,18 +427,18 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture waitForGradleProjectSyncToFinish() {
+  public IdeaFrameFixture waitForGradleProjectSyncToFinish() {
     return waitForGradleProjectSyncToFinish(Wait.seconds(10));
   }
 
   @NotNull
-  public IdeFrameFixture waitForGradleProjectSyncToFinish(@NotNull Wait waitForSync) {
+  public IdeaFrameFixture waitForGradleProjectSyncToFinish(@NotNull Wait waitForSync) {
     waitForGradleProjectSyncToFinish(waitForSync, false);
     return this;
   }
 
   @NotNull
-  public IdeFrameFixture waitForGradleImportProjectSync() {
+  public IdeaFrameFixture waitForGradleImportProjectSync() {
     Wait.seconds(30).expecting("Project Import Sync to finish")
       .until(() -> !GradleSyncState.getInstance(getProject()).isSyncInProgress());
     return this;
@@ -507,7 +499,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
 
   @NotNull
   public BuildVariantsToolWindowFixture getBuildVariantsWindow() {
-    return new BuildVariantsToolWindowFixture(this);
+    return new BuildVariantsToolWindowFixture(myIdeFrameFixture);
   }
 
   @NotNull
@@ -533,12 +525,12 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture useLocalGradleDistribution(@NotNull File gradleHomePath) {
+  public IdeaFrameFixture useLocalGradleDistribution(@NotNull File gradleHomePath) {
     return useLocalGradleDistribution(gradleHomePath.getPath());
   }
 
   @NotNull
-  public IdeFrameFixture useLocalGradleDistribution(@NotNull String gradleHome) {
+  public IdeaFrameFixture useLocalGradleDistribution(@NotNull String gradleHome) {
     GradleProjectSettings settings = getGradleSettings();
     settings.setDistributionType(LOCAL);
     settings.setGradleHome(gradleHome);
@@ -561,7 +553,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
         actionButtonFixture.target().click();
       }
     });
-    return AvdManagerDialogFixture.find(robot(), this);
+    return AvdManagerDialogFixture.find(robot(), myIdeFrameFixture);
   }
 
   @NotNull
@@ -572,7 +564,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
 
   @NotNull
   public ProjectViewFixture getProjectView() {
-    return new ProjectViewFixture(this);
+    return new ProjectViewFixture(myIdeFrameFixture);
   }
 
   @NotNull
@@ -580,9 +572,9 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
     return target().getProject();
   }
 
-  public WelcomeFrameFixture closeProject() {
+  public FlutterWelcomeFrameFixture closeProject() {
     myIsClosed = true;
-    return openFromMenu(WelcomeFrameFixture::find, "File", "Close Project");
+    return openFromMenu(FlutterWelcomeFrameFixture::find, "File", "Close Project");
   }
 
   public boolean isClosed() {
@@ -610,7 +602,7 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture setGradleJvmArgs(@NotNull String jvmArgs) {
+  public IdeaFrameFixture setGradleJvmArgs(@NotNull String jvmArgs) {
     Project project = getProject();
 
     GradleSettings settings = GradleSettings.getInstance(project);
@@ -622,13 +614,13 @@ public class IdeFrameFixture extends ComponentFixture<IdeFrameFixture, IdeFrameI
   }
 
   @NotNull
-  public IdeFrameFixture updateGradleWrapperVersion(@NotNull String version) throws IOException {
+  public IdeaFrameFixture updateGradleWrapperVersion(@NotNull String version) throws IOException {
     GradleWrapper.find(getProject()).updateDistributionUrlAndDisplayFailure(version);
     return this;
   }
 
   @NotNull
-  public IdeFrameFixture updateAndroidGradlePluginVersion(@NotNull String version) throws IOException {
+  public IdeaFrameFixture updateAndroidGradlePluginVersion(@NotNull String version) throws IOException {
     ApplicationManager.getApplication().invokeAndWait(
       () -> {
         AndroidPluginVersionUpdater versionUpdater = AndroidPluginVersionUpdater.getInstance(getProject());
