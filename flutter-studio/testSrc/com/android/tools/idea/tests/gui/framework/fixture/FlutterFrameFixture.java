@@ -6,6 +6,7 @@
 package com.android.tools.idea.tests.gui.framework.fixture;
 
 import com.android.tools.idea.tests.gui.framework.GuiTests;
+import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterProjectWizardFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.fest.swing.core.Robot;
@@ -19,6 +20,11 @@ public class FlutterFrameFixture extends IdeaFrameFixture {
   @NotNull
   public static FlutterFrameFixture find(@NotNull final Robot robot) {
     return new FlutterFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
+  }
+
+  @NotNull
+  public NewFlutterProjectWizardFixture findNewProjectWizard() {
+    return NewFlutterProjectWizardFixture.find(robot());
   }
 
   public void waitForProjectSyncToFinish() {
