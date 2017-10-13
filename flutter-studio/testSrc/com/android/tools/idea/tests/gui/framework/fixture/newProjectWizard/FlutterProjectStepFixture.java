@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import io.flutter.project.FlutterProjectStep;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
+import org.fest.swing.fixture.JCheckBoxFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.jetbrains.annotations.NotNull;
 
@@ -52,6 +53,22 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
     JTextComponent textField = findTextFieldWithLabel("Description");
     replaceText(textField, text);
     return this;
+  }
+
+  public String getProjectName() {
+    return findTextFieldWithLabel("Project name").getText();
+  }
+
+  public String getSdkPath() {
+    return findComboBox().selectedItem();
+  }
+
+  public String getProjectLocation() {
+    return getLocationInFileSystem().getPath();
+  }
+
+  public String getDescription() {
+    return findTextFieldWithLabel("Description").getText();
   }
 
   @NotNull

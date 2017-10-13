@@ -9,6 +9,7 @@ import com.android.tools.adtui.ASGallery;
 import com.android.tools.idea.tests.gui.framework.GuiTests;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.intellij.openapi.progress.ProgressManager;
+import io.flutter.module.FlutterProjectType;
 import org.fest.swing.core.Robot;
 import org.fest.swing.fixture.JListFixture;
 import org.fest.swing.timing.Wait;
@@ -37,8 +38,22 @@ public class NewFlutterProjectWizardFixture extends AbstractWizardFixture<NewFlu
   }
 
   @NotNull
-  public FlutterProjectStepFixture getFlutterProjectStep() {
-    JRootPane rootPane = findStepWithTitle("Configure the new Flutter application");
+  public FlutterProjectStepFixture getFlutterProjectStep(@NotNull FlutterProjectType type) {
+    String projectType;
+    switch (type) {
+      case APP:
+        projectType = "application";
+        break;
+      case PACKAGE:
+        projectType = "package";
+        break;
+      case PLUGIN:
+        projectType = "plugin";
+        break;
+      default:
+        throw new IllegalArgumentException();
+    }
+    JRootPane rootPane = findStepWithTitle("Configure the new Flutter " + projectType);
     return new FlutterProjectStepFixture(robot(), rootPane);
   }
 
