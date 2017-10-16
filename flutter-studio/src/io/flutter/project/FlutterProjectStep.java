@@ -187,7 +187,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     return new Validator.Result(Validator.Severity.ERROR, message);
   }
 
-  private static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
+  public static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
     // TODO(messick): Make the original version of this public in the Dart plugin. Cache comboBox.getModel().
     final Object currentItem = comboBox.getEditor().getItem();
 

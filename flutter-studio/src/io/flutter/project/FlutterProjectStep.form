@@ -14,6 +14,7 @@
         </constraints>
         <properties>
           <font style="1"/>
+          <labelFor value="c8d10"/>
           <text value="Project name"/>
         </properties>
       </component>
@@ -37,6 +38,7 @@
         </constraints>
         <properties>
           <font style="1"/>
+          <labelFor value="6f10c"/>
           <text value="Description"/>
         </properties>
       </component>

@@ -63,6 +63,11 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     abstract public String getHelpText();
+
+    @Override
+    public String toString() {
+      return getName();
+    }
   }
 
   private static class FlutterApplicationGalleryEntry extends FlutterGalleryEntry {
