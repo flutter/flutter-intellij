@@ -9,7 +9,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import io.flutter.project.FlutterProjectStep;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
-import org.fest.swing.fixture.JCheckBoxFixture;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.jetbrains.annotations.NotNull;
 

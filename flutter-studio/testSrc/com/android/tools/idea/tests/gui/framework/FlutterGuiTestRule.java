@@ -5,13 +5,11 @@
  */
 package com.android.tools.idea.tests.gui.framework;
 
-import com.android.SdkConstants;
-import com.android.tools.idea.gradle.project.importing.GradleProjectImporter;
-import com.android.tools.idea.gradle.util.GradleWrapper;
 import com.android.tools.idea.gradle.util.LocalProperties;
 import com.android.tools.idea.sdk.IdeSdks;
-import com.android.tools.idea.testing.AndroidGradleTests;
-import com.android.tools.idea.tests.gui.framework.fixture.*;
+import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.IdeaFrameFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.application.ApplicationManager;
@@ -53,16 +51,12 @@ import static org.fest.reflect.core.Reflection.*;
 @SuppressWarnings("Duplicates") // Adapted from com.android.tools.idea.tests.gui.framework.GuiTestRule
 public class FlutterGuiTestRule implements TestRule {
 
-  /** Hack to solve focus issue when running with no window manager */
+  /**
+   * Hack to solve focus issue when running with no window manager
+   */
   private static final boolean HAS_EXTERNAL_WINDOW_MANAGER = Toolkit.getDefaultToolkit().isFrameStateSupported(Frame.MAXIMIZED_BOTH);
-
-  private FlutterFrameFixture myIdeFrameFixture;
-
   private final RobotTestRule myRobotTestRule = new RobotTestRule();
   private final LeakCheck myLeakCheck = new LeakCheck();
-
-  private Timeout myTimeout = new Timeout(5, TimeUnit.MINUTES);
-
   private final PropertyChangeListener myGlobalFocusListener = e -> {
     Object oldValue = e.getOldValue();
     if ("permanentFocusOwner".equals(e.getPropertyName()) && oldValue instanceof Component && e.getNewValue() == null) {
@@ -76,6 +70,30 @@ public class FlutterGuiTestRule implements TestRule {
       }
     }
   };
+  private FlutterFrameFixture myIdeFrameFixture;
+  private Timeout myTimeout = new Timeout(5, TimeUnit.MINUTES);
+
+  private static ImmutableList<Throwable> thrownFromRunning(Runnable r) {
+    try {
+      r.run();
+      return ImmutableList.of();
+    }
+    catch (Throwable e) {
+      return ImmutableList.of(e);
+    }
+  }
+
+  // Note: this works with a cooperating window manager that returns focus properly. It does not work on bare Xvfb.
+  private static Dialog getActiveModalDialog() {
+    Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+    if (activeWindow instanceof Dialog) {
+      Dialog dialog = (Dialog)activeWindow;
+      if (dialog.getModalityType() == Dialog.ModalityType.APPLICATION_MODAL) {
+        return dialog;
+      }
+    }
+    return null;
+  }
 
   public FlutterGuiTestRule withLeakCheck() {
     myLeakCheck.setEnabled(true);
@@ -96,45 +114,11 @@ public class FlutterGuiTestRule implements TestRule {
       .apply(base, description);
   }
 
-  private class IdeHandling implements TestRule {
-    @NotNull
-    @Override
-    public Statement apply(final Statement base, final Description description) {
-      return new Statement() {
-        @Override
-        public void evaluate() throws Throwable {
-          System.out.println("Starting " + description.getDisplayName());
-          assume().that(GuiTests.fatalErrorsFromIde()).named("IDE errors").isEmpty();
-          assumeOnlyWelcomeFrameShowing();
-          setUp();
-          List<Throwable> errors = new ArrayList<>();
-          try {
-            base.evaluate();
-          } catch (MultipleFailureException e) {
-            errors.addAll(e.getFailures());
-          } catch (Throwable e) {
-            errors.add(e);
-          } finally {
-            try {
-              boolean hasTestPassed = errors.isEmpty();
-              errors.addAll(tearDown());  // shouldn't throw, but called inside a try-finally for defense in depth
-              if (hasTestPassed && !errors.isEmpty()) { // If we get a problem during tearDown, take a snapshot.
-                new ScreenshotOnFailure().failed(errors.get(0), description);
-              }
-            } finally {
-              //noinspection ThrowFromFinallyBlock; assertEmpty is intended to throw here
-              MultipleFailureException.assertEmpty(errors);
-            }
-          }
-        }
-      };
-    }
-  }
-
   private void assumeOnlyWelcomeFrameShowing() {
     try {
       FlutterWelcomeFrameFixture.find(robot());
-    } catch (WaitTimedOutError e) {
+    }
+    catch (WaitTimedOutError e) {
       throw new AssumptionViolatedException("didn't find welcome frame", e);
     }
     assume().that(GuiTests.windowsShowing()).named("windows showing").hasSize(1);
@@ -147,16 +131,6 @@ public class FlutterGuiTestRule implements TestRule {
 
     if (!HAS_EXTERNAL_WINDOW_MANAGER) {
       KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(myGlobalFocusListener);
-    }
-  }
-
-  private static ImmutableList<Throwable> thrownFromRunning(Runnable r) {
-    try {
-      r.run();
-      return ImmutableList.of();
-    }
-    catch (Throwable e) {
-      return ImmutableList.of(e);
     }
   }
 
@@ -192,18 +166,6 @@ public class FlutterGuiTestRule implements TestRule {
     return errors;
   }
 
-  // Note: this works with a cooperating window manager that returns focus properly. It does not work on bare Xvfb.
-  private static Dialog getActiveModalDialog() {
-    Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-    if (activeWindow instanceof Dialog) {
-      Dialog dialog = (Dialog)activeWindow;
-      if (dialog.getModalityType() == Dialog.ModalityType.APPLICATION_MODAL) {
-        return dialog;
-      }
-    }
-    return null;
-  }
-
   private void fixMemLeaks() {
     myIdeFrameFixture = null;
 
@@ -214,22 +176,12 @@ public class FlutterGuiTestRule implements TestRule {
     field("containerMap").ofType(Hashtable.class).in(manager).get().clear();
   }
 
-  public IdeaFrameFixture importSimpleApplication() throws IOException {
-    return importProjectAndWaitForProjectSyncToFinish("SimpleApplication");
-  }
-
-  public IdeaFrameFixture importMultiModule() throws IOException {
-    return importProjectAndWaitForProjectSyncToFinish("MultiModule");
-  }
-
-  public IdeaFrameFixture importProjectAndWaitForProjectSyncToFinish(@NotNull String projectDirName) throws IOException {
-    return importProject(projectDirName).waitForGradleProjectSyncToFinish();
-  }
-
   public IdeaFrameFixture importProject(@NotNull String projectDirName) throws IOException {
     VirtualFile toSelect = VfsUtil.findFileByIoFile(setUpProject(projectDirName), true);
-    ApplicationManager.getApplication().invokeAndWait(() -> GradleProjectImporter.getInstance().importProject(toSelect));
-
+    ApplicationManager.getApplication().invokeAndWait(() -> {
+      /* TODO(messick): Open the project in a new window. */
+    });
+    waitForBackgroundTasks();
     return ideFrame();
   }
 
@@ -247,14 +199,12 @@ public class FlutterGuiTestRule implements TestRule {
    * <p/>
    * </ul>
    *
-   * @param projectDirName             the name of the project's root directory. Tests are located in testData/guiTests.
+   * @param projectDirName the name of the project's root directory. Tests are located in testData/guiTests.
    * @throws IOException if an unexpected I/O error occurs.
    */
   private File setUpProject(@NotNull String projectDirName) throws IOException {
     File projectPath = copyProjectBeforeOpening(projectDirName);
 
-    createGradleWrapper(projectPath, SdkConstants.GRADLE_LATEST_VERSION);
-    updateGradleVersions(projectPath);
     updateLocalProperties(projectPath);
     cleanUpProjectForImport(projectPath);
     return projectPath;
@@ -272,18 +222,10 @@ public class FlutterGuiTestRule implements TestRule {
     return projectPath;
   }
 
-  protected boolean createGradleWrapper(@NotNull File projectDirPath, @NotNull String gradleVersion) throws IOException {
-    return GradleWrapper.create(projectDirPath, gradleVersion) != null;
-  }
-
   protected void updateLocalProperties(File projectPath) throws IOException {
     LocalProperties localProperties = new LocalProperties(projectPath);
     localProperties.setAndroidSdkPath(IdeSdks.getInstance().getAndroidSdkPath());
     localProperties.save();
-  }
-
-  protected void updateGradleVersions(@NotNull File projectPath) throws IOException {
-    AndroidGradleTests.updateGradleVersions(projectPath);
   }
 
   @NotNull
@@ -365,5 +307,44 @@ public class FlutterGuiTestRule implements TestRule {
   public FlutterGuiTestRule withTimeout(long timeout, @NotNull TimeUnit timeUnits) {
     myTimeout = new Timeout(timeout, timeUnits);
     return this;
+  }
+
+  private class IdeHandling implements TestRule {
+    @NotNull
+    @Override
+    public Statement apply(final Statement base, final Description description) {
+      return new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+          System.out.println("Starting " + description.getDisplayName());
+          assume().that(GuiTests.fatalErrorsFromIde()).named("IDE errors").isEmpty();
+          assumeOnlyWelcomeFrameShowing();
+          setUp();
+          List<Throwable> errors = new ArrayList<>();
+          try {
+            base.evaluate();
+          }
+          catch (MultipleFailureException e) {
+            errors.addAll(e.getFailures());
+          }
+          catch (Throwable e) {
+            errors.add(e);
+          }
+          finally {
+            try {
+              boolean hasTestPassed = errors.isEmpty();
+              errors.addAll(tearDown());  // shouldn't throw, but called inside a try-finally for defense in depth
+              if (hasTestPassed && !errors.isEmpty()) { // If we get a problem during tearDown, take a snapshot.
+                new ScreenshotOnFailure().failed(errors.get(0), description);
+              }
+            }
+            finally {
+              //noinspection ThrowFromFinallyBlock; assertEmpty is intended to throw here
+              MultipleFailureException.assertEmpty(errors);
+            }
+          }
+        }
+      };
+    }
   }
 }
