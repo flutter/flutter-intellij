@@ -9,6 +9,7 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import io.flutter.project.FlutterProjectStep;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
+import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,6 +24,10 @@ import static org.fest.swing.edt.GuiActionRunner.execute;
 public class FlutterProjectStepFixture extends AbstractWizardStepFixture<FlutterProjectStepFixture> {
   protected FlutterProjectStepFixture(@NotNull Robot robot, @NotNull JRootPane target) {
     super(FlutterProjectStepFixture.class, robot, target);
+  }
+
+  private static boolean isShown(JComponent field) {
+    return field.isVisible() && field.isShowing();
   }
 
   @NotNull
@@ -72,7 +77,7 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
 
   @NotNull
   public File getLocationInFileSystem() {
-    final TextFieldWithBrowseButton locationField = robot().finder().findByType(target(), TextFieldWithBrowseButton.class);
+    final TextFieldWithBrowseButton locationField = getLocationField();
     return execute(new GuiQuery<File>() {
       @Override
       protected File executeInEDT() throws Throwable {
@@ -87,5 +92,25 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
   protected JComboBoxFixture findComboBox() {
     JComboBox comboBox = robot().finder().findByType(target(), JComboBox.class, true);
     return new JComboBoxFixture(robot(), comboBox);
+  }
+
+  public boolean isConfiguredForModules() {
+    try {
+      return isShown(findTextFieldWithLabel("Project name")) &&
+             isShown(findTextFieldWithLabel("Description")) &&
+             isShown(findComboBox().target()) &&
+             !isShown(getLocationField());
+    } catch (ComponentLookupException ex) {
+      // Expect this exception when the location field is not found.
+      return true;
+    }
+  }
+
+  @NotNull
+  private TextFieldWithBrowseButton getLocationField() {
+    // This works for the project wizard. It might not work for the module wizard, if it were needed
+    // because several Android modules use TextFieldWithBrowseButton. Fortunately, we expect it to
+    // not be found in the module wizard because none are showing.
+    return robot().finder().findByType(target(), TextFieldWithBrowseButton.class);
   }
 }
