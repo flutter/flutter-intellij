@@ -21,7 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterDoctorAction extends FlutterSdkAction {
 
-  private static final Logger LOG = Logger.getInstance(FlutterDoctorAction.class.getName());
+  private static final Logger LOG = Logger.getInstance(FlutterDoctorAction.class);
 
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {

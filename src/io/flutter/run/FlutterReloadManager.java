@@ -69,7 +69,7 @@ import java.util.stream.Collectors;
 public class FlutterReloadManager {
   public static final String RELOAD_ON_SAVE_FEEDBACK_URL = "https://goo.gl/Pab4Li";
 
-  private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class.getName());
+  private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class);
 
   private static final String reloadSaveFeedbackKey = "io.flutter.askedUserReloadSaveFeedback";
 

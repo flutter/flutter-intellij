@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
-  private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class.getName());
+  private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class);
 
   private static void handleError(@NotNull Exception e) {
     FlutterMessages.showError("Error opening", e.getMessage());

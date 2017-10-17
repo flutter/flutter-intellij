@@ -52,7 +52,7 @@ import java.util.*;
  * <p>Doesn't do remote debugging. (The Flutter plugin doesn't need it.)</p>
  */
 public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
-  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
+  private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcessZ.class);
 
   private boolean myVmConnected = false;
 

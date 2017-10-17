@@ -35,7 +35,7 @@ import java.util.regex.Pattern;
  */
 @SuppressWarnings({"Duplicates", "FieldMayBeFinal", "LocalCanBeFinal", "SameReturnValue"})
 public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter {
-  private static final Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class.getName());
+  private static final Logger LOG = Logger.getInstance(DartTestEventsConverterZ.class);
 
   private static final String TYPE_START = "start";
   private static final String TYPE_SUITE = "suite";

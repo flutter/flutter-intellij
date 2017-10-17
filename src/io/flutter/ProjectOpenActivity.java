@@ -131,5 +131,5 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class.getName());
+  private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 }

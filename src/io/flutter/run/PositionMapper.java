@@ -343,7 +343,7 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(PositionMapper.class.getName());
+  private static final Logger LOG = Logger.getInstance(PositionMapper.class);
 
   /**
    * Wraps a Dart analysis server and execution id for doing URI resolution for a particular Flutter app.
