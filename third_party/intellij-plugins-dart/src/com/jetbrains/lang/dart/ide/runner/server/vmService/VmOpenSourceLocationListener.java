@@ -27,7 +27,7 @@ import java.util.List;
  * This class manages the openSourceLocation VM service registration and exposes the request as an event to listeners.
  */
 public class VmOpenSourceLocationListener {
-  private static final Logger LOG = Logger.getInstance(VmOpenSourceLocationListener.class.getName());
+  private static final Logger LOG = Logger.getInstance(VmOpenSourceLocationListener.class);
 
   private interface MessageSender {
     void sendMessage(JsonObject message);

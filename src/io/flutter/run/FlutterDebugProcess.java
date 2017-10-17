@@ -40,7 +40,7 @@ import java.util.Objects;
  * when not debugging in order to support hot reload.)
  */
 public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
-  private static final Logger LOG = Logger.getInstance(FlutterDebugProcess.class.getName());
+  private static final Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
 
   private final @NotNull FlutterApp app;
 

@@ -198,5 +198,5 @@ public class DebugTestRunner extends GenericProgramRunner {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(DebugTestRunner.class.getName());
+  private static final Logger LOG = Logger.getInstance(DebugTestRunner.class);
 }

@@ -154,5 +154,5 @@ class FlutterAppListener implements DaemonEvent.Listener {
     app.getProcessHandler().destroyProcess();
   }
 
-  private static final Logger LOG = Logger.getInstance(FlutterAppListener.class.getName());
+  private static final Logger LOG = Logger.getInstance(FlutterAppListener.class);
 }

@@ -36,7 +36,7 @@ import static com.android.tools.idea.wizard.WizardConstants.DEFAULT_GALLERY_THUM
 import static org.jetbrains.android.util.AndroidBundle.message;
 
 public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
-  private static final Logger LOG = Logger.getInstance(ChoseProjectTypeStep.class.getName());
+  private static final Logger LOG = Logger.getInstance(ChoseProjectTypeStep.class);
 
   private final List<FlutterGalleryEntry> myModuleGalleryEntryList;
   private final JComponent myRootPanel;

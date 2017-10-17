@@ -394,5 +394,5 @@ public class DaemonApi {
   }
 
   private static final Gson GSON = new Gson();
-  private static final Logger LOG = Logger.getInstance(DaemonApi.class.getName());
+  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
 }

@@ -246,5 +246,5 @@ public class DeviceService {
 
   public enum State {INACTIVE, LOADING, READY}
 
-  private static final Logger LOG = Logger.getInstance(DeviceService.class.getName());
+  private static final Logger LOG = Logger.getInstance(DeviceService.class);
 }

@@ -287,5 +287,5 @@ abstract class DaemonEvent {
   }
 
   private static final Gson GSON = new Gson();
-  private static final Logger LOG = Logger.getInstance(DaemonEvent.class.getName());
+  private static final Logger LOG = Logger.getInstance(DaemonEvent.class);
 }
