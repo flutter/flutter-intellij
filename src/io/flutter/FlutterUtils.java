@@ -11,6 +11,8 @@ import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
@@ -21,6 +23,7 @@ import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -62,6 +65,19 @@ public class FlutterUtils {
 
   public static boolean exists(@Nullable VirtualFile file) {
     return file != null && file.exists();
+  }
+
+  /**
+   * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
+   */
+  public static boolean isInFlutterProject(@NotNull PsiElement element) {
+    final Module module = ModuleUtil.findModuleForPsiElement(element);
+    if (module != null) {
+      for (PubRoot root : PubRoots.forModule(module)) {
+        if (root.declaresFlutter()) return true;
+      }
+    }
+    return false;
   }
 
   public static boolean isInTestDir(DartFile file) {
