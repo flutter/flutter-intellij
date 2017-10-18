@@ -28,6 +28,14 @@ public class FlutterIcons {
 
   public static final Icon BazelRun = load("/icons/bazel_run.png");
 
+  public static final Icon CustomClass = load("/icons/custom/class.png");
+  public static final Icon CustomClassAbstract = load("/icons/custom/class_abstract.png");
+  public static final Icon CustomFields = load("/icons/custom/fields.png");
+  public static final Icon CustomInterface = load("/icons/custom/interface.png");
+  public static final Icon CustomMethod = load("/icons/custom/method.png");
+  public static final Icon CustomMethodAbstract = load("/icons/custom/method_abstract.png");
+  public static final Icon CustomProperty = load("/icons/custom/property.png");
+
   public static final Icon AndroidStudioNewModule = load("/icons/template_new_project.png");
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
   public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
