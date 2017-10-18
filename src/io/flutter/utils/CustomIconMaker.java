@@ -40,8 +40,9 @@ public class CustomIconMaker {
     }
 
     final String text = fromText.toUpperCase().substring(0, 1);
+    final String mapKey = text + "_" + kind.name + "_" + isAbstract;
 
-    if (!iconCache.containsKey(text)) {
+    if (!iconCache.containsKey(mapKey)) {
       final Icon baseIcon = isAbstract ? kind.abstractIcon : kind.icon;
 
       final Icon icon = new LayeredIcon(baseIcon, new Icon() {
@@ -77,10 +78,10 @@ public class CustomIconMaker {
         }
       });
 
-      iconCache.put(text, icon);
+      iconCache.put(mapKey, icon);
     }
 
-    return iconCache.get(text);
+    return iconCache.get(mapKey);
   }
 
   enum IconKind {
