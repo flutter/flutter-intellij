@@ -67,6 +67,9 @@ public class FlutterUtils {
     return file != null && file.exists();
   }
 
+  /**
+   * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
+   */
   public static boolean isInFlutterProject(@NotNull PsiElement element) {
     final Module module = ModuleUtil.findModuleForPsiElement(element);
     if (module != null) {
