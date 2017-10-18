@@ -27,7 +27,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.FlutterDoctorAction;
 import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
@@ -116,7 +118,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (root == null) {
       final String stderr = listener.getOutput().getStderr();
       final String msg = stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr;
-      Messages.showErrorDialog(msg, "Error");
+      final int code = FlutterMessages.showDialog(project, msg, "Project Creation Error", new String[]{"Run Flutter Doctor", "Cancel"}, 0);
+      if (code == 0) {
+        new FlutterDoctorAction().startCommand(project, sdk, null);
+      }
       return null;
     }
     FlutterSdkUtil.updateKnownSdkPaths(sdk.getHomePath());
@@ -134,9 +139,9 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   private static void addAndroidModule(@NotNull Project project,
-                                @Nullable ModifiableModuleModel model,
-                                @NotNull String baseDirPath,
-                                @NotNull String flutterModuleName) {
+                                       @Nullable ModifiableModuleModel model,
+                                       @NotNull String baseDirPath,
+                                       @NotNull String flutterModuleName) {
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByPath(baseDirPath);
     if (baseDir == null) {
       return;
