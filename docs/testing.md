@@ -104,7 +104,8 @@ Assuming the app state from above (i.e., leave the Debug session running):
 
 Keybindings:
 * verify that the hot reload keybinding works (on a mac: `cmd-option-;` or `cmd-\`)
-  
+* verify that the reload-on-save feature works (hitting cmd-S / ctrl-s triggers a reload)
+
 ## Hot Restart
 
 * change the text and counter line back
