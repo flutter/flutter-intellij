@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 
 public class FlutterCreateAddtionalSettingsFields {
 
@@ -35,12 +34,9 @@ public class FlutterCreateAddtionalSettingsFields {
     settings = additionalSettings;
 
     projectTypeForm = new ProjectType();
-    projectTypeForm.addListener(new ItemListener() {
-      @Override
-      public void itemStateChanged(ItemEvent e) {
-        settings.setType(projectTypeForm.getType());
-        changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
-      }
+    projectTypeForm.addListener(e -> {
+      settings.setType(projectTypeForm.getType());
+      changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
     });
 
     orgField = new JTextField();
@@ -66,12 +62,9 @@ public class FlutterCreateAddtionalSettingsFields {
     androidLanguageRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.android.java"),
                                            FlutterBundle.message("flutter.module.create.settings.radios.android.kotlin"));
     androidLanguageRadios.addItemListener(
-      new ItemListener() {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          final boolean isJavaSelected = e.getStateChange() == ItemEvent.SELECTED;
-          settings.setKotlin(!isJavaSelected);
-        }
+      e -> {
+        final boolean isJavaSelected = e.getStateChange() == ItemEvent.SELECTED;
+        settings.setKotlin(!isJavaSelected);
       }
     );
     androidLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.android.tip"));
@@ -79,12 +72,9 @@ public class FlutterCreateAddtionalSettingsFields {
     iosLanguageRadios = new RadiosForm(FlutterBundle.message("flutter.module.create.settings.radios.ios.object_c"),
                                        FlutterBundle.message("flutter.module.create.settings.radios.ios.swift"));
     androidLanguageRadios.addItemListener(
-      new ItemListener() {
-        @Override
-        public void itemStateChanged(ItemEvent e) {
-          final boolean isObjcSelected = e.getStateChange() == ItemEvent.SELECTED;
-          settings.setSwift(!isObjcSelected);
-        }
+      e -> {
+        final boolean isObjcSelected = e.getStateChange() == ItemEvent.SELECTED;
+        settings.setSwift(!isObjcSelected);
       }
     );
     iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
