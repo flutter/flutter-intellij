@@ -278,12 +278,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     remoteDebug = true;
 
     vmService.addVmServiceListener(vmServiceListener);
-    myVmOpenSourceLocationListener.addListener(new VmOpenSourceLocationListener.Listener() {
-      @Override
-      public void onRequest(@NotNull String isolateId, @NotNull String scriptId, int tokenPos) {
-        onOpenSourceLocationRequest(isolateId, scriptId, tokenPos);
-      }
-    });
+    myVmOpenSourceLocationListener.addListener(
+      this::onOpenSourceLocationRequest);
 
     myVmConnected = true;
     getSession().rebuildViews();
@@ -302,18 +298,16 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
               final Project project = getSession().getProject();
               final OpenFileHyperlinkInfo
                 info = new OpenFileHyperlinkInfo(project, source.getFile(), source.getLine());
-              ApplicationManager.getApplication().invokeLater(() -> {
-                ApplicationManager.getApplication().runWriteAction(() -> {
-                  info.navigate(project);
+              ApplicationManager.getApplication().invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> {
+                info.navigate(project);
 
-                  if (SystemInfo.isLinux) {
-                    // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
-                    focusProject(project);
-                  } else {
-                    ProjectUtil.focusProjectWindow(project, true);
-                  }
-                });
-              });
+                if (SystemInfo.isLinux) {
+                  // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
+                  focusProject(project);
+                } else {
+                  ProjectUtil.focusProjectWindow(project, true);
+                }
+              }));
             }
           });
         }

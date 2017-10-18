@@ -23,29 +23,29 @@ public class FlutterModuleUtilsTest {
   public final ProjectFixture fixture = Testing.makeEmptyModule();
 
   @Test
-  public void isDeprecatedFlutterModuleType_true() throws Exception {
+  public void isDeprecatedFlutterModuleType_true() {
     fixture.getModule().setOption(Module.ELEMENT_TYPE, "FLUTTER_MODULE_TYPE");
     assertTrue(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
   }
 
   @Test
-  public void isDeprecatedFlutterModuleType_false_WEB_MODULE() throws Exception {
+  public void isDeprecatedFlutterModuleType_false_WEB_MODULE() {
     fixture.getModule().setOption(Module.ELEMENT_TYPE, FlutterModuleUtils.getModuleTypeIDForFlutter());
     assertFalse(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
   }
 
   @Test
-  public void isDeprecatedFlutterModuleType_false_empty_module() throws Exception {
+  public void isDeprecatedFlutterModuleType_false_empty_module() {
     assertFalse(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
   }
 
   @Test
-  public void isFlutterModule_null() throws Exception {
+  public void isFlutterModule_null() {
     assertFalse(FlutterModuleUtils.isFlutterModule(null));
   }
 
   @Test
-  public void isFlutterModule_emptyModule() throws Exception {
+  public void isFlutterModule_emptyModule() {
     assertFalse(FlutterModuleUtils.isFlutterModule(fixture.getModule()));
   }
 }
