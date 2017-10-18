@@ -5,6 +5,7 @@
  */
 package io.flutter.utils;
 
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.LayeredIcon;
 import com.intellij.util.ui.GraphicsUtil;
@@ -35,7 +36,7 @@ public class CustomIconMaker {
   }
 
   public Icon getCustomIcon(String fromText, IconKind kind, boolean isAbstract) {
-    if (fromText == null || fromText.length() == 0) {
+    if (StringUtil.isEmpty(fromText)) {
       return null;
     }
 
