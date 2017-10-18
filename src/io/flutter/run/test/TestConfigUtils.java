@@ -33,7 +33,7 @@ public class TestConfigUtils {
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
     final DartFile file = FlutterUtils.getDartFile(element);
-    if (file != null && FlutterUtils.isInTestDir(file)) {
+    if (file != null && FlutterUtils.isInTestDir(file) && FlutterUtils.isInFlutterProject(element)) {
       // Named tests.
       final TestType namedTestCall = findNamedTestCall(element);
       if (namedTestCall != null) return namedTestCall;

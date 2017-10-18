@@ -13,11 +13,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,7 +32,7 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
 
   private static boolean isFlutterContext(@NotNull ConfigurationContext context) {
     final PsiElement location = context.getPsiLocation();
-    return location != null && FlutterModuleUtils.isInFlutterModule(location);
+    return location != null && FlutterUtils.isInFlutterProject(location);
   }
 
   /**
