@@ -1,5 +1,6 @@
 package icons;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.IconLoader;
 
 import javax.swing.*;
@@ -18,10 +19,13 @@ public class FlutterIcons {
   public static final Icon Flutter_test = load("/icons/flutter_test.png");
 
   public static final Icon Phone = load("/icons/phone.png");
+
   public static final Icon OpenObservatory = load("/icons/observatory.png");
-  public static final Icon OpenMemoryDashboard = load("/icons/memory_dashboard.png");
+  public static final Icon OpenTimelineDashboard = AllIcons.Nodes.DataSchema;
+  public static final Icon OpenMemoryDashboard = AllIcons.Nodes.DataView;
 
   public static final Icon HotReload = load("/icons/hot-reload.png");
+  public static final Icon FullRestart = AllIcons.Actions.Restart;
 
   public static final Icon HotReloadRun = load("/icons/reload_run.png");
   public static final Icon HotReloadDebug = load("/icons/reload_debug.png");

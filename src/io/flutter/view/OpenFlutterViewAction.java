@@ -21,7 +21,7 @@ public class OpenFlutterViewAction extends DumbAwareAction {
   private final Computable<Boolean> myIsApplicable;
 
   public OpenFlutterViewAction(@NotNull final Computable<Boolean> isApplicable) {
-    super("Open Flutter View", "Open Flutter View", FlutterIcons.Flutter);
+    super("Open Flutter View", "Open Flutter View", FlutterIcons.Flutter_inspect);
 
     myIsApplicable = isApplicable;
   }
@@ -43,7 +43,8 @@ public class OpenFlutterViewAction extends DumbAwareAction {
     final ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow(FlutterView.TOOL_WINDOW_ID);
     if (toolWindow == null) {
       FlutterMessages.showError("Unable to open view", "Unable to open the Flutter tool window - no Flutter modules found");
-    } else {
+    }
+    else {
       toolWindow.show(null);
     }
   }

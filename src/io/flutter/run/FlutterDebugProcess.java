@@ -21,7 +21,6 @@ import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.view.FlutterViewMessages;
 import io.flutter.view.OpenFlutterViewAction;
 import org.dartlang.vm.service.VmService;
@@ -106,11 +105,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
-    topToolbar.add(new OpenFlutterViewAction(isSessionActive));
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    if (FlutterSettings.getInstance().isMemoryDashboardEnabled()) {
-      topToolbar.addAction(new OpenMemoryDashboardAction(app.getConnector(), observatoryAvailable));
-    }
+    topToolbar.add(new OpenFlutterViewAction(isSessionActive));
 
     // Don't call super since we have our own observatory action.
   }

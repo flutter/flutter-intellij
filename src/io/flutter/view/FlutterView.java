@@ -90,10 +90,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     toolbarGroup.add(new ToggleInspectModeAction(this));
     toolbarGroup.add(new TogglePlatformAction(this));
     toolbarGroup.addSeparator();
+    toolbarGroup.add(new TimelineDashboardAction(this));
     if (FlutterSettings.getInstance().isMemoryDashboardEnabled()) {
       toolbarGroup.add(new MemoryDashboardAction(this));
     }
-    toolbarGroup.add(new ObservatoryTimelineAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
@@ -265,9 +265,9 @@ class ShowPaintBaselinesAction extends AbstractToggleableAction {
   }
 }
 
-class ObservatoryTimelineAction extends FlutterViewAction {
-  ObservatoryTimelineAction(@NotNull FlutterView view) {
-    super(view, "Observatory Timeline", "Open Observatory Timeline", FlutterIcons.OpenObservatory);
+class TimelineDashboardAction extends FlutterViewAction {
+  TimelineDashboardAction(@NotNull FlutterView view) {
+    super(view, "Timeline Dashboard", "Open Timeline Dashboard", FlutterIcons.OpenTimelineDashboard);
   }
 
   @Override
@@ -276,7 +276,7 @@ class ObservatoryTimelineAction extends FlutterViewAction {
 
     final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
     if (httpUrl != null) {
-      BrowserLauncher.getInstance().browse(httpUrl + "/#/timeline", null);
+      BrowserLauncher.getInstance().browse(httpUrl + "/#/timeline-dashboard", null);
     }
   }
 }
