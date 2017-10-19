@@ -5,11 +5,11 @@
  */
 package io.flutter.actions;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.FlutterReloadManager;
@@ -23,7 +23,7 @@ public class RestartFlutterApp extends FlutterAppAction {
   public static final String DESCRIPTION = FlutterBundle.message("app.restart.action.description");
 
   public RestartFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
-    super(app, TEXT, DESCRIPTION, AllIcons.Actions.Restart, isApplicable, ID);
+    super(app, TEXT, DESCRIPTION, FlutterIcons.FullRestart, isApplicable, ID);
     // Shortcut is associated with toolbar action.
     copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.RestartAction"));
   }

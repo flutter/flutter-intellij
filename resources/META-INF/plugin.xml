@@ -384,7 +384,7 @@
       <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
-              icon="AllIcons.Actions.Restart">
+              icon="FlutterIcons.FullRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
       </action>
@@ -442,8 +442,8 @@
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
     <applicationService serviceInterface="io.flutter.settings.FlutterSettings"
-                    serviceImplementation="io.flutter.settings.FlutterSettings"
-                    overrides="false"/>
+                        serviceImplementation="io.flutter.settings.FlutterSettings"
+                        overrides="false"/>
 
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
 

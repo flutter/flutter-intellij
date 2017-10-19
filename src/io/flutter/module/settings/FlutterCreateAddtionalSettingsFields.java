@@ -7,6 +7,7 @@ package io.flutter.module.settings;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ui.DocumentAdapter;
+import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
@@ -95,7 +96,10 @@ public class FlutterCreateAddtionalSettingsFields {
                                   androidLanguageRadios.getComponent());
     settingsStep.addSettingsField(FlutterBundle.message("flutter.module.create.settings.radios.ios.label"),
                                   iosLanguageRadios.getComponent());
-    settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
+    // WebStorm has a smaller area for the wizard UI.
+    if (!PlatformUtils.isWebStorm()) {
+      settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
+    }
   }
 
   public FlutterCreateAdditionalSettings getAddtionalSettings() {
