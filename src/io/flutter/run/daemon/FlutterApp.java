@@ -332,7 +332,12 @@ public class FlutterApp {
     if (oldState == newState) {
       return false; // debounce
     }
-    myListeners.iterator().forEachRemaining(x -> x.stateChanged(newState));
+    if (!myListeners.isEmpty()) {
+      // Guard against modification while iterating.
+      for (StateListener listener : myListeners.toArray(new StateListener[myListeners.size()])) {
+        listener.stateChanged(newState);
+      }
+    }
     return true;
   }
 
