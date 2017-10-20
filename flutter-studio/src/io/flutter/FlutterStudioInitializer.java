@@ -11,7 +11,7 @@ import com.intellij.openapi.ui.Messages;
 public class FlutterStudioInitializer implements Runnable {
 
   private static void reportVersionIncompatibility(ApplicationInfo info) {
-    Messages.showErrorDialog("The Flutter plugin requires a more recent version of Android Studio.", "Version Mesmatch");
+    Messages.showErrorDialog("The Flutter plugin requires a more recent version of Android Studio.", "Version Mismatch");
   }
 
   @Override
