@@ -15,8 +15,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
@@ -25,79 +27,9 @@ import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+
 public class OpenInAndroidStudioAction extends AnAction {
-  @Override
-  public void update(AnActionEvent event) {
-    final boolean enabled = !FlutterUtils.isAndroidStudio() && findProjectFile(event) != null;
-
-    final Presentation presentation = event.getPresentation();
-    presentation.setEnabled(enabled);
-    presentation.setVisible(enabled);
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent e) {
-    if (FlutterUtils.isAndroidStudio()) {
-      return;
-    }
-
-    final String androidStudioPath = findAndroidStudio(e.getProject());
-    if (androidStudioPath == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Unable to locate Android Studio.");
-      return;
-    }
-
-    final VirtualFile projectFile = findProjectFile(e);
-    if (projectFile == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
-      return;
-    }
-
-    openFileInStudio(projectFile, androidStudioPath);
-  }
-
-  @Nullable
-  private String findAndroidStudio(@Nullable Project project) {
-    if (project == null) {
-      return null;
-    }
-
-    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-    if (flutterSdk != null) {
-      final String androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", true);
-      if (androidSdkLocation != null) {
-        final String contents = "/Contents";
-        // On a mac, trim off "/Contents".
-        if (SystemInfo.isMac && androidSdkLocation.endsWith(contents)) {
-          return androidSdkLocation.substring(0, androidSdkLocation.length() - contents.length());
-        }
-        return androidSdkLocation;
-      }
-    }
-    return null;
-  }
-
-  private VirtualFile findProjectFile(@Nullable AnActionEvent e) {
-    if (e != null) {
-      final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-      if (file != null && file.exists()) {
-        if (isProjectFileName(file.getName())) {
-          return file;
-        }
-
-        // Return null if this is an ios folder.
-        if (FlutterExternalIdeActionGroup.isIOsDirectory(file)) {
-          return null;
-        }
-      }
-
-      final Project project = e.getProject();
-      if (project != null) {
-        return findStudioProjectFile(project);
-      }
-    }
-    return null;
-  }
 
   private static void openFileInStudio(@NotNull VirtualFile file, @NotNull String androidStudioPath) {
     try {
@@ -141,5 +73,86 @@ public class OpenInAndroidStudioAction extends AnAction {
     }
 
     return null;
+  }
+
+  @Nullable
+  private static String findAndroidStudio(@Nullable Project project) {
+    if (project == null) {
+      return null;
+    }
+
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+    if (flutterSdk != null) {
+      String androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", true);
+      if (androidSdkLocation != null) {
+        if (androidSdkLocation.contains("/Android Studio 2")) {
+          Messages.showErrorDialog(FlutterBundle.message("old.android.studio.message", File.separator),
+                                   FlutterBundle.message("old.android.studio.title"));
+          return null;
+        }
+        if (androidSdkLocation.endsWith("/")) {
+          androidSdkLocation = androidSdkLocation.substring(0, androidSdkLocation.length() - 1);
+        }
+        final String contents = "/Contents";
+        // On a mac, trim off "/Contents".
+        if (SystemInfo.isMac && androidSdkLocation.endsWith(contents)) {
+          return androidSdkLocation.substring(0, androidSdkLocation.length() - contents.length());
+        }
+        return androidSdkLocation;
+      }
+    }
+    return null;
+  }
+
+  private static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
+    if (e != null) {
+      final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
+      if (file != null && file.exists()) {
+        if (isProjectFileName(file.getName())) {
+          return file;
+        }
+
+        // Return null if this is an ios folder.
+        if (FlutterExternalIdeActionGroup.isIOsDirectory(file)) {
+          return null;
+        }
+      }
+
+      final Project project = e.getProject();
+      if (project != null) {
+        return findStudioProjectFile(project);
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public void update(AnActionEvent event) {
+    final boolean enabled = !FlutterUtils.isAndroidStudio() && findProjectFile(event) != null;
+
+    final Presentation presentation = event.getPresentation();
+    presentation.setEnabled(enabled);
+    presentation.setVisible(enabled);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    if (FlutterUtils.isAndroidStudio()) {
+      return;
+    }
+
+    final String androidStudioPath = findAndroidStudio(e.getProject());
+    if (androidStudioPath == null) {
+      FlutterMessages.showError("Error Opening Android Studio", "Unable to locate Android Studio.");
+      return;
+    }
+
+    final VirtualFile projectFile = findProjectFile(e);
+    if (projectFile == null) {
+      FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
+      return;
+    }
+
+    openFileInStudio(projectFile, androidStudioPath);
   }
 }
