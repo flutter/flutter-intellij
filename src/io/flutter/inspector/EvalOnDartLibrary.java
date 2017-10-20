@@ -33,7 +33,6 @@ import java.util.concurrent.CompletableFuture;
 public class EvalOnDartLibrary implements Disposable {
   private final IsolatesInfo.IsolateInfo isolateInfo;
   private final VmService vmService;
-  private Isolate isolate;
   private final String libraryName;
   final CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
@@ -49,6 +48,10 @@ public class EvalOnDartLibrary implements Disposable {
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
     libraryRef = new CompletableFuture<>();
     initialize();
+  }
+
+  public String getIsolateId() {
+    return isolateInfo.getIsolateId();
   }
 
   public void dispose() {

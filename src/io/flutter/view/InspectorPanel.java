@@ -23,18 +23,22 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
-import com.intellij.xdebugger.impl.actions.XDebuggerActions;
 import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
 import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
 import io.flutter.inspector.*;
 import io.flutter.run.daemon.FlutterApp;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.tree.*;
+import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeExpansionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -52,6 +56,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final FlutterView flutterView;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
+  private static final DataKey<Tree> INSPECTOR_TREE_KEY = DataKey.create("Flutter.InspectorTree");
+
   private FlutterApp getFlutterApp() {
     return flutterView.getFlutterApp();
   }
@@ -64,10 +70,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
 
-  // XXX implement and use.
-//  private boolean treeDataMayBeStale = false;
-
-  public InspectorPanel(final PsiElement[] roots, FlutterView flutterView, Computable<Boolean> isApplicable, InspectorService.FlutterTreeType treeType) {
+  public InspectorPanel(final PsiElement[] roots,
+                        FlutterView flutterView,
+                        Computable<Boolean> isApplicable,
+                        InspectorService.FlutterTreeType treeType) {
     super(new BorderLayout());
     this.treeType = treeType;
     this.flutterView = flutterView;
@@ -102,12 +108,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (!(treeNode instanceof DefaultMutableTreeNode)) {
       return null;
     }
-    final Object userData = ((DefaultMutableTreeNode) treeNode).getUserObject();
-    return userData instanceof DiagnosticsNode ? (DiagnosticsNode) userData : null;
+    final Object userData = ((DefaultMutableTreeNode)treeNode).getUserObject();
+    return userData instanceof DiagnosticsNode ? (DiagnosticsNode)userData : null;
   }
 
   private DefaultTreeModel getTreeModel() {
-    return (DefaultTreeModel) myRootsTree.getModel();
+    return (DefaultTreeModel)myRootsTree.getModel();
   }
 
   public void onIsolateStopped() {
@@ -138,12 +144,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
 
     isActive = true;
-    assert(getInspectorService() != null);
+    assert (getInspectorService() != null);
     getInspectorService().addClient(this);
   }
 
   private DefaultMutableTreeNode getRootNode() {
-    return (DefaultMutableTreeNode) getTreeModel().getRoot();
+    return (DefaultMutableTreeNode)getTreeModel().getRoot();
   }
 
   void recomputeTreeRoot() {
@@ -177,7 +183,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         CompletableFuture<ArrayList<DiagnosticsNode>> childrenFuture = diagnosticsNode.getChildren();
         assert (childrenFuture.isDone());
         setupChildren(node, childrenFuture.getNow(null));
-      } else {
+      }
+      else {
         node.removeAllChildren();
         node.add(new DefaultMutableTreeNode("Loading..."));
       }
@@ -198,7 +205,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (!(node.getUserObject() instanceof DiagnosticsNode)) {
       return;
     }
-    final DiagnosticsNode diagonsticsNode = (DiagnosticsNode) node.getUserObject();
+    final DiagnosticsNode diagonsticsNode = (DiagnosticsNode)node.getUserObject();
     if (diagonsticsNode.hasChildren()) {
       if (placeholderChildren(node)) {
         whenCompleteUiThread(diagonsticsNode.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
@@ -278,14 +285,15 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                   child = new DefaultMutableTreeNode();
                   treeNode.add(child);
                   nodeChanged = true;
-                } else {
-                  child = (DefaultMutableTreeNode) treeNode.getChildAt(j);
                 }
-                if (j != pathNode.getChildIndex())  {
-                  // schedule loading children in this case.
+                else {
+                  child = (DefaultMutableTreeNode)treeNode.getChildAt(j);
+                }
+                if (j != pathNode.getChildIndex()) {
                   setupTreeNode(child, newChild);
                   model.reload(child);
-                } else {
+                }
+                else {
                   child.setUserObject(newChild);
                   child.setAllowsChildren(newChild.hasChildren());
                   child.removeAllChildren();
@@ -299,7 +307,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
               model.reload(treeNode);
             }
             if (i != path.size() - 1) {
-              treeNode = (DefaultMutableTreeNode) treeNode.getChildAt(pathNode.getChildIndex());
+              treeNode = (DefaultMutableTreeNode)treeNode.getChildAt(pathNode.getChildIndex());
             }
           }
           final TreePath selectionPath = new TreePath(treePath);
@@ -315,14 +323,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       return null;
     }
     final Object userObject = selectedNode.getUserObject();
-    return (userObject instanceof DiagnosticsNode) ?  (DiagnosticsNode)userObject : null;
+    return (userObject instanceof DiagnosticsNode) ? (DiagnosticsNode)userObject : null;
   }
 
   private void maybePopulateChildren(DefaultMutableTreeNode treeNode) {
     final Object userObject = treeNode.getUserObject();
     if (userObject instanceof DiagnosticsNode) {
-      final DiagnosticsNode diagnostic = (DiagnosticsNode) userObject;
-      if (diagnostic.hasChildren() && treeNode.getChildCount() ==0) {
+      final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
+      if (diagnostic.hasChildren() && treeNode.getChildCount() == 0) {
         final CompletableFuture<ArrayList<DiagnosticsNode>> childrenFuture = diagnostic.getChildren();
         whenCompleteUiThread(childrenFuture, (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
           if (throwable != null) {
@@ -349,14 +357,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       selectedNode = selectedNodes[0];
       Object userObject = selectedNodes[0].getUserObject();
       if (userObject instanceof DiagnosticsNode) {
-        DiagnosticsNode diagnostic = (DiagnosticsNode) userObject;
+        DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
         myPropertiesPanel.showProperties(diagnostic);
         if (getInspectorService() != null) {
           getInspectorService().maybeSetSelection(diagnostic.getValueRef(), false);
         }
       }
     }
-
   }
 
   private void initTree(final Tree tree) {
@@ -373,8 +380,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private ActionGroup createTreePopupActions() {
     final DefaultActionGroup group = new DefaultActionGroup();
     final ActionManager actionManager = ActionManager.getInstance();
-    // TODO(jacobr): figure out the hooks to make this actually work.
-    group.add(actionManager.getAction(XDebuggerActions.JUMP_TO_TYPE_SOURCE));
+    group.add(actionManager.getAction(InspectorActions.JUMP_TO_TYPE_SOURCE));
+    // TODO(jacobr): add JUMP_TO_SOURCE once we have actual source locations
+    // as well as type source locations. This will require at minimum adding
+    // a Dart kernel code transformer to track creation locations for widgets.
+    /// group.add(actionManager.getAction(InspectorActions.JUMP_TO_SOURCE));
     return group;
   }
 
@@ -386,6 +396,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static class MyTree extends Tree implements DataProvider, Disposable {
     private MyTree(final DefaultMutableTreeNode treemodel) {
       super(treemodel);
+      registerShortcuts();
+    }
+
+    void registerShortcuts() {
+      DebuggerUIUtil.registerActionOnComponent(InspectorActions.JUMP_TO_TYPE_SOURCE, this, this);
     }
 
     @Override
@@ -403,6 +418,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     @Nullable
     @Override
     public Object getData(String dataId) {
+      if (INSPECTOR_TREE_KEY.is(dataId)) {
+        return this;
+      }
       if (PlatformDataKeys.PREDEFINED_TEXT.is(dataId)) {
         XValueNodeImpl[] selectedNodes = getSelectedNodes(XValueNodeImpl.class, null);
         if (selectedNodes.length == 1 && selectedNodes[0].getFullValueEvaluator() == null) {
@@ -424,7 +442,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     @Nullable
     @Override
     public String valueOf(DefaultMutableTreeNode node) {
-      final DiagnosticsNode userObject = (DiagnosticsNode) node.getUserObject();
+      final DiagnosticsNode userObject = (DiagnosticsNode)node.getUserObject();
       String name = userObject.getName();
       if (name == null) {
         name = "";
@@ -452,7 +470,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     @Nullable
     @Override
     public String valueOf(DefaultMutableTreeNode node) {
-      DiagnosticsNode diagnostic = (DiagnosticsNode) node.getUserObject();
+      DiagnosticsNode diagnostic = (DiagnosticsNode)node.getUserObject();
       return diagnostic.getDescription();
     }
   }
@@ -461,13 +479,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     PropertiesPanel() {
       super(new ListTreeTableModelOnColumns(
         new DefaultMutableTreeNode(),
-        new ColumnInfo[] { new PropertyNameColumnInfo("Property"), new PropertyValueColumnInfo("Value") }
+        new ColumnInfo[]{new PropertyNameColumnInfo("Property"), new PropertyValueColumnInfo("Value")}
       ));
       setRootVisible(false);
     }
 
     ListTreeTableModelOnColumns getTreeModel() {
-      return (ListTreeTableModelOnColumns) getTableModel();
+      return (ListTreeTableModelOnColumns)getTableModel();
     }
 
     public void showProperties(DiagnosticsNode diagnostic) {
@@ -502,6 +520,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
      * This splits t
      */
     private final Pattern primaryDescriptionPattern = Pattern.compile("^(\\w+)(.*)$");
+
     public void customizeCellRenderer(@NotNull final JTree tree,
                                       final Object value,
                                       final boolean selected,
@@ -515,7 +534,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         return;
       }
       if (!(userObject instanceof DiagnosticsNode)) return;
-      DiagnosticsNode node = (DiagnosticsNode) userObject;
+      DiagnosticsNode node = (DiagnosticsNode)userObject;
       final String name = node.getName();
       SimpleTextAttributes textAttributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
       switch (node.getLevel()) {
@@ -538,7 +557,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         // color in name?
         if (textAttributes == SimpleTextAttributes.REGULAR_ATTRIBUTES && name.equals("child")) {
           append(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        } else {
+        }
+        else {
           append(name, textAttributes);
         }
         if (node.getShowSeparator()) {
@@ -554,10 +574,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         if (match.matches()) {
           append(match.group(1), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
           append(match.group(2), textAttributes);
-        } else {
+        }
+        else {
           append(node.getDescription(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
         }
-      } else {
+      }
+      else {
         append(node.getDescription(), textAttributes);
       }
 
@@ -572,17 +594,23 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   boolean placeholderChildren(DefaultMutableTreeNode node) {
-    return node.getChildCount() == 0 || (node.getChildCount() == 1 && ((DefaultMutableTreeNode) node.getFirstChild()).getUserObject() instanceof String);
+    return node.getChildCount() == 0 ||
+           (node.getChildCount() == 1 && ((DefaultMutableTreeNode)node.getFirstChild()).getUserObject() instanceof String);
   }
 
   private class MyTreeExpansionListener implements TreeExpansionListener {
     @Override
     public void treeExpanded(TreeExpansionEvent event) {
-      maybeLoadChildren((DefaultMutableTreeNode) event.getPath().getLastPathComponent());
+      maybeLoadChildren((DefaultMutableTreeNode)event.getPath().getLastPathComponent());
     }
 
     @Override
     public void treeCollapsed(TreeExpansionEvent event) {
     }
+  }
+
+  @Nullable
+  public static Tree getTree(final DataContext e) {
+    return e.getData(INSPECTOR_TREE_KEY);
   }
 }

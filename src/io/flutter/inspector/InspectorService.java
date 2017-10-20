@@ -10,6 +10,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.xdebugger.frame.XNamedValue;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
 import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
@@ -166,6 +168,21 @@ public class InspectorService implements Disposable {
       }
       return nodes;
     });
+  }
+
+  /**
+   * Converts an inspector ref to value suitable for use by generic intellij
+   * debugging tools.
+   * <p>
+   * Warning: DartVmServiceValue references do not make any lifetime gaurantees
+   * so code keeping them around for a long period of time must be prepared to
+   * handle reference expiration gracefully.
+   */
+  public CompletableFuture<XNamedValue> toDartVmServiceValueForSourceLocation(InspectorInstanceRef inspectorInstanceRef) {
+    return invokeServiceMethod("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
+      (InstanceRef instanceRef) -> {
+        return new DartVmServiceValue(debugProcess, inspectorLibrary.getIsolateId(), "inspectedObject", instanceRef, null, null, false);
+      });
   }
 
   CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodes(CompletableFuture<InstanceRef> instanceRefFuture) {

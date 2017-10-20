@@ -407,7 +407,11 @@ public class DiagnosticsNode {
    */
   private String dartDiagnosticId;
 
-  // XXX document
+  /**
+   * Reference to the actual Dart value DiagnosticsNode describes.
+   * <p>
+   * We cannot use observatory protocol InstanceRef ids as they are not adequately long lived.
+   */
   private String dartValueId;
 
   private String getStringMember(String memberName) {
@@ -499,5 +503,9 @@ public class DiagnosticsNode {
       properties = inspectorService.getProperties(getDartDiagnosticRef());
     }
     return properties;
+  }
+
+  public InspectorService getInspectorService() {
+    return inspectorService;
   }
 }
