@@ -70,8 +70,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
 
-  public InspectorPanel(final PsiElement[] roots,
-                        FlutterView flutterView,
+  public InspectorPanel(FlutterView flutterView,
                         Computable<Boolean> isApplicable,
                         InspectorService.FlutterTreeType treeType) {
     super(new BorderLayout());

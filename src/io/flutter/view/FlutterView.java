@@ -85,11 +85,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-    final Content toolContent = contentFactory.createContent(null, "Main", false);
-    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, false);
-    toolContent.setComponent(toolWindowPanel);
-    //Disposer.register(this, toolWindowPanel);
-    toolContent.setCloseable(false);
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(new DebugDrawAction(this));
@@ -103,18 +98,26 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
-    final JPanel mainContent = new JPanel(new BorderLayout());
-    toolWindowPanel.setContent(mainContent);
-    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
     final ContentManager contentManager = toolWindow.getContentManager();
-    contentManager.addContent(toolContent);
-    addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow);
-    addInspectorPanel("Render Objects", InspectorService.FlutterTreeType.renderObject, toolWindow);
-    contentManager.setSelectedContent(toolContent);
+    if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
+      addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
+      addInspectorPanel("Render Objects", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
+    } else {
+      // Legacy case showing just an empty tool window panel.
+      final Content toolContent = contentFactory.createContent(null, "Main", false);
+      final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, false);
+      toolContent.setComponent(toolWindowPanel);
+      toolContent.setCloseable(false);
+      final JPanel mainContent = new JPanel(new BorderLayout());
+      toolWindowPanel.setContent(mainContent);
+      toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
+      contentManager.addContent(toolContent);
+      contentManager.setSelectedContent(toolContent);
+    }
   }
 
-  private void addInspectorPanel(String displayName, InspectorService.FlutterTreeType treeType, @NotNull ToolWindow toolWindow) {
+  private void addInspectorPanel(String displayName, InspectorService.FlutterTreeType treeType, @NotNull ToolWindow toolWindow, DefaultActionGroup toolbarGroup, boolean selectedContent) {
     {
       final ContentManager contentManager = toolWindow.getContentManager();
       final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
@@ -129,10 +132,15 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
       content.setComponent(windowPanel);
 
-      InspectorPanel inspectorPanel = new InspectorPanel(PsiElement.EMPTY_ARRAY, this, isSessionActive, treeType);
+      InspectorPanel inspectorPanel = new InspectorPanel(this, isSessionActive, treeType);
       windowPanel.setContent(inspectorPanel);
+      windowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
       contentManager.addContent(content);
+      if (selectedContent) {
+        contentManager.setSelectedContent(content);
+      }
+
       inspectorPanels.add(inspectorPanel);
     }
     //renderObjectWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
