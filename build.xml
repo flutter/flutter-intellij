@@ -14,10 +14,11 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
   <property environment="env"/>
 
   <!-- defaults -->
+  <property name="default.idea.version" value="2017.2"/>
   <!-- one of ideaIC, WebStorm, or android-studio-ide -->
   <property name="idea.product" value="ideaIC"/>
   <!-- the platform version, and substring to use when downloading from google storage -->
-  <property name="idea.version" value="2017.1.3"/>
+  <property name="idea.version" value="${default.idea.version}"/>
 
   <property name="google.storage.base" value="https://storage.googleapis.com/flutter_infra/flutter/intellij"/>
 
@@ -46,6 +47,9 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
   </target>
 
   <target name="download.android" depends="init" if="extract.with.zip">
+    <property name="idea.idea.product" value="ideaIC"/>
+    <property name="idea.idea.version" value="${default.idea.version}"/>
+
     <property name="idea.home" location="artifacts/${idea.product}-${idea.version}"/>
     <get src="${google.storage.base}/${idea.product}-${idea.version}-linux.zip"
          dest="artifacts" usetimestamp="true"/>
@@ -55,6 +59,9 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
   </target>
 
   <target name="download.idea" depends="init" unless="extract.with.zip">
+    <property name="idea.idea.product" value="${idea.product}"/>
+    <property name="idea.idea.version" value="${idea.version}"/>
+
     <property name="idea.home" location="artifacts/${idea.product}-${idea.version}"/>
     <get src="${google.storage.base}/${idea.product}-${idea.version}.tar.gz"
          dest="artifacts" usetimestamp="true"/>
@@ -63,6 +70,18 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
     <untar src="artifacts/${idea.product}-${idea.version}.tar" dest="${idea.home}">
       <cutdirsmapper dirs="1"/>
     </untar>
+
+    <path id="idea.idea.jars">
+      <fileset dir="${idea.home}/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins/Dart/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins">
+        <include name="**/lib/*.jar"/>
+      </fileset>
+    </path>
   </target>
 
   <target name="download-dart-plugin" depends="init" if="dart.plugin.version">
@@ -75,6 +94,28 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
     <!-- download the javac2 jars -->
     <get src="${google.storage.base}/intellij-javac2.zip" dest="artifacts/" usetimestamp="true"/>
     <unzip src="artifacts/intellij-javac2.zip" dest="artifacts/javac2"/>
+
+    <!-- download a idea idea version -->
+    <property name="idea.idea.home" location="artifacts/${idea.idea.product}-${idea.idea.version}"/>
+    <get src="${google.storage.base}/${idea.idea.product}-${idea.idea.version}.tar.gz"
+         dest="artifacts" usetimestamp="true"/>
+    <gunzip src="artifacts/${idea.idea.product}-${idea.idea.version}.tar.gz"
+            dest="artifacts/${idea.idea.product}-${idea.idea.version}.tar"/>
+    <untar src="artifacts/${idea.idea.product}-${idea.idea.version}.tar" dest="${idea.idea.home}">
+      <cutdirsmapper dirs="1"/>
+    </untar>
+
+    <path id="idea.idea.jars">
+      <fileset dir="${idea.idea.home}/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins/Dart/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.idea.home}/plugins">
+        <include name="**/lib/*.jar"/>
+      </fileset>
+    </path>
   </target>
 
   <target name="properties" depends="download">
@@ -152,7 +193,7 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
     <javac2 destdir="build/src" memorymaximumsize="1000m" fork="true" includeantruntime="false">
       <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
       <classpath>
-        <path refid="idea.jars"/>
+        <path refid="idea.idea.jars"/>
         <path refid="dartplugin.jars"/>
       </classpath>
       <src refid="src.sourcepath"/>
