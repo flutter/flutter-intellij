@@ -178,7 +178,7 @@ public class InspectorService implements Disposable {
    * so code keeping them around for a long period of time must be prepared to
    * handle reference expiration gracefully.
    */
-  public CompletableFuture<XNamedValue> toDartVmServiceValueForSourceLocation(InspectorInstanceRef inspectorInstanceRef) {
+  public CompletableFuture<DartVmServiceValue> toDartVmServiceValueForSourceLocation(InspectorInstanceRef inspectorInstanceRef) {
     return invokeServiceMethod("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
       (InstanceRef instanceRef) -> {
         return new DartVmServiceValue(debugProcess, inspectorLibrary.getIsolateId(), "inspectedObject", instanceRef, null, null, false);

@@ -299,9 +299,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                   child.removeAllChildren();
                 }
 
-                /// XXX maybe node has't changed? this is wrong.
+                // TODO(jacobr): this is wrong. We shouldn't always be setting the node as changed.
                 nodeChanged = true;
-                model.nodeChanged(child); // XXX read about this api.
+                // TODO(jacobr): we are likely calling the wrong node structure changed APIs.
+                // For example, we should be getting these change notifications for free if we
+                // switched to call methods on the model object directly to manipulate the tree.
+                model.nodeChanged(child);
                 model.nodeStructureChanged(child);
               }
               model.reload(treeNode);
