@@ -102,7 +102,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     final ContentManager contentManager = toolWindow.getContentManager();
     if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
       addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
-      addInspectorPanel("Render Objects", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
+      addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
     } else {
       // Legacy case showing just an empty tool window panel.
       final Content toolContent = contentFactory.createContent(null, "Main", false);
