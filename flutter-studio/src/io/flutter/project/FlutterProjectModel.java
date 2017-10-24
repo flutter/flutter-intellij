@@ -53,8 +53,8 @@ public class FlutterProjectModel extends WizardModel {
     myKotlin.set(getInitialKotlinSupport());
     myKotlin.addListener(sender -> setInitialKotlinSupport(myKotlin.get()));
 
-    mySwift.set(getInitialKotlinSupport());
-    mySwift.addListener(sender -> setInitialKotlinSupport(mySwift.get()));
+    mySwift.set(getInitialSwiftSupport());
+    mySwift.addListener(sender -> setInitialSwiftSupport(mySwift.get()));
   }
 
   @NotNull
