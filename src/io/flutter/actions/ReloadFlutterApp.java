@@ -43,7 +43,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
 
     if (shouldRestart) {
       FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-      FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp());
+      FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), project);
     }
     else {
       // Else perform a hot reload.
