@@ -22,4 +22,9 @@ public class FlutterModuleStep extends FlutterProjectStep {
   public String getContainerName() {
     return "module";
   }
+
+  @Override
+  protected boolean isProject() {
+    return false;
+  }
 }
