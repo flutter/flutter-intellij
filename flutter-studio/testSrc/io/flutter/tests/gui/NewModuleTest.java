@@ -37,7 +37,29 @@ public class NewModuleTest {
 
     FlutterProjectStepFixture projectStep = wizard.getFlutterProjectStep(FlutterProjectType.APP);
     assertThat(projectStep.isConfiguredForModules()).isTrue();
+
+    // Check error messages.
+    assertThat(projectStep.getErrorMessage()).isNotNull();
+    projectStep.enterProjectName("");
+    assertThat(projectStep.getErrorMessage()).startsWith("Please enter");
+    projectStep.enterProjectName("A");
+    assertThat(projectStep.getErrorMessage()).contains("valid Dart package");
+    projectStep.enterProjectName("class");
+    assertThat(projectStep.getErrorMessage()).contains("Dart keyword");
+    projectStep.enterProjectName("utf");
+    assertThat(projectStep.getErrorMessage()).contains("Flutter package");
+    projectStep.enterProjectName("a_long_module_name_is_not_allowed");
+    assertThat(projectStep.getErrorMessage()).contains("less than");
+
     projectStep.enterProjectName("module");
+    String path = projectStep.getSdkPath();
+    projectStep.enterSdkPath("");
+    assertThat(projectStep.getErrorMessage()).endsWith(("not given."));
+    projectStep.enterSdkPath("x");
+    assertThat(projectStep.getErrorMessage()).endsWith(("not exist."));
+    projectStep.enterSdkPath("/tmp");
+    assertThat(projectStep.getErrorMessage()).endsWith(("location."));
+    projectStep.enterSdkPath(path);
     wizard.clickNext();
 
     FlutterSettingsStepFixture settingsStep = wizard.getFlutterSettingsStep();

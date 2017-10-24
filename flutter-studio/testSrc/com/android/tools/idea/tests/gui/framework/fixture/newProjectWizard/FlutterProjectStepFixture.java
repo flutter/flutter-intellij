@@ -6,15 +6,18 @@
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
+import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.io.File;
 
 import static com.google.common.truth.Truth.assertThat;
@@ -86,6 +89,16 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
         return new File(location);
       }
     });
+  }
+
+  @Nullable
+  public String getErrorMessage() {
+    Component comp = robot().finder().findByName("ValidationLabel");
+    if (comp instanceof JBLabel) {
+      JBLabel label = (JBLabel) comp;
+      return label.getText();
+    }
+    return null;
   }
 
   @NotNull
