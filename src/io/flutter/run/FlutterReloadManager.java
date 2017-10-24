@@ -220,7 +220,7 @@ public class FlutterReloadManager {
     }
   }
 
-  public void saveAllAndRestart(@NotNull FlutterApp app, @NotNull Project project) {
+  public void saveAllAndRestart(@NotNull FlutterApp app) {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
       app.performRestartApp().thenAccept(result -> {
@@ -229,7 +229,7 @@ public class FlutterReloadManager {
         }
       });
       // Bring iOS simulator to front.
-      final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
+      final FlutterDevice device = DeviceService.getInstance(myProject).getSelectedDevice();
       if (device != null && device.emulator() && device.isIOS()) {
         new OpenSimulatorAction(true).actionPerformed(null);
       }
