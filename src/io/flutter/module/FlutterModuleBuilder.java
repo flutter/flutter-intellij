@@ -30,7 +30,7 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterDoctorAction;
-import io.flutter.module.settings.FlutterCreateAddtionalSettingsFields;
+import io.flutter.module.settings.FlutterCreateAdditionalSettingsFields;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
@@ -54,7 +54,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @NotNull
   private FlutterCreateAdditionalSettings myAdditionalSettings = new FlutterCreateAdditionalSettings();
   @NotNull
-  private FlutterCreateAddtionalSettingsFields mySettingsFields = new FlutterCreateAddtionalSettingsFields(myAdditionalSettings);
+  private FlutterCreateAdditionalSettingsFields mySettingsFields = new FlutterCreateAdditionalSettingsFields(myAdditionalSettings);
 
   @Override
   public String getName() {

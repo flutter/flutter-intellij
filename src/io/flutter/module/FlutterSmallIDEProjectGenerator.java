@@ -56,7 +56,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       FlutterMessages.showError("Error creating project", msg);
       return;
     }
-    Runnable runnable = () -> applyDartModule(sdk, project, module, root);
+    final Runnable runnable = () -> applyDartModule(sdk, project, module, root);
     if (SwingUtilities.isEventDispatchThread()) {
       runnable.run();
     }
@@ -119,6 +119,6 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
                               @NotNull VirtualFile baseDir,
                               @NotNull String flutterSdkPath,
                               @NotNull Module module) {
-    generateProject(project, baseDir, flutterSdkPath, module, generatorPeer.getAddtionalSettings());
+    generateProject(project, baseDir, flutterSdkPath, module, generatorPeer.getAdditionalSettings());
   }
 }
