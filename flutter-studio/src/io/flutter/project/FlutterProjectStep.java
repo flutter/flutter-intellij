@@ -163,7 +163,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
       return Validator.Result.OK;
     }
     else {
-      return Validator.Result.fromNullableMessage("Flutter SDK path not given");
+      return Validator.Result.fromNullableMessage("Flutter SDK path not given.");
     }
   }
 
@@ -213,7 +213,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @NotNull
   private Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
     if (moduleName.isEmpty()) {
-      return errorResult("Please enter a name for the " + getContainerName());
+      return errorResult("Please enter a name for the " + getContainerName() + ".'");
     }
     if (!FlutterUtils.isValidPackageName(moduleName)) {
       return errorResult(
