@@ -219,7 +219,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
       return errorResult(
         "Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
     }
-    if (FlutterUtils.isDartKeword(moduleName)) {
+    if (FlutterUtils.isDartKeyword(moduleName)) {
       return errorResult("Invalid module name: '" + moduleName + "' - must not be a Dart keyword.");
     }
     if (!FlutterUtils.isValidDartIdentifier(moduleName)) {
