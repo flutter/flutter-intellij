@@ -213,21 +213,21 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @NotNull
   private Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
     if (moduleName.isEmpty()) {
-      return errorResult("Please enter a name for the project");
+      return errorResult("Please enter a name for the " + getContainerName());
     }
     if (!FlutterUtils.isValidPackageName(moduleName)) {
       return errorResult(
-        "Invalid module name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
+        "Invalid " + getContainerName() + " name: '" + moduleName + "' - must be a valid Dart package name (lower_case_with_underscores).");
     }
     if (FlutterUtils.isDartKeyword(moduleName)) {
       return errorResult("Invalid module name: '" + moduleName + "' - must not be a Dart keyword.");
     }
     // Package name is more restrictive than identifier, so no need to check for identifier validity.
     if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
-      return errorResult("Invalid module name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
+      return errorResult("Invalid " + getContainerName() + " name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
     }
     if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
-      return errorResult("Invalid module name - must be less than " +
+      return errorResult("Invalid " + getContainerName() + " name - must be less than " +
                          FlutterConstants.MAX_MODULE_NAME_LENGTH +
                          " characters.");
     }
@@ -250,6 +250,11 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
   protected void hideLocation() {
     myLocationPanel.setVisible(false);
+  }
+
+  @NotNull
+  public String getContainerName() {
+    return "project";
   }
 
   @Override
