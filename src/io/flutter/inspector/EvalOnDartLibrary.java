@@ -85,7 +85,6 @@ public class EvalOnDartLibrary implements Disposable {
                        new EvaluateConsumer() {
                          @Override
                          public void onError(RPCError error) {
-                           // TODO(jacobr): what is the right way to log this case?
                            LOG.error(error);
                            future.completeExceptionally(new RuntimeException(error.toString()));
                          }

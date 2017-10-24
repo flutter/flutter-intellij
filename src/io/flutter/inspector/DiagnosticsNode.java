@@ -146,8 +146,6 @@ public class DiagnosticsNode {
     return getStringMember("type");
   }
 
-  // The follow fields are only specified for properties.
-
   /**
    * Whether the description is enclosed in double quotes.
    * <p>
@@ -167,6 +165,7 @@ public class DiagnosticsNode {
    * Unit must be acceptable to display immediately after a number with no
    * spaces. For example: 'physical pixels per logical pixel' should be a
    * [tooltip] not a [unit].
+   *
    * Only specified for Number properties.
    */
   public String getUnit() {
@@ -179,6 +178,8 @@ public class DiagnosticsNode {
 
   /**
    * String describing just the numeric [value] without a unit suffix.
+   *
+   * Only specified for Number properties.
    */
   public String getNumberToString() {
     return getStringMember("numberToString");

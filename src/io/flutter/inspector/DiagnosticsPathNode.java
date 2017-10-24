@@ -48,6 +48,10 @@ public class DiagnosticsPathNode {
    * Returns the index of the child that continues the path if any.
    */
   public int getChildIndex() {
-    return json.get("childIndex").getAsInt();
+    final JsonElement childIndex = json.get("childIndex");
+    if (childIndex.isJsonNull()) {
+      return -1;
+    }
+    return childIndex.getAsInt();
   }
 }

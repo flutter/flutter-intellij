@@ -19,9 +19,9 @@ import java.util.concurrent.CompletableFuture;
 public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
   @Override
   protected void perform(final DefaultMutableTreeNode node, final DiagnosticsNode diagnosticsNode, final AnActionEvent e) {
-    XNavigatable navigatable = sourcePosition -> {
+    final Project project = e.getProject();
+    final XNavigatable navigatable = sourcePosition -> {
       if (sourcePosition != null) {
-        final Project project = e.getProject();
         AppUIUtil.invokeOnEdt(() -> {
           sourcePosition.createNavigatable(project).navigate(true);
         }, project.getDisposed());

@@ -112,23 +112,23 @@ public class InspectorService implements Disposable {
    * Intent is we could refactor how the API is invoked by only changing this call.
    */
   CompletableFuture<InstanceRef> invokeServiceMethod(String methodName) {
-    return getInspectorLibrary().eval("WidgetInspectorService." + methodName + "(\"" + groupName + "\")", null);
+    return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(\"" + groupName + "\")", null);
   }
 
   CompletableFuture<InstanceRef> invokeServiceMethod(String methodName, InspectorInstanceRef arg) {
     if (arg == null || arg.getId() == null) {
-      return getInspectorLibrary().eval("WidgetInspectorService." + methodName + "(null, \"" + groupName + "\")", null);
+      return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", null);
     }
-    return getInspectorLibrary().eval("WidgetInspectorService." + methodName + "(\"" + arg.getId() + "\", \"" + groupName + "\")", null);
+    return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(\"" + arg.getId() + "\", \"" + groupName + "\")", null);
   }
 
   CompletableFuture<InstanceRef> invokeServiceMethodOnRef(String methodName, InstanceRef arg) {
     HashMap<String, String> scope = new HashMap<>();
     if (arg == null) {
-      return getInspectorLibrary().eval("WidgetInspectorService." + methodName + "(null, \"" + groupName + "\")", scope);
+      return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", scope);
     }
     scope.put("arg1", arg.getId());
-    return getInspectorLibrary().eval("WidgetInspectorService." + methodName + "(arg1, \"" + groupName + "\")", scope);
+    return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(arg1, \"" + groupName + "\")", scope);
   }
 
   CompletableFuture<DiagnosticsNode> parseDiagnosticsNode(CompletableFuture<InstanceRef> instanceRefFuture) {
@@ -174,7 +174,7 @@ public class InspectorService implements Disposable {
    * Converts an inspector ref to value suitable for use by generic intellij
    * debugging tools.
    * <p>
-   * Warning: DartVmServiceValue references do not make any lifetime gaurantees
+   * Warning: DartVmServiceValue references do not make any lifetime guarantees
    * so code keeping them around for a long period of time must be prepared to
    * handle reference expiration gracefully.
    */
