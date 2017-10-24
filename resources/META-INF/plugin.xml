@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>18.1</version>
+  <version>18.2</version>
 
   <idea-version since-build="171.1" until-build="172.*"/>
 
@@ -21,6 +21,12 @@
 
   <change-notes>
     <![CDATA[
+
+18.2:
+<ul>
+  <li>fixed an issue where reload on save could not be disabled</li>
+  <li>fixed an exception that could occur on project creation</li>
+</ul>
 
 18.1:
 <ul>
