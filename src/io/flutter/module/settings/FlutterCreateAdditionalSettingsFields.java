@@ -18,8 +18,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import java.awt.event.ItemEvent;
 
-public class FlutterCreateAddtionalSettingsFields {
-
+public class FlutterCreateAdditionalSettingsFields {
   private final FlutterCreateAdditionalSettings settings;
   private final JTextField orgField;
   private final JTextField descriptionField;
@@ -27,11 +26,11 @@ public class FlutterCreateAddtionalSettingsFields {
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
 
-  public FlutterCreateAddtionalSettingsFields() {
+  public FlutterCreateAdditionalSettingsFields() {
     this(new FlutterCreateAdditionalSettings());
   }
 
-  public FlutterCreateAddtionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings) {
+  public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings) {
     settings = additionalSettings;
 
     projectTypeForm = new ProjectType();
@@ -102,7 +101,7 @@ public class FlutterCreateAddtionalSettingsFields {
     }
   }
 
-  public FlutterCreateAdditionalSettings getAddtionalSettings() {
+  public FlutterCreateAdditionalSettings getAdditionalSettings() {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setType(projectTypeForm.getType())
