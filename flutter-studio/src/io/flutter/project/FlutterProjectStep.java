@@ -119,8 +119,10 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myValidatorPanel.registerValidator(model.projectName(), this::validateFlutterModuleName);
     myValidatorPanel.registerMessageSource(myDownloadErrorMessage);
 
-    Expression<File> locationFile = model.projectLocation().transform(File::new);
-    myValidatorPanel.registerValidator(locationFile, PathValidator.createDefault("project location"));
+    if (isProject()) {
+      Expression<File> locationFile = model.projectLocation().transform(File::new);
+      myValidatorPanel.registerValidator(locationFile, PathValidator.createDefault("project location"));
+    }
 
     // Initialization of the SDK install UI was copied from FlutterGeneratorPeer.
 
@@ -255,6 +257,10 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @NotNull
   public String getContainerName() {
     return "project";
+  }
+
+  protected boolean isProject() {
+    return true;
   }
 
   @Override
