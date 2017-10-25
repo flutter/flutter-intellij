@@ -215,7 +215,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @NotNull
   private Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
     if (moduleName.isEmpty()) {
-      return errorResult("Please enter a name for the " + getContainerName() + ".'");
+      return errorResult("Please enter a name for the " + getContainerName() + ".");
     }
     if (!FlutterUtils.isValidPackageName(moduleName)) {
       return errorResult(
