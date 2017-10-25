@@ -189,8 +189,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     return new Validator.Result(Validator.Severity.ERROR, message);
   }
 
-  private static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
-    // TODO(messick): Make the original version of this public in the Dart plugin. Cache comboBox.getModel().
+  public static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
+    // TODO(messick): Replace the original in the Dart plugin with this implementation.
     final Object currentItem = comboBox.getEditor().getItem();
 
     boolean contains = false;
@@ -204,9 +204,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     if (!contains) {
       //noinspection unchecked
       ((DefaultComboBoxModel)comboBox.getModel()).insertElementAt(currentItem, 0);
-      comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
-      comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
     }
+    comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
+    comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
 
   /**
