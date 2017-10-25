@@ -63,6 +63,11 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     abstract public String getHelpText();
+
+    @Override
+    public String toString() {
+      return getName();
+    }
   }
 
   private static class FlutterApplicationGalleryEntry extends FlutterGalleryEntry {
@@ -84,7 +89,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
 
     @Nullable
-    @Override
+    @Override // Not used by Flutter.
     public String getDescription() {
       return FlutterBundle.message("module.wizard.app_description");
     }
@@ -132,7 +137,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
 
     @Nullable
-    @Override
+    @Override // Not used by Flutter.
     public String getDescription() {
       return FlutterBundle.message("module.wizard.package_description");
     }
@@ -180,7 +185,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
 
     @Nullable
-    @Override
+    @Override // Not used by Flutter.
     public String getDescription() {
       return FlutterBundle.message("module.wizard.plugin_description");
     }
