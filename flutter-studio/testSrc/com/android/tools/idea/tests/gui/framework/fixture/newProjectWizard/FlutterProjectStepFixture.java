@@ -50,8 +50,8 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
 
   @NotNull
   public FlutterProjectStepFixture enterProjectLocation(@NotNull String text) {
-    JTextComponent textField = findTextFieldWithLabel("Project location");
-    replaceText(textField, text);
+    final TextFieldWithBrowseButton locationField = getLocationField();
+    replaceText(locationField.getTextField(), text);
     return this;
   }
 

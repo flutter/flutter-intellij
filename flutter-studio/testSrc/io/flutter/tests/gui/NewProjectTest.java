@@ -22,6 +22,14 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.assertEquals;
 
 /**
+ * As long as the wizard is working properly the error checks
+ * in FlutterProjectCreator will never be triggered. That leaves
+ * quite a few lines untested. It currently has 79% coverage.
+ *
+ * The "Install SDK" button of FlutterProjectStep is not tested.
+ * It has 86% coverage currently, and most of the untested code
+ * is part of the installer implementation.
+ *
  * If flakey tests are found try adjusting these settings:
  * Settings festSettings = myGuiTest.robot().settings();
  * festSettings.delayBetweenEvents(50); // 30
@@ -123,6 +131,25 @@ public class NewProjectTest {
     assertThat(settingsStep.getPackageName()).isEqualTo("com.google.flutter_app"); // Partially persisting
     settingsStep.getKotlinFixture().requireSelected(); // Persisting
     settingsStep.getSwiftFixture().requireSelected(); // Persisting
+    settingsStep.getKotlinFixture().setSelected(false);
+    wizard.clickCancel();
+
+    myGuiTest.ideFrame().invokeMenuPath("File", "New", "New Flutter Project...");
+    wizard = myGuiTest.ideFrame().findNewProjectWizard();
+    wizard.chooseProjectType("Flutter Application").clickNext();
+    wizard.clickNext();
+
+    settingsStep = wizard.getFlutterSettingsStep();
+    settingsStep.getKotlinFixture().requireNotSelected(); // Persisting
+    settingsStep.getSwiftFixture().requireSelected(); // Independent of Kotlin
+    wizard.clickCancel();
+
+    myGuiTest.ideFrame().invokeMenuPath("File", "New", "New Flutter Project...");
+    wizard = myGuiTest.ideFrame().findNewProjectWizard();
+    wizard.chooseProjectType("Flutter Application").clickNext();
+    projectStep = wizard.getFlutterProjectStep(type);
+    projectStep.enterProjectLocation("/");
+    assertThat(projectStep.getErrorMessage()).contains("location");
     wizard.clickCancel();
   }
 }
