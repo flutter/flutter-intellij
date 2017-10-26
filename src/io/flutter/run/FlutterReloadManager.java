@@ -27,6 +27,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -47,6 +48,8 @@ import io.flutter.FlutterMessages;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -58,6 +61,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -314,13 +318,31 @@ public class FlutterReloadManager {
         //List<DartServerData.DartError> errors = analysisServerService.getErrors(scope);
         //noinspection unchecked
         List<DartServerData.DartError> errors = (List<DartServerData.DartError>)getErrorsMethod.invoke(analysisServerService, scope);
-        errors = errors.stream().filter(error -> error.getSeverity().equals(AnalysisErrorSeverity.ERROR)).collect(Collectors.toList());
+        errors = errors.stream().filter(error -> shouldBlockReload(error, module)).collect(Collectors.toList());
         return !errors.isEmpty();
       }
       catch (IllegalAccessException | InvocationTargetException e) {
         return false;
       }
     }
+  }
+
+  private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NotNull Module module) {
+    // Only block on errors.
+    if (!error.getSeverity().equals(AnalysisErrorSeverity.ERROR)) return false;
+
+    final File file = new File(error.getAnalysisErrorFileSD());
+    final VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, false);
+    if (virtualFile != null) {
+      final List<PubRoot> roots = PubRoots.forModule(module);
+      for (PubRoot root : roots) {
+        // Skip errors in test files.
+        final String relativePath = root.getRelativePath(virtualFile);
+        if (relativePath != null && relativePath.startsWith("test/")) return false;
+      }
+    }
+
+    return true;
   }
 
   private LightweightHint showEditorHint(@NotNull Editor editor, String message, boolean isError) {

@@ -20,13 +20,15 @@ import java.util.List;
  */
 public class PubRoots {
   // Not instantiable.
-  private PubRoots() {}
+  private PubRoots() {
+  }
 
   /**
    * Returns a PubRoot for each of the module's content roots that contains a pubspec.yaml file.
    * <p>
    * (Based on the filesystem cache; doesn't refresh anything.)
    */
+  @NotNull
   public static List<PubRoot> forModule(@NotNull Module module) {
     final List<PubRoot> result = new ArrayList<>();
     for (VirtualFile dir : ModuleRootManager.getInstance(module).getContentRoots()) {
@@ -43,6 +45,7 @@ public class PubRoots {
    * <p>
    * (Based on the filesystem cache; doesn't refresh anything.)
    */
+  @NotNull
   public static List<PubRoot> forProject(@NotNull Project project) {
     final List<PubRoot> result = new ArrayList<>();
     for (Module module : ModuleManager.getInstance(project).getModules()) {
