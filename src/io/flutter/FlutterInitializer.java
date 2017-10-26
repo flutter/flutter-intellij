@@ -60,7 +60,7 @@ public class FlutterInitializer implements StartupActivity {
         properties.setValue(analyticsClientIdKey, clientId);
       }
 
-      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(PluginId.getId("io.flutter"));
+      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(FlutterUtils.getPluginId());
       assert descriptor != null;
       final ApplicationInfo info = ApplicationInfo.getInstance();
       analytics = new Analytics(clientId, descriptor.getVersion(), info.getVersionName(), info.getFullVersion());

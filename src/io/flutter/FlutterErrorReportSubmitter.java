@@ -88,9 +88,10 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final ApplicationInfo info = ApplicationInfo.getInstance();
     builder.append(info.getVersionName()).append(" `").append(info.getFullVersion()).append("`");
 
-    final IdeaPluginDescriptor flutterPlugin = PluginManager.getPlugin(PluginId.getId("io.flutter"));
+    final PluginId pid = FlutterUtils.getPluginId();
+    final IdeaPluginDescriptor flutterPlugin = PluginManager.getPlugin(pid);
     //noinspection ConstantConditions
-    builder.append(" • Flutter plugin `").append(flutterPlugin.getVersion()).append("`");
+    builder.append(" • Flutter plugin `").append(pid.getIdString()).append(' ').append(flutterPlugin.getVersion()).append("`");
 
     final IdeaPluginDescriptor dartPlugin = PluginManager.getPlugin(PluginId.getId("Dart"));
     if (dartPlugin != null) {
