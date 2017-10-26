@@ -56,7 +56,7 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
     }
 
     final Module module = ModuleUtilCore.findModuleForFile(file, project);
-    if (module == null || !FlutterModuleUtils.isFlutterModule(module)) {
+    if (module == null || !FlutterModuleUtils.usesFlutter(module)) {
       return null;
     }
 
