@@ -121,13 +121,16 @@ public class FlutterInitializer implements StartupActivity {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
 
+    // If the project declares a Flutter dependency, do some extra initialization.
     final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
-    if (root != null) {
+    if (root != null && root.declaresFlutter()) {
+      // Set Android SDK.
       if (root.hasAndroidModule(project)) {
         ensureAndroidSdk(project);
       }
 
       FlutterModuleUtils.autoCreateRunConfig(project, root);
+      //TODO(pq): this is too eager; consider only doing this in case there are no already open editors.
       FlutterModuleUtils.autoShowMain(project, root);
     }
 
