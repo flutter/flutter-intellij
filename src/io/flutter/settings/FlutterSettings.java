@@ -16,6 +16,7 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String memoryDashboardKey = "io.flutter.memoryDashboard";
+  private static final String widgetInspectorKey = "io.flutter.widgetInspector";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -41,6 +42,9 @@ public class FlutterSettings {
     }
     if (isMemoryDashboardEnabled()) {
       analytics.sendEvent("settings", afterLastPeriod(memoryDashboardKey));
+    }
+    if (isWidgetInspectorEnabled()) {
+      analytics.sendEvent("settings", afterLastPeriod(widgetInspectorKey));
     }
   }
 
@@ -81,6 +85,17 @@ public class FlutterSettings {
 
     fireEvent();
   }
+
+  public boolean isWidgetInspectorEnabled() {
+    return getPropertiesComponent().getBoolean(widgetInspectorKey, false);
+  }
+
+  public void setWidgetInspectorEnabled(boolean value) {
+    getPropertiesComponent().setValue(widgetInspectorKey, value, false);
+
+    fireEvent();
+  }
+
 
   protected void fireEvent() {
     for (Listener listener : listeners) {

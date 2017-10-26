@@ -305,6 +305,18 @@
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
   <actions>
+    <group id="Flutter.InspectorActions">
+      <action id="Flutter.JumpToTypeSource" class="io.flutter.inspector.JumpToTypeSourceAction"
+              description="Jump to Type Source"
+              text="Jump to Type Source">
+        <keyboard-shortcut keymap="$default" first-keystroke="shift F4"/>
+      </action>
+      <action id="Flutter.JumpToSource" class="io.flutter.inspector.JumpToSourceAction"
+              text="Jump to Source">
+        <keyboard-shortcut keymap="$default" first-keystroke="control DOWN"/>
+      </action>
+    </group>
+
     <group id="Flutter.MainToolbarActions">
       <separator/>
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"

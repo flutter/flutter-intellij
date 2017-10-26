@@ -55,6 +55,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
 
   @Override
   protected void onVmConnected(@NotNull VmService vmService) {
+    app.setFlutterDebugProcess(this);
     FlutterViewMessages.sendDebugActive(getSession().getProject(), app, vmService);
   }
 

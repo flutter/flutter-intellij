@@ -9,6 +9,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.inspector.InspectorService;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,6 +39,9 @@ public class FlutterViewMessages {
                                      @NotNull VmService vmService) {
     final MessageBus bus = project.getMessageBus();
     final FlutterDebugNotifier publisher = bus.syncPublisher(FLUTTER_DEBUG_TOPIC);
+    app.setVmService(vmService);
+    assert(app.getFlutterDebugProcess() != null);
+    app.setInspectorService( new InspectorService(app.getFlutterDebugProcess(), vmService));
     publisher.debugActive(new FlutterDebugEvent(app, vmService));
   }
 }

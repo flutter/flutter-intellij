@@ -23,7 +23,10 @@ import com.intellij.openapi.util.Key;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
+import io.flutter.inspector.InspectorService;
+import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
+import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -63,6 +66,9 @@ public class FlutterApp {
   private final List<StateListener> myListeners = new ArrayList<>();
 
   private final ObservatoryConnector myConnector;
+  private FlutterDebugProcess myFlutterDebugProcess;
+  private VmService myVmService;
+  private InspectorService myInspectorService;
 
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
@@ -406,6 +412,30 @@ public class FlutterApp {
 
   public String deviceId() {
     return myDeviceId;
+  }
+
+  public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
+    myFlutterDebugProcess = flutterDebugProcess;
+  }
+
+  public FlutterDebugProcess getFlutterDebugProcess() {
+    return myFlutterDebugProcess;
+  }
+
+  public void setVmService(VmService vmService) {
+    myVmService = vmService;
+  }
+
+  public VmService getVmService() {
+    return myVmService;
+  }
+
+  public InspectorService getInspectorService() {
+    return myInspectorService;
+  }
+
+  public void setInspectorService(InspectorService service) {
+    myInspectorService = service;
   }
 
   public interface StateListener {

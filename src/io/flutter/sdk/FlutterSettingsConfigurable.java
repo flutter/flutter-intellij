@@ -51,6 +51,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myEnableMemoryDashboardCheckBox;
+  private JCheckBox myEnableWidgetInspectorCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -131,6 +132,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isWidgetInspectorEnabled() != myEnableWidgetInspectorCheckBox.isSelected()) {
+      return true;
+    }
+
     //noinspection RedundantIfStatement
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
@@ -160,6 +165,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setMemoryDashboardEnabled(myEnableMemoryDashboardCheckBox.isSelected());
+    settings.setWidgetInspectorEnabled(myEnableWidgetInspectorCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -182,6 +188,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     myEnableMemoryDashboardCheckBox.setSelected(settings.isMemoryDashboardEnabled());
+    myEnableWidgetInspectorCheckBox.setSelected(settings.isWidgetInspectorEnabled());
   }
 
   private void updateVersionText() {
