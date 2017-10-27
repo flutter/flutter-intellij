@@ -22,7 +22,7 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
   <!-- Filter properties and values for plugin.xml. The default is for IJ, the value in the comment for AS -->
   <!-- If there is no <depends> tag the plugin will work with all IDEA products -->
   <property name="DEPENDS" value=""/> <!-- <depends>com.intellij.modules.androidstudio</depends> -->
-  <property name="PLUGINID" value="io.flutter.ij"/> <!-- io.flutter.as -->
+  <property name="PLUGINID" value="io.flutter"/> <!-- io.flutter.as -->
   <property name="SINCE" value="172.1"/> <!-- 171.1 -->
   <property name="UNTIL" value="173.*"/> <!-- 171.* -->
   <filterset id="plugin.filters">
