@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 public class ProjectOpenActivity implements StartupActivity, DumbAware {
   @Override
   public void runActivity(@NotNull Project project) {
-    if (!FlutterModuleUtils.hasFlutterModule(project)) {
+    if (!FlutterModuleUtils.usesFlutter(project)) {
       // This method is called in twice when importing a project, because the project is reloaded.
       // Don't do anything until the second time.
       return;

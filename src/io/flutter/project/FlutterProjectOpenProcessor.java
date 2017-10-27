@@ -63,12 +63,12 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
     // Delegate opening to the platform open processor.
     final ProjectOpenProcessor importProvider = getDelegateImportProvider(file);
-    if (importProvider == null) {
-      return null;
-    }
+    if (importProvider == null) return null;
 
     final Project project = importProvider.doOpenProject(file, projectToClose, forceOpenInNewFrame);
-    if (project != null && !project.isDisposed() && !FlutterModuleUtils.hasFlutterModule(project)) {
+    if (project == null || project.isDisposed()) return project;
+
+    if (FlutterModuleUtils.usesFlutter(project) && !FlutterModuleUtils.hasFlutterModule(project)) {
       convertToFlutterProject(project);
     }
     return project;
