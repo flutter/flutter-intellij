@@ -11,6 +11,7 @@ import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProcessCanceledException;
@@ -35,6 +36,7 @@ import java.util.regex.Pattern;
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
   private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]+([_]?[a-z0-9]+)*)+$");
+  private static final String[] PLUGIN_IDS = { "io.flutter", "io.flutter.as" };
 
   private FlutterUtils() {
   }
@@ -192,5 +194,16 @@ public class FlutterUtils {
     catch (ExecutionException e) {
       return false;
     }
+  }
+
+  @NotNull
+  public static PluginId getPluginId() {
+    for (String id : PLUGIN_IDS) {
+      PluginId pid = PluginId.findId(id);
+      if (pid != null) {
+        return pid;
+      }
+    }
+    throw new IllegalStateException("no plugin id");
   }
 }

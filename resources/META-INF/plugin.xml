@@ -1,5 +1,5 @@
 <idea-plugin>
-  <id>io.flutter</id>
+  <id>@PLUGINID@</id>
   <name>Flutter</name>
   <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
     cross-platform, high-performance mobile apps on both Android and iOS.
@@ -8,19 +8,21 @@
 
   <category>Custom Languages</category>
 
-  <version>18.2</version>
+  <version>18.3</version>
 
-  <idea-version since-build="171.1" until-build="173.*"/>
+  <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
-
-  <!-- we use the hosted plugin store (plugins.jetbrains.com) to determine product availability -->
-  <!-- available in all IntelliJ platforms -->
-  <depends>com.intellij.modules.platform</depends>
+  @DEPENDS@
 
   <change-notes>
     <![CDATA[
+
+18.3:
+<ul>
+  <li>fixed a build problem that prevented the Android Studio plugin from creating projects
+</ul>
 
 18.2:
 <ul>
