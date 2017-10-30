@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.extensions.PluginId;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
@@ -129,9 +130,14 @@ public class FlutterInitializer implements StartupActivity {
         ensureAndroidSdk(project);
       }
 
+      // Setup a default run configuration for 'main.dart' (if it exists).
       FlutterModuleUtils.autoCreateRunConfig(project, root);
-      //TODO(pq): this is too eager; consider only doing this in case there are no already open editors.
-      FlutterModuleUtils.autoShowMain(project, root);
+
+      // If there are no open editors, show main.
+      final FileEditorManager editorManager = FileEditorManager.getInstance(project);
+      if (editorManager.getOpenFiles().length == 0) {
+        FlutterModuleUtils.autoShowMain(project, root);
+      }
     }
 
     FlutterRunNotifications.init(project);
