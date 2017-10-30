@@ -35,7 +35,8 @@ import java.util.regex.Pattern;
 
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
-  private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]+([_]?[a-z0-9]+)*)+$");
+  // Note the possessive quantifiers -- greedy quantifiers are too slow on long expressions (#1421).
+  private static final Pattern VALID_PACKAGE = Pattern.compile("^([a-z]++([_]?[a-z0-9]+)*)++$");
   private static final String[] PLUGIN_IDS = { "io.flutter", "io.flutter.as" };
 
   private FlutterUtils() {

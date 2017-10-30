@@ -29,12 +29,12 @@ public class FlutterUtilsTest {
 
   @Test
   public void validPackageNames() {
-    final String[] validNames = {"a", "a_b_c", "abc"};
+    final String[] validNames = {"a", "a_b_c", "abc", "a_long_module_name_that_is_legal"};
     for (String name : validNames) {
       assertTrue("expected " + name + " to be valid", isValidPackageName(name));
     }
 
-    final String[] invalidNames = {"_", "_a", "a_", "A", "Abc", "A_bc"};
+    final String[] invalidNames = {"_", "_a", "a_", "A", "Abc", "A_bc", "a_long_module_name_that_is_illegal_"};
     for (String name : invalidNames) {
       assertFalse("expected " + name + " to be invalid", isValidPackageName(name));
     }
