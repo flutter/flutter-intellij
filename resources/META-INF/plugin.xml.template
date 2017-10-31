@@ -1,5 +1,5 @@
 <idea-plugin>
-  <id>io.flutter</id>
+  <id>@PLUGINID@</id>
   <name>Flutter</name>
   <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
     cross-platform, high-performance mobile apps on both Android and iOS.
@@ -10,11 +10,11 @@
 
   <version>18.3</version>
 
-  <idea-version since-build="172.1" until-build="173.*"/>
+  <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
-  
+  @DEPENDS@
 
   <change-notes>
     <![CDATA[

@@ -194,11 +194,9 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
     </copy>
 
     <delete file="build/src/META-INF/plugin.xml"/>
-    <copy todir="build/src/META-INF">
+    <delete file="build/src/META-INF/plugin.xml.template"/>
+    <copy file="resources/META-INF/plugin.xml.template" tofile="build/src/META-INF/plugin.xml">
       <filterset refid="plugin.filters"/>
-      <fileset dir="resources/META-INF">
-        <filename name="plugin.xml"/>
-      </fileset>
     </copy>
 
     <jar destfile="build/flutter-intellij.jar" duplicate="preserve">
@@ -344,6 +342,14 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
 
   <target name="clean">
     <delete dir="build"/>
+  </target>
+
+  <target name="plugin.xml">
+    <move file="resources/META-INF/plugin.xml" tofile="resources/META-INF/plugin.xml.old"/>
+    <copy file="resources/META-INF/plugin.xml.template" tofile="resources/META-INF/plugin.xml">
+      <filterset refid="plugin.filters"/>
+    </copy>
+    <delete file="resources/META-INF/plugin.xml.old"/>
   </target>
 
 </project>
