@@ -164,8 +164,9 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
   <target name="build.src" depends="paths">
     <echo message="Building against target ${idea.home}"/>
 
-    <javac2 destdir="build/src" memorymaximumsize="1000m" fork="true" includeantruntime="false">
-      <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
+    <javac2 destdir="build/src" memorymaximumsize="1000m" fork="true"
+            debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <compilerarg line="-encoding UTF-8 -source 8 -target 8 -g"/>
       <classpath>
         <path refid="idea.jars"/>
         <path refid="dartplugin.jars"/>
@@ -214,8 +215,9 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
     <echo message="Building against target ${idea.home}"/>
 
     <mkdir dir="build/studioSrc"/>
-    <javac2 destdir="build/studioSrc" memorymaximumsize="1000m" fork="true" includeantruntime="false">
-      <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
+    <javac2 destdir="build/studioSrc" memorymaximumsize="1000m" fork="true"
+            debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <compilerarg line="-encoding UTF-8 -source 8 -target 8 -g"/>
       <classpath>
         <path refid="idea.jars"/>
         <path refid="dartplugin.jars"/>
@@ -266,7 +268,8 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=
   <target name="build.testSrc" depends="paths, build.src">
     <echo message="Building against target ${idea.home}"/>
 
-    <javac2 destdir="build/testSrc" memorymaximumsize="1000m" fork="true" includeantruntime="false">
+    <javac2 destdir="build/testSrc" memorymaximumsize="1000m" fork="true"
+            debug="true" debuglevel="lines,vars,source" includeantruntime="false">
       <compilerarg line="-encoding UTF-8 -source 8 -target 8"/>
       <classpath>
         <path refid="idea.jars"/>
