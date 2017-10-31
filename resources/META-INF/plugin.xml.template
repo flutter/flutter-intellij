@@ -1,5 +1,5 @@
 <idea-plugin>
-  <id>io.flutter</id>
+  <id>@PLUGINID@</id>
   <name>Flutter</name>
   <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
     cross-platform, high-performance mobile apps on both Android and iOS.
@@ -10,11 +10,11 @@
 
   <version>18.3</version>
 
-  <idea-version since-build="172.1" until-build="173.*"/>
+  <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
-  
+  @DEPENDS@
 
   <change-notes>
     <![CDATA[
@@ -298,6 +298,7 @@
 
   <!-- Contributes IDEA-specific features and implementations. -->
   <depends optional="true" config-file="idea-contribs.xml">com.intellij.modules.java</depends>
+
   <!-- Contributes Android Studio-specific features and implementations. -->
   <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
   <!-- depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends --><!-- dev-channel sources only -->
@@ -306,6 +307,18 @@
   <!-- See: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 
   <actions>
+    <group id="Flutter.InspectorActions">
+      <action id="Flutter.JumpToTypeSource" class="io.flutter.inspector.JumpToTypeSourceAction"
+              description="Jump to Type Source"
+              text="Jump to Type Source">
+        <keyboard-shortcut keymap="$default" first-keystroke="shift F4"/>
+      </action>
+      <action id="Flutter.JumpToSource" class="io.flutter.inspector.JumpToSourceAction"
+              text="Jump to Source">
+        <keyboard-shortcut keymap="$default" first-keystroke="control DOWN"/>
+      </action>
+    </group>
+
     <group id="Flutter.MainToolbarActions">
       <separator/>
       <action id="Flutter.DeviceSelector" class="io.flutter.actions.DeviceSelectorAction"
@@ -391,7 +404,7 @@
       <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
-              icon="AllIcons.Actions.Restart">
+              icon="FlutterIcons.FullRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
       </action>
@@ -449,8 +462,8 @@
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
 
     <applicationService serviceInterface="io.flutter.settings.FlutterSettings"
-                    serviceImplementation="io.flutter.settings.FlutterSettings"
-                    overrides="false"/>
+                        serviceImplementation="io.flutter.settings.FlutterSettings"
+                        overrides="false"/>
 
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
 
