@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>18.3</version>
+  <version>18.4</version>
 
   <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
@@ -18,6 +18,11 @@
 
   <change-notes>
     <![CDATA[
+
+18.4:
+<ul>
+  <li>fixed a npe in the FlutterInitializer class
+</ul>
 
 18.3:
 <ul>
