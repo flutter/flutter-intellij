@@ -24,7 +24,6 @@ import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
-import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
@@ -75,12 +74,7 @@ public class FlutterUtils {
    */
   public static boolean isInFlutterProject(@NotNull PsiElement element) {
     final Module module = ModuleUtil.findModuleForPsiElement(element);
-    if (module != null) {
-      for (PubRoot root : PubRoots.forModule(module)) {
-        if (root.declaresFlutter()) return true;
-      }
-    }
-    return false;
+    return module != null && FlutterModuleUtils.usesFlutter(module);
   }
 
   public static boolean isInTestDir(DartFile file) {
@@ -200,7 +194,7 @@ public class FlutterUtils {
   @NotNull
   public static PluginId getPluginId() {
     for (String id : PLUGIN_IDS) {
-      PluginId pid = PluginId.findId(id);
+      final PluginId pid = PluginId.findId(id);
       if (pid != null) {
         return pid;
       }
