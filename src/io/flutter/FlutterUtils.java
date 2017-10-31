@@ -182,18 +182,8 @@ public class FlutterUtils {
 
   @NotNull
   public static PluginId getPluginId() {
-<<<<<<< HEAD
-    for (String id : PLUGIN_IDS) {
-      PluginId pid = PluginId.findId(id);
-      if (pid != null) {
-        return pid;
-      }
-    }
-    throw new IllegalStateException("no plugin id");
-=======
     final PluginId pluginId = PluginId.findId(isAndroidStudio() ? "io.flutter.as" : "io.flutter");
     assert pluginId != null;
     return pluginId;
->>>>>>> 377060c... fix an npe in android studio (#1457)
   }
 }
