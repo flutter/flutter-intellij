@@ -98,19 +98,37 @@ public class FlutterPluginsLibraryManager {
   }
 
   private void updateFlutterPluginsImpl() {
+    final boolean usesFlutter = FlutterModuleUtils.usesFlutter(project);
+
     final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
     final Library existingLibrary = projectLibraryTable.getLibraryByName(FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME);
-    final Library library =
-      existingLibrary != null ? existingLibrary
-                              : WriteAction.compute(() -> {
-                                final LibraryTableBase.ModifiableModel libTableModel =
-                                  ProjectLibraryTable.getInstance(project).getModifiableModel();
-                                final Library lib = libTableModel
-                                  .createLibrary(FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME,
-                                                 FlutterPluginLibraryType.LIBRARY_KIND);
-                                libTableModel.commit();
-                                return lib;
-                              });
+
+    if (!usesFlutter) {
+      // If we have a Flutter library, remove it.
+      if (existingLibrary != null) {
+        WriteAction.compute(() -> {
+          final LibraryTableBase.ModifiableModel libraryTableModel =
+            ProjectLibraryTable.getInstance(project).getModifiableModel();
+          libraryTableModel.removeLibrary(existingLibrary);
+          libraryTableModel.commit();
+          return null;
+        });
+      }
+
+      return;
+    }
+
+    final Library library = existingLibrary != null
+                            ? existingLibrary
+                            : WriteAction.compute(() -> {
+                              final LibraryTableBase.ModifiableModel libraryTableModel =
+                                ProjectLibraryTable.getInstance(project).getModifiableModel();
+                              final Library lib = libraryTableModel.createLibrary(
+                                FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME,
+                                FlutterPluginLibraryType.LIBRARY_KIND);
+                              libraryTableModel.commit();
+                              return lib;
+                            });
 
     final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoot.multipleForProject(project));
     final Set<String> flutterPluginUrls = new HashSet<>();
@@ -142,8 +160,8 @@ public class FlutterPluginsLibraryManager {
       model.commit();
     });
 
-    for (Module module : ModuleManager.getInstance(project).getModules()) {
-      if (FlutterModuleUtils.isFlutterModule(module)) {
+    for (final Module module : ModuleManager.getInstance(project).getModules()) {
+      if (FlutterModuleUtils.usesFlutter(module)) {
         addFlutterLibraryDependency(module, library);
       }
       else {
