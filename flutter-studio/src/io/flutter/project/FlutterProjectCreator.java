@@ -34,7 +34,6 @@ import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.io.FileUtil;
-import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -246,10 +245,12 @@ public class FlutterProjectCreator {
 
     EnumSet<PlatformProjectOpenProcessor.Option> options = EnumSet.noneOf(PlatformProjectOpenProcessor.Option.class);
     Project newProject = PlatformProjectOpenProcessor.doOpenProject(baseDir, projectToClose, -1, callback, options);
-    StartupManager.getInstance(newProject).registerPostStartupActivity(() -> ApplicationManager.getApplication().invokeLater(() -> {
-      // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
-      ProjectView.getInstance(newProject).changeView(ProjectViewPane.ID);
-    }, ModalityState.NON_MODAL));
+    if (newProject != null) {
+      StartupManager.getInstance(newProject).registerPostStartupActivity(() -> ApplicationManager.getApplication().invokeLater(() -> {
+        // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
+        ProjectView.getInstance(newProject).changeView(ProjectViewPane.ID);
+      }, ModalityState.NON_MODAL));
+    }
   }
 
   private FlutterCreateAdditionalSettings makeAdditionalSettings() {
