@@ -72,7 +72,6 @@ public class FlutterModuleUtils {
     if (module == null) return false;
 
     // If not IntelliJ, assume a small IDE (no multi-module project support).
-    // Look for a module with a flutter-like file structure.
     if (!PlatformUtils.isIntelliJ()) {
       return usesFlutter(module);
     }
