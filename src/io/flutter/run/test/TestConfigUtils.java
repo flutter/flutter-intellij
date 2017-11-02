@@ -92,14 +92,15 @@ public class TestConfigUtils {
   }
 
   enum TestType {
+    // Note that mapping elements to their most specific enclosing function call depends on the ordering from most to least specific.
+    SINGLE(AllIcons.RunConfigurations.TestState.Run, "test", WIDGET_TEST_FUNCTION),
     GROUP(AllIcons.RunConfigurations.TestState.Run_run, "group"),
     MAIN(AllIcons.RunConfigurations.TestState.Run_run) {
       @NotNull
       String getTooltip(@NotNull PsiElement element) {
         return "Run Tests";
       }
-    },
-    SINGLE(AllIcons.RunConfigurations.TestState.Run, "test", WIDGET_TEST_FUNCTION);
+    };
 
     @NotNull
     private final Icon myIcon;
