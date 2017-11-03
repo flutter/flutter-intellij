@@ -21,6 +21,7 @@ public class InspectorInstanceRef {
 
   @Override
   public boolean equals(Object other) {
+    //noinspection SimplifiableIfStatement
     if (other instanceof InspectorInstanceRef) {
       return ((InspectorInstanceRef)other).id.equals(id);
     }

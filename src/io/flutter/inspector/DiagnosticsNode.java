@@ -165,7 +165,7 @@ public class DiagnosticsNode {
    * Unit must be acceptable to display immediately after a number with no
    * spaces. For example: 'physical pixels per logical pixel' should be a
    * [tooltip] not a [unit].
-   *
+   * <p>
    * Only specified for Number properties.
    */
   public String getUnit() {
@@ -178,7 +178,7 @@ public class DiagnosticsNode {
 
   /**
    * String describing just the numeric [value] without a unit suffix.
-   *
+   * <p>
    * Only specified for Number properties.
    */
   public String getNumberToString() {
@@ -419,7 +419,7 @@ public class DiagnosticsNode {
     if (!json.has(memberName)) {
       return null;
     }
-    JsonElement value = json.get(memberName);
+    final JsonElement value = json.get(memberName);
     if (value instanceof JsonNull) {
       return null;
     }
@@ -430,7 +430,7 @@ public class DiagnosticsNode {
     if (!json.has(memberName)) {
       return defaultValue;
     }
-    JsonElement value = json.get(memberName);
+    final JsonElement value = json.get(memberName);
     if (value instanceof JsonNull) {
       return defaultValue;
     }
@@ -441,7 +441,7 @@ public class DiagnosticsNode {
     if (!json.has(memberName)) {
       return defaultValue;
     }
-    JsonElement value = json.get(memberName);
+    final JsonElement value = json.get(memberName);
     if (value instanceof JsonNull) {
       return defaultValue;
     }
@@ -452,7 +452,7 @@ public class DiagnosticsNode {
     if (!json.has(memberName)) {
       return defaultValue;
     }
-    JsonElement value = json.get(memberName);
+    final JsonElement value = json.get(memberName);
     if (value instanceof JsonNull) {
       return defaultValue;
     }
@@ -485,7 +485,7 @@ public class DiagnosticsNode {
       }
       else {
         // Known to have no children so we can provide the children immediately.
-        children = new CompletableFuture<ArrayList<DiagnosticsNode>>();
+        children = new CompletableFuture<>();
         children.complete(new ArrayList<>());
       }
     }

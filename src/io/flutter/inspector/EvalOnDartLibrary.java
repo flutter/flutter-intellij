@@ -9,7 +9,6 @@ import com.google.common.collect.Iterables;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.psi.search.SearchScope;
 import com.intellij.util.Alarm;
 import com.intellij.util.ReflectionUtil;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.IsolatesInfo;
@@ -65,7 +64,9 @@ public class EvalOnDartLibrary implements Disposable {
    */
   private void callVmServiceRequest(VmService vmService, String methodName, JsonObject params, EvaluateConsumer consumer) {
     try {
-      Method method = ReflectionUtil.getDeclaredMethod(Class.forName("org.dartlang.vm.service.VmServiceBase"), "request", String.class, JsonObject.class, Consumer.class);
+      final Method method = ReflectionUtil
+        .getDeclaredMethod(Class.forName("org.dartlang.vm.service.VmServiceBase"), "request", String.class, JsonObject.class,
+                           Consumer.class);
       if (method == null) {
         throw new RuntimeException("Cannot find method 'request'");
       }
@@ -79,32 +80,35 @@ public class EvalOnDartLibrary implements Disposable {
 
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope) {
     final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
+    //noinspection CodeBlock2Expr
     myRequestsScheduler.addRequest(() -> {
+      //noinspection CodeBlock2Expr
       libraryRef.thenAcceptAsync((LibraryRef ref) -> {
-        evaluateHelper(isolateInfo.getIsolateId(), ref.getId(), expression, scope,
-                       new EvaluateConsumer() {
-                         @Override
-                         public void onError(RPCError error) {
-                           LOG.error(error);
-                           future.completeExceptionally(new RuntimeException(error.toString()));
-                         }
+        evaluateHelper(
+          isolateInfo.getIsolateId(), ref.getId(), expression, scope,
+          new EvaluateConsumer() {
+            @Override
+            public void onError(RPCError error) {
+              LOG.error(error);
+              future.completeExceptionally(new RuntimeException(error.toString()));
+            }
 
-                         @Override
-                         public void received(ErrorRef response) {
-                           LOG.error("Error evaluating expression:\n" + response.getMessage());
-                           future.completeExceptionally(new RuntimeException(response.toString()));
-                         }
+            @Override
+            public void received(ErrorRef response) {
+              LOG.error("Error evaluating expression:\n" + response.getMessage());
+              future.completeExceptionally(new RuntimeException(response.toString()));
+            }
 
-                         @Override
-                         public void received(InstanceRef response) {
-                           future.complete(response);
-                         }
+            @Override
+            public void received(InstanceRef response) {
+              future.complete(response);
+            }
 
-                         @Override
-                         public void received(Sentinel response) {
-                           future.completeExceptionally(new RuntimeException(response.toString()));
-                         }
-                       }
+            @Override
+            public void received(Sentinel response) {
+              future.completeExceptionally(new RuntimeException(response.toString()));
+            }
+          }
         );
       });
     }, 0);
@@ -113,23 +117,25 @@ public class EvalOnDartLibrary implements Disposable {
 
   public CompletableFuture<Instance> getInstance(InstanceRef instance) {
     final CompletableFuture<Instance> future = new CompletableFuture<>();
+    //noinspection CodeBlock2Expr
     myRequestsScheduler.addRequest(() -> {
-      vmService.getObject(isolateInfo.getIsolateId(), instance.getId(), new GetObjectConsumer() {
-                            @Override
-                            public void onError(RPCError error) {
-                              future.completeExceptionally(new RuntimeException(error.toString()));
-                            }
+      vmService.getObject(
+        isolateInfo.getIsolateId(), instance.getId(), new GetObjectConsumer() {
+          @Override
+          public void onError(RPCError error) {
+            future.completeExceptionally(new RuntimeException(error.toString()));
+          }
 
-                            @Override
-                            public void received(Obj response) {
-                              future.complete((Instance)response);
-                            }
+          @Override
+          public void received(Obj response) {
+            future.complete((Instance)response);
+          }
 
-                            @Override
-                            public void received(Sentinel response) {
-                              future.completeExceptionally(new RuntimeException(response.toString()));
-                            }
-                          }
+          @Override
+          public void received(Sentinel response) {
+            future.completeExceptionally(new RuntimeException(response.toString()));
+          }
+        }
       );
     }, 0);
     return future;
@@ -149,7 +155,7 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   private JsonObject convertMapToJsonObject(Map<String, String> map) {
-    JsonObject obj = new JsonObject();
+    final JsonObject obj = new JsonObject();
     for (String key : map.keySet()) {
       obj.addProperty(key, map.get(key));
     }

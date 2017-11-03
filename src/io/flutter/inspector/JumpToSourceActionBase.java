@@ -20,8 +20,12 @@ public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
   @Override
   protected void perform(final DefaultMutableTreeNode node, final DiagnosticsNode diagnosticsNode, final AnActionEvent e) {
     final Project project = e.getProject();
+    if (project == null) {
+      return;
+    }
     final XNavigatable navigatable = sourcePosition -> {
       if (sourcePosition != null) {
+        //noinspection CodeBlock2Expr
         AppUIUtil.invokeOnEdt(() -> {
           sourcePosition.createNavigatable(project).navigate(true);
         }, project.getDisposed());
@@ -29,7 +33,8 @@ public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
     };
 
     final InspectorService inspectorService = diagnosticsNode.getInspectorService();
-    final CompletableFuture<DartVmServiceValue> valueFuture = inspectorService.toDartVmServiceValueForSourceLocation(diagnosticsNode.getValueRef());
+    final CompletableFuture<DartVmServiceValue> valueFuture =
+      inspectorService.toDartVmServiceValueForSourceLocation(diagnosticsNode.getValueRef());
     InspectorPanel.whenCompleteUiThread(valueFuture, (DartVmServiceValue value, Throwable throwable) -> {
       if (throwable != null) {
         return;
