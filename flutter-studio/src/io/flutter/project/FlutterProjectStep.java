@@ -30,8 +30,7 @@ import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.ui.ComboboxWithBrowseButton;
-import com.intellij.ui.JBProgressBar;
+import com.intellij.ui.*;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
@@ -39,11 +38,14 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.module.InstallSdkAction;
+import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -77,6 +79,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private JBProgressBar myProgressBar;
   private JLabel myCancelProgressButton;
   private JTextPane myProgressText;
+  private Color sdkBackgroundColor;
 
   public FlutterProjectStep(FlutterProjectModel model, String title, Icon icon, FlutterProjectType type) {
     super(model, title, icon);
@@ -122,6 +125,14 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     if (isProject()) {
       Expression<File> locationFile = model.projectLocation().transform(File::new);
       myValidatorPanel.registerValidator(locationFile, PathValidator.createDefault("project location"));
+      final JTextComponent sdkEditor = (JTextComponent)myFlutterSdkPath.getComboBox().getEditor().getEditorComponent();
+      sdkBackgroundColor = sdkEditor.getBackground();
+      sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
+        @Override
+        protected void textChanged(final DocumentEvent e) {
+          updateSdkField(sdkEditor);
+        }
+      });
     }
 
     // Initialization of the SDK install UI was copied from FlutterGeneratorPeer.
@@ -209,6 +220,20 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
 
+  private void updateSdkField(JTextComponent sdkEditor) {
+    FlutterSdk current = FlutterSdk.forPath(sdkEditor.getText());
+    Color color = sdkBackgroundColor;
+    if (current == null) {
+      if (ColorUtil.isDark(sdkBackgroundColor)) {
+        color = ColorUtil.darker(JBColor.YELLOW, 5);
+      }
+      else {
+        color = ColorUtil.desaturate(JBColor.YELLOW, 15);
+      }
+    }
+    sdkEditor.setBackground(color);
+  }
+
   /**
    * @See: https://www.dartlang.org/tools/pub/pubspec#name
    */
@@ -226,7 +251,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     }
     // Package name is more restrictive than identifier, so no need to check for identifier validity.
     if (FlutterConstants.FLUTTER_PACKAGE_DEPENDENCIES.contains(moduleName)) {
-      return errorResult("Invalid " + getContainerName() + " name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
+      return errorResult(
+        "Invalid " + getContainerName() + " name: '" + moduleName + "' - this will conflict with Flutter package dependencies.");
     }
     if (moduleName.length() > FlutterConstants.MAX_MODULE_NAME_LENGTH) {
       return errorResult("Invalid " + getContainerName() + " name - must be less than " +
