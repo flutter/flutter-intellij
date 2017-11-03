@@ -12,7 +12,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.psi.PsiElement;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
@@ -119,7 +118,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (rootFuture != null && !rootFuture.isDone()) {
       // Already running.
       rootFuture.cancel(true);
-      //      rootFuture.cancel(true);
       rootFuture = null;
     }
     getTreeModel().setRoot(new DefaultMutableTreeNode());
@@ -130,8 +128,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     setActivate(isApplicable.compute());
   }
 
+  @Nullable
   private InspectorService getInspectorService() {
-    FlutterApp app = getFlutterApp();
+    final FlutterApp app = getFlutterApp();
     return (app != null) ? app.getInspectorService() : null;
   }
 
@@ -179,7 +178,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     node.setAllowsChildren(diagnosticsNode.hasChildren());
     if (diagnosticsNode.hasChildren()) {
       if (diagnosticsNode.childrenReady()) {
-        CompletableFuture<ArrayList<DiagnosticsNode>> childrenFuture = diagnosticsNode.getChildren();
+        final CompletableFuture<ArrayList<DiagnosticsNode>> childrenFuture = diagnosticsNode.getChildren();
         assert (childrenFuture.isDone());
         setupChildren(node, childrenFuture.getNow(null));
       }
@@ -357,9 +356,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     if (selectedNodes.length > 0) {
       selectedNode = selectedNodes[0];
-      Object userObject = selectedNodes[0].getUserObject();
+      final Object userObject = selectedNodes[0].getUserObject();
       if (userObject instanceof DiagnosticsNode) {
-        DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
+        final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
         myPropertiesPanel.showProperties(diagnostic);
         if (getInspectorService() != null) {
           getInspectorService().maybeSetSelection(diagnostic.getValueRef(), false);
@@ -424,7 +423,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         return this;
       }
       if (PlatformDataKeys.PREDEFINED_TEXT.is(dataId)) {
-        XValueNodeImpl[] selectedNodes = getSelectedNodes(XValueNodeImpl.class, null);
+        final XValueNodeImpl[] selectedNodes = getSelectedNodes(XValueNodeImpl.class, null);
         if (selectedNodes.length == 1 && selectedNodes[0].getFullValueEvaluator() == null) {
           return DebuggerUIUtil.getNodeRawValue(selectedNodes[0]);
         }
@@ -472,7 +471,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     @Nullable
     @Override
     public String valueOf(DefaultMutableTreeNode node) {
-      DiagnosticsNode diagnostic = (DiagnosticsNode)node.getUserObject();
+      final DiagnosticsNode diagnostic = (DiagnosticsNode)node.getUserObject();
       return diagnostic.getDescription();
     }
   }
@@ -503,7 +502,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           return;
         }
         final ListTreeTableModelOnColumns model = getTreeModel();
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
         properties.sort(Comparator.comparing(DiagnosticsNode::getLevel).reversed());
         for (DiagnosticsNode property : properties) {
           if (property.getLevel() != DiagnosticLevel.hidden) {
@@ -536,7 +535,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         return;
       }
       if (!(userObject instanceof DiagnosticsNode)) return;
-      DiagnosticsNode node = (DiagnosticsNode)userObject;
+      final DiagnosticsNode node = (DiagnosticsNode)userObject;
       final String name = node.getName();
       SimpleTextAttributes textAttributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
       switch (node.getLevel()) {

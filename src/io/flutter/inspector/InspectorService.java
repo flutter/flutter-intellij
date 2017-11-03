@@ -10,7 +10,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.xdebugger.frame.XNamedValue;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
 import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.VmService;
@@ -29,8 +28,8 @@ import java.util.concurrent.CompletableFuture;
  * inspector code running in the IDE.
  */
 public class InspectorService implements Disposable {
+  private static int nextGroupId = 0;
 
-  static int nextGroupId = 0;
   /**
    * Group name to to manage keeping alive nodes in the tree referenced by the inspector.
    */
@@ -119,11 +118,12 @@ public class InspectorService implements Disposable {
     if (arg == null || arg.getId() == null) {
       return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", null);
     }
-    return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(\"" + arg.getId() + "\", \"" + groupName + "\")", null);
+    return getInspectorLibrary()
+      .eval("WidgetInspectorService.instance." + methodName + "(\"" + arg.getId() + "\", \"" + groupName + "\")", null);
   }
 
   CompletableFuture<InstanceRef> invokeServiceMethodOnRef(String methodName, InstanceRef arg) {
-    HashMap<String, String> scope = new HashMap<>();
+    final HashMap<String, String> scope = new HashMap<>();
     if (arg == null) {
       return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", scope);
     }
@@ -145,6 +145,7 @@ public class InspectorService implements Disposable {
 
   CompletableFuture<DiagnosticsNode> parseDiagnosticsNode(InstanceRef instanceRef) {
     return instanceRefToJson(instanceRef).thenApplyAsync((JsonElement jsonElement) -> {
+      //noinspection CodeBlock2Expr
       return new DiagnosticsNode(jsonElement.getAsJsonObject(), this);
     });
   }
@@ -181,6 +182,7 @@ public class InspectorService implements Disposable {
   public CompletableFuture<DartVmServiceValue> toDartVmServiceValueForSourceLocation(InspectorInstanceRef inspectorInstanceRef) {
     return invokeServiceMethod("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
       (InstanceRef instanceRef) -> {
+        //noinspection CodeBlock2Expr
         return new DartVmServiceValue(debugProcess, inspectorLibrary.getIsolateId(), "inspectedObject", instanceRef, null, null, false);
       });
   }
@@ -342,7 +344,7 @@ public class InspectorService implements Disposable {
     // TODO(jacobr): add semantics, and layer trees.
   }
 
-  static public interface InspectorServiceClient {
+  public interface InspectorServiceClient {
     void onInspectorSelectionChanged();
 
     void onFlutterFrame();
