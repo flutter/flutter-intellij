@@ -275,6 +275,13 @@ public class PubRoot {
    * Returns true if the pubspec declares a flutter dependency.
    */
   public boolean declaresFlutter() {
+    return declaresFlutter(pubspec);
+  }
+
+  /**
+   * Returns true if passed pubspec declares a flutter dependency.
+   */
+  public static boolean declaresFlutter(@NotNull final VirtualFile pubspec) {
     // It uses Flutter if it contains:
     // dependencies:
     //   flutter:
@@ -449,7 +456,7 @@ public class PubRoot {
       //noinspection unchecked
       return (Map)yaml.load(yamlContents);
     }
-    catch (Exception var3) {
+    catch (Exception e) {
       return null;
     }
   }

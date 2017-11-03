@@ -216,6 +216,8 @@ public class FlutterModuleUtils {
   /**
    * Introspect into the module's content roots, looking for flutter.yaml or a pubspec.yaml that
    * references flutter.
+   * <p/>
+   * True is returned if any of the PubRoots associated with the {@link Module} have a pubspec that declares flutter.
    */
   public static boolean usesFlutter(@NotNull Module module) {
     for (PubRoot root : PubRoots.forModule(module)) {
