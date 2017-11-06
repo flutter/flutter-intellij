@@ -11,8 +11,8 @@ Pre-reqs: Run through the [flutter setup](https://flutter.io/setup/) and
 
 ## Testing matrix
 
-Testers should generally test against IntelliJ CE. We also support WebStorm and internal
-IntelliJ; we should have testers assigned to each for each roll.
+Testers should generally test against IntelliJ CE and Android Studio. We also support
+internal IntelliJ; we should have testers assigned to each for every roll.
 
 ## Project Creation
 
