@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -43,7 +42,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
-    final AnAction action = getAction();
+    final AnAction action = getAction(e.getProject());
     if (action != null) {
       action.actionPerformed(e);
     }
@@ -63,7 +62,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     presentation.setEnabled(false);
 
     // Retargeted actions defer to their targets for presentation updates.
-    final AnAction action = getAction();
+    final AnAction action = getAction(project);
     if (action != null) {
       final Presentation template = action.getTemplatePresentation();
       final String text = template.getTextWithMnemonic();
@@ -74,7 +73,7 @@ public abstract class FlutterRetargetAppAction extends DumbAwareAction {
     }
   }
 
-  private AnAction getAction() {
-    return ActionManager.getInstance().getAction(myActionId);
+  private AnAction getAction(@Nullable Project project) {
+    return project == null ? null : ProjectActions.getAction(project, myActionId);
   }
 }

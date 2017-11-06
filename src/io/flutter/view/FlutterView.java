@@ -21,16 +21,15 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.psi.PsiElement;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.inspector.InspectorService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -61,11 +60,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   @Nullable
   FlutterApp app;
 
-  private ArrayList<InspectorPanel> inspectorPanels;
+  private final ArrayList<InspectorPanel> inspectorPanels = new ArrayList<>();
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
-    inspectorPanels = new ArrayList<>();
   }
 
   @Override
@@ -122,7 +120,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       final ContentManager contentManager = toolWindow.getContentManager();
       final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
       final Computable<Boolean> isSessionActive = () -> {
-        FlutterApp app = getFlutterApp();
+        final FlutterApp app = getFlutterApp();
         return app != null && app.isStarted() && app.getFlutterDebugProcess().getVmConnected() &&
                !app.getFlutterDebugProcess().getSession().isStopped();
       };
@@ -132,7 +130,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
       content.setComponent(windowPanel);
 
-      InspectorPanel inspectorPanel = new InspectorPanel(this, isSessionActive, treeType);
+      final InspectorPanel inspectorPanel = new InspectorPanel(this, isSessionActive, treeType);
       windowPanel.setContent(inspectorPanel);
       windowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 

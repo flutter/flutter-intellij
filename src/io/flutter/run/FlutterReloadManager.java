@@ -13,7 +13,10 @@ import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.SaveAllAction;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.notification.*;
-import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.ex.ActionManagerEx;
 import com.intellij.openapi.actionSystem.ex.AnActionListener;
 import com.intellij.openapi.application.ApplicationManager;
@@ -24,7 +27,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -35,6 +37,7 @@ import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiErrorElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
+import com.intellij.psi.search.ProjectAndLibrariesScope;
 import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.LightweightHint;
@@ -47,6 +50,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.OpenSimulatorAction;
+import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -107,7 +111,7 @@ public class FlutterReloadManager {
         }
 
         // If this save all action is not for the current project, return.
-        if (myProject != CommonDataKeys.PROJECT.getData(event.getDataContext())) {
+        if (myProject != event.getProject()) {
           return;
         }
 
@@ -151,7 +155,7 @@ public class FlutterReloadManager {
       return;
     }
 
-    final AnAction reloadAction = ActionManager.getInstance().getAction(ReloadFlutterApp.ID);
+    final AnAction reloadAction = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
     final FlutterApp app = getApp(reloadAction);
     if (app == null) {
       return;
@@ -172,19 +176,6 @@ public class FlutterReloadManager {
 
     final EditorEx editorEx = (EditorEx)editor;
     final VirtualFile file = editorEx.getVirtualFile();
-    final Project project = editor.getProject();
-    if (file == null || project == null) {
-      return;
-    }
-    final Module module = ModuleUtil.findModuleForFile(file, project);
-    if (module == null) {
-      return;
-    }
-
-    // Only reload if it's in the same module.
-    if (!app.isSameModule(module)) {
-      return;
-    }
 
     // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
     // small pause to return error results in the (relatively infrequent) case where the user makes a bad
@@ -194,7 +185,7 @@ public class FlutterReloadManager {
     handlingSave.set(true);
 
     JobScheduler.getScheduler().schedule(() -> {
-      if (hasErrors(project, module, editor.getDocument())) {
+      if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
         handlingSave.set(false);
 
         showAnalysisNotification("Reload not performed", "Analysis issues found", true);
@@ -289,7 +280,7 @@ public class FlutterReloadManager {
   }
 
   private FlutterApp getApp() {
-    final AnAction action = ActionManager.getInstance().getAction(ReloadFlutterApp.ID);
+    final AnAction action = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
     return action instanceof FlutterAppAction ? ((FlutterAppAction)action).getApp() : null;
   }
 
@@ -297,7 +288,7 @@ public class FlutterReloadManager {
     return DartPluginCapabilities.isSupported("supports.pausePostRequest");
   }
 
-  private boolean hasErrors(@NotNull Project project, @NotNull Module module, @NotNull Document document) {
+  private boolean hasErrors(@NotNull Project project, @Nullable Module module, @NotNull Document document) {
     // For 2017.1, we use the IntelliJ parser and look for syntax errors in the current document.
     // For 2017.2 and later, we instead rely on the analysis server's results for files in the app's module.
 
@@ -313,12 +304,12 @@ public class FlutterReloadManager {
       return firstError != null;
     }
     else {
-      final GlobalSearchScope scope = module.getModuleContentScope();
+      final GlobalSearchScope scope = module == null ? new ProjectAndLibrariesScope(project) : module.getModuleContentScope();
       try {
         //List<DartServerData.DartError> errors = analysisServerService.getErrors(scope);
         //noinspection unchecked
         List<DartServerData.DartError> errors = (List<DartServerData.DartError>)getErrorsMethod.invoke(analysisServerService, scope);
-        errors = errors.stream().filter(error -> shouldBlockReload(error, module)).collect(Collectors.toList());
+        errors = errors.stream().filter(error -> shouldBlockReload(error, project, module)).collect(Collectors.toList());
         return !errors.isEmpty();
       }
       catch (IllegalAccessException | InvocationTargetException e) {
@@ -327,14 +318,14 @@ public class FlutterReloadManager {
     }
   }
 
-  private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NotNull Module module) {
+  private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NotNull Project project, @Nullable Module module) {
     // Only block on errors.
     if (!error.getSeverity().equals(AnalysisErrorSeverity.ERROR)) return false;
 
     final File file = new File(error.getAnalysisErrorFileSD());
     final VirtualFile virtualFile = VfsUtil.findFileByIoFile(file, false);
     if (virtualFile != null) {
-      final List<PubRoot> roots = PubRoots.forModule(module);
+      final List<PubRoot> roots = module == null ? PubRoots.forProject(project) : PubRoots.forModule(module);
       for (PubRoot root : roots) {
         // Skip errors in test files.
         final String relativePath = root.getRelativePath(virtualFile);

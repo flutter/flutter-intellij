@@ -5,10 +5,10 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -46,19 +46,17 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   }
 
   private void updateActionRegistration(boolean isConnected) {
-    final ActionManager actionManager = ActionManager.getInstance();
+    final Project project = getApp().getProject();
 
     if (!isConnected) {
       // Unregister ourselves if we're the current action.
-      if (actionManager.getAction(myActionId) == this) {
-        actionManager.unregisterAction(myActionId);
+      if (ProjectActions.getAction(project, myActionId) == this) {
+        ProjectActions.unregisterAction(project, myActionId);
       }
     }
     else {
-      // We have to unregister the previous action, otherwise we get an exception from the framework.
-      if (actionManager.getAction(myActionId) != this) {
-        actionManager.unregisterAction(myActionId);
-        actionManager.registerAction(myActionId, this);
+      if (ProjectActions.getAction(project, myActionId) != this) {
+        ProjectActions.registerAction(project, myActionId, this);
       }
     }
   }
