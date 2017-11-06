@@ -5,8 +5,8 @@
 #   artifacts/flutter-studio.zip
 
 rm -rf build/*
-ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=android-studio-ide \
-  -DDEPENDS=\<depends\>com.intellij.modules.androidstudio\</depends\> \
+ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4408382 -Didea.product=android-studio-ide \
+  -DDEPENDS=\<depends\>com.android.tools.apk\</depends\> \
   -DPLUGINID=io.flutter.as -DSINCE=171.1 -DUNTIL=171.\*
 mv build/flutter-studio.zip artifacts
 
