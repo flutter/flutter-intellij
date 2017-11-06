@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.android.annotations.NonNull;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
@@ -319,7 +318,7 @@ public class FlutterReloadManager {
     }
   }
 
-  private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NonNull Project project, @Nullable Module module) {
+  private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NotNull Project project, @Nullable Module module) {
     // Only block on errors.
     if (!error.getSeverity().equals(AnalysisErrorSeverity.ERROR)) return false;
 
