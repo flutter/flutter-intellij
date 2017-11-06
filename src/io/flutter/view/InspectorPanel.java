@@ -32,8 +32,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -82,21 +80,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     myPropertiesPanel = new PropertiesPanel();
 
     initTree(myRootsTree);
-    myRootsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
-      @Override
-      public void valueChanged(TreeSelectionEvent e) {
-        selectionChanged();
-      }
-    });
+    myRootsTree.getSelectionModel().addTreeSelectionListener(e -> selectionChanged());
 
     final Splitter treeSplitter = new Splitter(true);
     treeSplitter.setProportion(0.8f);
-    Disposer.register(this, new Disposable() {
-      public void dispose() {
-        treeSplitter.dispose();
-        // TODO(jacobr): surely there is more we should be disposing.
-      }
-    });
+    // TODO(jacobr): surely there is more we should be disposing.
+    Disposer.register(this, treeSplitter::dispose);
     treeSplitter.setFirstComponent(ScrollPaneFactory.createScrollPane(myRootsTree));
     treeSplitter.setSecondComponent(ScrollPaneFactory.createScrollPane(myPropertiesPanel));
     add(treeSplitter);
@@ -226,11 +215,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * Helper to get the value of a future on the UI thread.
    */
   public static <T> void whenCompleteUiThread(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
-    future.whenCompleteAsync((T value, Throwable throwable) -> {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        action.accept(value, throwable);
-      });
-    });
+    future.whenCompleteAsync(
+      (T value, Throwable throwable) -> ApplicationManager.getApplication().invokeLater(() -> action.accept(value, throwable)));
   }
 
   public void onFlutterFrame() {
