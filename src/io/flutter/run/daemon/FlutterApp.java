@@ -438,6 +438,16 @@ public class FlutterApp {
     myInspectorService = service;
   }
 
+  @NotNull
+  public Project getProject() {
+    return myProject;
+  }
+
+  @Nullable
+  public Module getModule() {
+    return myModule;
+  }
+
   public interface StateListener {
     void stateChanged(State newState);
   }
