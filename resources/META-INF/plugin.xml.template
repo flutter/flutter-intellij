@@ -395,7 +395,6 @@
             description="Reload"
             icon="FlutterIcons.HotReload">
       <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
-      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt SEMICOLON"/>
       <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
     </action>
 
@@ -406,8 +405,8 @@
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
               icon="FlutterIcons.FullRestart">
-        <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt SEMICOLON"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
       </action>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Flutter Run Profile Mode"
