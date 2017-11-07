@@ -190,8 +190,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      // Allow 5 minutes for flutter run to start; the user can cancel manually in the interim.
-      final long timeout = (long)5 * 60 * 1000;
+      // Allow 10 minutes for flutter run to start; the user can cancel manually in the interim.
+      final long timeout = (long)10 * 60 * 1000;
       final long startTime = System.currentTimeMillis();
 
       // Wait for "flutter run" to give us a websocket.
