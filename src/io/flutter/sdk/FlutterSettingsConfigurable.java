@@ -54,6 +54,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myEnableMemoryDashboardCheckBox;
   private JCheckBox myEnableWidgetInspectorCheckBox;
+  private LinkLabel<String> myInspectorFeedbackLink;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -64,9 +65,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myVersionLabel.setText("");
     myVersionLabel.setCopyable(true);
 
-    if (DISABLE_INSPECTOR) {
-      myEnableWidgetInspectorCheckBox.setVisible(false);
-    }
+    myEnableWidgetInspectorCheckBox.setVisible(!DISABLE_INSPECTOR);
+    myInspectorFeedbackLink.setVisible(!DISABLE_INSPECTOR);
   }
 
   private void init() {
@@ -91,6 +91,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       catch (URISyntaxException ignore) {
       }
     }, FlutterBundle.message("flutter.analytics.privacyUrl"));
+
+    myInspectorFeedbackLink.setIcon(null);
+    myInspectorFeedbackLink.setListener((label, linkUrl) -> {
+      try {
+        BrowserLauncher.getInstance().browse(new URI(linkUrl));
+      }
+      catch (URISyntaxException ignore) {
+      }
+    }, "https://goo.gl/WrMB43");
   }
 
   private void createUIComponents() {
