@@ -28,7 +28,15 @@ import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.nodes.Tag;
+import org.yaml.snakeyaml.representer.Representer;
+import org.yaml.snakeyaml.resolver.Resolver;
 
+import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -195,5 +203,82 @@ public class FlutterUtils {
     final PluginId pluginId = PluginId.findId(isAndroidStudio() ? "io.flutter.as" : "io.flutter");
     assert pluginId != null;
     return pluginId;
+  }
+
+  /**
+   * Returns true if passed pubspec declares a flutter dependency.
+   */
+  public static boolean declaresFlutter(@NotNull final VirtualFile pubspec) {
+    // It uses Flutter if it contains:
+    // dependencies:
+    //   flutter:
+
+    try {
+      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
+      final Map<String, Object> yaml = loadPubspecInfo(contents);
+      if (yaml == null) {
+        return false;
+      }
+
+      final Object flutterEntry = yaml.get("dependencies");
+      //noinspection SimplifiableIfStatement
+      if (flutterEntry instanceof Map) {
+        return ((Map)flutterEntry).containsKey("flutter");
+      }
+
+      return false;
+    }
+    catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if the passed pubspec indicates that it is a Flutter plugin.
+   */
+  public static boolean isFlutterPlugin(@NotNull final VirtualFile pubspec) {
+    // It's a plugin if it contains:
+    // flutter:
+    //   plugin:
+
+    try {
+      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
+      final Map<String, Object> yaml = loadPubspecInfo(contents);
+      if (yaml == null) {
+        return false;
+      }
+
+      final Object flutterEntry = yaml.get("flutter");
+      //noinspection SimplifiableIfStatement
+      if (flutterEntry instanceof Map) {
+        return ((Map)flutterEntry).containsKey("plugin");
+      }
+
+      return false;
+    }
+    catch (IOException e) {
+      return false;
+    }
+  }
+
+  private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
+    final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
+      @Override
+      protected void addImplicitResolvers() {
+        this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");
+        this.addImplicitResolver(Tag.NULL, NULL, "~nN\u0000");
+        this.addImplicitResolver(Tag.NULL, EMPTY, null);
+        this.addImplicitResolver(new Tag("tag:yaml.org,2002:value"), VALUE, "=");
+        this.addImplicitResolver(Tag.MERGE, MERGE, "<");
+      }
+    });
+
+    try {
+      //noinspection unchecked
+      return (Map)yaml.load(yamlContents);
+    }
+    catch (Exception e) {
+      return null;
+    }
   }
 }

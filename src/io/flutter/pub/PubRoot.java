@@ -16,6 +16,7 @@ import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.DumperOptions;
@@ -275,56 +276,14 @@ public class PubRoot {
    * Returns true if the pubspec declares a flutter dependency.
    */
   public boolean declaresFlutter() {
-    // It uses Flutter if it contains:
-    // dependencies:
-    //   flutter:
-
-    try {
-      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
-      final Map<String, Object> yaml = loadPubspecInfo(contents);
-      if (yaml == null) {
-        return false;
-      }
-
-      final Object flutterEntry = yaml.get("dependencies");
-      //noinspection SimplifiableIfStatement
-      if (flutterEntry instanceof Map) {
-        return ((Map)flutterEntry).containsKey("flutter");
-      }
-
-      return false;
-    }
-    catch (IOException e) {
-      return false;
-    }
+    return FlutterUtils.declaresFlutter(pubspec);
   }
 
   /**
    * Returns true if the pubspec indicates that it is a Flutter plugin.
    */
   public boolean isFlutterPlugin() {
-    // It's a plugin if it contains:
-    // flutter:
-    //   plugin:
-
-    try {
-      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
-      final Map<String, Object> yaml = loadPubspecInfo(contents);
-      if (yaml == null) {
-        return false;
-      }
-
-      final Object flutterEntry = yaml.get("flutter");
-      //noinspection SimplifiableIfStatement
-      if (flutterEntry instanceof Map) {
-        return ((Map)flutterEntry).containsKey("plugin");
-      }
-
-      return false;
-    }
-    catch (IOException e) {
-      return false;
-    }
+    return FlutterUtils.isFlutterPlugin(pubspec);
   }
 
   @Nullable
@@ -431,27 +390,6 @@ public class PubRoot {
       }
     }
     return false;
-  }
-
-  private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
-    final Yaml yaml = new Yaml(new SafeConstructor(), new Representer(), new DumperOptions(), new Resolver() {
-      @Override
-      protected void addImplicitResolvers() {
-        this.addImplicitResolver(Tag.BOOL, BOOL, "yYnNtTfFoO");
-        this.addImplicitResolver(Tag.NULL, NULL, "~nN\u0000");
-        this.addImplicitResolver(Tag.NULL, EMPTY, null);
-        this.addImplicitResolver(new Tag("tag:yaml.org,2002:value"), VALUE, "=");
-        this.addImplicitResolver(Tag.MERGE, MERGE, "<");
-      }
-    });
-
-    try {
-      //noinspection unchecked
-      return (Map)yaml.load(yamlContents);
-    }
-    catch (Exception var3) {
-      return null;
-    }
   }
 
   /**

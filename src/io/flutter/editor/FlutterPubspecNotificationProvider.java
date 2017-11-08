@@ -18,6 +18,7 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import com.intellij.ui.HyperlinkLabel;
 import icons.FlutterIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
@@ -55,13 +56,12 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       return null;
     }
 
-    final Module module = ModuleUtilCore.findModuleForFile(file, project);
-    if (module == null || !FlutterModuleUtils.usesFlutter(module)) {
+    // Check that this pubspec file declares flutter
+    if (!FlutterUtils.declaresFlutter(file)) {
       return null;
     }
 
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-    if (sdk == null) {
+    if (FlutterSdk.getFlutterSdk(project) == null) {
       return null;
     }
 
