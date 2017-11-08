@@ -38,7 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
-  private static final boolean DISABLE_INSPECTOR = true;
+  private static final boolean DISABLE_INSPECTOR = false;
 
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
@@ -99,8 +99,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
       catch (URISyntaxException ignore) {
       }
-      // TODO(devoncarew): Replace with a goo.gl short link.
-    }, "https://www.cheese.com");
+    }, "https://goo.gl/WrMB43");
   }
 
   private void createUIComponents() {

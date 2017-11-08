@@ -153,12 +153,12 @@
           </component>
           <component id="129f" class="com.intellij.ui.components.labels.LinkLabel" binding="myInspectorFeedbackLink">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="3" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="4" use-parent-layout="false"/>
             </constraints>
             <properties>
               <horizontalAlignment value="2"/>
               <horizontalTextPosition value="2"/>
-              <text value="Provide feedback on the widget inspector (https://todo)."/>
+              <text value="Provide feedback on the widget inspector (https://goo.gl/WrMB43)."/>
               <toolTipText value=""/>
             </properties>
           </component>
