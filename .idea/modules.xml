@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/flutter-intellij.iml" filepath="$PROJECT_DIR$/flutter-intellij.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tool/plugin/plugin.iml" filepath="$PROJECT_DIR$/tool/plugin/plugin.iml" />
     </modules>
   </component>
 </project>
