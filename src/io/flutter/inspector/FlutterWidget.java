@@ -80,7 +80,7 @@ public class FlutterWidget {
           if (!(element instanceof JsonObject)) throw new IllegalStateException("Unexpected Json format: expected object");
           final FlutterWidget widget = new FlutterWidget((JsonObject)element);
           final String name = widget.getName();
-          //TODO(pq): add validation once json is repaired (https://github.com/flutter/flutter/issues/12930).
+          // TODO(pq): add validation once json is repaired (https://github.com/flutter/flutter/issues/12930).
           //if (widgets.containsKey(name)) throw new IllegalStateException("Unexpected contents: widget `" + name + "` is duplicated");
           widgets.put(name, widget);
         });

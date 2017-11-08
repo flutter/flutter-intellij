@@ -29,7 +29,6 @@ public class JsonUtils {
     return value instanceof JsonNull ? null : value.getAsString();
   }
 
-
   @NotNull
   public static List<String> getValues(@NotNull JsonObject json, @NotNull String member) {
     if (!json.has(member)) {
@@ -42,5 +41,4 @@ public class JsonUtils {
 
     return values;
   }
-
 }
