@@ -9,6 +9,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import io.flutter.utils.JsonUtils;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -415,15 +417,8 @@ public class DiagnosticsNode {
    */
   private String dartValueId;
 
-  private String getStringMember(String memberName) {
-    if (!json.has(memberName)) {
-      return null;
-    }
-    final JsonElement value = json.get(memberName);
-    if (value instanceof JsonNull) {
-      return null;
-    }
-    return value.getAsString();
+  private String getStringMember(@NotNull String memberName) {
+    return JsonUtils.getStringMember(json, memberName);
   }
 
   private boolean getBooleanMember(String memberName, boolean defaultValue) {
