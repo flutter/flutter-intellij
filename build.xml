@@ -4,7 +4,7 @@
      plugin in the IntelliJ sandbox in order to run Flutter IntelliJ unit tests. -->
 
 <!-- Shell command to build AS version
-ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4333198 -Didea.product=android-studio-ide
+ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4408382 -Didea.product=android-studio-ide
 -->
 
 <!--suppress AntResolveInspection -->
