@@ -5,7 +5,11 @@
  */
 package io.flutter.inspector;
 
-import com.google.gson.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -15,13 +19,10 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
- * A representation of a Flutter widget.
+ * Categorization of a Flutter widget.
  */
 public class FlutterWidget {
 
@@ -40,38 +41,17 @@ public class FlutterWidget {
 
   @Nullable
   public String getName() {
-    return getStringMember("name");
+    return JsonUtils.getStringMember(json, "name");
   }
 
   @Nullable
   public List<String> getCategories() {
-    return getValues("categories");
+    return JsonUtils.getValues(json, "categories");
   }
 
   @Nullable
   public List<String> getSubCategories() {
-    return getValues("subcategories");
-  }
-
-  @NotNull
-  private List<String> getValues(@NotNull String member) {
-    if (!json.has(member)) {
-      return Collections.emptyList();
-    }
-
-    final JsonArray rawValues = json.getAsJsonArray(member);
-    final ArrayList<String> values = new ArrayList<>(rawValues.size());
-    rawValues.forEach(element -> values.add(element.getAsString()));
-
-    return values;
-  }
-
-  @Nullable
-  private String getStringMember(String memberName) {
-    if (!json.has(memberName)) return null;
-
-    final JsonElement value = json.get(memberName);
-    return value instanceof JsonNull ? null : value.getAsString();
+    return JsonUtils.getValues(json, "subcategories");
   }
 
   /**
@@ -79,7 +59,8 @@ public class FlutterWidget {
    */
   public static final class Catalog {
     @NotNull
-    private final List<FlutterWidget> widgets = new ArrayList<>();
+    private final Map<String, FlutterWidget> widgets = new HashMap<>();
+
     @Nullable
     private JsonElement json;
 
@@ -94,13 +75,15 @@ public class FlutterWidget {
         final String content = new String(Files.readAllBytes(Paths.get(resource.toURI())));
         final JsonParser parser = new JsonParser();
         json = parser.parse(content);
-        if (json instanceof JsonArray) {
-          ((JsonArray)json).forEach(element -> {
-            if (element instanceof JsonObject) {
-              widgets.add(new FlutterWidget((JsonObject)element));
-            }
-          });
-        }
+        if (!(json instanceof JsonArray)) throw new IllegalStateException("Unexpected Json format: expected array");
+        ((JsonArray)json).forEach(element -> {
+          if (!(element instanceof JsonObject)) throw new IllegalStateException("Unexpected Json format: expected object");
+          final FlutterWidget widget = new FlutterWidget((JsonObject)element);
+          final String name = widget.getName();
+          //TODO(pq): add validation once json is repaired (https://github.com/flutter/flutter/issues/12930).
+          //if (widgets.containsKey(name)) throw new IllegalStateException("Unexpected contents: widget `" + name + "` is duplicated");
+          widgets.put(name, widget);
+        });
       }
       catch (IOException | URISyntaxException e) {
         // Ignored -- json will be null.
@@ -109,14 +92,13 @@ public class FlutterWidget {
 
     @Contract(pure = true)
     @NotNull
-    public List<FlutterWidget> getWidgets() {
-      return widgets;
+    public Collection<FlutterWidget> getWidgets() {
+      return widgets.values();
     }
 
     @Nullable
     public FlutterWidget getWidget(@NotNull String name) {
-      return getWidgets().stream().filter(w -> Objects.equals(w.getName(), name))
-        .findFirst().orElse(null);
+      return widgets.get(name);
     }
 
     @Contract(pure = true)
