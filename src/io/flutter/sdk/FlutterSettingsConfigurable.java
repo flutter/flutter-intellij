@@ -38,7 +38,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
-  private static final boolean DISABLE_INSPECTOR = false;
+  private static final boolean DISABLE_INSPECTOR = true;
 
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
