@@ -10,7 +10,7 @@
 
   <version>19.0</version>
 
-  <idea-version since-build="172.1" until-build="173.*"/>
+  <idea-version since-build="171.1" until-build="173.*"/>
 
   <depends>Dart</depends>
 
