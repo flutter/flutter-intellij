@@ -1,7 +1,7 @@
+import 'package:mockito/mirrors.dart';
+import 'package:mockito/mockito.dart';
 import 'package:plugin/plugin.dart';
 import 'package:test/test.dart';
-import 'package:mockito/mockito.dart';
-import 'package:mockito/mirrors.dart';
 
 void main() {
   group("create", () {
@@ -37,4 +37,5 @@ void main() {
 }
 
 class MockCommand extends Mock implements BuildCommand {}
+
 class MockRunner extends Mock implements BuildCommandRunner {}
