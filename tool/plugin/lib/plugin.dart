@@ -80,9 +80,12 @@ abstract class ProductCommand extends Command {
 
   String get release => globalResults['release'];
 
-  run() {
+  run() async {
     specs = createBuildSpecs(this);
+    await doit();
   }
+
+  doit();
 }
 
 /// Temporary command to use the Ant build script.
@@ -96,8 +99,7 @@ class AntBuildCommand extends ProductCommand {
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
-  Future<int> run() async {
-    super.run();
+  Future<int> doit() async {
     var value;
     for (var spec in specs) {
       await spec.artifacts.provision(); // Not needed for ant script.
@@ -125,8 +127,7 @@ class BuildCommand extends ProductCommand {
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
-  Future<int> run() async {
-    super.run();
+  Future<int> doit() async {
     for (var spec in specs) {
       await spec.artifacts.provision();
 
@@ -183,8 +184,7 @@ class TestCommand extends ProductCommand {
 
   String get description => 'Run the tests for the Flutter plugin.';
 
-  Future<int> run() async {
-    super.run();
+  Future<int> doit() async {
     for (var spec in specs) {
       await spec.artifacts.provision();
 
@@ -206,8 +206,7 @@ class DeployCommand extends ProductCommand {
 
   String get description => 'Upload the Flutter plugin to the JetBrains site.';
 
-  Future<int> run() async {
-    super.run();
+  Future<int> doit() async {
 
     // TODO(messick): implement
     throw 'unimplemented';
