@@ -43,4 +43,13 @@ public class FlutterIcons {
   public static final Icon AndroidStudioNewModule = load("/icons/template_new_project.png");
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
   public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
+
+  public static final Icon Annotation = load("/icons/inspector/atrule.png");
+  public static final Icon AnyType = load("/icons/inspector/any_type.png");
+  public static final Icon Colors = load("/icons/inspector/colors.png");
+  public static final Icon Diagram = load("/icons/inspector/diagram.png");
+  public static final Icon Scrollbar = load("/icons/inspector/scrollbar.png");
+  public static final Icon TextArea = load("/icons/inspector/textArea.png");
+  public static final Icon Value = load("/icons/inspector/value.png");
+
 }

@@ -14,9 +14,12 @@ import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -68,6 +71,18 @@ public class FlutterWidgetTest {
     final FlutterWidget widget = FlutterWidget.getCatalog().getWidget(name);
     assertNotNull(widget);
     return widget;
+  }
+
+  @Test
+  public void allCategories() {
+    // Ensure all actual categories are accounted for.
+    final List<String> collectedCategories =
+      FlutterWidget.getCatalog().getWidgets().stream().map(FlutterWidget::getCategories).flatMap(Collection::stream).distinct().sorted()
+        .collect(Collectors.toList());
+    final List<String>
+      allCategories = Arrays.stream(FlutterWidget.Category.values()).map(FlutterWidget.Category::getLabel).collect(Collectors.toList());
+
+    assertThat(collectedCategories, equalTo(allCategories));
   }
 
   @Test

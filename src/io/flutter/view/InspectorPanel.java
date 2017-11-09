@@ -574,9 +574,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         setToolTipText(node.getTooltip());
       }
 
-      // TODO(jacobr): set icons for most nodes.
-      // Consider icons to cluster logic vs visual nodes, etc.
-      // setIcon(node.getIcon());
+      final Icon icon = node.getIcon();
+      if (icon != null) {
+        setIcon(icon);
+      }
     }
   }
 

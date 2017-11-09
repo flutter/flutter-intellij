@@ -11,7 +11,9 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
@@ -38,6 +40,7 @@ public class DiagnosticsNode {
   public DiagnosticsNode(JsonObject json, InspectorService inspectorService) {
     this.inspectorService = inspectorService;
     this.json = json;
+    this.widget = FlutterWidget.getCatalog().getWidget(getDescription());
   }
 
   @Override
@@ -398,6 +401,11 @@ public class DiagnosticsNode {
    */
   private final JsonObject json;
 
+  /**
+   * Corresponding Flutter widget.
+   */
+  private final FlutterWidget widget;
+
   private CompletableFuture<ArrayList<DiagnosticsNode>> children;
 
   private CompletableFuture<ArrayList<DiagnosticsNode>> properties;
@@ -503,5 +511,10 @@ public class DiagnosticsNode {
 
   public InspectorService getInspectorService() {
     return inspectorService;
+  }
+
+  @Nullable
+  public Icon getIcon() {
+    return widget != null ? widget.getIcon() : null;
   }
 }
