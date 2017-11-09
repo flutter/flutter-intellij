@@ -2,15 +2,11 @@ out/
 artifacts/
 build/
 flutter-intellij.jar
-flutter-intellij.zip
 packages
 .DS_Store
 .packages
 pubspec.lock
 .pub/
-.idea/workspace.xml
-.idea/shelf
-.idea/emacs.xml
-.idea/kotlinc.xml
+.idea/
 .vscode/
 material-design-icons/
