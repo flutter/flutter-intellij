@@ -200,7 +200,9 @@ public class FlutterUtils {
 
   @NotNull
   public static PluginId getPluginId() {
-    final PluginId pluginId = PluginId.findId(isAndroidStudio() ? "io.flutter.as" : "io.flutter");
+    // TODO(devoncarew): Update this as we converge on a new build system.
+    //final PluginId pluginId = PluginId.findId(isAndroidStudio() ? "io.flutter.as" : "io.flutter");
+    final PluginId pluginId = PluginId.findId("io.flutter");
     assert pluginId != null;
     return pluginId;
   }
