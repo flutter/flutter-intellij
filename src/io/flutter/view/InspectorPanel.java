@@ -347,7 +347,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
         myPropertiesPanel.showProperties(diagnostic);
         if (getInspectorService() != null) {
-          getInspectorService().maybeSetSelection(diagnostic.getValueRef(), false);
+          getInspectorService().setSelection(diagnostic.getValueRef(), false);
         }
       }
     }
