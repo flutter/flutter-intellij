@@ -12,8 +12,8 @@ import com.google.gson.JsonParser;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
