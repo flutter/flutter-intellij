@@ -40,7 +40,6 @@ public class DiagnosticsNode {
   public DiagnosticsNode(JsonObject json, InspectorService inspectorService) {
     this.inspectorService = inspectorService;
     this.json = json;
-    this.widget = FlutterWidget.getCatalog().getWidget(getDescription());
   }
 
   @Override
@@ -401,11 +400,6 @@ public class DiagnosticsNode {
    */
   private final JsonObject json;
 
-  /**
-   * Corresponding Flutter widget.
-   */
-  private final FlutterWidget widget;
-
   private CompletableFuture<ArrayList<DiagnosticsNode>> children;
 
   private CompletableFuture<ArrayList<DiagnosticsNode>> properties;
@@ -514,7 +508,13 @@ public class DiagnosticsNode {
   }
 
   @Nullable
+  public FlutterWidget getWidget() {
+    return FlutterWidget.getCatalog().getWidget(getDescription());
+  }
+
+  @Nullable
   public Icon getIcon() {
+    final FlutterWidget widget = getWidget();
     return widget != null ? widget.getIcon() : null;
   }
 }
