@@ -114,7 +114,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
                                              FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                              TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-    myProjectLocation.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
+    myProjectLocation.addBrowseFolderListener(FlutterBundle.message("flutter.module.create.settings.location.select"), null, null,
                                               FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                               TextComponentAccessor.TEXT_FIELD_WHOLE_TEXT);
 

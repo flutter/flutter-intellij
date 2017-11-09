@@ -19,7 +19,7 @@ Pre-reqs: Run through the [flutter setup](https://flutter.io/setup/) and
 
 Validate basic project creation.
 
-* Create a simple project (`File > New > Project...`, pick `Flutter`).
+* Create a simple project (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`).
   * (select an `Application` type project)
 * Confirm that:
   * Project contents are created.
@@ -50,8 +50,8 @@ Validate that a `flutter create` project can opened.
 
 * close any open projects in IDEA
 * run `flutter create` in a terminal to create a new project `testcreate`
-* choose `File > Open...`
-* browse to and select the 'testcreate' project
+* choose `File > Open...` and browse to and select the 'testcreate' project
+  * or, type `idea .` or `studio .` from the CLI if you have the CLI launcher installed
 * ensure there are no analysis errors or warnings
 * test that code completion is working as expected
 * ensure that the `main.dart` launch configuration shows up and is selected
@@ -104,13 +104,13 @@ Assuming the app state from above (i.e., leave the Debug session running):
   3. the + button decreases the value
 
 Keybindings:
-* verify that the hot reload keybinding works (on a mac: `cmd-option-;` or `cmd-\`)
-* verify that the reload-on-save feature works (hitting cmd-S / ctrl-s triggers a reload)
+* verify that the hot reload keybinding works (on a mac: `cmd-\`)
+* verify that the reload-on-save feature works (hitting cmd-s / ctrl-s triggers a reload)
 
 ## Hot Restart
 
 * change the text and counter line back
-* hit the `Full Application Restart` button (or hit the Debug button again)
+* hit the `Full Application Restart` button (or hit the Debug button again, or cmd-shift-s / ctrl-shift-s)
 * validate that the text and state resets, and the count increases
 
 ## Debugging Sessions

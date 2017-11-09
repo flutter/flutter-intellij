@@ -13,9 +13,10 @@ import icons.FlutterIcons;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import javax.swing.*;
+
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
