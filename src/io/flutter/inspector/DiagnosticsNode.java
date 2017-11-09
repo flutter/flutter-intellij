@@ -11,7 +11,9 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
@@ -503,5 +505,16 @@ public class DiagnosticsNode {
 
   public InspectorService getInspectorService() {
     return inspectorService;
+  }
+
+  @Nullable
+  public FlutterWidget getWidget() {
+    return FlutterWidget.getCatalog().getWidget(getDescription());
+  }
+
+  @Nullable
+  public Icon getIcon() {
+    final FlutterWidget widget = getWidget();
+    return widget != null ? widget.getIcon() : null;
   }
 }
