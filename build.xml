@@ -27,7 +27,7 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4408382 -Didea.product=
   <property name="UNTIL" value="173.*"/> <!-- 171.* -->
   <filterset id="plugin.filters">
     <propertyset>
-      <propertyref name="DEPENDS"/>
+      <!-- <propertyref name="DEPENDS"/> -->
       <propertyref name="PLUGINID"/>
       <propertyref name="SINCE"/>
       <propertyref name="UNTIL"/>
