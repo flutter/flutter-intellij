@@ -37,5 +37,16 @@ void main() {
 }
 
 class MockCommand extends Mock implements BuildCommand {}
+<<
+<<
+<<
+<
+HEAD
+
+==
+=====
+>>>>>>>
+937127846
+f6ef9ef35a8bcb66e76ceed102761f5
 
 class MockRunner extends Mock implements BuildCommandRunner {}
