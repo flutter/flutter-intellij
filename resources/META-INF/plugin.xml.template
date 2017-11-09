@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>18.4</version>
+  <version>19.0</version>
 
   <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
@@ -27,6 +27,25 @@
 
   <change-notes>
     <![CDATA[
+
+
+19.0:
+<ul>
+  <li>fixed an issue with reload when mutiple project windows are open</li>
+  <li>fixed running Flutter tests in nested groups</li>
+  <li>fixed miscellaneous project wizard issues</li>
+  <li>fix to ensure we don't create Flutter library entries for non-Flutter projects</li>
+  <li>fixed project name validation in the new project creation wizard to be more performant</li>
+  <li>fixed project opening to only open main.dart if no other editors are open</li>
+  <li>fix to limit Flutter icon contributions to Flutter projects</li>
+  <li>reload on save updated to ignore errors in test files</li>
+  <li>IDEA EAP support</li>
+  <li>fix to give restarted apps focus on iOS</li>
+  <li>miscellaneous Android Studio support fixes</li>
+  <li>fixed check for Flutter tests to not mis-identify vanilla Dart tests</li>
+  <li>improved error reporting on project creation failures</li>
+</ul>
+
 
 18.4:
 <ul>
