@@ -190,7 +190,7 @@ class TestCommand extends ProductCommand {
 
       // TODO(devoncarew): implement
     }
-    return 0;
+    throw 'unimplemented';
   }
 }
 
@@ -210,7 +210,7 @@ class DeployCommand extends ProductCommand {
     super.run();
 
     // TODO(messick): implement
-    return 0;
+    throw 'unimplemented';
   }
 }
 
@@ -229,7 +229,7 @@ class GenCommand extends Command {
 
   Future<int> run() async {
     // TODO(messick): implement
-    return 0;
+    throw 'unimplemented';
   }
 }
 
