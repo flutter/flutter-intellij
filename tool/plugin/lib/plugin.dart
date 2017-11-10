@@ -9,9 +9,12 @@ import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
 
+import 'src/lint.dart';
+
 main(List<String> args) async {
   BuildCommandRunner runner = new BuildCommandRunner();
 
+  runner.addCommand(new LintCommand(runner));
   runner.addCommand(new AntBuildCommand(runner));
 //  runner.addCommand(new BuildCommand(runner));
   runner.addCommand(new TestCommand(runner));
