@@ -68,7 +68,6 @@ public class FlutterModuleUtils {
    * </code>
    */
   public static boolean isFlutterModule(@Nullable final Module module) {
-
     if (module == null) return false;
 
     // If not IntelliJ, assume a small IDE (no multi-module project support).
@@ -292,7 +291,7 @@ public class FlutterModuleUtils {
 
     if (sdkPath == null) {
       final String[] flutterSdkPaths = FlutterSdkUtil.getKnownFlutterSdkPaths();
-      if (flutterSdkPaths != null && flutterSdkPaths.length > 0) {
+      if (flutterSdkPaths.length > 0) {
         sdkPath = flutterSdkPaths[0];
       }
     }
