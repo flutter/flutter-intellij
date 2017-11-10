@@ -1,5 +1,3 @@
-import 'package:mockito/mirrors.dart';
-import 'package:mockito/mockito.dart';
 import 'package:plugin/plugin.dart';
 import 'package:test/test.dart';
 
@@ -18,24 +16,25 @@ void main() {
       expect(new GenCommand(new BuildCommandRunner()).name, "gen");
     });
   });
+
   group("spec", () {
     test('build', () {
       var runner = new BuildCommandRunner();
-      var cmd = new AntBuildCommand(runner);
+      var cmd = new TestAntBuildCommand(runner);
       runner.addCommand(cmd);
-      var args = runner.parse(["-r=19", "build"]);
-      var mockCmd = new MockCommand();
-      when(mockCmd.argResults).thenReturn(args);
-      // Apparently spy() does not work the way I want it to.
-      if (0 == 0) return;
-      var specs = createBuildSpecs(spy(mockCmd, cmd));
-      expect(specs.length, 2);
-      expect(specs[0].ideaProduct, 'android-studio-ide');
-      expect(specs[1].ideaProduct, 'ideaIC');
+      runner.run(["-r=19", "build"])
+          .whenComplete(() {
+        var specs = cmd.specs;
+        expect(specs.length, 2);
+        expect(specs[0].ideaProduct, 'android-studio-ide');
+        expect(specs[1].ideaProduct, 'ideaIC');
+      });
     });
   });
 }
 
-class MockCommand extends Mock implements BuildCommand {}
+class TestAntBuildCommand extends AntBuildCommand {
+  TestAntBuildCommand(runner) : super(runner);
 
-class MockRunner extends Mock implements BuildCommandRunner {}
+  doit() {}
+}
