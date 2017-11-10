@@ -19,13 +19,13 @@ class LintCommand extends Command {
       'Perform simple validations on the flutter-intellij repo code.';
 
   Future<int> run() async {
-    // Print a report for the API used from the Dart plugin.
-    printApiUsage();
-
     // Check for unintentionally imported annotations.
     if (checkForBadImports()) {
       return 1;
     }
+
+    // Print a report for the API used from the Dart plugin.
+    printApiUsage();
 
     return 0;
   }
