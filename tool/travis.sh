@@ -14,11 +14,11 @@ flutter --version
 # Set up the plugin tool.
 echo -en 'travis_fold:start:pub.get\\r'
 echo "pub get"
-(cd tool/plugin; pub get)
+(cd tool/plugin; flutter packages get)
 echo -en 'travis_fold:end:pub.get\\r'
 
 # Run some validations on the repo code.
-./plugin.sh lint
+./plugin lint
 
 # Run the ant build.
 if [ "$UNIT_TEST" = "true" ]
