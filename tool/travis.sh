@@ -11,13 +11,13 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
-# Print a report for the API used from the Dart plugin
-echo -en 'travis_fold:start:pub.get\\r'
+# Set up the plugin tool.
 echo "pub get"
-pub get
-echo -en 'travis_fold:end:pub.get\\r'
+(cd tool/plugin; pub get)
 
-dart tool/grind.dart api
+# Run some validations on the repo code.
+echo "plugin lint"
+./bin/plugin lint
 
 # Run the ant build.
 if [ "$UNIT_TEST" = "true" ]

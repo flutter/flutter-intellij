@@ -10,7 +10,7 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
   - git clone https://github.com/flutter/flutter.git --depth 1
-  - export PATH="$PATH":flutter/bin:flutter/bin/cache/dart-sdk/bin
+  - export PATH="$PATH":`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin
   - flutter config --no-analytics
   - flutter doctor
   - export FLUTTER_SDK=`pwd`/flutter
