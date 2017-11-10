@@ -104,6 +104,28 @@ public class FlutterReloadManager {
     this.mySettings = FlutterSettings.getInstance();
 
     ActionManagerEx.getInstanceEx().addAnActionListener(new AnActionListener.Adapter() {
+      private Project eventProject;
+      private Editor eventEditor;
+
+      public void beforeActionPerformed(AnAction action, DataContext dataContext, AnActionEvent event) {
+        if (action instanceof SaveAllAction) {
+          // Save the current project value here. If we access later (in afterActionPerformed), we can get
+          // exceptions if another event occurs before afterActionPerformed is called.
+          try {
+            eventProject = event.getProject();
+            eventEditor = CommonDataKeys.EDITOR.getData(event.getDataContext());
+          }
+          catch (Throwable t) {
+            // A catch-all, so any exceptions don't bubble through to the users.
+            LOG.info(t);
+          }
+        }
+        else {
+          eventProject = null;
+          eventEditor = null;
+        }
+      }
+
       @Override
       public void afterActionPerformed(AnAction action, DataContext dataContext, AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
@@ -111,12 +133,12 @@ public class FlutterReloadManager {
         }
 
         // If this save all action is not for the current project, return.
-        if (myProject != event.getProject()) {
+        if (myProject != eventProject) {
           return;
         }
 
         try {
-          handleSaveAllNotification(event);
+          handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
           LOG.error(t);
@@ -146,8 +168,8 @@ public class FlutterReloadManager {
 
   private final AtomicBoolean handlingSave = new AtomicBoolean(false);
 
-  private void handleSaveAllNotification(AnActionEvent event) {
-    if (!mySettings.isReloadOnSave()) {
+  private void handleSaveAllNotification(@Nullable Editor editor) {
+    if (!mySettings.isReloadOnSave() || editor == null) {
       return;
     }
 
@@ -162,11 +184,6 @@ public class FlutterReloadManager {
     }
 
     if (!app.isStarted() || app.isReloading()) {
-      return;
-    }
-
-    @Nullable final Editor editor = CommonDataKeys.EDITOR.getData(event.getDataContext());
-    if (editor == null) {
       return;
     }
 
