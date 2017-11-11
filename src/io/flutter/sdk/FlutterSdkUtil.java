@@ -35,6 +35,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -99,11 +100,9 @@ public class FlutterSdkUtil {
     }
 
     final String[] knownPaths = getKnownFlutterSdkPaths();
-    if (knownPaths != null) {
-      for (String path : knownPaths) {
-        if (FlutterSdk.forPath(path) != null) {
-          pathsToShow.add(FileUtil.toSystemDependentName(path));
-        }
+    for (String path : knownPaths) {
+      if (FlutterSdk.forPath(path) != null) {
+        pathsToShow.add(FileUtil.toSystemDependentName(path));
       }
     }
 
@@ -115,9 +114,31 @@ public class FlutterSdkUtil {
     }
   }
 
-  @Nullable
+  @NotNull
   public static String[] getKnownFlutterSdkPaths() {
-    return PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
+    final Set<String> paths = new HashSet<>();
+
+    // scan current projects for existing flutter sdk settings
+    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
+      final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+      if (flutterSdk != null) {
+        paths.add(flutterSdk.getHomePath());
+      }
+    }
+
+    // use the list of paths they've entered in the past
+    final String[] knownPaths = PropertiesComponent.getInstance().getValues(FLUTTER_SDK_KNOWN_PATHS);
+    if (knownPaths != null) {
+      paths.addAll(Arrays.asList(knownPaths));
+    }
+
+    // search the user's path
+    final String fromUserPath = locateSdkFromPath();
+    if (fromUserPath != null) {
+      paths.add(fromUserPath);
+    }
+
+    return paths.toArray(new String[0]);
   }
 
   @NotNull
