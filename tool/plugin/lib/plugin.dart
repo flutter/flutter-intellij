@@ -11,6 +11,16 @@ import 'package:path/path.dart' as p;
 
 import 'src/lint.dart';
 
+const plugins = const {
+  'io.flutter': '9212',
+  'io.flutter.as': '10139',
+};
+
+const files = const {
+  'io.flutter': 'flutter-intellij.jar',
+  'io.flutter.as': 'flutter-studio.zip',
+};
+
 main(List<String> args) async {
   BuildCommandRunner runner = new BuildCommandRunner();
 
@@ -30,11 +40,9 @@ main(List<String> args) async {
 }
 
 class BuildCommandRunner extends CommandRunner {
-
   BuildCommandRunner()
-      : super(
-      'plugin',
-      'A script to build, test, and deploy the Flutter IntelliJ plugin.') {
+      : super('plugin',
+            'A script to build, test, and deploy the Flutter IntelliJ plugin.') {
     argParser.addOption(
       'release',
       abbr: 'r',
@@ -43,10 +51,11 @@ class BuildCommandRunner extends CommandRunner {
     );
   }
 
-  Future<int> javac({List sourcepath,
-    String destdir,
-    List classpath,
-    List<String> sources}) async {
+  Future<int> javac(
+      {List sourcepath,
+      String destdir,
+      List classpath,
+      List<String> sources}) async {
     //final Directory javacDir = new Directory('artifacts/${artifacts.javac.output}');
 
     final List<String> args = [
@@ -81,14 +90,28 @@ abstract class ProductCommand extends Command {
 
   bool get isForIntelliJ => argResults['ij'];
 
-  String get release => globalResults['release'];
-
-  run() async {
-    specs = createBuildSpecs(this);
-    await doit();
+  String get release {
+    var rel = globalResults['release'];
+    if (rel != null && rel.startsWith('=')) {
+      rel = rel.substring(1);
+    }
+    return rel;
   }
 
-  doit();
+  bool get isReleaseMode => release != null;
+
+  Future<int> run() async {
+    specs = createBuildSpecs(this);
+    return await doit();
+  }
+
+  Future<int> doit();
+
+  String archiveFilePath(BuildSpec spec) {
+    String subDir = isReleaseMode ? '/release_$release' : '';
+    String filePath = 'artifacts$subDir/${files[spec.pluginId]}';
+    return filePath;
+  }
 }
 
 /// Temporary command to use the Ant build script.
@@ -97,12 +120,17 @@ class AntBuildCommand extends ProductCommand {
 
   AntBuildCommand(this.runner);
 
-  String get name => 'build';
+  String get name => 'abuild';
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
   Future<int> doit() async {
+    if (isReleaseMode) {
+      if (!performReleaseChecks()) {
+        return new Future(() => 1);
+      }
+    }
     var value;
     for (var spec in specs) {
       await spec.artifacts.provision(); // Not needed for ant script.
@@ -111,7 +139,7 @@ class AntBuildCommand extends ProductCommand {
       if (value != 0) {
         return value;
       }
-      await moveToArtifacts(spec);
+      value = await moveToArtifacts(this, spec);
     }
     return value;
   }
@@ -131,14 +159,20 @@ class BuildCommand extends ProductCommand {
       'compiled against the specified artifacts.';
 
   Future<int> doit() async {
+    if (isReleaseMode) {
+      if (!performReleaseChecks()) {
+        return new Future(() => 1);
+      }
+    }
     for (var spec in specs) {
       await spec.artifacts.provision();
 
       separator('Building flutter-intellij.jar');
 
-      List<File> jars = []..addAll(
-          findJars('${spec.dartPlugin.outPath}/lib'))..addAll(
-          findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
+      List<File> jars = []
+        ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
+        ..addAll(
+            findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
 
       List<String> sourcepath = [
         'src',
@@ -175,12 +209,10 @@ class TestCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   TestCommand(this.runner) {
-    argParser.addFlag(
-        'unit', abbr: 'u', defaultsTo: true, help: 'Run unit tests');
-    argParser.addFlag(
-        'integration', abbr: 'i',
-        defaultsTo: false,
-        help: 'Run integration tests');
+    argParser.addFlag('unit',
+        abbr: 'u', defaultsTo: true, help: 'Run unit tests');
+    argParser.addFlag('integration',
+        abbr: 'i', defaultsTo: false, help: 'Run integration tests');
   }
 
   String get name => 'test';
@@ -188,6 +220,12 @@ class TestCommand extends ProductCommand {
   String get description => 'Run the tests for the Flutter plugin.';
 
   Future<int> doit() async {
+    if (isReleaseMode) {
+      if (!performReleaseChecks()) {
+        return new Future(() => 1);
+      }
+    }
+
     for (var spec in specs) {
       await spec.artifacts.provision();
 
@@ -202,6 +240,8 @@ class TestCommand extends ProductCommand {
 /// The --release argument is not optional.
 class DeployCommand extends ProductCommand {
   final BuildCommandRunner runner;
+  String username;
+  String tempDir;
 
   DeployCommand(this.runner);
 
@@ -210,9 +250,68 @@ class DeployCommand extends ProductCommand {
   String get description => 'Upload the Flutter plugin to the JetBrains site.';
 
   Future<int> doit() async {
+    if (isReleaseMode) {
+      if (!performReleaseChecks()) {
+        return new Future(() => 1);
+      }
+    } else {
+      log('Deploy must have a --release argument');
+      return new Future(() => 1);
+    }
+    String password;
+    try {
+      // Detect test mode early to keep stdio clean for the test results parser.
+      bool mode = stdin.echoMode;
+      stdout.writeln(
+          'Please enter the username and password for the JetBrains plugin repository');
+      stdout.write('Username: ');
+      username = stdin.readLineSync();
+      stdout.write('Password: ');
+      stdin.echoMode = false;
+      password = stdin.readLineSync();
+      stdin.echoMode = mode;
+    } on StdinException {
+      password = "hello"; // For testing.
+      username = "test";
+    }
 
-    // TODO(messick): implement
-    throw 'unimplemented';
+    Directory directory = Directory.systemTemp.createTempSync('plugin');
+    tempDir = directory.path;
+    var file = new File('$tempDir/.content');
+    file.writeAsStringSync(password, flush: true);
+
+    var value = 0;
+    for (var spec in specs) {
+      String filePath = archiveFilePath(spec);
+      value = await upload(filePath, plugins[spec.pluginId]);
+      if (value != 0) return value;
+    }
+
+    file.deleteSync();
+    directory.deleteSync();
+    return value;
+  }
+
+  Future<int> upload(String filePath, String pluginNumber) async {
+    if (!new File(filePath).existsSync()) {
+      throw 'File not found: $filePath';
+    }
+    log("uploading $filePath");
+    String args = '''
+-i 
+-F userName="${username}" 
+-F password="<${tempDir}/.content" 
+-F pluginId="$pluginNumber" 
+-F file="@$filePath" 
+"https://plugins.jetbrains.com/plugin/uploadPlugin"
+''';
+
+    final Process process = await Process.start('curl', args.split(r'\w'));
+    var result = await process.exitCode;
+    if (result != 0) {
+      log('Upload failed: ${result.toString()} for file: $filePath');
+    }
+    return result;
   }
 }
 
@@ -386,11 +485,17 @@ class BuildSpec {
   }
 }
 
+bool performReleaseChecks() {
+  // TODO(messick) Implement release checks.
+  // git should have a release_NN branch where NN is the value of --release
+  // git should have no uncommitted changes
+  return true;
+}
+
 void addProductFlags(ArgParser argParser, String verb) {
-  argParser.addFlag(
-      'ij', help: '$verb the IntelliJ plugin', defaultsTo: true);
-  argParser.addFlag(
-      'as', help: '$verb the Android Studio plugin', defaultsTo: true);
+  argParser.addFlag('ij', help: '$verb the IntelliJ plugin', defaultsTo: true);
+  argParser.addFlag('as',
+      help: '$verb the Android Studio plugin', defaultsTo: true);
 }
 
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
@@ -441,15 +546,13 @@ Future<int> deleteBuildContents() async {
   return await exec('rm', args);
 }
 
-Future<int> moveToArtifacts(BuildSpec spec) async {
+Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
   final Directory dir = new Directory('artifacts');
   if (!dir.existsSync()) throw 'No artifacts directory found';
-  String file = spec.ideaProduct == 'ideaIC'
-      ? 'flutter-intellij.jar'
-      : 'flutter-studio.zip';
+  String file = plugins[spec.pluginId];
   var args = new List<String>();
   args.add('build/$file');
-  args.add('artifacts');
+  args.add(cmd.archiveFilePath(spec));
   return await exec('mv', args);
 }
 
