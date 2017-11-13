@@ -305,7 +305,13 @@ class DeployCommand extends ProductCommand {
 -F file="@$filePath" 
 "https://plugins.jetbrains.com/plugin/uploadPlugin"
 ''';
-    return await exec('curl', args.split(r'\w'));
+
+    final Process process = await Process.start('curl', args.split(r'\w'));
+    var result = await process.exitCode;
+    if (result != 0) {
+      log('Upload failed: ${result.toString()} for file: $filePath');
+    }
+    return result;
   }
 }
 
