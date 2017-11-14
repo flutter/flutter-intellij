@@ -8,6 +8,7 @@ environment:
 dependencies:
   args: "^0.13.7"
   path: "^1.4.2"
+  git: "^0.4.4+2"
 
 dev_dependencies:
   test: "^0.12.0"

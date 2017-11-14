@@ -29,7 +29,7 @@ void main() {
   group("spec", () {
     test('abuild', () {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "abuild"]).whenComplete(() {
+      runner.run(["-r=19", "-d../..", "abuild"]).whenComplete(() {
         var specs = (runner.commands['abuild'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
@@ -38,7 +38,7 @@ void main() {
     });
     test('build', () {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "build"]).whenComplete(() {
+      runner.run(["-r=19", "-d../..", "build"]).whenComplete(() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
@@ -47,7 +47,7 @@ void main() {
     });
     test('test', () {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "test"]).whenComplete(() {
+      runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
@@ -56,7 +56,7 @@ void main() {
     });
     test('deploy', () {
       var runner = makeTestRunner();
-      runner.run(["-r19", "deploy"]).whenComplete(() {
+      runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
@@ -68,15 +68,15 @@ void main() {
   group('deploy', () {
     test('clean', () {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "deploy", "--no-as", "--no-ij"]).whenComplete(() {
+      runner.run(["-r=19", "-d../..", "deploy", "--no-as", "--no-ij"]).whenComplete(() {
         String dir = (runner.commands['deploy'] as DeployCommand).tempDir;
-        expect(new Directory(dir).existsSync(), false);
+        expectAsync0(() => new Directory(dir).existsSync() == false);
       });
     });
     test('without --release', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
-      await runner.run(["deploy"]).whenComplete(() {
+      await runner.run(["-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
       expect(cmd.paths, orderedEquals([]));
@@ -84,11 +84,11 @@ void main() {
     test('release paths', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
-      await runner.run(["--release=19", "deploy"]).whenComplete(() {
+      await runner.run(["--release=19", "-d../..", "deploy"]).whenComplete(() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
       expect(
-          cmd.paths,
+          cmd.paths.map((p) => p.substring(p.indexOf('artifacts'))),
           orderedEquals([
             'artifacts/release_19/flutter-studio.zip',
             'artifacts/release_19/flutter-intellij.jar',

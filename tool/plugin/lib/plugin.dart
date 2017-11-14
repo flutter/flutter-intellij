@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as p;
+import 'package:git/git.dart';
 
 import 'src/lint.dart';
 
@@ -20,6 +21,8 @@ const files = const {
   'io.flutter': 'flutter-intellij.jar',
   'io.flutter.as': 'flutter-studio.zip',
 };
+
+String rootPath;
 
 main(List<String> args) async {
   BuildCommandRunner runner = new BuildCommandRunner();
@@ -48,6 +51,12 @@ class BuildCommandRunner extends CommandRunner {
       abbr: 'r',
       help: 'The release identifier; the numeric suffix of the git branch name',
       valueHelp: 'id',
+    );
+    argParser.addOption(
+      'cwd',
+      abbr: 'd',
+      help: 'For testing only; the prefix used to locate the root path (../..)',
+      valueHelp: 'relative-path',
     );
   }
 
@@ -99,8 +108,15 @@ abstract class ProductCommand extends Command {
   }
 
   bool get isReleaseMode => release != null;
+  bool get isTestMode => globalResults['cwd'] != null;
 
   Future<int> run() async {
+    rootPath = Directory.current.path;
+    var rel = globalResults['cwd'];
+    if (rel != null) {
+      rootPath =
+          p.normalize(p.join(rootPath, rel));
+    }
     specs = createBuildSpecs(this);
     return await doit();
   }
@@ -108,8 +124,9 @@ abstract class ProductCommand extends Command {
   Future<int> doit();
 
   String archiveFilePath(BuildSpec spec) {
-    String subDir = isReleaseMode ? '/release_$release' : '';
-    String filePath = 'artifacts$subDir/${files[spec.pluginId]}';
+    String subDir = isReleaseMode ? 'release_$release' : '';
+    String filePath =
+        p.join(rootPath, 'artifacts', subDir, files[spec.pluginId]);
     return filePath;
   }
 }
@@ -127,7 +144,7 @@ class AntBuildCommand extends ProductCommand {
 
   Future<int> doit() async {
     if (isReleaseMode) {
-      if (!performReleaseChecks()) {
+      if (!await performReleaseChecks(this)) {
         return new Future(() => 1);
       }
     }
@@ -160,7 +177,7 @@ class BuildCommand extends ProductCommand {
 
   Future<int> doit() async {
     if (isReleaseMode) {
-      if (!performReleaseChecks()) {
+      if (!await performReleaseChecks(this)) {
         return new Future(() => 1);
       }
     }
@@ -221,7 +238,7 @@ class TestCommand extends ProductCommand {
 
   Future<int> doit() async {
     if (isReleaseMode) {
-      if (!performReleaseChecks()) {
+      if (!await performReleaseChecks(this)) {
         return new Future(() => 1);
       }
     }
@@ -251,7 +268,7 @@ class DeployCommand extends ProductCommand {
 
   Future<int> doit() async {
     if (isReleaseMode) {
-      if (!performReleaseChecks()) {
+      if (!await performReleaseChecks(this)) {
         return new Future(() => 1);
       }
     } else {
@@ -281,14 +298,18 @@ class DeployCommand extends ProductCommand {
     file.writeAsStringSync(password, flush: true);
 
     var value = 0;
-    for (var spec in specs) {
-      String filePath = archiveFilePath(spec);
-      value = await upload(filePath, plugins[spec.pluginId]);
-      if (value != 0) return value;
+    try {
+      for (var spec in specs) {
+        String filePath = archiveFilePath(spec);
+        value = await upload(filePath, plugins[spec.pluginId]);
+        if (value != 0) {
+          return value;
+        }
+      }
+    } finally {
+      file.deleteSync();
+      directory.deleteSync();
     }
-
-    file.deleteSync();
-    directory.deleteSync();
     return value;
   }
 
@@ -389,7 +410,7 @@ class ArtifactManager {
             '-C',
             artifact.output
           ],
-          cwd: 'artifacts',
+          cwd: p.join(rootPath, 'artifacts'),
         );
       }
 
@@ -411,7 +432,7 @@ class Artifact {
 
   bool get isZip => file.endsWith('.zip');
 
-  String get outPath => 'artifacts/$output';
+  String get outPath => p.join(rootPath, 'artifacts', output);
 }
 
 class BuildSpec {
@@ -485,11 +506,32 @@ class BuildSpec {
   }
 }
 
-bool performReleaseChecks() {
-  // TODO(messick) Implement release checks.
+Future<bool> performReleaseChecks(ProductCommand cmd) async {
   // git should have a release_NN branch where NN is the value of --release
   // git should have no uncommitted changes
-  return true;
+  var isGitDir = await GitDir.isGitDir(rootPath);
+  if (isGitDir) {
+    if (cmd.isTestMode) {
+      return new Future(() => true);
+    }
+    var gitDir = await GitDir.fromExisting(rootPath);
+    var isClean = await gitDir.isWorkingTreeClean();
+    if (isClean) {
+      var branch = await gitDir.getCurrentBranch();
+      String name = branch.branchName;
+      var result = name == "release_${cmd.release}";
+      if (result) {
+        return new Future(() => result);
+      } else {
+        log('the current git branch must be named "$name"');
+      }
+    } else {
+      log('the current git branch has uncommitted changes');
+    }
+  } else {
+    log('the currect working directory is not managed by git: $rootPath');
+  }
+  return new Future(() => false);
 }
 
 void addProductFlags(ArgParser argParser, String verb) {
@@ -538,20 +580,20 @@ Future<int> ant(BuildSpec spec) async {
 }
 
 Future<int> deleteBuildContents() async {
-  final Directory dir = new Directory('build');
+  final Directory dir = new Directory(p.join(rootPath, 'build'));
   if (!dir.existsSync()) throw 'No build directory found';
   var args = new List<String>();
   args.add('-rf');
-  args.add('build/*');
+  args.add(p.join(rootPath, 'build', '*'));
   return await exec('rm', args);
 }
 
 Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
-  final Directory dir = new Directory('artifacts');
+  final Directory dir = new Directory(p.join(rootPath, 'artifacts'));
   if (!dir.existsSync()) throw 'No artifacts directory found';
   String file = plugins[spec.pluginId];
   var args = new List<String>();
-  args.add('build/$file');
+  args.add(p.join(rootPath, 'build', file));
   args.add(cmd.archiveFilePath(spec));
   return await exec('mv', args);
 }
