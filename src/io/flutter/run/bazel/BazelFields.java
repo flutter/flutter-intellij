@@ -166,9 +166,13 @@ public class BazelFields {
         FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(launchScript)));
     }
 
-    // check bazel target
+    // check that bazel target is not empty
     if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
+    }
+    // check that the bazel target starts with "//"
+    else if (!bazelTarget.startsWith("//")) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
     }
   }
 
@@ -191,7 +195,7 @@ public class BazelFields {
     final String launchingScript = getLaunchingScript();
     assert launchingScript != null; // already checked
 
-    final String target = chooseTarget(mode);
+    final String target = getBazelTarget();
     assert target != null; // already checked
 
     final String additionalArgs = getAdditionalArgs();
@@ -211,7 +215,7 @@ public class BazelFields {
       if (device.isIOS()) {
         // --ios_cpu=[arm64, x86_64]
         final String arch = device.emulator() ? "x86_64" : "arm64";
-        commandLine.addParameter("--ios_cpu=" + arch);
+        commandLine.addParameter("--config=ios_" + arch);
       }
       else {
         // --android_cpu=[armeabi, x86, x86_64]
@@ -235,7 +239,7 @@ public class BazelFields {
         }
 
         if (arch != null) {
-          commandLine.addParameter("--android_cpu=" + arch);
+          commandLine.addParameter("--config=android_" + arch);
         }
       }
     }
@@ -275,16 +279,5 @@ public class BazelFields {
     }
 
     return commandLine;
-  }
-
-  @Nullable
-  private String chooseTarget(RunMode mode) {
-    String target = getBazelTarget();
-    if (target == null) return null;
-    // Append _run[_hot] to bazelTarget.
-    if (!target.endsWith("_run") && !target.endsWith(("_hot"))) {
-      target += "_run_hot";
-    }
-    return target;
   }
 }
