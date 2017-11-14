@@ -30,13 +30,18 @@ import java.util.*;
 public class FlutterWidget {
 
   enum Category {
-    // TODO(pq): fill in undefined widgets.
-    ACCESSIBILITY("Accessibility", null), ANIMATION_AND_MOTION("Animation and Motion", null),
-    ASSETS_IMAGES_AND_ICONS("Assets, Images, and Icons", FlutterIcons.AnyType),
-    ASYNC("Async", null), BASICS("Basics", null), CUPERTINO("Cupertino (iOS-style widgets)", null),
-    INPUT("Input", null), PAINTING_AND_EFFECTS("Painting and effects", FlutterIcons.Colors),
-    SCROLLING("Scrolling", FlutterIcons.Scrollbar), STACK("Stack", FlutterIcons.Value),
-    STYLING("Styling", FlutterIcons.Annotation), TEXT("Text", FlutterIcons.TextArea);
+    ACCESSIBILITY("Accessibility", FlutterIcons.Accessibility),
+    ANIMATION_AND_MOTION("Animation and Motion", FlutterIcons.Animation),
+    ASSETS_IMAGES_AND_ICONS("Assets, Images, and Icons", FlutterIcons.Assets),
+    ASYNC("Async", FlutterIcons.Async),
+    BASICS("Basics", FlutterIcons.Basics),
+    CUPERTINO("Cupertino (iOS-style widgets)", FlutterIcons.Cupertino),
+    INPUT("Input", FlutterIcons.Input),
+    PAINTING_AND_EFFECTS("Painting and effects", FlutterIcons.Painting),
+    SCROLLING("Scrolling", FlutterIcons.Scrollbar),
+    STACK("Stack", FlutterIcons.Stack),
+    STYLING("Styling", FlutterIcons.Styling),
+    TEXT("Text", FlutterIcons.Text);
 
     @NotNull
     private final String label;

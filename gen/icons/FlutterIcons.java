@@ -44,12 +44,18 @@ public class FlutterIcons {
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
   public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
 
-  public static final Icon Annotation = load("/icons/inspector/atrule.png");
-  public static final Icon AnyType = load("/icons/inspector/any_type.png");
-  public static final Icon Colors = load("/icons/inspector/colors.png");
+  // Flutter Inspector Widget Icons.
+  public static final Icon Accessibility = load("/icons/inspector/balloonInformation.png");
+  public static final Icon Animation = load("/icons/inspector/resume.png");
+  public static final Icon Assets = load("/icons/inspector/any_type.png");
+  public static final Icon Async = load("/icons/inspector/threads.png");
+  public static final Icon Basics = load("/icons/custom/class.png");
+  public static final Icon Cupertino = load("/icons/inspector/class.png");
   public static final Icon Diagram = load("/icons/inspector/diagram.png");
+  public static final Icon Input = load("/icons/inspector/renderer.png");
+  public static final Icon Painting = load("/icons/inspector/colors.png");
   public static final Icon Scrollbar = load("/icons/inspector/scrollbar.png");
-  public static final Icon TextArea = load("/icons/inspector/textArea.png");
-  public static final Icon Value = load("/icons/inspector/value.png");
-
+  public static final Icon Stack = load("/icons/inspector/value.png");
+  public static final Icon Styling = load("/icons/inspector/atrule.png");
+  public static final Icon Text = load("/icons/inspector/textArea.png");
 }
