@@ -8,7 +8,7 @@
 
   <category>Custom Languages</category>
 
-  <version>19.0</version>
+  <version>19.1</version>
 
   <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
@@ -28,6 +28,10 @@
   <change-notes>
     <![CDATA[
 
+19.1:
+<ul>
+  <li>Bazel run configuration updates</li>
+</ul>
 
 19.0:
 <ul>
