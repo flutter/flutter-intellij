@@ -33,7 +33,7 @@ void main() {
         var specs = (runner.commands['abuild'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
     test('build', () {
@@ -42,7 +42,7 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
     test('test', () {
@@ -51,7 +51,7 @@ void main() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
     test('deploy', () {
@@ -60,7 +60,7 @@ void main() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
   });
@@ -96,8 +96,9 @@ void main() {
       expect(
           cmd.paths.map((p) => p.substring(p.indexOf('artifacts'))),
           orderedEquals([
-            'artifacts/release_19/flutter-studio.zip',
-            'artifacts/release_19/flutter-intellij.jar',
+            'artifacts/release_19/3.0/flutter-intellij.zip',
+            'artifacts/release_19/2017.2/flutter-intellij.zip',
+            'artifacts/release_19/2017.3/flutter-intellij.zip',
           ]));
     });
   });
@@ -125,12 +126,6 @@ class TestBuildCommand extends BuildCommand {
   doit() {}
 }
 
-class TestTestCommand extends TestCommand {
-  TestTestCommand(runner) : super(runner);
-
-  doit() {}
-}
-
 class TestDeployCommand extends DeployCommand {
   var paths = new List<String>();
   var plugins = new List<String>();
@@ -146,6 +141,12 @@ class TestDeployCommand extends DeployCommand {
 
 class TestGenCommand extends GenCommand {
   TestGenCommand(runner) : super(runner);
+
+  doit() {}
+}
+
+class TestTestCommand extends TestCommand {
+  TestTestCommand(runner) : super(runner);
 
   doit() {}
 }
