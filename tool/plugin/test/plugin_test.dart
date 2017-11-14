@@ -1,11 +1,11 @@
 // Copyright 2017 The Chromium Authors. All rights reserved. Use of this source
 // code is governed by a BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:plugin/plugin.dart';
 import 'package:test/test.dart';
-import 'dart:async';
 
 void main() {
   group("create", () {
@@ -119,12 +119,6 @@ class TestBuildCommand extends BuildCommand {
   doit() {}
 }
 
-class TestTestCommand extends TestCommand {
-  TestTestCommand(runner) : super(runner);
-
-  doit() {}
-}
-
 class TestDeployCommand extends DeployCommand {
   var paths = new List<String>();
   var plugins = new List<String>();
@@ -140,6 +134,12 @@ class TestDeployCommand extends DeployCommand {
 
 class TestGenCommand extends GenCommand {
   TestGenCommand(runner) : super(runner);
+
+  doit() {}
+}
+
+class TestTestCommand extends TestCommand {
+  TestTestCommand(runner) : super(runner);
 
   doit() {}
 }
