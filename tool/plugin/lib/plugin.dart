@@ -114,8 +114,7 @@ abstract class ProductCommand extends Command {
     rootPath = Directory.current.path;
     var rel = globalResults['cwd'];
     if (rel != null) {
-      rootPath =
-          p.normalize(p.join(rootPath, rel));
+      rootPath = p.normalize(p.join(rootPath, rel));
     }
     specs = createBuildSpecs(this);
     return await doit();
@@ -347,7 +346,8 @@ class GenCommand extends Command {
   String get name => 'gen';
 
   String get description =>
-      'Generate a valid plugin.xml for the Flutter plugin from the template.';
+      'Generate a valid plugin.xml and .travis.yaml for the Flutter plugin.\n'
+      'The plugin.xml.template and product-matrix.json are used as input.';
 
   Future<int> run() async {
     // TODO(messick): implement
@@ -456,7 +456,7 @@ class BuildSpec {
   static BuildSpec forAndroidStudio(ProductCommand command) {
     BuildSpec spec = new BuildSpec();
 
-    // TODO(messick) Extract these values from .travis.yml
+    // TODO(messick) Extract these values from product-matrix.json
     spec.ideaProduct = 'android-studio-ide';
     spec.ideaVersion = '171.4408382';
     spec.dartVersion = '171.4424.10';
