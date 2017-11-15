@@ -33,7 +33,7 @@ void main() {
         var specs = (runner.commands['abuild'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
     test('build', () {
@@ -42,7 +42,7 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
     test('test', () {
@@ -51,7 +51,7 @@ void main() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
     test('deploy', () {
@@ -60,7 +60,7 @@ void main() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC']));
+            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
       });
     });
   });
@@ -68,7 +68,13 @@ void main() {
   group('deploy', () {
     test('clean', () {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "-d../..", "deploy", "--no-as", "--no-ij"]).whenComplete(() {
+      runner.run([
+        "-r=19",
+        "-d../..",
+        "deploy",
+        "--no-as",
+        "--no-ij"
+      ]).whenComplete(() {
         String dir = (runner.commands['deploy'] as DeployCommand).tempDir;
         expectAsync0(() => new Directory(dir).existsSync() == false);
       });
@@ -90,8 +96,9 @@ void main() {
       expect(
           cmd.paths.map((p) => p.substring(p.indexOf('artifacts'))),
           orderedEquals([
-            'artifacts/release_19/flutter-studio.zip',
-            'artifacts/release_19/flutter-intellij.jar',
+            'artifacts/release_19/3.0/flutter-intellij.zip',
+            'artifacts/release_19/2017.2/flutter-intellij.zip',
+            'artifacts/release_19/2017.3/flutter-intellij.zip',
           ]));
     });
   });

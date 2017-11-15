@@ -30,14 +30,9 @@ main(List<String> args) async {
   }
 }
 
-const files = const {
-  'io.flutter': 'flutter-intellij.jar',
-  'io.flutter.as': 'flutter-studio.zip',
-};
-
 const plugins = const {
   'io.flutter': '9212',
-  'io.flutter.as': '10139',
+  'io.flutter.as': '10139', // Currently unused.
 };
 
 String rootPath;
@@ -51,13 +46,11 @@ void addProductFlags(ArgParser argParser, String verb) {
 Future<int> ant(BuildSpec spec) async {
   var args = new List<String>();
   String directory = null;
-  args.add('-Ddart.plugin.version=${spec.dartVersion}');
+  args.add('-Ddart.plugin.version=${spec.dartPluginVersion}');
   args.add('-Didea.version=${spec.ideaVersion}');
   args.add('-Didea.product=${spec.ideaProduct}');
-  args.add('-DDEPENDS=${spec.depends}');
-  args.add('-DPLUGINID=${spec.pluginId}');
-  args.add('-DSINCE=${spec.since}');
-  args.add('-DUNTIL=${spec.until}');
+  args.add('-DSINCE=${spec.sinceBuild}');
+  args.add('-DUNTIL=${spec.untilBuild}');
   // TODO(messick) Add version to plugin.xml.template.
   return await exec('ant', args, cwd: directory);
 }
@@ -67,13 +60,14 @@ void copyResources({String from, String to}) {
 }
 
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
+  var contents =
+      new File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
+  var map = JSON.decode(contents);
   var specs = new List<BuildSpec>();
-  if (command.isForAndroidStudio) {
-    specs.add(BuildSpec.forAndroidStudio(command));
-  }
-  if (command.isForIntelliJ) {
-    specs.add(BuildSpec.forIntelliJ(command));
-  }
+  List input = map['list'];
+  input.forEach((json) {
+    specs.add(new BuildSpec.fromJson(json, command.release));
+  });
   return specs;
 }
 
@@ -152,8 +146,8 @@ Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
 }
 
 Future<bool> performReleaseChecks(ProductCommand cmd) async {
-  // git should have a release_NN branch where NN is the value of --release
-  // git should have no uncommitted changes
+  // git must have a release_NN branch where NN is the value of --release
+  // git must have no uncommitted changes
   var isGitDir = await GitDir.isGitDir(rootPath);
   if (isGitDir) {
     if (cmd.isTestMode) {
@@ -434,23 +428,34 @@ class BuildCommandRunner extends CommandRunner {
 
 class BuildSpec {
   // Build targets
-  String ideaProduct = 'ideaIC';
-  String ideaVersion = '2017.2';
-  String dartVersion = '172.3317.48';
+  final String name;
+  final String version;
+  final String ideaProduct;
+  final String ideaVersion;
+  final String dartPluginVersion;
 
   // plugin.xml variables
-  String since = '172.1';
-  String until = '173.*';
-  String pluginId = 'io.flutter';
-  String depends = '';
-  String version;
+  final String sinceBuild;
+  final String untilBuild;
+  final String pluginId = 'io.flutter';
+  final String release;
 
   ArtifactManager artifacts = new ArtifactManager();
 
   Artifact product;
   Artifact dartPlugin;
 
-  bool get isReleaseMode => version != null;
+  bool get isReleaseMode => release != null;
+
+  BuildSpec.fromJson(Map json, String releaseNum)
+      : release = releaseNum,
+        name = json['name'],
+        version = json['version'],
+        ideaProduct = json['ideaProduct'],
+        ideaVersion = json['ideaVersion'],
+        dartPluginVersion = json['dartPluginVersion'],
+        sinceBuild = json['sinceBuild'],
+        untilBuild = json['untilBuild'];
 
   createArtifacts() {
     if (ideaProduct == 'android-studio-ide') {
@@ -461,45 +466,12 @@ class BuildSpec {
       product = artifacts.add(new Artifact('$ideaProduct-$ideaVersion.tar.gz',
           output: ideaProduct));
     }
-    dartPlugin = artifacts.add(new Artifact('Dart-$dartVersion.zip'));
+    dartPlugin = artifacts.add(new Artifact('Dart-$dartPluginVersion.zip'));
   }
 
   String toString() {
-    return 'BuildSpec($ideaProduct $ideaVersion $dartVersion $since $until '
-        '$pluginId depends: "$depends" version: "$version")';
-  }
-
-  static BuildSpec forAndroidStudio(ProductCommand command) {
-    BuildSpec spec = new BuildSpec();
-
-    // TODO(messick) Extract these values from .travis.yml
-    spec.ideaProduct = 'android-studio-ide';
-    spec.ideaVersion = '171.4408382';
-    spec.dartVersion = '171.4424.10';
-
-    // These values are determined from the above.
-    spec.since = '${spec.ideaVersion.substring(0, 3)}.1';
-    spec.until = '${spec.ideaVersion.substring(0, 3)}.*';
-    spec.pluginId = '${spec.pluginId}.as';
-
-    // This is constant for Android Studio.
-    spec.depends = '<depends>com.android.tools.apk</depends>';
-
-    // Version from arguments -- may be null if not release mode.
-    spec.version = command.release;
-
-    spec.createArtifacts();
-    return spec;
-  }
-
-  static BuildSpec forIntelliJ(ProductCommand command) {
-    BuildSpec spec = new BuildSpec();
-
-    // TODO(messick) Current defaults should be replaced by values from .travis.yml.
-    spec.version = command.release;
-
-    spec.createArtifacts();
-    return spec;
+    return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
+        '$untilBuild version: "$release")';
   }
 }
 
@@ -596,7 +568,8 @@ class GenCommand extends Command {
   GenCommand(this.runner);
 
   String get description =>
-      'Generate a valid plugin.xml for the Flutter plugin from the template.';
+      'Generate a valid plugin.xml and .travis.yaml for the Flutter plugin.\n'
+      'The plugin.xml.template and product-matrix.json are used as input.';
 
   String get name => 'gen';
 
@@ -630,8 +603,8 @@ abstract class ProductCommand extends Command {
 
   String archiveFilePath(BuildSpec spec) {
     String subDir = isReleaseMode ? 'release_$release' : '';
-    String filePath =
-        p.join(rootPath, 'artifacts', subDir, files[spec.pluginId]);
+    String filePath = p.join(
+        rootPath, 'artifacts', subDir, spec.version, 'flutter-intellij.zip');
     return filePath;
   }
 
@@ -641,8 +614,7 @@ abstract class ProductCommand extends Command {
     rootPath = Directory.current.path;
     var rel = globalResults['cwd'];
     if (rel != null) {
-      rootPath =
-          p.normalize(p.join(rootPath, rel));
+      rootPath = p.normalize(p.join(rootPath, rel));
     }
     specs = createBuildSpecs(this);
     return await doit();

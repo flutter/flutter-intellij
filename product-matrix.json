@@ -1,0 +1,31 @@
+{
+  "list": [
+    {
+      "name": "Android Studio",
+      "version": "3.0",
+      "ideaProduct": "android-studio-ide",
+      "ideaVersion": "171.4408382",
+      "dartPluginVersion": "171.4424.10",
+      "sinceBuild": "171.1",
+      "untilBuild": "171.*"
+    },
+    {
+      "name": "IntelliJ",
+      "version": "2017.2",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "2017.2",
+      "dartPluginVersion": "172.3317.48",
+      "sinceBuild": "172.1",
+      "untilBuild": "172.*"
+    },
+    {
+      "name": "IntelliJ",
+      "version": "2017.3",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "2017.3",
+      "dartPluginVersion": "173.3302.13",
+      "sinceBuild": "173.1",
+      "untilBuild": "173.*"
+    }
+  ]
+}
