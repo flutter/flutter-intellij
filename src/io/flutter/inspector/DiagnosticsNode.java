@@ -5,6 +5,7 @@
  */
 package io.flutter.inspector;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
@@ -15,7 +16,13 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static io.flutter.sdk.FlutterSettingsConfigurable.WIDGET_FILTERING_ENABLED;
 
 /**
  * Defines diagnostics data for a [value].
@@ -479,6 +486,37 @@ public class DiagnosticsNode {
     if (children == null) {
       if (hasChildren()) {
         children = inspectorService.getChildren(getDartDiagnosticRef());
+
+        // Apply filters.
+        if (WIDGET_FILTERING_ENABLED) {
+          try {
+            final ArrayList<DiagnosticsNode> nodes = children.get();
+
+            final ArrayList<DiagnosticsNode> filtered = Lists.newArrayList(nodes);
+            // Filter private classes as a baby-step.
+            filtered.removeIf(FlutterWidget.Filter.PRIVATE_CLASS);
+
+            if (!filtered.isEmpty()) {
+              children = new CompletableFuture<>();
+              children.complete(filtered);
+            }
+            else {
+              if (!nodes.isEmpty()) {
+                final CompletableFuture<ArrayList<DiagnosticsNode>> future = nodes.get(0).getChildren();
+                for (int i = 1; i < nodes.size(); ++i) {
+                  future.thenCombine(nodes.get(i).getChildren(),
+                                       (nodes1, nodes2) -> Stream.of(nodes1, nodes2)
+                                         .flatMap(Collection::stream)
+                                         .collect(Collectors.toList()));
+                }
+                return future;
+              }
+            }
+          }
+          catch (InterruptedException | ExecutionException e) {
+            // Ignore.
+          }
+        }
       }
       else {
         // Known to have no children so we can provide the children immediately.

@@ -16,13 +16,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 /**
  * Categorization of a Flutter widget.
@@ -66,6 +67,24 @@ public class FlutterWidget {
     @Nullable
     public Icon getIcon() {
       return icon;
+    }
+  }
+
+  static abstract class Filter {
+
+    public static final Predicate<DiagnosticsNode> PRIVATE_CLASS = forPattern("_.*");
+
+    public static Predicate<DiagnosticsNode> forPatterns(@NotNull String... regexps) {
+      return Arrays.stream(regexps).map(Filter::forPattern).reduce(node -> false,
+                                                                   Predicate::or);
+    }
+
+    public static Predicate<DiagnosticsNode> forPattern(@NotNull String regexp) {
+      final Pattern pattern = Pattern.compile(regexp);
+      return node -> {
+        final String description = node.getDescription();
+        return description != null && pattern.matcher(description).matches();
+      };
     }
   }
 
