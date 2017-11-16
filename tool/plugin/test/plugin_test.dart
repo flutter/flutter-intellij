@@ -102,6 +102,25 @@ void main() {
           ]));
     });
   });
+
+  group('build', () {
+    test('plugin.xml', () async {
+      var runner = makeTestRunner();
+      TestBuildCommand cmd;
+      await runner.run(["-d../..", "build"]).whenComplete(() {
+        cmd = (runner.commands['build'] as TestBuildCommand);
+      });
+      BuildSpec spec = cmd.specs[0];
+      await removeAll('../../build/classes');
+      await genPluginXml(spec, 'build/classes');
+      var file = new File("../../build/classes/META-INF/plugin.xml");
+      expect(file.existsSync(), isTrue);
+      var content = file.readAsStringSync();
+      expect(content.length, greaterThan(10000));
+      int loc = content.indexOf('@');
+      expect(loc, -1);
+    });
+  });
 }
 
 BuildCommandRunner makeTestRunner() {

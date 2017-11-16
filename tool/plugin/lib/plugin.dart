@@ -17,7 +17,7 @@ main(List<String> args) async {
 
   runner.addCommand(new LintCommand(runner));
   runner.addCommand(new AntBuildCommand(runner));
-//  runner.addCommand(new BuildCommand(runner));
+  runner.addCommand(new BuildCommand(runner));
   runner.addCommand(new TestCommand(runner));
   runner.addCommand(new DeployCommand(runner));
   runner.addCommand(new GenCommand(runner));
@@ -56,6 +56,7 @@ Future<int> ant(BuildSpec spec) async {
 }
 
 void copyResources({String from, String to}) {
+  log('copying resources from $from to $to');
   _copyResources(new Directory(from), new Directory(to));
 }
 
@@ -79,8 +80,8 @@ void createDir(String name) {
   }
 }
 
-Future curl(String url, {String to}) async {
-  await exec('curl', ['-o', to, url]);
+Future<int> curl(String url, {String to}) async {
+  return await exec('curl', ['-o', to, url]);
 }
 
 Future<int> deleteBuildContents() async {
@@ -123,11 +124,26 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
+Future<int> genPluginXml(BuildSpec spec, String destDir) async {
+  var file = await new File(p.join(rootPath, destDir, 'META-INF/plugin.xml'))
+      .create(recursive: true);
+  var dest = file.openWrite();
+  // TODO(devoncarew): Move the change log to a separate file and insert it here.
+  await new File(p.join(rootPath, 'resources/META-INF/plugin.xml.template'))
+      .openRead()
+      .transform(UTF8.decoder)
+      .transform(new LineSplitter())
+      .forEach((l) => dest.writeln(substitueTemplateVariables(l, spec)));
+  await dest.close();
+  return dest.done;
+}
+
 Future<int> jar(String directory, String outFile) async {
   List<String> args = ['cf', p.absolute(outFile)];
   args.addAll(new Directory(directory)
       .listSync(followLinks: false)
       .map((f) => p.basename(f.path)));
+  args.remove('.DS_Store');
   return await exec('jar', args, cwd: directory);
 }
 
@@ -173,9 +189,47 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
   return new Future(() => false);
 }
 
+Future<int> removeAll(String dir) async {
+  var args = ['-rf', dir];
+  return await exec('rm', args);
+}
+
 void separator(String name) {
   log('');
   log('$name:', indent: false);
+}
+
+String substitueTemplateVariables(String line, BuildSpec spec) {
+  String valueOf(String name) {
+    switch (name) {
+      case 'PLUGINID':
+        return spec.pluginId;
+      case 'SINCE':
+        return spec.sinceBuild;
+      case 'UNTIL':
+        return spec.untilBuild;
+      default:
+        throw 'unknown template variable: $name';
+    }
+  }
+
+  int start = line.indexOf('@');
+  while (start >= 0) {
+    int end = line.indexOf('@', start + 1);
+    var name = line.substring(start + 1, end);
+    line = line.replaceRange(start, end + 1, valueOf(name));
+    if (end < line.length - 1) {
+      start = line.indexOf('@', end + 1);
+    }
+  }
+  return line;
+}
+
+Future<int> zip(String directory, String outFile) async {
+  var dest = p.absolute(outFile);
+  createDir(p.dirname(dest));
+  List<String> args = ['-r', dest, p.basename(directory)];
+  return await exec('zip', args, cwd: p.dirname(directory));
 }
 
 void _copyFile(File file, Directory to) {
@@ -189,7 +243,10 @@ void _copyFile(File file, Directory to) {
 void _copyResources(Directory from, Directory to) {
   for (FileSystemEntity entity in from.listSync(followLinks: false)) {
     final String basename = p.basename(entity.path);
-    if (basename.endsWith('.java') || basename.endsWith('.kt')) {
+    if (basename.endsWith('.java') ||
+        basename.endsWith('.kt') ||
+        basename.endsWith('.form') ||
+        basename == 'plugin.xml.template') {
       continue;
     }
 
@@ -279,10 +336,11 @@ class ArtifactManager {
     return artifact;
   }
 
-  Future provision() async {
+  Future<int> provision() async {
     separator('Getting artifacts');
     createDir('artifacts');
 
+    int result = 0;
     for (Artifact artifact in artifacts) {
       final String path = 'artifacts/${artifact.file}';
       if (FileSystemEntity.isFileSync(path)) {
@@ -291,20 +349,25 @@ class ArtifactManager {
       }
 
       log('downloading $path...');
-      await curl('$base/${artifact.file}', to: path);
+      result = await curl('$base/${artifact.file}', to: path);
+      if (result != 0) {
+        log('download failed');
+        break;
+      }
 
       // expand
       createDir(artifact.outPath);
 
       if (artifact.isZip) {
         if (artifact.bareArchive) {
-          await exec('unzip', ['-q', '-d', artifact.output, artifact.file],
+          result = await exec(
+              'unzip', ['-q', '-d', artifact.output, artifact.file],
               cwd: 'artifacts');
         } else {
-          await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
+          result = await exec('unzip', ['-q', artifact.file], cwd: 'artifacts');
         }
       } else {
-        await exec(
+        result = await exec(
           'tar',
           [
             '--strip-components=1',
@@ -316,9 +379,14 @@ class ArtifactManager {
           cwd: p.join(rootPath, 'artifacts'),
         );
       }
+      if (result != 0) {
+        log('unpacking failed');
+        break;
+      }
 
       log('');
     }
+    return new Future(() => result);
   }
 }
 
@@ -341,30 +409,19 @@ class BuildCommand extends ProductCommand {
         return new Future(() => 1);
       }
     }
+    int result = 0;
     for (var spec in specs) {
-      await spec.artifacts.provision();
+      result = await spec.artifacts.provision();
+      if (result != 0) {
+        return new Future(() => result);
+      }
 
       separator('Building flutter-intellij.jar');
-
-      List<File> jars = []
-        ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
-        ..addAll(
-            findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
-
-      List<String> sourcepath = [
-        'src',
-        'resources',
-        'gen',
-        'third_party/intellij-plugins-dart/src'
-      ];
-      createDir('build/classes');
-
-      await runner.javac(
-        sources: sourcepath.expand(findJavaFiles).toList(),
-        sourcepath: sourcepath,
-        destdir: 'build/classes',
-        classpath: jars.map((j) => j.path).toList(),
-      );
+      removeAll('build');
+      result = await runner.javac2(spec);
+      if (result != 0) {
+        return new Future(() => result);
+      }
 
       // copy resources
       copyResources(from: 'src', to: 'build/classes');
@@ -372,9 +429,32 @@ class BuildCommand extends ProductCommand {
       copyResources(from: 'gen', to: 'build/classes');
       copyResources(
           from: 'third_party/intellij-plugins-dart/src', to: 'build/classes');
+      await genPluginXml(spec, 'build/classes');
 
-      // create the jar
-      await jar('build/classes', 'build/flutter-intellij.jar');
+      // create the jars
+      createDir('build/flutter-intellij/lib');
+      result = await jar(
+          'build/classes', 'build/flutter-intellij/lib/flutter-intellij.jar');
+      if (result != 0) {
+        log('jar failed: ${result.toString()}');
+        return new Future(() => result);
+      }
+      if (spec.isAndroidStudio) {
+        result = await jar(
+            'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
+        if (result != 0) {
+          log('jar failed: ${result.toString()}');
+          return new Future(() => result);
+        }
+      }
+
+      // zip it up
+      result = await zip('build/flutter-intellij', archiveFilePath(spec));
+      if (result != 0) {
+        log('zip failed: ${result.toString()}');
+        return new Future(() => result);
+      }
+      break; //TODO remove
     }
     return 0;
   }
@@ -398,6 +478,7 @@ class BuildCommandRunner extends CommandRunner {
     );
   }
 
+  // Use this to compile test code, which should not define forms.
   Future<int> javac(
       {List sourcepath,
       String destdir,
@@ -421,8 +502,19 @@ class BuildCommandRunner extends CommandRunner {
     ];
     args.addAll(sources);
 
-    // TODO(messick) Change to javac2, add classpath entries.
-    return exec('javac', args);
+    return await exec('javac', args);
+  }
+
+  // Use this to compile plugin sources to get forms processed.
+  Future<int> javac2(BuildSpec spec) async {
+    String args = '''
+-f tool/plugin/compile.xml
+-Didea.product=${spec.ideaProduct}
+-Didea.version=${spec.ideaVersion}
+-Dbasedir=$rootPath
+compile
+''';
+    return await exec('ant', args.split(new RegExp(r'\s')));
   }
 }
 
@@ -445,8 +537,6 @@ class BuildSpec {
   Artifact product;
   Artifact dartPlugin;
 
-  bool get isReleaseMode => release != null;
-
   BuildSpec.fromJson(Map json, String releaseNum)
       : release = releaseNum,
         name = json['name'],
@@ -456,6 +546,10 @@ class BuildSpec {
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
         untilBuild = json['untilBuild'];
+
+  bool get isAndroidStudio => ideaProduct.contains('android-studio');
+
+  bool get isReleaseMode => release != null;
 
   createArtifacts() {
     if (ideaProduct == 'android-studio-ide') {
@@ -550,7 +644,8 @@ class DeployCommand extends ProductCommand {
 "https://plugins.jetbrains.com/plugin/uploadPlugin"
 ''';
 
-    final Process process = await Process.start('curl', args.split(r'\w'));
+    final Process process =
+        await Process.start('curl', args.split(new RegExp(r'\s')));
     var result = await process.exitCode;
     if (result != 0) {
       log('Upload failed: ${result.toString()} for file: $filePath');
@@ -574,7 +669,7 @@ class GenCommand extends Command {
   String get name => 'gen';
 
   Future<int> run() async {
-    // TODO(messick): implement
+    // TODO(messick): Implement GenCommand.
     throw 'unimplemented';
   }
 }
@@ -593,6 +688,7 @@ abstract class ProductCommand extends Command {
   bool get isReleaseMode => release != null;
 
   bool get isTestMode => globalResults['cwd'] != null;
+
   String get release {
     var rel = globalResults['release'];
     if (rel != null && rel.startsWith('=')) {
@@ -647,7 +743,28 @@ class TestCommand extends ProductCommand {
     for (var spec in specs) {
       await spec.artifacts.provision();
 
-      // TODO(devoncarew): implement
+      // TODO(messick) Finish the implementation of TestCommand.
+      separator('Compiling test sources');
+
+      List<File> jars = []
+        ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
+        ..addAll(
+            findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
+
+      List<String> sourcepath = [
+        'testSrc',
+        'resources',
+        'gen',
+        'third_party/intellij-plugins-dart/testSrc'
+      ];
+      createDir('build/classes');
+
+      await runner.javac(
+        sources: sourcepath.expand(findJavaFiles).toList(),
+        sourcepath: sourcepath,
+        destdir: 'build/classes',
+        classpath: jars.map((j) => j.path).toList(),
+      );
     }
     throw 'unimplemented';
   }
