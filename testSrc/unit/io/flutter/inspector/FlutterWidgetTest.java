@@ -6,6 +6,7 @@
 package io.flutter.inspector;
 
 import org.hamcrest.BaseMatcher;
+import org.hamcrest.CustomMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.jetbrains.annotations.Contract;
@@ -17,9 +18,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
@@ -66,11 +69,38 @@ public class FlutterWidgetTest {
     };
   }
 
+  @Contract(pure = true)
+  @NotNull
+  private static Matcher<Predicate<DiagnosticsNode>> matches(@NotNull DiagnosticsNode node) {
+    return new CustomMatcher<Predicate<DiagnosticsNode>>("Should match: " + node.getDescription()) {
+      @Override
+      public boolean matches(Object o) {
+        //noinspection unchecked
+        return ((Predicate<DiagnosticsNode>)o).test(node);
+      }
+    };
+  }
+
   @NotNull
   private static FlutterWidget widget(@NotNull String name) {
     final FlutterWidget widget = FlutterWidget.getCatalog().getWidget(name);
     assertNotNull(widget);
     return widget;
+  }
+
+  @NotNull
+  static DiagnosticsNode node(@Nullable String description) {
+    return new FakeNode(description);
+  }
+
+  @NotNull
+  static Predicate<DiagnosticsNode> pattern(@NotNull String pattern) {
+    return FlutterWidget.Filter.forPattern(pattern);
+  }
+
+  @NotNull
+  static Predicate<DiagnosticsNode> patterns(@NotNull String... pattern) {
+    return FlutterWidget.Filter.forPatterns(pattern);
   }
 
   @Test
@@ -101,5 +131,40 @@ public class FlutterWidgetTest {
     assertThat(widget("Scrollable"), hasSubCategories("Touch interactions"));
     assertThat(widget("Text"), hasSubCategories());
     assertThat(widget("Theme"), hasSubCategories());
+  }
+
+  @Test
+  public void patternFilters() {
+    assertThat(pattern("Theme"), matches(node("Theme")));
+    assertThat(pattern("_.*"), matches(node("_Internal")));
+    assertThat(pattern("_.*"), not(matches(node("foo"))));
+    assertThat(pattern("Foo"), not(matches(node(null))));
+  }
+
+  @Test
+  public void combinedPatternFilters() {
+    final Predicate<DiagnosticsNode> pattern = patterns("_.*", "Theme");
+    assertThat(pattern, matches(node("_Internal")));
+    assertThat(pattern, matches(node("Theme")));
+  }
+
+  @Test
+  public void privateClassFilter() {
+    assertThat(FlutterWidget.Filter.PRIVATE_CLASS, matches(node("_Private")));
+    assertThat(FlutterWidget.Filter.PRIVATE_CLASS, not(matches(node("Public"))));
+  }
+
+  static class FakeNode extends DiagnosticsNode {
+    private final String description;
+
+    public FakeNode(String description) {
+      super(null, null);
+      this.description = description;
+    }
+
+    @Override
+    public String getDescription() {
+      return description;
+    }
   }
 }
