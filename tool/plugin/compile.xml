@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+This script is the compiler-driver for the plugin tool and is not intended to be used elsewhere.
+Run this script with the current working directory set to the root directory of the Flutter plugin project.
+Include -D arguments to define these properties: idea.product, idea.version.
+-->
+
+<project
+    name="pluigin-compile"
+    default="compile">
+
+  <property environment="env"/>
+  <property name="idea.product" value="ideaIC"/>
+  <property name="idea.version" value="2017.1.3"/>
+  <property name="idea.home" location="artifacts/${idea.product}-${idea.version}"/>
+  <property name="javac2.home" value="artifacts/javac2"/>
+
+  <condition property="build.studio">
+    <contains string="${idea.product}" substring="android-studio"/>
+  </condition>
+
+  <patternset id="compiler.resources">
+    <exclude name="**/?*.java"/>
+    <exclude name="**/?*.form"/>
+    <exclude name="**/?*.class"/>
+    <exclude name="**/?*.kt"/>
+  </patternset>
+
+  <patternset id="ignored.files">
+    <exclude name="**/*~/**"/>
+    <exclude name="**/.DS_Store/**"/>
+    <exclude name="**/.git/**"/>
+  </patternset>
+
+  <path id="javac2.classpath">
+    <pathelement location="${javac2.home}/javac2.jar"/>
+    <pathelement location="${javac2.home}/jdom.jar"/>
+    <pathelement location="${javac2.home}/asm.jar"/>
+    <pathelement location="${javac2.home}/asm-all.jar"/>
+    <pathelement location="${javac2.home}/asm-commons.jar"/>
+    <pathelement location="${javac2.home}/jgoodies-forms.jar"/>
+  </path>
+
+  <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+
+  <target name="paths">
+    <path id="idea.jars">
+      <fileset dir="${idea.home}/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins/Dart/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${idea.home}/plugins">
+        <include name="**/lib/*.jar"/>
+      </fileset>
+    </path>
+
+    <path id="dartplugin.jars">
+      <fileset dir="${basedir}/artifacts/Dart/lib">
+        <include name="*.jar"/>
+      </fileset>
+    </path>
+
+    <path id="junit.jars">
+      <pathelement location="${idea.home}/lib/junit-*.jar"/>
+    </path>
+
+    <path id="src.sourcepath">
+      <dirset dir=".">
+        <include name="src"/>
+        <include name="resources"/>
+        <include name="gen"/>
+        <include name="third_party/intellij-plugins-dart/src"/>
+      </dirset>
+    </path>
+
+    <path id="studioSrc.sourcepath">
+      <dirset dir="flutter-studio">
+        <include name="src"/>
+      </dirset>
+    </path>
+  </target>
+
+  <target name="compile.studio" depends="paths, compile.idea" if="build.studio">
+    <mkdir dir="build/studio"/>
+    <echo message="compile flutter-studio"/>
+    <javac2 destdir="build/studio" memorymaximumsize="1000m" fork="true"
+            debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <compilerarg line="-encoding UTF-8 -source 8 -target 8 -g"/>
+      <classpath>
+        <path refid="idea.jars"/>
+        <path refid="dartplugin.jars"/>
+        <path location="build/classes"/>
+      </classpath>
+      <src refid="studioSrc.sourcepath"/>
+      <patternset refid="ignored.files"/>
+    </javac2>
+  </target>
+
+  <target name="compile.idea" depends="paths">
+    <mkdir dir="build/classes"/>
+    <echo message="compile flutter-intellij"/>
+    <javac2 destdir="build/classes" memorymaximumsize="1000m" fork="true"
+            debug="true" debuglevel="lines,vars,source" includeantruntime="false">
+      <compilerarg line="-encoding UTF-8 -source 8 -target 8 -g"/>
+      <classpath>
+        <path refid="idea.jars"/>
+        <path refid="dartplugin.jars"/>
+      </classpath>
+      <src refid="src.sourcepath"/>
+      <patternset refid="ignored.files"/>
+    </javac2>
+  </target>
+
+  <target name="compile" depends="compile.idea, compile.studio"/>
+
+</project>
