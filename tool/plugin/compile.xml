@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- Copyright 2000-2017 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file. -->
-
 <!--
 This script is the compiler-driver for the plugin tool and is not intended to be used elsewhere.
 Run this script with the current working directory set to the root directory of the Flutter plugin project.
