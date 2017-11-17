@@ -12,7 +12,7 @@ file.
 
 * Download and install the latest stable version of IntelliJ
   - https://www.jetbrains.com/idea/download/
-  - either the community edition (free) or Ultimate will work. We are currently using 2017.1.
+  - either the community edition (free) or Ultimate will work. We are currently using 2017.2.
 * Start IntelliJ
 * In the project structure dialog, configure an IntelliJ platform SDK
   - point it to the `Contents` directory in your just downloaded copy of IntelliJ Community Edition (e.g, `IntelliJ IDEA CE.app/Contents`)
