@@ -41,8 +41,10 @@ public class FlutterIconProvider extends IconProvider {
       if (!file.isInLocalFileSystem()) return null;
 
       // Project root.
-      if (Objects.equals(file.getPath(), project.getBaseDir().getPath())) {
-        return FlutterIcons.Flutter;
+      if (project.getBaseDir() != null) {
+        if (Objects.equals(file.getPath(), project.getBaseDir().getPath())) {
+          return FlutterIcons.Flutter;
+        }
       }
 
       final PubRoot root = PubRoot.forDirectory(file.getParent());

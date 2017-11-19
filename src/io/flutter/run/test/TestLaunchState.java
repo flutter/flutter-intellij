@@ -117,7 +117,13 @@ class TestLaunchState extends CommandLineState {
 
   private String getBaseDir() {
     final PubRoot root = config.getFields().getPubRoot(config.getProject());
-    return root != null ? root.getPath() : config.getProject().getBaseDir().getPath();
+    if (root != null) {
+      return root.getPath();
+    }
+    if (config.getProject().getBaseDir() == null) {
+      return null;
+    }
+    return config.getProject().getBaseDir().getPath();
   }
 
   @NotNull
