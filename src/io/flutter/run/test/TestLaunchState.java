@@ -110,20 +110,22 @@ class TestLaunchState extends CommandLineState {
     if (module != null) {
       console.addMessageFilter(new FlutterConsoleFilter(module));
     }
-    console.addMessageFilter(new DartRelativePathsConsoleFilter(project, getBaseDir()));
+    final String baseDir = getBaseDir();
+    if (baseDir != null) {
+      console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
+    }
     console.addMessageFilter(new UrlFilter());
     return console;
   }
 
+  @Nullable
   private String getBaseDir() {
     final PubRoot root = config.getFields().getPubRoot(config.getProject());
     if (root != null) {
       return root.getPath();
     }
-    if (config.getProject().getBaseDir() == null) {
-      return null;
-    }
-    return config.getProject().getBaseDir().getPath();
+    final VirtualFile baseDir = config.getProject().getBaseDir();
+    return baseDir == null ? null : baseDir.getPath();
   }
 
   @NotNull
