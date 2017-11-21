@@ -47,14 +47,11 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
   }
 
   private static boolean isProjectDirectory(@NotNull VirtualFile file, @Nullable Project project) {
-    if (!file.isDirectory()) {
-      return false;
-    }
-    //noinspection SimplifiableIfStatement
-    if (project == null || project.getBaseDir() == null) {
+    if (!file.isDirectory() || project == null) {
       return false;
     }
 
-    return project.getBaseDir().getPath().equals(file.getPath());
+    final VirtualFile baseDir = project.getBaseDir();
+    return baseDir != null && baseDir.getPath().equals(file.getPath());
   }
 }
