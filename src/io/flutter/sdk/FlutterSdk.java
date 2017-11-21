@@ -97,7 +97,7 @@ public class FlutterSdk {
     if (lib == null) {
       return null;
     }
-    return getFlutterFromDartSdkLibrary(lib, project.getBaseDir());
+    return getFlutterFromDartSdkLibrary(lib);
   }
 
   @Nullable
@@ -123,7 +123,7 @@ public class FlutterSdk {
   }
 
   @Nullable
-  private static FlutterSdk getFlutterFromDartSdkLibrary(Library lib, VirtualFile projectDir) {
+  private static FlutterSdk getFlutterFromDartSdkLibrary(Library lib) {
     final String[] urls = lib.getUrls(OrderRootType.CLASSES);
     for (String url : urls) {
       if (url.endsWith(DART_CORE_SUFFIX)) {
