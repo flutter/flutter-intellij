@@ -52,9 +52,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   private FlutterModuleWizardStep myStep;
   @NotNull
-  private FlutterCreateAdditionalSettings myAdditionalSettings = new FlutterCreateAdditionalSettings();
-  @NotNull
-  private FlutterCreateAdditionalSettingsFields mySettingsFields = new FlutterCreateAdditionalSettingsFields(myAdditionalSettings);
+  private final FlutterCreateAdditionalSettingsFields mySettingsFields =
+    new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings());
 
   @Override
   public String getName() {
@@ -222,7 +221,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @NotNull
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
-    return myAdditionalSettings;
+    return mySettingsFields.getAdditionalSettings();
   }
 
   @Nullable
