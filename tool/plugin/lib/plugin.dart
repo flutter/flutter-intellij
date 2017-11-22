@@ -58,6 +58,7 @@ script: ./tool/travis.sh
 
 # Testing product matrix - see gs://flutter_infra/flutter/intellij/.
 # IDEA_PRODUCT can be one of ideaIC, or android-studio-ide.
+# TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
 env:
 ''';
 
@@ -101,10 +102,6 @@ void createDir(String name) {
     log('creating $name/');
     dir.createSync(recursive: true);
   }
-}
-
-void createGitBranch(String relNumber) {
-  // TODO(messick) Create a git branch named "release_$relnumber", commit it.
 }
 
 Future<int> curl(String url, {String to}) async {
@@ -151,7 +148,7 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
-Future<int> genPluginXml(BuildSpec spec, String destDir) async {
+Future<File> genPluginXml(BuildSpec spec, String destDir) async {
   var file = await new File(p.join(rootPath, destDir, 'META-INF/plugin.xml'))
       .create(recursive: true);
   var dest = file.openWrite();
@@ -162,10 +159,10 @@ Future<int> genPluginXml(BuildSpec spec, String destDir) async {
       .transform(new LineSplitter())
       .forEach((l) => dest.writeln(substitueTemplateVariables(l, spec)));
   await dest.close();
-  return dest.done;
+  return await dest.done;
 }
 
-Future<int> genTravisYml(List<BuildSpec> specs) {
+void genTravisYml(List<BuildSpec> specs) {
   envLine(p, i, d) =>
       '  - IDEA_PRODUCT=$p IDEA_VERSION=$i DART_PLUGIN_VERSION=$d\n';
   var file = new File(p.join(rootPath, '.travis.yml'));
@@ -175,7 +172,6 @@ Future<int> genTravisYml(List<BuildSpec> specs) {
   }
   var contents = travisHeader + env;
   file.writeAsStringSync(contents, flush: true);
-  return new Future(() => 0);
 }
 
 bool isCacheDirectoryValid(Artifact artifact) {
@@ -774,14 +770,36 @@ class GenCommand extends ProductCommand {
   Future<int> doit() async {
     List json = readProductMatrix();
     var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
-    var result = await genPluginXml(spec, '.');
-    if (result == 0) {
-      result = await genTravisYml(specs);
+    log('writing pluginl.xml');
+    int value = 1;
+    var result = await genPluginXml(spec, 'resources');
+    if (result != null) {
+      log('writing .travis.yml');
+      genTravisYml(specs);
+      value = 0;
     }
     if (isReleaseMode) {
-      createGitBranch(release);
+      await createGitBranch(release);
     }
-    return new Future(() => result);
+    return new Future(() => value);
+  }
+
+  Future<int> createGitBranch(String relNumber) async {
+    // This is only called by the gen command when run in release mode,
+    // which means there were no uncommitted changes before gen ran.
+    // TODO(messick) Create a git branch named "release_$relNumber".
+    // Add modified files to the branch then commit it.
+    // The files are:
+    //   resources/META-INF/plugin.xml
+    //   .travis.yml
+    // Testing and debugging is likely to destroy the git repository
+    // so be sure to have a backup.
+    var gitDir = await GitDir.fromExisting(rootPath);
+    var branch = await gitDir.getCurrentBranch();
+    if (branch.branchName != "release_$relNumber") {
+
+    }
+    return new Future(() => 0);
   }
 
   makeSyntheticSpec(List specs) {
@@ -828,10 +846,22 @@ abstract class ProductCommand extends Command {
       rootPath = p.normalize(p.join(rootPath, rel));
     }
     specs = createBuildSpecs(this);
-    return await doit();
+    try {
+      return await doit();
+    } catch (ex, stack) {
+      log(ex.toString());
+      log(stack.toString());
+      return new Future(() => 1);
+    }
   }
 }
 
+/// This represents a BuildSpec that is used to generate the plugin.xml
+/// that is used during development. It needs to span all possible versions.
+/// The product-matrix.json file lists the versions in increasing build order.
+/// The first one is the earliest version used during development and the
+/// last one is the latest used during development. This BuildSpec combines
+/// those two.
 class SyntheticBuildSpec extends BuildSpec {
   Map alternate;
 
