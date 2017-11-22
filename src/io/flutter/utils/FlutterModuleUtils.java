@@ -118,31 +118,44 @@ public class FlutterModuleUtils {
 
   @Nullable
   public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
-    // Look for an XCode project file in `ios/`.
+    // Look for XCode metadata file in `ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile dir = root.getiOsDir();
-      if (dir != null) {
-        for (VirtualFile child : dir.getChildren()) {
-          if (FlutterUtils.isXcodeProjectFileName(child.getName())) {
-            return child;
-          }
-        }
+      final VirtualFile file = findPreferedXcodeMetadataFile(dir);
+      if (file != null) {
+        return file;
       }
     }
 
-    // Look for an XCode project file in `example/ios/`.
+    // Look for XCode metadata in `example/ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile exampleDir = root.getExampleDir();
       final VirtualFile iosDir = exampleDir == null ? null : exampleDir.findChild("ios");
-      if (iosDir != null) {
-        for (VirtualFile child : iosDir.getChildren()) {
-          if (FlutterUtils.isXcodeProjectFileName(child.getName())) {
-            return child;
-          }
-        }
+      final VirtualFile file = findPreferedXcodeMetadataFile(iosDir);
+      if (file != null) {
+        return file;
       }
     }
 
+    return null;
+  }
+
+  @Nullable
+  private static VirtualFile findPreferedXcodeMetadataFile(@Nullable VirtualFile iosDir) {
+    if (iosDir != null) {
+      // Prefer .xcworkspace.
+      for (VirtualFile child : iosDir.getChildren()) {
+        if (FlutterUtils.isXcodeWorkspaceFileName(child.getName())) {
+          return child;
+        }
+      }
+      // But fall-back to a project.
+      for (VirtualFile child : iosDir.getChildren()) {
+        if (FlutterUtils.isXcodeProjectFileName(child.getName())) {
+          return child;
+        }
+      }
+    }
     return null;
   }
 
