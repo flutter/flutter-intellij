@@ -35,6 +35,32 @@ const plugins = const {
   'io.flutter.as': '10139', // Currently unused.
 };
 
+const travisHeader = r'''
+language: java
+
+jdk:
+  - oraclejdk8
+
+install: true
+
+before_script:
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
+  - git clone https://github.com/flutter/flutter.git --depth 1
+  - export PATH="$PATH":`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin
+  - flutter config --no-analytics
+  - flutter doctor
+  - export FLUTTER_SDK=`pwd`/flutter
+
+# execution
+script: ./tool/travis.sh
+
+# Testing product matrix - see gs://flutter_infra/flutter/intellij/.
+# IDEA_PRODUCT can be one of ideaIC, or android-studio-ide.
+env:
+''';
+
 String rootPath;
 
 void addProductFlags(ArgParser argParser, String verb) {
@@ -61,11 +87,8 @@ void copyResources({String from, String to}) {
 }
 
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
-  var contents =
-      new File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
-  var map = JSON.decode(contents);
   var specs = new List<BuildSpec>();
-  List input = map['list'];
+  List input = readProductMatrix();
   input.forEach((json) {
     specs.add(new BuildSpec.fromJson(json, command.release));
   });
@@ -78,6 +101,10 @@ void createDir(String name) {
     log('creating $name/');
     dir.createSync(recursive: true);
   }
+}
+
+void createGitBranch(String relNumber) {
+  // TODO(messick) Create a git branch named "release_$relnumber", commit it.
 }
 
 Future<int> curl(String url, {String to}) async {
@@ -138,6 +165,51 @@ Future<int> genPluginXml(BuildSpec spec, String destDir) async {
   return dest.done;
 }
 
+Future<int> genTravisYml(List<BuildSpec> specs) {
+  envLine(p, i, d) =>
+      '  - IDEA_PRODUCT=$p IDEA_VERSION=$i DART_PLUGIN_VERSION=$d\n';
+  var file = new File(p.join(rootPath, '.travis.yml'));
+  String env = '';
+  for (var spec in specs) {
+    env += envLine(spec.ideaProduct, spec.ideaVersion, spec.dartPluginVersion);
+  }
+  var contents = travisHeader + env;
+  file.writeAsStringSync(contents, flush: true);
+  return new Future(() => 0);
+}
+
+bool isCacheDirectoryValid(Artifact artifact) {
+  String dirPath = artifact.outPath;
+  Directory dir = new Directory(dirPath);
+  if (!dir.existsSync()) {
+    return false;
+  }
+  String filePath = artifact.file;
+  File file = new File(filePath);
+  if (!file.existsSync()) {
+    throw 'Artifact file missing: $filePath';
+  }
+  return isNewer(dir, file);
+}
+
+bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
+  return newer.statSync().modified.isAfter(older.statSync().modified);
+}
+
+bool isTravisFileValid() {
+  String travisPath = p.join(rootPath, '.travis.yml');
+  File travisFile = new File(travisPath);
+  if (!travisFile.existsSync()) {
+    return false;
+  }
+  String matrixPath = p.join(rootPath, 'product-matrix.json');
+  File matrixFile = new File(matrixPath);
+  if (!matrixFile.existsSync()) {
+    throw 'product-matrix.json is missing';
+  }
+  return isNewer(travisFile, matrixFile);
+}
+
 Future<int> jar(String directory, String outFile) async {
   List<String> args = ['cf', p.absolute(outFile)];
   args.addAll(new Directory(directory)
@@ -176,7 +248,11 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       String name = branch.branchName;
       var result = name == "release_${cmd.release}";
       if (result) {
-        return new Future(() => result);
+        if (isTravisFileValid()) {
+          return new Future(() => result);
+        } else {
+          log('the .travis.yml file needs updating: plugin gen');
+        }
       } else {
         log('the current git branch must be named "$name"');
       }
@@ -187,6 +263,13 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     log('the currect working directory is not managed by git: $rootPath');
   }
   return new Future(() => false);
+}
+
+List readProductMatrix() {
+  var contents =
+      new File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
+  var map = JSON.decode(contents);
+  return map['list'];
 }
 
 Future<int> removeAll(String dir) async {
@@ -336,7 +419,7 @@ class ArtifactManager {
     return artifact;
   }
 
-  Future<int> provision() async {
+  Future<int> provision({rebuildCache = false}) async {
     separator('Getting artifacts');
     createDir('artifacts');
 
@@ -345,14 +428,21 @@ class ArtifactManager {
       final String path = 'artifacts/${artifact.file}';
       if (FileSystemEntity.isFileSync(path)) {
         log('$path exists in cache');
-        continue;
+      } else {
+        log('downloading $path...');
+        result = await curl('$base/${artifact.file}', to: path);
+        if (result != 0) {
+          log('download failed');
+          break;
+        }
       }
 
-      log('downloading $path...');
-      result = await curl('$base/${artifact.file}', to: path);
-      if (result != 0) {
-        log('download failed');
-        break;
+      // clear unpacked cache
+      if (rebuildCache || !FileSystemEntity.isDirectorySync(artifact.outPath)) {
+        removeAll(artifact.outPath);
+      }
+      if (isCacheDirectoryValid(artifact)) {
+        continue;
       }
 
       // expand
@@ -396,7 +486,14 @@ class ArtifactManager {
 class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  BuildCommand(this.runner);
+  BuildCommand(this.runner) {
+    argParser.addFlag('unpack',
+        abbr: 'u',
+        help: 'Unpack the artifact files during provisioning, '
+            'even if the cache appears fresh.\n'
+            'This flag is ignored if --release is given.',
+        defaultsTo: false);
+  }
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
@@ -405,13 +502,17 @@ class BuildCommand extends ProductCommand {
 
   Future<int> doit() async {
     if (isReleaseMode) {
+      if (argResults['unpack']) {
+        separator('Release mode (--release) implies --unpack');
+      }
       if (!await performReleaseChecks(this)) {
         return new Future(() => 1);
       }
     }
     int result = 0;
     for (var spec in specs) {
-      result = await spec.artifacts.provision();
+      result = await spec.artifacts
+          .provision(rebuildCache: isReleaseMode || argResults['unpack']);
       if (result != 0) {
         return new Future(() => result);
       }
@@ -454,7 +555,6 @@ class BuildCommand extends ProductCommand {
         log('zip failed: ${result.toString()}');
         return new Future(() => result);
       }
-      break; //TODO remove
     }
     return 0;
   }
@@ -657,20 +757,35 @@ class DeployCommand extends ProductCommand {
 /// Generate the plugin.xml from the plugin.xml.template file.
 /// If the --release argument is given, create a git branch and
 /// commit the new file to it, assuming the release checks pass.
-class GenCommand extends Command {
+/// Note: The product-matrix.json file includes a build spec for the
+/// EAP version at the end. When the EAP version is released that needs
+/// to be updated.
+class GenCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   GenCommand(this.runner);
 
   String get description =>
-      'Generate a valid plugin.xml and .travis.yaml for the Flutter plugin.\n'
+      'Generate a valid plugin.xml and .travis.yml for the Flutter plugin.\n'
       'The plugin.xml.template and product-matrix.json are used as input.';
 
   String get name => 'gen';
 
-  Future<int> run() async {
-    // TODO(messick): Implement GenCommand.
-    throw 'unimplemented';
+  Future<int> doit() async {
+    List json = readProductMatrix();
+    var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
+    var result = await genPluginXml(spec, '.');
+    if (result == 0) {
+      result = await genTravisYml(specs);
+    }
+    if (isReleaseMode) {
+      createGitBranch(release);
+    }
+    return new Future(() => result);
+  }
+
+  makeSyntheticSpec(List specs) {
+    return new SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
   }
 }
 
@@ -715,6 +830,15 @@ abstract class ProductCommand extends Command {
     specs = createBuildSpecs(this);
     return await doit();
   }
+}
+
+class SyntheticBuildSpec extends BuildSpec {
+  Map alternate;
+
+  SyntheticBuildSpec.fromJson(Map json, String releaseNum, this.alternate)
+      : super.fromJson(json, releaseNum);
+
+  String get untilBuild => alternate['untilBuild'];
 }
 
 /// Build the tests if necessary then
