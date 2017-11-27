@@ -10,12 +10,15 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
 import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
-import org.dartlang.vm.service.consumer.SuccessConsumer;
-import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.EventKind;
+import org.dartlang.vm.service.element.Instance;
+import org.dartlang.vm.service.element.InstanceRef;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +37,6 @@ public class InspectorService implements Disposable {
    * Group name to to manage keeping alive nodes in the tree referenced by the inspector.
    */
   private final String groupName;
-  private final SuccessConsumer debugStreamConsumer;
   private final FlutterDebugProcess debugProcess;
   private final VmService vmService;
   private final Set<InspectorServiceClient> clients;
@@ -53,8 +55,8 @@ public class InspectorService implements Disposable {
       }
 
       @Override
-      public void received(String s, Event event) {
-        onVmServiceReceived(s, event);
+      public void received(String streamId, Event event) {
+        onVmServiceReceived(streamId, event);
       }
 
       @Override
@@ -63,20 +65,7 @@ public class InspectorService implements Disposable {
       }
     });
 
-    // We have to provide a success consumer even though we don't really care
-    // about the output. TODO(jacobr): is there some no-op success consumer we
-    // can use?
-    debugStreamConsumer = new SuccessConsumer() {
-      @Override
-      public void received(Success success) {
-      }
-
-      @Override
-      public void onError(RPCError error) {
-      }
-    };
-
-    vmService.streamListen("Extension", debugStreamConsumer);
+    vmService.streamListen("Extension", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
   }
 
   public CompletableFuture<DiagnosticsNode> getRoot(FlutterTreeType type) {
@@ -256,7 +245,7 @@ public class InspectorService implements Disposable {
 
   @Override
   public void dispose() {
-    vmService.streamCancel("Extension", debugStreamConsumer);
+    vmService.streamCancel("Extension", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     // TODO(jacobr): dispose everything that needs to be disposed of.
   }
 
@@ -267,8 +256,8 @@ public class InspectorService implements Disposable {
     }
   }
 
-  private void onVmServiceReceived(String s, Event event) {
-    switch (s) {
+  private void onVmServiceReceived(String streamId, Event event) {
+    switch (streamId) {
       case VmService.ISOLATE_STREAM_ID:
         if (event.getKind() == EventKind.IsolateStart) {
           maybeDisposeInspectorLibrary();
