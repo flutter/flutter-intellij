@@ -415,7 +415,7 @@ class ArtifactManager {
     return artifact;
   }
 
-  Future<int> provision({rebuildCache = false}) async {
+  Future<int> provision({bool rebuildCache = false}) async {
     separator('Getting artifacts');
     createDir('artifacts');
 
@@ -779,27 +779,11 @@ class GenCommand extends ProductCommand {
       value = 0;
     }
     if (isReleaseMode) {
-      await createGitBranch(release);
+      if (!await performReleaseChecks(this)) {
+        return new Future(() => 1);
+      }
     }
     return new Future(() => value);
-  }
-
-  Future<int> createGitBranch(String relNumber) async {
-    // This is only called by the gen command when run in release mode,
-    // which means there were no uncommitted changes before gen ran.
-    // TODO(messick) Create a git branch named "release_$relNumber".
-    // Add modified files to the branch then commit it.
-    // The files are:
-    //   resources/META-INF/plugin.xml
-    //   .travis.yml
-    // Testing and debugging is likely to destroy the git repository
-    // so be sure to have a backup.
-    var gitDir = await GitDir.fromExisting(rootPath);
-    var branch = await gitDir.getCurrentBranch();
-    if (branch.branchName != "release_$relNumber") {
-
-    }
-    return new Future(() => 0);
   }
 
   makeSyntheticSpec(List specs) {
