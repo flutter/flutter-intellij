@@ -26,6 +26,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.PositionMapper;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +34,6 @@ import org.jetbrains.annotations.Nullable;
  * Runs a Flutter test configuration in the debugger.
  */
 public class DebugTestRunner extends GenericProgramRunner {
-
   @NotNull
   @Override
   public String getRunnerId() {
@@ -51,7 +51,7 @@ public class DebugTestRunner extends GenericProgramRunner {
       return false;
     }
 
-    final TestConfig config = (TestConfig) profile;
+    final TestConfig config = (TestConfig)profile;
     return config.getFields().getScope() != TestFields.Scope.DIRECTORY;
   }
 
@@ -59,7 +59,7 @@ public class DebugTestRunner extends GenericProgramRunner {
   @Override
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
     throws ExecutionException {
-    return runInDebugger((TestLaunchState) state, env);
+    return runInDebugger((TestLaunchState)state, env);
   }
 
   protected RunContentDescriptor runInDebugger(@NotNull TestLaunchState launcher, @NotNull ExecutionEnvironment env)
@@ -91,6 +91,7 @@ public class DebugTestRunner extends GenericProgramRunner {
    * Provides observatory URI, as received from the test process.
    */
   private static final class Connector implements ObservatoryConnector {
+    private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
     private final ProcessListener listener;
     private String observatoryUri;
 
@@ -102,17 +103,21 @@ public class DebugTestRunner extends GenericProgramRunner {
             return;
           }
 
-          final String text = event.getText().trim();
+          final String text = event.getText();
           if (FlutterSettings.getInstance().isVerboseLogging()) {
-            LOG.info("[<-- " + text + "]");
+            LOG.info("[<-- " + text.trim() + "]");
           }
 
-          if (!text.startsWith("[{") || !text.endsWith("}]")) {
-            return; // Ignore anything not in our expected format.
-          }
+          stdoutParser.appendOutput(text);
 
-          final String json = text.substring(1, text.length() - 1);
-          dispatchJson(json);
+          for (String line : stdoutParser.getAvailableLines()) {
+            if (line.startsWith("[{")) {
+              line = line.trim();
+
+              final String json = line.substring(1, line.length() - 1);
+              dispatchJson(json);
+            }
+          }
         }
 
         @Override
