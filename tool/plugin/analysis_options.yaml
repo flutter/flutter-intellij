@@ -4,10 +4,16 @@ analyzer:
 # Lint rules and documentation, see http://dart-lang.github.io/linter/lints
 linter:
   rules:
+    - await_only_futures
     - cancel_subscriptions
+    - directives_ordering
     - hash_and_equals
     - iterable_contains_unrelated_type
     - list_remove_unrelated_type
+    - omit_local_variable_types
     - test_types_in_equals
+    - type_annotate_public_apis
+    - type_init_formals
+    - unawaited_futures
     - unrelated_type_equality_checks
     - valid_regexps

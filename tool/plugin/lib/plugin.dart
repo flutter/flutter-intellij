@@ -12,8 +12,8 @@ import 'package:path/path.dart' as p;
 
 import 'src/lint.dart';
 
-main(List<String> args) async {
-  BuildCommandRunner runner = new BuildCommandRunner();
+Future<int> main(List<String> args) async {
+  var runner = new BuildCommandRunner();
 
   runner.addCommand(new LintCommand(runner));
   runner.addCommand(new AntBuildCommand(runner));
@@ -23,19 +23,19 @@ main(List<String> args) async {
   runner.addCommand(new GenCommand(runner));
 
   try {
-    exit(await runner.run(args) ?? 0);
+    return await runner.run(args) ?? 0;
   } on UsageException catch (e) {
     print('$e');
-    exit(1);
+    return 1;
   }
 }
 
-const plugins = const {
+const Map<String, String> plugins = const {
   'io.flutter': '9212',
   'io.flutter.as': '10139', // Currently unused.
 };
 
-const travisHeader = r'''
+const String travisHeader = r'''
 language: java
 
 jdk:
@@ -89,7 +89,7 @@ void copyResources({String from, String to}) {
 
 List<BuildSpec> createBuildSpecs(ProductCommand command) {
   var specs = new List<BuildSpec>();
-  List input = readProductMatrix();
+  var input = readProductMatrix();
   input.forEach((json) {
     specs.add(new BuildSpec.fromJson(json, command.release));
   });
@@ -97,7 +97,7 @@ List<BuildSpec> createBuildSpecs(ProductCommand command) {
 }
 
 void createDir(String name) {
-  final Directory dir = new Directory(name);
+  final dir = new Directory(name);
   if (!dir.existsSync()) {
     log('creating $name/');
     dir.createSync(recursive: true);
@@ -109,7 +109,7 @@ Future<int> curl(String url, {String to}) async {
 }
 
 Future<int> deleteBuildContents() async {
-  final Directory dir = new Directory(p.join(rootPath, 'build'));
+  final dir = new Directory(p.join(rootPath, 'build'));
   if (!dir.existsSync()) throw 'No build directory found';
   var args = new List<String>();
   args.add('-rf');
@@ -124,7 +124,7 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
     log(_shorten('$cmd ${args.join(' ')}'));
   }
 
-  final Process process = await Process.start(cmd, args, workingDirectory: cwd);
+  final process = await Process.start(cmd, args, workingDirectory: cwd);
   _toLineStream(process.stderr, SYSTEM_ENCODING).listen(log);
   _toLineStream(process.stdout, SYSTEM_ENCODING).listen(log);
 
@@ -132,7 +132,7 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
 }
 
 List<File> findJars(String path) {
-  final Directory dir = new Directory(path);
+  final dir = new Directory(path);
   return dir
       .listSync(recursive: true, followLinks: false)
       .where((e) => e.path.endsWith('.jar'))
@@ -140,7 +140,7 @@ List<File> findJars(String path) {
 }
 
 List<String> findJavaFiles(String path) {
-  final Directory dir = new Directory(path);
+  final dir = new Directory(path);
   return dir
       .listSync(recursive: true, followLinks: false)
       .where((e) => e.path.endsWith('.java'))
@@ -163,10 +163,10 @@ Future<File> genPluginXml(BuildSpec spec, String destDir) async {
 }
 
 void genTravisYml(List<BuildSpec> specs) {
-  envLine(p, i, d) =>
+  String envLine(String p, String i, String d) =>
       '  - IDEA_PRODUCT=$p IDEA_VERSION=$i DART_PLUGIN_VERSION=$d\n';
   var file = new File(p.join(rootPath, '.travis.yml'));
-  String env = '';
+  var env = '';
   for (var spec in specs) {
     env += envLine(spec.ideaProduct, spec.ideaVersion, spec.dartPluginVersion);
   }
@@ -175,13 +175,13 @@ void genTravisYml(List<BuildSpec> specs) {
 }
 
 bool isCacheDirectoryValid(Artifact artifact) {
-  String dirPath = artifact.outPath;
-  Directory dir = new Directory(dirPath);
+  var dirPath = artifact.outPath;
+  var dir = new Directory(dirPath);
   if (!dir.existsSync()) {
     return false;
   }
-  String filePath = artifact.file;
-  File file = new File(filePath);
+  var filePath = artifact.file;
+  var file = new File(filePath);
   if (!file.existsSync()) {
     throw 'Artifact file missing: $filePath';
   }
@@ -193,13 +193,13 @@ bool isNewer(FileSystemEntity newer, FileSystemEntity older) {
 }
 
 bool isTravisFileValid() {
-  String travisPath = p.join(rootPath, '.travis.yml');
-  File travisFile = new File(travisPath);
+  var travisPath = p.join(rootPath, '.travis.yml');
+  var travisFile = new File(travisPath);
   if (!travisFile.existsSync()) {
     return false;
   }
-  String matrixPath = p.join(rootPath, 'product-matrix.json');
-  File matrixFile = new File(matrixPath);
+  var matrixPath = p.join(rootPath, 'product-matrix.json');
+  var matrixFile = new File(matrixPath);
   if (!matrixFile.existsSync()) {
     throw 'product-matrix.json is missing';
   }
@@ -207,7 +207,7 @@ bool isTravisFileValid() {
 }
 
 Future<int> jar(String directory, String outFile) async {
-  List<String> args = ['cf', p.absolute(outFile)];
+  var args = ['cf', p.absolute(outFile)];
   args.addAll(new Directory(directory)
       .listSync(followLinks: false)
       .map((f) => p.basename(f.path)));
@@ -220,9 +220,9 @@ void log(String s, {bool indent: true}) {
 }
 
 Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
-  final Directory dir = new Directory(p.join(rootPath, 'artifacts'));
+  final dir = new Directory(p.join(rootPath, 'artifacts'));
   if (!dir.existsSync()) throw 'No artifacts directory found';
-  String file = plugins[spec.pluginId];
+  var file = plugins[spec.pluginId];
   var args = new List<String>();
   args.add(p.join(rootPath, 'build', file));
   args.add(cmd.archiveFilePath(spec));
@@ -241,7 +241,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     var isClean = await gitDir.isWorkingTreeClean();
     if (isClean) {
       var branch = await gitDir.getCurrentBranch();
-      String name = branch.branchName;
+      var name = branch.branchName;
       var result = name == "release_${cmd.release}";
       if (result) {
         if (isTravisFileValid()) {
@@ -292,9 +292,9 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
     }
   }
 
-  int start = line.indexOf('@');
+  var start = line.indexOf('@');
   while (start >= 0) {
-    int end = line.indexOf('@', start + 1);
+    var end = line.indexOf('@', start + 1);
     var name = line.substring(start + 1, end);
     line = line.replaceRange(start, end + 1, valueOf(name));
     if (end < line.length - 1) {
@@ -307,7 +307,7 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
 Future<int> zip(String directory, String outFile) async {
   var dest = p.absolute(outFile);
   createDir(p.dirname(dest));
-  List<String> args = ['-r', dest, p.basename(directory)];
+  var args = ['-r', dest, p.basename(directory)];
   return await exec('zip', args, cwd: p.dirname(directory));
 }
 
@@ -315,13 +315,13 @@ void _copyFile(File file, Directory to) {
   if (!to.existsSync()) {
     to.createSync(recursive: true);
   }
-  final File target = new File(p.join(to.path, p.basename(file.path)));
+  final target = new File(p.join(to.path, p.basename(file.path)));
   target.writeAsBytesSync(file.readAsBytesSync());
 }
 
 void _copyResources(Directory from, Directory to) {
-  for (FileSystemEntity entity in from.listSync(followLinks: false)) {
-    final String basename = p.basename(entity.path);
+  for (var entity in from.listSync(followLinks: false)) {
+    final basename = p.basename(entity.path);
     if (basename.endsWith('.java') ||
         basename.endsWith('.kt') ||
         basename.endsWith('.form') ||
@@ -419,9 +419,9 @@ class ArtifactManager {
     separator('Getting artifacts');
     createDir('artifacts');
 
-    int result = 0;
-    for (Artifact artifact in artifacts) {
-      final String path = 'artifacts/${artifact.file}';
+    var result = 0;
+    for (var artifact in artifacts) {
+      final path = 'artifacts/${artifact.file}';
       if (FileSystemEntity.isFileSync(path)) {
         log('$path exists in cache');
       } else {
@@ -435,7 +435,7 @@ class ArtifactManager {
 
       // clear unpacked cache
       if (rebuildCache || !FileSystemEntity.isDirectorySync(artifact.outPath)) {
-        removeAll(artifact.outPath);
+        await removeAll(artifact.outPath);
       }
       if (isCacheDirectoryValid(artifact)) {
         continue;
@@ -505,7 +505,7 @@ class BuildCommand extends ProductCommand {
         return new Future(() => 1);
       }
     }
-    int result = 0;
+    var result = 0;
     for (var spec in specs) {
       result = await spec.artifacts
           .provision(rebuildCache: isReleaseMode || argResults['unpack']);
@@ -514,7 +514,7 @@ class BuildCommand extends ProductCommand {
       }
 
       separator('Building flutter-intellij.jar');
-      removeAll('build');
+      await removeAll('build');
       result = await runner.javac2(spec);
       if (result != 0) {
         return new Future(() => result);
@@ -582,7 +582,7 @@ class BuildCommandRunner extends CommandRunner {
       List<String> sources}) async {
     //final Directory javacDir = new Directory('artifacts/${artifacts.javac.output}');
 
-    final List<String> args = [
+    final args = [
       '-d',
       destdir,
       '-encoding',
@@ -603,7 +603,7 @@ class BuildCommandRunner extends CommandRunner {
 
   // Use this to compile plugin sources to get forms processed.
   Future<int> javac2(BuildSpec spec) async {
-    String args = '''
+    var args = '''
 -f tool/plugin/compile.xml
 -Didea.product=${spec.ideaProduct}
 -Didea.version=${spec.ideaVersion}
@@ -647,7 +647,7 @@ class BuildSpec {
 
   bool get isReleaseMode => release != null;
 
-  createArtifacts() {
+  void createArtifacts() {
     if (ideaProduct == 'android-studio-ide') {
       product = artifacts.add(new Artifact(
           '$ideaProduct-$ideaVersion-linux.zip',
@@ -691,7 +691,7 @@ class DeployCommand extends ProductCommand {
     String password;
     try {
       // Detect test mode early to keep stdio clean for the test results parser.
-      bool mode = stdin.echoMode;
+      var mode = stdin.echoMode;
       stdout.writeln(
           'Please enter the username and password for the JetBrains plugin repository');
       stdout.write('Username: ');
@@ -705,7 +705,7 @@ class DeployCommand extends ProductCommand {
       username = "test";
     }
 
-    Directory directory = Directory.systemTemp.createTempSync('plugin');
+    var directory = Directory.systemTemp.createTempSync('plugin');
     tempDir = directory.path;
     var file = new File('$tempDir/.content');
     file.writeAsStringSync(password, flush: true);
@@ -713,7 +713,7 @@ class DeployCommand extends ProductCommand {
     var value = 0;
     try {
       for (var spec in specs) {
-        String filePath = archiveFilePath(spec);
+        var filePath = archiveFilePath(spec);
         value = await upload(filePath, plugins[spec.pluginId]);
         if (value != 0) {
           return value;
@@ -731,7 +731,7 @@ class DeployCommand extends ProductCommand {
       throw 'File not found: $filePath';
     }
     log("uploading $filePath");
-    String args = '''
+    var args = '''
 -i 
 -F userName="${username}" 
 -F password="<${tempDir}/.content" 
@@ -740,8 +740,7 @@ class DeployCommand extends ProductCommand {
 "https://plugins.jetbrains.com/plugin/uploadPlugin"
 ''';
 
-    final Process process =
-        await Process.start('curl', args.split(new RegExp(r'\s')));
+    final process = await Process.start('curl', args.split(new RegExp(r'\s')));
     var result = await process.exitCode;
     if (result != 0) {
       log('Upload failed: ${result.toString()} for file: $filePath');
@@ -768,10 +767,10 @@ class GenCommand extends ProductCommand {
   String get name => 'gen';
 
   Future<int> doit() async {
-    List json = readProductMatrix();
+    var json = readProductMatrix();
     var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
     log('writing pluginl.xml');
-    int value = 1;
+    var value = 1;
     var result = await genPluginXml(spec, 'resources');
     if (result != null) {
       log('writing .travis.yml');
@@ -786,9 +785,8 @@ class GenCommand extends ProductCommand {
     return new Future(() => value);
   }
 
-  makeSyntheticSpec(List specs) {
-    return new SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
-  }
+  SyntheticBuildSpec makeSyntheticSpec(List specs) =>
+      new SyntheticBuildSpec.fromJson(specs[0], release, specs[2]);
 }
 
 abstract class ProductCommand extends Command {
@@ -815,8 +813,8 @@ abstract class ProductCommand extends Command {
   }
 
   String archiveFilePath(BuildSpec spec) {
-    String subDir = isReleaseMode ? 'release_$release' : '';
-    String filePath = p.join(
+    var subDir = isReleaseMode ? 'release_$release' : '';
+    var filePath = p.join(
         rootPath, 'artifacts', subDir, spec.version, 'flutter-intellij.zip');
     return filePath;
   }
@@ -884,12 +882,12 @@ class TestCommand extends ProductCommand {
       // TODO(messick) Finish the implementation of TestCommand.
       separator('Compiling test sources');
 
-      List<File> jars = []
+      var jars = []
         ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
         ..addAll(
             findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
 
-      List<String> sourcepath = [
+      var sourcepath = [
         'testSrc',
         'resources',
         'gen',

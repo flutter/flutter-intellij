@@ -31,7 +31,7 @@ class LintCommand extends Command {
   }
 
   void printApiUsage() {
-    final ProcessResult result = Process.runSync(
+    final result = Process.runSync(
       'git',
       // Note: extra quotes added so grep doesn't match this file.
       ['grep', 'import com.jetbrains.' 'lang.dart.'],
@@ -39,7 +39,7 @@ class LintCommand extends Command {
     final String imports = result.stdout.trim();
 
     // path:import
-    final Map<String, List<String>> usages = {};
+    final usages = {};
 
     imports.split('\n').forEach((String line) {
       if (line
@@ -48,9 +48,9 @@ class LintCommand extends Command {
         return;
       }
 
-      int index = line.indexOf(':');
-      String place = line.substring(0, index);
-      String import = line.substring(index + 1);
+      var index = line.indexOf(':');
+      var place = line.substring(0, index);
+      var import = line.substring(index + 1);
       if (import.startsWith('import ')) import = import.substring(7);
       if (import.endsWith(';')) import = import.substring(0, import.length - 1);
       usages.putIfAbsent(import, () => []);
@@ -64,7 +64,7 @@ class LintCommand extends Command {
     print('${keys.length} separate Dart plugin APIs used:');
     print('------');
 
-    for (String import in keys) {
+    for (var import in keys) {
       print('$import:');
       List<String> places = usages[import];
       places.forEach((String place) => print('  $place'));
@@ -74,15 +74,15 @@ class LintCommand extends Command {
 
   /// Return `true` if an import violation was found.
   bool checkForBadImports() {
-    final List<String> proscribedImports = [
+    final proscribedImports = [
       'com.android.annotations.NonNull',
       'javax.annotation.Nullable'
     ];
 
-    for (String import in proscribedImports) {
+    for (var import in proscribedImports) {
       print('Checking for import of "$import"...');
 
-      final ProcessResult result = Process.runSync(
+      final result = Process.runSync(
         'git',
         ['grep', 'import $import;'],
       );
