@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,10 +28,6 @@ import org.jetbrains.annotations.NotNull;
  */
 public class DaemonConsoleView extends ConsoleViewImpl {
   private static final Logger LOG = Logger.getInstance(DaemonConsoleView.class);
-
-  public DaemonConsoleView(@NotNull final Project project, @NotNull final GlobalSearchScope searchScope) {
-    super(project, searchScope, true, false);
-  }
 
   /**
    * Sets up a launcher to use a DaemonConsoleView.
@@ -54,6 +51,13 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     launcher.setConsoleBuilder(builder);
   }
 
+  private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
+  private boolean hasPrintedText;
+
+  public DaemonConsoleView(@NotNull final Project project, @NotNull final GlobalSearchScope searchScope) {
+    super(project, searchScope, true, false);
+  }
+
   @Override
   public void print(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
     if (FlutterSettings.getInstance().isVerboseLogging()) {
@@ -61,26 +65,30 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       return;
     }
 
-    final String trimmed = text.trim();
-
-    if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
-      LOG.info(trimmed);
+    if (text.trim().startsWith("Observatory listening on http")) {
       return;
     }
 
-    if (trimmed.contains("\n")) {
-      super.print(text, contentType);
-      return;
-    }
+    stdoutParser.appendOutput(text);
 
-    if (trimmed.startsWith("Observatory listening on http")) {
-      return;
-    }
+    for (String line : stdoutParser.getAvailableLines()) {
+      final String trimmed = line.trim();
 
-    if (trimmed.startsWith("Diagnostic server listening on http")) {
-      return;
-    }
+      if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
+        LOG.info(trimmed);
+        return;
+      }
+      else {
+        // We're seeing a spurious newline before some launches; this removed any single
+        // newline that occur before we've printed text.
+        if (!hasPrintedText && text.equals(("\n"))) {
+          continue;
+        }
 
-    super.print(text, contentType);
+        hasPrintedText = true;
+
+        super.print(text, contentType);
+      }
+    }
   }
 }

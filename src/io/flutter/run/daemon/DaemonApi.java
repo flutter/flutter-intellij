@@ -14,6 +14,7 @@ import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,6 +46,8 @@ public class DaemonApi {
   @NotNull private final Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
+
+  private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
   /**
    * A ring buffer holding the last few lines that the process sent to stderr.
@@ -95,7 +98,6 @@ public class DaemonApi {
    */
   void listen(@NotNull ProcessHandler process, @NotNull DaemonEvent.Listener listener) {
     process.addProcessListener(new ProcessAdapter() {
-
       @Override
       public void onTextAvailable(ProcessEvent event, Key outputType) {
         if (outputType.equals(ProcessOutputTypes.STDERR)) {
@@ -104,7 +106,8 @@ public class DaemonApi {
           if (last != null && !last.endsWith("\n")) {
             stderr.removeLast();
             stderr.add(last + event.getText());
-          } else {
+          }
+          else {
             stderr.add(event.getText());
           }
 
@@ -112,24 +115,25 @@ public class DaemonApi {
           while (stderr.size() > STDERR_LINES_TO_KEEP) {
             stderr.removeFirst();
           }
-
-          return;
-        } else if (!outputType.equals(ProcessOutputTypes.STDOUT)) {
-          return; // Not sure what this is.
         }
+        else if (outputType.equals(ProcessOutputTypes.STDOUT)) {
+          final String text = event.getText();
 
-        final String text = event.getText().trim();
+          if (FlutterSettings.getInstance().isVerboseLogging()) {
+            LOG.info("[<-- " + text.trim() + "]");
+          }
 
-        if (FlutterSettings.getInstance().isVerboseLogging()) {
-          LOG.info("[<-- " + text + "]");
+          stdoutParser.appendOutput(text);
+
+          for (String line : stdoutParser.getAvailableLines()) {
+            if (line.startsWith("[{")) {
+              line = line.trim();
+
+              final String json = line.substring(1, line.length() - 1);
+              dispatch(json, listener);
+            }
+          }
         }
-
-        if (!text.startsWith("[{") || !text.endsWith("}]")) {
-          return; // Ignore anything not in our expected format.
-        }
-
-        final String json = text.substring(1, text.length() - 1);
-        dispatch(json, listener);
       }
 
       @Override
@@ -262,7 +266,7 @@ public class DaemonApi {
    * Returns the last lines written to stderr.
    */
   public String getStderrTail() {
-    final String[] lines = stderr.toArray(new String[] {});
+    final String[] lines = stderr.toArray(new String[]{});
     return String.join("", lines);
   }
 
