@@ -42,7 +42,6 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
    */
   @Override
   protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
-
     if (!isFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();

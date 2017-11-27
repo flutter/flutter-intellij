@@ -222,10 +222,17 @@ public class FlutterUtils {
         return false;
       }
 
-      final Object flutterEntry = yaml.get("dependencies");
+      // Special case the 'flutter' package itself - this allows us to run their unit tests from IntelliJ.
+      final Object name = yaml.get("name");
+      if ("flutter".equals(name)) {
+        return true;
+      }
+
+      // Check for a dependency on the flutter package.
+      final Object dependencies = yaml.get("dependencies");
       //noinspection SimplifiableIfStatement
-      if (flutterEntry instanceof Map) {
-        return ((Map)flutterEntry).containsKey("flutter");
+      if (dependencies instanceof Map) {
+        return ((Map)dependencies).containsKey("flutter");
       }
 
       return false;
