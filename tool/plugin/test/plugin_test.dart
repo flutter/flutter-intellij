@@ -75,7 +75,7 @@ void main() {
         "--no-as",
         "--no-ij"
       ]).whenComplete(() {
-        String dir = (runner.commands['deploy'] as DeployCommand).tempDir;
+        var dir = (runner.commands['deploy'] as DeployCommand).tempDir;
         expectAsync0(() => new Directory(dir).existsSync() == false);
       });
     });
@@ -110,14 +110,14 @@ void main() {
       await runner.run(["-d../..", "build"]).whenComplete(() {
         cmd = (runner.commands['build'] as TestBuildCommand);
       });
-      BuildSpec spec = cmd.specs[0];
+      var spec = cmd.specs[0];
       await removeAll('../../build/classes');
       await genPluginXml(spec, 'build/classes');
       var file = new File("../../build/classes/META-INF/plugin.xml");
       expect(file.existsSync(), isTrue);
       var content = file.readAsStringSync();
       expect(content.length, greaterThan(10000));
-      int loc = content.indexOf('@');
+      var loc = content.indexOf('@');
       expect(loc, -1);
     });
   });
@@ -136,18 +136,18 @@ BuildCommandRunner makeTestRunner() {
 class TestAntBuildCommand extends AntBuildCommand {
   TestAntBuildCommand(runner) : super(runner);
 
-  doit() {}
+  Future<int> doit() async => new Future(() => 0);
 }
 
 class TestBuildCommand extends BuildCommand {
   TestBuildCommand(runner) : super(runner);
 
-  doit() {}
+  Future<int> doit() async => new Future(() => 0);
 }
 
 class TestDeployCommand extends DeployCommand {
-  var paths = new List<String>();
-  var plugins = new List<String>();
+  List<String> paths = new List<String>();
+  List<String> plugins = new List<String>();
 
   TestDeployCommand(runner) : super(runner);
 
@@ -161,11 +161,11 @@ class TestDeployCommand extends DeployCommand {
 class TestGenCommand extends GenCommand {
   TestGenCommand(runner) : super(runner);
 
-  doit() {}
+  Future<int> doit() async => new Future(() => 0);
 }
 
 class TestTestCommand extends TestCommand {
   TestTestCommand(runner) : super(runner);
 
-  doit() {}
+  Future<int> doit() async => new Future(() => 0);
 }

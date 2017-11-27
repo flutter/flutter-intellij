@@ -11,3 +11,9 @@ linter:
     - test_types_in_equals
     - unrelated_type_equality_checks
     - valid_regexps
+    - await_only_futures
+    - directives_ordering
+    - omit_local_variable_types
+    - type_annotate_public_apis
+    - type_init_formals
+    - unawaited_futures
