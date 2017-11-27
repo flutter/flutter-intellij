@@ -25,7 +25,7 @@
       "ideaVersion": "2017.3",
       "dartPluginVersion": "173.3302.13",
       "sinceBuild": "173.1",
-      "untilBuild": "173.*"
+      "untilBuild": "181.*"
     }
   ]
 }
