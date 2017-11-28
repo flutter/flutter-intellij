@@ -4,11 +4,12 @@
   <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
     cross-platform, high-performance mobile apps on both Android and iOS.
   </description>
+  <!--suppress PluginXmlValidity -->
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
 
-  <version>19.1</version>
+  @VERSION@
 
   <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
@@ -23,7 +24,8 @@
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
   <depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends>
-  <!-- note that com.android.tools.apk also implies com.intellij.modules.androidstudio -->
+  <!-- note that com.android.tools.apk also implies com.intellij.modules.androidstudio but it is not available in sources -->
+  <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
 
   <change-notes>
     <![CDATA[

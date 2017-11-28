@@ -287,13 +287,15 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
         return spec.sinceBuild;
       case 'UNTIL':
         return spec.untilBuild;
+      case 'VERSION':
+        return spec.release == null ? '' : '<version>${spec.release}</version>';
       default:
         throw 'unknown template variable: $name';
     }
   }
 
   var start = line.indexOf('@');
-  while (start >= 0) {
+  while (start >= 0 && start < line.length) {
     var end = line.indexOf('@', start + 1);
     var name = line.substring(start + 1, end);
     line = line.replaceRange(start, end + 1, valueOf(name));
