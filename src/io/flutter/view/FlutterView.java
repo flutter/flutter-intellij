@@ -30,6 +30,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -96,7 +97,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
-
     final ContentManager contentManager = toolWindow.getContentManager();
     if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
       addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
@@ -150,14 +150,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     this.app = event.app;
 
-    event.vmService.addVmServiceListener(new VmServiceListener() {
+    event.vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void connectionOpened() {
         onAppChanged();
-      }
-
-      @Override
-      public void received(String s, Event event) {
       }
 
       @Override
