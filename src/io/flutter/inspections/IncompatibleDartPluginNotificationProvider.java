@@ -78,6 +78,9 @@ public class IncompatibleDartPluginNotificationProvider extends EditorNotificati
 
     final Version minimumVersion = DartPlugin.getInstance().getMinimumVersion();
     final Version dartVersion = DartPlugin.getInstance().getVersion();
+    if (dartVersion.minor == 0 && dartVersion.bugfix == 0) {
+      return null; // Running from sources.
+    }
     return dartVersion.compareTo(minimumVersion) < 0 ? createUpdateDartPanel(myProject, module, dartVersion.toCompactString(),
                                                                              getPrintableRequiredDartVersion()) : null;
   }
