@@ -43,7 +43,6 @@ newlines in place of spaces):
 -Dsun.awt.disablegrab=true 
 -Dawt.useSystemAAFontSettings=lcd 
 -Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine 
--Dplugin.path=../../../prebuilts/tools/common/kotlin-plugin/Kotlin 
 -Dmrj.version=mac 
 -Dcom.apple.macos.useScreenMenuBar=true 
 -Dapple.laf.useScreenMenuBar=true 
