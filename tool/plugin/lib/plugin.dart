@@ -78,7 +78,6 @@ Future<int> ant(BuildSpec spec) async {
   args.add('-Didea.product=${spec.ideaProduct}');
   args.add('-DSINCE=${spec.sinceBuild}');
   args.add('-DUNTIL=${spec.untilBuild}');
-  // TODO(messick) Add version to plugin.xml.template.
   return await exec('ant', args, cwd: directory);
 }
 
@@ -152,7 +151,7 @@ Future<File> genPluginXml(BuildSpec spec, String destDir) async {
   var file = await new File(p.join(rootPath, destDir, 'META-INF/plugin.xml'))
       .create(recursive: true);
   var dest = file.openWrite();
-  // TODO(devoncarew): Move the change log to a separate file and insert it here.
+  //TODO(devoncarew): Move the change log to a separate file and insert it here.
   await new File(p.join(rootPath, 'resources/META-INF/plugin.xml.template'))
       .openRead()
       .transform(UTF8.decoder)
@@ -881,13 +880,13 @@ class TestCommand extends ProductCommand {
     for (var spec in specs) {
       await spec.artifacts.provision();
 
-      // TODO(messick) Finish the implementation of TestCommand.
+      //TODO(messick) Finish the implementation of TestCommand.
       separator('Compiling test sources');
 
       var jars = []
         ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
         ..addAll(
-            findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
+            findJars('${spec.product.outPath}/lib')); //TODO: also, plugins
 
       var sourcepath = [
         'testSrc',
