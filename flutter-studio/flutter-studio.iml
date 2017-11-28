@@ -18,7 +18,6 @@
     <orderEntry type="module" module-name="adt-ui" />
     <orderEntry type="module" module-name="observable" />
     <orderEntry type="module" module-name="observable-ui" />
-    <orderEntry type="module" module-name="flutter-intellij-community" />
     <orderEntry type="module" module-name="Dart-community" />
     <orderEntry type="module" module-name="platform-api" />
     <orderEntry type="module" module-name="lang-api" />
@@ -26,7 +25,6 @@
     <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module" module-name="idea-ui" />
     <orderEntry type="module" module-name="android-uitests" scope="TEST" />
-
     <orderEntry type="module" module-name="fest-swing" scope="TEST" />
     <orderEntry type="module" module-name="testFramework" scope="TEST" />
     <orderEntry type="module" module-name="uitest-framework" scope="TEST" />
@@ -35,6 +33,6 @@
     <orderEntry type="module" module-name="designer" scope="TEST" />
     <orderEntry type="module" module-name="gradle" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
-
+    <orderEntry type="module" module-name="flutter-intellij-community" />
   </component>
 </module>
