@@ -13,6 +13,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
@@ -49,11 +50,7 @@ public class InspectorService implements Disposable {
     this.vmService = vmService;
     this.debugProcess = debugProcess;
 
-    vmService.addVmServiceListener(new VmServiceListener() {
-      @Override
-      public void connectionOpened() {
-      }
-
+    vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
         onVmServiceReceived(streamId, event);
