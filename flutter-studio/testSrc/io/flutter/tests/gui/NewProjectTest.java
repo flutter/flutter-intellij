@@ -63,9 +63,7 @@ public class NewProjectTest {
     String expected =
       "import 'package:flutter/material.dart';\n" +
       "\n" +
-      "void main() {\n" +
-      "  runApp(new MyApp());\n" +
-      "}\n";
+      "void main() => runApp(new MyApp());\n";
 
     assertEquals(expected, editor.getCurrentFileContents().substring(0, expected.length()));
   }

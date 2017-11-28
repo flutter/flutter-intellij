@@ -21,7 +21,7 @@ To set up a development environment:
 The GUI tests must be run in the same version of IntelliJ used by
 the Android Studio dev team. Currently that is 2017.1.5.
 
-To run the tests create a Run Configuration for class
+To run the tests create a Junit Run Configuration for class
 `io.flutter.tests.gui.NewProjectTest`. Set its working directory
 to the `bin` directory of the Android Studio sources. For
 example: `/Volumes/android/studio-master-dev/tools/idea/bin`
@@ -49,6 +49,8 @@ newlines in place of spaces):
 -Dapple.laf.useScreenMenuBar=true 
 -Dflutter.home=/path/to/flutter
 ```
+Don't forget to adjust the path to your Flutter SDK in the last one.
+
 If you're not using a Mac then delete these:
  - mrj.version
  - com.apple.macos.useScreenMenuBar
