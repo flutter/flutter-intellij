@@ -273,7 +273,7 @@ public class InspectorService implements Disposable {
         if (event.getKind() == EventKind.Inspect) {
           // Make sure the WidgetInspector on the device switches to show the inspected object
           // if the inspected object is a Widget or RenderObject.
-          maybeSetSelection(event.getInspectee(), true);
+          setSelection(event.getInspectee(), true);
           // Update the UI in IntelliJ.
           notifySelectionChanged();
         }
@@ -293,16 +293,16 @@ public class InspectorService implements Disposable {
     }
   }
 
-  public void maybeSetSelection(InspectorInstanceRef selection, boolean uiAlreadyUpdated) {
-    handleSetSelection(invokeServiceMethod("maybeSetSelection", selection), uiAlreadyUpdated);
+  public void setSelection(InspectorInstanceRef selection, boolean uiAlreadyUpdated) {
+    handleSetSelection(invokeServiceMethod("setSelectionById", selection), uiAlreadyUpdated);
   }
 
   /**
    * Helper when we need to set selection given an observatory InstanceRef
    * instead of an InspectorInstanceRef.
    */
-  public void maybeSetSelection(InstanceRef selection, boolean uiAlreadyUpdated) {
-    handleSetSelection(invokeServiceMethodOnRef("maybeSetSelectionRaw", selection), uiAlreadyUpdated);
+  public void setSelection(InstanceRef selection, boolean uiAlreadyUpdated) {
+    handleSetSelection(invokeServiceMethodOnRef("setSelection", selection), uiAlreadyUpdated);
   }
 
   private void handleSetSelection(CompletableFuture<InstanceRef> setSelectionResult, boolean uiAlreadyUpdated) {
