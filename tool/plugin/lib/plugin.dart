@@ -78,7 +78,6 @@ Future<int> ant(BuildSpec spec) async {
   args.add('-Didea.product=${spec.ideaProduct}');
   args.add('-DSINCE=${spec.sinceBuild}');
   args.add('-DUNTIL=${spec.untilBuild}');
-  // TODO(messick) Add version to plugin.xml.template.
   return await exec('ant', args, cwd: directory);
 }
 
@@ -152,7 +151,7 @@ Future<File> genPluginXml(BuildSpec spec, String destDir) async {
   var file = await new File(p.join(rootPath, destDir, 'META-INF/plugin.xml'))
       .create(recursive: true);
   var dest = file.openWrite();
-  // TODO(devoncarew): Move the change log to a separate file and insert it here.
+  //TODO(devoncarew): Move the change log to a separate file and insert it here.
   await new File(p.join(rootPath, 'resources/META-INF/plugin.xml.template'))
       .openRead()
       .transform(UTF8.decoder)
@@ -287,13 +286,15 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
         return spec.sinceBuild;
       case 'UNTIL':
         return spec.untilBuild;
+      case 'VERSION':
+        return spec.release == null ? '' : '<version>${spec.release}</version>';
       default:
         throw 'unknown template variable: $name';
     }
   }
 
   var start = line.indexOf('@');
-  while (start >= 0) {
+  while (start >= 0 && start < line.length) {
     var end = line.indexOf('@', start + 1);
     var name = line.substring(start + 1, end);
     line = line.replaceRange(start, end + 1, valueOf(name));
@@ -879,13 +880,13 @@ class TestCommand extends ProductCommand {
     for (var spec in specs) {
       await spec.artifacts.provision();
 
-      // TODO(messick) Finish the implementation of TestCommand.
+      //TODO(messick) Finish the implementation of TestCommand.
       separator('Compiling test sources');
 
       var jars = []
         ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
         ..addAll(
-            findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
+            findJars('${spec.product.outPath}/lib')); //TODO: also, plugins
 
       var sourcepath = [
         'testSrc',
