@@ -120,6 +120,16 @@ void main() {
       var loc = content.indexOf('@');
       expect(loc, -1);
     });
+    test('provision', () async {
+      var runner = makeTestRunner();
+      TestBuildCommand cmd;
+      await runner.run(["-d../..", "build"]).whenComplete(() {
+        cmd = (runner.commands['build'] as TestBuildCommand);
+      });
+      var spec = cmd.specs[0];
+      var result = await spec.artifacts.provision(rebuildCache: false);
+      expect(result, 0);
+    });
   });
 }
 
