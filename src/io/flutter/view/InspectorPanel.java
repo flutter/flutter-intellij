@@ -39,6 +39,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
@@ -81,7 +82,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     initTree(myRootsTree);
     myRootsTree.getSelectionModel().addTreeSelectionListener(e -> selectionChanged());
-
     final Splitter treeSplitter = new Splitter(true);
     treeSplitter.setProportion(0.8f);
     // TODO(jacobr): surely there is more we should be disposing.
@@ -104,11 +104,20 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   public void onIsolateStopped() {
+    // Make sure we cleanup all references to objects from the stopped
+    // isolate as they are now obsolete.
     if (rootFuture != null && !rootFuture.isDone()) {
-      // Already running.
       rootFuture.cancel(true);
-      rootFuture = null;
     }
+    rootFuture = null;
+
+    if (pendingSelectionFuture != null && !pendingSelectionFuture.isDone()) {
+      pendingSelectionFuture.cancel(true);
+    }
+    pendingSelectionFuture = null;
+
+    selectedNode = null;
+
     getTreeModel().setRoot(new DefaultMutableTreeNode());
     myPropertiesPanel.showProperties(null);
   }
@@ -213,10 +222,25 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   /**
    * Helper to get the value of a future on the UI thread.
+   *
+   * The action will never be called if the future is cancelled.
    */
   public static <T> void whenCompleteUiThread(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
     future.whenCompleteAsync(
-      (T value, Throwable throwable) -> ApplicationManager.getApplication().invokeLater(() -> action.accept(value, throwable)));
+      (T value, Throwable throwable) -> {
+        // Exceptions due to the Future being cancelled need to be treated
+        // differently as they indicate that no work should be done rather
+        // than that an error occurred.
+        // By convention we cancel Futures when the value to be computed
+        // would be obsolete. For example, the Future may be for a value from
+        // a previous Dart isolate or the user has already navigated somewhere
+        // else.
+        if (throwable instanceof CancellationException) {
+          return;
+        }
+        ApplicationManager.getApplication().invokeLater(() -> action.accept(value, throwable));
+      }
+    );
   }
 
   public void onFlutterFrame() {
@@ -230,16 +254,23 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   public void onInspectorSelectionChanged() {
     if (pendingSelectionFuture != null) {
       // Pending selection changed is obsolete.
-      pendingSelectionFuture.cancel(true);
-      pendingSelectionFuture = null;
+      if (!pendingSelectionFuture.isDone()) {
+        pendingSelectionFuture.cancel(true);
+        pendingSelectionFuture = null;
+      }
     }
     pendingSelectionFuture = getInspectorService().getSelection(getSelectedDiagnostic(), treeType);
     whenCompleteUiThread(pendingSelectionFuture, (DiagnosticsNode newSelection, Throwable error) -> {
+      pendingSelectionFuture = null;
       if (error != null) {
         LOG.error(error);
         return;
       }
       if (newSelection != getSelectedDiagnostic()) {
+        if (newSelection == null) {
+          myRootsTree.clearSelection();
+          return;
+        }
         whenCompleteUiThread(getInspectorService().getParentChain(newSelection), (ArrayList<DiagnosticsPathNode> path, Throwable ex) -> {
           if (ex != null) {
             LOG.error(ex);
