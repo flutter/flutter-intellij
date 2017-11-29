@@ -180,7 +180,7 @@ bool isCacheDirectoryValid(Artifact artifact) {
     return false;
   }
   var filePath = artifact.file;
-  var file = new File(filePath);
+  var file = new File(p.join(rootPath, 'artifacts', filePath));
   if (!file.existsSync()) {
     throw 'Artifact file missing: $filePath';
   }
