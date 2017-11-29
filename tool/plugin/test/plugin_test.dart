@@ -127,6 +127,7 @@ void main() {
         cmd = (runner.commands['build'] as TestBuildCommand);
       });
       var spec = cmd.specs[0];
+      expect(spec.artifacts.artifacts.length, greaterThan(1));
       var result = await spec.artifacts.provision(rebuildCache: false);
       expect(result, 0);
     });

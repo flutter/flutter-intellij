@@ -642,7 +642,9 @@ class BuildSpec {
         ideaVersion = json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
-        untilBuild = json['untilBuild'];
+        untilBuild = json['untilBuild'] {
+    createArtifacts();
+  }
 
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
