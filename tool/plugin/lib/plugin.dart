@@ -443,6 +443,9 @@ class ArtifactManager {
       }
 
       // expand
+      if (new Directory(artifact.outPath).existsSync()) {
+        await removeAll(artifact.outPath);
+      }
       createDir(artifact.outPath);
 
       if (artifact.isZip) {
@@ -887,8 +890,7 @@ class TestCommand extends ProductCommand {
 
       var jars = []
         ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
-        ..addAll(
-            findJars('${spec.product.outPath}/lib')); //TODO: also, plugins
+        ..addAll(findJars('${spec.product.outPath}/lib')); //TODO: also, plugins
 
       var sourcepath = [
         'testSrc',
