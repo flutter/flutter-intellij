@@ -3,7 +3,7 @@
     {
       "name": "Android Studio",
       "version": "3.0",
-      "ideaProduct": "android-studio-ide",
+      "ideaProduct": "android-studio",
       "ideaVersion": "171.4408382",
       "dartPluginVersion": "171.4424.10",
       "sinceBuild": "171.1",

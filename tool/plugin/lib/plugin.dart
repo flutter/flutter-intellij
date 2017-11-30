@@ -432,6 +432,13 @@ class ArtifactManager {
           log('download failed');
           break;
         }
+        var archiveFile = new File(path);
+        if (!archiveFile.existsSync() || archiveFile.lengthSync() < 200) {
+          log('archive file not found: $base/${artifact.file}');
+          archiveFile.deleteSync();
+          result = 1;
+          break;
+        }
       }
 
       // clear unpacked cache
@@ -471,6 +478,7 @@ class ArtifactManager {
       }
       if (result != 0) {
         log('unpacking failed');
+        await removeAll(artifact.output);
         break;
       }
 
@@ -555,6 +563,8 @@ class BuildCommand extends ProductCommand {
         log('zip failed: ${result.toString()}');
         return new Future(() => result);
       }
+      separator('BUILT');
+      log('${archiveFilePath(spec)}');
     }
     return 0;
   }
@@ -654,9 +664,9 @@ class BuildSpec {
   bool get isReleaseMode => release != null;
 
   void createArtifacts() {
-    if (ideaProduct == 'android-studio-ide') {
+    if (ideaProduct == 'android-studio') {
       product = artifacts.add(new Artifact(
-          '$ideaProduct-$ideaVersion-linux.zip',
+          '$ideaProduct-ide-$ideaVersion-linux.zip',
           output: ideaProduct));
     } else {
       product = artifacts.add(new Artifact('$ideaProduct-$ideaVersion.tar.gz',
