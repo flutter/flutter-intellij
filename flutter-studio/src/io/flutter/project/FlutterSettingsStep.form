@@ -14,6 +14,7 @@
         </constraints>
         <properties>
           <font style="1"/>
+          <labelFor value="6c9b3"/>
           <text value="Company domain"/>
         </properties>
       </component>

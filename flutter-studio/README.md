@@ -17,3 +17,41 @@ To set up a development environment:
 6. Select the `community-main` module and add module
    dependencies to `Dart-community`, `flutter-intellij-community`,
    and `flutter-studio`.
+
+The GUI tests must be run in the same version of IntelliJ used by
+the Android Studio dev team. Currently that is 2017.1.5.
+
+To run the tests create a Junit Run Configuration for class
+`io.flutter.tests.gui.NewProjectTest`. Set its working directory
+to the `bin` directory of the Android Studio sources. For
+example: `/Volumes/android/studio-master-dev/tools/idea/bin`
+Set it to use the classpath of module `flutter-studio`.
+It needs to run with Java 8 or later.
+
+The VM options are a bit complex. Here's mine (formatted with 
+newlines in place of spaces):
+```bash 
+-ea 
+-Xbootclasspath/p:../out/classes/production/boot 
+-Xms512m 
+-Xmx1024m 
+-Didea.is.internal=true 
+-Didea.platform.prefix=AndroidStudio 
+-Dandroid.extra_templates.path=../../../sdk/templates 
+-Dapple.laf.useScreenMenuBar=true 
+-Dcom.apple.mrj.application.apple.menu.about.name=AndroidStudio 
+-Dsun.awt.disablegrab=true 
+-Dawt.useSystemAAFontSettings=lcd 
+-Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine 
+-Dmrj.version=mac 
+-Dcom.apple.macos.useScreenMenuBar=true 
+-Dapple.laf.useScreenMenuBar=true 
+-Dflutter.home=/path/to/flutter
+```
+Don't forget to adjust the path to your Flutter SDK in the last one.
+
+If you're not using a Mac then delete these:
+ - mrj.version
+ - com.apple.macos.useScreenMenuBar
+ - apple.laf.useScreenMenuBar
+
