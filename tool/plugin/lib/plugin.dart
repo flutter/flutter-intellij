@@ -78,7 +78,6 @@ Future<int> ant(BuildSpec spec) async {
   args.add('-Didea.product=${spec.ideaProduct}');
   args.add('-DSINCE=${spec.sinceBuild}');
   args.add('-DUNTIL=${spec.untilBuild}');
-  // TODO(messick) Add version to plugin.xml.template.
   return await exec('ant', args, cwd: directory);
 }
 
@@ -152,7 +151,7 @@ Future<File> genPluginXml(BuildSpec spec, String destDir) async {
   var file = await new File(p.join(rootPath, destDir, 'META-INF/plugin.xml'))
       .create(recursive: true);
   var dest = file.openWrite();
-  // TODO(devoncarew): Move the change log to a separate file and insert it here.
+  //TODO(devoncarew): Move the change log to a separate file and insert it here.
   await new File(p.join(rootPath, 'resources/META-INF/plugin.xml.template'))
       .openRead()
       .transform(UTF8.decoder)
@@ -181,7 +180,7 @@ bool isCacheDirectoryValid(Artifact artifact) {
     return false;
   }
   var filePath = artifact.file;
-  var file = new File(filePath);
+  var file = new File(p.join(rootPath, 'artifacts', filePath));
   if (!file.existsSync()) {
     throw 'Artifact file missing: $filePath';
   }
@@ -287,13 +286,15 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
         return spec.sinceBuild;
       case 'UNTIL':
         return spec.untilBuild;
+      case 'VERSION':
+        return spec.release == null ? '' : '<version>${spec.release}</version>';
       default:
         throw 'unknown template variable: $name';
     }
   }
 
   var start = line.indexOf('@');
-  while (start >= 0) {
+  while (start >= 0 && start < line.length) {
     var end = line.indexOf('@', start + 1);
     var name = line.substring(start + 1, end);
     line = line.replaceRange(start, end + 1, valueOf(name));
@@ -431,6 +432,13 @@ class ArtifactManager {
           log('download failed');
           break;
         }
+        var archiveFile = new File(path);
+        if (!archiveFile.existsSync() || archiveFile.lengthSync() < 200) {
+          log('archive file not found: $base/${artifact.file}');
+          archiveFile.deleteSync();
+          result = 1;
+          break;
+        }
       }
 
       // clear unpacked cache
@@ -442,6 +450,9 @@ class ArtifactManager {
       }
 
       // expand
+      if (new Directory(artifact.outPath).existsSync()) {
+        await removeAll(artifact.outPath);
+      }
       createDir(artifact.outPath);
 
       if (artifact.isZip) {
@@ -467,6 +478,7 @@ class ArtifactManager {
       }
       if (result != 0) {
         log('unpacking failed');
+        await removeAll(artifact.output);
         break;
       }
 
@@ -551,6 +563,8 @@ class BuildCommand extends ProductCommand {
         log('zip failed: ${result.toString()}');
         return new Future(() => result);
       }
+      separator('BUILT');
+      log('${archiveFilePath(spec)}');
     }
     return 0;
   }
@@ -641,16 +655,18 @@ class BuildSpec {
         ideaVersion = json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
-        untilBuild = json['untilBuild'];
+        untilBuild = json['untilBuild'] {
+    createArtifacts();
+  }
 
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
   bool get isReleaseMode => release != null;
 
   void createArtifacts() {
-    if (ideaProduct == 'android-studio-ide') {
+    if (ideaProduct == 'android-studio') {
       product = artifacts.add(new Artifact(
-          '$ideaProduct-$ideaVersion-linux.zip',
+          '$ideaProduct-ide-$ideaVersion-linux.zip',
           output: ideaProduct));
     } else {
       product = artifacts.add(new Artifact('$ideaProduct-$ideaVersion.tar.gz',
@@ -879,13 +895,12 @@ class TestCommand extends ProductCommand {
     for (var spec in specs) {
       await spec.artifacts.provision();
 
-      // TODO(messick) Finish the implementation of TestCommand.
+      //TODO(messick) Finish the implementation of TestCommand.
       separator('Compiling test sources');
 
       var jars = []
         ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
-        ..addAll(
-            findJars('${spec.product.outPath}/lib')); // TODO: also, plugins
+        ..addAll(findJars('${spec.product.outPath}/lib')); //TODO: also, plugins
 
       var sourcepath = [
         'testSrc',

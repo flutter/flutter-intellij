@@ -9,6 +9,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.openapi.diagnostic.Logger;
 import icons.FlutterIcons;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Contract;
@@ -29,6 +30,7 @@ import java.util.regex.Pattern;
  * Categorization of a Flutter widget.
  */
 public class FlutterWidget {
+  private static final Logger LOG = Logger.getInstance(FlutterWidget.class);
 
   enum Category {
     ACCESSIBILITY("Accessibility", FlutterIcons.Accessibility),
@@ -173,6 +175,7 @@ public class FlutterWidget {
       }
       catch (IOException | URISyntaxException e) {
         // Ignored -- json will be null.
+        LOG.error(e);
       }
     }
 

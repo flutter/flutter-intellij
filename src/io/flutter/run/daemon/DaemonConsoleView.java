@@ -69,8 +69,19 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       return;
     }
 
-    stdoutParser.appendOutput(text);
+    if (contentType != ConsoleViewContentType.NORMAL_OUTPUT) {
+      stdoutParser.flush();
+      writeAvailableLines();
 
+      super.print(text, contentType);
+    }
+    else {
+      stdoutParser.appendOutput(text);
+      writeAvailableLines();
+    }
+  }
+
+  private void writeAvailableLines() {
     for (String line : stdoutParser.getAvailableLines()) {
       final String trimmed = line.trim();
 
@@ -81,13 +92,13 @@ public class DaemonConsoleView extends ConsoleViewImpl {
       else {
         // We're seeing a spurious newline before some launches; this removed any single
         // newline that occur before we've printed text.
-        if (!hasPrintedText && text.equals(("\n"))) {
+        if (!hasPrintedText && line.equals(("\n"))) {
           continue;
         }
 
         hasPrintedText = true;
 
-        super.print(text, contentType);
+        super.print(line, ConsoleViewContentType.NORMAL_OUTPUT);
       }
     }
   }
