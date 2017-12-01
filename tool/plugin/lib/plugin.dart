@@ -434,6 +434,9 @@ class ArtifactManager {
         }
         var archiveFile = new File(path);
         if (!archiveFile.existsSync() || archiveFile.lengthSync() < 200) {
+          // If the file is missing the server returns a small file
+          // containing an error message. Delete it and fail. The
+          // smallest file we store in the cloud is over 700K.
           log('archive file not found: $base/${artifact.file}');
           archiveFile.deleteSync();
           result = 1;

@@ -49,6 +49,25 @@ import java.util.concurrent.TimeUnit;
 import static com.google.common.truth.TruthJUnit.assume;
 import static org.fest.reflect.core.Reflection.*;
 
+/**
+ * A GUI test rule is used to drive GUI tests. It provides access to top-level
+ * UI elements, such as dialogs, IDE frame, and welcome screen (when no projects
+ * are open).
+ *
+ * For example:
+ *   FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
+ *   WizardUtils.createNewApplication(myGuiTest);
+ *   FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
+ *   EditorFixture editor = ideFrame.getEditor();
+ *   editor.waitUntilErrorAnalysisFinishes();
+ *   ...
+ *
+ * {@link TestRule}s can do everything that could be done previously with
+ * methods annotated with {@link org.junit.Before},
+ * {@link org.junit.After}, {@link org.junit.BeforeClass}, or
+ * {@link org.junit.AfterClass}, but they are more powerful, and more easily
+ * shared between projects and classes.
+ */
 @SuppressWarnings("Duplicates") // Adapted from com.android.tools.idea.tests.gui.framework.GuiTestRule
 public class FlutterGuiTestRule implements TestRule {
 
