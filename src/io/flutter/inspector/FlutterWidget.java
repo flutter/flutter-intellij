@@ -5,6 +5,8 @@
  */
 package io.flutter.inspector;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.ByteStreams;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,10 +20,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.IOException;
-import java.net.URISyntaxException;
+import java.io.InputStream;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
@@ -160,7 +160,8 @@ public class FlutterWidget {
       try {
         // Local copy of: https://github.com/flutter/website/tree/master/_data/catalog/widget.json
         final URL resource = getClass().getResource("widgets.json");
-        final String content = new String(Files.readAllBytes(Paths.get(resource.toURI())));
+        final byte[] contentBytes = ByteStreams.toByteArray((InputStream)resource.getContent());
+        final String content = new String(contentBytes, Charsets.UTF_8);
         final JsonParser parser = new JsonParser();
         json = parser.parse(content);
         if (!(json instanceof JsonArray)) throw new IllegalStateException("Unexpected Json format: expected array");
@@ -173,8 +174,7 @@ public class FlutterWidget {
           widgets.put(name, widget);
         });
       }
-      catch (IOException | URISyntaxException e) {
-        // Ignored -- json will be null.
+      catch (IOException e) {
         LOG.error(e);
       }
     }
