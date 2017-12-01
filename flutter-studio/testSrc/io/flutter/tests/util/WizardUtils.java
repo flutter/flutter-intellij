@@ -15,15 +15,15 @@ public class WizardUtils {
   }
 
   public static void createNewApplication(@NotNull FlutterGuiTestRule guiTest) {
-    createNewProject(guiTest, FlutterProjectType.APP, null, null, null, null, null);
+    createNewProject(guiTest, FlutterProjectType.APP);
   }
 
   public static void createNewPackage(@NotNull FlutterGuiTestRule guiTest) {
-    createNewProject(guiTest, FlutterProjectType.PACKAGE, null, null, null, null, null);
+    createNewProject(guiTest, FlutterProjectType.PACKAGE);
   }
 
   public static void createNewPlugin(@NotNull FlutterGuiTestRule guiTest) {
-    createNewProject(guiTest, FlutterProjectType.PLUGIN, null, null, null, null, null);
+    createNewProject(guiTest, FlutterProjectType.PLUGIN);
   }
 
   public static void createNewProject(@NotNull FlutterGuiTestRule guiTest, @NotNull FlutterProjectType type,
@@ -77,5 +77,9 @@ public class WizardUtils {
 
     guiTest.waitForBackgroundTasks();
     guiTest.ideFrame().waitForProjectSyncToFinish();
+  }
+
+  private static void createNewProject(@NotNull FlutterGuiTestRule guiTest, @NotNull FlutterProjectType type) {
+    createNewProject(guiTest, type, null, null, null, null, null);
   }
 }
