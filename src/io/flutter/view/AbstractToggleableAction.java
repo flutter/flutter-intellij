@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.DumbAwareAction;
 import io.flutter.FlutterInitializer;
+import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -72,5 +73,10 @@ abstract class AbstractToggleableAction extends DumbAwareAction implements Toggl
     this.selected = selected;
 
     ApplicationManager.getApplication().invokeLater(() -> this.update(event));
+  }
+
+  @Nullable
+  protected FlutterDevice getDevice() {
+    return view.getFlutterApp() == null ? null : view.getFlutterApp().device();
   }
 }

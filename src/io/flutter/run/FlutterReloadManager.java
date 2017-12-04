@@ -49,7 +49,6 @@ import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
 import io.flutter.actions.FlutterAppAction;
-import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.pub.PubRoot;
@@ -240,10 +239,9 @@ public class FlutterReloadManager {
           showRunNotification(app, "Full Restart", result.getMessage(), true);
         }
       });
-      // Bring iOS simulator to front.
       final FlutterDevice device = DeviceService.getInstance(myProject).getSelectedDevice();
-      if (device != null && device.emulator() && device.isIOS()) {
-        new OpenSimulatorAction(true).actionPerformed(null);
+      if (device != null) {
+        device.bringToFront();
       }
     }
   }

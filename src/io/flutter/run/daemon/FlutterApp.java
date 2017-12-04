@@ -44,7 +44,7 @@ public class FlutterApp {
   private final @NotNull Project myProject;
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
-  private final @NotNull String myDeviceId;
+  private final @NotNull FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
@@ -73,14 +73,14 @@ public class FlutterApp {
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
              @NotNull RunMode mode,
-             @NotNull String deviceId,
+             @NotNull FlutterDevice device,
              @NotNull ProcessHandler processHandler,
              @NotNull ExecutionEnvironment executionEnvironment,
              @NotNull DaemonApi daemonApi) {
     myProject = project;
     myModule = module;
     myMode = mode;
-    myDeviceId = deviceId;
+    myDevice = device;
     myProcessHandler = processHandler;
     myProcessHandler.putUserData(FLUTTER_APP_KEY, this);
     myExecutionEnvironment = executionEnvironment;
@@ -154,7 +154,7 @@ public class FlutterApp {
     FlutterInitializer.sendAnalyticsAction(analyticsStart);
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, device.deviceId(), process, env, api);
+    final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api);
 
     process.addProcessListener(new ProcessAdapter() {
       @Override
@@ -410,8 +410,12 @@ public class FlutterApp {
     return FlutterLaunchMode.getMode(myExecutionEnvironment);
   }
 
+  public FlutterDevice device() {
+    return myDevice;
+  }
+
   public String deviceId() {
-    return myDeviceId;
+    return myDevice.deviceId();
   }
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {

@@ -29,10 +29,9 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
-import org.dartlang.vm.service.VmServiceListener;
-import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -101,7 +100,8 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
       addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
       addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
-    } else {
+    }
+    else {
       // Legacy case showing just an empty tool window panel.
       final Content toolContent = contentFactory.createContent(null, "Main", false);
       final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, false);
@@ -115,7 +115,11 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     }
   }
 
-  private void addInspectorPanel(String displayName, InspectorService.FlutterTreeType treeType, @NotNull ToolWindow toolWindow, DefaultActionGroup toolbarGroup, boolean selectedContent) {
+  private void addInspectorPanel(String displayName,
+                                 InspectorService.FlutterTreeType treeType,
+                                 @NotNull ToolWindow toolWindow,
+                                 DefaultActionGroup toolbarGroup,
+                                 boolean selectedContent) {
     {
       final ContentManager contentManager = toolWindow.getContentManager();
       final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
@@ -166,6 +170,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     onAppChanged();
   }
 
+  @Nullable
   FlutterApp getFlutterApp() {
     return app;
   }
@@ -280,6 +285,14 @@ class ToggleInspectModeAction extends AbstractToggleableAction {
 
   protected void perform(AnActionEvent event) {
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected(event));
+
+    // If toggling inspect mode on, bring any device to the forground.
+    if (isSelected(event)) {
+      final FlutterDevice device = getDevice();
+      if (device != null) {
+        device.bringToFront();
+      }
+    }
   }
 }
 
