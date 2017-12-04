@@ -15,6 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/material-design-icons" />
+      <excludeFolder url="file://$MODULE_DIR$/testSrc/integration/io/flutter/gui" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
