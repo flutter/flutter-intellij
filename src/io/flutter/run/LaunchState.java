@@ -104,10 +104,7 @@ public class LaunchState extends CommandLineState {
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
-    if (device.emulator() && device.isIOS()) {
-      // Bring simulator to front.
-      new OpenSimulatorAction(true).actionPerformed(null);
-    }
+    device.bringToFront();
 
     // Check for and display any analysis errors when we launch an app.
     if (env.getRunProfile() instanceof SdkRunConfig) {

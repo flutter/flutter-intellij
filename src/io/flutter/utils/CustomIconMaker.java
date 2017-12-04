@@ -85,7 +85,7 @@ public class CustomIconMaker {
     return iconCache.get(mapKey);
   }
 
-  enum IconKind {
+  public enum IconKind {
     kClass("class", FlutterIcons.CustomClass, FlutterIcons.CustomClassAbstract),
     kField("fields", FlutterIcons.CustomFields),
     kInterface("interface", FlutterIcons.CustomInterface),
@@ -105,7 +105,7 @@ public class CustomIconMaker {
     IconKind(String name, Icon icon, Icon abstractIcon) {
       this.name = name;
       this.icon = icon;
-      this.abstractIcon = icon;
+      this.abstractIcon = abstractIcon;
     }
   }
 }

@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -38,12 +39,14 @@ import static io.flutter.sdk.FlutterSettingsConfigurable.WIDGET_FILTERING_ENABLE
  * * DiagnosticsNode class defined at https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/foundation/diagnostics.dart
  * The difference is the class hierarchy is collapsed on the Java side as
  * the class hierarchy on the Dart side exists more to simplify creation
- * of Diagnostics  than because the class hierarchy of Diagnostics is
+ * of Diagnostics than because the class hierarchy of Diagnostics is
  * important. If you need to determine the exact Diagnostic class on the
  * Dart side you can use the value of type. The raw Dart object value is
  * also available via the getValue() method.
  */
 public class DiagnosticsNode {
+  private static final CustomIconMaker iconMaker = new CustomIconMaker();
+
   public DiagnosticsNode(JsonObject json, InspectorService inspectorService) {
     this.inspectorService = inspectorService;
     this.json = json;
@@ -69,7 +72,7 @@ public class DiagnosticsNode {
   }
 
   /**
-   * Seperator text to show between propert names and values.
+   * Seperator text to show between property names and values.
    */
   public String getSeparator() {
     return getShowSeparator() ? ":" : "";
@@ -505,9 +508,9 @@ public class DiagnosticsNode {
                 final CompletableFuture<ArrayList<DiagnosticsNode>> future = nodes.get(0).getChildren();
                 for (int i = 1; i < nodes.size(); ++i) {
                   future.thenCombine(nodes.get(i).getChildren(),
-                                       (nodes1, nodes2) -> Stream.of(nodes1, nodes2)
-                                         .flatMap(Collection::stream)
-                                         .collect(Collectors.toList()));
+                                     (nodes1, nodes2) -> Stream.of(nodes1, nodes2)
+                                       .flatMap(Collection::stream)
+                                       .collect(Collectors.toList()));
                 }
                 return future;
               }
@@ -552,7 +555,31 @@ public class DiagnosticsNode {
 
   @Nullable
   public Icon getIcon() {
+    Icon icon = null;
     final FlutterWidget widget = getWidget();
-    return widget != null ? widget.getIcon() : null;
+    if (widget != null) {
+      icon = widget.getIcon();
+    }
+    if (icon == null) {
+      icon = getCustomIcon(getDescription());
+    }
+    return icon;
+  }
+
+  private static Icon getCustomIcon(String text) {
+    if (text == null) {
+      return null;
+    }
+
+    final boolean isPrivate = text.startsWith("_");
+    while (!text.isEmpty() && !Character.isAlphabetic(text.charAt(0))) {
+      text = text.substring(1);
+    }
+
+    if (text.isEmpty()) {
+      return null;
+    }
+
+    return iconMaker.getCustomIcon(text, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
   }
 }

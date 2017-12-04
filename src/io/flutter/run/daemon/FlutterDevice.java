@@ -5,6 +5,7 @@
  */
 package io.flutter.run.daemon;
 
+import io.flutter.actions.OpenSimulatorAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,5 +84,16 @@ public class FlutterDevice {
       }
     }
     return deviceName();
+  }
+
+  /**
+   * Bring the window representing this device to the foreground. This is a no-op for
+   * non-emulator, non-iOS devices.
+   */
+  public void bringToFront() {
+    if (emulator() && isIOS()) {
+      // Bring the iOS simulator to front.
+      new OpenSimulatorAction(true).actionPerformed(null);
+    }
   }
 }

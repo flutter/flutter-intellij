@@ -20,6 +20,7 @@ import com.intellij.ui.dualView.TreeTableView;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
@@ -32,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.table.JTableHeader;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -44,6 +46,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+// TODO(devoncarew): Should we filter out the CheckedModeBanner node type?
+// TODO(devoncarew): Should we filter out the WidgetInspector node type?
 
 public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient {
   private final MyTree myRootsTree;
@@ -82,6 +87,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     initTree(myRootsTree);
     myRootsTree.getSelectionModel().addTreeSelectionListener(e -> selectionChanged());
+    // TODO(devoncarew): We should remember and restore the last splitter position.
     final Splitter treeSplitter = new Splitter(true);
     treeSplitter.setProportion(0.8f);
     // TODO(jacobr): surely there is more we should be disposing.
@@ -222,7 +228,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   /**
    * Helper to get the value of a future on the UI thread.
-   *
+   * <p>
    * The action will never be called if the future is cancelled.
    */
   public static <T> void whenCompleteUiThread(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
@@ -385,8 +391,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   private void initTree(final Tree tree) {
-    final DiagnosticsTreeCellRenderer rootsTreeCellRenderer = new DiagnosticsTreeCellRenderer();
-    tree.setCellRenderer(rootsTreeCellRenderer);
+    tree.setCellRenderer(new DiagnosticsTreeCellRenderer());
     tree.setShowsRootHandles(true);
     UIUtil.setLineStyleAngled(tree);
 
@@ -414,6 +419,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static class MyTree extends Tree implements DataProvider, Disposable {
     private MyTree(final DefaultMutableTreeNode treemodel) {
       super(treemodel);
+
+      setRootVisible(false);
       registerShortcuts();
     }
 
@@ -450,34 +457,17 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   static class PropertyNameColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
-    private final DiagnosticsTreeCellRenderer renderer;
-
     public PropertyNameColumnInfo(String name) {
       super(name);
-      renderer = new DiagnosticsTreeCellRenderer();
     }
 
     @Nullable
     @Override
     public String valueOf(DefaultMutableTreeNode node) {
-      final DiagnosticsNode userObject = (DiagnosticsNode)node.getUserObject();
-      String name = userObject.getName();
-      if (name == null) {
-        name = "";
-      }
-      return name;
+      final DiagnosticsNode diagnosticNode = (DiagnosticsNode)node.getUserObject();
+      final String name = diagnosticNode.getName();
+      return name == null ? "" : name;
     }
-
-    @Override
-    public int getWidth(JTable table) {
-      return 220; // TODO(jacobr): determine a better default.
-    }
-
-    /*
-    public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
-      return renderer;
-    }
-    */
   }
 
   static class PropertyValueColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
@@ -488,8 +478,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     @Nullable
     @Override
     public String valueOf(DefaultMutableTreeNode node) {
-      final DiagnosticsNode diagnostic = (DiagnosticsNode)node.getUserObject();
-      return diagnostic.getDescription();
+      final DiagnosticsNode diagnosticNode = (DiagnosticsNode)node.getUserObject();
+      final boolean isNull = diagnosticNode.getValueRef().getId() == null;
+      if (isNull) {
+        return null;
+      }
+      return diagnosticNode.getDescription();
     }
   }
 
@@ -497,9 +491,21 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     PropertiesPanel() {
       super(new ListTreeTableModelOnColumns(
         new DefaultMutableTreeNode(),
-        new ColumnInfo[]{new PropertyNameColumnInfo("Property"), new PropertyValueColumnInfo("Value")}
+        new ColumnInfo[]{
+          new PropertyNameColumnInfo("Property"),
+          new PropertyValueColumnInfo("Value")
+        }
       ));
       setRootVisible(false);
+
+      setStriped(true);
+      setRowHeight(getRowHeight() + JBUI.scale(4));
+
+      final JTableHeader tableHeader = getTableHeader();
+      tableHeader.setPreferredSize(new Dimension(0, getRowHeight()));
+
+      getColumnModel().getColumn(0).setPreferredWidth(120);
+      getColumnModel().getColumn(1).setPreferredWidth(200);
     }
 
     ListTreeTableModelOnColumns getTreeModel() {
@@ -518,9 +524,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           // be loaded.
           return;
         }
+
+        properties.sort(Comparator.comparing(DiagnosticsNode::getName));
+
         final ListTreeTableModelOnColumns model = getTreeModel();
         final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        properties.sort(Comparator.comparing(DiagnosticsNode::getLevel).reversed());
         for (DiagnosticsNode property : properties) {
           if (property.getLevel() != DiagnosticLevel.hidden) {
             root.add(new DefaultMutableTreeNode(property));
@@ -534,18 +542,20 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static class DiagnosticsTreeCellRenderer extends ColoredTreeCellRenderer {
     /**
      * Split text into two groups, word characters at the start of a string
-     * and all other chracters.
-     * This splits t
+     * and all other chracters. Skip an <code>-</code> or <code>#</code> between the
+     * two groups.
      */
-    private final Pattern primaryDescriptionPattern = Pattern.compile("^(\\w+)(.*)$");
+    private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");
 
-    public void customizeCellRenderer(@NotNull final JTree tree,
-                                      final Object value,
-                                      final boolean selected,
-                                      final boolean expanded,
-                                      final boolean leaf,
-                                      final int row,
-                                      final boolean hasFocus) {
+    public void customizeCellRenderer(
+      @NotNull final JTree tree,
+      final Object value,
+      final boolean selected,
+      final boolean expanded,
+      final boolean leaf,
+      final int row,
+      final boolean hasFocus
+    ) {
       final Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
       if (userObject instanceof String) {
         append((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
@@ -570,10 +580,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           textAttributes = SimpleTextAttributes.ERROR_ATTRIBUTES;
           break;
       }
+
       // TODO(jacobr): color based on node level
       if (name != null && !name.isEmpty() && node.getShowName()) {
         // color in name?
-        if (textAttributes == SimpleTextAttributes.REGULAR_ATTRIBUTES && name.equals("child")) {
+        if (name.equals("child") || name.startsWith("child ")) {
           append(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         else {
@@ -585,17 +596,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         }
         append(" ");
       }
+
       // TODO(jacobr): custom display for units, colors, iterables, and icons.
       final String description = node.getDescription();
-      if (textAttributes == SimpleTextAttributes.REGULAR_ATTRIBUTES) {
-        final Matcher match = primaryDescriptionPattern.matcher(description);
-        if (match.matches()) {
-          append(match.group(1), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
-          append(match.group(2), textAttributes);
-        }
-        else {
-          append(node.getDescription(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
-        }
+      final Matcher match = primaryDescriptionPattern.matcher(description);
+      if (match.matches()) {
+        append(match.group(1), textAttributes);
+        append(" ");
+        append(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
       }
       else {
         append(node.getDescription(), textAttributes);
