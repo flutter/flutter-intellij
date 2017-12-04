@@ -93,3 +93,24 @@ Run integration tests without doing a build, assuming an edit-build-test cycle d
 Build everything then run all tests. The big question here is: Can we get integration tests to run using the newly-built plugin rather than sources?
 
 	`plugin build && plugin test`
+
+## Debugging
+
+It can be difficult to debug issues that only occur with a deployable
+plugin built by `plugin build`. Here's how to set up remote
+debugging with IntelliJ:
+
+In IntelliJ create a "Remote" type of run configuration. It 
+shows you the command-line arg you need to add in the top 
+text field of the run config. Copy that text.
+
+Now, (assuming you are on a Mac) find your IJ or AS app in 
+the Finder. Right-click, 'Show Package Contents', open 
+Contents, edit Info.plist. In the plist editor expand 
+JVMOptions and then edit VMOptions. Append the copied text 
+to the end. Save the plist editor and launch the AS or IJ app.
+
+Back in IntelliJ, select your new run config and click the 
+debug icon to attach the debugger to the app. The copied 
+text includes "suspend=n". If you want to set a breakpoint 
+before execution begins change that 'n' to 'y'.
