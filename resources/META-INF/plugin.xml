@@ -9,7 +9,7 @@
 
   <category>Custom Languages</category>
 
-  <version>19.1</version>
+  <version>20.0</version>
 
   <idea-version since-build="171.1" until-build="181.*"/>
 
@@ -29,6 +29,15 @@
 
   <change-notes>
     <![CDATA[
+
+20.0:
+<ul>
+  <li>improved console filtering</li>
+  <li>improved unit test running support to allow running package:flutter tests</li>
+  <li>improved "Open with Xcode..." logic to work better for plugin projects</li>
+  <li>fixed project creation to properly respect custom creation options (such as target language)</li>
+  <li>fixed an NPE sometimes encountered when deleting projects</li>
+</ul>
 
 19.1:
 <ul>
