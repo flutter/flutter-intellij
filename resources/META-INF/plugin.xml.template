@@ -30,6 +30,15 @@
   <change-notes>
     <![CDATA[
 
+20.0:
+<ul>
+  <li>improved console filtering</li>
+  <li>improved unit test running support to allow running package:flutter tests</li>
+  <li>improved "Open with Xcode..." logic to work better for plugin projects</li>
+  <li>fixed project creation to properly respect custom creation options (such as target language)</li>
+  <li>fixed an NPE sometimes encountered when deleting projects</li>
+</ul>
+
 19.1:
 <ul>
   <li>Bazel run configuration updates</li>
