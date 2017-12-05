@@ -28,12 +28,12 @@ public class ColorIconMaker {
             // draw a black and gray grid to use as the background to disambiguate
             // opaque colors from translucent colors.
             g2.setColor(Color.white);
-            g2.fillRect(iconMargin, iconMargin, getIconWidth() - iconMargin, getIconHeight() - iconMargin);
+            g2.fillRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
             g2.setColor(Color.gray);
-            g2.fillRect(iconMargin, iconMargin, getIconWidth() / 2, getIconHeight() / 2);
+            g2.fillRect(iconMargin, iconMargin, getIconWidth() / 2 - iconMargin, getIconHeight() / 2 - iconMargin);
             g2.fillRect(getIconWidth() / 2, getIconHeight() / 2, getIconWidth() / 2 - iconMargin, getIconHeight() / 2 - iconMargin);
             g2.setColor(color);
-            g2.fillRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight()- iconMargin * 2);
+            g2.fillRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
             g2.setColor(Color.black);
             g2.drawRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
           }

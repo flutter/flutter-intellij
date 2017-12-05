@@ -60,6 +60,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private static final DataKey<Tree> INSPECTOR_TREE_KEY = DataKey.create("Flutter.InspectorTree");
 
+  // We have to define this because SimpleTextAttributes does not define a
+  // value for warnings. This color looks reasonable for warnings both
+  // with the Dracula and the default themes.
+  private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.ORANGE);
+
   private FlutterApp getFlutterApp() {
     return flutterView.getFlutterApp();
   }
@@ -553,7 +558,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       case fine:
         return SimpleTextAttributes.GRAYED_ATTRIBUTES;
       case warning:
-        // TODO(jacobr): would be nice to use a yellow color for level warning.
+        return WARNING_ATTRIBUTES;
       case error:
         return SimpleTextAttributes.ERROR_ATTRIBUTES;
       case debug:
