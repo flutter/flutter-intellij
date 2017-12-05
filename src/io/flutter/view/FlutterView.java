@@ -86,7 +86,9 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(new DebugDrawAction(this));
-    toolbarGroup.add(new ToggleInspectModeAction(this));
+    if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
+      toolbarGroup.add(new ToggleInspectModeAction(this));
+    }
     toolbarGroup.add(new TogglePlatformAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new TimelineDashboardAction(this));
