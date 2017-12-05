@@ -190,6 +190,12 @@ public class FlutterModuleUtils {
 
     final RunManager runManager = RunManager.getInstance(project);
     if (!runManager.getConfigurationsList(configType).isEmpty()) {
+      if (runManager.getSelectedConfiguration() == null) {
+        final List<RunnerAndConfigurationSettings> flutterConfigs = runManager.getConfigurationSettingsList(configType);
+        if (!flutterConfigs.isEmpty()) {
+          runManager.setSelectedConfiguration(flutterConfigs.get(0));
+        }
+      }
       return;
     }
 
