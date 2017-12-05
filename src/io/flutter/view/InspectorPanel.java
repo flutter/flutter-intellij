@@ -12,10 +12,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.ColoredTreeCellRenderer;
-import com.intellij.ui.PopupHandler;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.*;
 import com.intellij.ui.dualView.TreeTableView;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
@@ -27,6 +24,7 @@ import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
 import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
 import io.flutter.inspector.*;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.ColorIconMaker;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +32,7 @@ import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -60,6 +59,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
   private static final DataKey<Tree> INSPECTOR_TREE_KEY = DataKey.create("Flutter.InspectorTree");
+
+  // We have to define this because SimpleTextAttributes does not define a
+  // value for warnings. This color looks reasonable for warnings both
+  // with the Dracula and the default themes.
+  private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.ORANGE);
 
   private FlutterApp getFlutterApp() {
     return flutterView.getFlutterApp();
@@ -456,34 +460,42 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
   }
 
-  static class PropertyNameColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+  static class PropertyNameColumnInfo extends ColumnInfo<DefaultMutableTreeNode, DiagnosticsNode> {
+    private final TableCellRenderer renderer = new PropertyNameRenderer();
+
     public PropertyNameColumnInfo(String name) {
       super(name);
     }
 
     @Nullable
     @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      final DiagnosticsNode diagnosticNode = (DiagnosticsNode)node.getUserObject();
-      final String name = diagnosticNode.getName();
-      return name == null ? "" : name;
+    public DiagnosticsNode valueOf(DefaultMutableTreeNode node) {
+      return (DiagnosticsNode)node.getUserObject();
+    }
+
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
+      return renderer;
     }
   }
 
-  static class PropertyValueColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+  static class PropertyValueColumnInfo extends ColumnInfo<DefaultMutableTreeNode, DiagnosticsNode> {
+    private final TableCellRenderer defaultRenderer;
+
     public PropertyValueColumnInfo(String name) {
       super(name);
+      defaultRenderer = new SimplePropertyValueRenderer();
     }
 
     @Nullable
     @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      final DiagnosticsNode diagnosticNode = (DiagnosticsNode)node.getUserObject();
-      final boolean isNull = diagnosticNode.getValueRef().getId() == null;
-      if (isNull) {
-        return null;
-      }
-      return diagnosticNode.getDescription();
+    public DiagnosticsNode valueOf(DefaultMutableTreeNode node) {
+      return (DiagnosticsNode)node.getUserObject();
+    }
+
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
+      return defaultRenderer;
     }
   }
 
@@ -522,6 +534,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         if (throwable != null) {
           // TODO(jacobr): show error message explaining properties could not
           // be loaded.
+          LOG.error(throwable);
           return;
         }
 
@@ -536,6 +549,91 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         }
         model.setRoot(root);
       });
+    }
+  }
+
+  private static SimpleTextAttributes textAttributesForLevel(DiagnosticLevel level) {
+    switch (level) {
+      case hidden:
+      case fine:
+        return SimpleTextAttributes.GRAYED_ATTRIBUTES;
+      case warning:
+        return WARNING_ATTRIBUTES;
+      case error:
+        return SimpleTextAttributes.ERROR_ATTRIBUTES;
+      case debug:
+      case info:
+      default:
+        return SimpleTextAttributes.REGULAR_ATTRIBUTES;
+    }
+  }
+
+  private static class PropertyNameRenderer extends ColoredTableCellRenderer {
+    @Override
+    protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+      if (value == null) return;
+      final DiagnosticsNode node = (DiagnosticsNode)value;
+      // If we should not show a separator then we should show the property name
+      // as part of the property value instead of in its own column.
+      if (!node.getShowSeparator()) {
+        return;
+      }
+      SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
+
+      if (!node.getShowName()) {
+        textAttributes = SimpleTextAttributes.GRAYED_ATTRIBUTES;
+        // TODO(jacobr): consider hiding the name completely
+      }
+      append(node.getName(), textAttributes);
+    }
+  }
+
+  /**
+   * Property value renderer that handles common cases where colored text
+   * is sufficient to describe the property value.
+   */
+  private static class SimplePropertyValueRenderer extends ColoredTableCellRenderer {
+    final Pattern colorPattern = Pattern.compile("^Color\\(0x([a-zA-Z0-9]+)\\)$");
+    final ColorIconMaker colorIconMaker = new ColorIconMaker();
+
+    @Override
+    protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+      if (value == null) return;
+      final DiagnosticsNode node = (DiagnosticsNode)value;
+      final SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
+
+      if (!node.getShowName()) {
+        append(node.getName(), textAttributes);
+        append(" ", textAttributes);
+      }
+      // TODO(jacobr): also provide custom UI display for padding, transform,
+      // and alignment properties.
+      if (node.getPropertyType().equals("Color")) {
+        final String colorValue = node.getDescription();
+        final Matcher matcher = colorPattern.matcher(colorValue);
+        if (matcher.matches()) {
+          final String colorWithAlpha = matcher.group(1);
+          final String alphaString = colorWithAlpha.substring(0, 2);
+          final String opaqueColor = colorWithAlpha.substring(2);
+          try {
+            Color color = Color.decode("0X" + opaqueColor);
+            int alpha = Integer.parseUnsignedInt(alphaString, 16);
+            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+            this.setIcon(colorIconMaker.getCustomIcon(color));
+            if (alpha == 255) {
+              append("#" + opaqueColor, textAttributes);
+            }
+            else {
+              append("#" + colorWithAlpha, textAttributes);
+            }
+            return;
+          }
+          catch (NumberFormatException e) {
+            LOG.error(e);
+          }
+        }
+      }
+      append(node.getDescription(), textAttributes);
     }
   }
 
@@ -564,24 +662,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (!(userObject instanceof DiagnosticsNode)) return;
       final DiagnosticsNode node = (DiagnosticsNode)userObject;
       final String name = node.getName();
-      SimpleTextAttributes textAttributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
-      switch (node.getLevel()) {
-        case hidden:
-        case fine:
-          textAttributes = SimpleTextAttributes.GRAYED_ATTRIBUTES;
-          break;
-        case debug:
-        case info:
-          textAttributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
-          break;
-        case warning:
-          // TODO(jacobr): would be nice to use a yellow color for level warning.
-        case error:
-          textAttributes = SimpleTextAttributes.ERROR_ATTRIBUTES;
-          break;
-      }
-
-      // TODO(jacobr): color based on node level
+      final SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
       if (name != null && !name.isEmpty() && node.getShowName()) {
         // color in name?
         if (name.equals("child") || name.startsWith("child ")) {
