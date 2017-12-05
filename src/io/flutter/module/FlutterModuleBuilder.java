@@ -282,7 +282,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   public void setFlutterSdkPath(String s) {
-    ComboBoxEditor combo = myStep.myPeer.getSdkEditor();
+    final ComboBoxEditor combo = myStep.myPeer.getSdkEditor();
     combo.setItem(s);
   }
 
