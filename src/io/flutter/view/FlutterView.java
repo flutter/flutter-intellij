@@ -286,7 +286,7 @@ class ToggleInspectModeAction extends AbstractToggleableAction {
   protected void perform(AnActionEvent event) {
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected(event));
 
-    // If toggling inspect mode on, bring any device to the forground.
+    // If toggling inspect mode on, bring any device to the foreground.
     if (isSelected(event)) {
       final FlutterDevice device = getDevice();
       if (device != null) {
