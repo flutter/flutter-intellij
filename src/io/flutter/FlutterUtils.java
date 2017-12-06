@@ -94,7 +94,7 @@ public class FlutterUtils {
     if (candidate == null) return false;
 
     final String relativePath = root.getRelativePath(candidate);
-    return relativePath != null && relativePath.startsWith("test/");
+    return relativePath != null && (relativePath.startsWith("test/") || relativePath.startsWith("example/test/"));
   }
 
   @Nullable
