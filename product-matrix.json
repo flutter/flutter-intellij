@@ -15,7 +15,7 @@
       "ideaProduct": "ideaIC",
       "ideaVersion": "2017.2",
       "dartPluginVersion": "172.3317.48",
-      "sinceBuild": "172.1",
+      "sinceBuild": "172.0",
       "untilBuild": "172.*"
     },
     {
@@ -24,7 +24,7 @@
       "ideaProduct": "ideaIC",
       "ideaVersion": "2017.3",
       "dartPluginVersion": "173.3302.13",
-      "sinceBuild": "173.1",
+      "sinceBuild": "173.0",
       "untilBuild": "181.*"
     }
   ]
