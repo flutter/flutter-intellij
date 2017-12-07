@@ -33,7 +33,7 @@ void main() {
         var specs = (runner.commands['abuild'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
       });
     });
     test('build', () {
@@ -42,7 +42,7 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
       });
     });
     test('test', () {
@@ -51,7 +51,7 @@ void main() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
       });
     });
     test('deploy', () {
@@ -60,7 +60,7 @@ void main() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio-ide', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
       });
     });
   });
