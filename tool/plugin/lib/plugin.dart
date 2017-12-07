@@ -168,7 +168,7 @@ void genTravisYml(List<BuildSpec> specs) {
   var file = new File(p.join(rootPath, '.travis.yml'));
   var env = '';
   for (var spec in specs) {
-    env += envLine(spec.ideaProduct, spec.ideaVersion, spec.dartPluginVersion);
+    env += envLine(spec.productFile, spec.ideaVersion, spec.dartPluginVersion);
   }
   var contents = travisHeader + env;
   file.writeAsStringSync(contents, flush: true);
@@ -668,6 +668,8 @@ class BuildSpec {
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
   bool get isReleaseMode => release != null;
+
+  String get productFile => isAndroidStudio ? "$ideaProduct-ide" : ideaProduct;
 
   void createArtifacts() {
     if (ideaProduct == 'android-studio') {
