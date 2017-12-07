@@ -12,12 +12,15 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
+import org.dartlang.vm.service.element.Instance;
+import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -414,20 +417,7 @@ public class DiagnosticsNode {
 
   private CompletableFuture<ArrayList<DiagnosticsNode>> properties;
 
-  /**
-   * Reference to the actual Dart DiagnosticsNode object this Java DiagnosticsNode
-   * describes.
-   * <p>
-   * We cannot use observatory protocol InstanceRef ids as they are not adequately long lived.
-   */
-  private String dartDiagnosticId;
-
-  /**
-   * Reference to the actual Dart value DiagnosticsNode describes.
-   * <p>
-   * We cannot use observatory protocol InstanceRef ids as they are not adequately long lived.
-   */
-  private String dartValueId;
+  private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
   private String getStringMember(@NotNull String memberName) {
     return JsonUtils.getStringMember(json, memberName);
@@ -472,6 +462,41 @@ public class DiagnosticsNode {
   public InspectorInstanceRef getValueRef() {
     final JsonElement valueId = json.get("valueId");
     return new InspectorInstanceRef(valueId.isJsonNull() ? null : valueId.getAsString());
+  }
+
+  /**
+   * Returns a list of raw Dart property values of the Dart value of this
+   * property that are useful for custom display of the property value.
+   * For example, get the red, green, and blue components of color.
+   *
+   * Unfortunately we cannot just use the list of fields from the Observatory
+   * Instance object for the Dart value because much of the relevant
+   * information to display good visualizations of Flutter values is stored
+   * in properties not in fields.
+   */
+  public CompletableFuture<Map<String, InstanceRef>> getValueProperties() {
+    final InspectorInstanceRef valueRef = getValueRef();
+    if (valueProperties == null) {
+      if (getPropertyType() == null || valueRef == null || valueRef.getId() == null) {
+        valueProperties = new CompletableFuture<>();
+        valueProperties.complete(null);
+        return valueProperties;
+      }
+      String[] propertyNames;
+      // Add more cases here as visual displays for additional Dart objects
+      // are added.
+      switch(getPropertyType()) {
+        case "Color":
+          propertyNames = new String[] { "red", "green", "blue", "alpha" };
+          break;
+        default:
+          valueProperties = new CompletableFuture<>();
+          valueProperties.complete(null);
+          return valueProperties;
+      }
+      valueProperties = inspectorService.getDartObjectProperties(getValueRef(), propertyNames);
+    }
+    return valueProperties;
   }
 
   public boolean hasChildren() {
