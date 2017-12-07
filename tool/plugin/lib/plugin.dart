@@ -63,6 +63,7 @@ env:
 ''';
 
 String rootPath;
+int pluginCount = 0;
 
 void addProductFlags(ArgParser argParser, String verb) {
   argParser.addFlag('ij', help: '$verb the IntelliJ plugin', defaultsTo: true);
@@ -287,7 +288,9 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
       case 'UNTIL':
         return spec.untilBuild;
       case 'VERSION':
-        return spec.release == null ? '' : '<version>${spec.release}</version>';
+        return spec.release == null
+            ? ''
+            : '<version>${spec.release}.${++pluginCount}</version>';
       default:
         throw 'unknown template variable: $name';
     }
