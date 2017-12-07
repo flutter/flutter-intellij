@@ -5,6 +5,7 @@
  */
 package io.flutter.inspector;
 
+import com.google.common.base.Joiner;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -16,15 +17,9 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
-import org.dartlang.vm.service.element.Event;
-import org.dartlang.vm.service.element.EventKind;
-import org.dartlang.vm.service.element.Instance;
-import org.dartlang.vm.service.element.InstanceRef;
+import org.dartlang.vm.service.element.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -119,6 +114,56 @@ public class InspectorService implements Disposable {
 
   CompletableFuture<DiagnosticsNode> parseDiagnosticsNode(CompletableFuture<InstanceRef> instanceRefFuture) {
     return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNode);
+  }
+
+  /**
+   * Returns a CompletableFuture with a Map of property names to Observatory
+   * InstanceRef objects. This method is shorthand for individually evaluating
+   * each of the getters specified by property names.
+   *
+   * It would be nice if the Observatory protocol provided a built in method
+   * to get InstanceRef objects for a list of properties but this is
+   * sufficient although slightly less efficient. The Observatory protocol
+   * does provide fast access to all fields as part of an Instance object
+   * but that is inadequate as for many Flutter data objects that we want
+   * to display visually we care about properties that are not neccesarily
+   * fields.
+   *
+   * The future will immediately complete to null if the inspectorInstanceRef is null.
+   */
+  public CompletableFuture<Map<String, InstanceRef>> getDartObjectProperties(
+      InspectorInstanceRef inspectorInstanceRef, final String[] propertyNames) {
+    return toObservatoryInstanceRef(inspectorInstanceRef).thenComposeAsync((InstanceRef instanceRef) -> {
+      final StringBuilder sb = new StringBuilder();
+      final List<String> propertyAccessors = new ArrayList<>();
+      final String objectName = "that";
+      for (String propertyName : propertyNames) {
+        propertyAccessors.add(objectName + "." + propertyName);
+      }
+      sb.append("<Object>[");
+      sb.append(Joiner.on(',').join(propertyAccessors));
+      sb.append("]");
+      final Map<String, String> scope = new HashMap<>();
+      scope.put(objectName, instanceRef.getId());
+      return getInstance(inspectorLibrary.eval(sb.toString(), scope)).thenApplyAsync(
+        (Instance instance) -> {
+        // We now have an instance object that is a Dart array of all the
+        // property values. Convert it back to a map from property name to
+        // property values.
+
+        final Map<String, InstanceRef> properties = new HashMap<>();
+        final ElementList<InstanceRef> values = instance.getElements();
+        assert(values.size() == propertyNames.length);
+        for (int i = 0; i < propertyNames.length; ++i) {
+          properties.put(propertyNames[i], values.get(i));
+        }
+        return properties;
+      });
+    });
+  }
+
+  public CompletableFuture<InstanceRef> toObservatoryInstanceRef(InspectorInstanceRef inspectorInstanceRef) {
+    return invokeServiceMethod("toObject", inspectorInstanceRef);
   }
 
   private CompletableFuture<Instance> getInstance(InstanceRef instanceRef) {

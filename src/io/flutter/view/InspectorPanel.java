@@ -18,13 +18,19 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
 import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
+import io.flutter.FlutterBundle;
 import io.flutter.inspector.*;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.ColorIconMaker;
+import org.dartlang.vm.service.element.BoundField;
+import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.Instance;
+import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -40,6 +46,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -527,27 +534,53 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     public void showProperties(DiagnosticsNode diagnostic) {
       // Temporarily clear.
       getTreeModel().setRoot(new DefaultMutableTreeNode());
+
       if (diagnostic == null) {
+        getTree().setToolTipText(null); // Nothing to show here.
         return;
       }
+      getEmptyText().setText(FlutterBundle.message("app.inspector.loading_properties"));
       whenCompleteUiThread(diagnostic.getProperties(), (ArrayList<DiagnosticsNode> properties, Throwable throwable) -> {
         if (throwable != null) {
-          // TODO(jacobr): show error message explaining properties could not
-          // be loaded.
+          getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_properties"));
           LOG.error(throwable);
           return;
         }
 
-        properties.sort(Comparator.comparing(DiagnosticsNode::getName));
-
-        final ListTreeTableModelOnColumns model = getTreeModel();
-        final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        for (DiagnosticsNode property : properties) {
-          if (property.getLevel() != DiagnosticLevel.hidden) {
-            root.add(new DefaultMutableTreeNode(property));
-          }
+        if (properties.size() == 0) {
+          getEmptyText().setText(FlutterBundle.message("app.inspector.no_properties"));
+          return;
         }
-        model.setRoot(root);
+
+        // Preload all information we need about each property before instantiating
+        // the UI so that the property display UI does not have to deal with values
+        // that are not yet available. As the number of properties is small this is
+        // a reasonable tradeoff.
+        final CompletableFuture[] futures = new CompletableFuture[properties.size()];
+        int i = 0;
+        for (DiagnosticsNode property : properties) {
+          futures[i] = property.getValueProperties();
+          ++i;
+        }
+        whenCompleteUiThread(CompletableFuture.allOf(futures), (Void ignored, Throwable errorGettingInstances) -> {
+          if (errorGettingInstances != null) {
+            // TODO(jacobr): show error message explaining properties could not
+            // be loaded.
+            LOG.error(errorGettingInstances);
+            getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_property_details"));
+            return;
+          }
+
+          final ListTreeTableModelOnColumns model = getTreeModel();
+          final DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+          for (DiagnosticsNode property : properties) {
+            if (property.getLevel() != DiagnosticLevel.hidden) {
+              root.add(new DefaultMutableTreeNode(property));
+            }
+          }
+          getEmptyText().setText(FlutterBundle.message("app.inspector.all_properties_hidden"));
+          model.setRoot(root);
+        });
       });
     }
   }
@@ -593,8 +626,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * is sufficient to describe the property value.
    */
   private static class SimplePropertyValueRenderer extends ColoredTableCellRenderer {
-    final Pattern colorPattern = Pattern.compile("^Color\\(0x([a-zA-Z0-9]+)\\)$");
     final ColorIconMaker colorIconMaker = new ColorIconMaker();
+
+    private static int getIntProperty(Map<String, InstanceRef> properties, String propertyName) {
+      if (properties == null || !properties.containsKey(propertyName)) {
+        return 0;
+      }
+      return Integer.parseInt(properties.get(propertyName).getValueAsString());
+    }
 
     @Override
     protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
@@ -608,29 +647,25 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       }
       // TODO(jacobr): also provide custom UI display for padding, transform,
       // and alignment properties.
-      if (node.getPropertyType().equals("Color")) {
-        final String colorValue = node.getDescription();
-        final Matcher matcher = colorPattern.matcher(colorValue);
-        if (matcher.matches()) {
-          final String colorWithAlpha = matcher.group(1);
-          final String alphaString = colorWithAlpha.substring(0, 2);
-          final String opaqueColor = colorWithAlpha.substring(2);
-          try {
-            Color color = Color.decode("0X" + opaqueColor);
-            int alpha = Integer.parseUnsignedInt(alphaString, 16);
-            color = new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+      final CompletableFuture<Map<String, InstanceRef>> propertiesFuture = node.getValueProperties();
+      if (propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
+        final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
+        switch (node.getPropertyType()) {
+          case "Color": {
+            final int alpha = getIntProperty(properties, "alpha");;
+            final int red = getIntProperty(properties, "red");;
+            final int green = getIntProperty(properties, "green");;
+            final int blue = getIntProperty(properties, "blue");;
+
+            final Color color = new Color(red, green, blue, alpha);
             this.setIcon(colorIconMaker.getCustomIcon(color));
             if (alpha == 255) {
-              append("#" + opaqueColor, textAttributes);
+              append(String.format("#%02x%02x%02x", red, green, blue), textAttributes);
+            } else {
+              append(String.format("#%02x%02x%02x%02x", alpha, red, green, blue), textAttributes);
             }
-            else {
-              append("#" + colorWithAlpha, textAttributes);
-            }
-            return;
           }
-          catch (NumberFormatException e) {
-            LOG.error(e);
-          }
+          return;
         }
       }
       append(node.getDescription(), textAttributes);
