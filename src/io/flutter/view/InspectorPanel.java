@@ -647,10 +647,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
         switch (node.getPropertyType()) {
           case "Color": {
-            int alpha = getIntProperty(properties, "alpha");;
-            int red = getIntProperty(properties, "red");;
-            int green = getIntProperty(properties, "green");;
-            int blue = getIntProperty(properties, "blue");;
+            final int alpha = getIntProperty(properties, "alpha");;
+            final int red = getIntProperty(properties, "red");;
+            final int green = getIntProperty(properties, "green");;
+            final int blue = getIntProperty(properties, "blue");;
 
             final Color color = new Color(red, green, blue, alpha);
             this.setIcon(colorIconMaker.getCustomIcon(color));

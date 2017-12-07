@@ -118,7 +118,8 @@ public class InspectorService implements Disposable {
 
   /**
    * Returns a CompletableFuture with a Map of property names to Observatory
-   * InstanceRef objects.
+   * InstanceRef objects. This method is shorthand for individually evaluating
+   * each of the getters specified by property names.
    *
    * It would be nice if the Observatory protocol provided a built in method
    * to get InstanceRef objects for a list of properties but this is
