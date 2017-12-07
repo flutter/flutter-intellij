@@ -18,10 +18,12 @@ import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.StatusText;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
 import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
+import io.flutter.FlutterBundle;
 import io.flutter.inspector.*;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.ColorIconMaker;
@@ -532,20 +534,21 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     public void showProperties(DiagnosticsNode diagnostic) {
       // Temporarily clear.
       getTreeModel().setRoot(new DefaultMutableTreeNode());
+
       if (diagnostic == null) {
+        getTree().setToolTipText(null); // Nothing to show here.
         return;
       }
+      getEmptyText().setText(FlutterBundle.message("app.inspector.loading_properties"));
       whenCompleteUiThread(diagnostic.getProperties(), (ArrayList<DiagnosticsNode> properties, Throwable throwable) -> {
         if (throwable != null) {
-          // TODO(jacobr): show error message explaining properties could not
-          // be loaded.
+          getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_properties"));
           LOG.error(throwable);
           return;
         }
 
         if (properties.size() == 0) {
-          // TODO(jacobr): display message that there are no properties
-          // and that no errors occurred.
+          getEmptyText().setText(FlutterBundle.message("app.inspector.no_properties"));
           return;
         }
 
@@ -564,6 +567,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
             // TODO(jacobr): show error message explaining properties could not
             // be loaded.
             LOG.error(errorGettingInstances);
+            getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_property_details"));
             return;
           }
 
@@ -574,6 +578,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
               root.add(new DefaultMutableTreeNode(property));
             }
           }
+          getEmptyText().setText(FlutterBundle.message("app.inspector.all_properties_hidden"));
           model.setRoot(root);
         });
       });
