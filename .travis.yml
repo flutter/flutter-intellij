@@ -15,21 +15,13 @@ before_script:
   - flutter doctor
   - export FLUTTER_SDK=`pwd`/flutter
 
-# Testing product matrix - see gs://flutter_infra/flutter/intellij/.
-# IDEA_PRODUCT can be one of ideaIC, or android-studio-ide.
-env:
-  # Android Studio 3.0
-  - IDEA_PRODUCT=android-studio-ide IDEA_VERSION=171.4408382 DART_PLUGIN_VERSION=171.4424.10
-
-  # TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
-  # IntelliJ 2017.1
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.1      DART_PLUGIN_VERSION=171.4694.29
-
-  # IntelliJ 2017.2
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=2017.2      DART_PLUGIN_VERSION=172.3317.48
-
-  # IntelliJ 2017.3 EAP
-  - IDEA_PRODUCT=ideaIC             IDEA_VERSION=173.3302.5  DART_PLUGIN_VERSION=173.3302.13
-
 # execution
 script: ./tool/travis.sh
+
+# Testing product matrix - see gs://flutter_infra/flutter/intellij/.
+# IDEA_PRODUCT can be one of ideaIC, or android-studio-ide.
+# TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
+env:
+  - IDEA_PRODUCT=android-studio-ide IDEA_VERSION=171.4408382 DART_PLUGIN_VERSION=171.4424.10
+  - IDEA_PRODUCT=ideaIC IDEA_VERSION=2017.2 DART_PLUGIN_VERSION=172.3317.48
+  - IDEA_PRODUCT=ideaIC IDEA_VERSION=2017.3 DART_PLUGIN_VERSION=173.3302.13
