@@ -84,8 +84,9 @@ public class FlutterUtils {
     return module != null && FlutterModuleUtils.usesFlutter(module);
   }
 
-  public static boolean isInTestDir(DartFile file) {
-    final PubRoot root = PubRoot.forPsiFile(file);
+  public static boolean isInTestDir(@Nullable DartFile file) {
+    if (file == null) return false;
+    final PubRoot root = PubRoot.forFile(file.getVirtualFile());
     if (root == null) return false;
 
     if (!FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()))) return false;
@@ -94,7 +95,7 @@ public class FlutterUtils {
     if (candidate == null) return false;
 
     final String relativePath = root.getRelativePath(candidate);
-    return relativePath != null && (relativePath.startsWith("test/") || relativePath.startsWith("example/test/"));
+    return relativePath != null && (relativePath.startsWith("test/"));
   }
 
   @Nullable
