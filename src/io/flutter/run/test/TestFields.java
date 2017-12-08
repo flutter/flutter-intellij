@@ -128,7 +128,8 @@ public class TestFields {
   @Nullable
   public PubRoot getPubRoot(@NotNull Project project) {
     final VirtualFile dir = getFileOrDir();
-    return (dir == null) ? null : PubRoot.forDescendant(dir, project);
+    final PubRoot root = PubRoot.forFile(dir);
+    return root != null ? root : PubRoot.forDescendant(dir, project);
   }
 
   /**

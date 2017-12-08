@@ -57,6 +57,20 @@ public class PubRoot {
   }
 
   /**
+   * Returns the first pub root containing the given file.
+   */
+  @Nullable
+  public static PubRoot forFile(@Nullable VirtualFile file) {
+    if (file == null) return null;
+    if (file.isDirectory()) {
+      final PubRoot root = forDirectory(file.getParent());
+      if (root != null) return root;
+    }
+
+    return forFile(file.getParent());
+  }
+
+  /**
    * Returns the unique pub root for a project.
    * <p>
    * If there is more than one, returns null.
