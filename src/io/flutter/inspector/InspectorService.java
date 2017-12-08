@@ -423,6 +423,38 @@ public class InspectorService implements Disposable {
     });
   }
 
+  public CompletableFuture<Map<String, InstanceRef>> getEnumPropertyValues(InspectorInstanceRef ref) {
+    if (ref == null || ref.getId() == null) {
+      CompletableFuture<Map<String, InstanceRef>> ret = new CompletableFuture<>();
+      ret.complete(new HashMap<>());
+      return ret;
+    }
+    return getInstance(toObservatoryInstanceRef(ref)).thenComposeAsync((Instance instance) -> {
+      return getInspectorLibrary().getClass(instance.getClassRef()).thenApplyAsync((ClassObj clazz) -> {
+        final Map<String, InstanceRef> properties = new LinkedHashMap<>();
+        for (FieldRef field : clazz.getFields()) {
+          final String name = field.getName();
+          if (name.startsWith("_")) {
+            // Needed to filter out _deleted_enum_sentinel synthetic property.
+            // If showing private enum values is useful we could special case
+            // just the _deleted_enum_sentinel property name.
+            continue;
+          }
+          if (name.equals("values")) {
+            // Need to filter out the synthetic "values" member.
+            // TODO(jacobr): detect that this properties return type is
+            // different and filter that way.
+            continue;
+          }
+          if (field.isConst() && field.isStatic()) {
+            properties.put(field.getName(), field.getDeclaredType());
+          }
+        }
+        return properties;
+      });
+    });
+  }
+
   public enum FlutterTreeType {
     widget("Widget"),
     renderObject("Render");
