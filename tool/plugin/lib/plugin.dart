@@ -237,12 +237,16 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     if (cmd.isTestMode) {
       return new Future(() => true);
     }
+    if (!cmd.isReleaseValid) {
+      log('the release identifier ("${cmd.release}") must be an integer or floating-point number');
+      return new Future(() => false);
+    }
     var gitDir = await GitDir.fromExisting(rootPath);
     var isClean = await gitDir.isWorkingTreeClean();
     if (isClean) {
       var branch = await gitDir.getCurrentBranch();
       var name = branch.branchName;
-      var result = name == "release_${cmd.release}";
+      var result = name == "release_${cmd.releaseMajor}";
       if (result) {
         if (isTravisFileValid()) {
           return new Future(() => result);
@@ -250,7 +254,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
           log('the .travis.yml file needs updating: plugin gen');
         }
       } else {
-        log('the current git branch must be named "$name"');
+        log('the current git branch must be named "release_${cmd.releaseMajor}"');
       }
     } else {
       log('the current git branch has uncommitted changes');
@@ -826,12 +830,31 @@ abstract class ProductCommand extends Command {
 
   bool get isReleaseMode => release != null;
 
+  bool get isReleaseValid {
+    var rel = release;
+    if (rel == null) {
+      return false;
+    }
+    return rel == new RegExp(r'\d+(?:\.\d+)?').stringMatch(rel);
+  }
+
   bool get isTestMode => globalResults['cwd'] != null;
 
   String get release {
     var rel = globalResults['release'];
     if (rel != null && rel.startsWith('=')) {
       rel = rel.substring(1);
+    }
+    return rel;
+  }
+
+  String get releaseMajor {
+    var rel = release;
+    if (rel != null) {
+      var idx = rel.indexOf('.');
+      if (idx > 0) {
+        rel = rel.substring(0, idx - 1);
+      }
     }
     return rel;
   }

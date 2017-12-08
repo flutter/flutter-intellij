@@ -65,6 +65,41 @@ void main() {
     });
   });
 
+  group('release', () {
+    test('simple', () async {
+      var runner = makeTestRunner();
+      TestDeployCommand cmd;
+      await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, true);
+    });
+    test('minor', () async {
+      var runner = makeTestRunner();
+      TestDeployCommand cmd;
+      await runner.run(["-r19.2", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, true);
+    });
+    test('patch invalid', () async {
+      var runner = makeTestRunner();
+      TestDeployCommand cmd;
+      await runner.run(["-r19.2.1", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, false);
+    });
+    test('non-numeric', () async {
+      var runner = makeTestRunner();
+      TestDeployCommand cmd;
+      await runner.run(["-rx19.2", "-d../..", "deploy"]).whenComplete(() {
+        cmd = (runner.commands['deploy'] as TestDeployCommand);
+      });
+      expect(cmd.isReleaseValid, false);
+    });
+  });
+
   group('deploy', () {
     test('clean', () {
       var runner = makeTestRunner();
