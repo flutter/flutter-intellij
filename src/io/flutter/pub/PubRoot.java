@@ -57,7 +57,7 @@ public class PubRoot {
   }
 
   /**
-   * Returns the first containing pub root for a given file.
+   * Returns the first pub root containing the given file.
    */
   @Nullable
   public static PubRoot forFile(@Nullable VirtualFile file) {
