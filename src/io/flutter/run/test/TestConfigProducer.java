@@ -89,16 +89,10 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
   }
 
   private VirtualFile verifyFlutterTestFile(TestConfig config, ConfigurationContext context, DartFile file) {
-    final PubRoot root = PubRoot.forPsiFile(file);
-    if (root == null) return null;
-
     final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
-    final String relativePath = root.getRelativePath(candidate);
-    if (relativePath == null || !relativePath.startsWith("test/")) return null;
-
-    return candidate;
+    return FlutterUtils.isInTestDir(file) ?  candidate : null;
   }
 
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
@@ -129,13 +123,11 @@ public class TestConfigProducer extends RunConfigurationProducer<TestConfig> {
 
     final String testName = TestConfigUtils.findTestName(context.getPsiLocation());
     if (config.getFields().getScope() == TestFields.Scope.NAME) {
-      if (testName == null || !testName.equals(config.getFields().getTestName())) return false;
+      return testName != null && testName.equals(config.getFields().getTestName());
     }
     else {
-      if (testName != null) return false;
+      return testName == null;
     }
-
-    return true;
   }
 
   @Override
