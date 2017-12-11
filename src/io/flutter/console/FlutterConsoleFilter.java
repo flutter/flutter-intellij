@@ -23,6 +23,8 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.run.FlutterReloadManager;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,6 +96,11 @@ public class FlutterConsoleFilter implements Filter {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
+    // Check for "restart" action in debugging output.
+    if (line.startsWith("you may need to restart the app")) {
+      return getRestartAppResult(line, entireLength - line.length());
+    }
+
     int lineNumber = 0;
     String pathPart = line.trim();
 
@@ -109,7 +116,7 @@ public class FlutterConsoleFilter implements Filter {
 
     // Check for embedded paths, e.g.,
     //    * "  • MyApp.xzzzz (lib/main.dart:6)"
-    //    * "  • _MyHomePageState._incrementCounter (lib/main.dart:49)
+    //    * "  • _MyHomePageState._incrementCounter (lib/main.dart:49)"
     final String[] parts = pathPart.split(" ");
     for (String part : parts) {
       // "(lib/main.dart:49)"
@@ -143,14 +150,41 @@ public class FlutterConsoleFilter implements Filter {
     return null;
   }
 
-  private Result getFlutterDoctorResult(final String line, final int lineStart) {
+  private static Result getFlutterDoctorResult(final String line, final int lineStart) {
     final int commandStart = line.indexOf('"') + 1;
     final int startOffset = lineStart + commandStart;
     final int commandLength = "flutter doctor".length();
-    return new Result(startOffset, startOffset + commandLength, new FlutteryHyperlinkInfo());
+    return new Result(startOffset, startOffset + commandLength, new FlutterDoctorHyperlinkInfo());
   }
 
-  private class FlutteryHyperlinkInfo implements HyperlinkInfo {
+  private static Result getRestartAppResult(final String line, final int lineStart) {
+    final int commandStart = line.indexOf("restart");
+    final int startOffset = lineStart + commandStart;
+    final int commandLength = "restart".length();
+    return new Result(startOffset, startOffset + commandLength, new RestartAppHyperlinkInfo());
+  }
+
+  private static class RestartAppHyperlinkInfo implements HyperlinkInfo {
+    @Override
+    public void navigate(final Project project) {
+      // TODO(pq) analytics for clicking the link? (We do log the command.)
+      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+      if (sdk == null) {
+        Messages.showErrorDialog(project, "Flutter SDK not found", "Error");
+        return;
+      }
+
+      final FlutterApp app = FlutterApp.fromProjectProcess(project);
+      if (app == null) {
+        Messages.showErrorDialog(project, "Running Flutter App not found", "Error");
+        return;
+      }
+
+      FlutterReloadManager.getInstance(project).saveAllAndRestart(app);
+    }
+  }
+
+  private static class FlutterDoctorHyperlinkInfo implements HyperlinkInfo {
     @Override
     public void navigate(final Project project) {
       // TODO(skybrian) analytics for clicking the link? (We do log the command.)

@@ -8,6 +8,7 @@ package io.flutter.run.daemon;
 import com.google.common.base.Stopwatch;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
@@ -15,6 +16,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -127,6 +129,24 @@ public class FlutterApp {
   @Nullable
   public static FlutterApp fromProcess(@NotNull ProcessHandler process) {
     return process.getUserData(FLUTTER_APP_KEY);
+  }
+
+
+  @Nullable
+  public static FlutterApp fromProjectProcess(@NotNull Project project) {
+    final List<RunContentDescriptor> runningProcesses =
+      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+    for (RunContentDescriptor descriptor : runningProcesses) {
+      final ProcessHandler process = descriptor.getProcessHandler();
+      if (process != null) {
+        final FlutterApp app = FlutterApp.fromProcess(process);
+        if (app != null) {
+          return app;
+        }
+      }
+    }
+
+    return null;
   }
 
   /**
