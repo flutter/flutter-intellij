@@ -5,6 +5,7 @@
  */
 package io.flutter.console;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.filters.Filter;
@@ -67,48 +68,76 @@ public class FlutterConsoleFilter implements Filter {
     this.module = module;
   }
 
+  @VisibleForTesting
+  @Nullable
+  public VirtualFile fileAtPath(@NotNull String pathPart) {
+
+    // "lib/main.dart:6"
+    pathPart = pathPart.split(":")[0];
+
+    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    for (VirtualFile root : roots) {
+      final String baseDirPath = root.getPath();
+      final String path = baseDirPath + "/" + pathPart;
+      final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+      if (!pathPart.isEmpty() && file != null && file.exists()) {
+        return file;
+      }
+    }
+
+    return null;
+  }
+
   @Nullable
   public Result applyFilter(final String line, final int entireLength) {
     if (line.startsWith("Run \"flutter doctor\" for information about installing additional components.")) {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
-    boolean openAsExternalFile = false;
-
+    int lineNumber = 0;
     String pathPart = line.trim();
 
-    // Check for, e.g., "Launching lib/main.dart"
-    if (line.startsWith("Launching ")) {
+    // Check for, e.g.,
+    //   * "Launching lib/main.dart"
+    //   * "open ios/Runner.xcworkspace"
+    if (line.startsWith("Launching ") || (line.startsWith("open "))) {
       final String[] parts = line.split(" ");
       if (parts.length > 1) {
         pathPart = parts[1];
       }
     }
 
-    // Check for, e.g., "open ios/Runner.xcworkspace"
-    if (pathPart.startsWith("open ")) {
-      final String[] parts = pathPart.split(" ");
-      if (parts.length > 1) {
-        if (FlutterUtils.isXcodeFileName(parts[1])) {
-          pathPart = parts[1];
-          openAsExternalFile = true;
+    // Check for embedded paths, e.g.,
+    //    * "  • MyApp.xzzzz (lib/main.dart:6)"
+    //    * "  • _MyHomePageState._incrementCounter (lib/main.dart:49)
+    final String[] parts = pathPart.split(" ");
+    for (String part : parts) {
+      // "(lib/main.dart:49)"
+      if (part.startsWith("(") && pathPart.endsWith(")")) {
+        part = part.substring(1, part.length() - 1);
+        final String[] split = part.split(":");
+        if (split.length == 2) {
+          try {
+            // Reconcile line number indexing.
+            lineNumber = Math.max(0, Integer.parseInt(split[1]) - 1);
+          }
+          catch (NumberFormatException e) {
+            // Ignored.
+          }
         }
+        pathPart = part;
       }
     }
 
-    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
-    for (VirtualFile root : roots) {
-      final String baseDirPath = root.getPath();
-      final String path = baseDirPath + "/" + pathPart;
+    final VirtualFile file = fileAtPath(pathPart);
+    if (file != null) {
+      // "open ios/Runner.xcworkspace"
+      final boolean openAsExternalFile = FlutterUtils.isXcodeFileName(pathPart);
+      final int lineStart = entireLength - line.length() + line.indexOf(pathPart);
 
-      final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
-      if (!pathPart.isEmpty() && file != null && file.exists()) {
-        final int lineStart = entireLength - line.length() + line.indexOf(pathPart);
-
-        final HyperlinkInfo hyperlinkInfo =
-          openAsExternalFile ? new OpenExternalFileHyperlink(file) : new OpenFileHyperlinkInfo(module.getProject(), file, 0, 0);
-        return new Result(lineStart, lineStart + pathPart.length(), hyperlinkInfo);
-      }
+      final HyperlinkInfo hyperlinkInfo =
+        openAsExternalFile ? new OpenExternalFileHyperlink(file) : new OpenFileHyperlinkInfo(module.getProject(), file, lineNumber, 0);
+      return new Result(lineStart, lineStart + pathPart.length(), hyperlinkInfo);
     }
 
     return null;
