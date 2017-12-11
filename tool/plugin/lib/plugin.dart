@@ -295,6 +295,12 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
         return spec.release == null
             ? ''
             : '<version>${spec.release}.${++pluginCount}</version>';
+      case 'DEPEND':
+        // If found, this is the module that triggers loading the Android Studio
+        // support. The public sources and the installable plugin use different ones.
+        return spec.isSynthetic
+            ? 'com.intellij.modules.androidstudio'
+            : 'com.android.tools.apk';
       default:
         throw 'unknown template variable: $name';
     }
@@ -529,6 +535,14 @@ class BuildCommand extends ProductCommand {
     }
     var result = 0;
     for (var spec in specs) {
+
+      if (!(isForIntelliJ && isForAndroidStudio)) {
+        // This is a little more complicated than I'd like because the
+        // default is to always do both.
+        if (isForAndroidStudio && !spec.isAndroidStudio) continue;
+        if (isForIntelliJ && spec.isAndroidStudio) continue;
+      }
+
       result = await spec.artifacts
           .provision(rebuildCache: isReleaseMode || argResults['unpack']);
       if (result != 0) {
@@ -672,7 +686,7 @@ class BuildSpec {
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
   bool get isReleaseMode => release != null;
-
+  bool get isSynthetic => false;
   String get productFile => isAndroidStudio ? "$ideaProduct-ide" : ideaProduct;
 
   void createArtifacts() {
@@ -898,6 +912,7 @@ class SyntheticBuildSpec extends BuildSpec {
       : super.fromJson(json, releaseNum);
 
   String get untilBuild => alternate['untilBuild'];
+  bool get isSynthetic => true;
 }
 
 /// Build the tests if necessary then
