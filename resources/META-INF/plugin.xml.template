@@ -23,9 +23,7 @@
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
-  <depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends>
-  <!-- note that com.android.tools.apk also implies com.intellij.modules.androidstudio but it is not available in sources -->
-  <!-- depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends -->
+  <depends optional="true" config-file="studio-contribs.xml">@DEPEND@</depends>
 
   <change-notes>
     <![CDATA[
