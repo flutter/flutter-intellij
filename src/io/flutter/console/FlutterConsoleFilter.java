@@ -72,7 +72,7 @@ public class FlutterConsoleFilter implements Filter {
   @Nullable
   public VirtualFile fileAtPath(@NotNull String pathPart) {
 
-    // lib/main.dart:6
+    // "lib/main.dart:6"
     pathPart = pathPart.split(":")[0];
 
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
@@ -112,7 +112,7 @@ public class FlutterConsoleFilter implements Filter {
     //    * "  • _MyHomePageState._incrementCounter (lib/main.dart:49)
     final String[] parts = pathPart.split(" ");
     for (String part : parts) {
-      // (lib/main.dart:49)
+      // "(lib/main.dart:49)"
       if (part.startsWith("(") && pathPart.endsWith(")")) {
         part = part.substring(1, part.length() - 1);
         final String[] split = part.split(":");
