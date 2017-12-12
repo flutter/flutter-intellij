@@ -172,7 +172,24 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Creates a Flutter run configuration if none exist.
+   * Ensures a Flutter run configuration is selected in the run pull down.
+   */
+  public static void ensureRunConfigSelected(@NotNull Project project) {
+    final FlutterRunConfigurationType configType = FlutterRunConfigurationType.getInstance();
+
+    final RunManager runManager = RunManager.getInstance(project);
+    if (!runManager.getConfigurationsList(configType).isEmpty()) {
+      if (runManager.getSelectedConfiguration() == null) {
+        final List<RunnerAndConfigurationSettings> flutterConfigs = runManager.getConfigurationSettingsList(configType);
+        if (!flutterConfigs.isEmpty()) {
+          runManager.setSelectedConfiguration(flutterConfigs.get(0));
+        }
+      }
+    }
+  }
+
+  /**
+   * Creates a Flutter run configuration if none exists.
    */
   public static void autoCreateRunConfig(@NotNull Project project, @NotNull PubRoot root) {
     assert ApplicationManager.getApplication().isReadAccessAllowed();
@@ -187,21 +204,10 @@ public class FlutterModuleUtils {
     }
 
     final FlutterRunConfigurationType configType = FlutterRunConfigurationType.getInstance();
-
     final RunManager runManager = RunManager.getInstance(project);
-    if (!runManager.getConfigurationsList(configType).isEmpty()) {
-      if (runManager.getSelectedConfiguration() == null) {
-        final List<RunnerAndConfigurationSettings> flutterConfigs = runManager.getConfigurationSettingsList(configType);
-        if (!flutterConfigs.isEmpty()) {
-          runManager.setSelectedConfiguration(flutterConfigs.get(0));
-        }
-      }
-      return;
-    }
 
     final RunnerAndConfigurationSettings settings =
       runManager.createRunConfiguration(project.getName(), configType.getFactory());
-
     final SdkRunConfig config = (SdkRunConfig)settings.getConfiguration();
 
     // Set config name.

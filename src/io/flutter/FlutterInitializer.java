@@ -129,8 +129,11 @@ public class FlutterInitializer implements StartupActivity {
         ensureAndroidSdk(project);
       }
 
-      // Setup a default run configuration for 'main.dart' (if it exists).
+      // Setup a default run configuration for 'main.dart' (if it's not there already and the file exists).
       FlutterModuleUtils.autoCreateRunConfig(project, root);
+
+      // Ensure a run config is selected and ready to go.
+      FlutterModuleUtils.ensureRunConfigSelected(project);
 
       // If there are no open editors, show main.
       final FileEditorManager editorManager = FileEditorManager.getInstance(project);
