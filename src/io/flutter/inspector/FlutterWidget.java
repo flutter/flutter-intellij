@@ -101,17 +101,18 @@ public class FlutterWidget {
 
   @Nullable
   private Icon initIcon() {
-    final List<String> categories = getCategories();
-    if (categories != null) {
-      // TODO(pq): consider priority over first match.
-      for (String label : categories) {
-        final Category category = Category.forLabel(label);
-        if (category != null) {
-          final Icon icon = category.getIcon();
-          if (icon != null) return icon;
-        }
-      }
-    }
+    // TODO(pq): re-enable category icons when we have a consistent icon set.
+    //final List<String> categories = getCategories();
+    //if (categories != null) {
+    //  // TODO(pq): consider priority over first match.
+    //  for (String label : categories) {
+    //    final Category category = Category.forLabel(label);
+    //    if (category != null) {
+    //      final Icon icon = category.getIcon();
+    //      if (icon != null) return icon;
+    //    }
+    //  }
+    //}
     return null;
   }
 
