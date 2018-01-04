@@ -15,6 +15,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
@@ -51,7 +52,8 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
         // Note that if the user creates more than one run config, they will need to rename it manually.
         name = template.getProject().getName();
         return ((BazelRunConfig)template).copyTemplateToNonTemplate(name);
-      } else {
+      }
+      else {
         return super.createConfiguration(name, template);
       }
     }
@@ -66,7 +68,8 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project));
+      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
+             FlutterModuleUtils.isFlutterBazelProject(project);
     }
   }
 }
