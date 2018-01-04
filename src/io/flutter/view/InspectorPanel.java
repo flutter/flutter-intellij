@@ -37,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -433,6 +434,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
       setRootVisible(false);
       registerShortcuts();
+
+      // Decrease indent, scaled for different display types.
+      final BasicTreeUI ui = (BasicTreeUI) getUI();
+      ui.setRightChildIndent(JBUI.scale(3));
     }
 
     void registerShortcuts() {
