@@ -12,7 +12,6 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
-import org.dartlang.vm.service.element.Instance;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

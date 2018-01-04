@@ -5,7 +5,6 @@
  */
 package io.flutter.utils;
 
-import com.intellij.ui.ColorUtil;
 import com.intellij.util.ui.GraphicsUtil;
 
 import javax.swing.*;
