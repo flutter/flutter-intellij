@@ -19,16 +19,8 @@ import com.intellij.psi.PsiFile;
 import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.SafeConstructor;
-import org.yaml.snakeyaml.nodes.Tag;
-import org.yaml.snakeyaml.representer.Representer;
-import org.yaml.snakeyaml.resolver.Resolver;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A snapshot of the root directory of a pub package.

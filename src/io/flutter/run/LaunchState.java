@@ -35,7 +35,6 @@ import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import io.flutter.actions.OpenSimulatorAction;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
