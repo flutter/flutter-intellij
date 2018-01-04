@@ -12,6 +12,6 @@ import io.flutter.utils.FlutterModuleUtils;
 public class FlutterViewCondition implements Condition<Project> {
   @Override
   public boolean value(Project project) {
-    return FlutterModuleUtils.hasFlutterModule(project);
+    return project != null && (FlutterModuleUtils.hasFlutterModule(project) || FlutterModuleUtils.isFlutterBazelProject(project));
   }
 }
