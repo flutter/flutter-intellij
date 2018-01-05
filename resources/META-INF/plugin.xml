@@ -14,6 +14,7 @@
   <idea-version since-build="171.1" until-build="181.*"/>
 
   <depends>Dart</depends>
+  <depends>org.jetbrains.android</depends>
 
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
@@ -23,9 +24,9 @@
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
-  <!-- depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends -->
+  <depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends>
   <!-- note that com.android.tools.apk also implies com.intellij.modules.androidstudio but it is not available in sources -->
-  <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
+  <!-- depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends -->
 
   <change-notes>
     <![CDATA[
