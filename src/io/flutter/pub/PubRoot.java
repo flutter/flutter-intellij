@@ -340,10 +340,7 @@ public class PubRoot {
    * Returns example/lib/main.dart if it exists.
    */
   public VirtualFile getExampleLibMain() {
-    if (lib == null) {
-      return null;
-    }
-    final VirtualFile exampleDir = lib.findChild("example");
+    final VirtualFile exampleDir = root.findChild("example");
     if (exampleDir != null) {
       final VirtualFile libDir = exampleDir.findChild("lib");
       if (libDir != null) {
