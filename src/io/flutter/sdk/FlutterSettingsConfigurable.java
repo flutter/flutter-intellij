@@ -52,8 +52,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private LinkLabel<String> myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
-  private JCheckBox myEnableWidgetInspectorCheckBox;
-  private LinkLabel<String> myInspectorFeedbackLink;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -87,15 +85,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       catch (URISyntaxException ignore) {
       }
     }, FlutterBundle.message("flutter.analytics.privacyUrl"));
-
-    myInspectorFeedbackLink.setIcon(null);
-    myInspectorFeedbackLink.setListener((label, linkUrl) -> {
-      try {
-        BrowserLauncher.getInstance().browse(new URI(linkUrl));
-      }
-      catch (URISyntaxException ignore) {
-      }
-    }, "https://goo.gl/WrMB43");
   }
 
   private void createUIComponents() {
@@ -139,10 +128,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isWidgetInspectorEnabled() != myEnableWidgetInspectorCheckBox.isSelected()) {
-      return true;
-    }
-
     //noinspection RedundantIfStatement
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
@@ -171,7 +156,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setWidgetInspectorEnabled(myEnableWidgetInspectorCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -193,7 +177,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    myEnableWidgetInspectorCheckBox.setSelected(settings.isWidgetInspectorEnabled());
   }
 
   private void updateVersionText() {

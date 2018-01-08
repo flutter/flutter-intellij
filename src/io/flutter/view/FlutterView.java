@@ -29,13 +29,11 @@ import io.flutter.FlutterBundle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -88,32 +86,15 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(new DebugDrawAction(this));
-    if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
-      toolbarGroup.add(new ToggleInspectModeAction(this));
-    }
+    toolbarGroup.add(new ToggleInspectModeAction(this));
     toolbarGroup.add(new TogglePlatformAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OpenObservatoryAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
-    final ContentManager contentManager = toolWindow.getContentManager();
-    if (FlutterSettings.getInstance().isWidgetInspectorEnabled()) {
-      addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
-      addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
-    }
-    else {
-      // Legacy case showing just an empty tool window panel.
-      final Content toolContent = contentFactory.createContent(null, "Main", false);
-      final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true, false);
-      toolContent.setComponent(toolWindowPanel);
-      toolContent.setCloseable(false);
-      final JPanel mainContent = new JPanel(new BorderLayout());
-      toolWindowPanel.setContent(mainContent);
-      toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
-      contentManager.addContent(toolContent);
-      contentManager.setSelectedContent(toolContent);
-    }
+    addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
+    addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
   }
 
   private void addInspectorPanel(String displayName,
