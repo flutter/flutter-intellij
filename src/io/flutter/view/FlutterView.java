@@ -26,7 +26,6 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -43,6 +42,9 @@ import java.util.Map;
 
 // TODO(devoncarew): Display an fps graph.
 // TODO(devoncarew): Have a pref setting for opening when starting a debug session.
+// TODO(devoncarew): The toggle settings can get out of sync with the runtime, after full
+//                   restarts or on new app launches. We need to query the framework and /
+//                   or listen to change events from the framework.
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -91,10 +93,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     }
     toolbarGroup.add(new TogglePlatformAction(this));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new TimelineDashboardAction(this));
-    if (FlutterSettings.getInstance().isMemoryDashboardEnabled()) {
-      toolbarGroup.add(new MemoryDashboardAction(this));
-    }
+    toolbarGroup.add(new OpenObservatoryAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
@@ -200,6 +199,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
     });
   }
 
+  private boolean hasFlutterApp() {
+    return getFlutterApp() != null;
+  }
+
   /**
    * State for the view.
    */
@@ -214,6 +217,7 @@ class DebugDrawAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaint", isSelected(event));
   }
 }
@@ -224,7 +228,28 @@ class PerformanceOverlayAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected(event));
+  }
+}
+
+class OpenObservatoryAction extends FlutterViewAction {
+  OpenObservatoryAction(@NotNull FlutterView view) {
+    super(view, FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"),
+          FlutterIcons.OpenObservatory);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    final FlutterApp app = view.getFlutterApp();
+    if (app == null) {
+      return;
+    }
+
+    final String url = app.getConnector().getBrowserUrl();
+    if (url != null) {
+      BrowserLauncher.getInstance().browse(url, null);
+    }
   }
 }
 
@@ -264,6 +289,7 @@ class RepaintRainbowAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected(event));
   }
 }
@@ -276,6 +302,7 @@ class TimeDilationAction extends AbstractToggleableAction {
   protected void perform(AnActionEvent event) {
     final Map<String, Object> params = new HashMap<>();
     params.put("timeDilation", isSelected(event) ? 5.0 : 1.0);
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callServiceExtension("ext.flutter.timeDilation", params);
   }
 }
@@ -286,6 +313,7 @@ class ToggleInspectModeAction extends AbstractToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected(event));
 
     // If toggling inspect mode on, bring any device to the foreground.
@@ -305,6 +333,7 @@ class HideSlowBannerAction extends AbstractToggleableAction {
 
   @Override
   protected void perform(AnActionEvent event) {
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected(event));
   }
 }
@@ -316,39 +345,8 @@ class ShowPaintBaselinesAction extends AbstractToggleableAction {
 
   @Override
   protected void perform(AnActionEvent event) {
+    assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected(event));
-  }
-}
-
-class TimelineDashboardAction extends FlutterViewAction {
-  TimelineDashboardAction(@NotNull FlutterView view) {
-    super(view, "Timeline Dashboard", "Open Timeline Dashboard", FlutterIcons.OpenTimelineDashboard);
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent event) {
-    FlutterInitializer.sendAnalyticsAction(this);
-
-    final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
-    if (httpUrl != null) {
-      BrowserLauncher.getInstance().browse(httpUrl + "/#/timeline-dashboard", null);
-    }
-  }
-}
-
-class MemoryDashboardAction extends FlutterViewAction {
-  MemoryDashboardAction(@NotNull FlutterView view) {
-    super(view, "Memory Dashboard", "Open Memory Dashboard", FlutterIcons.OpenMemoryDashboard);
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent event) {
-    FlutterInitializer.sendAnalyticsAction(this);
-
-    final String httpUrl = view.getFlutterApp().getConnector().getBrowserUrl();
-    if (httpUrl != null) {
-      BrowserLauncher.getInstance().browse(httpUrl + "/#/memory-dashboard", null);
-    }
   }
 }
 

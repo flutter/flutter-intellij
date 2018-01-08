@@ -15,7 +15,6 @@ import java.util.List;
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String memoryDashboardKey = "io.flutter.memoryDashboard";
   private static final String widgetInspectorKey = "io.flutter.widgetInspector";
 
   public static FlutterSettings getInstance() {
@@ -39,9 +38,6 @@ public class FlutterSettings {
     analytics.sendEvent("settings", "ping");
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
-    }
-    if (isMemoryDashboardEnabled()) {
-      analytics.sendEvent("settings", afterLastPeriod(memoryDashboardKey));
     }
     if (isWidgetInspectorEnabled()) {
       analytics.sendEvent("settings", afterLastPeriod(widgetInspectorKey));
@@ -72,16 +68,6 @@ public class FlutterSettings {
 
   public void setVerboseLogging(boolean value) {
     getPropertiesComponent().setValue(verboseLoggingKey, value, false);
-
-    fireEvent();
-  }
-
-  public boolean isMemoryDashboardEnabled() {
-    return getPropertiesComponent().getBoolean(memoryDashboardKey, false);
-  }
-
-  public void setMemoryDashboardEnabled(boolean value) {
-    getPropertiesComponent().setValue(memoryDashboardKey, value, false);
 
     fireEvent();
   }

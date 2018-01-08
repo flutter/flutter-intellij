@@ -52,7 +52,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private LinkLabel<String> myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
-  private JCheckBox myEnableMemoryDashboardCheckBox;
   private JCheckBox myEnableWidgetInspectorCheckBox;
   private LinkLabel<String> myInspectorFeedbackLink;
   private final @NotNull Project myProject;
@@ -140,10 +139,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isMemoryDashboardEnabled() != myEnableMemoryDashboardCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isWidgetInspectorEnabled() != myEnableWidgetInspectorCheckBox.isSelected()) {
       return true;
     }
@@ -176,7 +171,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setMemoryDashboardEnabled(myEnableMemoryDashboardCheckBox.isSelected());
     settings.setWidgetInspectorEnabled(myEnableWidgetInspectorCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -199,7 +193,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    myEnableMemoryDashboardCheckBox.setSelected(settings.isMemoryDashboardEnabled());
     myEnableWidgetInspectorCheckBox.setSelected(settings.isWidgetInspectorEnabled());
   }
 
