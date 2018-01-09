@@ -49,7 +49,7 @@ import java.util.Map;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
-  public static final String TOOL_WINDOW_ID = "Flutter";
+  public static final String TOOL_WINDOW_ID = "Flutter Inspector";
 
   @NotNull
   private FlutterView.State state = new FlutterView.State();
