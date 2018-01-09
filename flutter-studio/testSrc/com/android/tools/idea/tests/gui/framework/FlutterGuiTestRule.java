@@ -331,7 +331,17 @@ public class FlutterGuiTestRule implements TestRule {
     myTimeout = new Timeout(timeout, timeUnits);
     return this;
   }
-
+/*
+  @NotNull
+  public File getTestProjectsRootDirPath() {
+    String testDataPath = PathManager.getHomePath() + "/../adt/idea/android-uitests";
+    if (!new File(testDataPath).exists()) {
+      testDataPath = PathManagerEx.findFileUnderCommunityHome("plugins/android").getPath();
+    }
+    testDataPath = toCanonicalPath(toSystemDependentName(testDataPath));
+    return new File(testDataPath, "testData");
+  }
+*/
   private class IdeHandling implements TestRule {
     @NotNull
     @Override
