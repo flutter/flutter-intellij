@@ -511,7 +511,7 @@
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter" anchor="right" icon="FlutterIcons.Flutter_13"
+    <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.Flutter_13"
                 factoryClass="io.flutter.view.FlutterViewFactory"
                 conditionClass="io.flutter.view.FlutterViewCondition"/>
     <projectService serviceInterface="io.flutter.view.FlutterView"

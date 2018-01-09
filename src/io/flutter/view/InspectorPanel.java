@@ -432,7 +432,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
       // Decrease indent, scaled for different display types.
       final BasicTreeUI ui = (BasicTreeUI) getUI();
-      ui.setRightChildIndent(JBUI.scale(3));
+      ui.setRightChildIndent(JBUI.scale(4));
     }
 
     void registerShortcuts() {
