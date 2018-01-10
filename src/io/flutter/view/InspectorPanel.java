@@ -676,19 +676,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           }
 
           case "IconData": {
-            final String valueToString = node.getStringMember("valueToString");
-            if (valueToString != null) {
-              // IconData(U+0E88F)
-              final String prefix = "IconData(U+0";
-              // TODO(devoncarew): Is there a better way than string parsing?
-              if (valueToString.startsWith(prefix) && valueToString.endsWith(")")) {
-                final String str = valueToString.substring(prefix.length(), valueToString.length() - 1);
-                final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(str);
-                if (icon != null) {
-                  this.setIcon(icon);
-                  this.setIconOpaque(false);
-                  this.setTransparentIconBackground(true);
-                }
+            // IconData(U+0E88F)
+            final int codePoint = getIntProperty(properties, "codePoint");
+            if (codePoint > 0) {
+              final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(String.format("%1$04x", codePoint));
+              if (icon != null) {
+                this.setIcon(icon);
+                this.setIconOpaque(false);
+                this.setTransparentIconBackground(true);
               }
             }
             break;

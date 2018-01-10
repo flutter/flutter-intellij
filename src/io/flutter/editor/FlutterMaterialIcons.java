@@ -29,7 +29,7 @@ public class FlutterMaterialIcons {
   }
 
   public static Icon getMaterialIconForHex(String hexValue) {
-    final String iconName = icons.getProperty(hexValue.toLowerCase() + ".codepoint");
+    final String iconName = icons.getProperty(hexValue + ".codepoint");
     return getIcon(iconName);
   }
 
