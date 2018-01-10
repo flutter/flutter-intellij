@@ -9,7 +9,6 @@ import com.intellij.lang.annotation.Annotation;
 import com.intellij.lang.annotation.AnnotationHolder;
 import com.intellij.lang.annotation.Annotator;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.util.ui.ColorIcon;
 import com.jetbrains.lang.dart.psi.DartArrayAccessExpression;
@@ -27,21 +26,12 @@ public class FlutterEditorAnnotator implements Annotator {
   private static final Logger LOG = Logger.getInstance(FlutterEditorAnnotator.class);
 
   private static final Properties colors;
-  private static final Properties icons;
 
   static {
     colors = new Properties();
-    icons = new Properties();
 
     try {
       colors.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/colors.properties"));
-    }
-    catch (IOException e) {
-      LOG.warn(e);
-    }
-
-    try {
-      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons.properties"));
     }
     catch (IOException e) {
       LOG.warn(e);
@@ -80,11 +70,9 @@ public class FlutterEditorAnnotator implements Annotator {
       }
       else if (text.startsWith("Icons.")) {
         final String key = text.substring("Icons.".length());
-        if (icons.containsKey(key)) {
-          final Icon icon = getIcon(key);
-          if (icon != null) {
-            attachIcon(element, holder, icon);
-          }
+        final Icon icon = FlutterMaterialIcons.getMaterialIconForName(key);
+        if (icon != null) {
+          attachIcon(element, holder, icon);
         }
       }
     }
@@ -109,12 +97,9 @@ public class FlutterEditorAnnotator implements Annotator {
                             ? Integer.parseInt(val.substring(2), 16)
                             : Integer.parseInt(val);
           final String hex = Integer.toHexString(value);
-          final String iconName = icons.getProperty(hex + ".codepoint");
-          if (iconName != null) {
-            final Icon icon = getIcon(iconName);
-            if (icon != null) {
-              attachIcon(element, holder, icon);
-            }
+          final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(hex);
+          if (icon != null) {
+            attachIcon(element, holder, icon);
           }
         }
         catch (NumberFormatException ignored) {
@@ -135,14 +120,6 @@ public class FlutterEditorAnnotator implements Annotator {
         }
       }
     }
-  }
-
-  private Icon getIcon(String id) {
-    final String path = icons.getProperty(id);
-    if (path == null) {
-      return null;
-    }
-    return IconLoader.findIcon(path, FlutterEditorAnnotator.class);
   }
 
   private static Color getColor(String name) {

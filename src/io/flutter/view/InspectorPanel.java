@@ -23,6 +23,7 @@ import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
 import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
 import io.flutter.FlutterBundle;
+import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.*;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.ColorIconMaker;
@@ -431,7 +432,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       registerShortcuts();
 
       // Decrease indent, scaled for different display types.
-      final BasicTreeUI ui = (BasicTreeUI) getUI();
+      final BasicTreeUI ui = (BasicTreeUI)getUI();
       ui.setRightChildIndent(JBUI.scale(4));
     }
 
@@ -645,30 +646,54 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         append(node.getName(), textAttributes);
         append(" ", textAttributes);
       }
-      // TODO(jacobr): also provide custom UI display for padding, transform,
-      // and alignment properties.
+
+      boolean appendDescription = true;
+
+      // TODO(jacobr): also provide custom UI display for padding, transform, and alignment properties.
       final CompletableFuture<Map<String, InstanceRef>> propertiesFuture = node.getValueProperties();
       if (propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
         final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
         switch (node.getPropertyType()) {
           case "Color": {
-            final int alpha = getIntProperty(properties, "alpha");;
-            final int red = getIntProperty(properties, "red");;
-            final int green = getIntProperty(properties, "green");;
-            final int blue = getIntProperty(properties, "blue");;
+            final int alpha = getIntProperty(properties, "alpha");
+            final int red = getIntProperty(properties, "red");
+            final int green = getIntProperty(properties, "green");
+            final int blue = getIntProperty(properties, "blue");
 
+            //noinspection UseJBColor
             final Color color = new Color(red, green, blue, alpha);
             this.setIcon(colorIconMaker.getCustomIcon(color));
             if (alpha == 255) {
               append(String.format("#%02x%02x%02x", red, green, blue), textAttributes);
-            } else {
+            }
+            else {
               append(String.format("#%02x%02x%02x%02x", alpha, red, green, blue), textAttributes);
             }
+
+            appendDescription = false;
+
+            break;
           }
-          return;
+
+          case "IconData": {
+            // IconData(U+0E88F)
+            final int codePoint = getIntProperty(properties, "codePoint");
+            if (codePoint > 0) {
+              final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(String.format("%1$04x", codePoint));
+              if (icon != null) {
+                this.setIcon(icon);
+                this.setIconOpaque(false);
+                this.setTransparentIconBackground(true);
+              }
+            }
+            break;
+          }
         }
       }
-      append(node.getDescription(), textAttributes);
+
+      if (appendDescription) {
+        append(node.getDescription(), textAttributes);
+      }
     }
   }
 

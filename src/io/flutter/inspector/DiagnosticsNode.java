@@ -418,7 +418,7 @@ public class DiagnosticsNode {
 
   private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
-  private String getStringMember(@NotNull String memberName) {
+  public String getStringMember(@NotNull String memberName) {
     return JsonUtils.getStringMember(json, memberName);
   }
 
@@ -467,7 +467,7 @@ public class DiagnosticsNode {
    * Returns a list of raw Dart property values of the Dart value of this
    * property that are useful for custom display of the property value.
    * For example, get the red, green, and blue components of color.
-   *
+   * <p>
    * Unfortunately we cannot just use the list of fields from the Observatory
    * Instance object for the Dart value because much of the relevant
    * information to display good visualizations of Flutter values is stored
@@ -481,12 +481,15 @@ public class DiagnosticsNode {
         valueProperties.complete(null);
         return valueProperties;
       }
-      String[] propertyNames;
+      final String[] propertyNames;
       // Add more cases here as visual displays for additional Dart objects
       // are added.
-      switch(getPropertyType()) {
+      switch (getPropertyType()) {
         case "Color":
-          propertyNames = new String[] { "red", "green", "blue", "alpha" };
+          propertyNames = new String[]{"red", "green", "blue", "alpha"};
+          break;
+        case "IconData":
+          propertyNames = new String[]{"codePoint"};
           break;
         default:
           valueProperties = new CompletableFuture<>();
