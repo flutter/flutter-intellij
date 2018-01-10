@@ -418,7 +418,7 @@ public class DiagnosticsNode {
 
   private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
-  private String getStringMember(@NotNull String memberName) {
+  public String getStringMember(@NotNull String memberName) {
     return JsonUtils.getStringMember(json, memberName);
   }
 
