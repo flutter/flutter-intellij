@@ -67,7 +67,9 @@ import javax.swing.event.HyperlinkEvent;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -82,6 +84,17 @@ public class FlutterReloadManager {
   private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class);
 
   private static final String reloadSaveFeedbackKey = "io.flutter.askedUserReloadSaveFeedback";
+
+  private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
+
+  private static NotificationGroup getNotificationGroup(String toolWindowId) {
+    if (!toolWindowNotificationGroups.containsKey(toolWindowId)) {
+      final NotificationGroup notificationGroup = NotificationGroup.toolWindowGroup("Flutter " + toolWindowId, toolWindowId, false);
+      toolWindowNotificationGroups.put(toolWindowId, notificationGroup);
+    }
+
+    return toolWindowNotificationGroups.get(toolWindowId);
+  }
 
   private final @NotNull Project myProject;
   private final FlutterSettings mySettings;
@@ -261,8 +274,7 @@ public class FlutterReloadManager {
       content += " (<a href='open.analysis.view'>view issues</a>)";
     }
 
-    final NotificationGroup notificationGroup =
-      NotificationGroup.toolWindowGroup(FlutterRunNotifications.GROUP_DISPLAY_ID, DartProblemsView.TOOLWINDOW_ID, false);
+    final NotificationGroup notificationGroup = getNotificationGroup(DartProblemsView.TOOLWINDOW_ID);
     final Notification notification =
       notificationGroup.createNotification(
         title, content, isError ? NotificationType.ERROR : NotificationType.INFORMATION,
@@ -279,8 +291,7 @@ public class FlutterReloadManager {
 
   private Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
     final String toolWindowId = app.getMode() == RunMode.RUN ? ToolWindowId.RUN : ToolWindowId.DEBUG;
-    final NotificationGroup notificationGroup =
-      NotificationGroup.toolWindowGroup(FlutterRunNotifications.GROUP_DISPLAY_ID, toolWindowId, false);
+    final NotificationGroup notificationGroup = getNotificationGroup(toolWindowId);
     final Notification notification;
     if (title == null) {
       notification = notificationGroup.createNotification(content, isError ? NotificationType.ERROR : NotificationType.INFORMATION);
