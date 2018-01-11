@@ -273,7 +273,7 @@ public class DaemonApi {
   public static class RestartResult {
     private int code;
     private String message;
-    private String hint;
+    private String hintMessage;
     private String hintId;
 
     public boolean ok() {
@@ -288,8 +288,8 @@ public class DaemonApi {
       return message;
     }
 
-    public String getHint() {
-      return hint;
+    public String getHintMessage() {
+      return hintMessage;
     }
 
     public String getHintId() {
