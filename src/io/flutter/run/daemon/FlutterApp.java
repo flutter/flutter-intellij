@@ -178,7 +178,7 @@ public class FlutterApp {
 
     process.addProcessListener(new ProcessAdapter() {
       @Override
-      public void processTerminated(ProcessEvent event) {
+      public void processTerminated(@NotNull ProcessEvent event) {
         LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
         FlutterInitializer.sendAnalyticsAction(analyticsStop);
 

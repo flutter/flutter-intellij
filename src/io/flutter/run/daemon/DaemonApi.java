@@ -273,6 +273,8 @@ public class DaemonApi {
   public static class RestartResult {
     private int code;
     private String message;
+    private String hintMessage;
+    private String hintId;
 
     public boolean ok() {
       return code == 0;
@@ -284,6 +286,18 @@ public class DaemonApi {
 
     public String getMessage() {
       return message;
+    }
+
+    public String getHintMessage() {
+      return hintMessage;
+    }
+
+    public String getHintId() {
+      return hintId;
+    }
+
+    public boolean isRestartRecommended() {
+      return "restartRecommended".equals(hintId);
     }
 
     @Override

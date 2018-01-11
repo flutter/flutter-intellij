@@ -29,6 +29,7 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowId;
@@ -80,6 +81,10 @@ import java.util.stream.Collectors;
  */
 public class FlutterReloadManager {
   public static final String RELOAD_ON_SAVE_FEEDBACK_URL = "https://goo.gl/Pab4Li";
+
+  private static final String RESTART_SUGGESTED_TEXT =
+    "Not all changed program elements ran during view reassembly; consider restarting ("
+    + (SystemInfo.isMac ? "⇧⌘S" : "⇧^S") + ").";
 
   private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class);
 
@@ -228,6 +233,9 @@ public class FlutterReloadManager {
           if (!result.ok()) {
             showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
           }
+          else if (result.isRestartRecommended()) {
+            showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
+          }
         }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
       }
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
@@ -239,6 +247,9 @@ public class FlutterReloadManager {
       app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
+        }
+        else if (result.isRestartRecommended()) {
+          showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
         }
       });
     }
