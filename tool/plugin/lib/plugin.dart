@@ -867,7 +867,7 @@ abstract class ProductCommand extends Command {
     if (rel != null) {
       var idx = rel.indexOf('.');
       if (idx > 0) {
-        rel = rel.substring(0, idx - 1);
+        rel = rel.substring(0, idx);
       }
     }
     return rel;
