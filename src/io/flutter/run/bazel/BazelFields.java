@@ -218,13 +218,13 @@ public class BazelFields {
         commandLine.addParameter("--config=ios_" + arch);
       }
       else {
-        // --android_cpu=[armeabi, x86, x86_64]
+        // --android_cpu=[armeabi-v7a, x86, x86_64]
         String arch = null;
         final String platform = device.platform();
         if (platform != null) {
           switch (platform) {
             case "android-arm":
-              arch = "armeabi";
+              arch = "armeabi-v7a";
               break;
             case "android-x86":
               arch = "x86";
