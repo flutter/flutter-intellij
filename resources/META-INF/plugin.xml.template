@@ -45,6 +45,7 @@
   <li>show color properties with a nice color swatch icons/li>
   <li>add a notification for reloaded but not run elements/li>
   <li>show flutter material icons in the inspector/li>
+  <li>for Bazel launch configurations, update the android_cpu architecture type from armeabi to armeabi-v7a</li>
 </ul>
 
 20.0:
