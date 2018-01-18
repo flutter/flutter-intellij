@@ -359,6 +359,17 @@ public class DiagnosticsNode {
     return json.has("exception");
   }
 
+  public boolean hasCreationLocation() {
+    return json.has("creationLocation");
+  }
+
+  public Location getCreationLocation() {
+    if (!hasCreationLocation()) {
+      return null;
+    }
+    return new Location(json.getAsJsonObject("creationLocation"), null);
+  }
+
   /**
    * String representation of the type of the property [value].
    * <p>
