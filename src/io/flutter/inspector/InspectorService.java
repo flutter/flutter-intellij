@@ -36,6 +36,7 @@ public class InspectorService implements Disposable {
   private final VmService vmService;
   private final Set<InspectorServiceClient> clients;
   private EvalOnDartLibrary inspectorLibrary;
+  private CompletableFuture<Set<String>> supportedServiceMethods;
 
   public InspectorService(FlutterDebugProcess debugProcess, VmService vmService) {
     clients = new HashSet<>();
@@ -119,7 +120,7 @@ public class InspectorService implements Disposable {
    * Returns a CompletableFuture with a Map of property names to Observatory
    * InstanceRef objects. This method is shorthand for individually evaluating
    * each of the getters specified by property names.
-   *
+   * <p>
    * It would be nice if the Observatory protocol provided a built in method
    * to get InstanceRef objects for a list of properties but this is
    * sufficient although slightly less efficient. The Observatory protocol
@@ -127,11 +128,11 @@ public class InspectorService implements Disposable {
    * but that is inadequate as for many Flutter data objects that we want
    * to display visually we care about properties that are not neccesarily
    * fields.
-   *
+   * <p>
    * The future will immediately complete to null if the inspectorInstanceRef is null.
    */
   public CompletableFuture<Map<String, InstanceRef>> getDartObjectProperties(
-      InspectorInstanceRef inspectorInstanceRef, final String[] propertyNames) {
+    InspectorInstanceRef inspectorInstanceRef, final String[] propertyNames) {
     return toObservatoryInstanceRef(inspectorInstanceRef).thenComposeAsync((InstanceRef instanceRef) -> {
       final StringBuilder sb = new StringBuilder();
       final List<String> propertyAccessors = new ArrayList<>();
@@ -146,18 +147,18 @@ public class InspectorService implements Disposable {
       scope.put(objectName, instanceRef.getId());
       return getInstance(inspectorLibrary.eval(sb.toString(), scope)).thenApplyAsync(
         (Instance instance) -> {
-        // We now have an instance object that is a Dart array of all the
-        // property values. Convert it back to a map from property name to
-        // property values.
+          // We now have an instance object that is a Dart array of all the
+          // property values. Convert it back to a map from property name to
+          // property values.
 
-        final Map<String, InstanceRef> properties = new HashMap<>();
-        final ElementList<InstanceRef> values = instance.getElements();
-        assert(values.size() == propertyNames.length);
-        for (int i = 0; i < propertyNames.length; ++i) {
-          properties.put(propertyNames[i], values.get(i));
-        }
-        return properties;
-      });
+          final Map<String, InstanceRef> properties = new HashMap<>();
+          final ElementList<InstanceRef> values = instance.getElements();
+          assert (values.size() == propertyNames.length);
+          for (int i = 0; i < propertyNames.length; ++i) {
+            properties.put(propertyNames[i], values.get(i));
+          }
+          return properties;
+        });
     });
   }
 
@@ -227,6 +228,60 @@ public class InspectorService implements Disposable {
 
   CompletableFuture<ArrayList<DiagnosticsNode>> getProperties(InspectorInstanceRef instanceRef) {
     return getListHelper(instanceRef, "getProperties");
+  }
+
+  /**
+   * If the widget tree is not ready, the application should wait for the next
+   * Flutter.Frame event before attempting to display the widget tree. If the
+   * application is ready, the next Flutter.Frame event may never come as no
+   * new frames will be triggered to draw unless something changes in the UI.
+   */
+  public CompletableFuture<Boolean> isWidgetTreeReady() {
+    // TODO(jacobr): remove call to hasServiceMethod("isWidgetTreeReady") after
+    // the `isWidgetTreeReady` method has been in two revs of the Flutter Alpha
+    // channel. The feature is expected to have landed in the Flutter dev
+    // chanel on January 18, 2018.
+    return hasServiceMethod("isWidgetTreeReady").<Boolean>thenComposeAsync((Boolean hasMethod) -> {
+      if (!hasMethod) {
+        // Fallback if the InspectorService doesn't provide the
+        // isWidgetTreeReady method. In this case, we will fail gracefully
+        // risking not displaying the Widget tree but ensuring we do not throw
+        // exceptions due to accessing the widget tree before it is safe to.
+        CompletableFuture<Boolean> value = new CompletableFuture<>();
+        value.complete(false);
+        return value;
+      }
+      return invokeServiceMethod("isWidgetTreeReady").thenApplyAsync((InstanceRef ref) -> {
+        return "true".equals(ref.getValueAsString());
+      });
+    });
+  }
+
+  /**
+   * Use this method to write code that is backwards compatible with versions
+   * of Flutter that are too old to contain specific service methods.
+   */
+  private CompletableFuture<Boolean> hasServiceMethod(String methodName) {
+    if (supportedServiceMethods == null) {
+      EvalOnDartLibrary inspectorLibrary = getInspectorLibrary();
+      final CompletableFuture<Library> libraryFuture = inspectorLibrary.libraryRef.thenComposeAsync(inspectorLibrary::getLibrary);
+      supportedServiceMethods = libraryFuture.thenComposeAsync((Library library) -> {
+        for (ClassRef classRef : library.getClasses()) {
+          if ("WidgetInspectorService".equals(classRef.getName())) {
+            return inspectorLibrary.getClass(classRef).thenApplyAsync((ClassObj classObj) -> {
+              final Set<String> functionNames = new HashSet<>();
+              for (FuncRef funcRef : classObj.getFunctions()) {
+                functionNames.add(funcRef.getName());
+              }
+              return functionNames;
+            });
+          }
+        }
+        throw new RuntimeException("WidgetInspectorService class not found");
+      });
+    }
+
+    return supportedServiceMethods.thenApplyAsync(methodNames -> methodNames.contains(methodName));
   }
 
   private CompletableFuture<ArrayList<DiagnosticsNode>> getListHelper(

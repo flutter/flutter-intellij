@@ -156,6 +156,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     isActive = true;
     assert (getInspectorService() != null);
     getInspectorService().addClient(this);
+    getInspectorService().isWidgetTreeReady().thenAccept((Boolean ready) -> {
+      if (ready) {
+        onFlutterFrame();
+      }
+    });
   }
 
   private DefaultMutableTreeNode getRootNode() {
@@ -653,40 +658,43 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final CompletableFuture<Map<String, InstanceRef>> propertiesFuture = node.getValueProperties();
       if (propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
         final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
-        switch (node.getPropertyType()) {
-          case "Color": {
-            final int alpha = getIntProperty(properties, "alpha");
-            final int red = getIntProperty(properties, "red");
-            final int green = getIntProperty(properties, "green");
-            final int blue = getIntProperty(properties, "blue");
+        final String propertyType = node.getPropertyType();
+        if (propertyType != null) {
+          switch (propertyType) {
+            case "Color": {
+              final int alpha = getIntProperty(properties, "alpha");
+              final int red = getIntProperty(properties, "red");
+              final int green = getIntProperty(properties, "green");
+              final int blue = getIntProperty(properties, "blue");
 
-            //noinspection UseJBColor
-            final Color color = new Color(red, green, blue, alpha);
-            this.setIcon(colorIconMaker.getCustomIcon(color));
-            if (alpha == 255) {
-              append(String.format("#%02x%02x%02x", red, green, blue), textAttributes);
-            }
-            else {
-              append(String.format("#%02x%02x%02x%02x", alpha, red, green, blue), textAttributes);
-            }
-
-            appendDescription = false;
-
-            break;
-          }
-
-          case "IconData": {
-            // IconData(U+0E88F)
-            final int codePoint = getIntProperty(properties, "codePoint");
-            if (codePoint > 0) {
-              final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(String.format("%1$04x", codePoint));
-              if (icon != null) {
-                this.setIcon(icon);
-                this.setIconOpaque(false);
-                this.setTransparentIconBackground(true);
+              //noinspection UseJBColor
+              final Color color = new Color(red, green, blue, alpha);
+              this.setIcon(colorIconMaker.getCustomIcon(color));
+              if (alpha == 255) {
+                append(String.format("#%02x%02x%02x", red, green, blue), textAttributes);
               }
+              else {
+                append(String.format("#%02x%02x%02x%02x", alpha, red, green, blue), textAttributes);
+              }
+
+              appendDescription = false;
+
+              break;
             }
-            break;
+
+            case "IconData": {
+              // IconData(U+0E88F)
+              final int codePoint = getIntProperty(properties, "codePoint");
+              if (codePoint > 0) {
+                final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(String.format("%1$04x", codePoint));
+                if (icon != null) {
+                  this.setIcon(icon);
+                  this.setIconOpaque(false);
+                  this.setTransparentIconBackground(true);
+                }
+              }
+              break;
+            }
           }
         }
       }

@@ -14,10 +14,7 @@ import com.intellij.util.ReflectionUtil;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.IsolatesInfo;
 import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.Consumer;
-import org.dartlang.vm.service.consumer.EvaluateConsumer;
-import org.dartlang.vm.service.consumer.GetIsolateConsumer;
-import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.*;
 
 import java.lang.reflect.InvocationTargetException;
@@ -30,27 +27,53 @@ import java.util.concurrent.CompletableFuture;
  * Invoke methods from a specified Dart library using the observatory protocol.
  */
 public class EvalOnDartLibrary implements Disposable {
-  private final IsolatesInfo.IsolateInfo isolateInfo;
+  private String isolateId;
   private final VmService vmService;
   private final String libraryName;
   final CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
-
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
 
   public EvalOnDartLibrary(String libraryName, FlutterDebugProcess debugProcess, VmService vmService) {
     this.vmService = vmService;
     final Collection<IsolatesInfo.IsolateInfo> isolates = debugProcess.getIsolateInfos();
-    assert (isolates.size() == 1);
-    isolateInfo = Iterables.get(isolates, 0);
     this.libraryName = libraryName;
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
     libraryRef = new CompletableFuture<>();
-    initialize();
+
+    if (isolates.isEmpty()) {
+      // Due to a race condition that would take fixing the Dart plugin to fix,
+      // it is possible the debugProcess doesn't yet show any isolate infos
+      // even though the isolates have started so we get the isolate info
+      // ourselves in that case.
+      vmService.getVM(new VMConsumer() {
+        @Override
+        public void received(VM vm) {
+          final ElementList<IsolateRef> isolatesList = vm.getIsolates();
+          // If Flutter applications support multiple isolates we need to add
+          // logic to determine which isolate is running Flutter UI code.
+          assert(isolatesList.size() == 1);
+          isolateId = isolatesList.get(0).getId();
+          initialize();
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          libraryRef.completeExceptionally(new RuntimeException(error.toString()));
+        }
+      });
+    }
+    else {
+      // If Flutter applications support multiple isolates we need to add
+      // logic to determine which isolate is running Flutter UI code.
+      assert(isolates.size() == 1);
+      isolateId = Iterables.get(isolates, 0).getIsolateId();
+      initialize();
+    }
   }
 
   public String getIsolateId() {
-    return isolateInfo.getIsolateId();
+    return isolateId;
   }
 
   public void dispose() {
@@ -85,7 +108,7 @@ public class EvalOnDartLibrary implements Disposable {
       //noinspection CodeBlock2Expr
       libraryRef.thenAcceptAsync((LibraryRef ref) -> {
         evaluateHelper(
-          isolateInfo.getIsolateId(), ref.getId(), expression, scope,
+          getIsolateId(), ref.getId(), expression, scope,
           new EvaluateConsumer() {
             @Override
             public void onError(RPCError error) {
@@ -115,12 +138,13 @@ public class EvalOnDartLibrary implements Disposable {
     return future;
   }
 
-  public CompletableFuture<Instance> getInstance(InstanceRef instance) {
-    final CompletableFuture<Instance> future = new CompletableFuture<>();
+  @SuppressWarnings("unchecked")
+  public <T extends Obj> CompletableFuture<T> getObjHelper(ObjRef instance) {
+    final CompletableFuture<T> future = new CompletableFuture<>();
     //noinspection CodeBlock2Expr
     myRequestsScheduler.addRequest(() -> {
       vmService.getObject(
-        isolateInfo.getIsolateId(), instance.getId(), new GetObjectConsumer() {
+        getIsolateId(), instance.getId(), new GetObjectConsumer() {
           @Override
           public void onError(RPCError error) {
             future.completeExceptionally(new RuntimeException(error.toString()));
@@ -128,7 +152,7 @@ public class EvalOnDartLibrary implements Disposable {
 
           @Override
           public void received(Obj response) {
-            future.complete((Instance)response);
+            future.complete((T)response);
           }
 
           @Override
@@ -139,6 +163,18 @@ public class EvalOnDartLibrary implements Disposable {
       );
     }, 0);
     return future;
+  }
+
+  public CompletableFuture<Instance> getInstance(InstanceRef instance) {
+    return getObjHelper(instance);
+  }
+
+  public CompletableFuture<Library> getLibrary(LibraryRef instance) {
+    return getObjHelper(instance);
+  }
+
+  public CompletableFuture<ClassObj> getClass(ClassRef instance) {
+    return getObjHelper(instance);
   }
 
   public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture) {
@@ -163,7 +199,7 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   private void initialize() {
-    vmService.getIsolate(isolateInfo.getIsolateId(), new GetIsolateConsumer() {
+    vmService.getIsolate(isolateId, new GetIsolateConsumer() {
 
       @Override
       public void received(Isolate response) {
