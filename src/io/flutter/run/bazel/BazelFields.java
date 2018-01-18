@@ -224,7 +224,7 @@ public class BazelFields {
         if (platform != null) {
           switch (platform) {
             case "android-arm":
-              arch = "armeabi";
+              arch = "armeabi-v7a";
               break;
             case "android-x86":
               arch = "x86";
