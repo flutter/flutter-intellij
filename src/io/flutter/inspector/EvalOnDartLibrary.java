@@ -41,7 +41,7 @@ public class EvalOnDartLibrary implements Disposable {
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
     libraryRef = new CompletableFuture<>();
 
-    if (isolates.size() != 1) {
+    if (isolates.isEmpty()) {
       // Due to a race condition that would take fixing the Dart plugin to fix,
       // it is possible the debugProcess doesn't yet show any isolate infos
       // even though the isolates have started so we get the isolate info
@@ -50,9 +50,9 @@ public class EvalOnDartLibrary implements Disposable {
         @Override
         public void received(VM vm) {
           final ElementList<IsolateRef> isolatesList = vm.getIsolates();
-          if (isolatesList.size() != 1) {
-            libraryRef.completeExceptionally(new RuntimeException("Unexpected number of isolates:" + isolatesList.size()));
-          }
+          // If Flutter applications support multiple isolates we need to add
+          // logic to determine which isolate is running Flutter UI code.
+          assert(isolatesList.size() == 1);
           isolateId = isolatesList.get(0).getId();
           initialize();
         }
@@ -64,6 +64,9 @@ public class EvalOnDartLibrary implements Disposable {
       });
     }
     else {
+      // If Flutter applications support multiple isolates we need to add
+      // logic to determine which isolate is running Flutter UI code.
+      assert(isolates.size() == 1);
       isolateId = Iterables.get(isolates, 0).getIsolateId();
       initialize();
     }

@@ -237,6 +237,10 @@ public class InspectorService implements Disposable {
    * new frames will be triggered to draw unless something changes in the UI.
    */
   public CompletableFuture<Boolean> isWidgetTreeReady() {
+    // TODO(jacobr): remove call to hasServiceMethod("isWidgetTreeReady") after
+    // the `isWidgetTreeReady` method has been in two revs of the Flutter Alpha
+    // channel. The feature is expected to have landed in the Flutter dev
+    // chanel on January 18, 2018.
     return hasServiceMethod("isWidgetTreeReady").<Boolean>thenComposeAsync((Boolean hasMethod) -> {
       if (!hasMethod) {
         // Fallback if the InspectorService doesn't provide the
