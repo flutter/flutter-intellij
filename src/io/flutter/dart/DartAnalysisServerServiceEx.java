@@ -95,6 +95,9 @@ public class DartAnalysisServerServiceEx {
 
   private static final WeakHashMap<AnalysisServer, DartAnalysisServerServiceEx> serverToServiceEx = new WeakHashMap<>();
 
+  /**
+   * TODO(scheglov) Remove when we get listening for arbitrary responses in <code>DartAnalysisServerService</code>.
+   */
   public static DartAnalysisServerServiceEx get(DartAnalysisServerService base) {
     if (base == null) {
       return null;
@@ -119,6 +122,10 @@ public class DartAnalysisServerServiceEx {
       return null;
     }
 
+    // RemoteAnalysisServerImpl starts a new ServerResponseReaderThread that reads and process JSON responses.
+    // Each such thread that has a field "ResponseStream stream". The value of this field should be the same as the value of the field
+    // "RemoteAnalysisServerImpl.responseStream" in the corresponding instance of RemoteAnalysisServerImpl. We replace this value with the
+    // ResponseStream implementation that sends every read JSON to DartAnalysisServerServiceExResponseListener(s).
     Thread responseReaderThread = null;
     final List<Thread> threads = ThreadUtil.getCurrentGroupThreads();
     for (Thread thread : threads) {
