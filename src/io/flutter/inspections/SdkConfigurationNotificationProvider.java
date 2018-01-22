@@ -73,7 +73,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     if (flutterSdk == null) {
       return createNoFlutterSdkPanel(project);
     }
-    else if (!flutterSdk.getVersion().isSupported()) {
+    else if (!flutterSdk.getVersion().isMinRecommendedSupported()) {
       return createOutOfDateFlutterSdkPanel(flutterSdk);
     }
 
