@@ -66,12 +66,11 @@ public class FlutterSdkVersion {
   }
 
   public boolean flutterTestSupportsMachineMode() {
-    return version.compareTo(MIN_SUPPORTED_SDK.version) >= 0;
+    return isMinRecommendedSupported();
   }
 
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean flutterTestSupportsFiltering() {
-    return version.compareTo(MIN_SUPPORTED_SDK.version) >= 0;
+    return isMinRecommendedSupported();
   }
 
   @Override
