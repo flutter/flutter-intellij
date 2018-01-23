@@ -80,8 +80,10 @@ public class FlutterDartAnalysisServer {
       final JsonObject outlineObject = paramsObject.get("outline").getAsJsonObject();
       final FlutterOutline outline = FlutterOutline.fromJson(outlineObject);
       final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(file);
-      for (FlutterOutlineListener listener : Lists.newArrayList(listeners)) {
-        listener.outlineUpdated(file, outline);
+      if (listeners != null) {
+        for (FlutterOutlineListener listener : Lists.newArrayList(listeners)) {
+          listener.outlineUpdated(file, outline);
+        }
       }
     }
   }
