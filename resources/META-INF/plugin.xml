@@ -30,6 +30,11 @@
   <change-notes>
     <![CDATA[
 
+21.1:
+<ul>
+  <li>Fix an NPE when reading the Flutter SDK version file</li>
+</ul>
+
 21.0:
 <ul>
   <li>select an existing config at launch</li>
