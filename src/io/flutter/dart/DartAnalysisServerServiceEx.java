@@ -55,7 +55,7 @@ public class DartAnalysisServerServiceEx {
   @Nullable
   public String generateUniqueId() {
     try {
-      final Method generateUniqueId = ReflectionUtil.getMethod(analysisServer.getClass(), "generateUniqueId");
+      final Method generateUniqueId = ReflectionUtil.getDeclaredMethod(analysisServer.getClass(), "generateUniqueId");
       if (generateUniqueId != null) {
         return (String)generateUniqueId.invoke(analysisServer);
       }

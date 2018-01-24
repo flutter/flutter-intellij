@@ -11,6 +11,7 @@
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/testSrc/unit" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/testSrc/integration" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/third_party/analysisServer/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
