@@ -28,7 +28,7 @@
   <change-notes>
     <![CDATA[
 
-21.0:
+21.1:
 <ul>
   <li>Fix an NPE when reading the Flutter SDK version file</li>
 </ul>
