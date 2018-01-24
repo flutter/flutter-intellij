@@ -28,23 +28,28 @@
   <change-notes>
     <![CDATA[
 
+21.1:
+<ul>
+  <li>Fix an NPE when reading the Flutter SDK version file</li>
+</ul>
+
 21.0:
 <ul>
-  <li>select an existing config at launch/li>
-  <li>fix test discovery for plugin example tests/li>
-  <li>fix discovery of tests in example subdirs/li>
-  <li>improve pub root detection for flutter tests/li>
-  <li>actionable “restart” debugging console output/li>
-  <li>improve console hyperlinking for local files/li>
-  <li>fix run config autoselection for plugin projects/li>
-  <li>for non-bazel project configurations, don't show the FlutterBazelRunConfigurationType/li>
-  <li>update FlutterViewCondition to be bazel project aware/li>
-  <li>remove the preference for the Inspector view (it's now on by default)/li>
-  <li>rename the Flutter view to Flutter Inspector/li>
-  <li>clean up of the Flutter Inspector View icons/li>
-  <li>show color properties with a nice color swatch icons/li>
-  <li>add a notification for reloaded but not run elements/li>
-  <li>show flutter material icons in the inspector/li>
+  <li>select an existing config at launch</li>
+  <li>fix test discovery for plugin example tests</li>
+  <li>fix discovery of tests in example subdirs</li>
+  <li>improve pub root detection for flutter tests</li>
+  <li>actionable “restart” debugging console output</li>
+  <li>improve console hyperlinking for local files</li>
+  <li>fix run config autoselection for plugin projects</li>
+  <li>for non-bazel project configurations, don't show the FlutterBazelRunConfigurationType</li>
+  <li>update FlutterViewCondition to be bazel project aware</li>
+  <li>remove the preference for the Inspector view (it's now on by default)</li>
+  <li>rename the Flutter view to Flutter Inspector</li>
+  <li>clean up of the Flutter Inspector View icons</li>
+  <li>show color properties with a nice color swatch icons</li>
+  <li>add a notification for reloaded but not run elements</li>
+  <li>show flutter material icons in the inspector</li>
   <li>for Bazel launch configurations, update the android_cpu architecture type from armeabi to armeabi-v7a</li>
 </ul>
 
