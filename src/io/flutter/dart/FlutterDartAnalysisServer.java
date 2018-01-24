@@ -17,6 +17,7 @@ import java.util.*;
 public class FlutterDartAnalysisServer {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
 
+  @NotNull
   private final DartAnalysisServerServiceEx dartServiceEx;
 
   /**
@@ -27,7 +28,7 @@ public class FlutterDartAnalysisServer {
 
   private final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = new HashMap<>();
 
-  public FlutterDartAnalysisServer(DartAnalysisServerServiceEx dartServiceEx) {
+  public FlutterDartAnalysisServer(@NotNull DartAnalysisServerServiceEx dartServiceEx) {
     this.dartServiceEx = dartServiceEx;
     dartServiceEx.addListener(this::processNotification);
   }
