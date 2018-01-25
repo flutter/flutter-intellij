@@ -138,7 +138,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4408382 -Didea.product=
         <include name="src"/>
         <include name="resources"/>
         <include name="gen"/>
-        <include name="third_party/analysisServer/src"/>
         <include name="third_party/intellij-plugins-dart/src"/>
       </dirset>
     </path>
@@ -186,10 +185,6 @@ ant -Ddart.plugin.version=171.4424.10 -Didea.version=171.4408382 -Didea.product=
         <type type="file"/>
       </fileset>
       <fileset dir="gen">
-        <patternset refid="compiler.resources"/>
-        <type type="file"/>
-      </fileset>
-      <fileset dir="third_party/analysisServer/src">
         <patternset refid="compiler.resources"/>
         <type type="file"/>
       </fileset>
