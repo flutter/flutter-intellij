@@ -8,8 +8,6 @@ import 'package:plugin/plugin.dart' as plugin;
 
 /// Run from IntelliJ with a run configuration that has the working directory
 /// set to the project root directory.
-Future<int> main(List<String> arguments) async {
-  var result = await plugin.main(arguments);
-  exit(result);
-  return result; // Not reached.
+Future main(List<String> arguments) async {
+  exit(await plugin.main(arguments));
 }

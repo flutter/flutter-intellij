@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 
-import '../plugin.dart';
+import 'plugin.dart';
 
 class LintCommand extends Command {
   final BuildCommandRunner runner;
@@ -42,9 +42,7 @@ class LintCommand extends Command {
     final usages = {};
 
     imports.split('\n').forEach((String line) {
-      if (line
-          .trim()
-          .isEmpty) {
+      if (line.trim().isEmpty) {
         return;
       }
 
