@@ -10,12 +10,13 @@ import 'package:args/command_runner.dart';
 import 'package:git/git.dart';
 import 'package:path/path.dart' as p;
 
-import 'src/lint.dart';
+import 'lint.dart';
 
 Future<int> main(List<String> args) async {
   var runner = new BuildCommandRunner();
 
   runner.addCommand(new LintCommand(runner));
+  // ignore: deprecated_member_use
   runner.addCommand(new AntBuildCommand(runner));
   runner.addCommand(new BuildCommand(runner));
   runner.addCommand(new TestCommand(runner));
@@ -238,7 +239,8 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       return new Future(() => true);
     }
     if (!cmd.isReleaseValid) {
-      log('the release identifier ("${cmd.release}") must be an integer or floating-point number');
+      log('the release identifier ("${cmd
+          .release}") must be an integer or floating-point number');
       return new Future(() => false);
     }
     var gitDir = await GitDir.fromExisting(rootPath);
@@ -254,7 +256,8 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
           log('the .travis.yml file needs updating: plugin gen');
         }
       } else {
-        log('the current git branch must be named "release_${cmd.releaseMajor}"');
+        log('the current git branch must be named "release_${cmd
+            .releaseMajor}"');
       }
     } else {
       log('the current git branch has uncommitted changes');
@@ -362,15 +365,16 @@ Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
     s.transform(encoding.decoder).transform(const LineSplitter());
 
 /// Temporary command to use the Ant build script.
+@deprecated
 class AntBuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  AntBuildCommand(this.runner);
+  AntBuildCommand(this.runner) : super('abuild');
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
 
-  String get name => 'abuild';
+  bool get hidden => true;
 
   Future<int> doit() async {
     if (isReleaseMode) {
@@ -510,7 +514,7 @@ class ArtifactManager {
 class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  BuildCommand(this.runner) {
+  BuildCommand(this.runner) : super('build') {
     argParser.addFlag('unpack',
         abbr: 'u',
         help: 'Unpack the artifact files during provisioning, '
@@ -521,8 +525,6 @@ class BuildCommand extends ProductCommand {
 
   String get description => 'Build a deployable version of the Flutter plugin, '
       'compiled against the specified artifacts.';
-
-  String get name => 'build';
 
   Future<int> doit() async {
     if (isReleaseMode) {
@@ -535,7 +537,6 @@ class BuildCommand extends ProductCommand {
     }
     var result = 0;
     for (var spec in specs) {
-
       if (!(isForIntelliJ && isForAndroidStudio)) {
         // This is a little more complicated than I'd like because the
         // default is to always do both.
@@ -686,7 +687,9 @@ class BuildSpec {
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
   bool get isReleaseMode => release != null;
+
   bool get isSynthetic => false;
+
   String get productFile => isAndroidStudio ? "$ideaProduct-ide" : ideaProduct;
 
   void createArtifacts() {
@@ -715,11 +718,9 @@ class DeployCommand extends ProductCommand {
   String username;
   String tempDir;
 
-  DeployCommand(this.runner);
+  DeployCommand(this.runner) : super('deploy');
 
   String get description => 'Upload the Flutter plugin to the JetBrains site.';
-
-  String get name => 'deploy';
 
   Future<int> doit() async {
     if (isReleaseMode) {
@@ -800,13 +801,11 @@ class DeployCommand extends ProductCommand {
 class GenCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  GenCommand(this.runner);
+  GenCommand(this.runner) : super('gen');
 
   String get description =>
       'Generate a valid plugin.xml and .travis.yml for the Flutter plugin.\n'
       'The plugin.xml.template and product-matrix.json are used as input.';
-
-  String get name => 'gen';
 
   Future<int> doit() async {
     var json = readProductMatrix();
@@ -832,9 +831,10 @@ class GenCommand extends ProductCommand {
 }
 
 abstract class ProductCommand extends Command {
+  final String name;
   List<BuildSpec> specs;
 
-  ProductCommand() {
+  ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
   }
 
@@ -874,7 +874,7 @@ abstract class ProductCommand extends Command {
   }
 
   String archiveFilePath(BuildSpec spec) {
-    var subDir = isReleaseMode ? 'release_$release' : '';
+    var subDir = isReleaseMode ? 'release_$releaseMajor' : '';
     var filePath = p.join(
         rootPath, 'artifacts', subDir, spec.version, 'flutter-intellij.zip');
     return filePath;
@@ -906,21 +906,21 @@ abstract class ProductCommand extends Command {
 /// last one is the latest used during development. This BuildSpec combines
 /// those two.
 class SyntheticBuildSpec extends BuildSpec {
-  Map alternate;
+  final Map alternate;
 
   SyntheticBuildSpec.fromJson(Map json, String releaseNum, this.alternate)
       : super.fromJson(json, releaseNum);
 
   String get untilBuild => alternate['untilBuild'];
+
   bool get isSynthetic => true;
 }
 
-/// Build the tests if necessary then
-/// run them and return any failure code.
+/// Build the tests if necessary then run them and return any failure code.
 class TestCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  TestCommand(this.runner) {
+  TestCommand(this.runner) : super('test') {
     argParser.addFlag('unit',
         abbr: 'u', defaultsTo: true, help: 'Run unit tests');
     argParser.addFlag('integration',
@@ -928,8 +928,6 @@ class TestCommand extends ProductCommand {
   }
 
   String get description => 'Run the tests for the Flutter plugin.';
-
-  String get name => 'test';
 
   Future<int> doit() async {
     if (isReleaseMode) {

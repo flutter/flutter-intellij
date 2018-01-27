@@ -10,6 +10,7 @@ import 'package:test/test.dart';
 void main() {
   group("create", () {
     test('abuild', () {
+      // ignore: deprecated_member_use
       expect(new AntBuildCommand(new BuildCommandRunner()).name, "abuild");
     });
     test('build', () {
@@ -179,6 +180,7 @@ BuildCommandRunner makeTestRunner() {
   return runner;
 }
 
+// ignore: deprecated_member_use
 class TestAntBuildCommand extends AntBuildCommand {
   TestAntBuildCommand(runner) : super(runner);
 
