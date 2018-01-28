@@ -14,6 +14,7 @@ import java.util.List;
 
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
+  private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
 
   public static FlutterSettings getInstance() {
@@ -52,8 +53,18 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
+  public boolean isOpenInspectorOnAppLaunch() {
+    return getPropertiesComponent().getBoolean(openInspectorOnAppLaunchKey, true);
+  }
+
   public void setReloadOnSave(boolean value) {
     getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
+
+    fireEvent();
+  }
+
+  public void setOpenInspectorOnAppLaunch(boolean value) {
+    getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, true);
 
     fireEvent();
   }

@@ -21,6 +21,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -29,6 +30,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -39,7 +41,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 // TODO(devoncarew): Display an fps graph.
-// TODO(devoncarew): Have a pref setting for opening when starting a debug session.
 // TODO(devoncarew): The toggle settings can get out of sync with the runtime, after full
 //                   restarts or on new app launches. We need to query the framework and /
 //                   or listen to change events from the framework.
@@ -56,6 +57,8 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   @NotNull
   private final Project myProject;
+
+  private String restoreToolWindowId;
 
   @Nullable
   FlutterApp app;
@@ -134,6 +137,10 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
    * Called when a debug connection starts.
    */
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
+    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
+      autoActivateToolWindow();
+    }
+
     this.app = event.app;
 
     event.vmService.addVmServiceListener(new VmServiceListenerAdapter() {
@@ -146,6 +153,7 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       public void connectionClosed() {
         FlutterView.this.app = null;
         onAppChanged();
+        restorePreviousToolWindow();
       }
     });
 
@@ -182,6 +190,53 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   private boolean hasFlutterApp() {
     return getFlutterApp() != null;
+  }
+
+  /**
+   * Activate the tool window; on app termination, restore any previously active tool window.
+   */
+  private void autoActivateToolWindow() {
+    final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
+    if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
+      return;
+    }
+
+    restoreToolWindowId = null;
+
+    final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+    if (flutterToolWindow.isVisible()) {
+      return;
+    }
+
+    final ToolWindowManagerEx toolWindowManagerEx = (ToolWindowManagerEx)toolWindowManager;
+
+    for (String id : toolWindowManagerEx.getIdsOn(flutterToolWindow.getAnchor())) {
+      final ToolWindow toolWindow = toolWindowManagerEx.getToolWindow(id);
+      if (toolWindow.isVisible()) {
+        restoreToolWindowId = id;
+      }
+    }
+
+    flutterToolWindow.show(null);
+  }
+
+  private void restorePreviousToolWindow() {
+    if (restoreToolWindowId == null) {
+      return;
+    }
+
+    ApplicationManager.getApplication().invokeLater(() -> {
+      final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
+      final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+
+      // Show this view iff the flutter view is the one still visible.
+      if (flutterToolWindow.isVisible()) {
+        final ToolWindow toolWindow = toolWindowManager.getToolWindow(restoreToolWindowId);
+        toolWindow.show(null);
+      }
+
+      restoreToolWindowId = null;
+    });
   }
 
   /**
