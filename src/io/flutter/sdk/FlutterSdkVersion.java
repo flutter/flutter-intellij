@@ -6,9 +6,11 @@
 package io.flutter.sdk;
 
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,9 +21,11 @@ public class FlutterSdkVersion {
    */
   private static final FlutterSdkVersion MIN_SUPPORTED_SDK = new FlutterSdkVersion("0.0.12");
 
+  @Nullable
   private final Version version;
 
-  private FlutterSdkVersion(@NotNull String versionString) {
+  @VisibleForTesting
+  public FlutterSdkVersion(@NotNull String versionString) {
     version = Version.parseVersion(versionString);
   }
 
@@ -39,7 +43,8 @@ public class FlutterSdkVersion {
       return MIN_SUPPORTED_SDK;
     }
 
-    return new FlutterSdkVersion(versionString);
+    final FlutterSdkVersion sdkVersion = new FlutterSdkVersion(versionString);
+    return sdkVersion.isValid() ? sdkVersion : MIN_SUPPORTED_SDK;
   }
 
   private static String readVersionString(VirtualFile file) {
@@ -62,7 +67,8 @@ public class FlutterSdkVersion {
   }
 
   public boolean isMinRecommendedSupported() {
-    return version.compareTo(MIN_SUPPORTED_SDK.version) >= 0;
+    assert (MIN_SUPPORTED_SDK.version != null);
+    return version != null && version.compareTo(MIN_SUPPORTED_SDK.version) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {
@@ -75,6 +81,10 @@ public class FlutterSdkVersion {
 
   @Override
   public String toString() {
-    return version.toCompactString();
+    return version == null ? "unknown version" : version.toCompactString();
+  }
+
+  public boolean isValid() {
+    return version != null;
   }
 }
