@@ -49,11 +49,11 @@ import java.util.Map;
   name = "FlutterView",
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
-public class FlutterView implements PersistentStateComponent<FlutterView.State>, Disposable {
+public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
 
   @NotNull
-  private FlutterView.State state = new FlutterView.State();
+  private final FlutterViewState state = new FlutterViewState();
 
   @NotNull
   private final Project myProject;
@@ -75,21 +75,22 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
 
   @NotNull
   @Override
-  public FlutterView.State getState() {
+  public FlutterViewState getState() {
     return this.state;
   }
 
   @Override
-  public void loadState(FlutterView.State state) {
-    this.state = state;
+  public void loadState(FlutterViewState state) {
+    this.state.copyFrom(state);
   }
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(new DebugDrawAction(this));
     toolbarGroup.add(new ToggleInspectModeAction(this));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(new DebugDrawAction(this));
     toolbarGroup.add(new TogglePlatformAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OpenObservatoryAction(this));
@@ -238,12 +239,6 @@ public class FlutterView implements PersistentStateComponent<FlutterView.State>,
       restoreToolWindowId = null;
     });
   }
-
-  /**
-   * State for the view.
-   */
-  class State {
-  }
 }
 
 class DebugDrawAction extends AbstractToggleableAction {
@@ -345,7 +340,7 @@ class TimeDilationAction extends AbstractToggleableAction {
 
 class ToggleInspectModeAction extends AbstractToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterView view) {
-    super(view, "Toggle Inspect Mode", "Toggle Inspect Mode", AllIcons.General.LocateHover);
+    super(view, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
   }
 
   protected void perform(AnActionEvent event) {
