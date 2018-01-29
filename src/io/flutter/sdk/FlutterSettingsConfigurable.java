@@ -52,6 +52,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private LinkLabel<String> myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
+  private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -128,6 +129,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
+      return true;
+    }
+
     //noinspection RedundantIfStatement
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
@@ -155,6 +160,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
+    settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -176,6 +182,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
+    myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
   }
 
