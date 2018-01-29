@@ -13,8 +13,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -33,24 +35,23 @@ import icons.FlutterIcons;
 import io.flutter.dart.DartAnalysisServerServiceEx;
 import io.flutter.dart.DartPlugin;
 import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
+import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.dartlang.analysis.server.protocol.FlutterOutlineAttribute;
 import org.dartlang.analysis.server.protocol.FlutterOutlineKind;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
-
-import static io.flutter.dart.FlutterDartAnalysisServer.*;
+import java.util.Objects;
 
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
@@ -62,50 +63,29 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   @NotNull
   private PreviewView.State state = new PreviewView.State();
 
-  @NotNull final FlutterDartAnalysisServer flutterAnalysisServer;
+  @NotNull
+  private final Project project;
 
-  private Project project;
+  @NotNull
+  private final FlutterDartAnalysisServer flutterAnalysisServer;
+
+  private OutlineTree tree;
+
   private VirtualFile currentFile;
   private TextEditor currentEditor;
 
-  @Nullable
-  FlutterApp app;
-
-  private MyTree tree;
-
-  final OutlineListener outlineListener = new OutlineListener() {
+  final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
-      System.out.println("outlineUpdated: " + filePath + "   " + outline);
-      final DefaultMutableTreeNode rootNode = getRootNode();
-      rootNode.removeAllChildren();
-      showOutline(rootNode, ImmutableList.of(outline));
-      getTreeModel().reload(rootNode);
-      tree.expandAll();
-    }
-  };
-
-  private void showOutline(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
-    for (int i = 0; i < outlines.size(); i++) {
-      final FlutterOutline outline = outlines.get(i);
-
-      OutlineObject object = new OutlineObject(outline);
-
-      final DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
-      getTreeModel().insertNodeInto(node, parent, i);
-      if (outline.getChildren() != null) {
-        showOutline(node, outline.getChildren());
+      if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
+        final DefaultMutableTreeNode rootNode = getRootNode();
+        rootNode.removeAllChildren();
+        showOutline(rootNode, ImmutableList.of(outline));
+        getTreeModel().reload(rootNode);
+        tree.expandAll();
       }
     }
-  }
-
-  private DefaultTreeModel getTreeModel() {
-    return (DefaultTreeModel)tree.getModel();
-  }
-
-  private DefaultMutableTreeNode getRootNode() {
-    return (DefaultMutableTreeNode)getTreeModel().getRoot();
-  }
+  };
 
   public PreviewView(@NotNull Project project) {
     this.project = project;
@@ -146,7 +126,6 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     this.state = state;
   }
 
-
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
     final ContentManager contentManager = toolWindow.getContentManager();
@@ -185,8 +164,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
     final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
 
-    tree = new MyTree(rootNode);
-    tree.setCellRenderer(new MyTreeCellRenderer());
+    tree = new OutlineTree(rootNode);
+    tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
 
     tree.addMouseListener(new MouseAdapter() {
@@ -199,7 +178,6 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
             final OutlineObject object = (OutlineObject)node.getUserObject();
             System.out.println(object.outline.getClassName() + "  @" + object.outline.getOffset());
             if (currentEditor != null) {
-              //currentEditor.getEditor().set
               new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(true);
               currentEditor.getEditor().getCaretModel().moveToOffset(object.outline.getOffset());
             }
@@ -212,18 +190,28 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
+  }
 
+  private DefaultTreeModel getTreeModel() {
+    return (DefaultTreeModel)tree.getModel();
+  }
 
-    //toolbarGroup.add(new DebugDrawAction(this));
-    //toolbarGroup.add(new ToggleInspectModeAction(this));
-    //toolbarGroup.add(new TogglePlatformAction(this));
-    //toolbarGroup.addSeparator();
-    //toolbarGroup.add(new OpenObservatoryAction(this));
-    //toolbarGroup.addSeparator();
-    //toolbarGroup.add(new OverflowActionsAction(this));
-    //
-    //addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
-    //addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
+  private DefaultMutableTreeNode getRootNode() {
+    return (DefaultMutableTreeNode)getTreeModel().getRoot();
+  }
+
+  private void showOutline(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
+    for (int i = 0; i < outlines.size(); i++) {
+      final FlutterOutline outline = outlines.get(i);
+
+      final OutlineObject object = new OutlineObject(outline);
+
+      final DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
+      getTreeModel().insertNodeInto(node, parent, i);
+      if (outline.getChildren() != null) {
+        showOutline(node, outline.getChildren());
+      }
+    }
   }
 
   /**
@@ -234,16 +222,12 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 }
 
 
-class MyTree extends Tree {
-  MyTree(DefaultMutableTreeNode model) {
+class OutlineTree extends Tree {
+  OutlineTree(DefaultMutableTreeNode model) {
     super(model);
 
     setRootVisible(false);
     setToggleClickCount(0);
-
-    //// Decrease indent, scaled for different display types.
-    //final BasicTreeUI ui = (BasicTreeUI)getUI();
-    //ui.setRightChildIndent(JBUI.scale(4));
   }
 
   void expandAll() {
@@ -261,13 +245,6 @@ class OutlineObject {
 
   OutlineObject(FlutterOutline outline) {
     this.outline = outline;
-  }
-
-  String getName() {
-    if (outline.getKind().equals(FlutterOutlineKind.DART_ELEMENT)) {
-      return outline.getDartElement().getName();
-    }
-    return outline.getClassName();
   }
 
   Icon getIcon() {
@@ -306,7 +283,7 @@ class OutlineObject {
 }
 
 
-class MyTreeCellRenderer extends ColoredTreeCellRenderer {
+class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
   public void customizeCellRenderer(
     @NotNull final JTree tree,
     final Object value,
@@ -317,23 +294,50 @@ class MyTreeCellRenderer extends ColoredTreeCellRenderer {
     final boolean hasFocus
   ) {
     final Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
-    if (!(userObject instanceof OutlineObject)) return;
+    if (!(userObject instanceof OutlineObject)) {
+      return;
+    }
     final OutlineObject node = (OutlineObject)userObject;
+    final FlutterOutline outline = node.outline;
 
+    // Render a Dart element.
+    final Element dartElement = outline.getDartElement();
+    if (dartElement != null) {
+      final Icon icon = DartElementPresentationUtil.getIcon(dartElement);
+      setIcon(icon);
+
+      final String text = DartElementPresentationUtil.getText(dartElement);
+      append(text);
+      return;
+    }
+
+    // Render the widget icon.
     final Icon icon = node.getIcon();
     if (icon != null) {
       setIcon(icon);
     }
 
-    final String name = node.getName();
-    if (name != null) {
-      append(name, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    // Render the parent/child association.
+    if (outline.getParentAssociationLabel() != null) {
+      append(outline.getParentAssociationLabel() + ": ", SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }
 
-    // TODO(scheglov): custom display for units, colors, iterables, and icons.
-    if (name != null && name.equals("Text")) {
-      append(" ");
-      append("data: 'Foo bar'", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+    // Render the widget class.
+    append(outline.getClassName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+
+    // Render the variable.
+    if (outline.getVariableName() != null) {
+      append(" " + outline.getVariableName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    }
+
+    // Append all attributes.
+    final List<FlutterOutlineAttribute> attributes = outline.getAttributes();
+    if (attributes != null) {
+      for (FlutterOutlineAttribute attribute : attributes) {
+        append(" ");
+        append("[" + attribute.getName() + ": " + attribute.getLabel() + "]", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        // TODO(scheglov): custom display for units, colors, iterables, and icons?
+      }
     }
   }
 }

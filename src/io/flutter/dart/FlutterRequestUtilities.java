@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 /**
-<<<<<<< HEAD
  * A utilities class for generating analysis server json requests.
  */
 public class FlutterRequestUtilities {
