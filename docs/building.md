@@ -1,3 +1,5 @@
+_Note: this doc is out of date_
+
 ## Building the plugin
 
 We use ant to build the plugin; to check your ant install, run `ant -version`. We recommend
