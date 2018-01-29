@@ -28,6 +28,11 @@
   <change-notes>
     <![CDATA[
 
+21.2:
+<ul>
+  <li>Fix an NPE when the Flutter SDK version file contains the text 'unknown'</li>
+</ul>
+
 21.1:
 <ul>
   <li>Fix an NPE when reading the Flutter SDK version file</li>
