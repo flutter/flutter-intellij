@@ -424,9 +424,15 @@ public class InspectorService implements Disposable {
   }
 
   public enum FlutterTreeType {
-    widget,
-    renderObject,
+    widget("Widget"),
+    renderObject("Render");
     // TODO(jacobr): add semantics, and layer trees.
+
+    public final String displayName;
+
+    FlutterTreeType(String displayName) {
+      this.displayName = displayName;
+    }
   }
 
   public interface InspectorServiceClient {

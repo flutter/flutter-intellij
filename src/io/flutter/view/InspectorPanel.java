@@ -42,6 +42,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.CancellationException;
@@ -54,7 +56,7 @@ import java.util.regex.Pattern;
 // TODO(devoncarew): Should we filter out the WidgetInspector node type?
 
 public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient {
-  private final MyTree myRootsTree;
+  private final TreeDataProvider myRootsTree;
   private final PropertiesPanel myPropertiesPanel;
   private FlutterView view;
   private final Computable<Boolean> isApplicable;
@@ -89,15 +91,29 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     this.flutterView = flutterView;
     this.isApplicable = isApplicable;
 
-    myRootsTree = new MyTree(new DefaultMutableTreeNode(null));
+    myRootsTree = new TreeDataProvider(new DefaultMutableTreeNode(null), treeType.displayName);
     myRootsTree.addTreeExpansionListener(new MyTreeExpansionListener());
     myPropertiesPanel = new PropertiesPanel();
 
     initTree(myRootsTree);
     myRootsTree.getSelectionModel().addTreeSelectionListener(e -> selectionChanged());
-    // TODO(devoncarew): We should remember and restore the last splitter position.
+
     final Splitter treeSplitter = new Splitter(true);
-    treeSplitter.setProportion(0.8f);
+    treeSplitter.setProportion(flutterView.getState().getSplitterProportion());
+    flutterView.getState().addListener(e -> {
+      final float newProportion = flutterView.getState().getSplitterProportion();
+      if (treeSplitter.getProportion() != newProportion) {
+        treeSplitter.setProportion(newProportion);
+      }
+    });
+    //noinspection Convert2Lambda
+    treeSplitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        flutterView.getState().setSplitterProportion(treeSplitter.getProportion());
+      }
+    });
+
     // TODO(jacobr): surely there is more we should be disposing.
     Disposer.register(this, treeSplitter::dispose);
     treeSplitter.setFirstComponent(ScrollPaneFactory.createScrollPane(myRootsTree));
@@ -118,8 +134,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   public void onIsolateStopped() {
-    // Make sure we cleanup all references to objects from the stopped
-    // isolate as they are now obsolete.
+    // Make sure we cleanup all references to objects from the stopped isolate as they are now obsolete.
     if (rootFuture != null && !rootFuture.isDone()) {
       rootFuture.cancel(true);
     }
@@ -429,12 +444,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     // TODO(jacobr): actually implement.
   }
 
-  private static class MyTree extends Tree implements DataProvider, Disposable {
-    private MyTree(final DefaultMutableTreeNode treemodel) {
+  private static class TreeDataProvider extends Tree implements DataProvider, Disposable {
+    private TreeDataProvider(final DefaultMutableTreeNode treemodel, String treeName) {
       super(treemodel);
 
       setRootVisible(false);
       registerShortcuts();
+      getEmptyText().setText(treeName + " tree for the running app");
 
       // Decrease indent, scaled for different display types.
       final BasicTreeUI ui = (BasicTreeUI)getUI();
@@ -570,8 +586,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         }
         whenCompleteUiThread(CompletableFuture.allOf(futures), (Void ignored, Throwable errorGettingInstances) -> {
           if (errorGettingInstances != null) {
-            // TODO(jacobr): show error message explaining properties could not
-            // be loaded.
+            // TODO(jacobr): show error message explaining properties could not be loaded.
             LOG.error(errorGettingInstances);
             getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_property_details"));
             return;
