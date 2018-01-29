@@ -70,7 +70,6 @@ public class FlutterDartAnalysisServer {
    * Attempts to handle the given {@link JsonObject} as a notification.
    */
   private void processNotification(JsonObject response) {
-    System.out.println("[processNotification] " + response);
     final JsonElement eventElement = response.get("event");
     if (eventElement == null || !eventElement.isJsonPrimitive()) {
       return;
