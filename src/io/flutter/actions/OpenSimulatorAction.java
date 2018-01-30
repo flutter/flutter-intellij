@@ -39,7 +39,8 @@ public class OpenSimulatorAction extends AnAction {
         @Override
         public void processTerminated(final ProcessEvent event) {
           if (event.getExitCode() != 0) {
-            FlutterMessages.showError("Error Opening Simulator", event.getText());
+            final String msg = event.getText() != null ? event.getText() : "Process error - exit code: (" + event.getExitCode() + ")";
+            FlutterMessages.showError("Error Opening Simulator", msg);
           }
         }
       });
