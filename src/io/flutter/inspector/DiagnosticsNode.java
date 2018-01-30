@@ -463,6 +463,11 @@ public class DiagnosticsNode {
     return new InspectorInstanceRef(valueId.isJsonNull() ? null : valueId.getAsString());
   }
 
+  public boolean isEnumProperty() {
+    final String type = getType();
+    return type != null && type.startsWith("EnumProperty<");
+  }
+
   /**
    * Returns a list of raw Dart property values of the Dart value of this
    * property that are useful for custom display of the property value.
@@ -481,7 +486,13 @@ public class DiagnosticsNode {
         valueProperties.complete(null);
         return valueProperties;
       }
-      final String[] propertyNames;
+      if (isEnumProperty()) {
+        // Populate all the enum property values.
+        valueProperties = inspectorService.getEnumPropertyValues(getValueRef());
+        return valueProperties;
+      }
+
+      String[] propertyNames;
       // Add more cases here as visual displays for additional Dart objects
       // are added.
       switch (getPropertyType()) {

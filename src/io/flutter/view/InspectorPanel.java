@@ -5,6 +5,7 @@
  */
 package io.flutter.view;
 
+import com.google.common.base.Joiner;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -558,7 +559,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       getTreeModel().setRoot(new DefaultMutableTreeNode());
 
       if (diagnostic == null) {
-        getTree().setToolTipText(null); // Nothing to show here.
+        getEmptyText().setText(FlutterBundle.message("app.inspector.nothing_to_show"));
         return;
       }
       getEmptyText().setText(FlutterBundle.message("app.inspector.loading_properties"));
@@ -629,16 +630,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final DiagnosticsNode node = (DiagnosticsNode)value;
       // If we should not show a separator then we should show the property name
       // as part of the property value instead of in its own column.
-      if (!node.getShowSeparator()) {
+      if (!node.getShowSeparator() || !node.getShowName()) {
         return;
       }
-      SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
-
-      if (!node.getShowName()) {
-        textAttributes = SimpleTextAttributes.GRAYED_ATTRIBUTES;
-        // TODO(jacobr): consider hiding the name completely
-      }
-      append(node.getName(), textAttributes);
+      append(node.getName());
     }
   }
 
@@ -658,6 +653,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     @Override
     protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+      setToolTipText(null);
       if (value == null) return;
       final DiagnosticsNode node = (DiagnosticsNode)value;
       final SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
@@ -669,10 +665,20 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
       boolean appendDescription = true;
 
-      // TODO(jacobr): also provide custom UI display for padding, transform, and alignment properties.
+      if (node.getTooltip() != null) {
+        setToolTipText(node.getTooltip());
+      }
+      // TODO(jacobr): also provide custom UI display for padding, transform,
+      // and alignment properties.
       final CompletableFuture<Map<String, InstanceRef>> propertiesFuture = node.getValueProperties();
-      if (propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
+      if (propertiesFuture != null && propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
         final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
+        if (node.isEnumProperty() && properties != null) {
+          // We can display a better tooltip as we have access to introsection
+          // via the observatory service.
+          setToolTipText("Allowed values:\n" + Joiner.on('\n').join(properties.keySet()));
+        }
+
         final String propertyType = node.getPropertyType();
         if (propertyType != null) {
           switch (propertyType) {
