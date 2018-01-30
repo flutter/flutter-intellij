@@ -5,20 +5,16 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import com.google.common.collect.Lists;
-import com.google.dart.server.utilities.general.JsonUtilities;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-import org.apache.commons.lang3.StringUtils;
+import java.util.List;
 
 /**
  * An attribute for a FlutterOutline.
@@ -64,7 +60,11 @@ public class FlutterOutlineAttribute {
   /**
    * Constructor for {@link FlutterOutlineAttribute}.
    */
-  public FlutterOutlineAttribute(String name, String label, Boolean literalValueBoolean, Integer literalValueInteger, String literalValueString) {
+  public FlutterOutlineAttribute(String name,
+                                 String label,
+                                 Boolean literalValueBoolean,
+                                 Integer literalValueInteger,
+                                 String literalValueString) {
     this.name = name;
     this.label = label;
     this.literalValueBoolean = literalValueBoolean;
@@ -75,7 +75,7 @@ public class FlutterOutlineAttribute {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterOutlineAttribute) {
-      FlutterOutlineAttribute other = (FlutterOutlineAttribute) obj;
+      FlutterOutlineAttribute other = (FlutterOutlineAttribute)obj;
       return
         ObjectUtilities.equals(other.name, name) &&
         ObjectUtilities.equals(other.label, label) &&
@@ -89,7 +89,8 @@ public class FlutterOutlineAttribute {
   public static FlutterOutlineAttribute fromJson(JsonObject jsonObject) {
     String name = jsonObject.get("name").getAsString();
     String label = jsonObject.get("label").getAsString();
-    Boolean literalValueBoolean = jsonObject.get("literalValueBoolean") == null ? null : jsonObject.get("literalValueBoolean").getAsBoolean();
+    Boolean literalValueBoolean =
+      jsonObject.get("literalValueBoolean") == null ? null : jsonObject.get("literalValueBoolean").getAsBoolean();
     Integer literalValueInteger = jsonObject.get("literalValueInteger") == null ? null : jsonObject.get("literalValueInteger").getAsInt();
     String literalValueString = jsonObject.get("literalValueString") == null ? null : jsonObject.get("literalValueString").getAsString();
     return new FlutterOutlineAttribute(name, label, literalValueBoolean, literalValueInteger, literalValueString);
@@ -190,5 +191,4 @@ public class FlutterOutlineAttribute {
     builder.append("]");
     return builder.toString();
   }
-
 }

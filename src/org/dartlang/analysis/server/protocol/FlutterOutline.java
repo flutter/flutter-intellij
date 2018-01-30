@@ -5,20 +5,17 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import com.google.common.collect.Lists;
-import com.google.dart.server.utilities.general.JsonUtilities;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 import java.util.ArrayList;
 import java.util.Iterator;
-import org.apache.commons.lang3.StringUtils;
+import java.util.List;
 
 /**
  * An node in the Flutter specific outline structure of a file.
@@ -92,7 +89,16 @@ public class FlutterOutline {
   /**
    * Constructor for {@link FlutterOutline}.
    */
-  public FlutterOutline(String kind, int offset, int length, String label, Element dartElement, List<FlutterOutlineAttribute> attributes, String className, String parentAssociationLabel, String variableName, List<FlutterOutline> children) {
+  public FlutterOutline(String kind,
+                        int offset,
+                        int length,
+                        String label,
+                        Element dartElement,
+                        List<FlutterOutlineAttribute> attributes,
+                        String className,
+                        String parentAssociationLabel,
+                        String variableName,
+                        List<FlutterOutline> children) {
     this.kind = kind;
     this.offset = offset;
     this.length = length;
@@ -108,7 +114,7 @@ public class FlutterOutline {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof FlutterOutline) {
-      FlutterOutline other = (FlutterOutline) obj;
+      FlutterOutline other = (FlutterOutline)obj;
       return
         ObjectUtilities.equals(other.kind, kind) &&
         other.offset == offset &&
@@ -130,12 +136,16 @@ public class FlutterOutline {
     int length = jsonObject.get("length").getAsInt();
     String label = jsonObject.get("label") == null ? null : jsonObject.get("label").getAsString();
     Element dartElement = jsonObject.get("dartElement") == null ? null : Element.fromJson(jsonObject.get("dartElement").getAsJsonObject());
-    List<FlutterOutlineAttribute> attributes = jsonObject.get("attributes") == null ? null : FlutterOutlineAttribute.fromJsonArray(jsonObject.get("attributes").getAsJsonArray());
+    List<FlutterOutlineAttribute> attributes =
+      jsonObject.get("attributes") == null ? null : FlutterOutlineAttribute.fromJsonArray(jsonObject.get("attributes").getAsJsonArray());
     String className = jsonObject.get("className") == null ? null : jsonObject.get("className").getAsString();
-    String parentAssociationLabel = jsonObject.get("parentAssociationLabel") == null ? null : jsonObject.get("parentAssociationLabel").getAsString();
+    String parentAssociationLabel =
+      jsonObject.get("parentAssociationLabel") == null ? null : jsonObject.get("parentAssociationLabel").getAsString();
     String variableName = jsonObject.get("variableName") == null ? null : jsonObject.get("variableName").getAsString();
-    List<FlutterOutline> children = jsonObject.get("children") == null ? null : FlutterOutline.fromJsonArray(jsonObject.get("children").getAsJsonArray());
-    return new FlutterOutline(kind, offset, length, label, dartElement, attributes, className, parentAssociationLabel, variableName, children);
+    List<FlutterOutline> children =
+      jsonObject.get("children") == null ? null : FlutterOutline.fromJsonArray(jsonObject.get("children").getAsJsonArray());
+    return new FlutterOutline(kind, offset, length, label, dartElement, attributes, className, parentAssociationLabel, variableName,
+                              children);
   }
 
   public static List<FlutterOutline> fromJsonArray(JsonArray jsonArray) {
@@ -307,5 +317,4 @@ public class FlutterOutline {
     builder.append("]");
     return builder.toString();
   }
-
 }
