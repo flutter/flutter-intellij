@@ -53,6 +53,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
+  private JCheckBox myEnablePreviewViewCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -133,6 +134,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isPreviewView() != myEnablePreviewViewCheckBox.isSelected()) {
+      return true;
+    }
+
     //noinspection RedundantIfStatement
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
@@ -162,6 +167,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
+    settings.setPreviewView(myEnablePreviewViewCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -184,6 +190,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
+    myEnablePreviewViewCheckBox.setSelected(settings.isPreviewView());
   }
 
   private void updateVersionText() {

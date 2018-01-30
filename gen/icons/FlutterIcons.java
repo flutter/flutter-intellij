@@ -56,4 +56,9 @@ public class FlutterIcons {
   public static final Icon Stack = load("/icons/inspector/value.png");
   public static final Icon Styling = load("/icons/inspector/atrule.png");
   public static final Icon Text = load("/icons/inspector/textArea.png");
+
+  // Flutter Preview Widget Icons.
+  public static final Icon PreviewSurroundCenter = load("/icons/preview/surround_center.png");
+  public static final Icon PreviewSurroundColumn = load("/icons/preview/surround_column.png");
+  public static final Icon PreviewSurroundRow = load("/icons/preview/surround_row.png");
 }
