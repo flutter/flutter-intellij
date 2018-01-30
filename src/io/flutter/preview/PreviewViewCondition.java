@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.view.preview;
+package io.flutter.preview;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;

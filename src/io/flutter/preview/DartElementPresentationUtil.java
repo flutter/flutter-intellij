@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.view.preview;
+package io.flutter.preview;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.LayeredIcon;
@@ -17,7 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 import static com.intellij.icons.AllIcons.Nodes.*;
-import static com.intellij.icons.AllIcons.Nodes.PropertyWrite;
+import static com.intellij.icons.AllIcons.Nodes.Class;
+import static com.intellij.icons.AllIcons.Nodes.Enum;
 
 /**
  * Most of the class is copied from Dart Plugin.
@@ -35,7 +36,7 @@ public class DartElementPresentationUtil {
   private static final LayeredIcon TOP_LEVEL_CONST_ICON = new LayeredIcon(Variable, StaticMark, FinalMark);
 
   @Nullable
-  public static Icon getIcon(@NotNull  Element element) {
+  public static Icon getIcon(@NotNull Element element) {
     final boolean finalOrConst = element.isConst() || element.isFinal();
 
     switch (element.getKind()) {
