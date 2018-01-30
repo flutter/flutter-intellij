@@ -25,9 +25,11 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.TreeSpeedSearch;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
@@ -168,6 +170,19 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
 
+    new TreeSpeedSearch(tree) {
+      @Override
+      protected String getElementText(Object element) {
+        final TreePath path = (TreePath)element;
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+        final Object object = node.getUserObject();
+        if (object instanceof OutlineObject) {
+          return ((OutlineObject)object).getSpeedSearchString();
+        }
+        return null;
+      }
+    };
+
     tree.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
@@ -264,6 +279,42 @@ class OutlineObject {
     return icon;
   }
 
+  /**
+   * Return the string that is suitable for speed search. It has every name part separted so that we search only inside individual name
+   * parts, but not in their accidential concatenation.
+   */
+  @NotNull
+  String getSpeedSearchString() {
+    final StringBuilder builder = new StringBuilder();
+    final Element dartElement = outline.getDartElement();
+    if (dartElement != null) {
+      builder.append(dartElement.getName());
+    }
+    else {
+      builder.append(outline.getClassName());
+    }
+    if (outline.getParentAssociationLabel() != null) {
+      builder.append('|');
+      builder.append(outline.getParentAssociationLabel());
+      builder.append(": ");
+    }
+    if (outline.getVariableName() != null) {
+      builder.append('|');
+      builder.append(outline.getVariableName());
+    }
+
+    final List<FlutterOutlineAttribute> attributes = outline.getAttributes();
+    if (attributes != null) {
+      for (FlutterOutlineAttribute attribute : attributes) {
+        builder.append(attribute.getName());
+        builder.append(':');
+        builder.append(attribute.getLabel());
+      }
+    }
+
+    return builder.toString();
+  }
+
   private static Icon getCustomIcon(String text) {
     if (text == null) {
       return null;
@@ -284,6 +335,9 @@ class OutlineObject {
 
 
 class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
+  private JTree tree;
+  private boolean selected;
+
   public void customizeCellRenderer(
     @NotNull final JTree tree,
     final Object value,
@@ -300,6 +354,9 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     final OutlineObject node = (OutlineObject)userObject;
     final FlutterOutline outline = node.outline;
 
+    this.tree = tree;
+    this.selected = selected;
+
     // Render a Dart element.
     final Element dartElement = outline.getDartElement();
     if (dartElement != null) {
@@ -307,7 +364,7 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
       setIcon(icon);
 
       final String text = DartElementPresentationUtil.getText(dartElement);
-      append(text);
+      appendSearch(text, SimpleTextAttributes.REGULAR_ATTRIBUTES);
       return;
     }
 
@@ -319,15 +376,15 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
 
     // Render the parent/child association.
     if (outline.getParentAssociationLabel() != null) {
-      append(outline.getParentAssociationLabel() + ": ", SimpleTextAttributes.REGULAR_ATTRIBUTES);
+      appendSearch(outline.getParentAssociationLabel() + ": ", SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }
 
     // Render the widget class.
-    append(outline.getClassName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+    appendSearch(outline.getClassName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
 
     // Render the variable.
     if (outline.getVariableName() != null) {
-      append(" " + outline.getVariableName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+      appendSearch(outline.getVariableName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }
 
     // Append all attributes.
@@ -335,9 +392,17 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     if (attributes != null) {
       for (FlutterOutlineAttribute attribute : attributes) {
         append(" ");
-        append("[" + attribute.getName() + ": " + attribute.getLabel() + "]", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        append("[", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendSearch(attribute.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        append("]", SimpleTextAttributes.GRAYED_ATTRIBUTES);
         // TODO(scheglov): custom display for units, colors, iterables, and icons?
       }
     }
+  }
+
+  private void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
+    SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
   }
 }
