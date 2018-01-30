@@ -11,12 +11,18 @@ import com.jetbrains.lang.dart.DartComponentType;
 import com.jetbrains.lang.dart.util.DartPresentableUtil;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.ElementKind;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 import static com.intellij.icons.AllIcons.Nodes.*;
 import static com.intellij.icons.AllIcons.Nodes.PropertyWrite;
 
+/**
+ * Most of the class is copied from Dart Plugin.
+ * https://github.com/JetBrains/intellij-plugins/blob/master/Dart/src/com/jetbrains/lang/dart/ide/structure/DartStructureViewElement.java
+ */
 public class DartElementPresentationUtil {
   private static final LayeredIcon STATIC_FINAL_FIELD_ICON = new LayeredIcon(Field, StaticMark, FinalMark);
   private static final LayeredIcon FINAL_FIELD_ICON = new LayeredIcon(Field, FinalMark);
@@ -28,7 +34,8 @@ public class DartElementPresentationUtil {
   private static final LayeredIcon FUNCTION_INVOCATION_ICON = new LayeredIcon(Method, TabPin);
   private static final LayeredIcon TOP_LEVEL_CONST_ICON = new LayeredIcon(Variable, StaticMark, FinalMark);
 
-  public static Icon getIcon(Element element) {
+  @Nullable
+  public static Icon getIcon(@NotNull  Element element) {
     final boolean finalOrConst = element.isConst() || element.isFinal();
 
     switch (element.getKind()) {
@@ -36,6 +43,7 @@ public class DartElementPresentationUtil {
         return element.isAbstract() ? AbstractClass : Class;
       case ElementKind.CONSTRUCTOR:
         return Method;
+      // TODO(scheglov) Enable once minimal version is 2017.3
       //case ElementKind.CONSTRUCTOR_INVOCATION:
       //  return CONSTRUCTOR_INVOCATION_ICON;
       case ElementKind.ENUM:
@@ -49,6 +57,7 @@ public class DartElementPresentationUtil {
         return Field;
       case ElementKind.FUNCTION:
         return element.isTopLevelOrStatic() ? TOP_LEVEL_FUNCTION_ICON : Function;
+      // TODO(scheglov) Enable once minimal version is 2017.3
       //case ElementKind.FUNCTION_INVOCATION:
       //  return FUNCTION_INVOCATION_ICON;
       case ElementKind.FUNCTION_TYPE_ALIAS:
@@ -78,7 +87,8 @@ public class DartElementPresentationUtil {
     }
   }
 
-  public static String getText(Element element) {
+  @NotNull
+  public static String getText(@NotNull Element element) {
     final StringBuilder b = new StringBuilder(element.getName());
     if (!StringUtil.isEmpty(element.getTypeParameters())) {
       b.append(element.getTypeParameters());

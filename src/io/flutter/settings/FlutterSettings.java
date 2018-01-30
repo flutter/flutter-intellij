@@ -16,6 +16,7 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
+  private static final String previewViewKey = "io.flutter.previewView";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -36,9 +37,6 @@ public class FlutterSettings {
 
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
-    if (isReloadOnSave()) {
-      analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
-    }
   }
 
   public void addListener(Listener listener) {
@@ -47,6 +45,16 @@ public class FlutterSettings {
 
   public void removeListener(Listener listener) {
     listeners.remove(listener);
+  }
+
+  public boolean isPreviewView() {
+    return getPropertiesComponent().getBoolean(previewViewKey, false);
+  }
+
+  public void setPreviewView(boolean value) {
+    getPropertiesComponent().setValue(previewViewKey, value, false);
+
+    fireEvent();
   }
 
   public boolean isReloadOnSave() {
