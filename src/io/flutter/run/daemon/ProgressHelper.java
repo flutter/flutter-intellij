@@ -15,13 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-class ProgressHelper {
+public class ProgressHelper {
   final Project myProject;
   final List<String> myTasks = new ArrayList<>();
 
   private Task.Backgroundable myTask;
 
-  ProgressHelper(@NotNull Project project) {
+  public ProgressHelper(@NotNull Project project) {
     this.myProject = project;
   }
 
