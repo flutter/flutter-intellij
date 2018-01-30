@@ -542,10 +542,10 @@
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
     <toolWindow id="Flutter Preview" anchor="right" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.view.preview.PreviewViewFactory"
-                conditionClass="io.flutter.view.preview.PreviewViewCondition"/>
-    <projectService serviceInterface="io.flutter.view.preview.PreviewView"
-                    serviceImplementation="io.flutter.view.preview.PreviewView"
+                factoryClass="io.flutter.preview.PreviewViewFactory"
+                conditionClass="io.flutter.preview.PreviewViewCondition"/>
+    <projectService serviceInterface="io.flutter.preview.PreviewView"
+                    serviceImplementation="io.flutter.preview.PreviewView"
                     overrides="false"/>
 
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.Flutter_13"
