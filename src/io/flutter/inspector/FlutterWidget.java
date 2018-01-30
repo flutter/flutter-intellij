@@ -101,7 +101,6 @@ public class FlutterWidget {
 
   @Nullable
   private Icon initIcon() {
-    // TODO(pq): re-enable category icons when we have a consistent icon set.
     final List<String> categories = getCategories();
     if (categories != null) {
       // TODO(pq): consider priority over first match.
