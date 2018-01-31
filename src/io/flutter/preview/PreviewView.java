@@ -5,6 +5,7 @@
  */
 package io.flutter.preview;
 
+import com.intellij.icons.AllIcons;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.TreeExpander;
@@ -22,6 +23,7 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
@@ -57,9 +59,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
-
-import static com.intellij.icons.AllIcons.General.CollapseAll;
-import static com.intellij.icons.AllIcons.General.ExpandAll;
 
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
@@ -181,9 +180,9 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       final TreeExpander expander = new DefaultTreeExpander(tree);
       final CommonActionsManager actions = CommonActionsManager.getInstance();
       final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
-      expandAllAction.getTemplatePresentation().setIcon(ExpandAll);
+      expandAllAction.getTemplatePresentation().setIcon(AllIcons.General.ExpandAll);
       final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
-      collapseAllAction.getTemplatePresentation().setIcon(CollapseAll);
+      collapseAllAction.getTemplatePresentation().setIcon(AllIcons.General.CollapseAll);
       ((ToolWindowEx)toolWindow).setTitleActions(expandAllAction, collapseAllAction);
     }
 
@@ -209,7 +208,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
             final OutlineObject object = (OutlineObject)node.getUserObject();
             if (currentEditor != null) {
-              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(true);
+              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(false);
               currentEditor.getEditor().getCaretModel().moveToOffset(object.outline.getOffset());
             }
           }
@@ -407,7 +406,7 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     // Append all attributes.
     final List<FlutterOutlineAttribute> attributes = outline.getAttributes();
     if (attributes != null) {
-      if (attributes.size() == 1) {
+      if (attributes.size() == 1 && isAttributeElidable(attributes.get(0).getName())) {
         final FlutterOutlineAttribute attribute = attributes.get(0);
         append(" ");
         appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
@@ -419,16 +418,22 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
           if (i > 0) {
             append(",");
           }
-
           append(" ");
-          appendSearch(attribute.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
-          append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+
+          if (!StringUtil.equals("data", attribute.getName())) {
+            appendSearch(attribute.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+            append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          }
           appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
 
           // TODO(scheglov): custom display for units, colors, iterables, and icons?
         }
       }
     }
+  }
+
+  private static boolean isAttributeElidable(String name) {
+    return StringUtil.equals("text", name);
   }
 
   private void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
