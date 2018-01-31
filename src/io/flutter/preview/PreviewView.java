@@ -16,10 +16,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
-import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -37,10 +34,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
-import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import icons.FlutterIcons;
-import io.flutter.dart.DartAnalysisServerServiceEx;
-import io.flutter.dart.DartPlugin;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
@@ -79,7 +73,6 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   private OutlineTree tree;
 
   private VirtualFile currentFile;
-  private TextEditor currentEditor;
 
   final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
@@ -96,24 +89,22 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
   public PreviewView(@NotNull Project project) {
     this.project = project;
-    final DartAnalysisServerService analysisService = DartPlugin.getInstance().getAnalysisService(project);
-    final DartAnalysisServerServiceEx analysisServiceEx = DartAnalysisServerServiceEx.get(analysisService);
-    flutterAnalysisServer = new FlutterDartAnalysisServer(analysisServiceEx);
+    flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
 
+    // Show preview for the file selected when the view is being opened.
+    {
+      final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
+      if (selectedFiles.length != 0) {
+        setSelectedFile(selectedFiles[0]);
+      }
+    }
+
+    // Listen for selecting files.
     final MessageBusConnection bus = project.getMessageBus().connect(project);
     bus.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
       @Override
       public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        if (currentFile != null) {
-          flutterAnalysisServer.removeOutlineListener(currentFile.getPath(), outlineListener);
-          currentFile = null;
-          currentEditor = null;
-        }
-        if (event.getNewFile() != null && event.getNewEditor() instanceof TextEditor) {
-          currentFile = event.getNewFile();
-          currentEditor = (TextEditor)event.getNewEditor();
-          flutterAnalysisServer.addOutlineListener(currentFile.getPath(), outlineListener);
-        }
+        setSelectedFile(event.getNewFile());
       }
     });
   }
@@ -207,9 +198,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
           if (selectionPath != null) {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
             final OutlineObject object = (OutlineObject)node.getUserObject();
-            if (currentEditor != null) {
-              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(false);
-              currentEditor.getEditor().getCaretModel().moveToOffset(object.outline.getOffset());
+            if (currentFile != null) {
+              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(true);
             }
           }
         }
@@ -241,6 +231,17 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       if (outline.getChildren() != null) {
         updateOutline(node, outline.getChildren());
       }
+    }
+  }
+
+  private void setSelectedFile(VirtualFile newFile) {
+    if (currentFile != null) {
+      flutterAnalysisServer.removeOutlineListener(currentFile.getPath(), outlineListener);
+      currentFile = null;
+    }
+    if (newFile != null) {
+      currentFile = newFile;
+      flutterAnalysisServer.addOutlineListener(currentFile.getPath(), outlineListener);
     }
   }
 
