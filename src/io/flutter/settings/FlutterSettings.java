@@ -7,6 +7,8 @@ package io.flutter.settings;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.util.registry.Registry;
+import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.analytics.Analytics;
 
 import java.util.ArrayList;
@@ -17,6 +19,8 @@ public class FlutterSettings {
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String previewViewKey = "io.flutter.previewView";
+  private static final String previewDart2 = "io.flutter.getPreviewDart2";
+
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -47,14 +51,44 @@ public class FlutterSettings {
     listeners.remove(listener);
   }
 
-  public boolean isPreviewView() {
+  public boolean getEnablePreviewView() {
     return getPropertiesComponent().getBoolean(previewViewKey, false);
   }
 
-  public void setPreviewView(boolean value) {
+  public void setEnablePreviewView(boolean value) {
     getPropertiesComponent().setValue(previewViewKey, value, false);
 
     fireEvent();
+  }
+
+  public boolean getPreviewDart2() {
+    return getPropertiesComponent().getBoolean(previewDart2, false);
+  }
+
+  public void setPreviewDart2(boolean value) {
+    getPropertiesComponent().setValue(previewDart2, value, false);
+
+    updateAnalysisServerArgs(value);
+
+    fireEvent();
+  }
+
+  private void updateAnalysisServerArgs(boolean previewDart2) {
+    final String serverRegistryKey = "dart.server.additional.arguments";
+    final String previewDart2Flag = "--preview-dart-2";
+
+    final List<String> params = StringUtil.split(Registry.stringValue(serverRegistryKey), " ");
+
+    if (previewDart2 && !params.contains(previewDart2Flag)) {
+      final List<String> copy = new ArrayList<>(params);
+      copy.add(previewDart2Flag);
+      Registry.get(serverRegistryKey).setValue(StringUtil.join(copy, " "));
+    }
+    else if (!previewDart2 && params.contains(previewDart2Flag)) {
+      final List<String> copy = new ArrayList<>(params);
+      copy.removeIf(previewDart2Flag::equals);
+      Registry.get(serverRegistryKey).setValue(StringUtil.join(copy, " "));
+    }
   }
 
   public boolean isReloadOnSave() {
