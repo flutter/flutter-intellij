@@ -97,12 +97,18 @@ public class OpenInXcodeAction extends AnAction {
       sdk.flutterBuild(pubRoot, "ios", "--debug").start(null, new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull ProcessEvent event) {
-          super.processTerminated(event);
           progressHelper.done();
+
+          if (event.getExitCode() != 0) {
+            FlutterMessages.showError("Error Opening Xcode", "`flutter build` returned: " + event.getExitCode());
+            return;
+          }
+
           openWithXcode(file.getPath());
         }
       });
-    } else {
+    }
+    else {
       openWithXcode(file.getPath());
     }
   }
