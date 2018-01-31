@@ -16,7 +16,10 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.OpenFileDescriptor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -193,13 +196,13 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     tree.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 1) {
+        if (e.getClickCount() > 0) {
           final TreePath selectionPath = tree.getSelectionPath();
           if (selectionPath != null) {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
             final OutlineObject object = (OutlineObject)node.getUserObject();
             if (currentFile != null) {
-              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(true);
+              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(e.getClickCount() > 1);
             }
           }
         }
