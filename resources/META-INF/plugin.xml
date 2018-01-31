@@ -549,8 +549,7 @@
                     overrides="false"/>
 
     <toolWindow id="Flutter Inspector" anchor="right" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.view.FlutterViewFactory"
-                conditionClass="io.flutter.view.FlutterViewCondition"/>
+                factoryClass="io.flutter.view.FlutterViewFactory"/>
     <projectService serviceInterface="io.flutter.view.FlutterView"
                     serviceImplementation="io.flutter.view.FlutterView"
                     overrides="false"/>

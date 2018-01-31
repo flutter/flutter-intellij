@@ -8,11 +8,10 @@ package io.flutter.preview;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Condition;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.view.FlutterViewCondition;
 
 public class PreviewViewCondition implements Condition<Project> {
   @Override
   public boolean value(Project project) {
-    return new FlutterViewCondition().value(project) && FlutterSettings.getInstance().isPreviewView();
+    return FlutterSettings.getInstance().isPreviewView();
   }
 }
