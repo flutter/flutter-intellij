@@ -91,7 +91,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     this.project = project;
     flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
 
-    // Show preview for the file selected when the view is being open.
+    // Show preview for the file selected when the view is being opened.
     {
       final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
       if (selectedFiles.length != 0) {

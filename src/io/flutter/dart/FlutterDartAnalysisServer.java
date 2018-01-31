@@ -6,9 +6,9 @@
 package io.flutter.dart;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
@@ -25,9 +25,6 @@ import java.util.concurrent.TimeUnit;
 
 public class FlutterDartAnalysisServer {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
-
-  @NotNull
-  private final Project project;
 
   @Nullable
   private DartAnalysisServerServiceEx dartServiceEx;
@@ -46,8 +43,15 @@ public class FlutterDartAnalysisServer {
   }
 
   private FlutterDartAnalysisServer(@NotNull Project project) {
-    this.project = project;
-    new RefreshDartAnalysisServerServiceExThread().start();
+    JobScheduler.getScheduler().scheduleWithFixedDelay(() -> {
+      final DartAnalysisServerService analysisService = DartPlugin.getInstance().getAnalysisService(project);
+      final DartAnalysisServerServiceEx analysisServiceEx = DartAnalysisServerServiceEx.get(analysisService);
+      if (analysisServiceEx != null && analysisServiceEx != dartServiceEx) {
+        dartServiceEx = analysisServiceEx;
+        dartServiceEx.addListener(FlutterDartAnalysisServer.this::processNotification);
+        sendSubscriptions();
+      }
+    }, 100, 100, TimeUnit.MILLISECONDS);
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
@@ -104,27 +108,6 @@ public class FlutterDartAnalysisServer {
         for (FlutterOutlineListener listener : Lists.newArrayList(listeners)) {
           listener.outlineUpdated(file, outline);
         }
-      }
-    }
-  }
-
-  private class RefreshDartAnalysisServerServiceExThread extends Thread {
-    RefreshDartAnalysisServerServiceExThread() {
-      setDaemon(true);
-    }
-
-    @Override
-    public void run() {
-      //noinspection InfiniteLoopStatement
-      while (true) {
-        final DartAnalysisServerService analysisService = DartPlugin.getInstance().getAnalysisService(project);
-        final DartAnalysisServerServiceEx analysisServiceEx = DartAnalysisServerServiceEx.get(analysisService);
-        if (analysisServiceEx != null && analysisServiceEx != dartServiceEx) {
-          dartServiceEx = analysisServiceEx;
-          dartServiceEx.addListener(FlutterDartAnalysisServer.this::processNotification);
-          sendSubscriptions();
-        }
-        Uninterruptibles.sleepUninterruptibly(100, TimeUnit.MILLISECONDS);
       }
     }
   }
