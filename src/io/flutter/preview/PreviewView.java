@@ -5,7 +5,9 @@
  */
 package io.flutter.preview;
 
-import com.google.common.collect.ImmutableList;
+import com.intellij.ide.CommonActionsManager;
+import com.intellij.ide.DefaultTreeExpander;
+import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -22,6 +24,7 @@ import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SimpleTextAttributes;
@@ -55,6 +58,9 @@ import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.Objects;
 
+import static com.intellij.icons.AllIcons.General.CollapseAll;
+import static com.intellij.icons.AllIcons.General.ExpandAll;
+
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
   storages = {@Storage("$WORKSPACE_FILE$")}
@@ -82,7 +88,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
         final DefaultMutableTreeNode rootNode = getRootNode();
         rootNode.removeAllChildren();
-        showOutline(rootNode, ImmutableList.of(outline));
+        updateOutline(rootNode, outline.getChildren());
         getTreeModel().reload(rootNode);
         tree.expandAll();
       }
@@ -170,6 +176,17 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
 
+    // Add collapse all and expand all buttons.
+    if (toolWindow instanceof ToolWindowEx) {
+      final TreeExpander expander = new DefaultTreeExpander(tree);
+      final CommonActionsManager actions = CommonActionsManager.getInstance();
+      final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
+      expandAllAction.getTemplatePresentation().setIcon(ExpandAll);
+      final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
+      collapseAllAction.getTemplatePresentation().setIcon(CollapseAll);
+      ((ToolWindowEx)toolWindow).setTitleActions(expandAllAction, collapseAllAction);
+    }
+
     new TreeSpeedSearch(tree) {
       @Override
       protected String getElementText(Object element) {
@@ -186,12 +203,11 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     tree.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() == 2) {
+        if (e.getClickCount() == 1) {
           final TreePath selectionPath = tree.getSelectionPath();
           if (selectionPath != null) {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
             final OutlineObject object = (OutlineObject)node.getUserObject();
-            System.out.println(object.outline.getClassName() + "  @" + object.outline.getOffset());
             if (currentEditor != null) {
               new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(true);
               currentEditor.getEditor().getCaretModel().moveToOffset(object.outline.getOffset());
@@ -215,7 +231,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     return (DefaultMutableTreeNode)getTreeModel().getRoot();
   }
 
-  private void showOutline(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
+  private void updateOutline(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
     for (int i = 0; i < outlines.size(); i++) {
       final FlutterOutline outline = outlines.get(i);
 
@@ -224,7 +240,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       final DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
       getTreeModel().insertNodeInto(node, parent, i);
       if (outline.getChildren() != null) {
-        showOutline(node, outline.getChildren());
+        updateOutline(node, outline.getChildren());
       }
     }
   }
@@ -384,20 +400,33 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
 
     // Render the variable.
     if (outline.getVariableName() != null) {
+      append(" ");
       appendSearch(outline.getVariableName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }
 
     // Append all attributes.
     final List<FlutterOutlineAttribute> attributes = outline.getAttributes();
     if (attributes != null) {
-      for (FlutterOutlineAttribute attribute : attributes) {
+      if (attributes.size() == 1) {
+        final FlutterOutlineAttribute attribute = attributes.get(0);
         append(" ");
-        append("[", SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        appendSearch(attribute.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
         appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        append("]", SimpleTextAttributes.GRAYED_ATTRIBUTES);
-        // TODO(scheglov): custom display for units, colors, iterables, and icons?
+      }
+      else {
+        for (int i = 0; i < attributes.size(); i++) {
+          final FlutterOutlineAttribute attribute = attributes.get(i);
+
+          if (i > 0) {
+            append(",");
+          }
+
+          append(" ");
+          appendSearch(attribute.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+
+          // TODO(scheglov): custom display for units, colors, iterables, and icons?
+        }
       }
     }
   }
