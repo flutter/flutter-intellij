@@ -127,7 +127,7 @@ public class DartAnalysisServerServiceEx {
     // "RemoteAnalysisServerImpl.responseStream" in the corresponding instance of RemoteAnalysisServerImpl. We replace this value with the
     // ResponseStream implementation that sends every read JSON to DartAnalysisServerServiceExResponseListener(s).
     Thread responseReaderThread = null;
-    final List<Thread> threads = ThreadUtil.getCurrentGroupThreads();
+    final List<Thread> threads = ThreadUtil.getAllThreads();
     for (Thread thread : threads) {
       if (thread.getClass().getSimpleName().equals("ServerResponseReaderThread")) {
         final ResponseStream threadStream = ReflectionUtil.getField(thread.getClass(), thread, ResponseStream.class, "stream");
