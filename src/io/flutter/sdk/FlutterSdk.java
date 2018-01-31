@@ -169,6 +169,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
   }
 
+  public FlutterCommand flutterBuild(@NotNull PubRoot root, String... additionalArgs) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.BUILD, additionalArgs);
+  }
+
   public FlutterCommand flutterConfig(String... additionalArgs) {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
   }

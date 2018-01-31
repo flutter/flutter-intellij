@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.run.daemon;
+package io.flutter.utils;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -15,13 +15,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
-class ProgressHelper {
+public class ProgressHelper {
   final Project myProject;
   final List<String> myTasks = new ArrayList<>();
 
   private Task.Backgroundable myTask;
 
-  ProgressHelper(@NotNull Project project) {
+  public ProgressHelper(@NotNull Project project) {
     this.myProject = project;
   }
 

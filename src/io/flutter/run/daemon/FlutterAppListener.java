@@ -12,6 +12,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import io.flutter.FlutterInitializer;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;

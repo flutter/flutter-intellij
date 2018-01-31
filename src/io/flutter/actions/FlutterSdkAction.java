@@ -71,7 +71,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
     return false;
   }
 
-  private static void showMissingSdkDialog(Project project) {
+  public static void showMissingSdkDialog(Project project) {
     final int response = FlutterMessages.showDialog(project, FlutterBundle.message("flutter.sdk.notAvailable.message"),
                                                     FlutterBundle.message("flutter.sdk.notAvailable.title"),
                                                     new String[]{"Yes, configure", "No, thanks"}, -1);
