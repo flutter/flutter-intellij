@@ -5,6 +5,7 @@
  */
 package io.flutter.preview;
 
+import com.google.common.collect.Maps;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
@@ -16,10 +17,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
-import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
-import com.intellij.openapi.fileEditor.FileEditorManagerListener;
-import com.intellij.openapi.fileEditor.OpenFileDescriptor;
+import com.intellij.openapi.editor.Caret;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.event.CaretEvent;
+import com.intellij.openapi.editor.event.CaretListener;
+import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -51,10 +53,13 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 @com.intellij.openapi.components.State(
@@ -73,20 +78,48 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   @NotNull
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
+  private JScrollPane scrollPane;
   private OutlineTree tree;
+  private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
+  private Editor currentEditor;
+  private FlutterOutline currentOutline;
 
-  final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
+  private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
+        currentOutline = outline;
+
         final DefaultMutableTreeNode rootNode = getRootNode();
         rootNode.removeAllChildren();
+
+        outlineToNodeMap.clear();
         updateOutline(rootNode, outline.getChildren());
+
         getTreeModel().reload(rootNode);
         tree.expandAll();
       }
+    }
+  };
+
+  private final CaretListener caretListener = new CaretListener() {
+    @Override
+    public void caretPositionChanged(CaretEvent e) {
+      final Caret caret = e.getCaret();
+      if (caret != null) {
+        final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
+        setSelectedOutline(outline);
+      }
+    }
+
+    @Override
+    public void caretAdded(CaretEvent e) {
+    }
+
+    @Override
+    public void caretRemoved(CaretEvent e) {
     }
   };
 
@@ -100,6 +133,11 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       if (selectedFiles.length != 0) {
         setSelectedFile(selectedFiles[0]);
       }
+
+      final FileEditor[] selectedEditors = FileEditorManager.getInstance(project).getSelectedEditors();
+      if (selectedEditors.length != 0) {
+        setSelectedEditor(selectedEditors[0]);
+      }
     }
 
     // Listen for selecting files.
@@ -108,6 +146,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       @Override
       public void selectionChanged(@NotNull FileEditorManagerEvent event) {
         setSelectedFile(event.getNewFile());
+        setSelectedEditor(event.getNewEditor());
       }
     });
   }
@@ -201,15 +240,18 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
           if (selectionPath != null) {
             final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
             final OutlineObject object = (OutlineObject)node.getUserObject();
+            final FlutterOutline outline = object.outline;
+            final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
             if (currentFile != null) {
-              new OpenFileDescriptor(project, currentFile, object.outline.getOffset()).navigate(e.getClickCount() > 1);
+              new OpenFileDescriptor(project, currentFile, offset).navigate(e.getClickCount() > 1);
             }
           }
         }
       }
     });
 
-    windowPanel.setContent(ScrollPaneFactory.createScrollPane(tree));
+    scrollPane = ScrollPaneFactory.createScrollPane(tree);
+    windowPanel.setContent(scrollPane);
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
@@ -230,11 +272,30 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       final OutlineObject object = new OutlineObject(outline);
 
       final DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
+      outlineToNodeMap.put(outline, node);
       getTreeModel().insertNodeInto(node, parent, i);
       if (outline.getChildren() != null) {
         updateOutline(node, outline.getChildren());
       }
     }
+  }
+
+  private FlutterOutline findOutlineAtOffset(FlutterOutline outline, int offset) {
+    if (outline == null) {
+      return null;
+    }
+    if (outline.getOffset() <= offset && offset <= outline.getOffset() + outline.getLength()) {
+      if (outline.getChildren() != null) {
+        for (FlutterOutline child : outline.getChildren()) {
+          final FlutterOutline foundChild = findOutlineAtOffset(child, offset);
+          if (foundChild != null) {
+            return foundChild;
+          }
+        }
+      }
+      return outline;
+    }
+    return null;
   }
 
   private void setSelectedFile(VirtualFile newFile) {
@@ -245,6 +306,56 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     if (newFile != null) {
       currentFile = newFile;
       flutterAnalysisServer.addOutlineListener(currentFile.getPath(), outlineListener);
+    }
+  }
+
+  private void setSelectedEditor(FileEditor newEditor) {
+    if (currentEditor != null) {
+      currentEditor.getCaretModel().removeCaretListener(caretListener);
+    }
+    if (newEditor instanceof TextEditor) {
+      currentEditor = ((TextEditor)newEditor).getEditor();
+      currentEditor.getCaretModel().addCaretListener(caretListener);
+    }
+  }
+
+  private void setSelectedOutline(FlutterOutline outline) {
+    if (outline != null) {
+      final DefaultMutableTreeNode selectedNode = outlineToNodeMap.get(outline);
+      if (selectedNode != null) {
+        final TreeNode[] selectedNodesPath = selectedNode.getPath();
+        final TreePath selectedPath = new TreePath(selectedNodesPath);
+
+        // Ensure that all parent nodes are expected.
+        tree.scrollPathToVisible(selectedPath);
+
+        // Ensure that the top-level declaration (class) is on the top of the tree.
+        if (selectedNodesPath.length >= 2) {
+          scrollTreeToNodeOnTop(selectedNodesPath[1]);
+        }
+
+        // Ensure that the selected node is still visible, even if the top-level declaration is long.
+        tree.scrollPathToVisible(selectedPath);
+
+        // Now actually select the node.
+        tree.setSelectionPath(selectedPath);
+
+        // JTree attempts to show as much of the node as possible, so scrolls horizonally.
+        // But we actually need to see the whole hierarchy, so we scroll back to zero.
+        scrollPane.getHorizontalScrollBar().setValue(0);
+      }
+    }
+  }
+
+  private void scrollTreeToNodeOnTop(TreeNode node) {
+    if (node instanceof DefaultMutableTreeNode) {
+      final DefaultMutableTreeNode defaultNode = (DefaultMutableTreeNode)node;
+      final Rectangle bounds = tree.getPathBounds(new TreePath(defaultNode.getPath()));
+      // Set the height to the visible tree height to force the node to top.
+      if (bounds != null) {
+        bounds.height = tree.getVisibleRect().height;
+        tree.scrollRectToVisible(bounds);
+      }
     }
   }
 
