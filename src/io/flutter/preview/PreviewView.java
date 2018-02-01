@@ -106,6 +106,11 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
           getTreeModel().reload(rootNode);
           tree.expandAll();
 
+          if (currentEditor != null) {
+            final int offset = currentEditor.getCaretModel().getOffset();
+            selectOutlineAtOffset(offset);
+          }
+
           windowPanel.setToolbar(windowToolbar);
         });
       }
@@ -117,8 +122,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     public void caretPositionChanged(CaretEvent e) {
       final Caret caret = e.getCaret();
       if (caret != null && !isTreeClicking) {
-        final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
-        setSelectedOutline(outline);
+        final int offset = caret.getOffset();
+        selectOutlineAtOffset(offset);
       }
     }
 
@@ -348,6 +353,11 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       currentEditor = ((TextEditor)newEditor).getEditor();
       currentEditor.getCaretModel().addCaretListener(caretListener);
     }
+  }
+
+  private void selectOutlineAtOffset(int offset) {
+    final FlutterOutline outline = findOutlineAtOffset(currentOutline, offset);
+    setSelectedOutline(outline);
   }
 
   private void setSelectedOutline(FlutterOutline outline) {
