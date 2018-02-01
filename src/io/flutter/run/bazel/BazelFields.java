@@ -260,7 +260,7 @@ public class BazelFields {
     // Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
     commandLine.addParameter("--");
 
-    // Tell the flutter tommand-line tools that we want a machine interface on stdio.
+    // Tell the flutter command-line tools that we want a machine interface on stdio.
     commandLine.addParameter("--machine");
 
     if (FlutterSettings.getInstance().getPreviewDart2()) {
