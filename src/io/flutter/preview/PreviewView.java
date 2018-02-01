@@ -97,7 +97,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
         outlineToNodeMap.clear();
         updateOutline(rootNode, outline.getChildren());
-        
+
         getTreeModel().reload(rootNode);
         tree.expandAll();
       }
@@ -112,6 +112,14 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
         final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
         setSelectedOutline(outline);
       }
+    }
+
+    @Override
+    public void caretAdded(CaretEvent e) {
+    }
+
+    @Override
+    public void caretRemoved(CaretEvent e) {
     }
   };
 
