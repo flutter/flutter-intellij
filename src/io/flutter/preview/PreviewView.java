@@ -40,6 +40,7 @@ import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
 import icons.FlutterIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
@@ -79,6 +80,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
   private JScrollPane scrollPane;
+  private SimpleToolWindowPanel windowPanel;
+  private JComponent windowToolbar;
   private OutlineTree tree;
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
   private boolean isTreeClicking = false;
@@ -91,16 +94,20 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
-        currentOutline = outline;
+        SwingUtilities.invokeLater(() -> {
+          currentOutline = outline;
 
-        final DefaultMutableTreeNode rootNode = getRootNode();
-        rootNode.removeAllChildren();
+          final DefaultMutableTreeNode rootNode = getRootNode();
+          rootNode.removeAllChildren();
 
-        outlineToNodeMap.clear();
-        updateOutline(rootNode, outline.getChildren());
+          outlineToNodeMap.clear();
+          updateOutline(rootNode, outline.getChildren());
 
-        getTreeModel().reload(rootNode);
-        tree.expandAll();
+          getTreeModel().reload(rootNode);
+          tree.expandAll();
+
+          windowPanel.setToolbar(windowToolbar);
+        });
       }
     }
   };
@@ -198,10 +205,11 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
 
-    final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
+    windowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(windowPanel);
 
-    windowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent());
+    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
+    windowPanel.setToolbar(windowToolbar);
 
     final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
 
@@ -310,6 +318,22 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       flutterAnalysisServer.removeOutlineListener(currentFile.getPath(), outlineListener);
       currentFile = null;
     }
+
+    // If no the new file, or it is not a Dart file, remove the toolbar.
+    if (newFile == null || !FlutterUtils.isDartFile(newFile)) {
+      if (windowPanel != null && windowPanel.isToolbarVisible()) {
+        windowPanel.setToolbar(null);
+      }
+    }
+
+    // If the tree is already created, clear it now, until the outline for the new file is received.
+    if (tree != null) {
+      final DefaultMutableTreeNode rootNode = getRootNode();
+      rootNode.removeAllChildren();
+      getTreeModel().reload(rootNode);
+    }
+
+    // Subscribe for the outline for the new file.
     if (newFile != null) {
       currentFile = newFile;
       flutterAnalysisServer.addOutlineListener(currentFile.getPath(), outlineListener);
