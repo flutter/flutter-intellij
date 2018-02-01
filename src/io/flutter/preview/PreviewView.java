@@ -81,6 +81,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   private JScrollPane scrollPane;
   private OutlineTree tree;
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
+  private boolean isTreeClicking = false;
 
   private VirtualFile currentFile;
   private Editor currentEditor;
@@ -108,7 +109,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     @Override
     public void caretPositionChanged(CaretEvent e) {
       final Caret caret = e.getCaret();
-      if (caret != null) {
+      if (caret != null && !isTreeClicking) {
         final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
         setSelectedOutline(outline);
       }
@@ -243,7 +244,13 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
             final FlutterOutline outline = object.outline;
             final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
             if (currentFile != null) {
-              new OpenFileDescriptor(project, currentFile, offset).navigate(e.getClickCount() > 1);
+              isTreeClicking = true;
+              try {
+                new OpenFileDescriptor(project, currentFile, offset).navigate(e.getClickCount() > 1);
+              }
+              finally {
+                isTreeClicking = false;
+              }
             }
           }
         }
