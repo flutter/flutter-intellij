@@ -631,15 +631,16 @@ public class DiagnosticsNode {
     if (node == null) {
       return false;
     }
-    Set<String> keys = json.keySet();
-    if (!keys.equals(node.json.keySet())) {
+    final Set<Map.Entry<String, JsonElement>> entries = json.entrySet();
+    if (entries.size() != node.json.entrySet().size()) {
       return false;
     }
-    for (String key : keys) {
+    for (Map.Entry<String, JsonElement> entry : entries) {
+      final String key = entry.getKey();
       if (key.equals("objectId") || key.equals("valueId")) {
         continue;
       }
-      if (!json.get(key).equals(node.json.get(key))) {
+      if (entry.getValue().equals(node.json.get(key))) {
         return false;
       }
     }
