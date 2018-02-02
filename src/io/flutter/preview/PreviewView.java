@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.editor.Caret;
@@ -94,7 +95,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
-        SwingUtilities.invokeLater(() -> {
+        ApplicationManager.getApplication().invokeLater(() -> {
           currentOutline = outline;
 
           final DefaultMutableTreeNode rootNode = getRootNode();
@@ -249,24 +250,19 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     tree.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (e.getClickCount() > 0) {
+        if (e.getClickCount() > 1) {
           final TreePath selectionPath = tree.getSelectionPath();
           if (selectionPath != null) {
-            final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
-            final OutlineObject object = (OutlineObject)node.getUserObject();
-            final FlutterOutline outline = object.outline;
-            final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
-            if (currentFile != null) {
-              isTreeClicking = true;
-              try {
-                new OpenFileDescriptor(project, currentFile, offset).navigate(e.getClickCount() > 1);
-              }
-              finally {
-                isTreeClicking = false;
-              }
-            }
+            selectPath(selectionPath, true);
           }
         }
+      }
+    });
+
+    tree.addTreeSelectionListener(e -> {
+      final TreePath selectionPath = e.getNewLeadSelectionPath();
+      if (selectionPath != null) {
+        ApplicationManager.getApplication().invokeLater(() -> selectPath(selectionPath, false));
       }
     });
 
@@ -275,6 +271,22 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
+  }
+
+  private void selectPath(TreePath selectionPath, boolean focusEditor) {
+    final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
+    final OutlineObject object = (OutlineObject)node.getUserObject();
+    final FlutterOutline outline = object.outline;
+    final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
+    if (currentFile != null) {
+      isTreeClicking = true;
+      try {
+        new OpenFileDescriptor(project, currentFile, offset).navigate(focusEditor);
+      }
+      finally {
+        isTreeClicking = false;
+      }
+    }
   }
 
   private DefaultTreeModel getTreeModel() {
@@ -464,11 +476,6 @@ class OutlineObject {
     else {
       builder.append(outline.getClassName());
     }
-    if (outline.getParentAssociationLabel() != null) {
-      builder.append('|');
-      builder.append(outline.getParentAssociationLabel());
-      builder.append(": ");
-    }
     if (outline.getVariableName() != null) {
       builder.append('|');
       builder.append(outline.getVariableName());
@@ -503,7 +510,6 @@ class OutlineObject {
     return iconMaker.getCustomIcon(text, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
   }
 }
-
 
 class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
   private JTree tree;
@@ -545,13 +551,8 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
       setIcon(icon);
     }
 
-    // Render the parent/child association.
-    if (outline.getParentAssociationLabel() != null) {
-      appendSearch(outline.getParentAssociationLabel() + ": ", SimpleTextAttributes.REGULAR_ATTRIBUTES);
-    }
-
     // Render the widget class.
-    appendSearch(outline.getClassName(), SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES);
+    appendSearch(outline.getClassName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
 
     // Render the variable.
     if (outline.getVariableName() != null) {
@@ -589,7 +590,7 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
   }
 
   private static boolean isAttributeElidable(String name) {
-    return StringUtil.equals("text", name);
+    return StringUtil.equals("text", name) || StringUtil.equals("icon", name);
   }
 
   private void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
