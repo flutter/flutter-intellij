@@ -11,7 +11,7 @@ import com.intellij.ui.AppUIUtil;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
-import io.flutter.view.InspectorPanel;
+import io.flutter.utils.AsyncUtils;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.concurrent.CompletableFuture;
@@ -35,7 +35,7 @@ public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
     final InspectorService inspectorService = diagnosticsNode.getInspectorService();
     final CompletableFuture<DartVmServiceValue> valueFuture =
       inspectorService.toDartVmServiceValueForSourceLocation(diagnosticsNode.getValueRef());
-    InspectorPanel.whenCompleteUiThread(valueFuture, (DartVmServiceValue value, Throwable throwable) -> {
+    AsyncUtils.whenCompleteUiThread(valueFuture, (DartVmServiceValue value, Throwable throwable) -> {
       if (throwable != null) {
         return;
       }
