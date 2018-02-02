@@ -476,11 +476,6 @@ class OutlineObject {
     else {
       builder.append(outline.getClassName());
     }
-    if (outline.getParentAssociationLabel() != null) {
-      builder.append('|');
-      builder.append(outline.getParentAssociationLabel());
-      builder.append(": ");
-    }
     if (outline.getVariableName() != null) {
       builder.append('|');
       builder.append(outline.getVariableName());
