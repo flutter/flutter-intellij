@@ -20,6 +20,7 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -414,8 +415,6 @@ public class DiagnosticsNode {
 
   private CompletableFuture<ArrayList<DiagnosticsNode>> children;
 
-  private CompletableFuture<ArrayList<DiagnosticsNode>> properties;
-
   private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
   public String getStringMember(@NotNull String memberName) {
@@ -576,10 +575,7 @@ public class DiagnosticsNode {
   }
 
   public CompletableFuture<ArrayList<DiagnosticsNode>> getProperties() {
-    if (properties == null) {
-      properties = inspectorService.getProperties(getDartDiagnosticRef());
-    }
-    return properties;
+    return inspectorService.getProperties(getDartDiagnosticRef());
   }
 
   public InspectorService getInspectorService() {
@@ -619,5 +615,35 @@ public class DiagnosticsNode {
     }
 
     return iconMaker.getCustomIcon(text, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
+  }
+
+  /**
+   * Returns true if two diagnostic nodes are indistinguishable from
+   * the perspective of a user debugging.
+   * <p>
+   * In practice this means that all fields but the objectId and valueId
+   * properties for the DiagnosticsNode objects are identical. The valueId
+   * field may change even for properties that have not changed because in
+   * some cases such as the 'created' property for an element, the property
+   * value is created dynamically each time 'getProperties' is called.
+   */
+  public boolean identicalDisplay(DiagnosticsNode node) {
+    if (node == null) {
+      return false;
+    }
+    final Set<Map.Entry<String, JsonElement>> entries = json.entrySet();
+    if (entries.size() != node.json.entrySet().size()) {
+      return false;
+    }
+    for (Map.Entry<String, JsonElement> entry : entries) {
+      final String key = entry.getKey();
+      if (key.equals("objectId") || key.equals("valueId")) {
+        continue;
+      }
+      if (entry.getValue().equals(node.json.get(key))) {
+        return false;
+      }
+    }
+    return true;
   }
 }
