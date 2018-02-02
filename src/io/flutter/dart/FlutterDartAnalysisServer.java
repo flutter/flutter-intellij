@@ -11,16 +11,15 @@ import com.google.gson.JsonObject;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterService;
+import org.dartlang.analysis.server.protocol.SourceChange;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class FlutterDartAnalysisServer {
@@ -87,6 +86,14 @@ public class FlutterDartAnalysisServer {
       final String id = dartServiceEx.generateUniqueId();
       dartServiceEx.sendRequest(FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
     }
+  }
+
+  @NotNull
+  public List<SourceChange> edit_getAssists(@NotNull VirtualFile file, int offset, int length) {
+    if (dartServiceEx != null) {
+      return dartServiceEx.base.edit_getAssists(file, offset, length);
+    }
+    return Collections.emptyList();
   }
 
   /**
