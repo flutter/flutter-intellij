@@ -58,7 +58,9 @@ public class FlutterIcons {
   public static final Icon Text = load("/icons/inspector/textArea.png");
 
   // Flutter Preview Widget Icons.
-  public static final Icon PreviewSurroundCenter = load("/icons/preview/surround_center.png");
-  public static final Icon PreviewSurroundColumn = load("/icons/preview/surround_column.png");
-  public static final Icon PreviewSurroundRow = load("/icons/preview/surround_row.png");
+  public static final Icon Padding = load("/icons/preview/padding.png");
+  public static final Icon Padding2 = load("/icons/preview/padding2.png");
+  public static final Icon Center = load("/icons/preview/center.png");
+  public static final Icon Up = load("/icons/preview/up.png");
+  public static final Icon Down = load("/icons/preview/down.png");
 }

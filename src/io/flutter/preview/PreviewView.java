@@ -186,27 +186,31 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    toolbarGroup.add(new AnAction(FlutterIcons.PreviewSurroundCenter) {
+    toolbarGroup.add(new AnAction(FlutterIcons.Center) {
       @Override
       public void actionPerformed(AnActionEvent e) {
         Messages.showErrorDialog("Not implemented yet.", "TODO");
       }
     });
-
-    toolbarGroup.add(new AnAction(FlutterIcons.PreviewSurroundColumn) {
+    toolbarGroup.add(new AnAction(FlutterIcons.Padding) {
       @Override
       public void actionPerformed(AnActionEvent e) {
         Messages.showErrorDialog("Not implemented yet.", "TODO");
       }
     });
-
-    toolbarGroup.add(new AnAction(FlutterIcons.PreviewSurroundRow) {
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(new AnAction(FlutterIcons.Up) {
       @Override
       public void actionPerformed(AnActionEvent e) {
         Messages.showErrorDialog("Not implemented yet.", "TODO");
       }
     });
-
+    toolbarGroup.add(new AnAction(FlutterIcons.Down) {
+      @Override
+      public void actionPerformed(AnActionEvent e) {
+        Messages.showErrorDialog("Not implemented yet.", "TODO");
+      }
+    });
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
