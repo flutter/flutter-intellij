@@ -19,11 +19,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.WeakHashMap;
 
 /**
  * Wrapper around the standard {@link DartAnalysisServerService} that adds ability to send arbitrary JSON requests and listen for all JSON
  * responses.
+ *
+ * TODO(scheglov) Remove this class when we get listening for arbitrary responses in <code>DartAnalysisServerService</code>.
  */
 public class DartAnalysisServerServiceEx {
   public final DartAnalysisServerService base;
@@ -35,7 +38,12 @@ public class DartAnalysisServerServiceEx {
   public DartAnalysisServerServiceEx(DartAnalysisServerService base, AnalysisServer analysisServer) {
     this.base = base;
     this.analysisServer = analysisServer;
-    this.requestSink = ReflectionUtil.getField(analysisServer.getClass(), analysisServer, RequestSink.class, "requestSink");
+
+    RequestSink requestSink = ReflectionUtil.getField(analysisServer.getClass(), analysisServer, RequestSink.class, "requestSink");
+    if (Objects.equals(requestSink.getClass().getSimpleName(), "BlockingRequestSink")) {
+      requestSink = ReflectionUtil.getField(requestSink.getClass(), requestSink, RequestSink.class, "base");
+    }
+    this.requestSink = requestSink;
   }
 
   public void addListener(DartAnalysisServerServiceExResponseListener listener) {
@@ -95,9 +103,6 @@ public class DartAnalysisServerServiceEx {
 
   private static final WeakHashMap<AnalysisServer, DartAnalysisServerServiceEx> serverToServiceEx = new WeakHashMap<>();
 
-  /**
-   * TODO(scheglov) Remove when we get listening for arbitrary responses in <code>DartAnalysisServerService</code>.
-   */
   public static DartAnalysisServerServiceEx get(DartAnalysisServerService base) {
     if (base == null) {
       return null;
