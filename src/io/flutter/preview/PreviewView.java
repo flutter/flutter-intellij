@@ -43,6 +43,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.assists.AssistUtils;
 import com.jetbrains.lang.dart.assists.DartSourceEditException;
 import icons.FlutterIcons;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
@@ -191,7 +192,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Surround with Center"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Wrap with Center"));
     toolbarGroup.add(new AnAction(FlutterIcons.Padding) {
       @Override
       public void actionPerformed(AnActionEvent e) {
@@ -467,7 +468,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
           try {
             AssistUtils.applySourceChange(project, change, false);
           }
-          catch (DartSourceEditException ignored) {
+          catch (DartSourceEditException exception) {
+            FlutterMessages.showError("Error applying change", exception.getMessage());
           }
         });
       }
