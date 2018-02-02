@@ -22,7 +22,7 @@ import java.util.List;
  *
  * @coverage dart.server.generated.types
  */
-@SuppressWarnings("unused")
+@SuppressWarnings("ALL")
 public class FlutterOutline {
 
   public static final FlutterOutline[] EMPTY_ARRAY = new FlutterOutline[0];

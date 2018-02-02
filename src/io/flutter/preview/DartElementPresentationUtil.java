@@ -7,6 +7,7 @@ package io.flutter.preview;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.LayeredIcon;
+import com.intellij.ui.SimpleTextAttributes;
 import com.jetbrains.lang.dart.DartComponentType;
 import com.jetbrains.lang.dart.util.DartPresentableUtil;
 import org.dartlang.analysis.server.protocol.Element;
@@ -88,18 +89,23 @@ public class DartElementPresentationUtil {
     }
   }
 
-  @NotNull
-  public static String getText(@NotNull Element element) {
-    final StringBuilder b = new StringBuilder(element.getName());
+  public static void renderElement(@NotNull Element element, @NotNull OutlineTreeCellRenderer renderer, boolean nameInBold) {
+    final SimpleTextAttributes attributes =
+      nameInBold ? SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES : SimpleTextAttributes.REGULAR_ATTRIBUTES;
+
+    renderer.appendSearch(element.getName(), attributes);
+
     if (!StringUtil.isEmpty(element.getTypeParameters())) {
-      b.append(element.getTypeParameters());
+      renderer.appendSearch(element.getTypeParameters(), attributes);
     }
     if (!StringUtil.isEmpty(element.getParameters())) {
-      b.append(element.getParameters());
+      renderer.appendSearch(element.getParameters(), attributes);
     }
     if (!StringUtil.isEmpty(element.getReturnType())) {
-      b.append(" ").append(DartPresentableUtil.RIGHT_ARROW).append(" ").append(element.getReturnType());
+      renderer.append(" ");
+      renderer.append(DartPresentableUtil.RIGHT_ARROW);
+      renderer.append(" ");
+      renderer.appendSearch(element.getReturnType(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
     }
-    return b.toString();
   }
 }

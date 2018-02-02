@@ -148,16 +148,14 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
 
     // Show preview for the file selected when the view is being opened.
-    {
-      final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
-      if (selectedFiles.length != 0) {
-        setSelectedFile(selectedFiles[0]);
-      }
+    final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
+    if (selectedFiles.length != 0) {
+      setSelectedFile(selectedFiles[0]);
+    }
 
-      final FileEditor[] selectedEditors = FileEditorManager.getInstance(project).getSelectedEditors();
-      if (selectedEditors.length != 0) {
-        setSelectedEditor(selectedEditors[0]);
-      }
+    final FileEditor[] selectedEditors = FileEditorManager.getInstance(project).getSelectedEditors();
+    if (selectedEditors.length != 0) {
+      setSelectedEditor(selectedEditors[0]);
     }
 
     // Listen for selecting files.
@@ -610,8 +608,7 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
       final Icon icon = DartElementPresentationUtil.getIcon(dartElement);
       setIcon(icon);
 
-      final String text = DartElementPresentationUtil.getText(dartElement);
-      appendSearch(text, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+      DartElementPresentationUtil.renderElement(dartElement, this, hasWidgetChild(outline));
       return;
     }
 
@@ -659,11 +656,25 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     }
   }
 
+  private boolean hasWidgetChild(FlutterOutline outline) {
+    if (outline.getChildren() == null) {
+      return false;
+    }
+
+    for (FlutterOutline child : outline.getChildren()) {
+      if (child.getDartElement() == null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   private static boolean isAttributeElidable(String name) {
     return StringUtil.equals("text", name) || StringUtil.equals("icon", name);
   }
 
-  private void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
+  void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
     SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
   }
 }
