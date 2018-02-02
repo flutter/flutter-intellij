@@ -311,7 +311,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   private void selectPath(TreePath selectionPath, boolean focusEditor) {
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
-    if (currentFile != null) {
+    if (currentFile != null && !isEditorFocused()) {
       isTreeClicking = true;
       try {
         new OpenFileDescriptor(project, currentFile, offset).navigate(focusEditor);
@@ -320,6 +320,14 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
         isTreeClicking = false;
       }
     }
+  }
+
+  private boolean isEditorFocused() {
+    if (currentEditor != null) {
+      final Component focusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+      return SwingUtilities.isDescendingFrom(focusedComponent, currentEditor.getComponent());
+    }
+    return false;
   }
 
   private DefaultTreeModel getTreeModel() {
