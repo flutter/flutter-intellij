@@ -54,6 +54,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -91,7 +92,6 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   private JScrollPane scrollPane;
   private OutlineTree tree;
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
-  private boolean isTreeClicking = false;
 
   private VirtualFile currentFile;
   private Editor currentEditor;
@@ -128,7 +128,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     @Override
     public void caretPositionChanged(CaretEvent e) {
       final Caret caret = e.getCaret();
-      if (caret != null && !isTreeClicking) {
+      if (caret != null) {
         final int offset = caret.getOffset();
         selectOutlineAtOffset(offset);
       }
@@ -142,6 +142,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     public void caretRemoved(CaretEvent e) {
     }
   };
+
+  private final TreeSelectionListener treeSelectionListener = this::handleTreeSelectionEvent;
 
   public PreviewView(@NotNull Project project) {
     this.project = project;
@@ -262,7 +264,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       }
     });
 
-    tree.addTreeSelectionListener(this::handleTreeSelectionEvent);
+    tree.addTreeSelectionListener(treeSelectionListener);
 
     scrollPane = ScrollPaneFactory.createScrollPane(tree);
     windowPanel.setContent(scrollPane);
@@ -310,12 +312,12 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     if (currentFile != null) {
-      isTreeClicking = true;
+      currentEditor.getCaretModel().removeCaretListener(caretListener);
       try {
         new OpenFileDescriptor(project, currentFile, offset).navigate(focusEditor);
       }
       finally {
-        isTreeClicking = false;
+        currentEditor.getCaretModel().addCaretListener(caretListener);
       }
     }
   }
@@ -428,7 +430,9 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
         tree.scrollPathToVisible(selectedPath);
 
         // Now actually select the node.
+        tree.removeTreeSelectionListener(treeSelectionListener);
         tree.setSelectionPath(selectedPath);
+        tree.addTreeSelectionListener(treeSelectionListener);
 
         // JTree attempts to show as much of the node as possible, so scrolls horizonally.
         // But we actually need to see the whole hierarchy, so we scroll back to zero.
