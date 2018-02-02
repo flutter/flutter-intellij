@@ -12,6 +12,6 @@ import io.flutter.settings.FlutterSettings;
 public class PreviewViewCondition implements Condition<Project> {
   @Override
   public boolean value(Project project) {
-    return FlutterSettings.getInstance().isPreviewView();
+    return FlutterSettings.getInstance().getEnablePreviewView();
   }
 }

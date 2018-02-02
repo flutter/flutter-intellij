@@ -54,6 +54,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myEnablePreviewViewCheckBox;
+  private JCheckBox myPreviewDart2CheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -134,7 +135,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isPreviewView() != myEnablePreviewViewCheckBox.isSelected()) {
+    if (settings.getEnablePreviewView() != myEnablePreviewViewCheckBox.isSelected()) {
+      return true;
+    }
+
+    if (settings.getPreviewDart2() != myPreviewDart2CheckBox.isSelected()) {
       return true;
     }
 
@@ -167,7 +172,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setPreviewView(myEnablePreviewViewCheckBox.isSelected());
+    settings.setEnablePreviewView(myEnablePreviewViewCheckBox.isSelected());
+    settings.setPreviewDart2(myPreviewDart2CheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -190,7 +196,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    myEnablePreviewViewCheckBox.setSelected(settings.isPreviewView());
+    myEnablePreviewViewCheckBox.setSelected(settings.getEnablePreviewView());
+    myPreviewDart2CheckBox.setSelected(settings.getPreviewDart2());
   }
 
   private void updateVersionText() {
