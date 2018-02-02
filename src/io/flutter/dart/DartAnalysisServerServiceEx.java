@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.WeakHashMap;
 
 /**
@@ -35,7 +36,12 @@ public class DartAnalysisServerServiceEx {
   public DartAnalysisServerServiceEx(DartAnalysisServerService base, AnalysisServer analysisServer) {
     this.base = base;
     this.analysisServer = analysisServer;
-    this.requestSink = ReflectionUtil.getField(analysisServer.getClass(), analysisServer, RequestSink.class, "requestSink");
+
+    RequestSink requestSink = ReflectionUtil.getField(analysisServer.getClass(), analysisServer, RequestSink.class, "requestSink");
+    if (Objects.equals(requestSink.getClass().getSimpleName(), "BlockingRequestSink")) {
+      requestSink = ReflectionUtil.getField(requestSink.getClass(), requestSink, RequestSink.class, "base");
+    }
+    this.requestSink = requestSink;
   }
 
   public void addListener(DartAnalysisServerServiceExResponseListener listener) {
