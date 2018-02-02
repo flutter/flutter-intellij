@@ -21,7 +21,7 @@ import java.util.List;
  *
  * @coverage dart.server.generated.types
  */
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "LocalCanBeFinal"})
 public class FlutterOutlineAttribute {
 
   public static final FlutterOutlineAttribute[] EMPTY_ARRAY = new FlutterOutlineAttribute[0];
