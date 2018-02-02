@@ -42,11 +42,11 @@ public class ColorIconMaker {
         }
 
         public int getIconWidth() {
-          return 22;
+          return 22; // TODO(jacob): customize the icon height based on the font size.
         }
 
         public int getIconHeight() {
-          return 22;
+          return 22; // TODO(jacob): customize the icon height based on the font size.
         }
       };
 

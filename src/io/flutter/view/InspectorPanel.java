@@ -726,11 +726,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final DiagnosticsNode node = (DiagnosticsNode)value;
       final SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
 
-      if (!node.getShowName()) {
-        append(node.getName(), textAttributes);
-        append(" ", textAttributes);
-      }
-
       boolean appendDescription = true;
 
       if (node.getTooltip() != null) {
