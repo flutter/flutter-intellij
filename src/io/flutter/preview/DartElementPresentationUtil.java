@@ -90,16 +90,16 @@ public class DartElementPresentationUtil {
   }
 
   public static void renderElement(@NotNull Element element, @NotNull OutlineTreeCellRenderer renderer, boolean nameInBold) {
-    final SimpleTextAttributes attribs =
+    final SimpleTextAttributes attributes =
       nameInBold ? SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES : SimpleTextAttributes.REGULAR_ATTRIBUTES;
 
-    renderer.appendSearch(element.getName(), attribs);
+    renderer.appendSearch(element.getName(), attributes);
 
     if (!StringUtil.isEmpty(element.getTypeParameters())) {
-      renderer.appendSearch(element.getTypeParameters(), attribs);
+      renderer.appendSearch(element.getTypeParameters(), attributes);
     }
     if (!StringUtil.isEmpty(element.getParameters())) {
-      renderer.appendSearch(element.getParameters(), attribs);
+      renderer.appendSearch(element.getParameters(), attributes);
     }
     if (!StringUtil.isEmpty(element.getReturnType())) {
       renderer.append(" ");
