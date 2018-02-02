@@ -40,19 +40,20 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
+import com.jetbrains.lang.dart.assists.AssistUtils;
+import com.jetbrains.lang.dart.assists.DartSourceEditException;
 import icons.FlutterIcons;
+import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
 import io.flutter.utils.CustomIconMaker;
-import org.dartlang.analysis.server.protocol.Element;
-import org.dartlang.analysis.server.protocol.FlutterOutline;
-import org.dartlang.analysis.server.protocol.FlutterOutlineAttribute;
-import org.dartlang.analysis.server.protocol.FlutterOutlineKind;
+import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.TreeSelectionEvent;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
@@ -60,6 +61,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -80,9 +82,13 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   @NotNull
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
-  private JScrollPane scrollPane;
   private SimpleToolWindowPanel windowPanel;
   private JComponent windowToolbar;
+
+  private final Map<String, AnAction> messageToActionMap = new HashMap<>();
+  private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
+
+  private JScrollPane scrollPane;
   private OutlineTree tree;
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
   private boolean isTreeClicking = false;
@@ -186,12 +192,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    toolbarGroup.add(new AnAction(FlutterIcons.Center) {
-      @Override
-      public void actionPerformed(AnActionEvent e) {
-        Messages.showErrorDialog("Not implemented yet.", "TODO");
-      }
-    });
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Wrap with Center"));
     toolbarGroup.add(new AnAction(FlutterIcons.Padding) {
       @Override
       public void actionPerformed(AnActionEvent e) {
@@ -263,12 +264,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       }
     });
 
-    tree.addTreeSelectionListener(e -> {
-      final TreePath selectionPath = e.getNewLeadSelectionPath();
-      if (selectionPath != null) {
-        ApplicationManager.getApplication().invokeLater(() -> selectPath(selectionPath, false));
-      }
-    });
+    tree.addTreeSelectionListener(this::handleTreeSelectionEvent);
 
     scrollPane = ScrollPaneFactory.createScrollPane(tree);
     windowPanel.setContent(scrollPane);
@@ -277,10 +273,43 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     contentManager.setSelectedContent(content);
   }
 
+  private void handleTreeSelectionEvent(TreeSelectionEvent e) {
+    final TreePath selectionPath = e.getNewLeadSelectionPath();
+    if (selectionPath != null) {
+      ApplicationManager.getApplication().invokeLater(() -> selectPath(selectionPath, false));
+
+      actionToChangeMap.clear();
+
+      final VirtualFile selectionFile = this.currentFile;
+      final FlutterOutline selectionOutline = getOutlineOfPath(selectionPath);
+      if (selectionFile != null && selectionOutline != null) {
+        ApplicationManager.getApplication().executeOnPooledThread(() -> {
+          final int offset = selectionOutline.getOffset();
+          final int length = selectionOutline.getLength();
+          final List<SourceChange> changes = flutterAnalysisServer.edit_getAssists(selectionFile, offset, length);
+
+          // If the current file or outline are different, ignore the changes.
+          // We will eventually get new changes.
+          final FlutterOutline newOutline = getOutlineOfPath(tree.getSelectionPath());
+          if (!Objects.equals(this.currentFile, selectionFile) || newOutline != selectionOutline) {
+            return;
+          }
+
+          // Associate changes with actions.
+          // Actions will be enabled / disabled in background.
+          for (SourceChange change : changes) {
+            final AnAction action = messageToActionMap.get(change.getMessage());
+            if (action != null) {
+              actionToChangeMap.put(action, change);
+            }
+          }
+        });
+      }
+    }
+  }
+
   private void selectPath(TreePath selectionPath, boolean focusEditor) {
-    final DefaultMutableTreeNode node = (DefaultMutableTreeNode)selectionPath.getLastPathComponent();
-    final OutlineObject object = (OutlineObject)node.getUserObject();
-    final FlutterOutline outline = object.outline;
+    final FlutterOutline outline = getOutlineOfPath(selectionPath);
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     if (currentFile != null) {
       isTreeClicking = true;
@@ -314,6 +343,12 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
         updateOutline(node, outline.getChildren());
       }
     }
+  }
+
+  private FlutterOutline getOutlineOfPath(TreePath path) {
+    final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+    final OutlineObject object = (OutlineObject)node.getUserObject();
+    return object.outline;
   }
 
   private FlutterOutline findOutlineAtOffset(FlutterOutline outline, int offset) {
@@ -413,6 +448,37 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
         bounds.height = tree.getVisibleRect().height;
         tree.scrollRectToVisible(bounds);
       }
+    }
+  }
+
+  private class QuickAssistAction extends AnAction {
+    QuickAssistAction(Icon icon, String assistMessage) {
+      super(icon);
+      messageToActionMap.put(assistMessage, this);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      final SourceChange change;
+      synchronized (actionToChangeMap) {
+        change = actionToChangeMap.get(this);
+      }
+      if (change != null) {
+        ApplicationManager.getApplication().runWriteAction(() -> {
+          try {
+            AssistUtils.applySourceChange(project, change, false);
+          }
+          catch (DartSourceEditException exception) {
+            FlutterMessages.showError("Error applying change", exception.getMessage());
+          }
+        });
+      }
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      final boolean hasChange = actionToChangeMap.containsKey(this);
+      e.getPresentation().setEnabled(hasChange);
     }
   }
 
