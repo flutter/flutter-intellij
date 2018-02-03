@@ -85,6 +85,23 @@ public class CustomIconMaker {
     return iconCache.get(mapKey);
   }
 
+  public Icon fromWidgetName(String name) {
+    if (name == null) {
+      return null;
+    }
+
+    final boolean isPrivate = name.startsWith("_");
+    while (!name.isEmpty() && !Character.isAlphabetic(name.charAt(0))) {
+      name = name.substring(1);
+    }
+
+    if (name.isEmpty()) {
+      return null;
+    }
+
+    return getCustomIcon(name, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
+  }
+
   public enum IconKind {
     kClass("class", FlutterIcons.CustomClass, FlutterIcons.CustomClassAbstract),
     kField("fields", FlutterIcons.CustomFields),
