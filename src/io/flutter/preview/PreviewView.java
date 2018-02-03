@@ -66,16 +66,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
-public class PreviewView implements PersistentStateComponent<PreviewView.State>, Disposable {
+public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Preview";
 
   @NotNull
-  private PreviewView.State state = new PreviewView.State();
+  private PreviewViewState state = new PreviewViewState();
 
   @NotNull
   private final Project project;
@@ -177,12 +179,12 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
 
   @NotNull
   @Override
-  public PreviewView.State getState() {
+  public PreviewViewState getState() {
     return this.state;
   }
 
   @Override
-  public void loadState(PreviewView.State state) {
+  public void loadState(PreviewViewState state) {
     this.state = state;
   }
 
@@ -483,14 +485,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       e.getPresentation().setEnabled(hasChange);
     }
   }
-
-  /**
-   * State for the view.
-   */
-  class State {
-  }
 }
-
 
 class OutlineTree extends Tree {
   OutlineTree(DefaultMutableTreeNode model) {
@@ -521,6 +516,7 @@ class OutlineObject {
     if (outline.getKind().equals(FlutterOutlineKind.DART_ELEMENT)) {
       return null;
     }
+
     if (icon == null) {
       final String className = outline.getClassName();
       final FlutterWidget widget = FlutterWidget.getCatalog().getWidget(className);
@@ -528,9 +524,10 @@ class OutlineObject {
         icon = widget.getIcon();
       }
       if (icon == null) {
-        icon = getCustomIcon(className);
+        icon = iconMaker.fromWidgetName(className);
       }
     }
+
     return icon;
   }
 
@@ -563,23 +560,6 @@ class OutlineObject {
     }
 
     return builder.toString();
-  }
-
-  private static Icon getCustomIcon(String text) {
-    if (text == null) {
-      return null;
-    }
-
-    final boolean isPrivate = text.startsWith("_");
-    while (!text.isEmpty() && !Character.isAlphabetic(text.charAt(0))) {
-      text = text.substring(1);
-    }
-
-    if (text.isEmpty()) {
-      return null;
-    }
-
-    return iconMaker.getCustomIcon(text, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
   }
 }
 
@@ -652,12 +632,50 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
             appendSearch(attribute.getName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
             append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
           }
-          appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+
+          appendSearch(renderWithShortenedClosures(attribute), SimpleTextAttributes.GRAYED_ATTRIBUTES);
 
           // TODO(scheglov): custom display for units, colors, iterables, and icons?
         }
       }
     }
+  }
+
+  final static Pattern closureShorthand = Pattern.compile("^\\s*\\(\\s*([^(]*)\\s*\\)\\s*=>.*");
+  final static Pattern closureBlock = Pattern.compile("^\\s*\\(\\s*([^(]*)\\s*\\)\\s*\\{.*}");
+
+  private String renderWithShortenedClosures(FlutterOutlineAttribute attribute) {
+    if (attribute.getLiteralValueBoolean() != null) {
+      return attribute.getLabel();
+    }
+
+    if (attribute.getLiteralValueInteger() != null) {
+      return attribute.getLabel();
+    }
+
+    if (attribute.getLiteralValueString() != null) {
+      return attribute.getLabel();
+    }
+
+    // () => …
+    // (…) => ...
+    // () { … }
+    // (…) { … }
+    final String label = attribute.getLabel();
+
+    Matcher matcher = closureShorthand.matcher(label);
+    if (matcher.matches()) {
+      final String params = matcher.group(1).trim();
+      return params.isEmpty() ? "() => …" : "(…) => …";
+    }
+
+    matcher = closureBlock.matcher(label);
+    if (matcher.matches()) {
+      final String params = matcher.group(1).trim();
+      return params.isEmpty() ? "() { … }" : "(…) => { … }";
+    }
+
+    return label;
   }
 
   private boolean hasWidgetChild(FlutterOutline outline) {

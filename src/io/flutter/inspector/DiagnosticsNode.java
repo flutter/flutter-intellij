@@ -491,7 +491,7 @@ public class DiagnosticsNode {
         return valueProperties;
       }
 
-      String[] propertyNames;
+      final String[] propertyNames;
       // Add more cases here as visual displays for additional Dart objects
       // are added.
       switch (getPropertyType()) {
@@ -595,26 +595,9 @@ public class DiagnosticsNode {
       icon = widget.getIcon();
     }
     if (icon == null) {
-      icon = getCustomIcon(getDescription());
+      icon = iconMaker.fromWidgetName(getDescription());
     }
     return icon;
-  }
-
-  private static Icon getCustomIcon(String text) {
-    if (text == null) {
-      return null;
-    }
-
-    final boolean isPrivate = text.startsWith("_");
-    while (!text.isEmpty() && !Character.isAlphabetic(text.charAt(0))) {
-      text = text.substring(1);
-    }
-
-    if (text.isEmpty()) {
-      return null;
-    }
-
-    return iconMaker.getCustomIcon(text, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
   }
 
   /**

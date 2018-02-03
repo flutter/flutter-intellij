@@ -100,8 +100,9 @@ public class FlutterOutlineAttribute {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<FlutterOutlineAttribute> list = new ArrayList<FlutterOutlineAttribute>(jsonArray.size());
+    ArrayList<FlutterOutlineAttribute> list = new ArrayList<>(jsonArray.size());
     Iterator<JsonElement> iterator = jsonArray.iterator();
+    //noinspection WhileLoopReplaceableByForEach
     while (iterator.hasNext()) {
       list.add(fromJson(iterator.next().getAsJsonObject()));
     }
