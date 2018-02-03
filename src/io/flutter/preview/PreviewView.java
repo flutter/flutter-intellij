@@ -26,6 +26,7 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -84,13 +85,15 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
   private SimpleToolWindowPanel windowPanel;
-  private JComponent windowToolbar;
 
   private final Map<String, AnAction> messageToActionMap = new HashMap<>();
   private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
 
+  private Splitter splitter;
   private JScrollPane scrollPane;
   private OutlineTree tree;
+  private PreviewAreaPanel previewAreaPanel;
+
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
@@ -101,25 +104,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-          currentOutline = outline;
-
-          final DefaultMutableTreeNode rootNode = getRootNode();
-          rootNode.removeAllChildren();
-
-          outlineToNodeMap.clear();
-          updateOutline(rootNode, outline.getChildren());
-
-          getTreeModel().reload(rootNode);
-          tree.expandAll();
-
-          if (currentEditor != null) {
-            final int offset = currentEditor.getCaretModel().getOffset();
-            selectOutlineAtOffset(offset);
-          }
-
-          windowPanel.setToolbar(windowToolbar);
-        });
+        ApplicationManager.getApplication().invokeLater(() -> updateOutline(filePath, outline));
       }
     }
   };
@@ -219,7 +204,8 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     windowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(windowPanel);
 
-    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
+    final JComponent windowToolbar =
+      ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
     windowPanel.setToolbar(windowToolbar);
 
     final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
@@ -267,7 +253,14 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     tree.addTreeSelectionListener(treeSelectionListener);
 
     scrollPane = ScrollPaneFactory.createScrollPane(tree);
-    windowPanel.setContent(scrollPane);
+
+    previewAreaPanel = new PreviewAreaPanel();
+
+    splitter = new Splitter(true);
+    // TODO: read from saved state
+    splitter.setProportion(0.7f);
+    splitter.setFirstComponent(scrollPane);
+    windowPanel.setContent(splitter);
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
@@ -320,6 +313,29 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
         currentEditor.getCaretModel().addCaretListener(caretListener);
       }
     }
+
+    // TODO: Is this the best place?
+    previewAreaPanel.updatePreviewElement(getBuildMethodElement(selectionPath));
+  }
+
+  private Element getBuildMethodElement(TreePath path) {
+    for (Object n : path.getPath()) {
+      final DefaultMutableTreeNode node = (DefaultMutableTreeNode)n;
+      final OutlineObject outlineElement = (OutlineObject)node.getUserObject();
+      if (outlineElement == null) {
+        continue;
+      }
+
+      final FlutterOutline flutterOutline = outlineElement.outline;
+
+      if (flutterOutline.getDartElement() != null) {
+        if (ModelUtils.isBuildMethod(flutterOutline.getDartElement())) {
+          return flutterOutline.getDartElement();
+        }
+      }
+    }
+
+    return null;
   }
 
   private DefaultTreeModel getTreeModel() {
@@ -330,7 +346,33 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
     return (DefaultMutableTreeNode)getTreeModel().getRoot();
   }
 
-  private void updateOutline(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
+  private void updateOutline(@NotNull String filePath, @NotNull FlutterOutline outline) {
+    currentOutline = outline;
+
+    final DefaultMutableTreeNode rootNode = getRootNode();
+    rootNode.removeAllChildren();
+
+    outlineToNodeMap.clear();
+    updateOutlineImpl(rootNode, outline.getChildren());
+
+    getTreeModel().reload(rootNode);
+    tree.expandAll();
+
+    if (currentEditor != null) {
+      final int offset = currentEditor.getCaretModel().getOffset();
+      selectOutlineAtOffset(offset);
+    }
+
+    // TODO: We'll also need to update this as the current outline content changes.
+    if (ModelUtils.containsBuildMethod(outline)) {
+      splitter.setSecondComponent(previewAreaPanel);
+    }
+    else {
+      splitter.setSecondComponent(null);
+    }
+  }
+
+  private void updateOutlineImpl(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
     for (int i = 0; i < outlines.size(); i++) {
       final FlutterOutline outline = outlines.get(i);
 
@@ -340,7 +382,7 @@ public class PreviewView implements PersistentStateComponent<PreviewView.State>,
       outlineToNodeMap.put(outline, node);
       getTreeModel().insertNodeInto(node, parent, i);
       if (outline.getChildren() != null) {
-        updateOutline(node, outline.getChildren());
+        updateOutlineImpl(node, outline.getChildren());
       }
     }
   }
@@ -612,7 +654,8 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
       final Icon icon = DartElementPresentationUtil.getIcon(dartElement);
       setIcon(icon);
 
-      DartElementPresentationUtil.renderElement(dartElement, this, hasWidgetChild(outline));
+      final boolean renderInBold = hasWidgetChild(outline) && ModelUtils.isBuildMethod(dartElement);
+      DartElementPresentationUtil.renderElement(dartElement, this, renderInBold);
       return;
     }
 
