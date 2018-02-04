@@ -52,6 +52,7 @@ import io.flutter.inspector.FlutterWidget;
 import io.flutter.utils.CustomIconMaker;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -63,6 +64,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,8 +80,10 @@ import java.util.regex.Pattern;
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Preview";
 
+  private static final boolean SHOW_PREVIEW_AREA = false;
+
   @NotNull
-  private PreviewViewState state = new PreviewViewState();
+  private final PreviewViewState state = new PreviewViewState();
 
   @NotNull
   private final Project project;
@@ -170,7 +175,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   @Override
   public void loadState(PreviewViewState state) {
-    this.state = state;
+    this.state.copyFrom(state);
   }
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
@@ -259,8 +264,20 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     previewAreaPanel = new PreviewAreaPanel();
 
     splitter = new Splitter(true);
-    // TODO: read from saved state
-    splitter.setProportion(0.7f);
+    splitter.setProportion(getState().getSplitterProportion());
+    getState().addListener(e -> {
+      final float newProportion = getState().getSplitterProportion();
+      if (splitter.getProportion() != newProportion) {
+        splitter.setProportion(newProportion);
+      }
+    });
+    //noinspection Convert2Lambda
+    splitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        getState().setSplitterProportion(splitter.getProportion());
+      }
+    });
     splitter.setFirstComponent(scrollPane);
     windowPanel.setContent(splitter);
 
@@ -316,8 +333,30 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       }
     }
 
-    // TODO: Is this the best place?
-    previewAreaPanel.updatePreviewElement(getBuildMethodElement(selectionPath));
+    if (SHOW_PREVIEW_AREA) {
+      final Element buildMethodElement = getBuildMethodElement(selectionPath);
+      previewAreaPanel.updatePreviewElement(getElementParentFor(buildMethodElement), buildMethodElement);
+    }
+  }
+
+  // TODO: Add parent relationship info to FlutterOutline instead of this O(n^2) traversal.
+  private Element getElementParentFor(@Nullable Element element) {
+    if (element == null) {
+      return null;
+    }
+
+    for (FlutterOutline outline : outlineToNodeMap.keySet()) {
+      final List<FlutterOutline> children = outline.getChildren();
+      if (children != null) {
+        for (FlutterOutline child : children) {
+          if (child.getDartElement() == element) {
+            return outline.getDartElement();
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   private Element getBuildMethodElement(TreePath path) {
@@ -365,12 +404,16 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       selectOutlineAtOffset(offset);
     }
 
-    // TODO: We'll also need to update this as the current outline content changes.
-    if (ModelUtils.containsBuildMethod(outline)) {
-      splitter.setSecondComponent(previewAreaPanel);
-    }
-    else {
-      splitter.setSecondComponent(null);
+    if (SHOW_PREVIEW_AREA) {
+      if (ModelUtils.containsBuildMethod(outline)) {
+        splitter.setSecondComponent(previewAreaPanel);
+
+        final Element buildMethodElement = getBuildMethodElement(tree.getSelectionPath());
+        previewAreaPanel.updatePreviewElement(getElementParentFor(buildMethodElement), buildMethodElement);
+      }
+      else {
+        splitter.setSecondComponent(null);
+      }
     }
   }
 
