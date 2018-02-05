@@ -398,7 +398,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     rootNode.removeAllChildren();
 
     outlineToNodeMap.clear();
-    updateOutlineImpl(rootNode, outline.getChildren());
+    if (outline.getChildren() != null) {
+      updateOutlineImpl(rootNode, outline.getChildren());
+    }
 
     getTreeModel().reload(rootNode);
     tree.expandAll();
