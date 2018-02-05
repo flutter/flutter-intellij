@@ -8,6 +8,7 @@ package io.flutter.preview;
 import com.intellij.openapi.util.text.StringUtil;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class ModelUtils {
   private ModelUtils() {
   }
 
-  public static boolean isBuildMethod(Element element) {
+  public static boolean isBuildMethod(@NotNull Element element) {
     return StringUtil.equals("build", element.getName()) &&
            StringUtil.startsWith(element.getParameters(), "(BuildContext ");
   }

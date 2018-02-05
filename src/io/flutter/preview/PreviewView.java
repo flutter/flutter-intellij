@@ -368,11 +368,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       }
 
       final FlutterOutline flutterOutline = outlineElement.outline;
+      final Element element = flutterOutline.getDartElement();
 
-      if (flutterOutline.getDartElement() != null) {
-        if (ModelUtils.isBuildMethod(flutterOutline.getDartElement())) {
-          return flutterOutline.getDartElement();
-        }
+      if (element != null && ModelUtils.isBuildMethod(element)) {
+        return element;
       }
     }
 
