@@ -292,6 +292,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   private void selectPath(TreePath selectionPath, boolean focusEditor) {
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
+    if (outline == null) {
+      return;
+    }
+
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
@@ -432,7 +436,12 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
-  private FlutterOutline getOutlineOfPath(TreePath path) {
+  @Nullable
+  private FlutterOutline getOutlineOfPath(@Nullable TreePath path) {
+    if (path == null) {
+      return null;
+    }
+
     final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
     final OutlineObject object = (OutlineObject)node.getUserObject();
     return object.outline;
