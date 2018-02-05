@@ -26,6 +26,7 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -51,6 +52,7 @@ import io.flutter.inspector.FlutterWidget;
 import io.flutter.utils.CustomIconMaker;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
@@ -62,6 +64,8 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,8 +80,10 @@ import java.util.regex.Pattern;
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Preview";
 
+  private static final boolean SHOW_PREVIEW_AREA = false;
+
   @NotNull
-  private PreviewViewState state = new PreviewViewState();
+  private final PreviewViewState state = new PreviewViewState();
 
   @NotNull
   private final Project project;
@@ -86,13 +92,15 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
   private SimpleToolWindowPanel windowPanel;
-  private JComponent windowToolbar;
 
   private final Map<String, AnAction> messageToActionMap = new HashMap<>();
   private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
 
+  private Splitter splitter;
   private JScrollPane scrollPane;
   private OutlineTree tree;
+  private PreviewAreaPanel previewAreaPanel;
+
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
@@ -103,25 +111,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-          currentOutline = outline;
-
-          final DefaultMutableTreeNode rootNode = getRootNode();
-          rootNode.removeAllChildren();
-
-          outlineToNodeMap.clear();
-          updateOutline(rootNode, outline.getChildren());
-
-          getTreeModel().reload(rootNode);
-          tree.expandAll();
-
-          if (currentEditor != null) {
-            final int offset = currentEditor.getCaretModel().getOffset();
-            selectOutlineAtOffset(offset);
-          }
-
-          windowPanel.setToolbar(windowToolbar);
-        });
+        ApplicationManager.getApplication().invokeLater(() -> updateOutline(filePath, outline));
       }
     }
   };
@@ -185,7 +175,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   @Override
   public void loadState(PreviewViewState state) {
-    this.state = state;
+    this.state.copyFrom(state);
   }
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
@@ -221,7 +211,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     windowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(windowPanel);
 
-    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
+    final JComponent windowToolbar =
+      ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
     windowPanel.setToolbar(windowToolbar);
 
     final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
@@ -269,7 +260,26 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.addTreeSelectionListener(treeSelectionListener);
 
     scrollPane = ScrollPaneFactory.createScrollPane(tree);
-    windowPanel.setContent(scrollPane);
+
+    previewAreaPanel = new PreviewAreaPanel();
+
+    splitter = new Splitter(true);
+    splitter.setProportion(getState().getSplitterProportion());
+    getState().addListener(e -> {
+      final float newProportion = getState().getSplitterProportion();
+      if (splitter.getProportion() != newProportion) {
+        splitter.setProportion(newProportion);
+      }
+    });
+    //noinspection Convert2Lambda
+    splitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
+      @Override
+      public void propertyChange(PropertyChangeEvent evt) {
+        getState().setSplitterProportion(splitter.getProportion());
+      }
+    });
+    splitter.setFirstComponent(scrollPane);
+    windowPanel.setContent(splitter);
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
@@ -322,6 +332,50 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         currentEditor.getCaretModel().addCaretListener(caretListener);
       }
     }
+
+    if (SHOW_PREVIEW_AREA) {
+      final Element buildMethodElement = getBuildMethodElement(selectionPath);
+      previewAreaPanel.updatePreviewElement(getElementParentFor(buildMethodElement), buildMethodElement);
+    }
+  }
+
+  // TODO: Add parent relationship info to FlutterOutline instead of this O(n^2) traversal.
+  private Element getElementParentFor(@Nullable Element element) {
+    if (element == null) {
+      return null;
+    }
+
+    for (FlutterOutline outline : outlineToNodeMap.keySet()) {
+      final List<FlutterOutline> children = outline.getChildren();
+      if (children != null) {
+        for (FlutterOutline child : children) {
+          if (child.getDartElement() == element) {
+            return outline.getDartElement();
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private Element getBuildMethodElement(TreePath path) {
+    for (Object n : path.getPath()) {
+      final DefaultMutableTreeNode node = (DefaultMutableTreeNode)n;
+      final OutlineObject outlineElement = (OutlineObject)node.getUserObject();
+      if (outlineElement == null) {
+        continue;
+      }
+
+      final FlutterOutline flutterOutline = outlineElement.outline;
+      final Element element = flutterOutline.getDartElement();
+
+      if (element != null && ModelUtils.isBuildMethod(element)) {
+        return element;
+      }
+    }
+
+    return null;
   }
 
   private DefaultTreeModel getTreeModel() {
@@ -332,7 +386,37 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     return (DefaultMutableTreeNode)getTreeModel().getRoot();
   }
 
-  private void updateOutline(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
+  private void updateOutline(@NotNull String filePath, @NotNull FlutterOutline outline) {
+    currentOutline = outline;
+
+    final DefaultMutableTreeNode rootNode = getRootNode();
+    rootNode.removeAllChildren();
+
+    outlineToNodeMap.clear();
+    updateOutlineImpl(rootNode, outline.getChildren());
+
+    getTreeModel().reload(rootNode);
+    tree.expandAll();
+
+    if (currentEditor != null) {
+      final int offset = currentEditor.getCaretModel().getOffset();
+      selectOutlineAtOffset(offset);
+    }
+
+    if (SHOW_PREVIEW_AREA) {
+      if (ModelUtils.containsBuildMethod(outline)) {
+        splitter.setSecondComponent(previewAreaPanel);
+
+        final Element buildMethodElement = getBuildMethodElement(tree.getSelectionPath());
+        previewAreaPanel.updatePreviewElement(getElementParentFor(buildMethodElement), buildMethodElement);
+      }
+      else {
+        splitter.setSecondComponent(null);
+      }
+    }
+  }
+
+  private void updateOutlineImpl(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
     for (int i = 0; i < outlines.size(); i++) {
       final FlutterOutline outline = outlines.get(i);
 
@@ -342,7 +426,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       outlineToNodeMap.put(outline, node);
       getTreeModel().insertNodeInto(node, parent, i);
       if (outline.getChildren() != null) {
-        updateOutline(node, outline.getChildren());
+        updateOutlineImpl(node, outline.getChildren());
       }
     }
   }
@@ -592,7 +676,8 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
       final Icon icon = DartElementPresentationUtil.getIcon(dartElement);
       setIcon(icon);
 
-      DartElementPresentationUtil.renderElement(dartElement, this, hasWidgetChild(outline));
+      final boolean renderInBold = hasWidgetChild(outline) && ModelUtils.isBuildMethod(dartElement);
+      DartElementPresentationUtil.renderElement(dartElement, this, renderInBold);
       return;
     }
 
