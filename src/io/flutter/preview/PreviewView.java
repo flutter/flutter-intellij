@@ -184,13 +184,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Wrap with Center"));
-    toolbarGroup.add(new AnAction(FlutterIcons.Padding) {
-      @Override
-      public void actionPerformed(AnActionEvent e) {
-        Messages.showErrorDialog("Not implemented yet.", "TODO");
-      }
-    });
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Center widget"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Padding, "Add widget padding"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new AnAction(FlutterIcons.Up) {
       @Override
@@ -290,33 +285,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     if (selectionPath != null) {
       ApplicationManager.getApplication().invokeLater(() -> selectPath(selectionPath, false));
 
-      actionToChangeMap.clear();
-
-      final VirtualFile selectionFile = this.currentFile;
       final FlutterOutline selectionOutline = getOutlineOfPath(selectionPath);
-      if (selectionFile != null && selectionOutline != null) {
-        ApplicationManager.getApplication().executeOnPooledThread(() -> {
-          final int offset = selectionOutline.getOffset();
-          final int length = selectionOutline.getLength();
-          final List<SourceChange> changes = flutterAnalysisServer.edit_getAssists(selectionFile, offset, length);
-
-          // If the current file or outline are different, ignore the changes.
-          // We will eventually get new changes.
-          final FlutterOutline newOutline = getOutlineOfPath(tree.getSelectionPath());
-          if (!Objects.equals(this.currentFile, selectionFile) || newOutline != selectionOutline) {
-            return;
-          }
-
-          // Associate changes with actions.
-          // Actions will be enabled / disabled in background.
-          for (SourceChange change : changes) {
-            final AnAction action = messageToActionMap.get(change.getMessage());
-            if (action != null) {
-              actionToChangeMap.put(action, change);
-            }
-          }
-        });
-      }
+      updateActionsForOutline(selectionOutline);
     }
   }
 
@@ -336,6 +306,37 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     if (SHOW_PREVIEW_AREA) {
       final Element buildMethodElement = getBuildMethodElement(selectionPath);
       previewAreaPanel.updatePreviewElement(getElementParentFor(buildMethodElement), buildMethodElement);
+    }
+  }
+
+  private void updateActionsForOutline(FlutterOutline outline) {
+    synchronized (actionToChangeMap) {
+      actionToChangeMap.clear();
+    }
+
+    final VirtualFile selectionFile = this.currentFile;
+    if (selectionFile != null && outline != null) {
+      ApplicationManager.getApplication().executeOnPooledThread(() -> {
+        final int offset = outline.getOffset();
+        final int length = outline.getLength();
+        final List<SourceChange> changes = flutterAnalysisServer.edit_getAssists(selectionFile, offset, length);
+
+        // If the current file or outline are different, ignore the changes.
+        // We will eventually get new changes.
+        final FlutterOutline newOutline = getOutlineOfPath(tree.getSelectionPath());
+        if (!Objects.equals(this.currentFile, selectionFile) || newOutline != outline) {
+          return;
+        }
+
+        // Associate changes with actions.
+        // Actions will be enabled / disabled in background.
+        for (SourceChange change : changes) {
+          final AnAction action = messageToActionMap.get(change.getMessage());
+          if (action != null) {
+            actionToChangeMap.put(action, change);
+          }
+        }
+      });
     }
   }
 
@@ -498,6 +499,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   private void setSelectedOutline(FlutterOutline outline) {
+    updateActionsForOutline(outline);
     if (outline != null) {
       final DefaultMutableTreeNode selectedNode = outlineToNodeMap.get(outline);
       if (selectedNode != null) {
@@ -541,7 +543,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   private class QuickAssistAction extends AnAction {
     QuickAssistAction(Icon icon, String assistMessage) {
-      super(icon);
+      super(assistMessage, null, icon);
       messageToActionMap.put(assistMessage, this);
     }
 
@@ -550,6 +552,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       final SourceChange change;
       synchronized (actionToChangeMap) {
         change = actionToChangeMap.get(this);
+        actionToChangeMap.clear();
       }
       if (change != null) {
         ApplicationManager.getApplication().runWriteAction(() -> {
