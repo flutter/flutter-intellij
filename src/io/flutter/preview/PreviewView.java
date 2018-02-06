@@ -5,6 +5,7 @@
  */
 package io.flutter.preview;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.CommonActionsManager;
@@ -66,10 +67,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -186,6 +185,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Center widget"));
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Padding, "Add widget padding"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Column, "Put into new Column"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Row, "Put into new Row"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new AnAction(FlutterIcons.Up) {
       @Override
@@ -284,10 +285,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     final TreePath selectionPath = e.getNewLeadSelectionPath();
     if (selectionPath != null) {
       ApplicationManager.getApplication().invokeLater(() -> selectPath(selectionPath, false));
-
-      final FlutterOutline selectionOutline = getOutlineOfPath(selectionPath);
-      updateActionsForOutline(selectionOutline);
     }
+
+    final List<FlutterOutline> selectedOutlines = getOutlinesSelectedInTree();
+    updateActionsForOutlines(selectedOutlines);
   }
 
   private void selectPath(TreePath selectionPath, boolean focusEditor) {
@@ -313,22 +314,24 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
-  private void updateActionsForOutline(FlutterOutline outline) {
+  private void updateActionsForOutlines(List<FlutterOutline> outlines) {
     synchronized (actionToChangeMap) {
       actionToChangeMap.clear();
     }
 
     final VirtualFile selectionFile = this.currentFile;
-    if (selectionFile != null && outline != null) {
+    if (selectionFile != null && !outlines.isEmpty()) {
       ApplicationManager.getApplication().executeOnPooledThread(() -> {
-        final int offset = outline.getOffset();
-        final int length = outline.getLength();
+        final FlutterOutline firstOutline = outlines.get(0);
+        final FlutterOutline lastOutline = outlines.get(outlines.size() - 1);
+        final int offset = firstOutline.getOffset();
+        final int length = lastOutline.getOffset() + lastOutline.getLength() - offset;
         final List<SourceChange> changes = flutterAnalysisServer.edit_getAssists(selectionFile, offset, length);
 
         // If the current file or outline are different, ignore the changes.
         // We will eventually get new changes.
-        final FlutterOutline newOutline = getOutlineOfPath(tree.getSelectionPath());
-        if (!Objects.equals(this.currentFile, selectionFile) || newOutline != outline) {
+        final List<FlutterOutline> newOutlines = getOutlinesSelectedInTree();
+        if (!Objects.equals(this.currentFile, selectionFile) || !outlines.equals(newOutlines)) {
           return;
         }
 
@@ -438,6 +441,22 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
+  @NotNull
+  private List<FlutterOutline> getOutlinesSelectedInTree() {
+    final List<FlutterOutline> selectedOutlines = new ArrayList<>();
+    final DefaultMutableTreeNode[] selectedNodes = tree.getSelectedNodes(DefaultMutableTreeNode.class, null);
+    for (DefaultMutableTreeNode selectedNode : selectedNodes) {
+      final FlutterOutline outline = getOutlineOfNode(selectedNode);
+      selectedOutlines.add(outline);
+    }
+    return selectedOutlines;
+  }
+
+  static private FlutterOutline getOutlineOfNode(DefaultMutableTreeNode node) {
+    final OutlineObject object = (OutlineObject)node.getUserObject();
+    return object.outline;
+  }
+
   @Nullable
   private FlutterOutline getOutlineOfPath(@Nullable TreePath path) {
     if (path == null) {
@@ -445,8 +464,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
-    final OutlineObject object = (OutlineObject)node.getUserObject();
-    return object.outline;
+    return getOutlineOfNode(node);
   }
 
   private FlutterOutline findOutlineAtOffset(FlutterOutline outline, int offset) {
@@ -510,7 +528,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   private void setSelectedOutline(FlutterOutline outline) {
-    updateActionsForOutline(outline);
+    updateActionsForOutlines(outline != null ? ImmutableList.of(outline) : ImmutableList.of());
     if (outline != null) {
       final DefaultMutableTreeNode selectedNode = outlineToNodeMap.get(outline);
       if (selectedNode != null) {
