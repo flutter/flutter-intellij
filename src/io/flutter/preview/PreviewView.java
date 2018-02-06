@@ -185,8 +185,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Center widget"));
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Padding, "Add widget padding"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Column, "Put into new Column"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Row, "Put into new Row"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Column, "Wrap with Column"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Row, "Wrap with Row"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new AnAction(FlutterIcons.Up) {
       @Override
