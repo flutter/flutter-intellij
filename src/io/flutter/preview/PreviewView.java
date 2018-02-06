@@ -707,7 +707,14 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     // Render the variable.
     if (outline.getVariableName() != null) {
       append(" ");
-      appendSearch(outline.getVariableName(), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+      appendSearch(outline.getVariableName(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+    }
+
+    // Render a generic label.
+    if (outline.getKind().equals(FlutterOutlineKind.GENERIC) && outline.getLabel() != null) {
+      append(" ");
+      final String label = outline.getLabel();
+      appendSearch(label, SimpleTextAttributes.GRAYED_ATTRIBUTES);
     }
 
     // Append all attributes.
