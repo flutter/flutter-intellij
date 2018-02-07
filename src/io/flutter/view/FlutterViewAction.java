@@ -28,7 +28,10 @@ abstract class FlutterViewAction extends DumbAwareAction {
   }
 
   @Override
-  public final void update(AnActionEvent e) {
+  public void update(@NotNull AnActionEvent e) {
     e.getPresentation().setEnabled(view.getFlutterApp() != null);
+  }
+
+  public void handleAppRestarted() {
   }
 }

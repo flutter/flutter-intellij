@@ -247,7 +247,7 @@ public class InspectorService implements Disposable {
         // isWidgetTreeReady method. In this case, we will fail gracefully
         // risking not displaying the Widget tree but ensuring we do not throw
         // exceptions due to accessing the widget tree before it is safe to.
-        CompletableFuture<Boolean> value = new CompletableFuture<>();
+        final CompletableFuture<Boolean> value = new CompletableFuture<>();
         value.complete(false);
         return value;
       }
@@ -263,7 +263,7 @@ public class InspectorService implements Disposable {
    */
   private CompletableFuture<Boolean> hasServiceMethod(String methodName) {
     if (supportedServiceMethods == null) {
-      EvalOnDartLibrary inspectorLibrary = getInspectorLibrary();
+      final EvalOnDartLibrary inspectorLibrary = getInspectorLibrary();
       final CompletableFuture<Library> libraryFuture = inspectorLibrary.libraryRef.thenComposeAsync(inspectorLibrary::getLibrary);
       supportedServiceMethods = libraryFuture.thenComposeAsync((Library library) -> {
         for (ClassRef classRef : library.getClasses()) {
@@ -425,7 +425,7 @@ public class InspectorService implements Disposable {
 
   public CompletableFuture<Map<String, InstanceRef>> getEnumPropertyValues(InspectorInstanceRef ref) {
     if (ref == null || ref.getId() == null) {
-      CompletableFuture<Map<String, InstanceRef>> ret = new CompletableFuture<>();
+      final CompletableFuture<Map<String, InstanceRef>> ret = new CompletableFuture<>();
       ret.complete(new HashMap<>());
       return ret;
     }
