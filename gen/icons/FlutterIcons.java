@@ -21,6 +21,7 @@ public class FlutterIcons {
   public static final Icon Phone = load("/icons/phone.png");
 
   public static final Icon OpenObservatory = load("/icons/observatory.png");
+  public static final Icon OpenTimeline = load("/icons/timeline.png");
 
   public static final Icon HotReload = load("/icons/hot-reload.png");
   public static final Icon FullRestart = AllIcons.Actions.Restart;

@@ -41,9 +41,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 // TODO(devoncarew): Display an fps graph.
+
 // TODO(devoncarew): The toggle settings can get out of sync with the runtime, after full
 //                   restarts or on new app launches. We need to query the framework and /
 //                   or listen to change events from the framework.
+
+// TODO(devoncarew): Ensure all actions in this class send analytics.
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -92,7 +95,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.addSeparator();
     toolbarGroup.add(new DebugDrawAction(this));
     toolbarGroup.add(new TogglePlatformAction(this));
+    toolbarGroup.add(new PerformanceOverlayAction(this));
     toolbarGroup.addSeparator();
+    toolbarGroup.add(new OpenTimelineViewAction(this));
     toolbarGroup.add(new OpenObservatoryAction(this));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
@@ -255,7 +260,7 @@ class DebugDrawAction extends AbstractToggleableAction {
 
 class PerformanceOverlayAction extends AbstractToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterView view) {
-    super(view, "Show Performance Overlay");
+    super(view, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
   }
 
   protected void perform(AnActionEvent event) {
@@ -280,6 +285,25 @@ class OpenObservatoryAction extends FlutterViewAction {
     final String url = app.getConnector().getBrowserUrl();
     if (url != null) {
       BrowserLauncher.getInstance().browse(url, null);
+    }
+  }
+}
+
+class OpenTimelineViewAction extends FlutterViewAction {
+  OpenTimelineViewAction(@NotNull FlutterView view) {
+    super(view, "Open Timeline View", "Open Timeline View", FlutterIcons.OpenTimeline);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    final FlutterApp app = view.getFlutterApp();
+    if (app == null) {
+      return;
+    }
+
+    final String url = app.getConnector().getBrowserUrl();
+    if (url != null) {
+      BrowserLauncher.getInstance().browse(url + "/#/timeline-dashboard", null);
     }
   }
 }
@@ -427,7 +451,6 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
   private static DefaultActionGroup createPopupActionGroup(FlutterView view) {
     final DefaultActionGroup group = new DefaultActionGroup();
 
-    group.add(new PerformanceOverlayAction(view));
     group.add(new ShowPaintBaselinesAction(view));
     group.addSeparator();
     group.add(new RepaintRainbowAction(view));
