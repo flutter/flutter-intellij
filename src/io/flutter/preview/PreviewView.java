@@ -5,7 +5,6 @@
  */
 package io.flutter.preview;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.CommonActionsManager;
@@ -120,8 +119,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     public void caretPositionChanged(CaretEvent e) {
       final Caret caret = e.getCaret();
       if (caret != null) {
-        final int offset = caret.getOffset();
-        selectOutlineAtOffset(offset);
+        ApplicationManager.getApplication().invokeLater(() -> applyEditorSelectionToTree(caret));
       }
     }
 
@@ -409,8 +407,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.expandAll();
 
     if (currentEditor != null) {
-      final int offset = currentEditor.getCaretModel().getOffset();
-      selectOutlineAtOffset(offset);
+      final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
+      applyEditorSelectionToTree(caret);
     }
 
     if (SHOW_PREVIEW_AREA) {
@@ -485,6 +483,28 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     return null;
   }
 
+  private void addOutlinesCoveredByRange(List<FlutterOutline> covered, int start, int end, FlutterOutline outline) {
+    final int outlineStart = outline.getOffset();
+    final int outlineEnd = outlineStart + outline.getLength();
+    // The outline ends before, or starts after the selection.
+    if (outlineEnd < start || outlineStart > end) {
+      return;
+    }
+    // The outline is covered by the selection.
+    if (outlineStart >= start && outlineEnd <= end) {
+      covered.add(outline);
+      return;
+    }
+    // The outline covers the selection.
+    if (outlineStart <= start && end <= outlineEnd) {
+      if (outline.getChildren() != null) {
+        for (FlutterOutline child : outline.getChildren()) {
+          addOutlinesCoveredByRange(covered, start, end, child);
+        }
+      }
+    }
+  }
+
   private void setSelectedFile(VirtualFile newFile) {
     if (currentFile != null) {
       flutterAnalysisServer.removeOutlineListener(currentFile.getPath(), outlineListener);
@@ -522,40 +542,58 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
-  private void selectOutlineAtOffset(int offset) {
-    final FlutterOutline outline = findOutlineAtOffset(currentOutline, offset);
-    setSelectedOutline(outline);
-  }
+  private void applyEditorSelectionToTree(Caret caret) {
+    final List<FlutterOutline> selectedOutlines = new ArrayList<>();
 
-  private void setSelectedOutline(FlutterOutline outline) {
-    updateActionsForOutlines(outline != null ? ImmutableList.of(outline) : ImmutableList.of());
-    if (outline != null) {
-      final DefaultMutableTreeNode selectedNode = outlineToNodeMap.get(outline);
-      if (selectedNode != null) {
-        final TreeNode[] selectedNodesPath = selectedNode.getPath();
-        final TreePath selectedPath = new TreePath(selectedNodesPath);
+    // Try to find outlines covered by the selection.
+    addOutlinesCoveredByRange(selectedOutlines, caret.getSelectionStart(), caret.getSelectionEnd(), currentOutline);
 
-        // Ensure that all parent nodes are expected.
-        tree.scrollPathToVisible(selectedPath);
-
-        // Ensure that the top-level declaration (class) is on the top of the tree.
-        if (selectedNodesPath.length >= 2) {
-          scrollTreeToNodeOnTop(selectedNodesPath[1]);
-        }
-
-        // Ensure that the selected node is still visible, even if the top-level declaration is long.
-        tree.scrollPathToVisible(selectedPath);
-
-        // Now actually select the node.
-        tree.removeTreeSelectionListener(treeSelectionListener);
-        tree.setSelectionPath(selectedPath);
-        tree.addTreeSelectionListener(treeSelectionListener);
-
-        // JTree attempts to show as much of the node as possible, so scrolls horizonally.
-        // But we actually need to see the whole hierarchy, so we scroll back to zero.
-        scrollPane.getHorizontalScrollBar().setValue(0);
+    // If no covered outlines, try to find the outline under the caret.
+    if (selectedOutlines.isEmpty()) {
+      final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
+      if (outline != null) {
+        selectedOutlines.add(outline);
       }
     }
+
+    updateActionsForOutlines(selectedOutlines);
+    applyOutlinesSelectionToTree(selectedOutlines);
+  }
+
+  private void applyOutlinesSelectionToTree(List<FlutterOutline> outlines) {
+    final List<TreePath> selectedPaths = new ArrayList<>();
+    TreeNode[] lastNodePath = null;
+    TreePath lastTreePath = null;
+    for (FlutterOutline outline : outlines) {
+      final DefaultMutableTreeNode selectedNode = outlineToNodeMap.get(outline);
+      if (selectedNode != null) {
+        lastNodePath = selectedNode.getPath();
+        lastTreePath = new TreePath(lastNodePath);
+        selectedPaths.add(lastTreePath);
+      }
+    }
+
+    if (lastNodePath != null) {
+      // Ensure that all parent nodes are expected.
+      tree.scrollPathToVisible(lastTreePath);
+
+      // Ensure that the top-level declaration (class) is on the top of the tree.
+      if (lastNodePath.length >= 2) {
+        scrollTreeToNodeOnTop(lastNodePath[1]);
+      }
+
+      // Ensure that the selected node is still visible, even if the top-level declaration is long.
+      tree.scrollPathToVisible(lastTreePath);
+    }
+
+    // Now actually select the node.
+    tree.removeTreeSelectionListener(treeSelectionListener);
+    tree.setSelectionPaths(selectedPaths.toArray(new TreePath[selectedPaths.size()]));
+    tree.addTreeSelectionListener(treeSelectionListener);
+
+    // JTree attempts to show as much of the node as possible, so scrolls horizonally.
+    // But we actually need to see the whole hierarchy, so we scroll back to zero.
+    scrollPane.getHorizontalScrollBar().setValue(0);
   }
 
   private void scrollTreeToNodeOnTop(TreeNode node) {
