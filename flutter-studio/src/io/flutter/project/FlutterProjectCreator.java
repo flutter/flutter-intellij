@@ -257,9 +257,17 @@ public class FlutterProjectCreator {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(myModel.description().get().isEmpty() ? null : myModel.description().get())
       .setType(myModel.projectType().getValue())
-      .setOrg(myModel.packageName().get().isEmpty() ? null : myModel.packageName().get())
+      .setOrg(myModel.packageName().get().isEmpty() ? null : reversedOrgFromPackage(myModel.packageName().get()))
       .setKotlin(myModel.useKotlin().get() ? true : null)
       .setSwift(myModel.useSwift().get() ? true : null)
       .build();
+  }
+
+  private static String reversedOrgFromPackage(@NotNull String packageName) {
+    int idx = packageName.lastIndexOf('.');
+    if (idx <= 0) {
+      return packageName;
+    }
+    return packageName.substring(0, idx);
   }
 }
