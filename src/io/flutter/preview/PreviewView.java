@@ -483,7 +483,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     return null;
   }
 
-  private void addOutlinesCoveredByRange(List<FlutterOutline> covered, int start, int end, FlutterOutline outline) {
+  private void addOutlinesCoveredByRange(List<FlutterOutline> covered, int start, int end, @Nullable FlutterOutline outline) {
+    if (outline == null) {
+      return;
+    }
+
     final int outlineStart = outline.getOffset();
     final int outlineEnd = outlineStart + outline.getLength();
     // The outline ends before, or starts after the selection.
