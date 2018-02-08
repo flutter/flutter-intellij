@@ -10,7 +10,6 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -150,13 +149,7 @@ public class FlutterOutlineAttribute {
 
   @Override
   public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
-    builder.append(name);
-    builder.append(label);
-    builder.append(literalValueBoolean);
-    builder.append(literalValueInteger);
-    builder.append(literalValueString);
-    return builder.toHashCode();
+    return name.hashCode();
   }
 
   public JsonObject toJson() {

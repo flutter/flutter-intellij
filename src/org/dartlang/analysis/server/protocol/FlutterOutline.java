@@ -5,13 +5,12 @@
  */
 package org.dartlang.analysis.server.protocol;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -239,18 +238,7 @@ public class FlutterOutline {
 
   @Override
   public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
-    builder.append(kind);
-    builder.append(offset);
-    builder.append(length);
-    builder.append(label);
-    builder.append(dartElement);
-    builder.append(attributes);
-    builder.append(className);
-    builder.append(parentAssociationLabel);
-    builder.append(variableName);
-    builder.append(children);
-    return builder.toHashCode();
+    return offset;
   }
 
   public JsonObject toJson() {
@@ -305,7 +293,7 @@ public class FlutterOutline {
     builder.append("dartElement=");
     builder.append(dartElement + ", ");
     builder.append("attributes=");
-    builder.append(StringUtils.join(attributes, ", ") + ", ");
+    builder.append(Joiner.on(", ").join(attributes) + ", ");
     builder.append("className=");
     builder.append(className + ", ");
     builder.append("parentAssociationLabel=");
@@ -313,7 +301,7 @@ public class FlutterOutline {
     builder.append("variableName=");
     builder.append(variableName + ", ");
     builder.append("children=");
-    builder.append(StringUtils.join(children, ", "));
+    builder.append(Joiner.on(", ").join(children));
     builder.append("]");
     return builder.toString();
   }
