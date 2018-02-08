@@ -21,7 +21,6 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
-import io.flutter.dart.DartfmtSettings;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
@@ -146,13 +145,6 @@ public class FlutterInitializer implements StartupActivity {
 
     // Watch save actions.
     FlutterReloadManager.init(project);
-
-    // Do a one-time set for the default value of the whole file dartfmt setting.
-    if (DartfmtSettings.dartPluginHasSetting()) {
-      if (!DartfmtSettings.hasBeenOneTimeSet()) {
-        DartfmtSettings.setDartfmtValue();
-      }
-    }
 
     // Start watching for project structure and .packages file changes.
     final FlutterPluginsLibraryManager libraryManager = new FlutterPluginsLibraryManager(project);
