@@ -90,6 +90,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
   private SimpleToolWindowPanel windowPanel;
+  private JComponent windowToolbar;
 
   private final Map<String, AnAction> messageToActionMap = new HashMap<>();
   private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
@@ -205,8 +206,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     windowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(windowPanel);
 
-    final JComponent windowToolbar =
-      ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
+    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
     windowPanel.setToolbar(windowToolbar);
 
     final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
@@ -515,9 +515,12 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       currentFile = null;
     }
 
-    // If no the new file, or it is not a Dart file, remove the toolbar.
-    if (newFile == null || !FlutterUtils.isDartFile(newFile)) {
-      if (windowPanel != null && windowPanel.isToolbarVisible()) {
+    // Show the toolbar if the new file is a Dart file, or hide otherwise.
+    if (windowPanel != null) {
+      if (newFile != null && FlutterUtils.isDartFile(newFile)) {
+        windowPanel.setToolbar(windowToolbar);
+      }
+      else if (windowPanel.isToolbarVisible()) {
         windowPanel.setToolbar(null);
       }
     }
