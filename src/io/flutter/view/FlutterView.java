@@ -447,7 +447,7 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
     super(view, "Enable Repaint Rainbow");
   }
 
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected());
   }
@@ -525,7 +525,7 @@ class HideSlowBannerAction extends FlutterViewToggleableAction {
   }
 
   @Override
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
   }
@@ -547,7 +547,7 @@ class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   }
 
   @Override
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected());
   }
