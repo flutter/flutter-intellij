@@ -65,7 +65,7 @@ public class FlutterApp {
   private @Nullable Runnable myResume;
 
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
-  private final List<StateListener> myListeners = new ArrayList<>();
+  private final List<FlutterAppListener> myListeners = new ArrayList<>();
 
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
@@ -188,7 +188,7 @@ public class FlutterApp {
       }
     });
 
-    api.listen(process, new FlutterAppListener(app, project));
+    api.listen(process, new io.flutter.run.daemon.FlutterAppListener(app, project));
 
     return app;
   }
@@ -260,7 +260,17 @@ public class FlutterApp {
     final CompletableFuture<DaemonApi.RestartResult> future =
       myDaemonApi.restartApp(myAppId, true, false);
     future.thenAccept(result -> changeState(State.STARTED));
+    future.thenRun(this::notifyAppRestarted);
     return future;
+  }
+
+  private void notifyAppRestarted() {
+    if (!myListeners.isEmpty()) {
+      // Guard against modification while iterating.
+      for (FlutterAppListener listener : myListeners.toArray(new FlutterAppListener[myListeners.size()])) {
+        listener.notifyAppRestarted();
+      }
+    }
   }
 
   public boolean isSameModule(@Nullable final Module other) {
@@ -360,7 +370,7 @@ public class FlutterApp {
     }
     if (!myListeners.isEmpty()) {
       // Guard against modification while iterating.
-      for (StateListener listener : myListeners.toArray(new StateListener[myListeners.size()])) {
+      for (FlutterAppListener listener : myListeners.toArray(new FlutterAppListener[myListeners.size()])) {
         listener.stateChanged(newState);
       }
     }
@@ -417,12 +427,12 @@ public class FlutterApp {
     return done;
   }
 
-  public void addStateListener(@NotNull StateListener listener) {
+  public void addStateListener(@NotNull FlutterAppListener listener) {
     myListeners.add(listener);
     listener.stateChanged(myState.get());
   }
 
-  public void removeStateListener(@NotNull StateListener listener) {
+  public void removeStateListener(@NotNull FlutterAppListener listener) {
     myListeners.remove(listener);
   }
 
@@ -472,8 +482,12 @@ public class FlutterApp {
     return myModule;
   }
 
-  public interface StateListener {
-    void stateChanged(State newState);
+  public interface FlutterAppListener {
+    default void stateChanged(State newState) {
+    }
+
+    default void notifyAppRestarted() {
+    }
   }
 
   public enum State {STARTING, STARTED, RELOADING, TERMINATING, TERMINATED}

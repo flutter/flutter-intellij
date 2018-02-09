@@ -19,6 +19,7 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
@@ -32,19 +33,18 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
+import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // TODO(devoncarew): Display an fps graph.
-
-// TODO(devoncarew): The toggle settings can get out of sync with the runtime, after full
-//                   restarts or on new app launches. We need to query the framework and /
-//                   or listen to change events from the framework.
 
 // TODO(devoncarew): Ensure all actions in this class send analytics.
 
@@ -65,6 +65,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @Nullable
   FlutterApp app;
+
+  private final List<FlutterViewAction> flutterViewActions = new ArrayList<>();
 
   private final ArrayList<InspectorPanel> inspectorPanels = new ArrayList<>();
 
@@ -91,19 +93,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(new ToggleInspectModeAction(this));
+    toolbarGroup.add(registerAction(new ToggleInspectModeAction(this)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new DebugDrawAction(this));
-    toolbarGroup.add(new TogglePlatformAction(this));
-    toolbarGroup.add(new PerformanceOverlayAction(this));
+    toolbarGroup.add(registerAction(new DebugDrawAction(this)));
+    toolbarGroup.add(registerAction(new TogglePlatformAction(this)));
+    toolbarGroup.add(registerAction(new PerformanceOverlayAction(this)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new OpenTimelineViewAction(this));
-    toolbarGroup.add(new OpenObservatoryAction(this));
+    toolbarGroup.add(registerAction(new OpenTimelineViewAction(this)));
+    toolbarGroup.add(registerAction(new OpenObservatoryAction(this)));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
     addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
     addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
+  }
+
+  FlutterViewAction registerAction(FlutterViewAction action) {
+    flutterViewActions.add(action);
+    return action;
   }
 
   private void addInspectorPanel(String displayName,
@@ -156,6 +163,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       @Override
+      public void received(String streamId, Event event) {
+        // Note: we depend here on the streamListen("Extension") call in InspectorService.
+        if (StringUtil.equals(streamId, VmService.EXTENSION_STREAM_ID)) {
+          if (StringUtil.equals("Flutter.Frame", event.getExtensionKind())) {
+            handleFlutterFrame();
+          }
+        }
+      }
+
+      @Override
       public void connectionClosed() {
         FlutterView.this.app = null;
         onAppChanged();
@@ -164,6 +181,50 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
 
     onAppChanged();
+
+    if (this.app != null) {
+      this.app.addStateListener(new FlutterApp.FlutterAppListener() {
+        public void notifyAppRestarted() {
+          // When we get a restart finishes, queue up a notification to the flutter view
+          // actions. We don't notify right away because the new isolate can take a little
+          // while to start up. We wait until we get the first frame event, which is
+          // enough of an indication that the isolate and flutter framework are initialized
+          // enough to receive service calls (for example, calls to restore various framework
+          // debugging settings).
+          sendRestartNotificationOnNextFrame = true;
+        }
+      });
+    }
+  }
+
+  private boolean sendRestartNotificationOnNextFrame = false;
+
+  private void handleFlutterFrame() {
+    if (sendRestartNotificationOnNextFrame) {
+      sendRestartNotificationOnNextFrame = false;
+
+      notifyActionsOnRestart();
+    }
+  }
+
+  private void notifyActionsAppStarted() {
+    for (FlutterViewAction action : flutterViewActions) {
+      action.handleAppStarted();
+    }
+  }
+
+  private void notifyActionsOnRestart() {
+    for (FlutterViewAction action : flutterViewActions) {
+      action.handleAppRestarted();
+    }
+  }
+
+  private void notifyActionsAppStopped() {
+    sendRestartNotificationOnNextFrame = false;
+
+    for (FlutterViewAction action : flutterViewActions) {
+      action.handleAppStopped();
+    }
   }
 
   @Nullable
@@ -178,13 +239,17 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
-      if (toolWindow == null) return;
+      if (toolWindow == null) {
+        return;
+      }
 
       if (app == null) {
         toolWindow.setIcon(FlutterIcons.Flutter_13);
+        notifyActionsAppStopped();
       }
       else {
         toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+        notifyActionsAppStarted();
       }
 
       for (InspectorPanel inspectorPanel : inspectorPanels) {
@@ -246,7 +311,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 }
 
-class DebugDrawAction extends AbstractToggleableAction {
+class DebugDrawAction extends FlutterViewToggleableAction {
   DebugDrawAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
           AllIcons.General.TbShown);
@@ -254,18 +319,38 @@ class DebugDrawAction extends AbstractToggleableAction {
 
   protected void perform(AnActionEvent event) {
     assert (view.getFlutterApp() != null);
-    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaint", isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaint", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
+  }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      perform(null);
+    }
   }
 }
 
-class PerformanceOverlayAction extends AbstractToggleableAction {
+class PerformanceOverlayAction extends FlutterViewToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterView view) {
     super(view, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
   }
 
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
-    view.getFlutterApp().callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
+  }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      perform(null);
+    }
   }
 }
 
@@ -309,6 +394,8 @@ class OpenTimelineViewAction extends FlutterViewAction {
 }
 
 class TogglePlatformAction extends FlutterViewAction {
+  private Boolean isCurrentlyAndroid;
+
   TogglePlatformAction(@NotNull FlutterView view) {
     super(view, FlutterBundle.message("flutter.view.togglePlatform.text"), FlutterBundle.message("flutter.view.togglePlatform.description"),
           AllIcons.RunConfigurations.Application);
@@ -328,6 +415,8 @@ class TogglePlatformAction extends FlutterViewAction {
 
       app.togglePlatform(!isAndroid).thenAccept(isNowAndroid -> {
         if (app.getConsole() != null && isNowAndroid != null) {
+          isCurrentlyAndroid = isNowAndroid;
+
           app.getConsole().print(
             FlutterBundle.message("flutter.view.togglePlatform.output",
                                   isNowAndroid ? "Android" : "iOS"),
@@ -336,72 +425,141 @@ class TogglePlatformAction extends FlutterViewAction {
       });
     });
   }
+
+  public void handleAppRestarted() {
+    final FlutterApp app = view.getFlutterApp();
+    if (app == null) {
+      return;
+    }
+
+    if (isCurrentlyAndroid != null) {
+      app.togglePlatform(isCurrentlyAndroid);
+    }
+  }
+
+  public void handleAppStopped() {
+    isCurrentlyAndroid = null;
+  }
 }
 
-class RepaintRainbowAction extends AbstractToggleableAction {
+class RepaintRainbowAction extends FlutterViewToggleableAction {
   RepaintRainbowAction(@NotNull FlutterView view) {
     super(view, "Enable Repaint Rainbow");
   }
 
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
-    view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
+  }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      perform(null);
+    }
   }
 }
 
-class TimeDilationAction extends AbstractToggleableAction {
+class TimeDilationAction extends FlutterViewToggleableAction {
   TimeDilationAction(@NotNull FlutterView view) {
     super(view, "Enable Slow Animations");
   }
 
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     final Map<String, Object> params = new HashMap<>();
-    params.put("timeDilation", isSelected(event) ? 5.0 : 1.0);
+    params.put("timeDilation", isSelected() ? 5.0 : 1.0);
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callServiceExtension("ext.flutter.timeDilation", params);
   }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      perform(null);
+    }
+  }
+
+  public void handleAppStopped() {
+    if (isSelected()) {
+      setSelected(null, false);
+    }
+  }
 }
 
-class ToggleInspectModeAction extends AbstractToggleableAction {
+class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterView view) {
     super(view, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
   }
 
   protected void perform(AnActionEvent event) {
     assert (view.getFlutterApp() != null);
-    view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected());
 
     // If toggling inspect mode on, bring any device to the foreground.
-    if (isSelected(event)) {
+    if (isSelected()) {
       final FlutterDevice device = getDevice();
       if (device != null) {
         device.bringToFront();
       }
     }
   }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      setSelected(null, false);
+    }
+  }
+
+  public void handleAppStopped() {
+    if (isSelected()) {
+      setSelected(null, false);
+    }
+  }
 }
 
-class HideSlowBannerAction extends AbstractToggleableAction {
+class HideSlowBannerAction extends FlutterViewToggleableAction {
   HideSlowBannerAction(@NotNull FlutterView view) {
     super(view, "Hide Slow Mode Banner");
   }
 
   @Override
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
-    view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
+  }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      perform(null);
+    }
   }
 }
 
-class ShowPaintBaselinesAction extends AbstractToggleableAction {
+class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   ShowPaintBaselinesAction(@NotNull FlutterView view) {
     super(view, "Show Paint Baselines");
   }
 
   @Override
-  protected void perform(AnActionEvent event) {
+  protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
-    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected(event));
+    view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
+  }
+
+  public void handleAppRestarted() {
+    if (isSelected()) {
+      perform(null);
+    }
   }
 }
 
@@ -451,12 +609,12 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
   private static DefaultActionGroup createPopupActionGroup(FlutterView view) {
     final DefaultActionGroup group = new DefaultActionGroup();
 
-    group.add(new ShowPaintBaselinesAction(view));
+    group.add(view.registerAction(new ShowPaintBaselinesAction(view)));
     group.addSeparator();
-    group.add(new RepaintRainbowAction(view));
-    group.add(new TimeDilationAction(view));
+    group.add(view.registerAction(new RepaintRainbowAction(view)));
+    group.add(view.registerAction(new TimeDilationAction(view)));
     group.addSeparator();
-    group.add(new HideSlowBannerAction(view));
+    group.add(view.registerAction(new HideSlowBannerAction(view)));
 
     return group;
   }

@@ -22,7 +22,7 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   @NotNull private final Computable<Boolean> myIsApplicable;
   @NotNull private final String myActionId;
 
-  private final FlutterApp.StateListener myListener = new FlutterApp.StateListener() {
+  private final FlutterApp.FlutterAppListener myListener = new FlutterApp.FlutterAppListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
       getTemplatePresentation().setEnabled(myApp.isStarted() && myIsApplicable.compute());

@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.project.DumbAwareAction;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
@@ -17,31 +16,23 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class AbstractToggleableAction extends DumbAwareAction implements Toggleable {
-  @NotNull final FlutterView view;
+abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable {
   private boolean selected = false;
 
-  AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text) {
-    super(text);
-
-    this.view = view;
+  FlutterViewToggleableAction(@NotNull FlutterView view, @Nullable String text) {
+    super(view, text);
   }
 
-  AbstractToggleableAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
-    super(text, description, icon);
-
-    this.view = view;
+  FlutterViewToggleableAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+    super(view, text, description, icon);
   }
 
   @Override
-  public final void update(AnActionEvent e) {
+  public final void update(@NotNull AnActionEvent e) {
     final boolean hasFlutterApp = view.getFlutterApp() != null;
-    if (!hasFlutterApp) {
-      selected = false;
-    }
 
     // selected
-    final boolean selected = this.isSelected(e);
+    final boolean selected = this.isSelected();
     final Presentation presentation = e.getPresentation();
     presentation.putClientProperty("selected", selected);
 
@@ -55,24 +46,26 @@ abstract class AbstractToggleableAction extends DumbAwareAction implements Toggl
       return;
     }
 
-    this.setSelected(event, !isSelected(event));
+    this.setSelected(event, !isSelected());
     final Presentation presentation = event.getPresentation();
-    presentation.putClientProperty("selected", isSelected(event));
+    presentation.putClientProperty("selected", isSelected());
 
     FlutterInitializer.sendAnalyticsAction(this);
     perform(event);
   }
 
-  protected abstract void perform(AnActionEvent event);
+  protected abstract void perform(@Nullable AnActionEvent event);
 
-  public boolean isSelected(AnActionEvent var1) {
+  public boolean isSelected() {
     return selected;
   }
 
-  public void setSelected(AnActionEvent event, boolean selected) {
+  public void setSelected(@Nullable AnActionEvent event, boolean selected) {
     this.selected = selected;
 
-    ApplicationManager.getApplication().invokeLater(() -> this.update(event));
+    if (event != null) {
+      ApplicationManager.getApplication().invokeLater(() -> this.update(event));
+    }
   }
 
   @Nullable
