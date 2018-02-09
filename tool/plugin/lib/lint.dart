@@ -74,7 +74,9 @@ class LintCommand extends Command {
   bool checkForBadImports() {
     final proscribedImports = [
       'com.android.annotations.NonNull',
-      'javax.annotation.Nullable'
+      'javax.annotation.Nullable',
+      'org.apache.commons.lang3.StringUtils',
+      'org.apache.commons.lang3.builder.HashCodeBuilder',
     ];
 
     for (var import in proscribedImports) {
