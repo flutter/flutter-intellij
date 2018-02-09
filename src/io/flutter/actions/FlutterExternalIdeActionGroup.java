@@ -16,15 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
-  @Override
-  public void update(AnActionEvent event) {
-    final Presentation presentation = event.getPresentation();
-    final boolean enabled = isExternalIdeFile(event);
-    presentation.setEnabled(enabled);
-    presentation.setVisible(enabled);
-  }
-
-  private boolean isExternalIdeFile(AnActionEvent e) {
+  private static boolean isExternalIdeFile(AnActionEvent e) {
     final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
     if (file == null || !file.exists()) {
       return false;
@@ -32,9 +24,8 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
 
     final Project project = e.getProject();
     return
-      isProjectDirectory(file, project) ||
       isIOsDirectory(file) ||
-      (isAndroidDirectory(file) && !FlutterUtils.isAndroidStudio()) ||
+      isAndroidDirectory(file) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 
@@ -53,5 +44,13 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
 
     final VirtualFile baseDir = project.getBaseDir();
     return baseDir != null && baseDir.getPath().equals(file.getPath());
+  }
+
+  @Override
+  public void update(AnActionEvent event) {
+    final Presentation presentation = event.getPresentation();
+    final boolean enabled = isExternalIdeFile(event);
+    presentation.setEnabled(enabled);
+    presentation.setVisible(enabled);
   }
 }
