@@ -30,9 +30,6 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
   @Override
   public final void update(@NotNull AnActionEvent e) {
     final boolean hasFlutterApp = view.getFlutterApp() != null;
-    if (!hasFlutterApp) {
-      selected = false;
-    }
 
     // selected
     final boolean selected = this.isSelected();

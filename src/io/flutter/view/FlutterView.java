@@ -207,9 +207,23 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
+  private void notifyActionsAppStarted() {
+    for (FlutterViewAction action : flutterViewActions) {
+      action.handleAppStarted();
+    }
+  }
+
   private void notifyActionsOnRestart() {
     for (FlutterViewAction action : flutterViewActions) {
       action.handleAppRestarted();
+    }
+  }
+
+  private void notifyActionsAppStopped() {
+    sendRestartNotificationOnNextFrame = false;
+
+    for (FlutterViewAction action : flutterViewActions) {
+      action.handleAppStopped();
     }
   }
 
@@ -231,9 +245,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       if (app == null) {
         toolWindow.setIcon(FlutterIcons.Flutter_13);
+        notifyActionsAppStopped();
       }
       else {
         toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+        notifyActionsAppStarted();
       }
 
       for (InspectorPanel inspectorPanel : inspectorPanels) {
@@ -306,6 +322,10 @@ class DebugDrawAction extends FlutterViewToggleableAction {
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaint", isSelected());
   }
 
+  public void handleAppStarted() {
+    handleAppRestarted();
+  }
+
   public void handleAppRestarted() {
     if (isSelected()) {
       perform(null);
@@ -321,6 +341,10 @@ class PerformanceOverlayAction extends FlutterViewToggleableAction {
   protected void perform(@Nullable AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
   }
 
   public void handleAppRestarted() {
@@ -412,6 +436,10 @@ class TogglePlatformAction extends FlutterViewAction {
       app.togglePlatform(isCurrentlyAndroid);
     }
   }
+
+  public void handleAppStopped() {
+    isCurrentlyAndroid = null;
+  }
 }
 
 class RepaintRainbowAction extends FlutterViewToggleableAction {
@@ -422,6 +450,10 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
   protected void perform(AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.repaintRainbow", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
   }
 
   public void handleAppRestarted() {
@@ -446,6 +478,12 @@ class TimeDilationAction extends FlutterViewToggleableAction {
   public void handleAppRestarted() {
     if (isSelected()) {
       perform(null);
+    }
+  }
+
+  public void handleAppStopped() {
+    if (isSelected()) {
+      setSelected(null, false);
     }
   }
 }
@@ -473,6 +511,12 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
       setSelected(null, false);
     }
   }
+
+  public void handleAppStopped() {
+    if (isSelected()) {
+      setSelected(null, false);
+    }
+  }
 }
 
 class HideSlowBannerAction extends FlutterViewToggleableAction {
@@ -484,6 +528,10 @@ class HideSlowBannerAction extends FlutterViewToggleableAction {
   protected void perform(AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
   }
 
   public void handleAppRestarted() {
@@ -502,6 +550,10 @@ class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   protected void perform(AnActionEvent event) {
     assert (view.getFlutterApp() != null);
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected());
+  }
+
+  public void handleAppStarted() {
+    handleAppRestarted();
   }
 
   public void handleAppRestarted() {

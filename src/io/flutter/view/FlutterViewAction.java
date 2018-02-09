@@ -32,6 +32,12 @@ abstract class FlutterViewAction extends DumbAwareAction {
     e.getPresentation().setEnabled(view.getFlutterApp() != null);
   }
 
+  public void handleAppStarted() {
+  }
+
   public void handleAppRestarted() {
+  }
+
+  public void handleAppStopped() {
   }
 }
