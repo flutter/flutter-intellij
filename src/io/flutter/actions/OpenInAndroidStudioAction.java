@@ -111,8 +111,10 @@ public class OpenInAndroidStudioAction extends AnAction {
           return file;
         }
 
+        final Project project = e.getProject();
+        assert (project != null);
         // Return null if this is an ios folder.
-        if (FlutterExternalIdeActionGroup.isIOsDirectory(file)) {
+        if (FlutterExternalIdeActionGroup.isWithinIOsDirectory(file, project)) {
           return null;
         }
       }

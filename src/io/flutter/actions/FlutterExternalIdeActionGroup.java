@@ -23,18 +23,50 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
     }
 
     final Project project = e.getProject();
+    assert (project != null);
     return
-      isIOsDirectory(file) ||
-      isAndroidDirectory(file) ||
+      isProjectDirectory(file, project) ||
+      isWithinIOsDirectory(file, project) ||
+      isWithinAndroidDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 
-  protected static boolean isAndroidDirectory(@NotNull VirtualFile file) {
+  private static boolean isAndroidDirectory(@NotNull VirtualFile file) {
     return file.isDirectory() && file.getName().equals("android");
   }
 
-  protected static boolean isIOsDirectory(@NotNull VirtualFile file) {
+  private static boolean isIOsDirectory(@NotNull VirtualFile file) {
     return file.isDirectory() && file.getName().equals("ios");
+  }
+
+  protected static boolean isWithinAndroidDirectory(@NotNull VirtualFile file, @NotNull Project project) {
+    final VirtualFile baseDir = project.getBaseDir();
+    if (baseDir == null) {
+      return false;
+    }
+    VirtualFile candidate = file;
+    while (candidate != null && !baseDir.equals(candidate)) {
+      if (isAndroidDirectory(candidate)) {
+        return true;
+      }
+      candidate = candidate.getParent();
+    }
+    return false;
+  }
+
+  protected static boolean isWithinIOsDirectory(@NotNull VirtualFile file, @NotNull Project project) {
+    final VirtualFile baseDir = project.getBaseDir();
+    if (baseDir == null) {
+      return false;
+    }
+    VirtualFile candidate = file;
+    while (candidate != null && !baseDir.equals(candidate)) {
+      if (isIOsDirectory(candidate)) {
+        return true;
+      }
+      candidate = candidate.getParent();
+    }
+    return false;
   }
 
   private static boolean isProjectDirectory(@NotNull VirtualFile file, @Nullable Project project) {

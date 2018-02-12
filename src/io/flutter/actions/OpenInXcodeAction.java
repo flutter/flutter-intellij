@@ -36,8 +36,11 @@ public class OpenInXcodeAction extends AnAction {
           return file;
         }
 
+        final Project project = e.getProject();
+        assert (project != null);
         // Return null if this is an android folder.
-        if (FlutterExternalIdeActionGroup.isAndroidDirectory(file) || OpenInAndroidStudioAction.isProjectFileName(file.getName())) {
+        if (FlutterExternalIdeActionGroup.isWithinAndroidDirectory(file, project) ||
+            OpenInAndroidStudioAction.isProjectFileName(file.getName())) {
           return null;
         }
       }
