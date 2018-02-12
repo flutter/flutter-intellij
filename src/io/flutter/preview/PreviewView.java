@@ -68,8 +68,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
@@ -803,49 +801,12 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
             append(": ", SimpleTextAttributes.GRAYED_ATTRIBUTES);
           }
 
-          appendSearch(renderWithShortenedClosures(attribute), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          appendSearch(attribute.getLabel(), SimpleTextAttributes.GRAYED_ATTRIBUTES);
 
           // TODO(scheglov): custom display for units, colors, iterables, and icons?
         }
       }
     }
-  }
-
-  final static Pattern closureShorthand = Pattern.compile("^\\s*\\(\\s*([^(]*)\\s*\\)\\s*=>.*");
-  final static Pattern closureBlock = Pattern.compile("^\\s*\\(\\s*([^(]*)\\s*\\)\\s*\\{.*}");
-
-  private String renderWithShortenedClosures(FlutterOutlineAttribute attribute) {
-    if (attribute.getLiteralValueBoolean() != null) {
-      return attribute.getLabel();
-    }
-
-    if (attribute.getLiteralValueInteger() != null) {
-      return attribute.getLabel();
-    }
-
-    if (attribute.getLiteralValueString() != null) {
-      return attribute.getLabel();
-    }
-
-    // () => …
-    // (…) => ...
-    // () { … }
-    // (…) { … }
-    final String label = attribute.getLabel();
-
-    Matcher matcher = closureShorthand.matcher(label);
-    if (matcher.matches()) {
-      final String params = matcher.group(1).trim();
-      return params.isEmpty() ? "() => …" : "(…) => …";
-    }
-
-    matcher = closureBlock.matcher(label);
-    if (matcher.matches()) {
-      final String params = matcher.group(1).trim();
-      return params.isEmpty() ? "() { … }" : "(…) => { … }";
-    }
-
-    return label;
   }
 
   private boolean hasWidgetChild(FlutterOutline outline) {
