@@ -11,10 +11,7 @@ import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.TreeExpander;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
@@ -88,7 +85,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
   private SimpleToolWindowPanel windowPanel;
-  private JComponent windowToolbar;
+  private ActionToolbar windowToolbar;
 
   private final Map<String, AnAction> messageToActionMap = new HashMap<>();
   private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
@@ -205,8 +202,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     windowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(windowPanel);
 
-    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true).getComponent();
-    windowPanel.setToolbar(windowToolbar);
+    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true);
+    windowPanel.setToolbar(windowToolbar.getComponent());
 
     final DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode();
 
@@ -339,6 +336,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
           if (action != null) {
             actionToChangeMap.put(action, change);
           }
+        }
+
+        // Update actions immediately.
+        if (windowToolbar != null) {
+          ApplicationManager.getApplication().invokeLater(() -> windowToolbar.updateActionsImmediately());
         }
       });
     }
@@ -517,7 +519,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     // Show the toolbar if the new file is a Dart file, or hide otherwise.
     if (windowPanel != null) {
       if (newFile != null && FlutterUtils.isDartFile(newFile)) {
-        windowPanel.setToolbar(windowToolbar);
+        windowPanel.setToolbar(windowToolbar.getComponent());
       }
       else if (windowPanel.isToolbarVisible()) {
         windowPanel.setToolbar(null);
