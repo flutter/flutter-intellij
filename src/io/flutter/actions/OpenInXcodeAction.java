@@ -21,39 +21,14 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
-import io.flutter.utils.ProgressHelper;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class OpenInXcodeAction extends AnAction {
-  @Override
-  public void update(AnActionEvent event) {
-    // Enable in global menu; action group controls context menu visibility.
-    if (!SystemInfo.isMac) {
-      event.getPresentation().setVisible(false);
-    }
-    else {
-      final Presentation presentation = event.getPresentation();
-      final boolean enabled = findProjectFile(event) != null;
-      presentation.setEnabled(enabled);
-      presentation.setVisible(enabled);
-    }
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent e) {
-    final VirtualFile projectFile = findProjectFile(e);
-    if (projectFile != null) {
-      openFile(projectFile);
-    }
-    else {
-      FlutterMessages.showError("Error Opening Xcode", "Project not found.");
-    }
-  }
-
-  private VirtualFile findProjectFile(@Nullable AnActionEvent e) {
+  private static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
       if (file != null && file.exists()) {
@@ -61,8 +36,11 @@ public class OpenInXcodeAction extends AnAction {
           return file;
         }
 
+        final Project project = e.getProject();
+        assert (project != null);
         // Return null if this is an android folder.
-        if (FlutterExternalIdeActionGroup.isAndroidDirectory(file)) {
+        if (FlutterExternalIdeActionGroup.isWithinAndroidDirectory(file, project) ||
+            OpenInAndroidStudioAction.isProjectFileName(file.getName())) {
           return null;
         }
       }
@@ -136,6 +114,31 @@ public class OpenInXcodeAction extends AnAction {
       FlutterMessages.showError(
         "Error Opening",
         "Exception: " + ex.getMessage());
+    }
+  }
+
+  @Override
+  public void update(AnActionEvent event) {
+    // Enable in global menu; action group controls context menu visibility.
+    if (!SystemInfo.isMac) {
+      event.getPresentation().setVisible(false);
+    }
+    else {
+      final Presentation presentation = event.getPresentation();
+      final boolean enabled = findProjectFile(event) != null;
+      presentation.setEnabled(enabled);
+      presentation.setVisible(enabled);
+    }
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    final VirtualFile projectFile = findProjectFile(e);
+    if (projectFile != null) {
+      openFile(projectFile);
+    }
+    else {
+      FlutterMessages.showError("Error Opening Xcode", "Project not found.");
     }
   }
 }

@@ -421,14 +421,14 @@
               description="Run 'flutter packages upgrade'"/>
       <separator/>
       <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
-              text="Open Project in Android Studio…"
-              description="Open project in Android Studio"/>
+              text="Open Android module in Android Studio"
+              description="Launch Android Studio to edit the Android module as a top-level project"/>
       <action id="flutter.xcode.open" class="io.flutter.actions.OpenInXcodeAction"
-              text="Open Project in Xcode…"
-              description="Open project in Xcode"/>
+              text="Open iOS module in Xcode"
+              description="Launch Xcode to edit the iOS module as a top-level project"/>
       <separator/>
       <action id="flutter.submitFeedback" class="io.flutter.actions.FlutterSubmitFeedback"
-              text="Submit Feedback…"
+              text="Submit Feedback..."
               description="Provide feedback for the Flutter plugin"/>
     </group>
 

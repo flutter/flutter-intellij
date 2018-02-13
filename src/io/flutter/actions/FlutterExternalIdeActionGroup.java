@@ -16,34 +16,57 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
-  @Override
-  public void update(AnActionEvent event) {
-    final Presentation presentation = event.getPresentation();
-    final boolean enabled = isExternalIdeFile(event);
-    presentation.setEnabled(enabled);
-    presentation.setVisible(enabled);
-  }
-
-  private boolean isExternalIdeFile(AnActionEvent e) {
+  private static boolean isExternalIdeFile(AnActionEvent e) {
     final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
     if (file == null || !file.exists()) {
       return false;
     }
 
     final Project project = e.getProject();
+    assert (project != null);
     return
       isProjectDirectory(file, project) ||
-      isIOsDirectory(file) ||
-      (isAndroidDirectory(file) && !FlutterUtils.isAndroidStudio()) ||
+      isWithinIOsDirectory(file, project) ||
+      isWithinAndroidDirectory(file, project) ||
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 
-  protected static boolean isAndroidDirectory(@NotNull VirtualFile file) {
+  private static boolean isAndroidDirectory(@NotNull VirtualFile file) {
     return file.isDirectory() && file.getName().equals("android");
   }
 
-  protected static boolean isIOsDirectory(@NotNull VirtualFile file) {
+  private static boolean isIOsDirectory(@NotNull VirtualFile file) {
     return file.isDirectory() && file.getName().equals("ios");
+  }
+
+  protected static boolean isWithinAndroidDirectory(@NotNull VirtualFile file, @NotNull Project project) {
+    final VirtualFile baseDir = project.getBaseDir();
+    if (baseDir == null) {
+      return false;
+    }
+    VirtualFile candidate = file;
+    while (candidate != null && !baseDir.equals(candidate)) {
+      if (isAndroidDirectory(candidate)) {
+        return true;
+      }
+      candidate = candidate.getParent();
+    }
+    return false;
+  }
+
+  protected static boolean isWithinIOsDirectory(@NotNull VirtualFile file, @NotNull Project project) {
+    final VirtualFile baseDir = project.getBaseDir();
+    if (baseDir == null) {
+      return false;
+    }
+    VirtualFile candidate = file;
+    while (candidate != null && !baseDir.equals(candidate)) {
+      if (isIOsDirectory(candidate)) {
+        return true;
+      }
+      candidate = candidate.getParent();
+    }
+    return false;
   }
 
   private static boolean isProjectDirectory(@NotNull VirtualFile file, @Nullable Project project) {
@@ -53,5 +76,13 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
 
     final VirtualFile baseDir = project.getBaseDir();
     return baseDir != null && baseDir.getPath().equals(file.getPath());
+  }
+
+  @Override
+  public void update(AnActionEvent event) {
+    final Presentation presentation = event.getPresentation();
+    final boolean enabled = isExternalIdeFile(event);
+    presentation.setEnabled(enabled);
+    presentation.setVisible(enabled);
   }
 }
