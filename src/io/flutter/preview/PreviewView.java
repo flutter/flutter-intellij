@@ -21,7 +21,6 @@ import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.text.StringUtil;
@@ -183,18 +182,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Row, "Wrap with Row"));
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.RemoveWidget, "Remove widget"));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new AnAction(FlutterIcons.Up) {
-      @Override
-      public void actionPerformed(AnActionEvent e) {
-        Messages.showErrorDialog("Not implemented yet.", "TODO");
-      }
-    });
-    toolbarGroup.add(new AnAction(FlutterIcons.Down) {
-      @Override
-      public void actionPerformed(AnActionEvent e) {
-        Messages.showErrorDialog("Not implemented yet.", "TODO");
-      }
-    });
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Up, "Move widget up"));
+    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Down, "Move widget down"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
