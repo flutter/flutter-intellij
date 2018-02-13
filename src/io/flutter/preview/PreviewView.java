@@ -40,6 +40,7 @@ import com.intellij.util.messages.MessageBusConnection;
 import com.jetbrains.lang.dart.assists.AssistUtils;
 import com.jetbrains.lang.dart.assists.DartSourceEditException;
 import icons.FlutterIcons;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
@@ -171,16 +172,18 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
+    sendAnalyticEvent("initToolWindow");
+
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Center, "Center widget"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Padding, "Add widget padding"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Column, "Wrap with Column"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Row, "Wrap with Row"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.RemoveWidget, "Remove widget"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add widget padding"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Up, "Move widget up"));
     toolbarGroup.add(new QuickAssistAction(FlutterIcons.Down, "Move widget down"));
@@ -278,6 +281,15 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
     if (outline == null) {
       return;
+    }
+
+    if (focusEditor) {
+      if (outline.getDartElement() != null) {
+        sendAnalyticEvent("doubleClickDartOutline");
+      }
+      else {
+        sendAnalyticEvent("doubleClickFlutterOutline");
+      }
     }
 
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
@@ -605,14 +617,22 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
+  private void sendAnalyticEvent(@NotNull String name) {
+    FlutterInitializer.getAnalytics().sendEvent("flutterPreview", name);
+  }
+
   private class QuickAssistAction extends AnAction {
-    QuickAssistAction(Icon icon, String assistMessage) {
+    private final String id;
+
+    QuickAssistAction(@NotNull String id, Icon icon, String assistMessage) {
       super(assistMessage, null, icon);
+      this.id = id;
       messageToActionMap.put(assistMessage, this);
     }
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+      sendAnalyticEvent(id);
       final SourceChange change;
       synchronized (actionToChangeMap) {
         change = actionToChangeMap.get(this);
