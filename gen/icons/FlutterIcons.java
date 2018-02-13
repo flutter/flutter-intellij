@@ -62,7 +62,7 @@ public class FlutterIcons {
   public static final Icon Column = load("/icons/preview/column.png");
   public static final Icon Padding = load("/icons/preview/padding.png");
   public static final Icon Padding2 = load("/icons/preview/padding2.png");
-  public static final Icon ReplaceWithChildren = load("/icons/preview/replace_with_children.png");
+  public static final Icon RemoveWidget = load("/icons/preview/remove_widget.png");
   public static final Icon Row = load("/icons/preview/row.png");
   public static final Icon Center = load("/icons/preview/center.png");
   public static final Icon Up = load("/icons/preview/up.png");
