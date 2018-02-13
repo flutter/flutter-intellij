@@ -93,7 +93,6 @@ public class DartAnalysisServerServiceEx {
     public JsonObject take() throws Exception {
       final JsonObject json = base.take();
       synchronized (listeners) {
-        System.out.println(json);
         for (DartAnalysisServerServiceExResponseListener listener : ImmutableList.copyOf(listeners)) {
           listener.onResponse(json);
         }
