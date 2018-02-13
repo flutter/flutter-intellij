@@ -36,7 +36,7 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
       // This is always called first when loading a run config, even when it's a non-template config.
       // See RunManagerImpl.doCreateConfiguration
-      return new BazelRunConfig(project, this, "Flutter (Bazel)");
+      return new BazelRunConfig(project, this, FlutterBundle.message("runner.flutter.bazel.configuration.name"));
     }
 
     @Override
