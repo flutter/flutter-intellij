@@ -178,13 +178,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
 
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add widget padding"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding"));
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column"));
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up"));
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
