@@ -99,7 +99,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private boolean isActive = false;
 
   private final AsyncRateLimiter refreshRateLimiter;
-  private List<PubRoot> pubRoots;
 
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
 
@@ -189,14 +188,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   void setActivate(boolean enabled) {
-    // TODO(jacobr): where is the right place to be caching the pub roots.
-    if (flutterView != null && flutterView.getFlutterApp() != null) {
-      pubRoots = PubRoots.forProject(flutterView.getFlutterApp().getProject());
-    }
-    else {
-      pubRoots = null;
-    }
-
     if (!enabled) {
       onIsolateStopped();
       isActive = false;
@@ -874,7 +865,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   boolean isCreatedByLocalProject(DiagnosticsNode node) {
-    if (pubRoots == null) {
+    if (getFlutterApp() == null) {
       return false;
     }
     final Location location = node.getCreationLocation();
@@ -886,7 +877,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       return false;
     }
     String filePath = file.getCanonicalPath();
-    for (PubRoot root : pubRoots) {
+    for (PubRoot root : getFlutterApp().getPubRoots()) {
       if (filePath.startsWith(root.getRoot().getCanonicalPath())) {
         return true;
       }
