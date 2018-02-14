@@ -275,26 +275,19 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     updateActionsForOutlines(selectedOutlines);
   }
 
-  private void selectPath(TreePath selectionPath, boolean jumpToSource) {
+  private void selectPath(TreePath selectionPath, boolean requestFocus) {
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
     if (outline == null) {
       return;
     }
 
-    if (jumpToSource) {
-      if (outline.getDartElement() != null) {
-        sendAnalyticEvent("jumpToSourceDartOutline");
-      }
-      else {
-        sendAnalyticEvent("jumpToSourceFlutterOutline");
-      }
-    }
+    sendAnalyticEvent("jumpToSource");
 
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
       try {
-        new OpenFileDescriptor(project, currentFile, offset).navigate(jumpToSource);
+        new OpenFileDescriptor(project, currentFile, offset).navigate(requestFocus);
       }
       finally {
         currentEditor.getCaretModel().addCaretListener(caretListener);
