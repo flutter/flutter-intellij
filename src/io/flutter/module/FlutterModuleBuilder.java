@@ -195,7 +195,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   public boolean validate(Project current, Project dest) {
     final String settingsValidation = validateSettings(getAdditionalSettings());
     if (settingsValidation != null) {
-      Messages.showErrorDialog(settingsValidation, "Invalid Description");
+      Messages.showErrorDialog(settingsValidation, "Error");
       return false;
     }
 
