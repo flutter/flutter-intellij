@@ -29,6 +29,13 @@ public class JsonUtils {
     return value instanceof JsonNull ? null : value.getAsString();
   }
 
+  public static int getIntMember(@NotNull JsonObject json, @NotNull String memberName) {
+    if (!json.has(memberName)) return -1;
+
+    final JsonElement value = json.get(memberName);
+    return value instanceof JsonNull ? -1: value.getAsInt();
+  }
+
   @NotNull
   public static List<String> getValues(@NotNull JsonObject json, @NotNull String member) {
     if (!json.has(member)) {

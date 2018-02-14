@@ -12,6 +12,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.*;
 import com.intellij.ui.dualView.TreeTableView;
 import com.intellij.ui.treeStructure.Tree;
@@ -25,6 +26,8 @@ import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
 import io.flutter.FlutterBundle;
 import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.*;
+import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncRateLimiter;
 import io.flutter.utils.ColorIconMaker;
@@ -46,6 +49,7 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -72,7 +76,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   private final TreeDataProvider myRootsTree;
   private final PropertiesPanel myPropertiesPanel;
-  private FlutterView view;
   private final Computable<Boolean> isApplicable;
   private final InspectorService.FlutterTreeType treeType;
   private final FlutterView flutterView;
@@ -416,6 +419,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final Object userObject = selectedNodes[0].getUserObject();
       if (userObject instanceof DiagnosticsNode) {
         final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
+        if (diagnostic != null) {
+          if (isCreatedByLocalProject(diagnostic)) {
+            diagnostic.getCreationLocation().getXSourcePosition().createNavigatable(flutterView.getFlutterApp().getProject())
+              .navigate(false);
+          }
+        }
         myPropertiesPanel.showProperties(diagnostic);
         if (getInspectorService() != null) {
           getInspectorService().setSelection(diagnostic.getValueRef(), false);
@@ -437,11 +446,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private ActionGroup createTreePopupActions() {
     final DefaultActionGroup group = new DefaultActionGroup();
     final ActionManager actionManager = ActionManager.getInstance();
+    group.add(actionManager.getAction(InspectorActions.JUMP_TO_SOURCE));
     group.add(actionManager.getAction(InspectorActions.JUMP_TO_TYPE_SOURCE));
-    // TODO(jacobr): add JUMP_TO_SOURCE once we have actual source locations
-    // as well as type source locations. This will require at minimum adding
-    // a Dart kernel code transformer to track creation locations for widgets.
-    /// group.add(actionManager.getAction(InspectorActions.JUMP_TO_SOURCE));
     return group;
   }
 
@@ -789,7 +795,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
   }
 
-  private static class DiagnosticsTreeCellRenderer extends ColoredTreeCellRenderer {
+  private class DiagnosticsTreeCellRenderer extends ColoredTreeCellRenderer {
     /**
      * Split text into two groups, word characters at the start of a string
      * and all other chracters. Skip an <code>-</code> or <code>#</code> between the
@@ -814,7 +820,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (!(userObject instanceof DiagnosticsNode)) return;
       final DiagnosticsNode node = (DiagnosticsNode)userObject;
       final String name = node.getName();
-      final SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
+      SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
       if (name != null && !name.isEmpty() && node.getShowName()) {
         // color in name?
         if (name.equals("child") || name.startsWith("child ")) {
@@ -823,11 +829,16 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         else {
           append(name, textAttributes);
         }
+
         if (node.getShowSeparator()) {
           // Is this good?
           append(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
         }
         append(" ");
+      }
+
+      if (isCreatedByLocalProject(node)) {
+        textAttributes = textAttributes.derive(SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.getStyle(), null, null, null);
       }
 
       // TODO(jacobr): custom display for units, colors, iterables, and icons.
@@ -851,6 +862,27 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         setIcon(icon);
       }
     }
+  }
+
+  boolean isCreatedByLocalProject(DiagnosticsNode node) {
+    if (getFlutterApp() == null) {
+      return false;
+    }
+    final Location location = node.getCreationLocation();
+    if (location == null) {
+      return false;
+    }
+    VirtualFile file = location.getFile();
+    if (file == null) {
+      return false;
+    }
+    String filePath = file.getCanonicalPath();
+    for (PubRoot root : getFlutterApp().getPubRoots()) {
+      if (filePath.startsWith(root.getRoot().getCanonicalPath())) {
+        return true;
+      }
+    }
+    return false;
   }
 
   boolean placeholderChildren(DefaultMutableTreeNode node) {

@@ -50,6 +50,8 @@ import static io.flutter.sdk.FlutterSettingsConfigurable.WIDGET_FILTERING_ENABLE
 public class DiagnosticsNode {
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 
+  private Location location;
+
   public DiagnosticsNode(JsonObject json, InspectorService inspectorService) {
     this.inspectorService = inspectorService;
     this.json = json;
@@ -357,6 +359,21 @@ public class DiagnosticsNode {
    */
   boolean hasException() {
     return json.has("exception");
+  }
+
+  public boolean hasCreationLocation() {
+    return json.has("creationLocation");
+  }
+
+  public Location getCreationLocation() {
+    if (location != null) {
+      return location;
+    }
+    if (!hasCreationLocation()) {
+      return null;
+    }
+    location = new Location(json.getAsJsonObject("creationLocation"), null);
+    return location;
   }
 
   /**

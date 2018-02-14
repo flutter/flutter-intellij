@@ -140,7 +140,7 @@ public class InspectorService implements Disposable {
       for (String propertyName : propertyNames) {
         propertyAccessors.add(objectName + "." + propertyName);
       }
-      sb.append("<Object>[");
+      sb.append("[");
       sb.append(Joiner.on(',').join(propertyAccessors));
       sb.append("]");
       final Map<String, String> scope = new HashMap<>();

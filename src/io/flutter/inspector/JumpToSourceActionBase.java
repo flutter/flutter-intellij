@@ -8,6 +8,7 @@ package io.flutter.inspector;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.AppUIUtil;
+import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
@@ -31,7 +32,13 @@ public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
         }, project.getDisposed());
       }
     };
-
+    final XSourcePosition sourcePosition = getSourcePosition(diagnosticsNode);
+    if (sourcePosition != null) {
+      // Source position is available immediately.
+      navigatable.setSourcePosition(sourcePosition);
+      return;
+    }
+    // We have to get a DartVmServiceValue to compute the source position.
     final InspectorService inspectorService = diagnosticsNode.getInspectorService();
     final CompletableFuture<DartVmServiceValue> valueFuture =
       inspectorService.toDartVmServiceValueForSourceLocation(diagnosticsNode.getValueRef());
@@ -43,5 +50,13 @@ public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
     });
   }
 
+  /**
+   * Implement if the source position is available directly from the diagnostics node.
+   */
+  protected abstract XSourcePosition getSourcePosition(DiagnosticsNode node);
+
+  /**
+   * Implement if the source position is available from the XValue of the diagnostics node.
+   */
   protected abstract void startComputingSourcePosition(XValue value, XNavigatable navigatable);
 }

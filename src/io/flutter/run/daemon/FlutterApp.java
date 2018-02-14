@@ -26,6 +26,8 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
+import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
 import org.dartlang.vm.service.VmService;
@@ -55,6 +57,8 @@ public class FlutterApp {
   private @Nullable String myWsUrl;
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
+
+  private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
   private int restartCount;
@@ -475,6 +479,14 @@ public class FlutterApp {
   @NotNull
   public Project getProject() {
     return myProject;
+  }
+
+  @NotNull
+  public List<PubRoot> getPubRoots() {
+    if (myPubRoots == null) {
+      myPubRoots = PubRoots.forProject(myProject);
+    }
+    return myPubRoots;
   }
 
   @Nullable

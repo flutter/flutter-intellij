@@ -35,7 +35,11 @@ public abstract class InspectorTreeActionBase extends AnAction {
   }
 
   protected boolean isEnabled(final DefaultMutableTreeNode node, AnActionEvent e) {
-    return node.getUserObject() instanceof DiagnosticsNode;
+    return node.getUserObject() instanceof DiagnosticsNode && isSupported((DiagnosticsNode)node.getUserObject());
+  }
+
+  protected boolean isSupported(DiagnosticsNode diagnosticsNode) {
+    return true;
   }
 
   public static DefaultMutableTreeNode getSelectedNode(final DataContext dataContext) {
