@@ -216,7 +216,7 @@ public class BazelFields {
       if (device.isIOS()) {
         // --ios_cpu=[arm64, x86_64]
         final String arch = device.emulator() ? "x86_64" : "arm64";
-        commandLine.addParameter("--config=ios_" + arch);
+        commandLine.addParameter("--ios_multi_cpus=" + arch);
       }
       else {
         // --android_cpu=[armeabi-v7a, x86, x86_64]
@@ -240,7 +240,7 @@ public class BazelFields {
         }
 
         if (arch != null) {
-          commandLine.addParameter("--config=android_" + arch);
+          commandLine.addParameter("--fat_apk_cpu=" + arch);
         }
       }
     }
