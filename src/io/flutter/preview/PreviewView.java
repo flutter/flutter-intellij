@@ -275,7 +275,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     updateActionsForOutlines(selectedOutlines);
   }
 
-  private void selectPath(TreePath selectionPath, boolean requestFocus) {
+  private void selectPath(TreePath selectionPath, boolean focusEditor) {
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
     if (outline == null) {
       return;
@@ -287,7 +287,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
       try {
-        new OpenFileDescriptor(project, currentFile, offset).navigate(requestFocus);
+        new OpenFileDescriptor(project, currentFile, offset).navigate(focusEditor);
       }
       finally {
         currentEditor.getCaretModel().addCaretListener(caretListener);
