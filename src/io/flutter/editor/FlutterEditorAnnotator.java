@@ -14,7 +14,6 @@ import com.intellij.util.ui.ColorIcon;
 import com.jetbrains.lang.dart.psi.DartArrayAccessExpression;
 import com.jetbrains.lang.dart.psi.DartNewExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -22,6 +21,11 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.Properties;
 
+import static io.flutter.utils.FlutterModuleUtils.isInFlutterModule;
+
+/**
+ * Add Material icons and Flutter color icons to the editor's gutter.
+ */
 public class FlutterEditorAnnotator implements Annotator {
   private static final Logger LOG = Logger.getInstance(FlutterEditorAnnotator.class);
 
@@ -42,29 +46,39 @@ public class FlutterEditorAnnotator implements Annotator {
   public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
     if (holder.isBatchMode()) return;
 
-    // TODO(devoncarew): Use a DartVisitor instead of calling element.getText()?
-
     if (element instanceof DartReferenceExpression || element instanceof DartArrayAccessExpression) {
-      if (!FlutterModuleUtils.isInFlutterModule(element)) {
+      if (!isInFlutterModule(element)) {
         return;
       }
 
       final String text = element.getText();
 
       if (text.startsWith("Colors.")) {
-        final String key = text.substring("Colors.".length());
+        String key = text.substring("Colors.".length());
+
+        // Handle things like Colors.blue.shade200; convert the text to blue[200].
+        if (key.contains(".shade")) {
+          key = key.replace(".shade", "[") + "]";
+        }
+
         if (colors.containsKey(key)) {
           final Color color = getColor(key);
           if (color != null) {
             attachColorIcon(element, holder, color);
           }
         }
-        else if (!(element.getParent() instanceof DartArrayAccessExpression) && colors.containsKey(key + ".primary")) {
-          // If we're a primary color access, and we're not followed by an array access (really referencing a
-          // more specific color).
-          final Color color = getColor(key + ".primary");
-          if (color != null) {
-            attachColorIcon(element, holder, color);
+        else if (colors.containsKey(key + ".primary")) {
+          // If we're a primary color access, and
+          // - we're not followed by an array access (really referencing a more specific color)
+          // - we're not followed by a shadeXXX access
+          final boolean inColorIndexExpression = element.getParent() instanceof DartArrayAccessExpression;
+          final boolean inShadeExpression =
+            (element.getParent() instanceof DartReferenceExpression && element.getParent().getText().startsWith(text + ".shade"));
+          if (!inShadeExpression && !inColorIndexExpression) {
+            final Color color = getColor(key + ".primary");
+            if (color != null) {
+              attachColorIcon(element, holder, color);
+            }
           }
         }
       }
@@ -77,11 +91,6 @@ public class FlutterEditorAnnotator implements Annotator {
       }
     }
     else if (element instanceof DartNewExpression) {
-      // For IconData, we want to be able to show icons in the flutter package as well.
-      //if (!isInFlutterModule(element)) {
-      //  return;
-      //}
-
       // const IconData(0xe914)
       final String text = element.getText();
 
