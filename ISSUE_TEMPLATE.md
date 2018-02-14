@@ -9,6 +9,6 @@ _Please tell us what you were doing and what went wrong_
 
 ## Version info
 
-Please paste the output of running `flutter doctor` here (available from the command
+Please paste the output of running `flutter doctor -v` here (available from the command
 line or from `Tools > Flutter > Flutter Doctor`). It will provide the version of the
 Flutter framework as well as of the IntelliJ plugin.

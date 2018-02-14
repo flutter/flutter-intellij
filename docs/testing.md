@@ -74,7 +74,7 @@ Validate device selection.
   
 * Emulated Android device
   * Start an Android emulator
-  * Ensure that a menu item appears in the device pull down for the device.  
+  * Ensure that a menu item appears in the device pull down for the device.
 
 ### macOS only
 

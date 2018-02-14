@@ -49,7 +49,7 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
   private static Icon getTestStateIcon(@NotNull PsiElement element, @NotNull Icon defaultIcon) {
 
     // SMTTestProxy maps test run data to a URI derived from a location hint produced by `package:test`.
-    // If we can find corresponding data, we can provide state-aware icons.  If not, we default to
+    // If we can find corresponding data, we can provide state-aware icons. If not, we default to
     // a standard Run state.
 
     PsiFile containingFile;

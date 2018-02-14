@@ -59,7 +59,7 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Return true if the passed module is of a Flutter type.  Before version M16 this plugin had its own Flutter {@link ModuleType}. Post M16
+   * Return true if the passed module is of a Flutter type. Before version M16 this plugin had its own Flutter {@link ModuleType}. Post M16
    * a Flutter module is defined by the following:
    * <p>
    * <code>
@@ -92,8 +92,8 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Return the the Flutter {@link Workspace} if there is atleast module that is determined to be a Flutter module by the workspace, and has
-   * the Dart SDK enabled module.
+   * Return the Flutter {@link Workspace} if there is at least one module that is determined to be a Flutter module by the workspace, and
+   * has the Dart SDK enabled module.
    */
   @Nullable
   public static Workspace getFlutterBazelWorkspace(@Nullable Project project) {
