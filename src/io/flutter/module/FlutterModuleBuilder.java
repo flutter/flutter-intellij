@@ -139,8 +139,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   private static String validateSettings(FlutterCreateAdditionalSettings settings) {
     final String description = settings.getDescription();
-    if (description != null && description.contains(":")) {
-      return "Invalid package description: " + description + " - cannot contain ':'s.";
+    if (description != null && description.contains(": ")) {
+      return "Invalid package description: '" + description + "' - cannot contain the sequence ': '.";
     }
     return null;
   }
