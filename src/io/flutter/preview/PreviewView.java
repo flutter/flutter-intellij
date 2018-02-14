@@ -172,8 +172,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   public void initToolWindow(@NotNull ToolWindow toolWindow) {
-    sendAnalyticEvent("initToolWindow");
-
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
     final ContentManager contentManager = toolWindow.getContentManager();
 
@@ -185,8 +183,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row"));
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Up, "Move widget up"));
-    toolbarGroup.add(new QuickAssistAction(FlutterIcons.Down, "Move widget down"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up"));
+    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
@@ -277,18 +275,18 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     updateActionsForOutlines(selectedOutlines);
   }
 
-  private void selectPath(TreePath selectionPath, boolean focusEditor) {
+  private void selectPath(TreePath selectionPath, boolean jumpToSource) {
     final FlutterOutline outline = getOutlineOfPath(selectionPath);
     if (outline == null) {
       return;
     }
 
-    if (focusEditor) {
+    if (jumpToSource) {
       if (outline.getDartElement() != null) {
-        sendAnalyticEvent("doubleClickDartOutline");
+        sendAnalyticEvent("jumpToSourceDartOutline");
       }
       else {
-        sendAnalyticEvent("doubleClickFlutterOutline");
+        sendAnalyticEvent("jumpToSourceFlutterOutline");
       }
     }
 
@@ -296,7 +294,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
       try {
-        new OpenFileDescriptor(project, currentFile, offset).navigate(focusEditor);
+        new OpenFileDescriptor(project, currentFile, offset).navigate(jumpToSource);
       }
       finally {
         currentEditor.getCaretModel().addCaretListener(caretListener);
@@ -618,7 +616,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   private void sendAnalyticEvent(@NotNull String name) {
-    FlutterInitializer.getAnalytics().sendEvent("flutterPreview", name);
+    FlutterInitializer.getAnalytics().sendEvent("preview", name);
   }
 
   private class QuickAssistAction extends AnAction {
