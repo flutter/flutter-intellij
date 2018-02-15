@@ -481,6 +481,7 @@ class BuildCommand extends ProductCommand {
 
   BuildCommand(this.runner) : super('build') {
     argParser.addOption('only-version',
+        abbr: 'o',
         help: 'Only build the specified IntelliJ version; useful for sharding '
             'builds on CI systems.');
     argParser.addFlag('unpack',
