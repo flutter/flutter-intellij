@@ -761,7 +761,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
       final Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
       if (userObject instanceof String) {
-        appendSearch((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendText((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         return;
       }
       if (!(userObject instanceof DiagnosticsNode)) return;
@@ -771,28 +771,28 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (name != null && !name.isEmpty() && node.getShowName()) {
         // color in name?
         if (name.equals("child") || name.startsWith("child ")) {
-          appendSearch(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          appendText(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         else {
-          appendSearch(name, textAttributes);
+          appendText(name, textAttributes);
         }
         if (node.getShowSeparator()) {
           // Is this good?
-          appendSearch(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
+          appendText(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
         }
-        appendSearch(" ", SimpleTextAttributes.GRAY_ATTRIBUTES);
+        appendText(" ", SimpleTextAttributes.GRAY_ATTRIBUTES);
       }
 
       // TODO(jacobr): custom display for units, colors, iterables, and icons.
       final String description = node.getDescription();
       final Matcher match = primaryDescriptionPattern.matcher(description);
       if (match.matches()) {
-        appendSearch(match.group(1), textAttributes);
-        appendSearch(" ", textAttributes);
-        appendSearch(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendText(match.group(1), textAttributes);
+        appendText(" ", textAttributes);
+        appendText(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
       }
       else {
-        appendSearch(node.getDescription(), textAttributes);
+        appendText(node.getDescription(), textAttributes);
       }
 
       if (node.hasTooltip()) {
@@ -805,7 +805,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       }
     }
 
-    private void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
+    private void appendText(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
       SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
     }
   }
