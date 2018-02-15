@@ -7,37 +7,35 @@ package io.flutter.view;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
+import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 abstract class FlutterViewAction extends DumbAwareAction {
-  @NotNull final FlutterView view;
+  @NotNull final FlutterApp app;
 
-  FlutterViewAction(@NotNull FlutterView view, @Nullable String text) {
+  FlutterViewAction(@NotNull FlutterApp app, @Nullable String text) {
     super(text);
 
-    this.view = view;
+    this.app = app;
   }
 
-  FlutterViewAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+  FlutterViewAction(@NotNull FlutterApp app, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
     super(text, description, icon);
 
-    this.view = view;
+    this.app = app;
   }
 
   @Override
   public void update(@NotNull AnActionEvent e) {
-    e.getPresentation().setEnabled(view.getFlutterApp() != null);
+    e.getPresentation().setEnabled(app.isSessionActive());
   }
 
   public void handleAppStarted() {
   }
 
   public void handleAppRestarted() {
-  }
-
-  public void handleAppStopped() {
   }
 }

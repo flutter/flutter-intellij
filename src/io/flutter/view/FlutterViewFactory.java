@@ -33,9 +33,5 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    //noinspection CodeBlock2Expr
-    DumbService.getInstance(project).runWhenSmart(() -> {
-      (ServiceManager.getService(project, FlutterView.class)).initToolWindow(toolWindow);
-    });
   }
 }
