@@ -426,6 +426,20 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     TreeUtil.installActions(tree);
 
     PopupHandler.installUnknownPopupHandler(tree, createTreePopupActions(), ActionManager.getInstance());
+
+    new TreeSpeedSearch(tree) {
+      @Override
+      protected String getElementText(Object element) {
+        final TreePath path = (TreePath)element;
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+        final Object object = node.getUserObject();
+        if (object instanceof DiagnosticsNode) {
+          // TODO(pq): consider a specialized String for matching.
+          return object.toString();
+        }
+        return null;
+      }
+    };
   }
 
   private ActionGroup createTreePopupActions() {
