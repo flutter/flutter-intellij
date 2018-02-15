@@ -15,6 +15,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.*;
 import com.intellij.ui.dualView.TreeTableView;
+import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
@@ -441,6 +442,20 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     TreeUtil.installActions(tree);
 
     PopupHandler.installUnknownPopupHandler(tree, createTreePopupActions(), ActionManager.getInstance());
+
+    new TreeSpeedSearch(tree) {
+      @Override
+      protected String getElementText(Object element) {
+        final TreePath path = (TreePath)element;
+        final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+        final Object object = node.getUserObject();
+        if (object instanceof DiagnosticsNode) {
+          // TODO(pq): consider a specialized String for matching.
+          return object.toString();
+        }
+        return null;
+      }
+    };
   }
 
   private ActionGroup createTreePopupActions() {
@@ -802,6 +817,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
      * two groups.
      */
     private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");
+    
+    private JTree tree;
+    private boolean selected;
 
     public void customizeCellRenderer(
       @NotNull final JTree tree,
@@ -812,9 +830,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final int row,
       final boolean hasFocus
     ) {
+
+      this.tree = tree;
+      this.selected = selected;
+
       final Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
       if (userObject instanceof String) {
-        append((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendText((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         return;
       }
       if (!(userObject instanceof DiagnosticsNode)) return;
@@ -824,17 +846,17 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (name != null && !name.isEmpty() && node.getShowName()) {
         // color in name?
         if (name.equals("child") || name.startsWith("child ")) {
-          append(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          appendText(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         else {
-          append(name, textAttributes);
+          appendText(name, textAttributes);
         }
 
         if (node.getShowSeparator()) {
           // Is this good?
-          append(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
+          appendText(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
         }
-        append(" ");
+        appendText(" ", SimpleTextAttributes.GRAY_ATTRIBUTES);
       }
 
       if (isCreatedByLocalProject(node)) {
@@ -845,12 +867,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final String description = node.getDescription();
       final Matcher match = primaryDescriptionPattern.matcher(description);
       if (match.matches()) {
-        append(match.group(1), textAttributes);
-        append(" ");
-        append(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendText(match.group(1), textAttributes);
+        appendText(" ", textAttributes);
+        appendText(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
       }
       else {
-        append(node.getDescription(), textAttributes);
+        appendText(node.getDescription(), textAttributes);
       }
 
       if (node.hasTooltip()) {
@@ -861,6 +883,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (icon != null) {
         setIcon(icon);
       }
+    }
+
+    private void appendText(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
+      SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
     }
   }
 
