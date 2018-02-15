@@ -14,6 +14,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.*;
 import com.intellij.ui.dualView.TreeTableView;
+import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
@@ -741,6 +742,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
      * two groups.
      */
     private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");
+    
+    private JTree tree;
+    private boolean selected;
 
     public void customizeCellRenderer(
       @NotNull final JTree tree,
@@ -751,9 +755,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final int row,
       final boolean hasFocus
     ) {
+
+      this.tree = tree;
+      this.selected = selected;
+
       final Object userObject = ((DefaultMutableTreeNode)value).getUserObject();
       if (userObject instanceof String) {
-        append((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendSearch((String)userObject, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         return;
       }
       if (!(userObject instanceof DiagnosticsNode)) return;
@@ -763,28 +771,28 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (name != null && !name.isEmpty() && node.getShowName()) {
         // color in name?
         if (name.equals("child") || name.startsWith("child ")) {
-          append(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+          appendSearch(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         else {
-          append(name, textAttributes);
+          appendSearch(name, textAttributes);
         }
         if (node.getShowSeparator()) {
           // Is this good?
-          append(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
+          appendSearch(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
         }
-        append(" ");
+        appendSearch(" ", SimpleTextAttributes.GRAY_ATTRIBUTES);
       }
 
       // TODO(jacobr): custom display for units, colors, iterables, and icons.
       final String description = node.getDescription();
       final Matcher match = primaryDescriptionPattern.matcher(description);
       if (match.matches()) {
-        append(match.group(1), textAttributes);
-        append(" ");
-        append(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
+        appendSearch(match.group(1), textAttributes);
+        appendSearch(" ", textAttributes);
+        appendSearch(match.group(2), SimpleTextAttributes.GRAYED_ATTRIBUTES);
       }
       else {
-        append(node.getDescription(), textAttributes);
+        appendSearch(node.getDescription(), textAttributes);
       }
 
       if (node.hasTooltip()) {
@@ -795,6 +803,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (icon != null) {
         setIcon(icon);
       }
+    }
+
+    private void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
+      SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
     }
   }
 
