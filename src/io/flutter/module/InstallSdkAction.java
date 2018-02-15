@@ -381,7 +381,7 @@ public class InstallSdkAction extends DumbAwareAction {
       void onTextAvailable(ProcessEvent event, Key outputType) {
         final String details = event.getText();
         // Filter out long messages and ones w/ leading whitespace.
-        // Conveniently, these are also the unfriendly ones.  For example:
+        // Conveniently, these are also the unfriendly ones. For example:
         // 6 57.9M    6 3838k    0     0  2978k      0  0:00:19  0:00:01  0:00:18 2978k
         //TODO(pq): consider a more robust approach to filtering.
         if (!details.startsWith(" ") && details.length() < 70) {
