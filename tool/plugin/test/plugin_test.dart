@@ -9,10 +9,6 @@ import 'package:test/test.dart';
 
 void main() {
   group("create", () {
-    test('abuild', () {
-      // ignore: deprecated_member_use
-      expect(new AntBuildCommand(new BuildCommandRunner()).name, "abuild");
-    });
     test('build', () {
       expect(new BuildCommand(new BuildCommandRunner()).name, "build");
     });
@@ -172,19 +168,11 @@ void main() {
 
 BuildCommandRunner makeTestRunner() {
   var runner = new BuildCommandRunner();
-  runner.addCommand(new TestAntBuildCommand(runner));
   runner.addCommand(new TestBuildCommand(runner));
   runner.addCommand(new TestTestCommand(runner));
   runner.addCommand(new TestDeployCommand(runner));
   runner.addCommand(new TestGenCommand(runner));
   return runner;
-}
-
-// ignore: deprecated_member_use
-class TestAntBuildCommand extends AntBuildCommand {
-  TestAntBuildCommand(runner) : super(runner);
-
-  Future<int> doit() async => new Future(() => 0);
 }
 
 class TestBuildCommand extends BuildCommand {

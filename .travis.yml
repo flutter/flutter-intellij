@@ -18,10 +18,9 @@ before_script:
 # execution
 script: ./tool/travis.sh
 
-# Testing product matrix - see gs://flutter_infra/flutter/intellij/.
-# IDEA_PRODUCT can be one of ideaIC, or android-studio-ide.
-# TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
+# Testing product matrix; the values should match the version field in the
+# product-matrix.json file.
 env:
-  - IDEA_PRODUCT=android-studio-ide IDEA_VERSION=171.4408382 DART_PLUGIN_VERSION=171.4424.10
-  - IDEA_PRODUCT=ideaIC IDEA_VERSION=2017.2 DART_PLUGIN_VERSION=172.3317.48
-  - IDEA_PRODUCT=ideaIC IDEA_VERSION=2017.3 DART_PLUGIN_VERSION=173.3302.13
+  - IDEA_VERSION=3.0
+  - IDEA_VERSION=2017.3
+  - IDEA_VERSION=2018.1

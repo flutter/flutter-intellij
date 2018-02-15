@@ -16,8 +16,6 @@ Future<int> main(List<String> args) async {
   var runner = new BuildCommandRunner();
 
   runner.addCommand(new LintCommand(runner));
-  // ignore: deprecated_member_use
-  runner.addCommand(new AntBuildCommand(runner));
   runner.addCommand(new BuildCommand(runner));
   runner.addCommand(new TestCommand(runner));
   runner.addCommand(new DeployCommand(runner));
@@ -354,47 +352,14 @@ void _copyResources(Directory from, Directory to) {
   }
 }
 
-String _shorten(String s) {
-  if (s.length < 200) {
-    return s;
-  }
-  return s.substring(0, 170) + ' ... ' + s.substring(s.length - 30);
+String _shorten(String str) {
+  return str.length < 200
+      ? str
+      : str.substring(0, 170) + ' ... ' + str.substring(str.length - 30);
 }
 
 Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
     s.transform(encoding.decoder).transform(const LineSplitter());
-
-/// Temporary command to use the Ant build script.
-@deprecated
-class AntBuildCommand extends ProductCommand {
-  final BuildCommandRunner runner;
-
-  AntBuildCommand(this.runner) : super('abuild');
-
-  String get description => 'Build a deployable version of the Flutter plugin, '
-      'compiled against the specified artifacts.';
-
-  bool get hidden => true;
-
-  Future<int> doit() async {
-    if (isReleaseMode) {
-      if (!await performReleaseChecks(this)) {
-        return new Future(() => 1);
-      }
-    }
-    var value;
-    for (var spec in specs) {
-      await spec.artifacts.provision(); // Not needed for ant script.
-      await deleteBuildContents();
-      value = await ant(spec);
-      if (value != 0) {
-        return value;
-      }
-      value = await moveToArtifacts(this, spec);
-    }
-    return value;
-  }
-}
 
 class Artifact {
   final String file;
@@ -451,9 +416,9 @@ class ArtifactManager {
         }
         var archiveFile = new File(path);
         if (!archiveFile.existsSync() || archiveFile.lengthSync() < 200) {
-          // If the file is missing the server returns a small file
-          // containing an error message. Delete it and fail. The
-          // smallest file we store in the cloud is over 700K.
+          // If the file is missing the server returns a small file containing
+          // an error message. Delete it and fail. The smallest file we store in
+          // the cloud is over 700K.
           log('archive file not found: $base/${artifact.file}');
           archiveFile.deleteSync();
           result = 1;
@@ -515,6 +480,10 @@ class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   BuildCommand(this.runner) : super('build') {
+    argParser.addOption('only-version',
+        abbr: 'o',
+        help: 'Only build the specified IntelliJ version; useful for sharding '
+            'builds on CI systems.');
     argParser.addFlag('unpack',
         abbr: 'u',
         help: 'Unpack the artifact files during provisioning, '
@@ -532,14 +501,27 @@ class BuildCommand extends ProductCommand {
         separator('Release mode (--release) implies --unpack');
       }
       if (!await performReleaseChecks(this)) {
-        return new Future(() => 1);
+        return 1;
       }
     }
+
+    // Check to see if we should only be building a specific version.
+    String onlyVersion = argResults['only-version'];
+
+    List buildSpecs = specs;
+    if (onlyVersion != null) {
+      buildSpecs = specs.where((spec) => spec.version == onlyVersion).toList();
+      if (buildSpecs.isEmpty) {
+        log("No spec found for version '$onlyVersion'");
+        return 1;
+      }
+    }
+
     var result = 0;
-    for (var spec in specs) {
+    for (var spec in buildSpecs) {
       if (!(isForIntelliJ && isForAndroidStudio)) {
-        // This is a little more complicated than I'd like because the
-        // default is to always do both.
+        // This is a little more complicated than I'd like because the default
+        // is to always do both.
         if (isForAndroidStudio && !spec.isAndroidStudio) continue;
         if (isForIntelliJ && spec.isAndroidStudio) continue;
       }
@@ -591,6 +573,7 @@ class BuildCommand extends ProductCommand {
       separator('BUILT');
       log('${archiveFilePath(spec)}');
     }
+
     return 0;
   }
 }
