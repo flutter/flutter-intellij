@@ -480,6 +480,9 @@ class BuildCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   BuildCommand(this.runner) : super('build') {
+    argParser.addOption('only-version',
+        help: 'Only build the specified IntelliJ version; useful for sharding '
+            'builds on CI systems.');
     argParser.addFlag('unpack',
         abbr: 'u',
         help: 'Unpack the artifact files during provisioning, '
@@ -497,11 +500,24 @@ class BuildCommand extends ProductCommand {
         separator('Release mode (--release) implies --unpack');
       }
       if (!await performReleaseChecks(this)) {
-        return new Future(() => 1);
+        return 1;
       }
     }
+
+    // Check to see if we should only be building a specific version.
+    String onlyVersion = argResults['only-version'];
+
+    List buildSpecs = specs;
+    if (onlyVersion != null) {
+      buildSpecs = specs.where((spec) => spec.version == onlyVersion).toList();
+      if (buildSpecs.isEmpty) {
+        log("No spec found for version '$onlyVersion'");
+        return 1;
+      }
+    }
+
     var result = 0;
-    for (var spec in specs) {
+    for (var spec in buildSpecs) {
       if (!(isForIntelliJ && isForAndroidStudio)) {
         // This is a little more complicated than I'd like because the default
         // is to always do both.
@@ -556,6 +572,7 @@ class BuildCommand extends ProductCommand {
       separator('BUILT');
       log('${archiveFilePath(spec)}');
     }
+
     return 0;
   }
 }

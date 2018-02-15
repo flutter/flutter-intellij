@@ -19,20 +19,5 @@ echo "pub get"
 echo "plugin lint"
 ./bin/plugin lint
 
-# Run the ant build.
-if [ "$UNIT_TEST" = "true" ]
-then
-  if [ -z "$DART_PLUGIN_VERSION" ]
-  then
-    ant build test -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION
-  else
-    ant build test -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
-  fi
-else
-  if [ -z "$DART_PLUGIN_VERSION" ]
-  then
-    ant build -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION
-  else
-    ant build -Didea.product=$IDEA_PRODUCT -Didea.version=$IDEA_VERSION -Ddart.plugin.version=$DART_PLUGIN_VERSION
-  fi
-fi
+# Run the build.
+bin/plugin build --only-version=$IDEA_VERSION
