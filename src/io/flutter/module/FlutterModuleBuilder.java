@@ -137,6 +137,14 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return flutter;
   }
 
+  private static String validateSettings(FlutterCreateAdditionalSettings settings) {
+    final String description = settings.getDescription();
+    if (description != null && description.contains(": ")) {
+      return "Invalid package description: '" + description + "' - cannot contain the sequence ': '.";
+    }
+    return null;
+  }
+
   private static void addAndroidModule(@NotNull Project project,
                                        @Nullable ModifiableModuleModel model,
                                        @NotNull String baseDirPath,
@@ -185,6 +193,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   @Override
   public boolean validate(Project current, Project dest) {
+    final String settingsValidation = validateSettings(getAdditionalSettings());
+    if (settingsValidation != null) {
+      Messages.showErrorDialog(settingsValidation, "Error");
+      return false;
+    }
+
     return myStep.getFlutterSdk() != null;
   }
 
