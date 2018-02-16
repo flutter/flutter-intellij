@@ -22,7 +22,7 @@ Android Studio.
 It is fine to have both projects open at the same time. The
 IDE gives you the option to use separate
 windows or to replace the existing window with the new project
-when opening a second project. Werecommend opening multiple
+when opening a second project. We recommend opening multiple
 projects in separate windows in Android Studio.
 
 Why do you need to open Android Studio twice? There are some
