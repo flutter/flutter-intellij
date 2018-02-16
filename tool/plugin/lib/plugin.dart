@@ -70,17 +70,6 @@ void addProductFlags(ArgParser argParser, String verb) {
       help: '$verb the Android Studio plugin', defaultsTo: true);
 }
 
-Future<int> ant(BuildSpec spec) async {
-  var args = new List<String>();
-  String directory = null;
-  args.add('-Ddart.plugin.version=${spec.dartPluginVersion}');
-  args.add('-Didea.version=${spec.ideaVersion}');
-  args.add('-Didea.product=${spec.ideaProduct}');
-  args.add('-DSINCE=${spec.sinceBuild}');
-  args.add('-DUNTIL=${spec.untilBuild}');
-  return await exec('ant', args, cwd: directory);
-}
-
 void copyResources({String from, String to}) {
   log('copying resources from $from to $to');
   _copyResources(new Directory(from), new Directory(to));
@@ -632,7 +621,18 @@ class BuildCommandRunner extends CommandRunner {
 -Dbasedir=$rootPath
 compile
 ''';
-    return await exec('ant', args.split(new RegExp(r'\s')));
+    try {
+      return await exec('ant', args.split(new RegExp(r'\s')));
+    } on ProcessException catch (x) {
+      if (x.message == 'No such file or directory') {
+        log('\nThe build command requires ant to be installed. '
+            '\nPlease ensure ant is on your \$PATH.',
+            indent: false);
+        exit(x.errorCode);
+      } else {
+        throw x;
+      }
+    }
   }
 }
 
