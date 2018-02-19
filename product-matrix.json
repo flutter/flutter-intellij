@@ -2,7 +2,7 @@
   "list": [
     {
       "name": "Android Studio",
-      "version": "3.0",
+      "version": "2017.1",
       "ideaProduct": "android-studio",
       "ideaVersion": "171.4408382",
       "dartPluginVersion": "171.4424.10",
@@ -12,8 +12,8 @@
     {
       "name": "IntelliJ",
       "version": "2017.3",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2017.3",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "173.4580418",
       "dartPluginVersion": "173.3302.13",
       "sinceBuild": "173.0",
       "untilBuild": "173.*"
