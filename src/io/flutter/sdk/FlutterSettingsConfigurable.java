@@ -26,6 +26,7 @@ import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.preview.PreviewView;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -49,12 +50,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private ComboboxWithBrowseButton mySdkCombo;
   private JBLabel myVersionLabel;
   private JCheckBox myReportUsageInformationCheckBox;
-  private LinkLabel<String> myPrivacyPolicy;
+  private JLabel myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myEnablePreviewViewCheckBox;
   private JCheckBox myPreviewDart2CheckBox;
+  private LinkLabel<String> myPreviewViewFeedback;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -80,14 +82,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-    myPrivacyPolicy.setIcon(null);
-    myPrivacyPolicy.setListener((label, linkUrl) -> {
+    myPreviewViewFeedback.setIcon(null);
+    myPreviewViewFeedback.setListener((label, linkUrl) -> {
       try {
         BrowserLauncher.getInstance().browse(new URI(linkUrl));
       }
       catch (URISyntaxException ignore) {
       }
-    }, FlutterBundle.message("flutter.analytics.privacyUrl"));
+    }, PreviewView.FEEDBACK_URL);
   }
 
   private void createUIComponents() {

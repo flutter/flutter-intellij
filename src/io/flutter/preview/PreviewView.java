@@ -7,6 +7,7 @@ package io.flutter.preview;
 
 import com.google.common.collect.Maps;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
 import com.intellij.ide.TreeExpander;
@@ -72,6 +73,9 @@ import java.util.List;
 )
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Preview";
+
+  // TODO:
+  public static final String FEEDBACK_URL = "todo:";
 
   private static final boolean SHOW_PREVIEW_AREA = false;
 
@@ -202,15 +206,31 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
 
-    // Add collapse all and expand all buttons.
+    // Add collapse all, expand all, and feedback buttons.
     if (toolWindow instanceof ToolWindowEx) {
+      final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+          BrowserUtil.browse(FEEDBACK_URL);
+        }
+      };
+
+      final AnAction separator = new AnAction(AllIcons.General.Divider) {
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+        }
+      };
+
       final TreeExpander expander = new DefaultTreeExpander(tree);
       final CommonActionsManager actions = CommonActionsManager.getInstance();
+
       final AnAction expandAllAction = actions.createExpandAllAction(expander, tree);
       expandAllAction.getTemplatePresentation().setIcon(AllIcons.General.ExpandAll);
+
       final AnAction collapseAllAction = actions.createCollapseAllAction(expander, tree);
       collapseAllAction.getTemplatePresentation().setIcon(AllIcons.General.CollapseAll);
-      ((ToolWindowEx)toolWindow).setTitleActions(expandAllAction, collapseAllAction);
+
+      ((ToolWindowEx)toolWindow).setTitleActions(sendFeedbackAction, separator, expandAllAction, collapseAllAction);
     }
 
     new TreeSpeedSearch(tree) {
