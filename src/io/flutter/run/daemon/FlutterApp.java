@@ -444,6 +444,11 @@ public class FlutterApp {
     return FlutterLaunchMode.getMode(myExecutionEnvironment);
   }
 
+  public boolean isSessionActive() {
+    return isStarted() && getFlutterDebugProcess().getVmConnected() &&
+           !getFlutterDebugProcess().getSession().isStopped();
+  }
+
   public FlutterDevice device() {
     return myDevice;
   }
