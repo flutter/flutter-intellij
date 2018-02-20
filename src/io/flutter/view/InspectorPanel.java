@@ -78,17 +78,18 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final Computable<Boolean> isApplicable;
   private final InspectorService.FlutterTreeType treeType;
   private final FlutterView flutterView;
+  private final FlutterApp flutterApp;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
   private static final DataKey<Tree> INSPECTOR_TREE_KEY = DataKey.create("Flutter.InspectorTree");
 
   // We have to define this because SimpleTextAttributes does not define a
   // value for warnings. This color looks reasonable for warnings both
-  // with the Dracula and the default themes.
+  // with the Darculaand the default themes.
   private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.ORANGE);
 
-  private FlutterApp getFlutterApp() {
-    return flutterView.getFlutterApp();
+  public FlutterApp getFlutterApp() {
+    return flutterApp;
   }
 
   private DefaultMutableTreeNode selectedNode;
@@ -102,11 +103,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
 
   public InspectorPanel(FlutterView flutterView,
+                        FlutterApp flutterApp,
                         Computable<Boolean> isApplicable,
                         InspectorService.FlutterTreeType treeType) {
     super(new BorderLayout());
     this.treeType = treeType;
     this.flutterView = flutterView;
+    this.flutterApp = flutterApp;
     this.isApplicable = isApplicable;
 
     refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh);
@@ -190,6 +193,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (!enabled) {
       onIsolateStopped();
       isActive = false;
+      return;
+    }
+    if (isActive) {
+      // Already activated.
       return;
     }
 
@@ -420,7 +427,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
         if (diagnostic != null) {
           if (isCreatedByLocalProject(diagnostic)) {
-            diagnostic.getCreationLocation().getXSourcePosition().createNavigatable(flutterView.getFlutterApp().getProject())
+            diagnostic.getCreationLocation().getXSourcePosition().createNavigatable(getFlutterApp().getProject())
               .navigate(false);
           }
         }

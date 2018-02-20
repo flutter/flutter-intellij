@@ -58,7 +58,7 @@ public class FlutterIcons {
   public static final Icon Styling = load("/icons/inspector/atrule.png");
   public static final Icon Text = load("/icons/inspector/textArea.png");
 
-  // Flutter Preview Widget Icons.
+  // Flutter Outline Widget Icons.
   public static final Icon Column = load("/icons/preview/column.png");
   public static final Icon Padding = load("/icons/preview/padding.png");
   public static final Icon Padding2 = load("/icons/preview/padding2.png");

@@ -10,7 +10,7 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.FlutterInitializer;
-import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -19,17 +19,17 @@ import javax.swing.*;
 abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable {
   private boolean selected = false;
 
-  FlutterViewToggleableAction(@NotNull FlutterView view, @Nullable String text) {
-    super(view, text);
+  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
+    super(app, text);
   }
 
-  FlutterViewToggleableAction(@NotNull FlutterView view, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
-    super(view, text, description, icon);
+  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+    super(app, text, description, icon);
   }
 
   @Override
   public final void update(@NotNull AnActionEvent e) {
-    final boolean hasFlutterApp = view.getFlutterApp() != null;
+    final boolean hasFlutterApp = app.isSessionActive();
 
     // selected
     final boolean selected = this.isSelected();
@@ -42,10 +42,6 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    if (view.getFlutterApp() == null) {
-      return;
-    }
-
     this.setSelected(event, !isSelected());
     final Presentation presentation = event.getPresentation();
     presentation.putClientProperty("selected", isSelected());
@@ -66,10 +62,5 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     if (event != null) {
       ApplicationManager.getApplication().invokeLater(() -> this.update(event));
     }
-  }
-
-  @Nullable
-  protected FlutterDevice getDevice() {
-    return view.getFlutterApp() == null ? null : view.getFlutterApp().device();
   }
 }
