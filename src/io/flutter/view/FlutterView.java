@@ -28,6 +28,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -495,6 +496,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
 
   protected void perform(AnActionEvent event) {
     assert (view.getFlutterApp() != null);
+    FlutterInitializer.getAnalytics().sendEvent("inspector", "toggleInspectMode");
     view.getFlutterApp().callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected());
 
     // If toggling inspect mode on, bring any device to the foreground.

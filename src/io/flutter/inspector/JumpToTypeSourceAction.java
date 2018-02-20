@@ -8,8 +8,13 @@ package io.flutter.inspector;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
+import org.jetbrains.annotations.NotNull;
 
 public class JumpToTypeSourceAction extends JumpToSourceActionBase {
+  public JumpToTypeSourceAction() {
+    super(InspectorActions.JUMP_TO_TYPE_SOURCE);
+  }
+
   @Override
   protected void startComputingSourcePosition(XValue value, XNavigatable navigatable) {
     value.computeTypeSourcePosition(navigatable);
