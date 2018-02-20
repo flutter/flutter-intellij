@@ -20,6 +20,9 @@ public class PreviewViewState {
   @Attribute(value = "splitter-proportion")
   public float splitterProportion;
 
+  @Attribute(value = "show-only-widgets")
+  public boolean showOnlyWidgets;
+
   public PreviewViewState() {
   }
 
@@ -29,6 +32,15 @@ public class PreviewViewState {
 
   public void setSplitterProportion(float value) {
     splitterProportion = value;
+    dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
+  }
+
+  public boolean getShowOnlyWidgets() {
+    return showOnlyWidgets;
+  }
+
+  public void setShowOnlyWidgets(boolean value) {
+    showOnlyWidgets = value;
     dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
   }
 
@@ -42,5 +54,6 @@ public class PreviewViewState {
 
   void copyFrom(PreviewViewState other) {
     splitterProportion = other.splitterProportion;
+    showOnlyWidgets = other.showOnlyWidgets;
   }
 }
