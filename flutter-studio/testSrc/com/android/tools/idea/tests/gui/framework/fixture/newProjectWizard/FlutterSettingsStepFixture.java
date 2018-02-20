@@ -6,8 +6,9 @@
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
 import com.android.tools.adtui.LabelWithEditButton;
+import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import io.flutter.FlutterBundle;
-import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.JCheckBoxFixture;
 import org.jetbrains.annotations.NotNull;
@@ -18,9 +19,10 @@ import javax.swing.text.JTextComponent;
 import static com.google.common.truth.Truth.assertThat;
 import static org.fest.swing.edt.GuiActionRunner.execute;
 
-public class FlutterSettingsStepFixture extends AbstractWizardStepFixture<FlutterSettingsStepFixture> {
-  protected FlutterSettingsStepFixture(@NotNull Robot robot, @NotNull JRootPane target) {
-    super(FlutterSettingsStepFixture.class, robot, target);
+public class FlutterSettingsStepFixture<W extends AbstractWizardFixture>
+  extends AbstractWizardStepFixture<FlutterSettingsStepFixture, W> {
+  protected FlutterSettingsStepFixture(@NotNull W wizard, @NotNull JRootPane target) {
+    super(FlutterSettingsStepFixture.class, wizard, target);
   }
 
   @NotNull

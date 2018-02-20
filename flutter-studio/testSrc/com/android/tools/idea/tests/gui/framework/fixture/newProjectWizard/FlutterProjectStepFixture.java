@@ -5,6 +5,8 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
+import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
@@ -24,9 +26,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.fest.swing.edt.GuiActionRunner.execute;
 
 // TODO(messick): Browse button for SDK; "Install SDK" button
-public class FlutterProjectStepFixture extends AbstractWizardStepFixture<FlutterProjectStepFixture> {
-  protected FlutterProjectStepFixture(@NotNull Robot robot, @NotNull JRootPane target) {
-    super(FlutterProjectStepFixture.class, robot, target);
+public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends AbstractWizardStepFixture<FlutterProjectStepFixture, W> {
+  protected FlutterProjectStepFixture(@NotNull W wizard, @NotNull JRootPane target) {
+    super(FlutterProjectStepFixture.class, wizard, target);
   }
 
   private static boolean isShown(JComponent field) {

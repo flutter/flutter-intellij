@@ -9,6 +9,7 @@ import com.android.tools.idea.gradle.project.model.AndroidModuleModel;
 import com.android.tools.idea.testing.Modules;
 import com.android.tools.idea.tests.gui.framework.GuiTests;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
+import com.android.tools.idea.ui.GuiTestingService;
 import com.google.common.collect.Lists;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.Disposable;
@@ -49,7 +50,6 @@ import static java.awt.event.InputEvent.CTRL_MASK;
 import static java.awt.event.InputEvent.META_MASK;
 import static junit.framework.Assert.assertNotNull;
 import static org.fest.util.Strings.quote;
-import static org.jetbrains.android.AndroidPlugin.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY;
 import static org.junit.Assert.assertFalse;
 
 @SuppressWarnings("Duplicates") // Adapted from IdeFrameFixture in uitest-framework module, due to private constructor.
@@ -150,7 +150,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     Runnable failTask = () -> {
       throw new ExternalSystemException(failure);
     };
-    ApplicationManager.getApplication().putUserData(EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY, failTask);
+    ApplicationManager.getApplication().putUserData(GuiTestingService.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY, failTask);
     selectProjectMakeAction();
     return this;
   }
