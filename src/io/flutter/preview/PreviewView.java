@@ -28,10 +28,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
-import com.intellij.ui.ColoredTreeCellRenderer;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.TreeSpeedSearch;
+import com.intellij.ui.*;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -717,6 +714,7 @@ class OutlineTree extends Tree {
 
 class OutlineObject {
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
+  private static final Map<Icon, LayeredIcon> flutterDecoratedIcons = new HashMap<>();
 
   final FlutterOutline outline;
   private Icon icon;
@@ -742,6 +740,23 @@ class OutlineObject {
     }
 
     return icon;
+  }
+
+  Icon getFlutterDecoratedIcon() {
+    final Icon icon = getIcon();
+    if (icon == null) return null;
+
+    LayeredIcon decorated = flutterDecoratedIcons.get(icon);
+    if (decorated == null) {
+      final Icon prefix = FlutterIcons.Flutter;
+
+      decorated = new LayeredIcon(2);
+      decorated.setIcon(prefix, 0, 0, 0);
+      decorated.setIcon(icon, 1, prefix.getIconWidth(), 0);
+
+      flutterDecoratedIcons.put(icon, decorated);
+    }
+    return decorated;
   }
 
   /**
@@ -811,7 +826,7 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     }
 
     // Render the widget icon.
-    final Icon icon = node.getIcon();
+    final Icon icon = node.getFlutterDecoratedIcon();
     if (icon != null) {
       setIcon(icon);
     }
