@@ -23,9 +23,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.*;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
@@ -40,10 +38,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // TODO(devoncarew): Display an fps graph.
 
@@ -55,6 +50,9 @@ import java.util.Map;
 )
 public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
+
+  public static final String WIDGET_TREE_LABEL = "Widgets";
+  public static final String RENDER_TREE_LABEL = "Render Tree";
 
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
@@ -105,8 +103,26 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.addSeparator();
     toolbarGroup.add(new OverflowActionsAction(this));
 
-    addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
-    addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
+    addInspectorPanel(WIDGET_TREE_LABEL, InspectorService.FlutterTreeType.widget, toolWindow, toolbarGroup, true);
+    addInspectorPanel(RENDER_TREE_LABEL, InspectorService.FlutterTreeType.renderObject, toolWindow, toolbarGroup, false);
+
+    listenForRenderTreeActivations(toolWindow);
+  }
+
+  private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
+    final ContentManager contentManager = toolWindow.getContentManager();
+    contentManager.addContentManagerListener(new ContentManagerAdapter(){
+      @Override
+      public void selectionChanged(ContentManagerEvent event) {
+        final ContentManagerEvent.ContentOperation operation = event.getOperation();
+        if (operation == ContentManagerEvent.ContentOperation.add) {
+          final String name = event.getContent().getTabName();
+          if (Objects.equals(name, RENDER_TREE_LABEL)) {
+            FlutterInitializer.getAnalytics().sendEvent("inspector", "renderTreeSelected");
+          }
+        }
+      }
+    });
   }
 
   FlutterViewAction registerAction(FlutterViewAction action) {
