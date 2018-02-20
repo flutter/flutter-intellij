@@ -46,11 +46,8 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     final Presentation presentation = event.getPresentation();
     presentation.putClientProperty("selected", isSelected());
 
-    FlutterInitializer.sendAnalyticsAction(this);
-    perform(event);
+    super.actionPerformed(event);
   }
-
-  protected abstract void perform(@Nullable AnActionEvent event);
 
   public boolean isSelected() {
     return selected;

@@ -423,7 +423,7 @@ class OpenObservatoryAction extends FlutterViewAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       final String url = app.getConnector().getBrowserUrl();
       if (url != null) {
@@ -439,7 +439,7 @@ class OpenTimelineViewAction extends FlutterViewAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       final String url = app.getConnector().getBrowserUrl();
       if (url != null) {
@@ -458,7 +458,7 @@ class TogglePlatformAction extends FlutterViewAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       app.togglePlatform().thenAccept(isAndroid -> {
         if (isAndroid == null) {
