@@ -102,7 +102,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private VirtualFile currentFile;
   private Editor currentEditor;
   private FlutterOutline currentOutline;
-  private boolean showOnlyWidgets = false;
 
   private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
@@ -446,7 +445,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private void updateOutlineImpl(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
     int index = 0;
     for (final FlutterOutline outline : outlines) {
-      if (showOnlyWidgets && !outlinesWithWidgets.contains(outline)) {
+      if (getState().getShowOnlyWidgets() && !outlinesWithWidgets.contains(outline)) {
         continue;
       }
 
@@ -685,7 +684,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-      showOnlyWidgets = !showOnlyWidgets;
+      getState().setShowOnlyWidgets(!getState().getShowOnlyWidgets());
       if (currentOutline != null) {
         updateOutline(currentOutline);
       }
@@ -694,7 +693,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     @Override
     public void update(AnActionEvent e) {
       final Presentation presentation = e.getPresentation();
-      presentation.putClientProperty(SELECTED_PROPERTY, showOnlyWidgets);
+      presentation.putClientProperty(SELECTED_PROPERTY, getState().getShowOnlyWidgets());
       presentation.setEnabled(currentOutline != null);
     }
   }
