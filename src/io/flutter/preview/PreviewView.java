@@ -27,10 +27,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
-import com.intellij.ui.ColoredTreeCellRenderer;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.TreeSpeedSearch;
+import com.intellij.ui.*;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -662,6 +659,20 @@ class OutlineTree extends Tree {
     for (int row = 0; row < getRowCount(); row++) {
       expandRow(row);
     }
+  }
+
+  @Override
+  public boolean isFileColorsEnabled() {
+    return true;
+  }
+
+  @Nullable
+  public Color getFileColorFor(Object object) {
+    final OutlineObject outlineObject = (OutlineObject)object;
+    if (outlineObject.outline.getDartElement() == null) {
+      return new JBColor(new Color(0xF0FFF0), new Color(0x405040));
+    }
+    return null;
   }
 }
 
