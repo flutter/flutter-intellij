@@ -6,6 +6,7 @@
 package io.flutter.preview;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.CommonActionsManager;
 import com.intellij.ide.DefaultTreeExpander;
@@ -95,17 +96,19 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private OutlineTree tree;
   private PreviewAreaPanel previewAreaPanel;
 
+  private final Set<FlutterOutline> outlinesWithWidgets = Sets.newHashSet();
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
   private Editor currentEditor;
   private FlutterOutline currentOutline;
+  private boolean showOnlyWidgets = false;
 
   private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
-        ApplicationManager.getApplication().invokeLater(() -> updateOutline(filePath, outline));
+        ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
       }
     }
   };
@@ -186,6 +189,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
+    toolbarGroup.add(new ShowOnlyWidgetsAction(FlutterIcons.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
@@ -386,14 +390,16 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     return (DefaultMutableTreeNode)getTreeModel().getRoot();
   }
 
-  private void updateOutline(@NotNull String filePath, @NotNull FlutterOutline outline) {
+  private void updateOutline(@NotNull FlutterOutline outline) {
     currentOutline = outline;
 
     final DefaultMutableTreeNode rootNode = getRootNode();
     rootNode.removeAllChildren();
 
+    outlinesWithWidgets.clear();
     outlineToNodeMap.clear();
     if (outline.getChildren() != null) {
+      computeOutlinesWithWidgets(outline);
       updateOutlineImpl(rootNode, outline.getChildren());
     }
 
@@ -418,15 +424,38 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
+  private boolean computeOutlinesWithWidgets(FlutterOutline outline) {
+    boolean hasWidget = false;
+    if (outline.getDartElement() == null) {
+      outlinesWithWidgets.add(outline);
+      hasWidget = true;
+    }
+
+    final List<FlutterOutline> children = outline.getChildren();
+    if (children != null) {
+      for (final FlutterOutline child : children) {
+        if (computeOutlinesWithWidgets(child)) {
+          outlinesWithWidgets.add(outline);
+          hasWidget = true;
+        }
+      }
+    }
+    return hasWidget;
+  }
+
   private void updateOutlineImpl(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
-    for (int i = 0; i < outlines.size(); i++) {
-      final FlutterOutline outline = outlines.get(i);
+    int index = 0;
+    for (final FlutterOutline outline : outlines) {
+      if (showOnlyWidgets && !outlinesWithWidgets.contains(outline)) {
+        continue;
+      }
 
       final OutlineObject object = new OutlineObject(outline);
-
       final DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
       outlineToNodeMap.put(outline, node);
-      getTreeModel().insertNodeInto(node, parent, i);
+
+      getTreeModel().insertNodeInto(node, parent, index++);
+
       if (outline.getChildren() != null) {
         updateOutlineImpl(node, outline.getChildren());
       }
@@ -646,6 +675,27 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     public void update(AnActionEvent e) {
       final boolean hasChange = actionToChangeMap.containsKey(this);
       e.getPresentation().setEnabled(hasChange);
+    }
+  }
+
+  private class ShowOnlyWidgetsAction extends AnAction implements Toggleable, RightAlignedToolbarAction {
+    ShowOnlyWidgetsAction(@NotNull Icon icon, @NotNull String text) {
+      super(text, null, icon);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      showOnlyWidgets = !showOnlyWidgets;
+      if (currentOutline != null) {
+        updateOutline(currentOutline);
+      }
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      final Presentation presentation = e.getPresentation();
+      presentation.putClientProperty(SELECTED_PROPERTY, showOnlyWidgets);
+      presentation.setEnabled(currentOutline != null);
     }
   }
 }
