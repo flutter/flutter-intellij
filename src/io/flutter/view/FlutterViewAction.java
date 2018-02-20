@@ -7,6 +7,7 @@ package io.flutter.view;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
+import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,6 +28,14 @@ abstract class FlutterViewAction extends DumbAwareAction {
 
     this.app = app;
   }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    FlutterInitializer.sendAnalyticsAction(this);
+    perform(e);
+  }
+
+  protected abstract void perform(@Nullable AnActionEvent event);
 
   @Override
   public void update(@NotNull AnActionEvent e) {
