@@ -903,11 +903,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (location == null) {
       return false;
     }
-    VirtualFile file = location.getFile();
+    final VirtualFile file = location.getFile();
     if (file == null) {
       return false;
     }
-    String filePath = file.getCanonicalPath();
+    final String filePath = file.getCanonicalPath();
     for (PubRoot root : getFlutterApp().getPubRoots()) {
       if (filePath.startsWith(root.getRoot().getCanonicalPath())) {
         return true;
