@@ -149,7 +149,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       windowPanel.setContent(inspectorPanel);
       windowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
       contentManager.addContent(content);
-      PerAppState state = getOrCreateStateForApp(flutterApp);
+      final PerAppState state = getOrCreateStateForApp(flutterApp);
       state.contents.add(content);
       if (selectedContent) {
         contentManager.setSelectedContent(content);
@@ -180,7 +180,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
 
     addInspectorPanel(WIDGET_TREE_LABEL, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
     addInspectorPanel(RENDER_TREE_LABEL, InspectorService.FlutterTreeType.renderObject, app, toolWindow, toolbarGroup, false);
@@ -251,7 +251,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           if (Objects.equals(name, RENDER_TREE_LABEL)) {
             FlutterInitializer.getAnalytics().sendEvent("inspector", "renderTreeSelected");
           }
-          else if ((Objects.equals(name, WIDGET_TREE_LABEL)) {
+          else if (Objects.equals(name, WIDGET_TREE_LABEL)) {
             FlutterInitializer.getAnalytics().sendEvent("inspector", "widgetTreeSelected");
           }
         }
