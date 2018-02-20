@@ -139,6 +139,14 @@ public class FlutterProjectCreator {
     return "";
   }
 
+  private static String reversedOrgFromPackage(@NotNull String packageName) {
+    int idx = packageName.lastIndexOf('.');
+    if (idx <= 0) {
+      return packageName;
+    }
+    return packageName.substring(0, idx);
+  }
+
   public void createModule() {
     Project project = myModel.project().getValue();
     VirtualFile baseDir = project.getBaseDir();
@@ -258,13 +266,5 @@ public class FlutterProjectCreator {
       .setKotlin(myModel.useKotlin().get() ? true : null)
       .setSwift(myModel.useSwift().get() ? true : null)
       .build();
-  }
-
-  private static String reversedOrgFromPackage(@NotNull String packageName) {
-    int idx = packageName.lastIndexOf('.');
-    if (idx <= 0) {
-      return packageName;
-    }
-    return packageName.substring(0, idx);
   }
 }

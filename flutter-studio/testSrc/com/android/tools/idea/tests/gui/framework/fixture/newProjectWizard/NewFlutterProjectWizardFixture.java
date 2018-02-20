@@ -26,14 +26,14 @@ import static com.google.common.collect.Lists.newArrayList;
 // Adapted from com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewProjectWizardFixture
 public class NewFlutterProjectWizardFixture extends AbstractWizardFixture<NewFlutterProjectWizardFixture> {
 
+  private NewFlutterProjectWizardFixture(@NotNull Robot robot, @NotNull JDialog target) {
+    super(NewFlutterProjectWizardFixture.class, robot, target);
+  }
+
   @NotNull
   public static NewFlutterProjectWizardFixture find(@NotNull Robot robot) {
     JDialog dialog = GuiTests.waitUntilShowing(robot, Matchers.byTitle(JDialog.class, "Create New Flutter Project"));
     return new NewFlutterProjectWizardFixture(robot, dialog);
-  }
-
-  private NewFlutterProjectWizardFixture(@NotNull Robot robot, @NotNull JDialog target) {
-    super(NewFlutterProjectWizardFixture.class, robot, target);
   }
 
   public NewFlutterProjectWizardFixture chooseProjectType(@NotNull String activity) {

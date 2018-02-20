@@ -17,6 +17,10 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterWelcomeFrameFixture extends ComponentFixture<FlutterWelcomeFrameFixture, FlatWelcomeFrame> {
   private static final String NEW_PROJECT_WELCOME_ID = "flutter.NewProject.welcome"; // See META-INF/studio-contribs.xml
 
+  private FlutterWelcomeFrameFixture(@NotNull Robot robot, @NotNull FlatWelcomeFrame target) {
+    super(FlutterWelcomeFrameFixture.class, robot, target);
+  }
+
   @SuppressWarnings("WeakerAccess")
   @NotNull
   public static FlutterWelcomeFrameFixture find(@NotNull Robot robot) {
@@ -26,10 +30,6 @@ public class FlutterWelcomeFrameFixture extends ComponentFixture<FlutterWelcomeF
   @NotNull
   public static FlutterWelcomeFrameFixture find(@NotNull IdeaFrameFixture ideFrameFixture) {
     return find(ideFrameFixture.robot());
-  }
-
-  private FlutterWelcomeFrameFixture(@NotNull Robot robot, @NotNull FlatWelcomeFrame target) {
-    super(FlutterWelcomeFrameFixture.class, robot, target);
   }
 
   public SdkProblemDialogFixture createNewProjectWhenSdkIsInvalid() {

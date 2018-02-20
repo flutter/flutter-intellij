@@ -10,7 +10,6 @@ import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardS
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
-import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JComboBoxFixture;
@@ -97,7 +96,7 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
   public String getErrorMessage() {
     Component comp = robot().finder().findByName("ValidationLabel");
     if (comp instanceof JBLabel) {
-      JBLabel label = (JBLabel) comp;
+      JBLabel label = (JBLabel)comp;
       return label.getText();
     }
     return null;
@@ -115,7 +114,8 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
              isShown(findTextFieldWithLabel("Description")) &&
              isShown(findComboBox().target()) &&
              !isShown(getLocationField());
-    } catch (ComponentLookupException ex) {
+    }
+    catch (ComponentLookupException ex) {
       // Expect this exception when the location field is not found.
       return true;
     }

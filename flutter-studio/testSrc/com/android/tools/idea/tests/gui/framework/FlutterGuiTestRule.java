@@ -9,7 +9,6 @@ import com.android.tools.idea.gradle.util.LocalProperties;
 import com.android.tools.idea.sdk.IdeSdks;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
-import com.android.tools.idea.tests.gui.framework.fixture.IdeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.IdeaFrameFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
@@ -58,12 +57,12 @@ import static org.fest.reflect.core.Reflection.*;
  * are open).
  *
  * For example:
- *   FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
- *   WizardUtils.createNewApplication(myGuiTest);
- *   FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
- *   EditorFixture editor = ideFrame.getEditor();
- *   editor.waitUntilErrorAnalysisFinishes();
- *   ...
+ * FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
+ * WizardUtils.createNewApplication(myGuiTest);
+ * FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
+ * EditorFixture editor = ideFrame.getEditor();
+ * editor.waitUntilErrorAnalysisFinishes();
+ * ...
  *
  * {@link TestRule}s can do everything that could be done previously with
  * methods annotated with {@link org.junit.Before},

@@ -60,11 +60,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   private EditorFixture myEditor;
   private boolean myIsClosed;
 
-  @NotNull
-  public static IdeaFrameFixture find(@NotNull final Robot robot) {
-    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
-  }
-
   IdeaFrameFixture(@NotNull Robot robot, @NotNull IdeFrameImpl target) {
     super(IdeaFrameFixture.class, robot, target);
     myIdeFrameFixture = IdeFrameFixture.find(robot);
@@ -73,6 +68,11 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
     Disposable disposable = new NoOpDisposable();
     Disposer.register(project, disposable);
+  }
+
+  @NotNull
+  public static IdeaFrameFixture find(@NotNull final Robot robot) {
+    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
   }
 
   @NotNull
@@ -357,12 +357,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     return new DialogFixture(robot(), GuiTests.waitUntilShowing(robot(), Matchers.byTitle(JDialog.class, title)));
   }
 
-  private static class NoOpDisposable implements Disposable {
-    @Override
-    public void dispose() {
-    }
-  }
-
   public void selectApp(@NotNull String appName) {
     ActionButtonFixture runButton = findRunApplicationButton();
     Container actionToolbarContainer = GuiQuery.getNonNull(() -> runButton.target().getParent());
@@ -403,5 +397,11 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
       }
     });
     robot().pressAndReleaseKey(KeyEvent.VK_ENTER, 0);
+  }
+
+  private static class NoOpDisposable implements Disposable {
+    @Override
+    public void dispose() {
+    }
   }
 }
