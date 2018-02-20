@@ -37,7 +37,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 // TODO(devoncarew): Display an fps graph.
 
@@ -47,8 +50,6 @@ import java.util.*;
   name = "FlutterView",
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
-
-
 public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
 
   private static class PerAppState {
@@ -98,7 +99,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     // manually opens the window when there is not yet a running app.
   }
 
-  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, FlutterApp app) {
+  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, @NotNull FlutterApp app) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(registerAction(new ToggleInspectModeAction(app)));
     toolbarGroup.addSeparator();
@@ -168,7 +169,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     final FlutterApp app = event.app;
-    assert (app != null);
 
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
@@ -605,7 +605,7 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
-  public OverflowActionsAction(@NotNull FlutterView view, FlutterApp app) {
+  public OverflowActionsAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
     super("Additional actions", null, AllIcons.General.Gear);
 
     this.app = app;
