@@ -38,7 +38,9 @@ Builds may be targeted for local development or distribution.
 Build for IntelliJ. Default is true; may be negated by including `no`.
 *   `-[no-]as`
 Build for Android Studio. Default is true; may be negated by including `no`.
-*   -u, --unpack
+*   `-o, --only-version=ID`
+Only build the specified IntelliJ version. `ID` is one of the "version" strings in product-matrix.json.
+*   `-u, --unpack`
 Normally the archive files are not unpacked if the corresponding directory exists. This flag forces the archive files to be unpacked.
 
 
