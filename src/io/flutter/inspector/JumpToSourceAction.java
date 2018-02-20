@@ -10,6 +10,10 @@ import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
 
 public class JumpToSourceAction extends JumpToSourceActionBase {
+  public JumpToSourceAction() {
+    super("jumpToSource");
+  }
+
   @Override
   protected XSourcePosition getSourcePosition(DiagnosticsNode node) {
     if (!node.hasCreationLocation()) {

@@ -22,11 +22,10 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.*;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -60,6 +59,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
+
+  public static final String WIDGET_TREE_LABEL = "Widgets";
+  public static final String RENDER_TREE_LABEL = "Render Tree";
 
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
@@ -147,7 +149,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       windowPanel.setContent(inspectorPanel);
       windowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
       contentManager.addContent(content);
-      PerAppState state = getOrCreateStateForApp(flutterApp);
+      final PerAppState state = getOrCreateStateForApp(flutterApp);
       state.contents.add(content);
       if (selectedContent) {
         contentManager.setSelectedContent(content);
@@ -178,10 +180,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
 
-    addInspectorPanel("Widgets", InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
-    addInspectorPanel("Render Tree", InspectorService.FlutterTreeType.renderObject, app, toolWindow, toolbarGroup, false);
+    addInspectorPanel(WIDGET_TREE_LABEL, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
+    addInspectorPanel(RENDER_TREE_LABEL, InspectorService.FlutterTreeType.renderObject, app, toolWindow, toolbarGroup, false);
+
+    listenForRenderTreeActivations(toolWindow);
 
     event.vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -231,6 +235,25 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         final PerAppState state = getStateForApp(app);
         if (state != null) {
           state.sendRestartNotificationOnNextFrame = true;
+        }
+      }
+    });
+  }
+
+  private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
+    final ContentManager contentManager = toolWindow.getContentManager();
+    contentManager.addContentManagerListener(new ContentManagerAdapter() {
+      @Override
+      public void selectionChanged(ContentManagerEvent event) {
+        final ContentManagerEvent.ContentOperation operation = event.getOperation();
+        if (operation == ContentManagerEvent.ContentOperation.add) {
+          final String name = event.getContent().getTabName();
+          if (Objects.equals(name, RENDER_TREE_LABEL)) {
+            FlutterInitializer.getAnalytics().sendEvent("inspector", "renderTreeSelected");
+          }
+          else if (Objects.equals(name, WIDGET_TREE_LABEL)) {
+            FlutterInitializer.getAnalytics().sendEvent("inspector", "widgetTreeSelected");
+          }
         }
       }
     });
