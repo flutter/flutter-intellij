@@ -90,6 +90,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     this.state.copyFrom(state);
   }
 
+  public void initToolWindow(ToolWindow window) {
+    window.setToHideOnEmptyContent(true);
+    // TODO(jacobr): add a message explaining the empty contents if the user
+    // manually opens the window when there is not yet a running app.
+  }
+
   private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, FlutterApp app) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(registerAction(new ToggleInspectModeAction(app)));
