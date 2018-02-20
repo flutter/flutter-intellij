@@ -5,10 +5,11 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
+import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
-import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JComboBoxFixture;
@@ -24,9 +25,9 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.fest.swing.edt.GuiActionRunner.execute;
 
 // TODO(messick): Browse button for SDK; "Install SDK" button
-public class FlutterProjectStepFixture extends AbstractWizardStepFixture<FlutterProjectStepFixture> {
-  protected FlutterProjectStepFixture(@NotNull Robot robot, @NotNull JRootPane target) {
-    super(FlutterProjectStepFixture.class, robot, target);
+public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends AbstractWizardStepFixture<FlutterProjectStepFixture, W> {
+  protected FlutterProjectStepFixture(@NotNull W wizard, @NotNull JRootPane target) {
+    super(FlutterProjectStepFixture.class, wizard, target);
   }
 
   private static boolean isShown(JComponent field) {
@@ -95,7 +96,7 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
   public String getErrorMessage() {
     Component comp = robot().finder().findByName("ValidationLabel");
     if (comp instanceof JBLabel) {
-      JBLabel label = (JBLabel) comp;
+      JBLabel label = (JBLabel)comp;
       return label.getText();
     }
     return null;
@@ -113,7 +114,8 @@ public class FlutterProjectStepFixture extends AbstractWizardStepFixture<Flutter
              isShown(findTextFieldWithLabel("Description")) &&
              isShown(findComboBox().target()) &&
              !isShown(getLocationField());
-    } catch (ComponentLookupException ex) {
+    }
+    catch (ComponentLookupException ex) {
       // Expect this exception when the location field is not found.
       return true;
     }

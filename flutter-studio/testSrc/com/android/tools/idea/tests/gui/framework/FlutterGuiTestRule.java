@@ -9,7 +9,6 @@ import com.android.tools.idea.gradle.util.LocalProperties;
 import com.android.tools.idea.sdk.IdeSdks;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
-import com.android.tools.idea.tests.gui.framework.fixture.IdeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.IdeaFrameFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
@@ -28,6 +27,7 @@ import org.jdom.Element;
 import org.jdom.input.SAXBuilder;
 import org.jdom.xpath.XPath;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.AssumptionViolatedException;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
@@ -46,7 +46,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.android.tools.idea.tests.gui.framework.GuiTests.setUpDefaultProjectCreationLocationPath;
 import static com.google.common.truth.TruthJUnit.assume;
+import static com.intellij.openapi.util.io.FileUtil.sanitizeFileName;
 import static org.fest.reflect.core.Reflection.*;
 
 /**
@@ -55,12 +57,12 @@ import static org.fest.reflect.core.Reflection.*;
  * are open).
  *
  * For example:
- *   FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
- *   WizardUtils.createNewApplication(myGuiTest);
- *   FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
- *   EditorFixture editor = ideFrame.getEditor();
- *   editor.waitUntilErrorAnalysisFinishes();
- *   ...
+ * FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
+ * WizardUtils.createNewApplication(myGuiTest);
+ * FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
+ * EditorFixture editor = ideFrame.getEditor();
+ * editor.waitUntilErrorAnalysisFinishes();
+ * ...
  *
  * {@link TestRule}s can do everything that could be done previously with
  * methods annotated with {@link org.junit.Before},
@@ -91,6 +93,7 @@ public class FlutterGuiTestRule implements TestRule {
     }
   };
   private FlutterFrameFixture myIdeFrameFixture;
+  @Nullable private String myTestDirectory;
   private Timeout myTimeout = new Timeout(5, TimeUnit.MINUTES);
 
   private static ImmutableList<Throwable> thrownFromRunning(Runnable r) {
@@ -128,7 +131,6 @@ public class FlutterGuiTestRule implements TestRule {
       .around(myRobotTestRule)
       .around(myLeakCheck)
       .around(new IdeHandling())
-      .around(new TestPerformance())
       .around(new ScreenshotOnFailure())
       .around(myTimeout)
       .apply(base, description);
@@ -144,8 +146,9 @@ public class FlutterGuiTestRule implements TestRule {
     assume().that(GuiTests.windowsShowing()).named("windows showing").hasSize(1);
   }
 
-  private void setUp() {
-    GuiTests.setUpDefaultProjectCreationLocationPath();
+  private void setUp(@NotNull String methodName) {
+    myTestDirectory = methodName != null ? sanitizeFileName(methodName) : null;
+    setUpDefaultProjectCreationLocationPath(myTestDirectory);
     GuiTests.setIdeSettings();
     GuiTests.setUpSdks();
 
@@ -255,7 +258,7 @@ public class FlutterGuiTestRule implements TestRule {
 
   @NotNull
   protected File getTestProjectDirPath(@NotNull String projectDirName) {
-    return new File(GuiTests.getProjectCreationDirPath(), projectDirName);
+    return new File(GuiTests.getProjectCreationDirPath(myTestDirectory), projectDirName);
   }
 
   public void cleanUpProjectForImport(@NotNull File projectPath) {
@@ -339,7 +342,7 @@ public class FlutterGuiTestRule implements TestRule {
           System.out.println("Starting " + description.getDisplayName());
           assume().that(GuiTests.fatalErrorsFromIde()).named("IDE errors").isEmpty();
           assumeOnlyWelcomeFrameShowing();
-          setUp();
+          setUp(description.getMethodName());
           List<Throwable> errors = new ArrayList<>();
           try {
             base.evaluate();

@@ -5,10 +5,7 @@
  */
 package io.flutter.project;
 
-import com.android.builder.model.SourceProvider;
 import com.android.repository.io.FileOpUtils;
-import com.android.tools.idea.gradle.npw.project.GradleAndroidProjectPaths;
-import com.android.tools.idea.npw.project.AndroidSourceSet;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.ide.RecentProjectsManager;
@@ -48,6 +45,7 @@ import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.facet.AndroidFacetType;
+import org.jetbrains.android.facet.IdeaSourceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.jps.android.model.impl.JpsAndroidModuleProperties;
@@ -114,32 +112,39 @@ public class FlutterProjectCreator {
     }
   }
 
-  private static void configureFacet(@NotNull AndroidFacet facet, @NotNull FlutterProjectModel androidModel, @NotNull File location) {
+  private static void configureFacet(@NotNull AndroidFacet facet, @NotNull File location) {
     JpsAndroidModuleProperties facetProperties = facet.getProperties();
 
     File modulePath = new File(location, "android");
-    AndroidSourceSet sources = GradleAndroidProjectPaths.createDefaultSourceSetAt(modulePath);
-    SourceProvider sourceProvider = sources.toSourceProvider();
+    IdeaSourceProvider sourceProvider = IdeaSourceProvider.create(facet);
     facetProperties.MANIFEST_FILE_RELATIVE_PATH = relativePath(modulePath, sourceProvider.getManifestFile());
     facetProperties.RES_FOLDER_RELATIVE_PATH = relativePath(modulePath, sourceProvider.getResDirectories());
     facetProperties.ASSETS_FOLDER_RELATIVE_PATH = relativePath(modulePath, sourceProvider.getAssetsDirectories());
   }
 
   @NotNull
-  private static String relativePath(@NotNull File basePath, @NotNull Collection<File> dirs) {
+  private static String relativePath(@NotNull File basePath, @NotNull Collection<VirtualFile> dirs) {
     return relativePath(basePath, getFirstItem(dirs));
   }
 
   @NotNull
-  private static String relativePath(@NotNull File basePath, @Nullable File file) {
+  private static String relativePath(@NotNull File basePath, @Nullable VirtualFile file) {
     String relativePath = null;
     if (file != null) {
-      relativePath = getRelativePath(basePath, file);
+      relativePath = getRelativePath(basePath, new File(file.getPath()));
     }
     if (relativePath != null && !relativePath.startsWith(SEPARATOR)) {
       return SEPARATOR + toSystemIndependentName(relativePath);
     }
     return "";
+  }
+
+  private static String reversedOrgFromPackage(@NotNull String packageName) {
+    int idx = packageName.lastIndexOf('.');
+    if (idx <= 0) {
+      return packageName;
+    }
+    return packageName.substring(0, idx);
   }
 
   public void createModule() {
@@ -228,7 +233,7 @@ public class FlutterProjectCreator {
             AndroidFacetType facetType = AndroidFacet.getFacetType();
             AndroidFacet facet = facetType.createFacet(module, AndroidFacet.NAME, facetType.createDefaultConfiguration(), null);
             model.addFacet(facet);
-            configureFacet(facet, myModel, location);
+            configureFacet(facet, location);
           }
 
           // The IDE has already created some files. Fluter won't overwrite them, but we want the versions provided by Flutter.
@@ -261,13 +266,5 @@ public class FlutterProjectCreator {
       .setKotlin(myModel.useKotlin().get() ? true : null)
       .setSwift(myModel.useSwift().get() ? true : null)
       .build();
-  }
-
-  private static String reversedOrgFromPackage(@NotNull String packageName) {
-    int idx = packageName.lastIndexOf('.');
-    if (idx <= 0) {
-      return packageName;
-    }
-    return packageName.substring(0, idx);
   }
 }

@@ -27,7 +27,8 @@ public class FlutterStudioInitializer implements Runnable {
       String version = info.getFullVersion();
       if (version.startsWith("2.") || (version.contains("Beta") && !version.endsWith("7"))) {
         reportVersionIncompatibility(info);
-      } else if (version.contains("Canary")) {
+      }
+      else if (version.contains("Canary")) {
         reportCanaryIncompatibility();
       }
     }

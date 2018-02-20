@@ -9,10 +9,10 @@ import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
 import com.android.tools.idea.tests.gui.framework.GuiTestRunner;
 import com.android.tools.idea.tests.gui.framework.fixture.EditorFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
-import com.android.tools.idea.tests.gui.framework.fixture.IdeFrameFixture;
-import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.*;
+import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterSettingsStepFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterModuleWizardFixture;
 import io.flutter.module.FlutterProjectType;
-import io.flutter.project.FlutterSettingsStep;
 import io.flutter.tests.util.WizardUtils;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,7 +31,8 @@ public class NewModuleTest {
     EditorFixture editor = ideFrame.getEditor();
     editor.waitUntilErrorAnalysisFinishes();
 
-    NewFlutterModuleWizardFixture wizardFixture = ideFrame.openFromMenu(NewFlutterModuleWizardFixture::find, "File", "New", "New Module...");
+    NewFlutterModuleWizardFixture wizardFixture =
+      ideFrame.openFromMenu(NewFlutterModuleWizardFixture::find, "File", "New", "New Module...");
     wizardFixture.chooseModuleType("Flutter Application").clickNext();
     NewFlutterModuleWizardFixture wizard = ideFrame.findNewModuleWizard();
 

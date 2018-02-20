@@ -7,6 +7,7 @@ package io.flutter.project;
 
 //import com.android.tools.idea.projectsystem.*;
 //import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
+
 import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;

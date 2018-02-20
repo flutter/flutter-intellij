@@ -7,6 +7,7 @@ package com.android.tools.idea.tests.gui.framework.fixture;
 
 import com.android.tools.idea.tests.gui.framework.GuiTests;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterProjectWizardFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.sdk.SdkProblemDialogFixture;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.intellij.openapi.wm.impl.welcomeScreen.FlatWelcomeFrame;
 import org.fest.swing.core.Robot;
@@ -15,6 +16,10 @@ import org.jetbrains.annotations.NotNull;
 // Adapted from com.android.tools.idea.tests.gui.framework.fixture.WelcomeFrameFixture
 public class FlutterWelcomeFrameFixture extends ComponentFixture<FlutterWelcomeFrameFixture, FlatWelcomeFrame> {
   private static final String NEW_PROJECT_WELCOME_ID = "flutter.NewProject.welcome"; // See META-INF/studio-contribs.xml
+
+  private FlutterWelcomeFrameFixture(@NotNull Robot robot, @NotNull FlatWelcomeFrame target) {
+    super(FlutterWelcomeFrameFixture.class, robot, target);
+  }
 
   @SuppressWarnings("WeakerAccess")
   @NotNull
@@ -25,10 +30,6 @@ public class FlutterWelcomeFrameFixture extends ComponentFixture<FlutterWelcomeF
   @NotNull
   public static FlutterWelcomeFrameFixture find(@NotNull IdeaFrameFixture ideFrameFixture) {
     return find(ideFrameFixture.robot());
-  }
-
-  private FlutterWelcomeFrameFixture(@NotNull Robot robot, @NotNull FlatWelcomeFrame target) {
-    super(FlutterWelcomeFrameFixture.class, robot, target);
   }
 
   public SdkProblemDialogFixture createNewProjectWhenSdkIsInvalid() {

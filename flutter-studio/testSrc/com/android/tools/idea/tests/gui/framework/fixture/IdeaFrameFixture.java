@@ -9,6 +9,7 @@ import com.android.tools.idea.gradle.project.model.AndroidModuleModel;
 import com.android.tools.idea.testing.Modules;
 import com.android.tools.idea.tests.gui.framework.GuiTests;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
+import com.android.tools.idea.ui.GuiTestingService;
 import com.google.common.collect.Lists;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.Disposable;
@@ -49,7 +50,6 @@ import static java.awt.event.InputEvent.CTRL_MASK;
 import static java.awt.event.InputEvent.META_MASK;
 import static junit.framework.Assert.assertNotNull;
 import static org.fest.util.Strings.quote;
-import static org.jetbrains.android.AndroidPlugin.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY;
 import static org.junit.Assert.assertFalse;
 
 @SuppressWarnings("Duplicates") // Adapted from IdeFrameFixture in uitest-framework module, due to private constructor.
@@ -60,11 +60,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   private EditorFixture myEditor;
   private boolean myIsClosed;
 
-  @NotNull
-  public static IdeaFrameFixture find(@NotNull final Robot robot) {
-    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
-  }
-
   IdeaFrameFixture(@NotNull Robot robot, @NotNull IdeFrameImpl target) {
     super(IdeaFrameFixture.class, robot, target);
     myIdeFrameFixture = IdeFrameFixture.find(robot);
@@ -73,6 +68,11 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
     Disposable disposable = new NoOpDisposable();
     Disposer.register(project, disposable);
+  }
+
+  @NotNull
+  public static IdeaFrameFixture find(@NotNull final Robot robot) {
+    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
   }
 
   @NotNull
@@ -150,7 +150,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     Runnable failTask = () -> {
       throw new ExternalSystemException(failure);
     };
-    ApplicationManager.getApplication().putUserData(EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY, failTask);
+    ApplicationManager.getApplication().putUserData(GuiTestingService.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY, failTask);
     selectProjectMakeAction();
     return this;
   }
@@ -357,12 +357,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     return new DialogFixture(robot(), GuiTests.waitUntilShowing(robot(), Matchers.byTitle(JDialog.class, title)));
   }
 
-  private static class NoOpDisposable implements Disposable {
-    @Override
-    public void dispose() {
-    }
-  }
-
   public void selectApp(@NotNull String appName) {
     ActionButtonFixture runButton = findRunApplicationButton();
     Container actionToolbarContainer = GuiQuery.getNonNull(() -> runButton.target().getParent());
@@ -403,5 +397,11 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
       }
     });
     robot().pressAndReleaseKey(KeyEvent.VK_ENTER, 0);
+  }
+
+  private static class NoOpDisposable implements Disposable {
+    @Override
+    public void dispose() {
+    }
   }
 }
