@@ -71,7 +71,7 @@ import java.util.List;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
-  public static final String TOOL_WINDOW_ID = "Flutter Preview";
+  public static final String TOOL_WINDOW_ID = "Flutter Outline";
 
   private static final boolean SHOW_PREVIEW_AREA = false;
 

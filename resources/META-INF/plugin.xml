@@ -543,7 +543,7 @@
     <annotator language="Dart" implementationClass="io.flutter.editor.FlutterEditorAnnotator"/>
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
-    <toolWindow id="Flutter Preview" anchor="right" icon="FlutterIcons.Flutter_13"
+    <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.Flutter_13"
                 factoryClass="io.flutter.preview.PreviewViewFactory"
                 conditionClass="io.flutter.preview.PreviewViewCondition"/>
     <projectService serviceInterface="io.flutter.preview.PreviewView"
