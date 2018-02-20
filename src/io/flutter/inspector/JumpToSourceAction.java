@@ -8,11 +8,10 @@ package io.flutter.inspector;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
-import org.jetbrains.annotations.NotNull;
 
 public class JumpToSourceAction extends JumpToSourceActionBase {
   public JumpToSourceAction() {
-    super(InspectorActions.JUMP_TO_SOURCE);
+    super("jumpToSource");
   }
 
   @Override
