@@ -74,7 +74,7 @@ import java.util.List;
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Preview";
 
-  public static final String FEEDBACK_URL = " https://goo.gl/forms/MbPU0kcPqBO6tunH3";
+  public static final String FEEDBACK_URL = "https://goo.gl/forms/MbPU0kcPqBO6tunH3";
 
   private static final boolean SHOW_PREVIEW_AREA = false;
 

@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import java.awt.event.MouseAdapter;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -83,6 +84,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
     myPreviewViewFeedback.setIcon(null);
+    // Add an empty listener to work around a bug in LinkLabel.
+    myPreviewViewFeedback.addMouseListener(new MouseAdapter() {
+    });
     myPreviewViewFeedback.setListener((label, linkUrl) -> {
       try {
         BrowserLauncher.getInstance().browse(new URI(linkUrl));
