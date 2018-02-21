@@ -21,6 +21,6 @@ script: ./tool/travis.sh
 # Testing product matrix; the values should match the version field in the
 # product-matrix.json file.
 env:
-  - IDEA_VERSION=2017.1
-  - IDEA_VERSION=2017.3
+  - IDEA_VERSION=3.0
+  - IDEA_VERSION=3.1
   - IDEA_VERSION=2018.1
