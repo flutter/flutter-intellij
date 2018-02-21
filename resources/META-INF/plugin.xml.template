@@ -28,6 +28,54 @@
   <change-notes>
     <![CDATA[
 
+22.0:
+
+inspector view:
+<ul>
+<li>support for multiple running applications</li>
+<li>basic speed search for the Inspector Tree</li>
+<li>restore flutter framework toggles after a restart</li>
+<li>expose the observatory timeline view (the dashboard version) (#1744)</li>
+<li>live update of property values triggered each time a flutter frame is drawn. (#1721)</li>
+<li>enum property support and tweaks to property display. (#1695)</li>
+<li>HD inspector Widgets (#1682)</li>
+<li>restore inspector splitter position (#1676)</li>
+<li>open the inspector view at app launch (#1670)</li>
+</ul>
+
+outline view:
+<ul>
+<li>rename 'Add widget padding' assist to 'Add padding' (#1771)</li>
+<li>bind actions to move widget down/up. (#1768)</li>
+<li>rename 'Replace with children' to 'Remove widget'. (#1764)</li>
+<li>add action for 'Replace with children' assist. (#1759)</li>
+<li>update messages for wrapping with Column/Row. (#1745)</li>
+<li>add icons and actions for wrapping into Column and Row. (#1743)</li>
+<li>show build() methods in bold (#1731)</li>
+<li>associate the Center action with the corresponding Quick Assist. (#1726)</li>
+<li>navigate from source to Preview view. (#1710)</li>
+<li>add speed search to the Preview view. (#1696)</li>
+<li>add basic Flutter Preview view. (#1678)</li>
+</ul>
+
+platforms:
+<ul>
+<li>support AS 3.1 Beta</li>
+<li>support 2018.1 EAP</li>
+<li>no longer build for 2017.2</li>
+</ul>
+
+miscellaneous:
+<ul>
+<li>fix for displaying the flutter icon for flutter modules</li>
+<li>fix for issue 1772, Switch Bazel flag for launching apps (#1775)</li>
+<li>add support for displaying flutter color shades in the editor ruler (#1770)</li>
+<li>improve the Open in... action (#1758)</li>
+<li>add a flag to enable --preview-dart-2 (#1709)</li>
+<li>smarts to run `flutter build` before trying open Xcode (#1373). (#1694)</li>
+<li>harden error reporting on iOS simulator start failures (#1647). (#1681)</li>
+</ul>
+
 21.2:
 <ul>
   <li>Fix an NPE when the Flutter SDK version file contains the text 'unknown'</li>
