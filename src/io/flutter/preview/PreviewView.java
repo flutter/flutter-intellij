@@ -6,6 +6,7 @@
 package io.flutter.preview;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.CommonActionsManager;
@@ -28,10 +29,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
-import com.intellij.ui.ColoredTreeCellRenderer;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.TreeSpeedSearch;
+import com.intellij.ui.*;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -72,7 +70,7 @@ import java.util.List;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class PreviewView implements PersistentStateComponent<PreviewViewState>, Disposable {
-  public static final String TOOL_WINDOW_ID = "Flutter Preview";
+  public static final String TOOL_WINDOW_ID = "Flutter Outline";
 
   public static final String FEEDBACK_URL = "https://goo.gl/forms/MbPU0kcPqBO6tunH3";
 
@@ -98,6 +96,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private OutlineTree tree;
   private PreviewAreaPanel previewAreaPanel;
 
+  private final Set<FlutterOutline> outlinesWithWidgets = Sets.newHashSet();
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
@@ -108,7 +107,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
       if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
-        ApplicationManager.getApplication().invokeLater(() -> updateOutline(filePath, outline));
+        ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
       }
     }
   };
@@ -189,6 +188,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
+    toolbarGroup.add(new ShowOnlyWidgetsAction(FlutterIcons.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
@@ -405,14 +405,16 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     return (DefaultMutableTreeNode)getTreeModel().getRoot();
   }
 
-  private void updateOutline(@NotNull String filePath, @NotNull FlutterOutline outline) {
+  private void updateOutline(@NotNull FlutterOutline outline) {
     currentOutline = outline;
 
     final DefaultMutableTreeNode rootNode = getRootNode();
     rootNode.removeAllChildren();
 
+    outlinesWithWidgets.clear();
     outlineToNodeMap.clear();
     if (outline.getChildren() != null) {
+      computeOutlinesWithWidgets(outline);
       updateOutlineImpl(rootNode, outline.getChildren());
     }
 
@@ -437,15 +439,38 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
+  private boolean computeOutlinesWithWidgets(FlutterOutline outline) {
+    boolean hasWidget = false;
+    if (outline.getDartElement() == null) {
+      outlinesWithWidgets.add(outline);
+      hasWidget = true;
+    }
+
+    final List<FlutterOutline> children = outline.getChildren();
+    if (children != null) {
+      for (final FlutterOutline child : children) {
+        if (computeOutlinesWithWidgets(child)) {
+          outlinesWithWidgets.add(outline);
+          hasWidget = true;
+        }
+      }
+    }
+    return hasWidget;
+  }
+
   private void updateOutlineImpl(@NotNull DefaultMutableTreeNode parent, @NotNull List<FlutterOutline> outlines) {
-    for (int i = 0; i < outlines.size(); i++) {
-      final FlutterOutline outline = outlines.get(i);
+    int index = 0;
+    for (final FlutterOutline outline : outlines) {
+      if (getState().getShowOnlyWidgets() && !outlinesWithWidgets.contains(outline)) {
+        continue;
+      }
 
       final OutlineObject object = new OutlineObject(outline);
-
       final DefaultMutableTreeNode node = new DefaultMutableTreeNode(object);
       outlineToNodeMap.put(outline, node);
-      getTreeModel().insertNodeInto(node, parent, i);
+
+      getTreeModel().insertNodeInto(node, parent, index++);
+
       if (outline.getChildren() != null) {
         updateOutlineImpl(node, outline.getChildren());
       }
@@ -667,6 +692,27 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       e.getPresentation().setEnabled(hasChange);
     }
   }
+
+  private class ShowOnlyWidgetsAction extends AnAction implements Toggleable, RightAlignedToolbarAction {
+    ShowOnlyWidgetsAction(@NotNull Icon icon, @NotNull String text) {
+      super(text, null, icon);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      getState().setShowOnlyWidgets(!getState().getShowOnlyWidgets());
+      if (currentOutline != null) {
+        updateOutline(currentOutline);
+      }
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      final Presentation presentation = e.getPresentation();
+      presentation.putClientProperty(SELECTED_PROPERTY, getState().getShowOnlyWidgets());
+      presentation.setEnabled(currentOutline != null);
+    }
+  }
 }
 
 class OutlineTree extends Tree {
@@ -686,6 +732,7 @@ class OutlineTree extends Tree {
 
 class OutlineObject {
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
+  private static final Map<Icon, LayeredIcon> flutterDecoratedIcons = new HashMap<>();
 
   final FlutterOutline outline;
   private Icon icon;
@@ -711,6 +758,23 @@ class OutlineObject {
     }
 
     return icon;
+  }
+
+  Icon getFlutterDecoratedIcon() {
+    final Icon icon = getIcon();
+    if (icon == null) return null;
+
+    LayeredIcon decorated = flutterDecoratedIcons.get(icon);
+    if (decorated == null) {
+      final Icon prefix = FlutterIcons.Flutter;
+
+      decorated = new LayeredIcon(2);
+      decorated.setIcon(prefix, 0, 0, 0);
+      decorated.setIcon(icon, 1, prefix.getIconWidth(), 0);
+
+      flutterDecoratedIcons.put(icon, decorated);
+    }
+    return decorated;
   }
 
   /**
@@ -780,7 +844,7 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
     }
 
     // Render the widget icon.
-    final Icon icon = node.getIcon();
+    final Icon icon = node.getFlutterDecoratedIcon();
     if (icon != null) {
       setIcon(icon);
     }

@@ -59,7 +59,7 @@ public class FlutterIcons {
   public static final Icon Styling = load("/icons/inspector/atrule.png");
   public static final Icon Text = load("/icons/inspector/textArea.png");
 
-  // Flutter Preview Widget Icons.
+  // Flutter Outline Widget Icons.
   public static final Icon Column = load("/icons/preview/column.png");
   public static final Icon Padding = load("/icons/preview/padding.png");
   public static final Icon RemoveWidget = load("/icons/preview/remove_widget.png");
@@ -67,4 +67,5 @@ public class FlutterIcons {
   public static final Icon Center = load("/icons/preview/center.png");
   public static final Icon Up = load("/icons/preview/up.png");
   public static final Icon Down = load("/icons/preview/down.png");
+  public static final Icon Filter = load("/icons/preview/filter.png");
 }

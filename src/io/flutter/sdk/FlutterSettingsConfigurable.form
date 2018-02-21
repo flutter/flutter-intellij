@@ -138,7 +138,7 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Enable Flutter Preview view"/>
+              <text value="Enable Flutter Outline view"/>
               <toolTipText value="A tool for analyzing your application's ui."/>
             </properties>
           </component>

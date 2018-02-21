@@ -12,18 +12,34 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
+import io.flutter.FlutterInitializer;
 import io.flutter.utils.AsyncUtils;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
+
+  /**
+   * A string id intended for tracking usage analytics.
+   */
+  @NotNull
+  private final String id;
+
+  JumpToSourceActionBase(@NotNull String id) {
+    this.id = id;
+  }
+
   @Override
   protected void perform(final DefaultMutableTreeNode node, final DiagnosticsNode diagnosticsNode, final AnActionEvent e) {
     final Project project = e.getProject();
     if (project == null) {
       return;
     }
+
+    FlutterInitializer.getAnalytics().sendEvent("inspector", id);
+
     final XNavigatable navigatable = sourcePosition -> {
       if (sourcePosition != null) {
         //noinspection CodeBlock2Expr
