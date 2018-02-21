@@ -96,7 +96,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   public void initToolWindow(ToolWindow window) {
-    window.setToHideOnEmptyContent(true);
+    // Add a feedback button.
+    if (window instanceof ToolWindowEx) {
+      final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+          BrowserUtil.browse("https://goo.gl/WrMB43");
+        }
+      };
+
+      ((ToolWindowEx)window).setTitleActions(sendFeedbackAction);
+    }
+
     // TODO(jacobr): add a message explaining the empty contents if the user
     // manually opens the window when there is not yet a running app.
   }
@@ -147,18 +158,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       content.setCloseable(true);
       final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
       content.setComponent(windowPanel);
-
-      // Add a feedback button.
-      if (toolWindow instanceof ToolWindowEx) {
-        final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
-          @Override
-          public void actionPerformed(AnActionEvent event) {
-            BrowserUtil.browse("https://goo.gl/WrMB43");
-          }
-        };
-
-        ((ToolWindowEx)toolWindow).setTitleActions(sendFeedbackAction);
-      }
 
       final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
       windowPanel.setContent(inspectorPanel);
