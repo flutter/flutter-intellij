@@ -19,6 +19,7 @@ public class FlutterIcons {
   public static final Icon Flutter_test = load("/icons/flutter_test.png");
 
   public static final Icon Phone = load("/icons/phone.png");
+  public static final Icon Feedback = load("/icons/feedback.png");
 
   public static final Icon OpenObservatory = load("/icons/observatory.png");
   public static final Icon OpenTimeline = load("/icons/timeline.png");
@@ -61,7 +62,6 @@ public class FlutterIcons {
   // Flutter Outline Widget Icons.
   public static final Icon Column = load("/icons/preview/column.png");
   public static final Icon Padding = load("/icons/preview/padding.png");
-  public static final Icon Padding2 = load("/icons/preview/padding2.png");
   public static final Icon RemoveWidget = load("/icons/preview/remove_widget.png");
   public static final Icon Row = load("/icons/preview/row.png");
   public static final Icon Center = load("/icons/preview/center.png");

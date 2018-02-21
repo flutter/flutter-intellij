@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -21,6 +22,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.content.*;
 import icons.FlutterIcons;
@@ -145,6 +147,18 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       content.setCloseable(true);
       final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
       content.setComponent(windowPanel);
+
+      // Add a feedback button.
+      if (toolWindow instanceof ToolWindowEx) {
+        final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
+          @Override
+          public void actionPerformed(AnActionEvent event) {
+            BrowserUtil.browse("https://goo.gl/WrMB43");
+          }
+        };
+
+        ((ToolWindowEx)toolWindow).setTitleActions(sendFeedbackAction);
+      }
 
       final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
       windowPanel.setContent(inspectorPanel);
