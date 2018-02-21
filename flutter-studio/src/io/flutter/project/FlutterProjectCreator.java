@@ -6,8 +6,9 @@
 package io.flutter.project;
 
 import com.android.repository.io.FileOpUtils;
-import com.intellij.conversion.ConversionListener;
-import com.intellij.conversion.ConversionService;
+import com.android.tools.idea.run.AndroidRunConfiguration;
+import com.android.tools.ndk.run.AndroidRunConfigurationConverter;
+import com.intellij.conversion.*;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.ide.RecentProjectsManager;
@@ -22,7 +23,6 @@ import com.intellij.idea.ActionsBundle;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -243,11 +243,8 @@ public class FlutterProjectCreator {
           // The IDE has already created some files. Flutter won't overwrite them, but we want the versions provided by Flutter.
           deleteDirectoryContents(location);
 
-          TransactionGuard.getInstance().submitTransactionAndWait(
-            () ->
-              FlutterSmallIDEProjectGenerator
-                .generateProject(project, baseDir, myModel.flutterSdk().get(), module,
-                                 makeAdditionalSettings()));
+          FlutterSmallIDEProjectGenerator
+            .generateProject(project, baseDir, myModel.flutterSdk().get(), module, makeAdditionalSettings());
 
           // Reload the project to use the configuration written by Flutter.
           VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);

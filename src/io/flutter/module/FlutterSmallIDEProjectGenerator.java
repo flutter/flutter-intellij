@@ -8,6 +8,7 @@ package io.flutter.module;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.util.projectWizard.WebProjectTemplate;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -57,17 +58,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       return;
     }
     final Runnable runnable = () -> applyDartModule(sdk, project, module, root);
-    if (SwingUtilities.isEventDispatchThread()) {
-      runnable.run();
-    }
-    else {
-      try {
-        SwingUtilities.invokeAndWait(runnable);
-      }
-      catch (InvocationTargetException | InterruptedException e) {
-        LOG.error(e);
-      }
-    }
+    TransactionGuard.getInstance().submitTransactionAndWait(runnable);
   }
 
   private static void applyDartModule(FlutterSdk sdk, Project project, Module module, PubRoot root) {
