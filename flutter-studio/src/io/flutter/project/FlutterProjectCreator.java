@@ -6,6 +6,8 @@
 package io.flutter.project;
 
 import com.android.repository.io.FileOpUtils;
+import com.intellij.conversion.ConversionListener;
+import com.intellij.conversion.ConversionService;
 import com.intellij.facet.FacetManager;
 import com.intellij.facet.ModifiableFacetModel;
 import com.intellij.ide.RecentProjectsManager;
@@ -20,6 +22,7 @@ import com.intellij.idea.ActionsBundle;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -53,6 +56,7 @@ import org.jetbrains.jps.android.model.impl.JpsAndroidModuleProperties;
 import java.io.File;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.List;
 
 import static com.intellij.openapi.util.io.FileUtilRt.getRelativePath;
 import static com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName;
@@ -236,13 +240,18 @@ public class FlutterProjectCreator {
             configureFacet(facet, location);
           }
 
-          // The IDE has already created some files. Fluter won't overwrite them, but we want the versions provided by Flutter.
+          // The IDE has already created some files. Flutter won't overwrite them, but we want the versions provided by Flutter.
           deleteDirectoryContents(location);
 
-          FlutterSmallIDEProjectGenerator
-            .generateProject(project, baseDir, myModel.flutterSdk().get(), module, makeAdditionalSettings());
+          TransactionGuard.getInstance().submitTransactionAndWait(
+            () ->
+              FlutterSmallIDEProjectGenerator
+                .generateProject(project, baseDir, myModel.flutterSdk().get(), module,
+                                 makeAdditionalSettings()));
 
           // Reload the project to use the configuration written by Flutter.
+          VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
+          ConversionService.getInstance().convertSilently(baseDir.getPath(), new MyConversionListener());
           VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
           ProjectManager.getInstance().reloadProject(project);
         }
@@ -266,5 +275,36 @@ public class FlutterProjectCreator {
       .setKotlin(myModel.useKotlin().get() ? true : null)
       .setSwift(myModel.useSwift().get() ? true : null)
       .build();
+  }
+
+  public static class MyConversionListener implements ConversionListener {
+    private boolean myConversionNeeded;
+    private boolean myConverted;
+
+    @Override
+    public void conversionNeeded() {
+      myConversionNeeded = true;
+    }
+
+    @Override
+    public void successfullyConverted(File backupDir) {
+      myConverted = true;
+    }
+
+    @Override
+    public void error(String message) {
+    }
+
+    @Override
+    public void cannotWriteToFiles(List<File> readonlyFiles) {
+    }
+
+    public boolean isConversionNeeded() {
+      return myConversionNeeded;
+    }
+
+    public boolean isConverted() {
+      return myConverted;
+    }
   }
 }
