@@ -78,6 +78,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final Computable<Boolean> isApplicable;
   private final InspectorService.FlutterTreeType treeType;
   private final FlutterView flutterView;
+  @NotNull
   private final FlutterApp flutterApp;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
@@ -107,6 +108,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                         Computable<Boolean> isApplicable,
                         InspectorService.FlutterTreeType treeType) {
     super(new BorderLayout());
+
     this.treeType = treeType;
     this.flutterView = flutterView;
     this.flutterApp = flutterApp;
@@ -185,8 +187,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   @Nullable
   private InspectorService getInspectorService() {
-    final FlutterApp app = getFlutterApp();
-    return (app != null) ? app.getInspectorService() : null;
+    return flutterApp.getInspectorService();
   }
 
   void setActivate(boolean enabled) {
@@ -896,9 +897,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   boolean isCreatedByLocalProject(DiagnosticsNode node) {
-    if (getFlutterApp() == null) {
-      return false;
-    }
     final Location location = node.getCreationLocation();
     if (location == null) {
       return false;
