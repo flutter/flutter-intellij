@@ -10,20 +10,11 @@
       "untilBuild": "171.*"
     },
     {
-      "name": "Android Studio",
+      "name": "IntelliJ",
       "version": "3.1",
       "ideaProduct": "android-studio",
       "ideaVersion": "173.4595152",
       "dartPluginVersion": "173.4301.22",
-      "sinceBuild": "173.0",
-      "untilBuild": "173.*"
-    },
-    {
-      "name": "IntelliJ",
-      "version": "2017.3",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2017.3",
-      "dartPluginVersion": "173.3302.13",
       "sinceBuild": "173.0",
       "untilBuild": "173.*"
     },

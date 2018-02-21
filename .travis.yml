@@ -22,5 +22,5 @@ script: ./tool/travis.sh
 # product-matrix.json file.
 env:
   - IDEA_VERSION=3.0
-  - IDEA_VERSION=2017.3
+  - IDEA_VERSION=3.1
   - IDEA_VERSION=2018.1
