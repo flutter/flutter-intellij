@@ -11,6 +11,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableModelsProvider;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -27,7 +28,6 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;
 
 // TODO(devoncarew): It would be nice to show a hyperlink in the upper right of this wizard.
 // https://youtrack.jetbrains.com/issue/WEB-27537
@@ -58,7 +58,12 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       return;
     }
     final Runnable runnable = () -> applyDartModule(sdk, project, module, root);
-    TransactionGuard.getInstance().submitTransactionAndWait(runnable);
+    try {
+      TransactionGuard.getInstance().submitTransactionAndWait(runnable);
+    }
+    catch (ProcessCanceledException e) {
+      LOG.error(e);
+    }
   }
 
   private static void applyDartModule(FlutterSdk sdk, Project project, Module module, PubRoot root) {
