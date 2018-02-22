@@ -62,7 +62,6 @@ outline view:
 
 platforms:
 <ul>
-<li>support AS 3.1 Beta</li>
 <li>support 2018.1 EAP</li>
 <li>no longer build for 2017.2</li>
 </ul>
