@@ -8,8 +8,10 @@ package io.flutter.module;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.util.projectWizard.WebProjectTemplate;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModifiableModelsProvider;
 import com.intellij.openapi.roots.ModifiableRootModel;
@@ -26,7 +28,6 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;
 
 // TODO(devoncarew): It would be nice to show a hyperlink in the upper right of this wizard.
 // https://youtrack.jetbrains.com/issue/WEB-27537
@@ -57,16 +58,11 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       return;
     }
     final Runnable runnable = () -> applyDartModule(sdk, project, module, root);
-    if (SwingUtilities.isEventDispatchThread()) {
-      runnable.run();
+    try {
+      TransactionGuard.getInstance().submitTransactionAndWait(runnable);
     }
-    else {
-      try {
-        SwingUtilities.invokeAndWait(runnable);
-      }
-      catch (InvocationTargetException | InterruptedException e) {
-        LOG.error(e);
-      }
+    catch (ProcessCanceledException e) {
+      LOG.error(e);
     }
   }
 

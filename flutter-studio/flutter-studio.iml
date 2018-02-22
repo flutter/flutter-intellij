@@ -34,5 +34,6 @@
     <orderEntry type="module" module-name="gradle" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
+    <orderEntry type="module" module-name="android-ndk" />
   </component>
 </module>
