@@ -100,6 +100,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
+  FileEditor currentFileEditor;
   private Editor currentEditor;
   private FlutterOutline currentOutline;
 
@@ -193,7 +194,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
 
-    windowPanel = new SimpleToolWindowPanel(true, true);
+    windowPanel = new OutlineComponent(this);
     content.setComponent(windowPanel);
 
     windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true);
@@ -582,6 +583,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       currentEditor.getCaretModel().removeCaretListener(caretListener);
     }
     if (newEditor instanceof TextEditor) {
+      currentFileEditor = newEditor;
       currentEditor = ((TextEditor)newEditor).getEditor();
       currentEditor.getCaretModel().addCaretListener(caretListener);
     }
@@ -712,6 +714,27 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       presentation.putClientProperty(SELECTED_PROPERTY, getState().getShowOnlyWidgets());
       presentation.setEnabled(currentOutline != null);
     }
+  }
+}
+
+/**
+ * We subclass {@link SimpleToolWindowPanel} to implement "getData" and return {@link PlatformDataKeys#FILE_EDITOR},
+ * so that Undo/Redo actions work.
+ */
+class OutlineComponent extends SimpleToolWindowPanel {
+  private final PreviewView myView;
+
+  OutlineComponent(PreviewView view) {
+    super(true, true);
+    myView = view;
+  }
+
+  @Override
+  public Object getData(String dataId) {
+    if (PlatformDataKeys.FILE_EDITOR.is(dataId)) {
+      return myView.currentFileEditor;
+    }
+    return super.getData(dataId);
   }
 }
 
