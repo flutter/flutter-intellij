@@ -7,6 +7,7 @@ package io.flutter.preview;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.CommonActionsManager;
@@ -64,6 +65,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
@@ -84,6 +86,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   @NotNull
   private final FlutterDartAnalysisServer flutterAnalysisServer;
+
+  final QuickAssistAction actionCenter;
+  final QuickAssistAction actionPadding;
+  final QuickAssistAction actionColumn;
+  final QuickAssistAction actionRow;
+  final QuickAssistAction actionMoveUp;
+  final QuickAssistAction actionMoveDown;
+  final QuickAssistAction actionRemove;
 
   private SimpleToolWindowPanel windowPanel;
   private ActionToolbar windowToolbar;
@@ -156,6 +166,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         setSelectedEditor(event.getNewEditor());
       }
     });
+
+    actionCenter = new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget");
+    actionPadding = new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding");
+    actionColumn = new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column");
+    actionRow = new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row");
+    actionMoveUp = new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up");
+    actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
+    actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget");
   }
 
   @Override
@@ -178,16 +196,15 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row"));
+    toolbarGroup.add(actionCenter);
+    toolbarGroup.add(actionPadding);
+    toolbarGroup.add(actionColumn);
+    toolbarGroup.add(actionRow);
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
+    toolbarGroup.add(actionMoveUp);
+    toolbarGroup.add(actionMoveDown);
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
+    toolbarGroup.add(actionRemove);
     toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
@@ -204,6 +221,15 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree = new OutlineTree(rootNode);
     tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
+
+    tree.addMouseListener(new PopupHandler() {
+      public void invokePopup(Component comp, int x, int y) {
+        final ActionManager actionManager = ActionManager.getInstance();
+        final ActionGroup group = createTreePopupActions();
+        final ActionPopupMenu popupMenu = actionManager.createActionPopupMenu(ActionPlaces.UNKNOWN, group);
+        popupMenu.getComponent().show(comp, x, y);
+      }
+    });
 
     // Add collapse all, expand all, and feedback buttons.
     if (toolWindow instanceof ToolWindowEx) {
@@ -283,6 +309,26 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
+  }
+
+  private ActionGroup createTreePopupActions() {
+    // The corresponding tree item has just been selected.
+    // Wait short time for receiving assists from the server.
+    for (int i = 0; i < 20 && actionToChangeMap.isEmpty(); i++) {
+      Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+    }
+
+    final DefaultActionGroup group = new DefaultActionGroup();
+    group.add(actionCenter);
+    group.add(actionPadding);
+    group.add(actionColumn);
+    group.add(actionRow);
+    group.addSeparator();
+    group.add(actionMoveUp);
+    group.add(actionMoveDown);
+    group.addSeparator();
+    group.add(actionRemove);
+    return group;
   }
 
   private void handleTreeSelectionEvent(TreeSelectionEvent e) {
