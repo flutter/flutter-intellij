@@ -844,12 +844,17 @@ abstract class ProductCommand extends Command {
 
   String get release {
     String rel = globalResults['release'];
-    if (rel != null && rel.startsWith('=')) {
-      rel = rel.substring(1);
+
+    if (rel != null) {
+      if (rel.startsWith('=')) {
+        rel = rel.substring(1);
+      }
+
+      if (!rel.contains('.')) {
+        rel = '$rel.0';
+      }
     }
-    if (!rel.contains('.')) {
-      rel = '$rel.0';
-    }
+
     return rel;
   }
 
