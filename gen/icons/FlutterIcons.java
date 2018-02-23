@@ -49,8 +49,6 @@ public class FlutterIcons {
   public static final Icon Animation = load("/icons/inspector/resume.png");
   public static final Icon Assets = load("/icons/inspector/any_type.png");
   public static final Icon Async = load("/icons/inspector/threads.png");
-  //public static final Icon Basics = load("/icons/custom/class.png");
-  //public static final Icon Cupertino = load("/icons/inspector/class.png");
   public static final Icon Diagram = load("/icons/inspector/diagram.png");
   public static final Icon Input = load("/icons/inspector/renderer.png");
   public static final Icon Painting = load("/icons/inspector/colors.png");
@@ -67,5 +65,4 @@ public class FlutterIcons {
   public static final Icon Center = load("/icons/preview/center.png");
   public static final Icon Up = load("/icons/preview/up.png");
   public static final Icon Down = load("/icons/preview/down.png");
-  public static final Icon Filter = load("/icons/preview/filter.png");
 }

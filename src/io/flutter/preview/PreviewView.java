@@ -188,7 +188,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
     toolbarGroup.addSeparator();
     toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
-    toolbarGroup.add(new ShowOnlyWidgetsAction(FlutterIcons.Filter, "Show only widgets"));
+    toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
