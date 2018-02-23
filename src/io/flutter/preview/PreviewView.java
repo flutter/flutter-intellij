@@ -839,6 +839,20 @@ class OutlineTree extends Tree {
       expandRow(row);
     }
   }
+
+  @Override
+  public boolean isFileColorsEnabled() {
+    return true;
+  }
+
+  @Nullable
+  public Color getFileColorFor(Object object) {
+    final OutlineObject outlineObject = (OutlineObject)object;
+    if (outlineObject.outline.getDartElement() == null) {
+      return new JBColor(new Color(0xF0FFF0), new Color(0x405040));
+    }
+    return null;
+  }
 }
 
 class OutlineObject {
