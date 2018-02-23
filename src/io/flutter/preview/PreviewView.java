@@ -222,14 +222,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
 
-    tree.addMouseListener(new PopupHandler() {
-      public void invokePopup(Component comp, int x, int y) {
-        final ActionManager actionManager = ActionManager.getInstance();
-        final ActionGroup group = createTreePopupActions();
-        final ActionPopupMenu popupMenu = actionManager.createActionPopupMenu(ActionPlaces.UNKNOWN, group);
-        popupMenu.getComponent().show(comp, x, y);
-      }
-    });
+    initTreePopup();
 
     // Add collapse all, expand all, and feedback buttons.
     if (toolWindow instanceof ToolWindowEx) {
@@ -311,38 +304,69 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     contentManager.setSelectedContent(content);
   }
 
-  private ActionGroup createTreePopupActions() {
-    // The corresponding tree item has just been selected.
-    // Wait short time for receiving assists from the server.
-    for (int i = 0; i < 20 && actionToChangeMap.isEmpty(); i++) {
-      Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
-    }
+  private void initTreePopup() {
+    tree.addMouseListener(new PopupHandler() {
+      public void invokePopup(Component comp, int x, int y) {
+        // Ensure that at least one Widget item is selected.
+        final List<FlutterOutline> selectedOutlines = getOutlinesSelectedInTree();
+        if (selectedOutlines.isEmpty()) {
+          return;
+        }
+        for (FlutterOutline outline : selectedOutlines) {
+          if (outline.getDartElement() != null) {
+            return;
+          }
+        }
 
-    final DefaultActionGroup group = new DefaultActionGroup();
-    if (actionCenter.isEnabled()) {
-      group.add(actionCenter);
-    }
-    if (actionPadding.isEnabled()) {
-      group.add(actionPadding);
-    }
-    if (actionColumn.isEnabled()) {
-      group.add(actionColumn);
-    }
-    if (actionRow.isEnabled()) {
-      group.add(actionRow);
-    }
-    group.addSeparator();
-    if (actionMoveUp.isEnabled()) {
-      group.add(actionMoveUp);
-    }
-    if (actionMoveDown.isEnabled()) {
-      group.add(actionMoveDown);
-    }
-    group.addSeparator();
-    if (actionRemove.isEnabled()) {
-      group.add(actionRemove);
-    }
-    return group;
+        // The corresponding tree item has just been selected.
+        // Wait short time for receiving assists from the server.
+        for (int i = 0; i < 20 && actionToChangeMap.isEmpty(); i++) {
+          Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+        }
+
+        final DefaultActionGroup group = new DefaultActionGroup();
+        boolean hasAction = false;
+        if (actionCenter.isEnabled()) {
+          hasAction = true;
+          group.add(actionCenter);
+        }
+        if (actionPadding.isEnabled()) {
+          hasAction = true;
+          group.add(actionPadding);
+        }
+        if (actionColumn.isEnabled()) {
+          hasAction = true;
+          group.add(actionColumn);
+        }
+        if (actionRow.isEnabled()) {
+          hasAction = true;
+          group.add(actionRow);
+        }
+        group.addSeparator();
+        if (actionMoveUp.isEnabled()) {
+          hasAction = true;
+          group.add(actionMoveUp);
+        }
+        if (actionMoveDown.isEnabled()) {
+          hasAction = true;
+          group.add(actionMoveDown);
+        }
+        group.addSeparator();
+        if (actionRemove.isEnabled()) {
+          hasAction = true;
+          group.add(actionRemove);
+        }
+
+        // Don't show the empty popup.
+        if (!hasAction) {
+          return;
+        }
+
+        final ActionManager actionManager = ActionManager.getInstance();
+        final ActionPopupMenu popupMenu = actionManager.createActionPopupMenu(ActionPlaces.UNKNOWN, group);
+        popupMenu.getComponent().show(comp, x, y);
+      }
+    });
   }
 
   private void handleTreeSelectionEvent(TreeSelectionEvent e) {
