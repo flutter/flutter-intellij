@@ -95,7 +95,7 @@ the first time, to get dependencies and paths configured.
     from the command line.
 
         cd fpl/example
-        fluter run
+        flutter run
 
 4. Once the app appears on the emulated device you can terminate
 the app and, if desired, close that instance of Android Studio.
