@@ -769,10 +769,8 @@ class OutlineObject {
       final Icon badgeIcon = FlutterIcons.Flutter_badge;
 
       decorated = new LayeredIcon(2);
-      decorated.setIcon(icon, 0, 0, 0);
-      decorated.setIcon(badgeIcon, 1,
-                        icon.getIconWidth() + (icon.getIconWidth() - badgeIcon.getIconWidth()) / 2,
-                        (icon.getIconHeight() - badgeIcon.getIconHeight()) / 2);
+      decorated.setIcon(badgeIcon, 0, 0, 1 + (icon.getIconHeight() - badgeIcon.getIconHeight()) / 2);
+      decorated.setIcon(icon, 1, badgeIcon.getIconWidth(), 0);
 
       flutterDecoratedIcons.put(icon, decorated);
     }
