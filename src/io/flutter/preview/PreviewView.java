@@ -319,15 +319,29 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     final DefaultActionGroup group = new DefaultActionGroup();
-    group.add(actionCenter);
-    group.add(actionPadding);
-    group.add(actionColumn);
-    group.add(actionRow);
+    if (actionCenter.isEnabled()) {
+      group.add(actionCenter);
+    }
+    if (actionPadding.isEnabled()) {
+      group.add(actionPadding);
+    }
+    if (actionColumn.isEnabled()) {
+      group.add(actionColumn);
+    }
+    if (actionRow.isEnabled()) {
+      group.add(actionRow);
+    }
     group.addSeparator();
-    group.add(actionMoveUp);
-    group.add(actionMoveDown);
+    if (actionMoveUp.isEnabled()) {
+      group.add(actionMoveUp);
+    }
+    if (actionMoveDown.isEnabled()) {
+      group.add(actionMoveDown);
+    }
     group.addSeparator();
-    group.add(actionRemove);
+    if (actionRemove.isEnabled()) {
+      group.add(actionRemove);
+    }
     return group;
   }
 
@@ -736,6 +750,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     public void update(AnActionEvent e) {
       final boolean hasChange = actionToChangeMap.containsKey(this);
       e.getPresentation().setEnabled(hasChange);
+    }
+
+    boolean isEnabled() {
+      return actionToChangeMap.containsKey(this);
     }
   }
 
