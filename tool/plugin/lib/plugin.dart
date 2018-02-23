@@ -227,7 +227,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     }
     if (!cmd.isReleaseValid) {
       log('the release identifier ("${cmd
-          .release}") must be an integer or floating-point number');
+          .release}") must be of the form xx.x (major.minor)');
       return new Future(() => false);
     }
     var gitDir = await GitDir.fromExisting(rootPath);
@@ -625,7 +625,8 @@ compile
       return await exec('ant', args.split(new RegExp(r'\s')));
     } on ProcessException catch (x) {
       if (x.message == 'No such file or directory') {
-        log('\nThe build command requires ant to be installed. '
+        log(
+            '\nThe build command requires ant to be installed. '
             '\nPlease ensure ant is on your \$PATH.',
             indent: false);
         exit(x.errorCode);
@@ -832,15 +833,19 @@ abstract class ProductCommand extends Command {
     if (rel == null) {
       return false;
     }
-    return rel == new RegExp(r'\d+(?:\.\d+)?').stringMatch(rel);
+    // Validate for '00.0'.
+    return rel == new RegExp(r'\d+\.\d').stringMatch(rel);
   }
 
   bool get isTestMode => globalResults['cwd'] != null;
 
   String get release {
-    var rel = globalResults['release'];
+    String rel = globalResults['release'];
     if (rel != null && rel.startsWith('=')) {
       rel = rel.substring(1);
+    }
+    if (!rel.contains('.')) {
+      rel = '$rel.0';
     }
     return rel;
   }
