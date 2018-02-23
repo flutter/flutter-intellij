@@ -717,6 +717,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 }
 
+/**
+ * We subclass {@link SimpleToolWindowPanel} to implement "getData" and return {@link PlatformDataKeys#FILE_EDITOR},
+ * so that Undo/Redo actions work.
+ */
 class OutlineComponent extends SimpleToolWindowPanel {
   private final PreviewView myView;
 
