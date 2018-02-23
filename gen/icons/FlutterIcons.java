@@ -17,6 +17,7 @@ public class FlutterIcons {
   public static final Icon Flutter_2x = load("/icons/flutter@2x.png");
   public static final Icon Flutter_inspect = load("/icons/flutter_inspect.png");
   public static final Icon Flutter_test = load("/icons/flutter_test.png");
+  public static final Icon Flutter_badge = load("/icons/flutter_badge.png");
 
   public static final Icon Phone = load("/icons/phone.png");
   public static final Icon Feedback = load("/icons/feedback.png");
