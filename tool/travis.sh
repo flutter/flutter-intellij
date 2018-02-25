@@ -20,7 +20,7 @@ pushd tool/plugin
 pub get
 popd
 
-if [ "DART_BOT" = true ] ; then
+if [ "$DART_BOT" = true ] ; then
   # analyze the Dart code in the repo
   pub global activate tuneup
   pub global run tuneup
