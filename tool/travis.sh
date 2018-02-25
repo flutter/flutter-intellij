@@ -7,13 +7,18 @@
 # Fast fail the script on failures.
 set -e
 
+# Echo commands as they are executed.
+set -v
+
 # Echo build info.
 echo $FLUTTER_SDK
 flutter --version
 
 # Set up the plugin tool.
 echo "pub get"
-(cd tool/plugin; pub get)
+pushd tool/plugin
+pub get
+popd
 
 if [ "DART_BOT" = true ] ; then
   # analyze the Dart code in the repo
@@ -21,12 +26,13 @@ if [ "DART_BOT" = true ] ; then
   pub global run tuneup
 
   # run the tests for the plugin tool
-  (cd tool/plugin; dart test/plugin_test.dart)
+  pushd tool/plugin
+  dart test/plugin_test.dart
+  popd
 else
   # Run some validations on the repo code.
-  echo "plugin lint"
   ./bin/plugin lint
 
   # Run the build.
-  bin/plugin build --only-version=$IDEA_VERSION
+  ./bin/plugin build --only-version=$IDEA_VERSION
 fi
