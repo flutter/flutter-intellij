@@ -498,7 +498,7 @@ class BuildCommand extends ProductCommand {
     String onlyVersion = argResults['only-version'];
 
     List buildSpecs = specs;
-    if (onlyVersion != null) {
+    if (onlyVersion != null && onlyVersion.isNotEmpty) {
       buildSpecs = specs.where((spec) => spec.version == onlyVersion).toList();
       if (buildSpecs.isEmpty) {
         log("No spec found for version '$onlyVersion'");
