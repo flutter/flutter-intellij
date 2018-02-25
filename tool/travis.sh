@@ -11,11 +11,11 @@ set -e
 echo $FLUTTER_SDK
 flutter --version
 
-# Set up the plugin tool.
-echo "pub get"
-pushd tool/plugin
+# Get packages for the top-level grind script utilities
 pub get
-popd
+
+# Set up the plugin tool.
+(tool/plugin; pub get)
 
 if [ "$DART_BOT" = true ] ; then
   # analyze the Dart code in the repo
