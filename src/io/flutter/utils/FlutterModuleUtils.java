@@ -40,8 +40,7 @@ import java.util.List;
 import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
 
 public class FlutterModuleUtils {
-
-  private static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "FLUTTER_MODULE_TYPE";
+  public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
 
   private FlutterModuleUtils() {
   }
@@ -55,7 +54,7 @@ public class FlutterModuleUtils {
   @SuppressWarnings("SameReturnValue")
   @NotNull
   public static String getModuleTypeIDForFlutter() {
-    return "WEB_MODULE";
+    return "JAVA_MODULE";
   }
 
   /**

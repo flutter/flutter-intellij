@@ -19,6 +19,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
@@ -47,6 +48,8 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       FlutterMessages.showError("Error creating project", flutterSdkPath + " is not a valid Flutter SDK");
       return;
     }
+
+    FlutterUtils.disableGradleProjectMigrationNotification(project);
 
     // Run "flutter create".
     final OutputListener listener = new OutputListener();

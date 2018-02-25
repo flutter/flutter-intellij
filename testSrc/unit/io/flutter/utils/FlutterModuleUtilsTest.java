@@ -24,12 +24,12 @@ public class FlutterModuleUtilsTest {
 
   @Test
   public void isDeprecatedFlutterModuleType_true() {
-    fixture.getModule().setOption(Module.ELEMENT_TYPE, "FLUTTER_MODULE_TYPE");
+    fixture.getModule().setOption(Module.ELEMENT_TYPE, "WEB_MODULE");
     assertTrue(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
   }
 
   @Test
-  public void isDeprecatedFlutterModuleType_false_WEB_MODULE() {
+  public void isDeprecatedFlutterModuleType_false_JAVA_MODULE() {
     fixture.getModule().setOption(Module.ELEMENT_TYPE, FlutterModuleUtils.getModuleTypeIDForFlutter());
     assertFalse(FlutterModuleUtils.isDeprecatedFlutterModuleType(fixture.getModule()));
   }
