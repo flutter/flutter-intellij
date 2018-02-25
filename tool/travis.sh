@@ -15,7 +15,7 @@ flutter --version
 pub get
 
 # Set up the plugin tool.
-(tool/plugin; pub get)
+(cd tool/plugin; pub get)
 
 if [ "$DART_BOT" = true ] ; then
   # analyze the Dart code in the repo
