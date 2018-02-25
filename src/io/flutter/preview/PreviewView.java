@@ -7,6 +7,7 @@ package io.flutter.preview;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.CommonActionsManager;
@@ -64,6 +65,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @com.intellij.openapi.components.State(
   name = "FlutterPreviewView",
@@ -85,6 +87,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   @NotNull
   private final FlutterDartAnalysisServer flutterAnalysisServer;
 
+  final QuickAssistAction actionCenter;
+  final QuickAssistAction actionPadding;
+  final QuickAssistAction actionColumn;
+  final QuickAssistAction actionRow;
+  final QuickAssistAction actionMoveUp;
+  final QuickAssistAction actionMoveDown;
+  final QuickAssistAction actionRemove;
+
   private SimpleToolWindowPanel windowPanel;
   private ActionToolbar windowToolbar;
 
@@ -100,6 +110,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
+  FileEditor currentFileEditor;
   private Editor currentEditor;
   private FlutterOutline currentOutline;
 
@@ -156,6 +167,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         setSelectedEditor(event.getNewEditor());
       }
     });
+
+    actionCenter = new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget");
+    actionPadding = new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding");
+    actionColumn = new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column");
+    actionRow = new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row");
+    actionMoveUp = new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up");
+    actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
+    actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget");
   }
 
   @Override
@@ -178,22 +197,21 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     final ContentManager contentManager = toolWindow.getContentManager();
 
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.center", FlutterIcons.Center, "Center widget"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row"));
+    toolbarGroup.add(actionCenter);
+    toolbarGroup.add(actionPadding);
+    toolbarGroup.add(actionColumn);
+    toolbarGroup.add(actionRow);
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up"));
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down"));
+    toolbarGroup.add(actionMoveUp);
+    toolbarGroup.add(actionMoveDown);
     toolbarGroup.addSeparator();
-    toolbarGroup.add(new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget"));
+    toolbarGroup.add(actionRemove);
     toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
     content.setCloseable(false);
 
-    windowPanel = new SimpleToolWindowPanel(true, true);
+    windowPanel = new OutlineComponent(this);
     content.setComponent(windowPanel);
 
     windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewViewToolbar", toolbarGroup, true);
@@ -204,6 +222,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree = new OutlineTree(rootNode);
     tree.setCellRenderer(new OutlineTreeCellRenderer());
     tree.expandAll();
+
+    initTreePopup();
 
     // Add collapse all, expand all, and feedback buttons.
     if (toolWindow instanceof ToolWindowEx) {
@@ -283,6 +303,71 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
+  }
+
+  private void initTreePopup() {
+    tree.addMouseListener(new PopupHandler() {
+      public void invokePopup(Component comp, int x, int y) {
+        // Ensure that at least one Widget item is selected.
+        final List<FlutterOutline> selectedOutlines = getOutlinesSelectedInTree();
+        if (selectedOutlines.isEmpty()) {
+          return;
+        }
+        for (FlutterOutline outline : selectedOutlines) {
+          if (outline.getDartElement() != null) {
+            return;
+          }
+        }
+
+        // The corresponding tree item has just been selected.
+        // Wait short time for receiving assists from the server.
+        for (int i = 0; i < 20 && actionToChangeMap.isEmpty(); i++) {
+          Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+        }
+
+        final DefaultActionGroup group = new DefaultActionGroup();
+        boolean hasAction = false;
+        if (actionCenter.isEnabled()) {
+          hasAction = true;
+          group.add(actionCenter);
+        }
+        if (actionPadding.isEnabled()) {
+          hasAction = true;
+          group.add(actionPadding);
+        }
+        if (actionColumn.isEnabled()) {
+          hasAction = true;
+          group.add(actionColumn);
+        }
+        if (actionRow.isEnabled()) {
+          hasAction = true;
+          group.add(actionRow);
+        }
+        group.addSeparator();
+        if (actionMoveUp.isEnabled()) {
+          hasAction = true;
+          group.add(actionMoveUp);
+        }
+        if (actionMoveDown.isEnabled()) {
+          hasAction = true;
+          group.add(actionMoveDown);
+        }
+        group.addSeparator();
+        if (actionRemove.isEnabled()) {
+          hasAction = true;
+          group.add(actionRemove);
+        }
+
+        // Don't show the empty popup.
+        if (!hasAction) {
+          return;
+        }
+
+        final ActionManager actionManager = ActionManager.getInstance();
+        final ActionPopupMenu popupMenu = actionManager.createActionPopupMenu(ActionPlaces.UNKNOWN, group);
+        popupMenu.getComponent().show(comp, x, y);
+      }
+    });
   }
 
   private void handleTreeSelectionEvent(TreeSelectionEvent e) {
@@ -582,6 +667,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       currentEditor.getCaretModel().removeCaretListener(caretListener);
     }
     if (newEditor instanceof TextEditor) {
+      currentFileEditor = newEditor;
       currentEditor = ((TextEditor)newEditor).getEditor();
       currentEditor.getCaretModel().addCaretListener(caretListener);
     }
@@ -691,6 +777,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       final boolean hasChange = actionToChangeMap.containsKey(this);
       e.getPresentation().setEnabled(hasChange);
     }
+
+    boolean isEnabled() {
+      return actionToChangeMap.containsKey(this);
+    }
   }
 
   private class ShowOnlyWidgetsAction extends AnAction implements Toggleable, RightAlignedToolbarAction {
@@ -712,6 +802,27 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       presentation.putClientProperty(SELECTED_PROPERTY, getState().getShowOnlyWidgets());
       presentation.setEnabled(currentOutline != null);
     }
+  }
+}
+
+/**
+ * We subclass {@link SimpleToolWindowPanel} to implement "getData" and return {@link PlatformDataKeys#FILE_EDITOR},
+ * so that Undo/Redo actions work.
+ */
+class OutlineComponent extends SimpleToolWindowPanel {
+  private final PreviewView myView;
+
+  OutlineComponent(PreviewView view) {
+    super(true, true);
+    myView = view;
+  }
+
+  @Override
+  public Object getData(String dataId) {
+    if (PlatformDataKeys.FILE_EDITOR.is(dataId)) {
+      return myView.currentFileEditor;
+    }
+    return super.getData(dataId);
   }
 }
 
