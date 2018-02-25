@@ -7,9 +7,6 @@
 # Fast fail the script on failures.
 set -e
 
-# Echo commands as they are executed.
-set -v
-
 # Echo build info.
 echo $FLUTTER_SDK
 flutter --version
