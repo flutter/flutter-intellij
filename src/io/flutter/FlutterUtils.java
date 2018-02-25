@@ -5,7 +5,6 @@
  */
 package io.flutter;
 
-import com.android.annotations.NonNull;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
@@ -74,7 +73,7 @@ public class FlutterUtils {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
   }
 
-  public static void disableGradleProjectMigrationNotification(@NonNull Project project) {
+  public static void disableGradleProjectMigrationNotification(@NotNull Project project) {
     // TODO(devoncarew): In Android Studio, do we want to show this notification?
     //if (isAndroidStudio()) {
     //  return;
@@ -161,9 +160,10 @@ public class FlutterUtils {
   /**
    * Checks whether a given string is a valid Dart package name.
    * <p>
-   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
+   *
    * @param name the string to check
    * @return true if a valid package name, false otherwise.
+   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
    */
   public static boolean isValidPackageName(@NotNull String name) {
     return VALID_PACKAGE.matcher(name).matches();
