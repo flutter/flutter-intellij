@@ -265,17 +265,24 @@ public class FlutterModuleUtils {
 
   public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
     boolean modulesConverted = false;
+
     for (Module module : getModules(project)) {
       if (isDeprecatedFlutterModuleType(module)) {
         setFlutterModuleType(module);
         modulesConverted = true;
       }
     }
+
     return modulesConverted;
   }
 
   public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
-    return DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"));
+    if (!DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"))) {
+      return false;
+    }
+
+    // Validate that the pubspec references flutter.
+    return FlutterModuleUtils.usesFlutter(module);
   }
 
   /**
