@@ -718,21 +718,22 @@ class DeployCommand extends ProductCommand {
       log('Deploy must have a --release argument');
       return new Future(() => 1);
     }
+
     String password;
-    try {
-      // Detect test mode early to keep stdio clean for the test results parser.
+
+    if (isTesting) {
+      password = "hello"; // For testing.
+      username = "test";
+    } else {
       var mode = stdin.echoMode;
-      stdout.writeln(
-          'Please enter the username and password for the JetBrains plugin repository');
+      stdout.writeln('Please enter the username and password '
+          'for the JetBrains plugin repository');
       stdout.write('Username: ');
       username = stdin.readLineSync();
       stdout.write('Password: ');
       stdin.echoMode = false;
       password = stdin.readLineSync();
       stdin.echoMode = mode;
-    } on StdinException {
-      password = "hello"; // For testing.
-      username = "test";
     }
 
     var directory = Directory.systemTemp.createTempSync('plugin');
@@ -824,6 +825,9 @@ abstract class ProductCommand extends Command {
   ProductCommand(this.name) {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
   }
+
+  /// Returns true when running in the context of a unit test.
+  bool get isTesting => false;
 
   bool get isForAndroidStudio => argResults['as'];
 
