@@ -227,7 +227,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
     }
     if (!cmd.isReleaseValid) {
       log('the release identifier ("${cmd
-          .release}") must be an integer or floating-point number');
+          .release}") must be of the form xx.x (major.minor)');
       return new Future(() => false);
     }
     var gitDir = await GitDir.fromExisting(rootPath);
@@ -498,7 +498,7 @@ class BuildCommand extends ProductCommand {
     String onlyVersion = argResults['only-version'];
 
     List buildSpecs = specs;
-    if (onlyVersion != null) {
+    if (onlyVersion != null && onlyVersion.isNotEmpty) {
       buildSpecs = specs.where((spec) => spec.version == onlyVersion).toList();
       if (buildSpecs.isEmpty) {
         log("No spec found for version '$onlyVersion'");
@@ -625,10 +625,14 @@ compile
       return await exec('ant', args.split(new RegExp(r'\s')));
     } on ProcessException catch (x) {
       if (x.message == 'No such file or directory') {
-        log('\nThe build command requires ant to be installed. '
+        log(
+            '\nThe build command requires ant to be installed. '
             '\nPlease ensure ant is on your \$PATH.',
             indent: false);
         exit(x.errorCode);
+        // The call to `exit` above does not return, but we return a value from
+        // the function here to make the analyzer happy.
+        return 0;
       } else {
         throw x;
       }
@@ -714,21 +718,22 @@ class DeployCommand extends ProductCommand {
       log('Deploy must have a --release argument');
       return new Future(() => 1);
     }
+
     String password;
-    try {
-      // Detect test mode early to keep stdio clean for the test results parser.
+
+    if (isTesting) {
+      password = "hello"; // For testing.
+      username = "test";
+    } else {
       var mode = stdin.echoMode;
-      stdout.writeln(
-          'Please enter the username and password for the JetBrains plugin repository');
+      stdout.writeln('Please enter the username and password '
+          'for the JetBrains plugin repository');
       stdout.write('Username: ');
       username = stdin.readLineSync();
       stdout.write('Password: ');
       stdin.echoMode = false;
       password = stdin.readLineSync();
       stdin.echoMode = mode;
-    } on StdinException {
-      password = "hello"; // For testing.
-      username = "test";
     }
 
     var directory = Directory.systemTemp.createTempSync('plugin');
@@ -821,6 +826,9 @@ abstract class ProductCommand extends Command {
     addProductFlags(argParser, name[0].toUpperCase() + name.substring(1));
   }
 
+  /// Returns true when running in the context of a unit test.
+  bool get isTesting => false;
+
   bool get isForAndroidStudio => argResults['as'];
 
   bool get isForIntelliJ => argResults['ij'];
@@ -832,16 +840,25 @@ abstract class ProductCommand extends Command {
     if (rel == null) {
       return false;
     }
-    return rel == new RegExp(r'\d+(?:\.\d+)?').stringMatch(rel);
+    // Validate for '00.0'.
+    return rel == new RegExp(r'\d+\.\d').stringMatch(rel);
   }
 
   bool get isTestMode => globalResults['cwd'] != null;
 
   String get release {
-    var rel = globalResults['release'];
-    if (rel != null && rel.startsWith('=')) {
-      rel = rel.substring(1);
+    String rel = globalResults['release'];
+
+    if (rel != null) {
+      if (rel.startsWith('=')) {
+        rel = rel.substring(1);
+      }
+
+      if (!rel.contains('.')) {
+        rel = '$rel.0';
+      }
     }
+
     return rel;
   }
 

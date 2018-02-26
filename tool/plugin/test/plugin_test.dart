@@ -24,40 +24,31 @@ void main() {
   });
 
   group("spec", () {
-    test('abuild', () {
+    test('build', () async {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "-d../..", "abuild"]).whenComplete(() {
-        var specs = (runner.commands['abuild'] as ProductCommand).specs;
-        expect(specs, isNotNull);
-        expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
-      });
-    });
-    test('build', () {
-      var runner = makeTestRunner();
-      runner.run(["-r=19", "-d../..", "build"]).whenComplete(() {
+      await runner.run(["-r=19", "-d../..", "build"]).whenComplete(() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
       });
     });
-    test('test', () {
+    test('test', () async {
       var runner = makeTestRunner();
-      runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
+      await runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
       });
     });
-    test('deploy', () {
+    test('deploy', () async {
       var runner = makeTestRunner();
-      runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
+      await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC', 'ideaIC']));
+            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
       });
     });
   });
@@ -98,9 +89,9 @@ void main() {
   });
 
   group('deploy', () {
-    test('clean', () {
+    test('clean', () async {
       var runner = makeTestRunner();
-      runner.run([
+      await runner.run([
         "-r=19",
         "-d../..",
         "deploy",
@@ -108,7 +99,7 @@ void main() {
         "--no-ij"
       ]).whenComplete(() {
         var dir = (runner.commands['deploy'] as DeployCommand).tempDir;
-        expectAsync0(() => new Directory(dir).existsSync() == false);
+        expect(new Directory(dir).existsSync(), false);
       });
     });
     test('without --release', () async {
@@ -129,8 +120,8 @@ void main() {
           cmd.paths.map((p) => p.substring(p.indexOf('artifacts'))),
           orderedEquals([
             'artifacts/release_19/3.0/flutter-intellij.zip',
-            'artifacts/release_19/2017.2/flutter-intellij.zip',
-            'artifacts/release_19/2017.3/flutter-intellij.zip',
+            'artifacts/release_19/3.1/flutter-intellij.zip',
+            'artifacts/release_19/2018.1/flutter-intellij.zip',
           ]));
     });
   });
@@ -163,6 +154,55 @@ void main() {
       var result = await spec.artifacts.provision(rebuildCache: false);
       expect(result, 0);
     });
+    test('only-version', () async {
+      ProductCommand command = makeTestRunner().commands['build'];
+      var results = command.argParser.parse(['--only-version=2018.1']);
+      expect(results['only-version'], '2018.1');
+    });
+  });
+
+  group('ProductCommand', () {
+    test('parses release', () async {
+      var runner = makeTestRunner();
+      ProductCommand command;
+      await runner.run(["-d../..", '-r22.0', "build"]).whenComplete(() {
+        command = (runner.commands['build'] as ProductCommand);
+      });
+      expect(command.release, '22.0');
+    });
+    test('parses release partial number', () async {
+      var runner = makeTestRunner();
+      ProductCommand command;
+      await runner.run(["-d../..", '-r22', "build"]).whenComplete(() {
+        command = (runner.commands['build'] as ProductCommand);
+      });
+      expect(command.release, '22.0');
+    });
+
+    test('isReleaseValid', () async {
+      var runner = makeTestRunner();
+      ProductCommand command;
+      await runner.run(["-d../..", '-r22.0', "build"]).whenComplete(() {
+        command = (runner.commands['build'] as ProductCommand);
+      });
+      expect(command.isReleaseValid, true);
+    });
+    test('isReleaseValid partial version', () async {
+      var runner = makeTestRunner();
+      ProductCommand command;
+      await runner.run(["-d../..", '-r22', "build"]).whenComplete(() {
+        command = (runner.commands['build'] as ProductCommand);
+      });
+      expect(command.isReleaseValid, true);
+    });
+    test('isReleaseValid bad version', () async {
+      var runner = makeTestRunner();
+      ProductCommand command;
+      await runner.run(["-d../..", '-r22.0.0', "build"]).whenComplete(() {
+        command = (runner.commands['build'] as ProductCommand);
+      });
+      expect(command.isReleaseValid, false);
+    });
   });
 }
 
@@ -178,6 +218,8 @@ BuildCommandRunner makeTestRunner() {
 class TestBuildCommand extends BuildCommand {
   TestBuildCommand(runner) : super(runner);
 
+  bool get isTesting => true;
+
   Future<int> doit() async => new Future(() => 0);
 }
 
@@ -186,6 +228,8 @@ class TestDeployCommand extends DeployCommand {
   List<String> plugins = new List<String>();
 
   TestDeployCommand(runner) : super(runner);
+
+  bool get isTesting => true;
 
   Future<int> upload(String filePath, String pluginNumber) {
     paths.add(filePath);
@@ -197,11 +241,15 @@ class TestDeployCommand extends DeployCommand {
 class TestGenCommand extends GenCommand {
   TestGenCommand(runner) : super(runner);
 
+  bool get isTesting => true;
+
   Future<int> doit() async => new Future(() => 0);
 }
 
 class TestTestCommand extends TestCommand {
   TestTestCommand(runner) : super(runner);
+
+  bool get isTesting => true;
 
   Future<int> doit() async => new Future(() => 0);
 }

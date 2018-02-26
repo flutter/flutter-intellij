@@ -9,11 +9,11 @@ before_script:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
-  - git clone https://github.com/flutter/flutter.git --depth 1
-  - export PATH="$PATH":`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin
+  - git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
+  - export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
   - flutter config --no-analytics
   - flutter doctor
-  - export FLUTTER_SDK=`pwd`/flutter
+  - export FLUTTER_SDK=`pwd`/../flutter
 
 # execution
 script: ./tool/travis.sh
@@ -21,6 +21,7 @@ script: ./tool/travis.sh
 # Testing product matrix; the values should match the version field in the
 # product-matrix.json file.
 env:
+  - DART_BOT=true
   - IDEA_VERSION=3.0
   - IDEA_VERSION=3.1
   - IDEA_VERSION=2018.1
