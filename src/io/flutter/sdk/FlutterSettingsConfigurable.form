@@ -165,7 +165,7 @@
             <properties>
               <horizontalAlignment value="2"/>
               <horizontalTextPosition value="2"/>
-              <text value="provide feedback on the Preview view"/>
+              <text value="provide feedback on the Outline view"/>
               <toolTipText value=""/>
             </properties>
           </component>
