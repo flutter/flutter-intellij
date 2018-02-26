@@ -66,4 +66,5 @@ public class FlutterIcons {
   public static final Icon Center = load("/icons/preview/center.png");
   public static final Icon Up = load("/icons/preview/up.png");
   public static final Icon Down = load("/icons/preview/down.png");
+  public static final Icon ExtractMethod = load("/icons/preview/extract_method.png");
 }

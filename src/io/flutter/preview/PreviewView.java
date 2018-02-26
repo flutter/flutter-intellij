@@ -9,13 +9,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.intellij.icons.AllIcons;
-import com.intellij.ide.BrowserUtil;
-import com.intellij.ide.CommonActionsManager;
-import com.intellij.ide.DefaultTreeExpander;
-import com.intellij.ide.TreeExpander;
+import com.intellij.ide.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.editor.Caret;
@@ -96,6 +94,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   final QuickAssistAction actionMoveUp;
   final QuickAssistAction actionMoveDown;
   final QuickAssistAction actionRemove;
+  final ExtractMethodAction actionExtractMethod;
 
   private SimpleToolWindowPanel windowPanel;
   private ActionToolbar windowToolbar;
@@ -178,6 +177,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     actionMoveUp = new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up");
     actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
     actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget");
+    actionExtractMethod = new ExtractMethodAction();
   }
 
   @Override
@@ -207,6 +207,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionMoveUp);
     toolbarGroup.add(actionMoveDown);
+    toolbarGroup.add(actionExtractMethod);
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionRemove);
     toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
@@ -354,6 +355,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         if (actionMoveDown.isEnabled()) {
           hasAction = true;
           group.add(actionMoveDown);
+        }
+        if (actionExtractMethod.isEnabled()) {
+          hasAction = true;
+          group.add(actionExtractMethod);
         }
         group.addSeparator();
         if (actionRemove.isEnabled()) {
@@ -800,6 +805,59 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     boolean isEnabled() {
       return actionToChangeMap.containsKey(this);
+    }
+  }
+
+  private class ExtractMethodAction extends AnAction {
+    private final String id = "dart.assist.flutter.extractMethod";
+
+    ExtractMethodAction() {
+      super("Extract method", null, FlutterIcons.ExtractMethod);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      final AnAction action = ActionManager.getInstance().getAction("ExtractMethod");
+      if (action != null) {
+        final FlutterOutline outline = getWidgetOutline();
+        if (outline != null) {
+          TransactionGuard.submitTransaction(project, () -> {
+            // Ideally we don't need this - just caret at the beginning should be enough.
+            // Unfortunately this was implemented only recently.
+            // So, we have to select the widget range.
+            final int offset = getConvertedOutlineOffset(outline);
+            final int end = getConvertedOutlineEnd(outline);
+            currentEditor.getSelectionModel().setSelection(offset, end);
+
+            final JComponent editorComponent = currentEditor.getComponent();
+            final DataContext editorContext = DataManager.getInstance().getDataContext(editorComponent);
+            final AnActionEvent editorEvent = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, editorContext);
+
+            action.actionPerformed(editorEvent);
+          });
+        }
+      }
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      final boolean isEnabled = isEnabled();
+      e.getPresentation().setEnabled(isEnabled);
+    }
+
+    boolean isEnabled() {
+      return getWidgetOutline() != null;
+    }
+
+    private FlutterOutline getWidgetOutline() {
+      final List<FlutterOutline> outlines = getOutlinesSelectedInTree();
+      if (outlines.size() == 1) {
+        final FlutterOutline outline = outlines.get(0);
+        if (outline.getDartElement() == null) {
+          return outline;
+        }
+      }
+      return null;
     }
   }
 
