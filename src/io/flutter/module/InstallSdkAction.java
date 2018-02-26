@@ -329,7 +329,7 @@ public class InstallSdkAction extends DumbAwareAction {
       @Override
       GeneralCommandLine getCommandLine() {
         return gitCommandBase().withWorkDirectory(myInstallPath)
-          .withParameters("clone", "-b", "alpha", "https://github.com/flutter/flutter.git");
+          .withParameters("clone", "-b", "dev", "https://github.com/flutter/flutter.git");
       }
 
       @NotNull
