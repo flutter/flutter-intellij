@@ -18,8 +18,7 @@ import org.jetbrains.annotations.Nullable;
 import java.nio.file.Path;
 
 public class FlutterProjectSystem implements AndroidProjectSystem {
-  @NotNull
-  final private GradleProjectSystem gradleProjectSystem;
+  @NotNull final private GradleProjectSystem gradleProjectSystem;
 
   public FlutterProjectSystem(Project project) {
     gradleProjectSystem = new GradleProjectSystem(project);

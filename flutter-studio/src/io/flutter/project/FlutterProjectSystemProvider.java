@@ -11,7 +11,6 @@ import com.intellij.openapi.project.Project;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
-// This is needed in 3.1 builds but not 3.0.
 public class FlutterProjectSystemProvider implements AndroidProjectSystemProvider {
   final private Project myProject;
 

@@ -136,12 +136,20 @@ List<String> findJavaFiles(String path) {
       .toList();
 }
 
-Future<File> genPluginXml(BuildSpec spec, String destDir) async {
-  var file = await new File(p.join(rootPath, destDir, 'META-INF/plugin.xml'))
-      .create(recursive: true);
-  var dest = file.openWrite();
+Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
   //TODO(devoncarew): Move the change log to a separate file and insert it here.
-  await new File(p.join(rootPath, 'resources/META-INF/plugin.xml.template'))
+  var result = await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
+  if (result == null) return false;
+  result = await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
+  if (result == null) return false;
+  return true;
+}
+
+Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
+  var file =
+      await new File(p.join(rootPath, destDir, path)).create(recursive: true);
+  var dest = file.openWrite();
+  await new File(p.join(rootPath, 'resources', '$path.template'))
       .openRead()
       .transform(UTF8.decoder)
       .transform(new LineSplitter())
@@ -291,6 +299,11 @@ String substitueTemplateVariables(String line, BuildSpec spec) {
         return spec.isSynthetic
             ? 'com.intellij.modules.androidstudio'
             : 'com.android.tools.apk';
+      case 'PROJECTSYSTEM':
+        // Temporary work-around for 3.0 vs 3.1 AS incompatibility.
+        return spec.version == '3.1'
+            ? '<projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>'
+            : '';
       default:
         throw 'unknown template variable: $name';
     }
@@ -523,7 +536,13 @@ class BuildCommand extends ProductCommand {
 
       separator('Building flutter-intellij.jar');
       await removeAll('build');
+      for (var file in spec.filesToSkip) {
+        await new File(file).rename('$file~');
+      }
       result = await runner.javac2(spec);
+      for (var file in spec.filesToSkip) {
+        await new File('$file~').rename(file);
+      }
       if (result != 0) {
         return new Future(() => result);
       }
@@ -534,7 +553,7 @@ class BuildCommand extends ProductCommand {
       copyResources(from: 'gen', to: 'build/classes');
       copyResources(
           from: 'third_party/intellij-plugins-dart/src', to: 'build/classes');
-      await genPluginXml(spec, 'build/classes');
+      await genPluginFiles(spec, 'build/classes');
 
       // create the jars
       createDir('build/flutter-intellij/lib');
@@ -625,7 +644,8 @@ compile
       return await exec('ant', args.split(new RegExp(r'\s')));
     } on ProcessException catch (x) {
       if (x.message == 'No such file or directory') {
-        log('\nThe build command requires ant to be installed. '
+        log(
+            '\nThe build command requires ant to be installed. '
             '\nPlease ensure ant is on your \$PATH.',
             indent: false);
         exit(x.errorCode);
@@ -649,6 +669,7 @@ class BuildSpec {
   final String untilBuild;
   final String pluginId = 'io.flutter';
   final String release;
+  final List<String> filesToSkip;
 
   ArtifactManager artifacts = new ArtifactManager();
 
@@ -663,7 +684,8 @@ class BuildSpec {
         ideaVersion = json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
-        untilBuild = json['untilBuild'] {
+        untilBuild = json['untilBuild'],
+        filesToSkip = json['filesToSkip'] ?? [] {
     createArtifacts();
   }
 
@@ -795,7 +817,7 @@ class GenCommand extends ProductCommand {
     var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
     log('writing pluginl.xml');
     var value = 1;
-    var result = await genPluginXml(spec, 'resources');
+    var result = await genPluginFiles(spec, 'resources');
     if (result != null) {
       log('writing .travis.yml');
       genTravisYml(specs);
