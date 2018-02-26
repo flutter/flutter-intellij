@@ -9,6 +9,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.extensions.PluginId;
@@ -70,6 +71,15 @@ public class FlutterUtils {
 
   public static boolean isAndroidStudio() {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
+  }
+
+  public static void disableGradleProjectMigrationNotification(@NotNull Project project) {
+    final String showMigrateToGradlePopup = "show.migrate.to.gradle.popup";
+    final PropertiesComponent properties = PropertiesComponent.getInstance(project);
+
+    if (properties.getValue(showMigrateToGradlePopup) == null) {
+      properties.setValue(showMigrateToGradlePopup, "false");
+    }
   }
 
   public static boolean exists(@Nullable VirtualFile file) {
@@ -145,10 +155,10 @@ public class FlutterUtils {
   /**
    * Checks whether a given string is a valid Dart package name.
    * <p>
-   * See: https://www.dartlang.org/tools/pub/pubspec#name
    *
    * @param name the string to check
    * @return true if a valid package name, false otherwise.
+   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
    */
   public static boolean isValidPackageName(@NotNull String name) {
     return VALID_PACKAGE.matcher(name).matches();

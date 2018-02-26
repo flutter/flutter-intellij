@@ -235,7 +235,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   }
 
   /**
-   * @See: https://www.dartlang.org/tools/pub/pubspec#name
+   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
    */
   @NotNull
   private Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
