@@ -26,6 +26,7 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.Splitter;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
@@ -37,6 +38,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.speedSearch.SpeedSearchUtil;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.util.messages.MessageBusConnection;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.assists.AssistUtils;
 import com.jetbrains.lang.dart.assists.DartSourceEditException;
 import icons.FlutterIcons;
@@ -110,6 +112,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
 
   private VirtualFile currentFile;
+  private String currentFilePath;
   FileEditor currentFileEditor;
   private Editor currentEditor;
   private FlutterOutline currentOutline;
@@ -117,7 +120,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline) {
-      if (currentFile != null && Objects.equals(currentFile.getPath(), filePath)) {
+      if (Objects.equals(currentFilePath, filePath)) {
         ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
       }
     }
@@ -388,10 +391,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     sendAnalyticEvent("jumpToSource");
 
-    final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
       try {
+        int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
+        offset = getConvertedFileOffset(offset);
         new OpenFileDescriptor(project, currentFile, offset).navigate(focusEditor);
       }
       finally {
@@ -415,8 +419,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       ApplicationManager.getApplication().executeOnPooledThread(() -> {
         final FlutterOutline firstOutline = outlines.get(0);
         final FlutterOutline lastOutline = outlines.get(outlines.size() - 1);
-        final int offset = firstOutline.getOffset();
-        final int length = lastOutline.getOffset() + lastOutline.getLength() - offset;
+        final int offset = getConvertedOutlineOffset(firstOutline);
+        final int length = getConvertedOutlineEnd(lastOutline) - offset;
         final List<SourceChange> changes = flutterAnalysisServer.edit_getAssists(selectionFile, offset, length);
 
         // If the current file or outline are different, ignore the changes.
@@ -588,11 +592,25 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     return getOutlineOfNode(node);
   }
 
+  private int getConvertedFileOffset(int offset) {
+    return DartAnalysisServerService.getInstance(project).getConvertedOffset(currentFile, offset);
+  }
+
+  private int getConvertedOutlineOffset(FlutterOutline outline) {
+    final int offset = outline.getOffset();
+    return getConvertedFileOffset(offset);
+  }
+
+  private int getConvertedOutlineEnd(FlutterOutline outline) {
+    final int end = outline.getOffset() + outline.getLength();
+    return getConvertedFileOffset(end);
+  }
+
   private FlutterOutline findOutlineAtOffset(FlutterOutline outline, int offset) {
     if (outline == null) {
       return null;
     }
-    if (outline.getOffset() <= offset && offset <= outline.getOffset() + outline.getLength()) {
+    if (getConvertedOutlineOffset(outline) <= offset && offset <= getConvertedOutlineEnd(outline)) {
       if (outline.getChildren() != null) {
         for (FlutterOutline child : outline.getChildren()) {
           final FlutterOutline foundChild = findOutlineAtOffset(child, offset);
@@ -611,8 +629,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       return;
     }
 
-    final int outlineStart = outline.getOffset();
-    final int outlineEnd = outlineStart + outline.getLength();
+    final int outlineStart = getConvertedOutlineOffset(outline);
+    final int outlineEnd = getConvertedOutlineEnd(outline);
     // The outline ends before, or starts after the selection.
     if (outlineEnd < start || outlineStart > end) {
       return;
@@ -634,8 +652,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   private void setSelectedFile(VirtualFile newFile) {
     if (currentFile != null) {
-      flutterAnalysisServer.removeOutlineListener(currentFile.getPath(), outlineListener);
+      flutterAnalysisServer.removeOutlineListener(currentFilePath, outlineListener);
       currentFile = null;
+      currentFilePath = null;
     }
 
     // Show the toolbar if the new file is a Dart file, or hide otherwise.
@@ -658,7 +677,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     // Subscribe for the outline for the new file.
     if (newFile != null) {
       currentFile = newFile;
-      flutterAnalysisServer.addOutlineListener(currentFile.getPath(), outlineListener);
+      currentFilePath = FileUtil.toSystemDependentName(currentFile.getPath());
+      flutterAnalysisServer.addOutlineListener(currentFilePath, outlineListener);
     }
   }
 
