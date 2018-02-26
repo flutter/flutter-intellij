@@ -9,7 +9,7 @@
 
   <category>Custom Languages</category>
 
-  <version>22.0</version>
+  <version>22.1</version>
 
   <idea-version since-build="171.1" until-build="181.*"/>
 
@@ -29,6 +29,12 @@
 
   <change-notes>
     <![CDATA[
+
+22.1:
+
+<ul>
+<li>when installing the Flutter SDK, use the 'dev' channel instead of 'alpha'</li>
+</ul>
 
 22.0:
 
