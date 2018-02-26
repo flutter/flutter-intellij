@@ -34,6 +34,7 @@
 
 <ul>
 <li>when installing the Flutter SDK, use the 'dev' channel instead of 'alpha'</li>
+<li>fix an issue with the Flutter Outline view on Windows</li>
 </ul>
 
 22.0:
