@@ -28,6 +28,12 @@
   <change-notes>
     <![CDATA[
 
+22.1:
+
+<ul>
+<li>when installing the Flutter SDK, use the 'dev' channel instead of 'alpha'</li>
+</ul>
+
 22.0:
 
 inspector view:
