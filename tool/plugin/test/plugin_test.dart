@@ -143,6 +143,8 @@ void main() {
       var loc = content.indexOf('@');
       expect(loc, -1);
     });
+    // Skipped as downloading the artifacts can take longer than the 30 second
+    // test timeout.
     test('provision', () async {
       var runner = makeTestRunner();
       TestBuildCommand cmd;
@@ -153,7 +155,7 @@ void main() {
       expect(spec.artifacts.artifacts.length, greaterThan(1));
       var result = await spec.artifacts.provision(rebuildCache: false);
       expect(result, 0);
-    });
+    }, skip: true);
     test('only-version', () async {
       ProductCommand command = makeTestRunner().commands['build'];
       var results = command.argParser.parse(['--only-version=2018.1']);
