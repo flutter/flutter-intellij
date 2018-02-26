@@ -207,10 +207,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionMoveUp);
     toolbarGroup.add(actionMoveDown);
+    toolbarGroup.add(actionExtractMethod);
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionRemove);
-    toolbarGroup.addSeparator();
-    toolbarGroup.add(actionExtractMethod);
     toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
 
     final Content content = contentFactory.createContent(null, null, false);
@@ -357,15 +356,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
           hasAction = true;
           group.add(actionMoveDown);
         }
+        if (actionExtractMethod.isEnabled()) {
+          hasAction = true;
+          group.add(actionExtractMethod);
+        }
         group.addSeparator();
         if (actionRemove.isEnabled()) {
           hasAction = true;
           group.add(actionRemove);
-        }
-        group.addSeparator();
-        if (actionExtractMethod.isEnabled()) {
-          hasAction = true;
-          group.add(actionExtractMethod);
         }
 
         // Don't show the empty popup.
@@ -827,9 +825,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
             // Ideally we don't need this - just caret at the beginning should be enough.
             // Unfortunately this was implemented only recently.
             // So, we have to select the widget range.
-            final int offset = outline.getOffset();
-            final int length = outline.getLength();
-            currentEditor.getSelectionModel().setSelection(offset, offset + length);
+            final int offset = getConvertedOutlineOffset(outline);
+            final int end = getConvertedOutlineEnd(outline);
+            currentEditor.getSelectionModel().setSelection(offset, end);
 
             final JComponent editorComponent = currentEditor.getComponent();
             final DataContext editorContext = DataManager.getInstance().getDataContext(editorComponent);
