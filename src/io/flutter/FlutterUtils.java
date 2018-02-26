@@ -74,11 +74,6 @@ public class FlutterUtils {
   }
 
   public static void disableGradleProjectMigrationNotification(@NotNull Project project) {
-    // TODO(devoncarew): In Android Studio, do we want to show this notification?
-    //if (isAndroidStudio()) {
-    //  return;
-    //}
-
     final String showMigrateToGradlePopup = "show.migrate.to.gradle.popup";
     final PropertiesComponent properties = PropertiesComponent.getInstance(project);
 
