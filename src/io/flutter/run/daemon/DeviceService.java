@@ -9,11 +9,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.execution.ExecutionException;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
+import io.flutter.FlutterMessages;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.utils.Refreshable;
@@ -169,8 +171,7 @@ public class DeviceService {
 
     final DeviceDaemon current = deviceDaemon.getNow();
     if (current == null || current.isRunning()) {
-      // The active daemon didn't die, so it must be some older process.
-      // Just log it.
+      // The active daemon didn't die, so it must be some older process. Just log it.
       LOG.info("A Flutter device daemon stopped.\n" + details);
       return;
     }
@@ -178,15 +179,16 @@ public class DeviceService {
     // If we haven't tried restarting recently, try again.
     final long now = System.currentTimeMillis();
     final long millisSinceLastRestart = now - lastRestartTime.get();
-    if (millisSinceLastRestart > TimeUnit.MINUTES.toMillis(5)) {
+    if (millisSinceLastRestart > TimeUnit.SECONDS.toMillis(20)) {
       LOG.info("A Flutter device daemon stopped. Automatically restarting it.\n" + details);
       refreshDeviceDaemon();
       lastRestartTime.set(now);
       return;
     }
 
-    // Report this so the user can send it to us, without restarting.
-    LOG.error("A Flutter device daemon stopped unexpectedly.", details);
+    // Display as a notification to the user.
+    final ApplicationInfo info = ApplicationInfo.getInstance();
+    FlutterMessages.showWarning("Flutter daemon terminated", "Consider re-starting " + info.getVersionName() + ".");
   }
 
   /**

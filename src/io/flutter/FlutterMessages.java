@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterMessages {
-  public static final String FLUTTER_NOTIFICATION_GOUP_ID = "Flutter Commands";
+  public static final String FLUTTER_NOTIFICATION_GOUP_ID = "Flutter Messages";
 
   private FlutterMessages() {
   }
