@@ -21,7 +21,7 @@ public class OpenFlutterViewAction extends DumbAwareAction {
   private final Computable<Boolean> myIsApplicable;
 
   public OpenFlutterViewAction(@NotNull final Computable<Boolean> isApplicable) {
-    super("Open Flutter View", "Open Flutter View", FlutterIcons.Flutter_inspect);
+    super("Open Flutter Inspector", "Open Flutter Inspector", FlutterIcons.Flutter_inspect);
 
     myIsApplicable = isApplicable;
   }
