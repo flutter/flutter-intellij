@@ -135,7 +135,7 @@ void main() {
       });
       var spec = cmd.specs[0];
       await removeAll('../../build/classes');
-      await genPluginXml(spec, 'build/classes');
+      await genPluginFiles(spec, 'build/classes');
       var file = new File("../../build/classes/META-INF/plugin.xml");
       expect(file.existsSync(), isTrue);
       var content = file.readAsStringSync();

@@ -7,7 +7,11 @@
       "ideaVersion": "171.4408382",
       "dartPluginVersion": "171.4424.10",
       "sinceBuild": "171.1",
-      "untilBuild": "171.*"
+      "untilBuild": "171.*",
+      "filesToSkip": [
+        "flutter-studio/src/io/flutter/project/FlutterProjectSystemProvider.java",
+        "flutter-studio/src/io/flutter/project/FlutterProjectSystem.java"
+      ]
     },
     {
       "name": "IntelliJ",

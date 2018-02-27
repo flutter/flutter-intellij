@@ -7,7 +7,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.android.project">
-    <projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>
+    @PROJECTSYSTEM@
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">
