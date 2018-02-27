@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
-import io.flutter.FlutterInitializer;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -46,11 +45,8 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     final Presentation presentation = event.getPresentation();
     presentation.putClientProperty("selected", isSelected());
 
-    FlutterInitializer.sendAnalyticsAction(this);
-    perform(event);
+    super.actionPerformed(event);
   }
-
-  protected abstract void perform(@Nullable AnActionEvent event);
 
   public boolean isSelected() {
     return selected;

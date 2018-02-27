@@ -17,8 +17,10 @@ public class FlutterIcons {
   public static final Icon Flutter_2x = load("/icons/flutter@2x.png");
   public static final Icon Flutter_inspect = load("/icons/flutter_inspect.png");
   public static final Icon Flutter_test = load("/icons/flutter_test.png");
+  public static final Icon Flutter_badge = load("/icons/flutter_badge.png");
 
   public static final Icon Phone = load("/icons/phone.png");
+  public static final Icon Feedback = load("/icons/feedback.png");
 
   public static final Icon OpenObservatory = load("/icons/observatory.png");
   public static final Icon OpenTimeline = load("/icons/timeline.png");
@@ -48,8 +50,6 @@ public class FlutterIcons {
   public static final Icon Animation = load("/icons/inspector/resume.png");
   public static final Icon Assets = load("/icons/inspector/any_type.png");
   public static final Icon Async = load("/icons/inspector/threads.png");
-  //public static final Icon Basics = load("/icons/custom/class.png");
-  //public static final Icon Cupertino = load("/icons/inspector/class.png");
   public static final Icon Diagram = load("/icons/inspector/diagram.png");
   public static final Icon Input = load("/icons/inspector/renderer.png");
   public static final Icon Painting = load("/icons/inspector/colors.png");
@@ -61,11 +61,10 @@ public class FlutterIcons {
   // Flutter Outline Widget Icons.
   public static final Icon Column = load("/icons/preview/column.png");
   public static final Icon Padding = load("/icons/preview/padding.png");
-  public static final Icon Padding2 = load("/icons/preview/padding2.png");
   public static final Icon RemoveWidget = load("/icons/preview/remove_widget.png");
   public static final Icon Row = load("/icons/preview/row.png");
   public static final Icon Center = load("/icons/preview/center.png");
   public static final Icon Up = load("/icons/preview/up.png");
   public static final Icon Down = load("/icons/preview/down.png");
-  public static final Icon Filter = load("/icons/preview/filter.png");
+  public static final Icon ExtractMethod = load("/icons/preview/extract_method.png");
 }

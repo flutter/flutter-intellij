@@ -40,8 +40,7 @@ import java.util.List;
 import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
 
 public class FlutterModuleUtils {
-
-  private static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "FLUTTER_MODULE_TYPE";
+  public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
 
   private FlutterModuleUtils() {
   }
@@ -55,7 +54,7 @@ public class FlutterModuleUtils {
   @SuppressWarnings("SameReturnValue")
   @NotNull
   public static String getModuleTypeIDForFlutter() {
-    return "WEB_MODULE";
+    return "JAVA_MODULE";
   }
 
   /**
@@ -266,17 +265,24 @@ public class FlutterModuleUtils {
 
   public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
     boolean modulesConverted = false;
+
     for (Module module : getModules(project)) {
       if (isDeprecatedFlutterModuleType(module)) {
         setFlutterModuleType(module);
         modulesConverted = true;
       }
     }
+
     return modulesConverted;
   }
 
   public static boolean isDeprecatedFlutterModuleType(@NotNull Module module) {
-    return DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"));
+    if (!DEPRECATED_FLUTTER_MODULE_TYPE_ID.equals(module.getOptionValue("type"))) {
+      return false;
+    }
+
+    // Validate that the pubspec references flutter.
+    return FlutterModuleUtils.usesFlutter(module);
   }
 
   /**

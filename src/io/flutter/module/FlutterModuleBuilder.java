@@ -48,8 +48,6 @@ import static java.util.Arrays.asList;
 public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
-  private static final String DART_GROUP_NAME = "Static Web"; // == WebModuleBuilder.GROUP_NAME
-
   private FlutterModuleWizardStep myStep;
   @NotNull
   private final FlutterCreateAdditionalSettingsFields mySettingsFields =
@@ -203,7 +201,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   /**
-   * @See: https://www.dartlang.org/tools/pub/pubspec#name
+   * @see <a href="www.dartlang.org/tools/pub/pubspec#name">https://www.dartlang.org/tools/pub/pubspec#name</a>
    */
   @Override
   public boolean validateModuleName(@NotNull String moduleName) throws ConfigurationException {
@@ -255,11 +253,6 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   }
 
   @Override
-  public String getParentGroup() {
-    return DART_GROUP_NAME;
-  }
-
-  @Override
   @NotNull
   public String getBuilderId() {
     // The builder id is used to distinguish between different builders with the same module type, see
@@ -286,6 +279,8 @@ public class FlutterModuleBuilder extends ModuleBuilder {
                                                       @Nullable FlutterCreateAdditionalSettings additionalSettings) {
     final ProgressManager progress = ProgressManager.getInstance();
     final AtomicReference<PubRoot> result = new AtomicReference<>(null);
+
+    FlutterUtils.disableGradleProjectMigrationNotification(project);
 
     progress.runProcessWithProgressSynchronously(() -> {
       progress.getProgressIndicator().setIndeterminate(true);
@@ -334,7 +329,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     private FlutterSdk getFlutterSdk() {
       final String sdkPath = myPeer.getSdkComboPath();
 
-      //Ensure the local filesystem has caught up to external processes (e.g., git clone).
+      // Ensure the local filesystem has caught up to external processes (e.g., git clone).
       if (!sdkPath.isEmpty()) {
         try {
           LocalFileSystem

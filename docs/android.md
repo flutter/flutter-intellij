@@ -71,3 +71,51 @@ Dependencies tab.
 Caution: adding dependencies also adds code to your app.
 This increases the size of the installed binary on user's
 devices. The appcompat-v7 library adds almost 7 megabytes.
+
+## Plugins
+
+Editing the native Android code of a Flutter plugin is a bit
+more tricky. Let's say we have created a new plugin called `fpl`.
+It might have been created using an IDE or perhaps it was made
+at the command line:
+
+    flutter create --template=plugin fpl
+
+To edit the native Android code you need to follow these steps
+the first time, to get dependencies and paths configured.
+1. Open `fpl` as the top-level project in Android Studio or IntelliJ.
+2. Use the device picker to start the Android emulator.
+3. Run the default run configuration, which launches the `example`
+   app on the emulated device. This causes Flutter to build all
+   the dependent binaries and get the paths set up correctly,
+   the Flutter equivalent to doing a Gradle build.
+
+    Alternatively, if you have an Android device connected (or
+    an emulator running) these first three steps could be done
+    from the command line.
+
+        cd fpl/example
+        flutter run
+
+4. Once the app appears on the emulated device you can terminate
+the app and, if desired, close that instance of Android Studio.
+5. Open Android Studio on the native code in the example app,
+`fpl/example/android`.
+6. The Project tool window defaults to the Android view. The list
+on the left-hand side of the Android Studio window should have
+three items:
+    * **app**
+    * **fpl**
+    * Gradle Scripts
+7. The native Android code for your plugin is in **fpl** (or whatever
+name you chose for your project). The example app native code is
+in **app** and you probably won't need to edit that. You can
+ignore Gradle Scripts unless you're doing some advanced
+Android programming.
+8. Navigate to `fpl/java` to find the Java package for your
+new plugin.
+
+Your plugin will probably need to import some dependencies.
+You can add dependencies as described in the `Dependencies`
+section. Just be sure to select your plugin module (**fpl**
+in this example) in the module list.

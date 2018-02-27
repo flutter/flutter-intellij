@@ -7,7 +7,9 @@ package io.flutter.view;
 
 import com.intellij.execution.runners.ExecutionUtil;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
+import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -21,8 +23,14 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
+import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.content.*;
+import com.intellij.ui.*;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentFactory;
+import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.tabs.TabInfo;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
@@ -41,20 +49,16 @@ import java.util.*;
 
 // TODO(devoncarew): Display an fps graph.
 
-// TODO(devoncarew): Ensure all actions in this class send analytics.
-
 @com.intellij.openapi.components.State(
   name = "FlutterView",
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
-
-
 public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
 
   private static class PerAppState {
     ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
     ArrayList<InspectorPanel> inspectorPanels = new ArrayList<>();
-    ArrayList<Content> contents = new ArrayList<>();
+    Content content;
     boolean sendRestartNotificationOnNextFrame = false;
   }
 
@@ -93,12 +97,23 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   public void initToolWindow(ToolWindow window) {
-    window.setToHideOnEmptyContent(true);
+    // Add a feedback button.
+    if (window instanceof ToolWindowEx) {
+      final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
+        @Override
+        public void actionPerformed(AnActionEvent event) {
+          BrowserUtil.browse("https://goo.gl/WrMB43");
+        }
+      };
+
+      ((ToolWindowEx)window).setTitleActions(sendFeedbackAction);
+    }
+
     // TODO(jacobr): add a message explaining the empty contents if the user
     // manually opens the window when there is not yet a running app.
   }
 
-  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, FlutterApp app) {
+  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, @NotNull FlutterApp app) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(registerAction(new ToggleInspectModeAction(app)));
     toolbarGroup.addSeparator();
@@ -131,31 +146,46 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return state;
   }
 
+  private void addInspector(FlutterApp app, ToolWindow toolWindow) {
+    final ContentManager contentManager = toolWindow.getContentManager();
+    final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
+    final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
+    final JBRunnerTabs tabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
+    final List<FlutterDevice> existingDevices = new ArrayList<>();
+    for (FlutterApp otherApp : perAppViewState.keySet()) {
+      existingDevices.add(otherApp.device());
+    }
+    final Content content = contentFactory.createContent(null, app.device().getUniqueName(existingDevices), false);
+    content.setComponent(tabs.getComponent());
+    contentManager.addContent(content);
+    PerAppState state = getOrCreateStateForApp(app);
+    assert (state.content == null);
+    state.content = content;
+
+    DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
+    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
+
+    addInspectorPanel("Widgets", tabs, state, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
+    addInspectorPanel("Render Tree", tabs, state, InspectorService.FlutterTreeType.renderObject, app, toolWindow, toolbarGroup, false);
+  }
+
   private void addInspectorPanel(String displayName,
+                                 JBRunnerTabs tabs,
+                                 PerAppState state,
                                  InspectorService.FlutterTreeType treeType,
                                  FlutterApp flutterApp,
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
-                                 boolean selectedContent) {
+                                 boolean selectedTab) {
     {
-      final ContentManager contentManager = toolWindow.getContentManager();
-      final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
-      final Content content = contentFactory.createContent(null, displayName, false);
-      content.setCloseable(true);
-      final SimpleToolWindowPanel windowPanel = new SimpleToolWindowPanel(true, true);
-      content.setComponent(windowPanel);
-
       final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
-      windowPanel.setContent(inspectorPanel);
-      windowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
-      contentManager.addContent(content);
-      final PerAppState state = getOrCreateStateForApp(flutterApp);
-      state.contents.add(content);
-      if (selectedContent) {
-        contentManager.setSelectedContent(content);
-      }
-
+      TabInfo tabInfo = new TabInfo(inspectorPanel).setActions(toolbarGroup, ActionPlaces.TOOLBAR)
+        .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+      tabs.addTab(tabInfo);
       state.inspectorPanels.add(inspectorPanel);
+      if (selectedTab) {
+        tabs.select(tabInfo, false);
+      }
     }
   }
 
@@ -168,7 +198,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     final FlutterApp app = event.app;
-    assert (app != null);
 
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
@@ -180,12 +209,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
-
-    addInspectorPanel(WIDGET_TREE_LABEL, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
-    addInspectorPanel(RENDER_TREE_LABEL, InspectorService.FlutterTreeType.renderObject, app, toolWindow, toolbarGroup, false);
-
     listenForRenderTreeActivations(toolWindow);
+    addInspector(app, toolWindow);
 
     event.vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -209,10 +234,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           final ContentManager contentManager = toolWindow.getContentManager();
           onAppChanged(app);
           final PerAppState state = perAppViewState.remove(app);
-          if (state != null) {
-            for (Content content : state.contents) {
-              contentManager.removeContent(content, true);
-            }
+          if (state != null && state.content != null) {
+            contentManager.removeContent(state.content, true);
           }
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
@@ -423,7 +446,7 @@ class OpenObservatoryAction extends FlutterViewAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       final String url = app.getConnector().getBrowserUrl();
       if (url != null) {
@@ -439,7 +462,7 @@ class OpenTimelineViewAction extends FlutterViewAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       final String url = app.getConnector().getBrowserUrl();
       if (url != null) {
@@ -453,12 +476,13 @@ class TogglePlatformAction extends FlutterViewAction {
   private Boolean isCurrentlyAndroid;
 
   TogglePlatformAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.togglePlatform.text"), FlutterBundle.message("flutter.view.togglePlatform.description"),
+    super(app, FlutterBundle.message("flutter.view.togglePlatform.text"),
+          FlutterBundle.message("flutter.view.togglePlatform.description"),
           AllIcons.RunConfigurations.Application);
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       app.togglePlatform().thenAccept(isAndroid -> {
         if (isAndroid == null) {
@@ -605,7 +629,7 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
-  public OverflowActionsAction(@NotNull FlutterView view, FlutterApp app) {
+  public OverflowActionsAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
     super("Additional actions", null, AllIcons.General.Gear);
 
     this.app = app;

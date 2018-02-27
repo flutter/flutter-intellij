@@ -41,6 +41,19 @@ public class FlutterSettings {
 
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
+
+    if (getEnablePreviewView()) {
+      analytics.sendEvent("settings", afterLastPeriod(previewViewKey));
+    }
+    if (getPreviewDart2()) {
+      analytics.sendEvent("settings", afterLastPeriod(previewDart2));
+    }
+    if (isReloadOnSave()) {
+      analytics.sendEvent("Settings", afterLastPeriod(reloadOnSaveKey));
+    }
+    if (isOpenInspectorOnAppLaunch()) {
+      analytics.sendEvent("Settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+    }
   }
 
   public void addListener(Listener listener) {
