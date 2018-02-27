@@ -151,8 +151,8 @@ public class AsyncRateLimiterTest {
                requestsPerSecond * 10 + 5.0 > TEST_FRAMES_PER_SECOND);
   }
 
-  private synchronized boolean log(String message) {
-    return logEntries.add(message);
+  private synchronized void log(String message) {
+    logEntries.add(message);
   }
 
   private synchronized List<String> getLogEntries() {
