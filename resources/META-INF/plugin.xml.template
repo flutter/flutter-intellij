@@ -28,6 +28,12 @@
   <change-notes>
     <![CDATA[
 
+22.2:
+
+<ul>
+<li>when installing the Flutter SDK, use the 'beta' channel instead of 'dev'</li>
+</ul>
+
 22.1:
 
 <ul>
