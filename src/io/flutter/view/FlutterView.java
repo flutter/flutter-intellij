@@ -45,14 +45,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 // TODO(devoncarew): Display an fps graph.
-
-// TODO(devoncarew): Ensure all actions in this class send analytics.
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -156,7 +151,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs tabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
-    ArrayList<FlutterDevice> existingDevices = new ArrayList<>();
+    final List<FlutterDevice> existingDevices = new ArrayList<>();
     for (FlutterApp otherApp : perAppViewState.keySet()) {
       existingDevices.add(otherApp.device());
     }
