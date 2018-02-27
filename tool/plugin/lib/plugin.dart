@@ -539,9 +539,12 @@ class BuildCommand extends ProductCommand {
       for (var file in spec.filesToSkip) {
         await new File(file).rename('$file~');
       }
-      result = await runner.javac2(spec);
-      for (var file in spec.filesToSkip) {
-        await new File('$file~').rename(file);
+      try {
+        result = await runner.javac2(spec);
+      } finally {
+        for (var file in spec.filesToSkip) {
+          await new File('$file~').rename(file);
+        }
       }
       if (result != 0) {
         return new Future(() => result);

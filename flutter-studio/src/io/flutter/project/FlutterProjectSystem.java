@@ -27,7 +27,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Nullable
   @Override
   public VirtualFile getDefaultApkFile() {
-    return gradleProjectSystem.getDefaultApkFile(); // TODO find the flutter binary
+    return gradleProjectSystem.getDefaultApkFile();
   }
 
   @NotNull
