@@ -23,7 +23,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
-import com.intellij.ui.JBProgressBar;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterInitializer;
@@ -84,7 +83,7 @@ public class InstallSdkAction extends DumbAwareAction {
 
     LinkLabel getInstallActionLink();
 
-    JBProgressBar getProgressBar();
+    JProgressBar getProgressBar();
 
     void setErrorDetails(String details);
 

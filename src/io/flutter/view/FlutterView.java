@@ -25,11 +25,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.content.*;
-import com.intellij.ui.*;
-import com.intellij.ui.content.Content;
-import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.tabs.TabInfo;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -158,11 +155,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final Content content = contentFactory.createContent(null, app.device().getUniqueName(existingDevices), false);
     content.setComponent(tabs.getComponent());
     contentManager.addContent(content);
-    PerAppState state = getOrCreateStateForApp(app);
+    final PerAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);
     state.content = content;
 
-    DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
     addInspectorPanel("Widgets", tabs, state, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
@@ -177,15 +174,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
                                  boolean selectedTab) {
-    {
-      final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
-      TabInfo tabInfo = new TabInfo(inspectorPanel).setActions(toolbarGroup, ActionPlaces.TOOLBAR)
-        .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-      tabs.addTab(tabInfo);
-      state.inspectorPanels.add(inspectorPanel);
-      if (selectedTab) {
-        tabs.select(tabInfo, false);
-      }
+    final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
+    final TabInfo tabInfo = new TabInfo(inspectorPanel).setActions(toolbarGroup, ActionPlaces.TOOLBAR)
+      .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    tabs.addTab(tabInfo);
+    state.inspectorPanels.add(inspectorPanel);
+    if (selectedTab) {
+      tabs.select(tabInfo, false);
     }
   }
 

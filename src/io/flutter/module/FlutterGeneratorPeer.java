@@ -17,7 +17,6 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.io.FileUtilRt;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
-import com.intellij.ui.JBProgressBar;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ReflectionUtil;
@@ -46,7 +45,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private JTextPane errorText;
   private JScrollPane errorPane;
   private LinkLabel myInstallActionLink;
-  private JBProgressBar myProgressBar;
+  private JProgressBar myProgressBar;
   private JTextPane myProgressText;
   private JScrollPane myProgressScrollPane;
   private JLabel myCancelProgressButton;
@@ -169,7 +168,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   }
 
   @Override
-  public JBProgressBar getProgressBar() {
+  public JProgressBar getProgressBar() {
     return myProgressBar;
   }
 

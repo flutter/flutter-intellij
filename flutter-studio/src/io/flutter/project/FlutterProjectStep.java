@@ -76,7 +76,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private JLabel myHeading;
   private JPanel myLocationPanel;
   private LinkLabel myInstallActionLink;
-  private JBProgressBar myProgressBar;
+  private JProgressBar myProgressBar;
   private JLabel myCancelProgressButton;
   private JTextPane myProgressText;
   private Color sdkBackgroundColor;
@@ -405,7 +405,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   }
 
   @Override
-  public JBProgressBar getProgressBar() {
+  public JProgressBar getProgressBar() {
     return myProgressBar;
   }
 
