@@ -205,9 +205,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(actionColumn);
     toolbarGroup.add(actionRow);
     toolbarGroup.addSeparator();
+    toolbarGroup.add(actionExtractMethod);
+    toolbarGroup.addSeparator();
     toolbarGroup.add(actionMoveUp);
     toolbarGroup.add(actionMoveDown);
-    toolbarGroup.add(actionExtractMethod);
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionRemove);
     toolbarGroup.add(new ShowOnlyWidgetsAction(AllIcons.General.Filter, "Show only widgets"));
@@ -333,37 +334,38 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         boolean hasAction = false;
         if (actionCenter.isEnabled()) {
           hasAction = true;
-          group.add(actionCenter);
+          group.add(new TextOnlyActionWrapper(actionCenter));
         }
         if (actionPadding.isEnabled()) {
           hasAction = true;
-          group.add(actionPadding);
+          group.add(new TextOnlyActionWrapper(actionPadding));
         }
         if (actionColumn.isEnabled()) {
           hasAction = true;
-          group.add(actionColumn);
+          group.add(new TextOnlyActionWrapper(actionColumn));
         }
         if (actionRow.isEnabled()) {
           hasAction = true;
-          group.add(actionRow);
+          group.add(new TextOnlyActionWrapper(actionRow));
+        }
+        group.addSeparator();
+        if (actionExtractMethod.isEnabled()) {
+          hasAction = true;
+          group.add(new TextOnlyActionWrapper(actionExtractMethod));
         }
         group.addSeparator();
         if (actionMoveUp.isEnabled()) {
           hasAction = true;
-          group.add(actionMoveUp);
+          group.add(new TextOnlyActionWrapper(actionMoveUp));
         }
         if (actionMoveDown.isEnabled()) {
           hasAction = true;
-          group.add(actionMoveDown);
-        }
-        if (actionExtractMethod.isEnabled()) {
-          hasAction = true;
-          group.add(actionExtractMethod);
+          group.add(new TextOnlyActionWrapper(actionMoveDown));
         }
         group.addSeparator();
         if (actionRemove.isEnabled()) {
           hasAction = true;
-          group.add(actionRemove);
+          group.add(new TextOnlyActionWrapper(actionRemove));
         }
 
         // Don't show the empty popup.
@@ -812,7 +814,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     private final String id = "dart.assist.flutter.extractMethod";
 
     ExtractMethodAction() {
-      super("Extract method", null, FlutterIcons.ExtractMethod);
+      super("Extract method...", null, FlutterIcons.ExtractMethod);
     }
 
     @Override
@@ -1105,5 +1107,23 @@ class OutlineTreeCellRenderer extends ColoredTreeCellRenderer {
 
   void appendSearch(@NotNull String text, @NotNull SimpleTextAttributes attributes) {
     SpeedSearchUtil.appendFragmentsForSpeedSearch(tree, text, attributes, selected, this);
+  }
+}
+
+/**
+ * Delegate to the given action, but do not render the action's icon.
+ */
+class TextOnlyActionWrapper extends AnAction {
+  private final AnAction action;
+
+  public TextOnlyActionWrapper(AnAction action) {
+    super(action.getTemplatePresentation().getText());
+
+    this.action = action;
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+    action.actionPerformed(event);
   }
 }
