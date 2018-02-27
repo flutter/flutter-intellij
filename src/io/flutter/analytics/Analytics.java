@@ -105,6 +105,8 @@ public class Analytics {
     }
 
     String description = stringWriter.toString().trim();
+    description = description.replaceAll("com.intellij.openapi.", "c.i.o.");
+    description = description.replaceAll("com.intellij.", "c.i.");
     if (description.length() > maxExceptionLength) {
       description = description.substring(0, maxExceptionLength);
     }

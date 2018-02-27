@@ -171,7 +171,7 @@ public class FlutterCommand {
    * <p>
    * Returns the handler if successfully started.
    */
-  public OSProcessHandler startProcess(boolean sendAnalytics) {
+  @Nullable public OSProcessHandler startProcess(boolean sendAnalytics) {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(null);
       LOG.info(commandLine.toString());

@@ -389,6 +389,11 @@ public class FlutterSdk {
   private String queryFlutterConfigImpl(String key) {
     final FlutterCommand command = flutterConfig("--machine");
     final OSProcessHandler process = command.startProcess(false);
+
+    if (process == null) {
+      return null;
+    }
+
     final StringBuilder stdout = new StringBuilder();
     process.addProcessListener(new ProcessAdapter() {
       boolean hasSeenStartingBrace = false;
