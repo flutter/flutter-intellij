@@ -14,18 +14,17 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterMessages;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterRunNotifications {
-  public static final String GROUP_DISPLAY_ID = "Flutter App Run";
-
   private static final String RELOAD_ALREADY_RUN = "io.flutter.reload.alreadyRun";
 
   public static void init(@NotNull Project project) {
     // Initialize the flutter run notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(
-      FlutterRunNotifications.GROUP_DISPLAY_ID,
+      FlutterMessages.FLUTTER_NOTIFICATION_GOUP_ID,
       NotificationDisplayType.BALLOON,
       false);
 
@@ -53,7 +52,7 @@ public class FlutterRunNotifications {
       properties.setValue(RELOAD_ALREADY_RUN, true);
 
       final Notification notification = new Notification(
-        GROUP_DISPLAY_ID,
+        FlutterMessages.FLUTTER_NOTIFICATION_GOUP_ID,
         FlutterBundle.message("flutter.reload.firstRun.title"),
         FlutterBundle.message("flutter.reload.firstRun.content"),
         NotificationType.INFORMATION);
