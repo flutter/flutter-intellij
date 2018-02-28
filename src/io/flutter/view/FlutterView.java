@@ -154,6 +154,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     final Content content = contentFactory.createContent(null, app.device().getUniqueName(existingDevices), false);
     content.setComponent(tabs.getComponent());
+    content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
+    content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
     final PerAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);
