@@ -88,8 +88,7 @@ public class DeviceService {
    */
   public void addListener(@NotNull Runnable callback) {
     listeners.updateAndGet((old) -> {
-      final List<Runnable> changed = new ArrayList<>();
-      changed.addAll(old);
+      final List<Runnable> changed = new ArrayList<>(old);
       changed.add(callback);
       return ImmutableSet.copyOf(changed);
     });

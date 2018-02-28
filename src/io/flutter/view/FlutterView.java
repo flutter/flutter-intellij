@@ -135,11 +135,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private PerAppState getOrCreateStateForApp(FlutterApp app) {
-    PerAppState state = perAppViewState.get(app);
-    if (state == null) {
-      state = new PerAppState();
-      perAppViewState.put(app, state);
-    }
+    PerAppState state = perAppViewState.computeIfAbsent(app, k -> new PerAppState());
     return state;
   }
 
@@ -555,7 +551,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
   }
 
   protected void perform(AnActionEvent event) {
-    if (app != null && app.isSessionActive()) {
+    if (app.isSessionActive()) {
       app.callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected());
 
       // If toggling inspect mode on, bring all devices to the foreground.

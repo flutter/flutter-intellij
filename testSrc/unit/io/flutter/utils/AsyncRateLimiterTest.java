@@ -73,9 +73,7 @@ public class AsyncRateLimiterTest {
   }
 
   void scheduleRequest() {
-    SwingUtilities.invokeLater(() -> {
-      rateLimiter.scheduleRequest();
-    });
+    SwingUtilities.invokeLater(() -> rateLimiter.scheduleRequest());
   }
 
   @Test
