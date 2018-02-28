@@ -119,14 +119,16 @@ Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
 }
 
 Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
+  var templatePath =
+      path.substring(0, path.length - '.xml'.length) + '_template.xml';
   var file =
       await new File(p.join(rootPath, destDir, path)).create(recursive: true);
   log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
   dest.writeln("<!-- Do not edit; instead, modify ${p.basename(
-      path)}.template, and run './bin/plugin generate'. -->");
+      templatePath)}, and run './bin/plugin generate'. -->");
   dest.writeln();
-  await new File(p.join(rootPath, 'resources', '$path.template'))
+  await new File(p.join(rootPath, 'resources', templatePath))
       .openRead()
       .transform(UTF8.decoder)
       .transform(new LineSplitter())
@@ -142,7 +144,7 @@ void genTravisYml(List<BuildSpec> specs) {
     env += '  - IDEA_VERSION=${spec.version}\n';
   }
 
-  var templateFile = new File(p.join(rootPath, '.travis.yml.template'));
+  var templateFile = new File(p.join(rootPath, '.travis_template.yml'));
   var templateContents = templateFile.readAsStringSync();
   var header = "# Do not edit; instead, modify ${p.basename(
       templateFile.path)},"

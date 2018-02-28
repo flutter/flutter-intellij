@@ -1,4 +1,4 @@
-<!-- Do not edit; instead, modify studio-contribs.xml.template, and run './bin/plugin generate'. -->
+<!-- Do not edit; instead, modify studio-contribs_template.xml, and run './bin/plugin generate'. -->
 
 <!-- Defines Android Studio IDE-specific contributions and implementations. -->
 <idea-plugin>

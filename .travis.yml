@@ -1,4 +1,4 @@
-# Do not edit; instead, modify .travis.yml.template, and run './bin/plugin generate'.
+# Do not edit; instead, modify .travis_template.yml, and run './bin/plugin generate'.
 
 language: java
 

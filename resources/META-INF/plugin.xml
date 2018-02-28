@@ -1,4 +1,4 @@
-<!-- Do not edit; instead, modify plugin.xml.template, and run './bin/plugin generate'. -->
+<!-- Do not edit; instead, modify plugin_template.xml, and run './bin/plugin generate'. -->
 
 <idea-plugin>
   <id>io.flutter</id>
