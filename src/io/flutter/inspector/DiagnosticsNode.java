@@ -17,10 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -362,7 +359,7 @@ public class DiagnosticsNode {
   }
 
   public boolean hasCreationLocation() {
-    return json.has("creationLocation");
+    return location != null || json.has("creationLocation");
   }
 
   public Location getCreationLocation() {
@@ -592,7 +589,37 @@ public class DiagnosticsNode {
   }
 
   public CompletableFuture<ArrayList<DiagnosticsNode>> getProperties() {
-    return inspectorService.getProperties(getDartDiagnosticRef());
+    final CompletableFuture<ArrayList<DiagnosticsNode>> properties = inspectorService.getProperties(getDartDiagnosticRef());
+    return properties.thenApplyAsync((ArrayList<DiagnosticsNode> nodes) -> {
+      // Map locations to property nodes where available.
+      final Location location = getCreationLocation();
+      if (location != null) {
+        final ArrayList<Location> parameterLocations = location.getParameterLocations();
+        if (parameterLocations != null) {
+            final Map<String, Location> names = new HashMap<>();
+            for (Location pl : parameterLocations) {
+              final String name = pl.getName();
+              if (name != null) {
+                names.put(name, pl);
+              }
+            }
+            for (DiagnosticsNode node : nodes) {
+              final String name = node.getName();
+              if (name != null) {
+                final Location parameterLocation = names.get(name);
+                if (parameterLocation != null) {
+                  node.setCreationLocation(parameterLocation);
+                }
+              }
+            }
+        }
+      }
+      return nodes;
+    });
+  }
+
+  private void setCreationLocation(Location location) {
+    this.location = location;
   }
 
   public InspectorService getInspectorService() {
