@@ -18,9 +18,7 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String previewViewKey = "io.flutter.previewView";
   private static final String previewDart2 = "io.flutter.getPreviewDart2";
-
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -42,9 +40,6 @@ public class FlutterSettings {
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
 
-    if (getEnablePreviewView()) {
-      analytics.sendEvent("settings", afterLastPeriod(previewViewKey));
-    }
     if (getPreviewDart2()) {
       analytics.sendEvent("settings", afterLastPeriod(previewDart2));
     }
@@ -62,16 +57,6 @@ public class FlutterSettings {
 
   public void removeListener(Listener listener) {
     listeners.remove(listener);
-  }
-
-  public boolean getEnablePreviewView() {
-    return getPropertiesComponent().getBoolean(previewViewKey, false);
-  }
-
-  public void setEnablePreviewView(boolean value) {
-    getPropertiesComponent().setValue(previewViewKey, value, false);
-
-    fireEvent();
   }
 
   public boolean getPreviewDart2() {
