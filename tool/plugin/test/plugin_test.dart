@@ -18,8 +18,8 @@ void main() {
     test('deploy', () {
       expect(new DeployCommand(new BuildCommandRunner()).name, "deploy");
     });
-    test('gen', () {
-      expect(new GenCommand(new BuildCommandRunner()).name, "gen");
+    test('generate', () {
+      expect(new GenerateCommand(new BuildCommandRunner()).name, "generate");
     });
   });
 
@@ -240,7 +240,7 @@ class TestDeployCommand extends DeployCommand {
   }
 }
 
-class TestGenCommand extends GenCommand {
+class TestGenCommand extends GenerateCommand {
   TestGenCommand(runner) : super(runner);
 
   bool get isTesting => true;
