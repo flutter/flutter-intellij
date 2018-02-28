@@ -604,8 +604,7 @@ miscellaneous:
     <errorHandler implementation="io.flutter.FlutterErrorReportSubmitter"/>
 
     <toolWindow id="Flutter Outline" anchor="right" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.preview.PreviewViewFactory"
-                conditionClass="io.flutter.preview.PreviewViewCondition"/>
+                factoryClass="io.flutter.preview.PreviewViewFactory"/>
     <projectService serviceInterface="io.flutter.preview.PreviewView"
                     serviceImplementation="io.flutter.preview.PreviewView"
                     overrides="false"/>

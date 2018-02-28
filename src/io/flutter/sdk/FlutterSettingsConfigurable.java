@@ -22,11 +22,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
-import io.flutter.preview.PreviewView;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -36,6 +34,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -55,9 +54,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
-  private JCheckBox myEnablePreviewViewCheckBox;
   private JCheckBox myPreviewDart2CheckBox;
-  private LinkLabel<String> myPreviewViewFeedback;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -83,17 +80,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        FileChooserDescriptorFactory.createSingleFolderDescriptor(),
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
-    myPreviewViewFeedback.setIcon(null);
-    // Add an empty listener to work around a bug in LinkLabel.
-    myPreviewViewFeedback.addMouseListener(new MouseAdapter() {
+    myPrivacyPolicy.addMouseListener(new MouseAdapter() {
+      public void mouseClicked(MouseEvent e) {
+        try {
+          BrowserLauncher.getInstance().browse(new URI(FlutterBundle.message("flutter.analytics.privacyUrl")));
+        }
+        catch (URISyntaxException ignore) {
+        }
+      }
     });
-    myPreviewViewFeedback.setListener((label, linkUrl) -> {
-      try {
-        BrowserLauncher.getInstance().browse(new URI(linkUrl));
-      }
-      catch (URISyntaxException ignore) {
-      }
-    }, PreviewView.FEEDBACK_URL);
   }
 
   private void createUIComponents() {
@@ -141,10 +136,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.getEnablePreviewView() != myEnablePreviewViewCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.getPreviewDart2() != myPreviewDart2CheckBox.isSelected()) {
       return true;
     }
@@ -178,7 +169,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setEnablePreviewView(myEnablePreviewViewCheckBox.isSelected());
     settings.setPreviewDart2(myPreviewDart2CheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -202,7 +192,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    myEnablePreviewViewCheckBox.setSelected(settings.getEnablePreviewView());
     myPreviewDart2CheckBox.setSelected(settings.getPreviewDart2());
   }
 
