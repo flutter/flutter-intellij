@@ -121,7 +121,11 @@ Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
 Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   var file =
       await new File(p.join(rootPath, destDir, path)).create(recursive: true);
+  log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
+  dest.writeln("<!-- Do not edit; instead, modify ${p.basename(
+      path)}.template, and run './bin/plugin generate'. -->");
+  dest.writeln();
   await new File(p.join(rootPath, 'resources', '$path.template'))
       .openRead()
       .transform(UTF8.decoder)
@@ -138,11 +142,13 @@ void genTravisYml(List<BuildSpec> specs) {
     env += '  - IDEA_VERSION=${spec.version}\n';
   }
 
-  var header = "# Do not edit; instead, modify .travis.yml.template,"
+  var templateFile = new File(p.join(rootPath, '.travis.yml.template'));
+  var templateContents = templateFile.readAsStringSync();
+  var header = "# Do not edit; instead, modify ${p.basename(
+      templateFile.path)},"
       " and run './bin/plugin generate'.\n\n";
-  var travisTemplate =
-      new File(p.join(rootPath, '.travis.yml.template')).readAsStringSync();
-  var contents = header + travisTemplate + env;
+  var contents = header + templateContents + env;
+  log('writing ${p.relative(file.path)}');
   file.writeAsStringSync(contents, flush: true);
 }
 
@@ -799,11 +805,9 @@ class GenerateCommand extends ProductCommand {
   Future<int> doit() async {
     var json = readProductMatrix();
     var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
-    log('writing pluginl.xml');
     var value = 1;
     var result = await genPluginFiles(spec, 'resources');
     if (result != null) {
-      log('writing .travis.yml');
       genTravisYml(specs);
       value = 0;
     }
