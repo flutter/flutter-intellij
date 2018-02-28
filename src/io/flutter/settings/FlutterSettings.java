@@ -49,10 +49,10 @@ public class FlutterSettings {
       analytics.sendEvent("settings", afterLastPeriod(previewDart2));
     }
     if (isReloadOnSave()) {
-      analytics.sendEvent("Settings", afterLastPeriod(reloadOnSaveKey));
+      analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
     if (isOpenInspectorOnAppLaunch()) {
-      analytics.sendEvent("Settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+      analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
     }
   }
 
