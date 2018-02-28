@@ -103,12 +103,37 @@ public class OpenInAndroidStudioAction extends AnAction {
     return null;
   }
 
-  private static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
+  @Nullable
+  private static VirtualFile getProjectForFile(@Nullable VirtualFile file) {
+    // Expect true: isProjectFileName(file.getName()), but some flexibility is allowed.
+    if (file == null) {
+      return null;
+    }
+    if (file.isDirectory()) {
+      return isAndroidWithApp(file) ? file : null;
+    }
+    VirtualFile dir = file.getParent();
+    if (isAndroidWithApp(dir)) {
+      // In case someone moves the .iml file, or the project organization gets rationalized.
+      return dir;
+    }
+    VirtualFile project = dir.findChild("android");
+    if (project != null && isAndroidWithApp(project)) {
+      return project;
+    }
+    return null;
+  }
+
+  private static boolean isAndroidWithApp(@NotNull VirtualFile file) {
+    return file.getName().equals("android") && file.findChild("app") != null;
+  }
+
+  protected static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
       if (file != null && file.exists()) {
         if (isProjectFileName(file.getName())) {
-          return file;
+          return getProjectForFile(file);
         }
 
         final Project project = e.getProject();
@@ -121,7 +146,7 @@ public class OpenInAndroidStudioAction extends AnAction {
 
       final Project project = e.getProject();
       if (project != null) {
-        return findStudioProjectFile(project);
+        return getProjectForFile(findStudioProjectFile(project));
       }
     }
     return null;
