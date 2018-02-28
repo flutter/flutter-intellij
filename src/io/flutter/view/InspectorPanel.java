@@ -729,7 +729,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (!node.getShowSeparator() || !node.getShowName()) {
         return;
       }
-      append(node.getName());
+      // Present user defined properties in BOLD.
+      final SimpleTextAttributes attributes =
+        node.hasCreationLocation() ? SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES : SimpleTextAttributes.REGULAR_ATTRIBUTES;
+      append(node.getName(), attributes);
     }
   }
 
@@ -824,7 +827,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
      * two groups.
      */
     private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");
-    
+
     private JTree tree;
     private boolean selected;
 

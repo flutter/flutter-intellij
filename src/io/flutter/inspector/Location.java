@@ -46,6 +46,10 @@ public class Location {
     return JsonUtils.getIntMember(json, "line");
   }
 
+  public String getName() {
+    return JsonUtils.getStringMember(json, "name");
+  }
+
   public int getColumn() {
     return JsonUtils.getIntMember(json, "column");
   }
