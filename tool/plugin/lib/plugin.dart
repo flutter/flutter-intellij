@@ -19,7 +19,7 @@ Future<int> main(List<String> args) async {
   runner.addCommand(new BuildCommand(runner));
   runner.addCommand(new TestCommand(runner));
   runner.addCommand(new DeployCommand(runner));
-  runner.addCommand(new GenCommand(runner));
+  runner.addCommand(new GenerateCommand(runner));
 
   try {
     return await runner.run(args) ?? 0;
@@ -33,33 +33,6 @@ const Map<String, String> plugins = const {
   'io.flutter': '9212',
   'io.flutter.as': '10139', // Currently unused.
 };
-
-const String travisHeader = r'''
-language: java
-
-jdk:
-  - oraclejdk8
-
-install: true
-
-before_script:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
-  - sleep 3 # give xvfb some time to start
-  - git clone https://github.com/flutter/flutter.git --depth 1
-  - export PATH="$PATH":`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin
-  - flutter config --no-analytics
-  - flutter doctor
-  - export FLUTTER_SDK=`pwd`/flutter
-
-# execution
-script: ./tool/travis.sh
-
-# Testing product matrix - see gs://flutter_infra/flutter/intellij/.
-# IDEA_PRODUCT can be one of ideaIC, or android-studio-ide.
-# TODO(devoncarew): Re-enable unit testing on the bots (UNIT_TEST=true).
-env:
-''';
 
 String rootPath;
 int pluginCount = 0;
@@ -159,14 +132,17 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
 }
 
 void genTravisYml(List<BuildSpec> specs) {
-  String envLine(String p, String i, String d) =>
-      '  - IDEA_PRODUCT=$p IDEA_VERSION=$i DART_PLUGIN_VERSION=$d\n';
   var file = new File(p.join(rootPath, '.travis.yml'));
   var env = '';
   for (var spec in specs) {
-    env += envLine(spec.productFile, spec.ideaVersion, spec.dartPluginVersion);
+    env += '  - IDEA_VERSION=${spec.version}\n';
   }
-  var contents = travisHeader + env;
+
+  var header = "# Do not edit; instead, modify .travis.yml.template,"
+      " and run './bin/plugin generate'.\n\n";
+  var travisTemplate =
+      new File(p.join(rootPath, '.travis.yml.template')).readAsStringSync();
+  var contents = header + travisTemplate + env;
   file.writeAsStringSync(contents, flush: true);
 }
 
@@ -248,7 +224,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
         if (isTravisFileValid()) {
           return new Future(() => result);
         } else {
-          log('the .travis.yml file needs updating: plugin gen');
+          log('the .travis.yml file needs updating: plugin generate');
         }
       } else {
         log('the current git branch must be named "release_${cmd
@@ -807,13 +783,14 @@ class DeployCommand extends ProductCommand {
 /// Generate the plugin.xml from the plugin.xml.template file.
 /// If the --release argument is given, create a git branch and
 /// commit the new file to it, assuming the release checks pass.
+///
 /// Note: The product-matrix.json file includes a build spec for the
 /// EAP version at the end. When the EAP version is released that needs
 /// to be updated.
-class GenCommand extends ProductCommand {
+class GenerateCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
-  GenCommand(this.runner) : super('gen');
+  GenerateCommand(this.runner) : super('generate');
 
   String get description =>
       'Generate a valid plugin.xml and .travis.yml for the Flutter plugin.\n'
