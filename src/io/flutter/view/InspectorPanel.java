@@ -89,6 +89,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   // with the Darculaand the default themes.
   private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.ORANGE);
 
+  @NotNull
   public FlutterApp getFlutterApp() {
     return flutterApp;
   }
@@ -104,7 +105,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
 
   public InspectorPanel(FlutterView flutterView,
-                        FlutterApp flutterApp,
+                        @NotNull FlutterApp flutterApp,
                         Computable<Boolean> isApplicable,
                         InspectorService.FlutterTreeType treeType) {
     super(new BorderLayout());

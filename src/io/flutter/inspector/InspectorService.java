@@ -251,9 +251,7 @@ public class InspectorService implements Disposable {
         value.complete(false);
         return value;
       }
-      return invokeServiceMethod("isWidgetTreeReady").thenApplyAsync((InstanceRef ref) -> {
-        return "true".equals(ref.getValueAsString());
-      });
+      return invokeServiceMethod("isWidgetTreeReady").thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
     });
   }
 
@@ -429,8 +427,8 @@ public class InspectorService implements Disposable {
       ret.complete(new HashMap<>());
       return ret;
     }
-    return getInstance(toObservatoryInstanceRef(ref)).thenComposeAsync((Instance instance) -> {
-      return getInspectorLibrary().getClass(instance.getClassRef()).thenApplyAsync((ClassObj clazz) -> {
+    return getInstance(toObservatoryInstanceRef(ref))
+      .thenComposeAsync((Instance instance) -> getInspectorLibrary().getClass(instance.getClassRef()).thenApplyAsync((ClassObj clazz) -> {
         final Map<String, InstanceRef> properties = new LinkedHashMap<>();
         for (FieldRef field : clazz.getFields()) {
           final String name = field.getName();
@@ -451,8 +449,7 @@ public class InspectorService implements Disposable {
           }
         }
         return properties;
-      });
-    });
+      }));
   }
 
   public enum FlutterTreeType {

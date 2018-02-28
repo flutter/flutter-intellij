@@ -363,8 +363,7 @@ class DeviceDaemon {
     // helpers
 
     private static ImmutableList<FlutterDevice> addDevice(Stream<FlutterDevice> old, FlutterDevice newDevice) {
-      final List<FlutterDevice> changed = new ArrayList<>();
-      changed.addAll(removeDevice(old, newDevice.deviceId()));
+      final List<FlutterDevice> changed = new ArrayList<>(removeDevice(old, newDevice.deviceId()));
       changed.add(newDevice);
       changed.sort(Comparator.comparing(FlutterDevice::deviceName));
       return ImmutableList.copyOf(changed);
