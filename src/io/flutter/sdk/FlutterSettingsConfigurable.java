@@ -163,7 +163,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       });
     }
 
-    FlutterInitializer.setCanReportAnalaytics(myReportUsageInformationCheckBox.isSelected());
+    FlutterInitializer.setCanReportAnalytics(myReportUsageInformationCheckBox.isSelected());
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
