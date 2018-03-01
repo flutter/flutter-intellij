@@ -15,6 +15,7 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,8 +69,7 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
-             FlutterModuleUtils.isFlutterBazelProject(project);
+      return FlutterBazelRunConfigurationType.doShowBazelRunConfigurationForProject(project);
     }
   }
 }
