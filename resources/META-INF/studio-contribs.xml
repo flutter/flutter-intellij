@@ -1,3 +1,5 @@
+<!-- Do not edit; instead, modify studio-contribs_template.xml, and run './bin/plugin generate'. -->
+
 <!-- Defines Android Studio IDE-specific contributions and implementations. -->
 <idea-plugin>
 
@@ -7,7 +9,7 @@
   </extensions>
 
   <extensions defaultExtensionNs="com.android.project">
-    <projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>
+    
   </extensions>
 
   <extensions defaultExtensionNs="com.intellij">

@@ -1,3 +1,5 @@
+<!-- Do not edit; instead, modify plugin_template.xml, and run './bin/plugin generate'. -->
+
 <idea-plugin>
   <id>io.flutter</id>
   <name>Flutter</name>
@@ -8,9 +10,7 @@
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
-
-  <version>22.2</version>
-
+  
   <idea-version since-build="171.1" until-build="181.*"/>
 
   <depends>Dart</depends>
@@ -23,8 +23,6 @@
 
   <!-- Contributes Android Studio-specific features and implementations. -->
   <!--suppress PluginXmlValidity -->
-  <!-- depends optional="true" config-file="studio-contribs.xml">com.android.tools.apk</depends -->
-  <!-- note that com.android.tools.apk also implies com.intellij.modules.androidstudio but it is not available in sources -->
   <depends optional="true" config-file="studio-contribs.xml">com.intellij.modules.androidstudio</depends>
 
   <change-notes>

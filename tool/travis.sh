@@ -22,10 +22,18 @@ if [ "$DART_BOT" = true ] ; then
   pub global activate tuneup
   pub global run tuneup
 
+  # ensure that the edits have been applied to template files (and they're target
+  # files have been regenerated)
+  ./bin/plugin generate
+
+  # show any changed file
+  git status --porcelain
+
+  # return a failure exit code if there are any diffs
+  git diff --exit-code
+
   # run the tests for the plugin tool
-  pushd tool/plugin
-  dart test/plugin_test.dart
-  popd
+  (cd tool/plugin; dart test/plugin_test.dart)
 else
   # Run some validations on the repo code.
   ./bin/plugin lint

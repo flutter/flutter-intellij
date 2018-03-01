@@ -8,9 +8,7 @@
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
-
   @VERSION@
-
   <idea-version since-build="@SINCE@" until-build="@UNTIL@"/>
 
   <depends>Dart</depends>
