@@ -7,6 +7,7 @@ package io.flutter.utils;
 
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
@@ -204,6 +205,10 @@ public class FlutterModuleUtils {
 
     final FlutterRunConfigurationType configType = FlutterRunConfigurationType.getInstance();
     final RunManager runManager = RunManager.getInstance(project);
+    if (!runManager.getConfigurationsList(configType).isEmpty()) {
+      // Don't create a run config if one already exists.
+      return;
+    }
 
     final RunnerAndConfigurationSettings settings =
       runManager.createRunConfiguration(project.getName(), configType.getFactory());
