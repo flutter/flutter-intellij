@@ -33,6 +33,7 @@ public class BazelTestFields {
 
   private @Nullable String entryFile;
   private @Nullable String launchScript;
+  // TODO(jwren) figure out if we want additionalArgs as part this configuration
   //private @Nullable String additionalArgs;
   private @Nullable String bazelTarget;
 
@@ -45,6 +46,7 @@ public class BazelTestFields {
   private BazelTestFields(@NotNull BazelTestFields original) {
     entryFile = original.entryFile;
     launchScript = original.launchScript;
+    // TODO(jwren) figure out if we want additionalArgs as part this configuration
     //additionalArgs = original.additionalArgs;
     bazelTarget = original.bazelTarget;
   }
@@ -102,11 +104,13 @@ public class BazelTestFields {
     this.launchScript = launchScript;
   }
 
+  // TODO(jwren) figure out if we want additionalArgs as part this configuration
   //@Nullable
   //public String getAdditionalArgs() {
   //  return additionalArgs;
   //}
-  //
+
+  // TODO(jwren) figure out if we want additionalArgs as part this configuration
   //public void setAdditionalArgs(@Nullable String additionalArgs) {
   //  this.additionalArgs = additionalArgs;
   //}
@@ -154,7 +158,7 @@ public class BazelTestFields {
     //  throw new RuntimeConfigurationError(main.getError());
     //}
 
-    // check launcher script
+    // Check launcher script
     if (StringUtil.isEmptyOrSpaces(launchScript)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
     }
@@ -165,11 +169,11 @@ public class BazelTestFields {
         FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(launchScript)));
     }
 
-    // check that bazel target is not empty
+    // Check that bazel target is not empty
     if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
     }
-    // check that the bazel target starts with "//"
+    // Check that the bazel target starts with "//"
     else if (!bazelTarget.startsWith("//")) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
     }
@@ -197,6 +201,7 @@ public class BazelTestFields {
     final String target = getBazelTarget();
     assert target != null; // already checked
 
+    // TODO(jwren) figure out if we want additionalArgs as part this configuration
     //final String additionalArgs = getAdditionalArgs();
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(appDir.getPath());
@@ -208,7 +213,7 @@ public class BazelTestFields {
       commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
     }
 
-
+    // TODO(jwren) currently a work in progress
     //// User specified additional arguments.
     //final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
     //while (argumentsTokenizer.hasMoreTokens()) {
@@ -221,6 +226,7 @@ public class BazelTestFields {
 
     commandLine.addParameter(target);
 
+    // TODO(jwren) currently a work in progress
     //// Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
     //commandLine.addParameter("--");
     //
