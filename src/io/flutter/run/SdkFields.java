@@ -133,6 +133,8 @@ public class SdkFields {
   SdkFields copy() {
     final SdkFields copy = new SdkFields();
     copy.setFilePath(filePath);
+    copy.setAdditionalArgs(additionalArgs);
+    copy.setBuildFlavor(buildFlavor);
     return copy;
   }
 
