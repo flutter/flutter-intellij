@@ -11,7 +11,7 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
-import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.run.FlutterRunConfigurationType;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -41,7 +41,7 @@ public class TestConfigType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FlutterModuleUtils.hasFlutterModule(project);
+      return FlutterRunConfigurationType.doShowFlutterRunConfigurationForProject(project);
     }
   }
 }

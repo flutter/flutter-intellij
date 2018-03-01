@@ -29,6 +29,15 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     addFactory(factory);
   }
 
+  /**
+   * Defined here for all Flutter run configurations.
+   */
+  public static boolean doShowFlutterRunConfigurationForProject(@NotNull Project project) {
+    return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
+           FlutterModuleUtils.hasFlutterModule(project);
+  }
+
+
   public Factory getFactory() {
     return factory;
   }
@@ -57,8 +66,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
-             FlutterModuleUtils.hasFlutterModule(project);
+      return FlutterRunConfigurationType.doShowFlutterRunConfigurationForProject(project);
     }
   }
 }
