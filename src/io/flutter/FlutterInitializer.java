@@ -76,17 +76,17 @@ public class FlutterInitializer implements StartupActivity {
     return analytics;
   }
 
-  public static void setCanReportAnalaytics(boolean canReportAnalaytics) {
-    if (getCanReportAnalytics() != canReportAnalaytics) {
+  public static void setCanReportAnalytics(boolean canReportAnalytics) {
+    if (getCanReportAnalytics() != canReportAnalytics) {
       final boolean wasReporting = getCanReportAnalytics();
 
       final PropertiesComponent properties = PropertiesComponent.getInstance();
-      properties.setValue(analyticsOptOutKey, !canReportAnalaytics);
+      properties.setValue(analyticsOptOutKey, !canReportAnalytics);
       if (analytics != null) {
         analytics.setCanSend(getCanReportAnalytics());
       }
 
-      if (!wasReporting && canReportAnalaytics) {
+      if (!wasReporting && canReportAnalytics) {
         getAnalytics().sendScreenView("main");
       }
     }
@@ -196,7 +196,7 @@ public class FlutterInitializer implements StartupActivity {
         @Override
         public void actionPerformed(AnActionEvent event) {
           notification.expire();
-          setCanReportAnalaytics(false);
+          setCanReportAnalytics(false);
         }
       });
       Notifications.Bus.notify(notification);
