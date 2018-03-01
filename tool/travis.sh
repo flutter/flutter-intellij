@@ -34,7 +34,6 @@ if [ "$DART_BOT" = true ] ; then
 
   # run the tests for the plugin tool
   (cd tool/plugin; dart test/plugin_test.dart)
-  popd
 else
   # Run some validations on the repo code.
   ./bin/plugin lint
