@@ -18,6 +18,10 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
 
+/**
+ * Open the selected module in Android Studio, re-using the current process
+ * rather than spawning a new process (as IntelliJ does).
+ */
 public class OpenAndroidModule extends OpenInAndroidStudioAction implements DumbAware {
   @Override
   public void actionPerformed(AnActionEvent e) {

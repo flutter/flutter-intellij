@@ -15,6 +15,8 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterStudioStartupActivity implements StartupActivity {
   @Override
   public void runActivity(@NotNull Project project) {
+    // The IntelliJ version of this action spawns a new process for Android Studio.
+    // Since we're already running Android Studio we want to simply open the project in the current process.
     replaceAction("flutter.androidstudio.open", new OpenAndroidModule());
   }
 
