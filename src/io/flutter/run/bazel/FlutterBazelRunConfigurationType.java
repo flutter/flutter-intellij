@@ -26,6 +26,14 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
     addFactory(new Factory(this));
   }
 
+  /**
+   * Defined here for all Flutter Bazel run configurations.
+   */
+  public static boolean doShowBazelRunConfigurationForProject(@NotNull Project project) {
+    return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
+           FlutterModuleUtils.isFlutterBazelProject(project);
+  }
+
   private static class Factory extends ConfigurationFactory {
     public Factory(FlutterBazelRunConfigurationType type) {
       super(type);
@@ -68,8 +76,7 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
-      return FileTypeIndex.containsFileOfType(DartFileType.INSTANCE, GlobalSearchScope.projectScope(project)) &&
-             FlutterModuleUtils.isFlutterBazelProject(project);
+      return FlutterBazelRunConfigurationType.doShowBazelRunConfigurationForProject(project);
     }
   }
 }
