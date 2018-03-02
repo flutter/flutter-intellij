@@ -18,7 +18,9 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String previewDart2 = "io.flutter.getPreviewDart2";
+  private static final String previewDart2Key = "io.flutter.getPreviewDart2";
+  private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
+  private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -41,10 +43,17 @@ public class FlutterSettings {
     analytics.sendEvent("settings", "ping");
 
     if (getPreviewDart2()) {
-      analytics.sendEvent("settings", afterLastPeriod(previewDart2));
+      analytics.sendEvent("settings", afterLastPeriod(previewDart2Key));
     }
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
+    }
+    if (isFormatCodeOnSave()) {
+      analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
+
+      if (isOrganizeImportsOnSaveKey()) {
+        analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
+      }
     }
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
@@ -60,11 +69,11 @@ public class FlutterSettings {
   }
 
   public boolean getPreviewDart2() {
-    return getPropertiesComponent().getBoolean(previewDart2, false);
+    return getPropertiesComponent().getBoolean(previewDart2Key, false);
   }
 
   public void setPreviewDart2(boolean value) {
-    getPropertiesComponent().setValue(previewDart2, value, false);
+    getPropertiesComponent().setValue(previewDart2Key, value, false);
 
     updateAnalysisServerArgs(value);
 
@@ -93,14 +102,34 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
-  public boolean isOpenInspectorOnAppLaunch() {
-    return getPropertiesComponent().getBoolean(openInspectorOnAppLaunchKey, true);
-  }
-
   public void setReloadOnSave(boolean value) {
     getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
 
     fireEvent();
+  }
+
+  public boolean isFormatCodeOnSave() {
+    return getPropertiesComponent().getBoolean(formatCodeOnSaveKey, false);
+  }
+
+  public void setFormatCodeOnSave(boolean value) {
+    getPropertiesComponent().setValue(formatCodeOnSaveKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isOrganizeImportsOnSaveKey() {
+    return getPropertiesComponent().getBoolean(organizeImportsOnSaveKey, false);
+  }
+
+  public void setOrganizeImportsOnSaveKey(boolean value) {
+    getPropertiesComponent().setValue(organizeImportsOnSaveKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isOpenInspectorOnAppLaunch() {
+    return getPropertiesComponent().getBoolean(openInspectorOnAppLaunchKey, true);
   }
 
   public void setOpenInspectorOnAppLaunch(boolean value) {

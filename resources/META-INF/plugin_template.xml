@@ -625,6 +625,9 @@ miscellaneous:
     <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
                     serviceImplementation="io.flutter.run.FlutterReloadManager"
                     overrides="false"/>
+    <projectService serviceInterface="io.flutter.editor.FlutterSaveActionsManager"
+                    serviceImplementation="io.flutter.editor.FlutterSaveActionsManager"
+                    overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 

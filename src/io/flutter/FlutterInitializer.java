@@ -21,6 +21,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
+import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
@@ -151,8 +152,11 @@ public class FlutterInitializer implements StartupActivity {
 
     FlutterRunNotifications.init(project);
 
-    // Watch save actions.
+    // Watch save actions for reload on save.
     FlutterReloadManager.init(project);
+
+    // Watch save actions for format on save.
+    FlutterSaveActionsManager.init(project);
 
     // Start watching for project structure and .packages file changes.
     final FlutterPluginsLibraryManager libraryManager = new FlutterPluginsLibraryManager(project);
