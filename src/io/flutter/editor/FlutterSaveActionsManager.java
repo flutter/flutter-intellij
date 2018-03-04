@@ -14,9 +14,8 @@ import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileDocumentManagerAdapter;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDocumentManager;
@@ -34,8 +33,8 @@ import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.SourceEdit;
 import org.dartlang.analysis.server.protocol.SourceFileEdit;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -95,7 +94,7 @@ public class FlutterSaveActionsManager {
       return;
     }
 
-    final Module module = getModuleForPath(file);
+    final Module module = ModuleUtil.findModuleForFile(file, myProject);
     if (module == null) {
       return;
     }
@@ -112,36 +111,33 @@ public class FlutterSaveActionsManager {
     DartAnalysisServerService.getInstance(myProject).serverReadyForRequest(myProject);
 
     if (settings.isOrganizeImportsOnSaveKey()) {
-      performOrganizeImportsOnSave(document, file);
+      performOrganizeThenFormat(document, file);
     }
     else {
-      performFormatOnSave(document, file, false);
+      performFormat(document, file, false);
     }
   }
 
-  private void performOrganizeImportsOnSave(@NotNull Document document, @NotNull VirtualFile file) {
+  private void performOrganizeThenFormat(@NotNull Document document, @NotNull VirtualFile file) {
     final String filePath = file.getPath();
     final SourceFileEdit fileEdit = DartAnalysisServerService.getInstance(myProject).edit_organizeDirectives(filePath);
+
     if (fileEdit != null) {
       ApplicationManager.getApplication().invokeLater(() -> new WriteCommandAction.Simple(myProject) {
         @Override
         protected void run() {
-          boolean reSave = false;
+          AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
 
-          if (AssistUtils.applyFileEdit(myProject, fileEdit)) {
-            // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
-            PsiDocumentManager.getInstance(myProject).commitDocument(document);
+          // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
+          PsiDocumentManager.getInstance(myProject).commitDocument(document);
 
-            reSave = true;
-          }
-
-          performFormatOnSave(document, file, reSave);
+          performFormat(document, file, true);
         }
       }.execute());
     }
   }
 
-  private void performFormatOnSave(@NotNull Document document, @NotNull VirtualFile file, boolean reSave) {
+  private void performFormat(@NotNull Document document, @NotNull VirtualFile file, boolean reSave) {
     final int lineLength = getRightMargin(myProject);
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(myProject);
 
@@ -175,17 +171,6 @@ public class FlutterSaveActionsManager {
         }
       }
     }.execute());
-  }
-
-  private @Nullable
-  Module getModuleForPath(@NotNull VirtualFile file) {
-    for (final Module module : ModuleManager.getInstance(myProject).getModules()) {
-      if (ModuleRootManager.getInstance(module).getFileIndex().isInContent(file)) {
-        return module;
-      }
-    }
-
-    return null;
   }
 
   private static int getRightMargin(@NotNull Project project) {
