@@ -17,10 +17,11 @@ import java.util.ArrayList;
 
 public class Location {
   final JsonObject json;
-  Location parent;
+  final Location parent;
 
   public Location(JsonObject json, Location parent) {
     this.json = json;
+    this.parent = parent;
   }
 
   public VirtualFile getFile() {

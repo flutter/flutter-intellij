@@ -82,7 +82,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final FlutterApp flutterApp;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
-  private static final DataKey<Tree> INSPECTOR_TREE_KEY = DataKey.create("Flutter.InspectorTree");
+  private static final DataKey<Tree> INSPECTOR_KEY = DataKey.create("Flutter.InspectorKey");
 
   // We have to define this because SimpleTextAttributes does not define a
   // value for warnings. This color looks reasonable for warnings both
@@ -510,7 +510,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     @Nullable
     @Override
     public Object getData(String dataId) {
-      if (INSPECTOR_TREE_KEY.is(dataId)) {
+      if (INSPECTOR_KEY.is(dataId)) {
         return this;
       }
       if (PlatformDataKeys.PREDEFINED_TEXT.is(dataId)) {
@@ -562,7 +562,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     }
   }
 
-  private static class PropertiesPanel extends TreeTableView {
+  private static class PropertiesPanel extends TreeTableView implements DataProvider {
     /**
      * Diagnostic we are displaying properties for.
      */
@@ -593,6 +593,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       getColumnModel().getColumn(1).setPreferredWidth(200);
     }
 
+    private ActionGroup createTreePopupActions() {
+      final DefaultActionGroup group = new DefaultActionGroup();
+      final ActionManager actionManager = ActionManager.getInstance();
+      group.add(actionManager.getAction(InspectorActions.JUMP_TO_SOURCE));
+      return group;
+    }
+
     ListTreeTableModelOnColumns getTreeModel() {
       return (ListTreeTableModelOnColumns)getTableModel();
     }
@@ -614,6 +621,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           return;
         }
         showPropertiesHelper(properties);
+        PopupHandler.installUnknownPopupHandler( this, createTreePopupActions(), ActionManager.getInstance());
       });
     }
 
@@ -701,6 +709,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       }
       return true;
     }
+
+    @Nullable
+    @Override
+    public Object getData(String dataId) {
+      return INSPECTOR_KEY.is(dataId) ? getTree() : null;
+    }
   }
 
   private static SimpleTextAttributes textAttributesForLevel(DiagnosticLevel level) {
@@ -733,6 +747,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final SimpleTextAttributes attributes =
         node.hasCreationLocation() ? SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES : SimpleTextAttributes.REGULAR_ATTRIBUTES;
       append(node.getName(), attributes);
+
+      // TODO(pq): add property description.
+      //setToolTipText(...);
     }
   }
 
@@ -936,6 +953,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   @Nullable
   public static Tree getTree(final DataContext e) {
-    return e.getData(INSPECTOR_TREE_KEY);
+    return e.getData(INSPECTOR_KEY);
   }
 }
