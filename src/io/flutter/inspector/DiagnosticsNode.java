@@ -48,6 +48,7 @@ public class DiagnosticsNode {
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 
   private Location location;
+  private DiagnosticsNode parent;
 
   public DiagnosticsNode(JsonObject json, InspectorService inspectorService) {
     this.inspectorService = inspectorService;
@@ -71,6 +72,21 @@ public class DiagnosticsNode {
     }
 
     return name + getSeparator() + ' ' + getDescription();
+  }
+
+  /**
+   * Set this node's parent.
+   */
+  public void setParent(DiagnosticsNode parent) {
+    this.parent = parent;
+  }
+
+  /**
+   * This node's parent (if it's been set).
+   */
+  @Nullable
+  public DiagnosticsNode getParent() {
+    return parent;
   }
 
   /**
@@ -604,6 +620,7 @@ public class DiagnosticsNode {
               }
             }
             for (DiagnosticsNode node : nodes) {
+              node.setParent(this);
               final String name = node.getName();
               if (name != null) {
                 final Location parameterLocation = names.get(name);
