@@ -14,6 +14,7 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -371,6 +372,24 @@ public class FlutterSdk {
   @Nullable
   public String getDartSdkPath() {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
+  }
+
+  /**
+   * Return the existing 'flutter_tester' executable.
+   */
+  @Nullable
+  public VirtualFile getTester() {
+    final String platformString;
+    if (SystemInfo.isMac) {
+      platformString = "darwin-x64";
+    } else if (SystemInfo.isLinux) {
+      platformString = "linux-x64";
+    } else {
+      return null;
+    }
+
+    final String relativePath = "bin/cache/artifacts/engine/" + platformString + "/flutter_tester";
+    return getHome().findFileByRelativePath(relativePath);
   }
 
   /**

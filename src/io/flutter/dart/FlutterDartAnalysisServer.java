@@ -6,6 +6,7 @@
 package io.flutter.dart;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.concurrency.JobScheduler;
@@ -16,6 +17,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterService;
 import org.dartlang.analysis.server.protocol.SourceChange;
+import org.dartlang.analysis.server.protocol.SourceEdit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -108,12 +110,17 @@ public class FlutterDartAnalysisServer {
     if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
       final String file = paramsObject.get("file").getAsString();
+
+      final JsonElement instrumentedCodeElement = paramsObject.get("instrumentedCode");
+      final String instrumentedCode = instrumentedCodeElement != null ? instrumentedCodeElement.getAsString() : null;
+
       final JsonObject outlineObject = paramsObject.get("outline").getAsJsonObject();
       final FlutterOutline outline = FlutterOutline.fromJson(outlineObject);
+
       final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(file);
       if (listeners != null) {
         for (FlutterOutlineListener listener : Lists.newArrayList(listeners)) {
-          listener.outlineUpdated(file, outline);
+          listener.outlineUpdated(file, outline, instrumentedCode);
         }
       }
     }
