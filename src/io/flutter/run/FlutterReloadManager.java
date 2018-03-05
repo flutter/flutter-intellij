@@ -121,8 +121,8 @@ public class FlutterReloadManager {
     this.mySettings = FlutterSettings.getInstance();
 
     ActionManagerEx.getInstanceEx().addAnActionListener(new AnActionListener.Adapter() {
-      private Project eventProject;
-      private Editor eventEditor;
+      private @Nullable Project eventProject;
+      private @Nullable Editor eventEditor;
 
       public void beforeActionPerformed(AnAction action, DataContext dataContext, AnActionEvent event) {
         if (action instanceof SaveAllAction) {
@@ -163,12 +163,12 @@ public class FlutterReloadManager {
       }
     }, project);
 
-    FlutterSettings.getInstance().addListener(new FlutterSettings.Listener() {
-      boolean reloadOnSave = FlutterSettings.getInstance().isReloadOnSave();
+    mySettings.addListener(new FlutterSettings.Listener() {
+      boolean reloadOnSave = mySettings.isReloadOnSave();
 
       @Override
       public void settingsChanged() {
-        final boolean newReloadOnSave = FlutterSettings.getInstance().isReloadOnSave();
+        final boolean newReloadOnSave = mySettings.isReloadOnSave();
         if (reloadOnSave && !newReloadOnSave) {
           // The user is turning off reload on save; see if we should ask why.
           final PropertiesComponent properties = PropertiesComponent.getInstance();
@@ -244,6 +244,7 @@ public class FlutterReloadManager {
   public void saveAllAndReload(@NotNull FlutterApp app) {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
+
       app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);

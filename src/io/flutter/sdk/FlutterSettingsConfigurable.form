@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="574" height="493"/>
+      <xy x="20" y="20" width="574" height="468"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -94,15 +94,6 @@
               <toolTipText value="http://www.google.com/policies/privacy/"/>
             </properties>
           </component>
-          <component id="87b06" class="javax.swing.JCheckBox" binding="myHotReloadOnSaveCheckBox">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Perform hot reload on save"/>
-              <toolTipText value="On save, hot reload changes into running Flutter apps."/>
-            </properties>
-          </component>
           <component id="be19f" class="javax.swing.JCheckBox" binding="myEnableVerboseLoggingCheckBox" default-binding="true">
             <constraints>
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
@@ -114,15 +105,24 @@
           </component>
           <component id="356a" class="javax.swing.JCheckBox" binding="myOpenInspectorOnAppLaunchCheckBox">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Open Flutter Inspector view on app launch"/>
             </properties>
           </component>
+          <component id="87b06" class="javax.swing.JCheckBox" binding="myHotReloadOnSaveCheckBox">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Perform hot reload on save"/>
+              <toolTipText value="On save, hot reload changes into running Flutter apps."/>
+            </properties>
+          </component>
         </children>
       </grid>
-      <grid id="23e52" layout-manager="GridLayoutManager" row-count="3" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="23e52" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -141,9 +141,27 @@
               <text value="Try out features still under development (a restart may be required)."/>
             </properties>
           </component>
-          <component id="4e9b" class="javax.swing.JCheckBox" binding="myPreviewDart2CheckBox">
+          <component id="8bd46" class="javax.swing.JCheckBox" binding="myOrganizeImportsOnSaveCheckBox" default-binding="true">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Organize imports on save"/>
+              <toolTipText value="On save, organize imports for changed Dart files."/>
+            </properties>
+          </component>
+          <component id="a0dd8" class="javax.swing.JCheckBox" binding="myFormatCodeOnSaveCheckBox" default-binding="true">
             <constraints>
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Format code on save"/>
+              <toolTipText value="On save, run dartfmt on changed Dart files."/>
+            </properties>
+          </component>
+          <component id="4e9b" class="javax.swing.JCheckBox" binding="myPreviewDart2CheckBox">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Run applications with --preview-dart-2"/>
