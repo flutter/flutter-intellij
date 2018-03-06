@@ -48,10 +48,8 @@ void main() async {
   }
 }
 
-Iterable<Element> collectAllElementsFrom(Element rootElement) {
-  return new CachingIterable<Element>(
-      new _DepthFirstElementIterator(rootElement));
-}
+Iterable<Element> collectAllElementsFrom(Element rootElement) =>
+    new CachingIterable<Element>(new _DepthFirstElementIterator(rootElement));
 
 class ElementInfo {
   final ElementInfo parent;
@@ -73,8 +71,8 @@ class ElementInfo {
       }
     };
 
-    for (int i = 0; i < children.length; i++) {
-      children[i].appendToJson(json);
+    for (var child in children) {
+      child.appendToJson(json);
     }
   }
 
@@ -109,6 +107,8 @@ class ElementInfo {
         Element ancestor = getInterestingAncestor(element);
         ElementInfo ancestorInfo = createInfoForElement(ancestor);
         ui.Rect globalBounds = getGlobalBounds(element);
+        // TODO(scheglov) Think about offstage elements.
+        // https://github.com/flutter/flutter-intellij/pull/1882#discussion_r172446305
         info = new ElementInfo(ancestorInfo, id, globalBounds);
         elementToInfoMap[element] = info;
       }
