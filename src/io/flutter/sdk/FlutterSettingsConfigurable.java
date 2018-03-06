@@ -59,6 +59,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myPreviewDart2CheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
+  private JCheckBox myShowPreviewAreaCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -152,6 +153,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isShowPreviewArea() != myShowPreviewAreaCheckBox.isSelected()) {
+      return true;
+    }
+
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
       return true;
     }
@@ -189,6 +194,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
+    settings.setShowPreviewAreaKey(myShowPreviewAreaCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setPreviewDart2(myPreviewDart2CheckBox.isSelected());
@@ -214,6 +220,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
+    myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     myPreviewDart2CheckBox.setSelected(settings.getPreviewDart2());
