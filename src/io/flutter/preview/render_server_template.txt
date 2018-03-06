@@ -7,6 +7,9 @@ import 'package:flutter/material.dart';
 
 // TODO: import library to render
 
+/// We use `to do` comments to mark places where placeholder values should be
+/// replaced with actual values that depend on the which library to import,
+/// which widget to instantiate and render, the size of the preview canvas, etc.
 void main() async {
   try {
     var binding = WidgetsFlutterBinding.ensureInitialized();
