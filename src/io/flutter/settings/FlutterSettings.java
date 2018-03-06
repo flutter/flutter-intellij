@@ -21,6 +21,7 @@ public class FlutterSettings {
   private static final String previewDart2Key = "io.flutter.getPreviewDart2";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
+  private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -57,6 +58,9 @@ public class FlutterSettings {
     }
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+    }
+    if (isShowPreviewArea()) {
+      analytics.sendEvent("settings", afterLastPeriod(showPreviewAreaKey));
     }
   }
 
@@ -124,6 +128,16 @@ public class FlutterSettings {
 
   public void setOrganizeImportsOnSaveKey(boolean value) {
     getPropertiesComponent().setValue(organizeImportsOnSaveKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowPreviewArea() {
+    return getPropertiesComponent().getBoolean(showPreviewAreaKey, false);
+  }
+
+  public void setShowPreviewAreaKey(boolean value) {
+    getPropertiesComponent().setValue(showPreviewAreaKey, value, false);
 
     fireEvent();
   }

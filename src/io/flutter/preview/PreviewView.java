@@ -48,6 +48,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.CustomIconMaker;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
@@ -77,8 +78,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   public static final String TOOL_WINDOW_ID = "Flutter Outline";
 
   public static final String FEEDBACK_URL = "https://goo.gl/forms/MbPU0kcPqBO6tunH3";
-
-  private static final boolean SHOW_PREVIEW_AREA = false;
 
   @NotNull
   private final PreviewViewState state = new PreviewViewState();
@@ -185,7 +184,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     this.project = project;
     flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
 
-    if (SHOW_PREVIEW_AREA) {
+    if (FlutterSettings.getInstance().isShowPreviewArea()) {
       myRenderHelper = new RenderHelper(project, renderListener);
     } else {
       myRenderHelper = null;
@@ -560,7 +559,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       applyEditorSelectionToTree(caret);
     }
 
-    if (SHOW_PREVIEW_AREA) {
+    if (FlutterSettings.getInstance().isShowPreviewArea()) {
       if (ModelUtils.containsBuildMethod(outline)) {
         splitter.setSecondComponent(previewArea.panel);
       }
