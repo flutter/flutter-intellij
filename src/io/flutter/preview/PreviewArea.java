@@ -11,9 +11,13 @@ import org.dartlang.analysis.server.protocol.FlutterOutline;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 // TODO: have a way to tell the panel whether it's hidden or shown
@@ -32,22 +36,26 @@ public class PreviewArea {
 
   @SuppressWarnings("UseJBColor")
   private static final Color[] pastelColors = new Color[]{
-    new Color(255,132,203),
-    new Color(168,231,234),
-    new Color(251,255,147),
-    new Color(143,255,159),
-    new Color(193,149,255),
+    new Color(255, 132, 203),
+    new Color(168, 231, 234),
+    new Color(251, 255, 147),
+    new Color(143, 255, 159),
+    new Color(193, 149, 255),
   };
 
   private final Listener myListener;
 
   public final JPanel panel = new JPanel();
+  private final JPanel handleLayer = new JPanel(null);
 
   private final Map<Integer, FlutterOutline> idToOutline = new HashMap<>();
 
   private int rootWidgetId;
   private Rectangle rootWidgetBounds;
   private final Map<Integer, Rectangle> idToGlobalBounds = new HashMap<>();
+
+  private final Map<FlutterOutline, JComponent> outlineToComponent = new HashMap<>();
+  private final List<SelectionEditPolicy> selectionComponents = new ArrayList<>();
 
   private int colorIndex = 0;
 
@@ -56,6 +64,15 @@ public class PreviewArea {
 
     panel.setLayout(new BorderLayout());
     clear();
+
+    handleLayer.setOpaque(false);
+    panel.addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentResized(ComponentEvent e) {
+        handleLayer.setBounds(0, 0, panel.getWidth(), panel.getHeight());
+      }
+    });
+    panel.add(handleLayer);
   }
 
   public void clear() {
@@ -73,6 +90,7 @@ public class PreviewArea {
 
     panel.removeAll();
     panel.setLayout(null);
+    panel.add(handleLayer, 0);
 
     final FlutterOutline rootOutline = idToOutline.get(rootWidgetId);
     if (rootOutline == null) {
@@ -82,6 +100,24 @@ public class PreviewArea {
 
     colorIndex = 0;
     renderWidgetOutline(rootOutline);
+    panel.repaint();
+  }
+
+  public void select(List<FlutterOutline> outlines) {
+    for (SelectionEditPolicy policy : selectionComponents) {
+      policy.deactivate();
+    }
+    selectionComponents.clear();
+
+    for (FlutterOutline outline : outlines) {
+      final JComponent widget = outlineToComponent.get(outline);
+      if (widget != null) {
+        final SelectionEditPolicy selectionPolicy = new SelectionEditPolicy(handleLayer, widget);
+        selectionComponents.add(selectionPolicy);
+        selectionPolicy.activate();
+      }
+    }
+
     panel.repaint();
   }
 
@@ -118,7 +154,9 @@ public class PreviewArea {
         }
 
         idToGlobalBounds.put(id, rect);
-      } catch (Throwable ignored) {}
+      }
+      catch (Throwable ignored) {
+      }
     }
   }
 
@@ -134,6 +172,8 @@ public class PreviewArea {
         final JPanel widget = new JPanel();
         widget.setBackground(pastelColors[(colorIndex++) % pastelColors.length]);
         widget.setBounds(rect);
+
+        outlineToComponent.put(outline, widget);
 
         widget.addMouseListener(new MouseAdapter() {
           @Override
@@ -162,6 +202,7 @@ public class PreviewArea {
 
   interface Listener {
     void clicked(FlutterOutline outline);
+
     void doubleClicked(FlutterOutline outline);
   }
 }

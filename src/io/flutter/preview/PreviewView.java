@@ -469,6 +469,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     if (myRenderHelper != null) {
       myRenderHelper.setOffset(offset);
+      previewArea.select(ImmutableList.of(outline));
     }
   }
 
@@ -757,7 +758,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     applyOutlinesSelectionToTree(selectedOutlines);
 
     if (myRenderHelper != null) {
-      myRenderHelper.setOffset(caret.getOffset());
+      final int offset = caret.getOffset();
+      myRenderHelper.setOffset(offset);
+      previewArea.select(selectedOutlines);
     }
   }
 
