@@ -108,12 +108,17 @@ public class FlutterDartAnalysisServer {
     if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
       final String file = paramsObject.get("file").getAsString();
+
+      final JsonElement instrumentedCodeElement = paramsObject.get("instrumentedCode");
+      final String instrumentedCode = instrumentedCodeElement != null ? instrumentedCodeElement.getAsString() : null;
+
       final JsonObject outlineObject = paramsObject.get("outline").getAsJsonObject();
       final FlutterOutline outline = FlutterOutline.fromJson(outlineObject);
+
       final List<FlutterOutlineListener> listeners = fileOutlineListeners.get(file);
       if (listeners != null) {
         for (FlutterOutlineListener listener : Lists.newArrayList(listeners)) {
-          listener.outlineUpdated(file, outline);
+          listener.outlineUpdated(file, outline, instrumentedCode);
         }
       }
     }
