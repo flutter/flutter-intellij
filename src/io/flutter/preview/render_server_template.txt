@@ -181,8 +181,8 @@ class _DesignerApp extends StatelessWidget {
       home: new Scaffold(
         body: new Center(
           child: new SizedBox(
-            width: 350.0,
-            height: 400.0,
+            width: 350.0 /*TODO: width*/,
+            height: 400.0 /*TODO: height*/,
             child: widget,
           ),
         ),

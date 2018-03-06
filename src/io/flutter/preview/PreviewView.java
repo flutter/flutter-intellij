@@ -186,7 +186,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     if (FlutterSettings.getInstance().isShowPreviewArea()) {
       myRenderHelper = new RenderHelper(project, renderListener);
-    } else {
+    }
+    else {
       myRenderHelper = null;
     }
 
@@ -338,6 +339,13 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       public void doubleClicked(FlutterOutline outline) {
         applyOutlinesSelectionToTree(ImmutableList.of(outline));
         jumpToOutlineInEditor(outline, true);
+      }
+
+      @Override
+      public void resized(int width, int height) {
+        if (myRenderHelper != null) {
+          myRenderHelper.setSize(width, height);
+        }
       }
     });
 
