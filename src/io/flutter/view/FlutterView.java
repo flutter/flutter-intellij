@@ -373,6 +373,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     ApplicationManager.getApplication().invokeLater(() -> {
+      if (myProject.isDisposed()) {
+        return;
+      }
+
       final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
       final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
 
