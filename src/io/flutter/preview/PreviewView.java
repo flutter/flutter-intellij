@@ -1024,7 +1024,7 @@ class OutlineObject {
   }
 
   /**
-   * Return the string that is suitable for speed search. It has every name part separted so that we search only inside individual name
+   * Return the string that is suitable for speed search. It has every name part separated so that we search only inside individual name
    * parts, but not in their accidential concatenation.
    */
   @NotNull
