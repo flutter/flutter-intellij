@@ -198,7 +198,7 @@ public class InstallSdkAction extends DumbAwareAction {
           public void validateSelectedFiles(VirtualFile[] files) throws Exception {
             for (VirtualFile file : files) {
               if (file.findChild("flutter") != null) {
-                throw new IllegalArgumentException("A file callled 'flutter' already exists in this location.");
+                throw new IllegalArgumentException("A file called 'flutter' already exists in this location.");
               }
             }
           }
