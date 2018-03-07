@@ -420,7 +420,7 @@ public class DiagnosticsNode {
   /**
    * Whether the value of the property is a Diagnosticable value itself.
    * Optionally, properties that are themselves Diagnosticable should be
-   * deplayed as trees of diagnosticable properties and children.
+   * displayed as trees of diagnosticable properties and children.
    * <p>
    * TODO(jacobr): add helpers to get the properties and children of
    * this diagnosticable value even if getChildren and getProperties
