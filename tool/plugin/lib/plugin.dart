@@ -242,7 +242,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       log('the current git branch has uncommitted changes');
     }
   } else {
-    log('the currect working directory is not managed by git: $rootPath');
+    log('the current working directory is not managed by git: $rootPath');
   }
   return new Future(() => false);
 }
