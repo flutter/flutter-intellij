@@ -185,7 +185,7 @@ public class RenderHelper {
         return;
       }
 
-      // The output stream must have a single line with the JSON reponse.
+      // The output stream must have a single line with the JSON response.
       JsonObject response = null;
       final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
       while (true) {
