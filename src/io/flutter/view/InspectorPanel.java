@@ -752,6 +752,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       append(node.getName(), attributes);
 
       // Set property description in tooltip.
+      // TODO (pq):
+      //  * consider tooltips for values
+      //  * consider rich navigation hovers (w/ styling and navigable docs)
       final CompletableFuture<String> propertyDoc = node.getPropertyDoc();
       final String doc = propertyDoc.getNow(null);
       if (doc != null) {
