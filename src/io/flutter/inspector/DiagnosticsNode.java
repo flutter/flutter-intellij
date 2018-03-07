@@ -90,7 +90,7 @@ public class DiagnosticsNode {
   }
 
   /**
-   * Seperator text to show between property names and values.
+   * Separator text to show between property names and values.
    */
   public String getSeparator() {
     return getShowSeparator() ? ":" : "";
