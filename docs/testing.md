@@ -35,7 +35,7 @@ Validate basic project creation.
     * Change `primarySwatch: Colors` to some other color and validate that you
       get completions.
 
-* Create a **plugin project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`), specify "Plugin" as the project type and select "Swfit" for the iOS language.
+* Create a **plugin project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`), specify "Plugin" as the project type and select "Swift" for the iOS language.
 * Confirm that:
   * Project contents are created.
     * Verify that `<project root>/ios/Classes/Swift<Project Name>Plugin.swift` exists.
