@@ -803,7 +803,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.setSelectionPaths(selectedPaths.toArray(new TreePath[selectedPaths.size()]));
     tree.addTreeSelectionListener(treeSelectionListener);
 
-    // JTree attempts to show as much of the node as possible, so scrolls horizonally.
+    // JTree attempts to show as much of the node as possible, so scrolls horizontally.
     // But we actually need to see the whole hierarchy, so we scroll back to zero.
     scrollPane.getHorizontalScrollBar().setValue(0);
   }
