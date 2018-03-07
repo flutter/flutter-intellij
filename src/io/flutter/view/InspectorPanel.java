@@ -785,7 +785,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (propertiesFuture != null && propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
         final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
         if (node.isEnumProperty() && properties != null) {
-          // We can display a better tooltip as we have access to introsection
+          // We can display a better tooltip as we have access to introspection
           // via the observatory service.
           setToolTipText("Allowed values:\n" + Joiner.on('\n').join(properties.keySet()));
         }
