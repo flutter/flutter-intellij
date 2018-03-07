@@ -160,11 +160,11 @@ public class RenderHelper {
 
       final URL templateUri = RenderHelper.class.getResource("render_server_template.txt");
       String template = Resources.toString(templateUri, StandardCharsets.UTF_8);
-      template = template.replace("// TODO: import library to render", "import '" + toRenderFile.toURI() + "';");
-      template = template.replace("new Container(); // TODO: create widget", widgetCreation);
-      template = template.replace("{}; // TODO: use flutterDesignerWidgets", "flutterDesignerWidgets;");
-      template = template.replace("350.0 /*TODO: width*/", request.width + ".0");
-      template = template.replace("400.0 /*TODO: height*/", request.height + ".0");
+      template = template.replace("// TEMPLATE_VALUE: import library to render", "import '" + toRenderFile.toURI() + "';");
+      template = template.replace("new Container(); // TEMPLATE_VALUE: create widget", widgetCreation);
+      template = template.replace("{}; // TEMPLATE_VALUE: use flutterDesignerWidgets", "flutterDesignerWidgets;");
+      template = template.replace("350.0 /*TEMPLATE_VALUE: width*/", request.width + ".0");
+      template = template.replace("400.0 /*TEMPLATE_VALUE: height*/", request.height + ".0");
 
       final String renderServerPath = request.file.getParent().getPath() + File.separator + ".render_server._dart";
       final File renderServerFile = new File(renderServerPath);
