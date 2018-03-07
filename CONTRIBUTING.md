@@ -56,7 +56,7 @@ In order to be able to run a single test class or test method you need to do the
   VM Options to the corresponding field
 * Repeat the same with Working directory field - it must point to intellij-community/bin
 
-## Working with Andriod Studio
+## Working with Android Studio
 
 1. Initialize Android Studio sources.
 2. Checkout Flutter plugin sources, tip of tree.

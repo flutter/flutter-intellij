@@ -33,7 +33,7 @@ Android code to be edited normally by opening the Flutter
 project but this requires some changes to Android Studio to
 implement.
 
-If you have not run your Flutter app you may see Andriod Studio
+If you have not run your Flutter app you may see Android Studio
 report a build error when you open the `android` project.
 Use Build>Make Project to fix it.
 
