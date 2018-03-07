@@ -30,6 +30,7 @@ import io.flutter.inspector.*;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncRateLimiter;
+import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.ColorIconMaker;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
@@ -97,7 +98,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private DefaultMutableTreeNode selectedNode;
 
   private CompletableFuture<DiagnosticsNode> pendingSelectionFuture;
-  private boolean myIsListening = false;
+  @SuppressWarnings("FieldMayBeFinal") private boolean myIsListening = false;
   private boolean isActive = false;
 
   private final AsyncRateLimiter refreshRateLimiter;
@@ -495,6 +496,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       DebuggerUIUtil.registerActionOnComponent(InspectorActions.JUMP_TO_TYPE_SOURCE, this, this);
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Override
     protected void paintComponent(final Graphics g) {
       // TOOD(jacobr): actually perform some custom painting.
@@ -597,6 +599,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final DefaultActionGroup group = new DefaultActionGroup();
       final ActionManager actionManager = ActionManager.getInstance();
       group.add(actionManager.getAction(InspectorActions.JUMP_TO_SOURCE));
+      // TODO(pq): implement
+      //group.add(new JumpToPropertyDeclarationAction());
       return group;
     }
 
@@ -621,7 +625,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           return;
         }
         showPropertiesHelper(properties);
-        PopupHandler.installUnknownPopupHandler( this, createTreePopupActions(), ActionManager.getInstance());
+        PopupHandler.installUnknownPopupHandler(this, createTreePopupActions(), ActionManager.getInstance());
       });
     }
 
@@ -632,9 +636,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         getEmptyText().setText(FlutterBundle.message("app.inspector.no_properties"));
         return;
       }
-      CompletableFuture<Void> loaded = loadPropertyMetadata(properties);
-
-      whenCompleteUiThread(loaded, (Void ignored, Throwable errorGettingInstances) -> {
+      final CompletableFuture<Void> loaded = loadPropertyMetadata(properties);
+      whenCompleteUiThread(loadPropertyMetadata(properties), (Void ignored, Throwable errorGettingInstances) -> {
         if (errorGettingInstances != null) {
           // TODO(jacobr): show error message explaining properties could not
           // be loaded.
@@ -679,7 +682,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         refreshComplete.complete(null);
         return refreshComplete;
       }
-      CompletableFuture<ArrayList<DiagnosticsNode>> propertiesFuture = diagnostic.getProperties();
+      final CompletableFuture<ArrayList<DiagnosticsNode>> propertiesFuture = diagnostic.getProperties();
       whenCompleteUiThread(propertiesFuture, (ArrayList<DiagnosticsNode> properties, Throwable throwable) -> {
         if (throwable != null) {
           return;
@@ -748,8 +751,20 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         node.hasCreationLocation() ? SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES : SimpleTextAttributes.REGULAR_ATTRIBUTES;
       append(node.getName(), attributes);
 
-      // TODO(pq): add property description.
-      //setToolTipText(...);
+      // Set property description in tooltip.
+      final CompletableFuture<String> propertyDoc = node.getPropertyDoc();
+      final String doc = propertyDoc.getNow(null);
+      if (doc != null) {
+        setToolTipText(doc);
+      }
+      else {
+        AsyncUtils.whenCompleteUiThread(propertyDoc, (String tooltip, Throwable th) -> {
+          if (th != null) {
+            LOG.warn(th);
+          }
+          setToolTipText(tooltip);
+        });
+      }
     }
   }
 

@@ -11,11 +11,14 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.Alarm;
 import com.intellij.util.ReflectionUtil;
+import com.intellij.xdebugger.XSourcePosition;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.IsolatesInfo;
 import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -165,6 +168,13 @@ public class EvalOnDartLibrary implements Disposable {
     return future;
   }
 
+  @NotNull
+  public CompletableFuture<XSourcePosition> getSourcePosition(DartVmServiceDebugProcess debugProcess,  ScriptRef script, int tokenPos) {
+    final CompletableFuture<XSourcePosition> future = new CompletableFuture<>();
+    myRequestsScheduler.addRequest(() -> future.complete(debugProcess.getSourcePosition(isolateId, script, tokenPos)), 0);
+    return future;
+  }
+
   public CompletableFuture<Instance> getInstance(InstanceRef instance) {
     return getObjHelper(instance);
   }
@@ -174,6 +184,10 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   public CompletableFuture<ClassObj> getClass(ClassRef instance) {
+    return getObjHelper(instance);
+  }
+
+  public CompletableFuture<Func> getFunc(FuncRef instance) {
     return getObjHelper(instance);
   }
 
