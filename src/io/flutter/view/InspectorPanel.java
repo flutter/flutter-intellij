@@ -265,15 +265,15 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (!(node.getUserObject() instanceof DiagnosticsNode)) {
       return;
     }
-    final DiagnosticsNode diagonsticsNode = (DiagnosticsNode)node.getUserObject();
-    if (diagonsticsNode.hasChildren()) {
+    final DiagnosticsNode diagnosticsNode = (DiagnosticsNode)node.getUserObject();
+    if (diagnosticsNode.hasChildren()) {
       if (placeholderChildren(node)) {
-        whenCompleteUiThread(diagonsticsNode.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
+        whenCompleteUiThread(diagnosticsNode.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
           if (throwable != null) {
             // Display that children failed to load.
             return;
           }
-          if (node.getUserObject() != diagonsticsNode) {
+          if (node.getUserObject() != diagnosticsNode) {
             // Node changed, this data is stale.
             return;
           }
