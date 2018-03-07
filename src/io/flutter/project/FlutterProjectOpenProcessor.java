@@ -14,6 +14,7 @@ import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.ProjectOpenActivity;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
@@ -45,9 +46,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
   @Override
   public boolean canOpenProject(@Nullable VirtualFile file) {
-    if (file == null) return false;
-    final PubRoot root = PubRoot.forDirectory(file);
-    return root != null && root.declaresFlutter();
+    return FlutterUtils.isFlutterProjectRoot(file);
   }
 
   /**

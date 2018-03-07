@@ -15,6 +15,12 @@
 
   <depends>Dart</depends>
 
+  <application-components>
+    <component>
+      <implementation-class>io.flutter.FlutterInitialConfigurator</implementation-class>
+    </component>
+  </application-components>
+
   <!-- plugin compatibility -->
   <!-- see: http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html -->
 

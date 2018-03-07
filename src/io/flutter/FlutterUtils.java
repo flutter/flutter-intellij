@@ -10,6 +10,8 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.extensions.PluginId;
@@ -58,6 +60,12 @@ public class FlutterUtils {
     ApplicationManager.getApplication().invokeAndWait(
       runnable,
       ModalityState.defaultModalityState());
+  }
+
+  public static boolean isFlutterProjectRoot(@Nullable VirtualFile file) {
+    if (file == null) return false;
+    final PubRoot root = PubRoot.forDirectory(file);
+    return root != null && root.declaresFlutter();
   }
 
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
@@ -216,6 +224,18 @@ public class FlutterUtils {
     final PluginId pluginId = PluginId.findId("io.flutter");
     assert pluginId != null;
     return pluginId;
+  }
+
+  public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
+    final ActionManager actionManager = ActionManager.getInstance();
+    final AnAction oldAction = actionManager.getAction(actionId);
+    if (oldAction != null) {
+      newAction.getTemplatePresentation().setIcon(oldAction.getTemplatePresentation().getIcon());
+      newAction.getTemplatePresentation().setText(oldAction.getTemplatePresentation().getTextWithMnemonic(), true);
+      newAction.getTemplatePresentation().setDescription(oldAction.getTemplatePresentation().getDescription());
+      actionManager.unregisterAction(actionId);
+    }
+    actionManager.registerAction(actionId, newAction);
   }
 
   /**
