@@ -840,7 +840,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private class DiagnosticsTreeCellRenderer extends ColoredTreeCellRenderer {
     /**
      * Split text into two groups, word characters at the start of a string
-     * and all other chracters. Skip an <code>-</code> or <code>#</code> between the
+     * and all other characters. Skip an <code>-</code> or <code>#</code> between the
      * two groups.
      */
     private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");
