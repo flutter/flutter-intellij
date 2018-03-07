@@ -156,7 +156,7 @@ public class DeviceService {
   }
 
   /**
-   * Updates the device daemon to what it should be based on current configuation.
+   * Updates the device daemon to what it should be based on current configuration.
    * <p>
    * <p>This might mean starting it, stopping it, or restarting it.
    */

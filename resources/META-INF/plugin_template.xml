@@ -385,7 +385,7 @@ miscellaneous:
 0.1.5:
 <ul>
   <li>console filtering for flutter run output</li>
-  <li>improved messaging for incomplete Flutter SDK configirations</li>
+  <li>improved messaging for incomplete Flutter SDK configurations</li>
   <li>support for new application events produced by Flutter tools</li>
   <li>fixed duplicate service protocol console logging</li>
   <li>Flutter run configuration cleanup</li>
