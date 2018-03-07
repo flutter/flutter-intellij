@@ -166,7 +166,7 @@
   {
     "name": "TabBarView",
     "sample": "TabBarView_index",
-    "description": "A page view that displays the widget which corresponds to the currently selected tab. Typically used in conjuction with a TabBar.",
+    "description": "A page view that displays the widget which corresponds to the currently selected tab. Typically used in conjunction with a TabBar.",
     "categories": [],
     "subcategories": [
       "App structure and navigation"
