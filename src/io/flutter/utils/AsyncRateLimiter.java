@@ -62,7 +62,7 @@ public class AsyncRateLimiter implements Disposable {
       performRequest();
     }
     else {
-      // Track that we have sheduled a request and then schedule the request
+      // Track that we have scheduled a request and then schedule the request
       // to occur once the rate limiter is available.
       requestScheduledButNotStarted = true;
       requestScheduler.addRequest(() -> {
