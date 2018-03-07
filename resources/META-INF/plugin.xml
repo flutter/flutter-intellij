@@ -215,7 +215,7 @@ miscellaneous:
   <li>fix to ensure the `Install SDK…` action is always visible</li>
   <li>support for running a single Flutter test, by name</li>
   <li>install creation progress UI fixes</li>
-  <li>project creation fixes for smalll IDEs</li>
+  <li>project creation fixes for small IDEs</li>
   <li>fixes to android emulator launching</li>
 </ul>
 
