@@ -299,7 +299,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     private final FlutterGeneratorPeer myPeer;
 
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
-      //TODO(pq): find a way to listen to wizard cancelation and propogate to peer.
+      //TODO(pq): find a way to listen to wizard cancelation and propagate to peer.
       myPeer = new FlutterGeneratorPeer(context);
     }
 
