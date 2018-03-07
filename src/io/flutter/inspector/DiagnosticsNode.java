@@ -10,8 +10,16 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.xdebugger.XSourcePosition;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
+import org.dartlang.analysis.server.protocol.HoverInformation;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -49,6 +57,8 @@ public class DiagnosticsNode {
 
   private Location location;
   private DiagnosticsNode parent;
+
+  private CompletableFuture<String> propertyDocFuture;
 
   public DiagnosticsNode(JsonObject json, InspectorService inspectorService) {
     this.inspectorService = inspectorService;
@@ -608,31 +618,71 @@ public class DiagnosticsNode {
     final CompletableFuture<ArrayList<DiagnosticsNode>> properties = inspectorService.getProperties(getDartDiagnosticRef());
     return properties.thenApplyAsync((ArrayList<DiagnosticsNode> nodes) -> {
       // Map locations to property nodes where available.
-      final Location location = getCreationLocation();
-      if (location != null) {
-        final ArrayList<Location> parameterLocations = location.getParameterLocations();
+      final Location creationLocation = getCreationLocation();
+      if (creationLocation != null) {
+        final ArrayList<Location> parameterLocations = creationLocation.getParameterLocations();
         if (parameterLocations != null) {
-            final Map<String, Location> names = new HashMap<>();
-            for (Location pl : parameterLocations) {
-              final String name = pl.getName();
-              if (name != null) {
-                names.put(name, pl);
+          final Map<String, Location> names = new HashMap<>();
+          for (Location location : parameterLocations) {
+            final String name = location.getName();
+            if (name != null) {
+              names.put(name, location);
+            }
+          }
+          for (DiagnosticsNode node : nodes) {
+            node.setParent(this);
+            final String name = node.getName();
+            if (name != null) {
+              final Location parameterLocation = names.get(name);
+              if (parameterLocation != null) {
+                node.setCreationLocation(parameterLocation);
               }
             }
-            for (DiagnosticsNode node : nodes) {
-              node.setParent(this);
-              final String name = node.getName();
-              if (name != null) {
-                final Location parameterLocation = names.get(name);
-                if (parameterLocation != null) {
-                  node.setCreationLocation(parameterLocation);
-                }
-              }
-            }
+          }
         }
       }
       return nodes;
     });
+  }
+
+  @NotNull
+  public CompletableFuture<String> getPropertyDoc() {
+    if (propertyDocFuture == null) {
+      propertyDocFuture = createPropertyDocFurure();
+    }
+    return propertyDocFuture;
+  }
+
+  private CompletableFuture<String> createPropertyDocFurure() {
+    final DiagnosticsNode parent = getParent();
+    if (parent != null) {
+      return inspectorService.toDartVmServiceValueForSourceLocation(parent.getValueRef())
+        .thenComposeAsync((DartVmServiceValue vmValue) -> inspectorService.getPropertyLocation(vmValue.getInstanceRef(), getName())
+          .thenApplyAsync((XSourcePosition sourcePosition) -> {
+            if (sourcePosition != null) {
+              final VirtualFile file = sourcePosition.getFile();
+              final int offset = sourcePosition.getOffset();
+
+              final Project project = getProject(file);
+              if (project != null) {
+                final List<HoverInformation> hovers =
+                  DartAnalysisServerService.getInstance(project).analysis_getHover(file, offset);
+                if (!hovers.isEmpty()) {
+                  return hovers.get(0).getDartdoc();
+                }
+              }
+            }
+            return "Unable to find property source";
+          }));
+    }
+
+    return CompletableFuture.completedFuture("Unable to find property source");
+  }
+
+  @Nullable
+  private Project getProject(@NotNull VirtualFile file) {
+    final FlutterApp app = inspectorService.getApp();
+    return app != null ? app.getProject() : ProjectUtil.guessProjectForFile(file);
   }
 
   private void setCreationLocation(Location location) {
