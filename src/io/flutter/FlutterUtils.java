@@ -134,7 +134,7 @@ public class FlutterUtils {
    * Checks whether a given string is a Dart keyword.
    *
    * @param string the string to check
-   * @return true if a keyword, false oetherwise
+   * @return true if a keyword, false otherwise
    */
   public static boolean isDartKeyword(@NotNull String string) {
     return FlutterConstants.DART_KEYWORDS.contains(string);
