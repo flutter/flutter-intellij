@@ -11,6 +11,7 @@ import com.intellij.ide.util.newProjectWizard.AddModuleWizard;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.project.Project;
@@ -25,8 +26,11 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public class FlutterImportProjectAction extends AnAction {
+
+  private static final Logger LOG = Logger.getInstance(FlutterImportProjectAction.class);
+
   @NotNull
-  private AnAction delegateAction;
+  private final AnAction delegateAction;
   @Nullable
   private final Icon icon;
 
@@ -61,15 +65,21 @@ public class FlutterImportProjectAction extends AnAction {
         }
         else {
           if (delegateAction instanceof ImportModuleAction) {
-            AddModuleWizard wizard = ImportModuleAction.createImportWizard(project, null, selection, ArrayUtil
-              .toObjectArray(ImportModuleAction.getProviders(project), ProjectImportProvider.class));
-            if (wizard != null && (wizard.getStepCount() <= 0 || wizard.showAndGet())) {
-              ImportModuleAction.createFromWizard(project, wizard);
-              return;
+            try {
+              final AddModuleWizard wizard = ImportModuleAction.createImportWizard(project, null, selection, ArrayUtil
+                .toObjectArray(ImportModuleAction.getProviders(project), ProjectImportProvider.class));
+              if (wizard != null && (wizard.getStepCount() <= 0 || wizard.showAndGet())) {
+                ImportModuleAction.createFromWizard(project, wizard);
+                return;
+              }
             }
+            catch (Throwable th) {
+              // Be extra defensive in the off chance that something goes sideways in our delegate to the ImportModuleAction.
+              LOG.error(th);
+            }
+            // Fall back on delegate action.
+            delegateAction.actionPerformed(e);
           }
-          // Fall back on delegate action.
-          delegateAction.actionPerformed(e);
         }
       });
   }
