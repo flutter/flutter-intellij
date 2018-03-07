@@ -134,7 +134,7 @@ miscellaneous:
 
 19.0:
 <ul>
-  <li>fixed an issue with reload when mutiple project windows are open</li>
+  <li>fixed an issue with reload when multiple project windows are open</li>
   <li>fixed running Flutter tests in nested groups</li>
   <li>fixed miscellaneous project wizard issues</li>
   <li>fix to ensure we don't create Flutter library entries for non-Flutter projects</li>
