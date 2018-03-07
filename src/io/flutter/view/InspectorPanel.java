@@ -636,7 +636,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         getEmptyText().setText(FlutterBundle.message("app.inspector.no_properties"));
         return;
       }
-      final CompletableFuture<Void> loaded = loadPropertyMetadata(properties);
       whenCompleteUiThread(loadPropertyMetadata(properties), (Void ignored, Throwable errorGettingInstances) -> {
         if (errorGettingInstances != null) {
           // TODO(jacobr): show error message explaining properties could not
@@ -761,9 +760,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         setToolTipText(doc);
       }
       else {
+        // Make sure we see nothing stale while we wait.
+        setToolTipText(null);
         AsyncUtils.whenCompleteUiThread(propertyDoc, (String tooltip, Throwable th) -> {
           if (th != null) {
-            LOG.warn(th);
+            LOG.error(th);
           }
           setToolTipText(tooltip);
         });

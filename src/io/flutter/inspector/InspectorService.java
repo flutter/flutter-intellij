@@ -15,6 +15,7 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
@@ -65,6 +66,10 @@ public class InspectorService implements Disposable {
     return debugProcess;
   }
 
+  public FlutterApp getApp() {
+    return debugProcess != null ? debugProcess.getApp() : null;
+  }
+
   public CompletableFuture<XSourcePosition> getPropertyLocation(InstanceRef instanceRef, String name) {
     return getInstance(instanceRef).thenComposeAsync((Instance instance) -> getPropertyLocationHelper(instance.getClassRef(), name));
   }
@@ -72,6 +77,7 @@ public class InspectorService implements Disposable {
   public CompletableFuture<XSourcePosition> getPropertyLocationHelper(ClassRef classRef, String name) {
     return inspectorLibrary.getClass(classRef).thenComposeAsync((ClassObj clazz) -> {
       for (FuncRef f : clazz.getFunctions()) {
+        // TODO(pq): check for private properties that match name.
         if (f.getName().equals(name)) {
           return inspectorLibrary.getFunc(f).thenComposeAsync((Func func) -> {
             final SourceLocation location = func.getLocation();

@@ -16,7 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
-import io.flutter.run.FlutterDebugProcess;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
 import org.dartlang.analysis.server.protocol.HoverInformation;
@@ -618,15 +618,15 @@ public class DiagnosticsNode {
     final CompletableFuture<ArrayList<DiagnosticsNode>> properties = inspectorService.getProperties(getDartDiagnosticRef());
     return properties.thenApplyAsync((ArrayList<DiagnosticsNode> nodes) -> {
       // Map locations to property nodes where available.
-      final Location location = getCreationLocation();
-      if (location != null) {
-        final ArrayList<Location> parameterLocations = location.getParameterLocations();
+      final Location creationLocation = getCreationLocation();
+      if (creationLocation != null) {
+        final ArrayList<Location> parameterLocations = creationLocation.getParameterLocations();
         if (parameterLocations != null) {
           final Map<String, Location> names = new HashMap<>();
-          for (Location pl : parameterLocations) {
-            final String name = pl.getName();
+          for (Location location : parameterLocations) {
+            final String name = location.getName();
             if (name != null) {
-              names.put(name, pl);
+              names.put(name, location);
             }
           }
           for (DiagnosticsNode node : nodes) {
@@ -656,28 +656,24 @@ public class DiagnosticsNode {
   private CompletableFuture<String> createPropertyDocFurure() {
     final DiagnosticsNode parent = getParent();
     if (parent != null) {
-      final InspectorService inspectorService = parent.getInspectorService();
-      final CompletableFuture<DartVmServiceValue> valueFuture =
-        inspectorService.toDartVmServiceValueForSourceLocation(parent.getValueRef());
-      return valueFuture.thenComposeAsync((DartVmServiceValue vmValue) -> {
-        final InstanceRef instanceRef = vmValue.getInstanceRef();
-        return inspectorService.getPropertyLocation(instanceRef, getName()).thenApplyAsync((XSourcePosition sourcePosition) -> {
-          if (sourcePosition != null) {
-            final VirtualFile file = sourcePosition.getFile();
-            final int offset = sourcePosition.getOffset();
+      return inspectorService.toDartVmServiceValueForSourceLocation(parent.getValueRef())
+        .thenComposeAsync((DartVmServiceValue vmValue) -> inspectorService.getPropertyLocation(vmValue.getInstanceRef(), getName())
+          .thenApplyAsync((XSourcePosition sourcePosition) -> {
+            if (sourcePosition != null) {
+              final VirtualFile file = sourcePosition.getFile();
+              final int offset = sourcePosition.getOffset();
 
-            final Project project = getProject(file);
-            if (project != null) {
-              final List<HoverInformation> hovers =
-                DartAnalysisServerService.getInstance(project).analysis_getHover(file, offset);
-              if (!hovers.isEmpty()) {
-                return hovers.get(0).getDartdoc();
+              final Project project = getProject(file);
+              if (project != null) {
+                final List<HoverInformation> hovers =
+                  DartAnalysisServerService.getInstance(project).analysis_getHover(file, offset);
+                if (!hovers.isEmpty()) {
+                  return hovers.get(0).getDartdoc();
+                }
               }
             }
-          }
-          return "Unable to find property source";
-        });
-      });
+            return "Unable to find property source";
+          }));
     }
 
     return CompletableFuture.completedFuture("Unable to find property source");
@@ -685,8 +681,8 @@ public class DiagnosticsNode {
 
   @Nullable
   private Project getProject(@NotNull VirtualFile file) {
-    final FlutterDebugProcess process = inspectorService.getDebugProcess();
-    return  process != null ? process.getApp().getProject() : ProjectUtil.guessProjectForFile(file);
+    final FlutterApp app = inspectorService.getApp();
+    return app != null ? app.getProject() : ProjectUtil.guessProjectForFile(file);
   }
 
   private void setCreationLocation(Location location) {
