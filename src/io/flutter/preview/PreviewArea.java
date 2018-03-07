@@ -62,6 +62,15 @@ public class PreviewArea {
   public PreviewArea(Listener listener) {
     this.myListener = listener;
 
+    panel.addComponentListener(new ComponentAdapter() {
+      @Override
+      public void componentResized(ComponentEvent e) {
+        final int width = panel.getWidth() - 2 * BORDER_WITH;
+        final int height = panel.getHeight() - 2 * BORDER_WITH;
+        listener.resized(width, height);
+      }
+    });
+
     panel.setLayout(new BorderLayout());
     clear();
 
@@ -204,5 +213,7 @@ public class PreviewArea {
     void clicked(FlutterOutline outline);
 
     void doubleClicked(FlutterOutline outline);
+
+    void resized(int width, int height);
   }
 }

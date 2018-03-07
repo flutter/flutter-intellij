@@ -38,6 +38,9 @@ public class RenderHelper {
 
   private FlutterOutline myWidgetOutline;
 
+  private int myWidth = 0;
+  private int myHeight = 0;
+
   public RenderHelper(@NotNull Project project, @NotNull Listener listener) {
     myProject = project;
     myListener = listener;
@@ -66,26 +69,28 @@ public class RenderHelper {
   }
 
   /**
+   * Set the size and render the current widget with this size.
+   */
+  public void setSize(int width, int height) {
+    myWidth = width;
+    myHeight = height;
+    scheduleRendering();
+  }
+
+  /**
    * Set the offset in the current file, and render if a new widget.
    */
   public void setOffset(int offset) {
-    if (myPackages == null || myInstrumentedCode == null) {
+    final FlutterOutline widgetOutline = getContainingWidgetOutline(offset);
+    if (widgetOutline == myWidgetOutline) {
       return;
     }
 
-    final FlutterOutline widgetOutline = getContainingWidgetOutline(offset);
-    if (widgetOutline != null) {
-      if (myWidgetOutline != widgetOutline) {
-        myWidgetOutline = widgetOutline;
-        final String widgetClass = widgetOutline.getDartElement().getName();
-        final String constructor = widgetOutline.getRenderConstructor();
-        final RenderRequest request =
-          new RenderRequest(myTesterPath, myPackages, myFile, myInstrumentedCode, widgetClass, constructor, myListener);
-        myRenderThread.setRequest(request);
-      }
+    myWidgetOutline = widgetOutline;
+    if (myWidgetOutline != null) {
+      scheduleRendering();
     }
     else {
-      myWidgetOutline = null;
       myListener.noWidget();
     }
   }
@@ -133,6 +138,18 @@ public class RenderHelper {
     return DartAnalysisServerService.getInstance(myProject).getConvertedOffset(myFile, offset);
   }
 
+  private void scheduleRendering() {
+    if (myPackages == null || myInstrumentedCode == null || myWidgetOutline == null || myWidth == 0 || myHeight == 0) {
+      return;
+    }
+
+    final String widgetClass = myWidgetOutline.getDartElement().getName();
+    final String constructor = myWidgetOutline.getRenderConstructor();
+    final RenderRequest request =
+      new RenderRequest(myTesterPath, myPackages, myFile, myInstrumentedCode, widgetClass, constructor, myWidth, myHeight, myListener);
+    myRenderThread.setRequest(request);
+  }
+
   private static void render(@NotNull RenderRequest request) {
     try {
       final String toRenderPath = request.file.getParent().getPath() + File.separator + ".to_render._dart";
@@ -143,9 +160,11 @@ public class RenderHelper {
 
       final URL templateUri = RenderHelper.class.getResource("render_server_template.txt");
       String template = Resources.toString(templateUri, StandardCharsets.UTF_8);
-      template = template.replace("// TODO: import library to render", "import '" + toRenderFile.toURI() + "';");
-      template = template.replace("new Container(); // TODO: create widget", widgetCreation);
-      template = template.replace("{}; // TODO: use flutterDesignerWidgets", "flutterDesignerWidgets;");
+      template = template.replace("// TEMPLATE_VALUE: import library to render", "import '" + toRenderFile.toURI() + "';");
+      template = template.replace("new Container(); // TEMPLATE_VALUE: create widget", widgetCreation);
+      template = template.replace("{}; // TEMPLATE_VALUE: use flutterDesignerWidgets", "flutterDesignerWidgets;");
+      template = template.replace("350.0 /*TEMPLATE_VALUE: width*/", request.width + ".0");
+      template = template.replace("400.0 /*TEMPLATE_VALUE: height*/", request.height + ".0");
 
       final String renderServerPath = request.file.getParent().getPath() + File.separator + ".render_server._dart";
       final File renderServerFile = new File(renderServerPath);
@@ -264,12 +283,16 @@ class RenderRequest {
   final String codeToRender;
   final String widgetClass;
   final String widgetConstructor;
+  final int width;
+  final int height;
+
   final RenderHelper.Listener listener;
 
   RenderRequest(String testerPath, VirtualFile packages, VirtualFile file,
                 String codeToRender,
                 String widgetClass,
                 String widgetConstructor,
+                int width, int height,
                 RenderHelper.Listener listener) {
     this.testerPath = testerPath;
     this.packages = packages;
@@ -277,6 +300,8 @@ class RenderRequest {
     this.codeToRender = codeToRender;
     this.widgetClass = widgetClass;
     this.widgetConstructor = widgetConstructor;
+    this.width = width;
+    this.height = height;
     this.listener = listener;
   }
 }
