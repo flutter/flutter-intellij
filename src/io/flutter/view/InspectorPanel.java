@@ -339,7 +339,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
             boolean nodeChanged = false;
             if (!identicalDiagnosticsNodes(pathDiagnosticNode, existingNode)) {
               treeNode.setUserObject(pathDiagnosticNode);
-              // Clear children to force an update on this subtree. Not neccessarily required.
+              // Clear children to force an update on this subtree. Not necessarily required.
               nodeChanged = true;
             }
             treeNode.setAllowsChildren(!newChildren.isEmpty());

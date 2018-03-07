@@ -126,7 +126,7 @@ public class InspectorService implements Disposable {
    * sufficient although slightly less efficient. The Observatory protocol
    * does provide fast access to all fields as part of an Instance object
    * but that is inadequate as for many Flutter data objects that we want
-   * to display visually we care about properties that are not neccesarily
+   * to display visually we care about properties that are not necessarily
    * fields.
    * <p>
    * The future will immediately complete to null if the inspectorInstanceRef is null.
