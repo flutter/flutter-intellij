@@ -1,4 +1,4 @@
-# Debugger Architecture Overiew
+# Debugger Architecture Overview
 
 ## `io.flutter.run`
 
