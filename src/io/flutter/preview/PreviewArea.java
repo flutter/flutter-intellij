@@ -23,7 +23,7 @@ import java.util.Map;
 // TODO: have a way to tell the panel whether it's hidden or shown
 
 // TODO: we'll need to know whether the preview element is stateless widget or a state of a stateful
-//       widget; for the 2nd case, we'll need to find the cooresponding stateful widget class
+//       widget; for the 2nd case, we'll need to find the corresponding stateful widget class
 
 // TODO: we want to preview anything in a state, stateful, or stateless class (not
 //       just things contained in a build method)
