@@ -7,6 +7,7 @@ package io.flutter.preview;
 
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
@@ -23,6 +24,8 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class RenderHelper {
   private final Project myProject;
@@ -178,7 +181,17 @@ public class RenderHelper {
                            renderServerPath)
           .start();
 
+      // Terminate the process if it does not exit fast enough.
+      final CountDownLatch processExitLatch = new CountDownLatch(1);
+      new Thread(() -> {
+        Uninterruptibles.awaitUninterruptibly(processExitLatch, 2000, TimeUnit.MILLISECONDS);
+        if (process.isAlive()) {
+          process.destroyForcibly();
+        }
+      }).start();
+
       final int exitCode = process.waitFor();
+      processExitLatch.countDown();
       if (exitCode != 0) {
         final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         request.listener.onFailure(null);
