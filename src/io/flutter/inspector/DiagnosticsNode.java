@@ -458,6 +458,12 @@ public class DiagnosticsNode {
 
   private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
+  private final boolean isProperty;
+
+  public boolean isProperty() {
+    return isProperty;
+  }
+
   public String getStringMember(@NotNull String memberName) {
     return JsonUtils.getStringMember(json, memberName);
   }

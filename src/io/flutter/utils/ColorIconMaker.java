@@ -5,6 +5,7 @@
  */
 package io.flutter.utils;
 
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.GraphicsUtil;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ import java.util.Map;
 
 public class ColorIconMaker {
   private final Map<Color, Icon> iconCache = new HashMap<>();
-  private static final int iconMargin = 2;
+  private static final int iconMargin = 3;
 
   public Icon getCustomIcon(Color color) {
     if (!iconCache.containsKey(color)) {
@@ -26,15 +27,15 @@ public class ColorIconMaker {
             GraphicsUtil.setupAAPainting(g2);
             // draw a black and gray grid to use as the background to disambiguate
             // opaque colors from translucent colors.
-            g2.setColor(Color.white);
-            g2.fillRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
-            g2.setColor(Color.gray);
-            g2.fillRect(iconMargin, iconMargin, getIconWidth() / 2 - iconMargin, getIconHeight() / 2 - iconMargin);
-            g2.fillRect(getIconWidth() / 2, getIconHeight() / 2, getIconWidth() / 2 - iconMargin, getIconHeight() / 2 - iconMargin);
+            g2.setColor(JBColor.white);
+            g2.fillRect(x + iconMargin, y + iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
+            g2.setColor(JBColor.gray);
+            g2.fillRect(x + iconMargin, y + iconMargin, getIconWidth() / 2 - iconMargin, getIconHeight() / 2 - iconMargin);
+            g2.fillRect(x + getIconWidth() / 2, y + getIconHeight() / 2, getIconWidth() / 2 - iconMargin, getIconHeight() / 2 - iconMargin);
             g2.setColor(color);
-            g2.fillRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
-            g2.setColor(Color.black);
-            g2.drawRect(iconMargin, iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
+            g2.fillRect(x + iconMargin, y + iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
+            g2.setColor(JBColor.black);
+            g2.drawRect(x + iconMargin, y + iconMargin, getIconWidth() - iconMargin * 2, getIconHeight() - iconMargin * 2);
           }
           finally {
             g2.dispose();

@@ -43,6 +43,7 @@ public class FlutterIcons {
   public static final Icon CustomMethod = load("/icons/custom/method.png");
   public static final Icon CustomMethodAbstract = load("/icons/custom/method_abstract.png");
   public static final Icon CustomProperty = load("/icons/custom/property.png");
+  public static final Icon CustomInfo = load("/icons/custom/info.png");
 
   public static final Icon AndroidStudioNewModule = load("/icons/template_new_project.png");
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
@@ -60,6 +61,9 @@ public class FlutterIcons {
   public static final Icon Stack = load("/icons/inspector/value.png");
   public static final Icon Styling = load("/icons/inspector/atrule.png");
   public static final Icon Text = load("/icons/inspector/textArea.png");
+
+  public static final Icon ExpandProperty = load("/icons/inspector/expand_property.png");
+  public static final Icon CollapseProperty = load("/icons/inspector/collapse_property.png");
 
   // Flutter Outline Widget Icons.
   public static final Icon Column = load("/icons/preview/column.png");
