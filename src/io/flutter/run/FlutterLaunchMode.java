@@ -10,7 +10,7 @@ import com.intellij.openapi.util.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The Flutter launch mode. This coresponds to the flutter run modes: --debug,
+ * The Flutter launch mode. This corresponds to the flutter run modes: --debug,
  * --profile, and --release.
  */
 public enum FlutterLaunchMode {

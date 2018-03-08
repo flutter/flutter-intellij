@@ -132,7 +132,7 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
       .openRead()
       .transform(UTF8.decoder)
       .transform(new LineSplitter())
-      .forEach((l) => dest.writeln(substitueTemplateVariables(l, spec)));
+      .forEach((l) => dest.writeln(substituteTemplateVariables(l, spec)));
   await dest.close();
   return await dest.done;
 }
@@ -242,7 +242,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       log('the current git branch has uncommitted changes');
     }
   } else {
-    log('the currect working directory is not managed by git: $rootPath');
+    log('the current working directory is not managed by git: $rootPath');
   }
   return new Future(() => false);
 }
@@ -264,7 +264,7 @@ void separator(String name) {
   log('$name:', indent: false);
 }
 
-String substitueTemplateVariables(String line, BuildSpec spec) {
+String substituteTemplateVariables(String line, BuildSpec spec) {
   String valueOf(String name) {
     switch (name) {
       case 'PLUGINID':

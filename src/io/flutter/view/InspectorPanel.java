@@ -266,15 +266,15 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (!(node.getUserObject() instanceof DiagnosticsNode)) {
       return;
     }
-    final DiagnosticsNode diagonsticsNode = (DiagnosticsNode)node.getUserObject();
-    if (diagonsticsNode.hasChildren()) {
+    final DiagnosticsNode diagnosticsNode = (DiagnosticsNode)node.getUserObject();
+    if (diagnosticsNode.hasChildren()) {
       if (placeholderChildren(node)) {
-        whenCompleteUiThread(diagonsticsNode.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
+        whenCompleteUiThread(diagnosticsNode.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
           if (throwable != null) {
             // Display that children failed to load.
             return;
           }
-          if (node.getUserObject() != diagonsticsNode) {
+          if (node.getUserObject() != diagnosticsNode) {
             // Node changed, this data is stale.
             return;
           }
@@ -340,7 +340,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
             boolean nodeChanged = false;
             if (!identicalDiagnosticsNodes(pathDiagnosticNode, existingNode)) {
               treeNode.setUserObject(pathDiagnosticNode);
-              // Clear children to force an update on this subtree. Not neccessarily required.
+              // Clear children to force an update on this subtree. Not necessarily required.
               nodeChanged = true;
             }
             treeNode.setAllowsChildren(!newChildren.isEmpty());
@@ -804,7 +804,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (propertiesFuture != null && propertiesFuture.isDone() && !propertiesFuture.isCompletedExceptionally()) {
         final Map<String, InstanceRef> properties = propertiesFuture.getNow(null);
         if (node.isEnumProperty() && properties != null) {
-          // We can display a better tooltip as we have access to introsection
+          // We can display a better tooltip as we have access to introspection
           // via the observatory service.
           setToolTipText("Allowed values:\n" + Joiner.on('\n').join(properties.keySet()));
         }
@@ -859,7 +859,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private class DiagnosticsTreeCellRenderer extends ColoredTreeCellRenderer {
     /**
      * Split text into two groups, word characters at the start of a string
-     * and all other chracters. Skip an <code>-</code> or <code>#</code> between the
+     * and all other characters. Skip an <code>-</code> or <code>#</code> between the
      * two groups.
      */
     private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");

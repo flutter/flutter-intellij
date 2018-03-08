@@ -803,7 +803,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.setSelectionPaths(selectedPaths.toArray(new TreePath[selectedPaths.size()]));
     tree.addTreeSelectionListener(treeSelectionListener);
 
-    // JTree attempts to show as much of the node as possible, so scrolls horizonally.
+    // JTree attempts to show as much of the node as possible, so scrolls horizontally.
     // But we actually need to see the whole hierarchy, so we scroll back to zero.
     scrollPane.getHorizontalScrollBar().setValue(0);
   }
@@ -1024,7 +1024,7 @@ class OutlineObject {
   }
 
   /**
-   * Return the string that is suitable for speed search. It has every name part separted so that we search only inside individual name
+   * Return the string that is suitable for speed search. It has every name part separated so that we search only inside individual name
    * parts, but not in their accidential concatenation.
    */
   @NotNull

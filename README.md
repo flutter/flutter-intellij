@@ -48,7 +48,7 @@ for Flutter IntelliJ issues.
 
 - for more general Flutter issues, you should prefer to use the Flutter
   [issue tracker](https://github.com/flutter/flutter/issues)
-- for more Dart IntelliJ releated issues, you can use JetBrains'
+- for more Dart IntelliJ related issues, you can use JetBrains'
   [YouTrack tracker](https://youtrack.jetbrains.com/issues?q=%23Dart%20%23Unresolved%20)
 
 ## Known issues

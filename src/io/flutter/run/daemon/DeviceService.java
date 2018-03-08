@@ -149,14 +149,14 @@ public class DeviceService {
           listener.run();
         }
         catch (Exception e) {
-          LOG.error("DeviceDaemon listerner threw an exception", e);
+          LOG.error("DeviceDaemon listener threw an exception", e);
         }
       }
     });
   }
 
   /**
-   * Updates the device daemon to what it should be based on current configuation.
+   * Updates the device daemon to what it should be based on current configuration.
    * <p>
    * <p>This might mean starting it, stopping it, or restarting it.
    */

@@ -67,7 +67,7 @@ public class NewFlutterModuleWizardFixture extends AbstractWizardFixture<NewFlut
 
   @NotNull
   public NewFlutterModuleWizardFixture clickFinish() {
-    // Do not user superclass method. When the project/module wizard is run from the IDE (not the Welcome scren)
+    // Do not user superclass method. When the project/module wizard is run from the IDE (not the Welcome screen)
     // the dialog does not disappear within the time allotted by the superclass method.
     findAndClickButtonWhenEnabled(this, "Finish");
     Wait.seconds(30).expecting("dialog to disappear").until(() -> !target().isShowing());

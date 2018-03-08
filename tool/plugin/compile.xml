@@ -7,7 +7,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
 -->
 
 <project
-    name="pluigin-compile"
+    name="plugin-compile"
     default="compile">
 
   <property environment="env"/>

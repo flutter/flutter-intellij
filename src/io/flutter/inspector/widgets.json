@@ -166,7 +166,7 @@
   {
     "name": "TabBarView",
     "sample": "TabBarView_index",
-    "description": "A page view that displays the widget which corresponds to the currently selected tab. Typically used in conjuction with a TabBar.",
+    "description": "A page view that displays the widget which corresponds to the currently selected tab. Typically used in conjunction with a TabBar.",
     "categories": [],
     "subcategories": [
       "App structure and navigation"
@@ -1090,7 +1090,7 @@
   },
   {
     "name": "GridView",
-    "description": "A scrollable, 2D array of widgets. The most commonly used grid layouts are GridView.count, which creates a layout with a fixed number of tiles in the cross axis, and GridView.extent, which creates a layout with tiles that have a maximum cross-axis extent. A custom SliverGridDelegate can produce an aribtrary 2D arrangement of children, including arrangements that are unaligned or overlapping.",
+    "description": "A scrollable, 2D array of widgets. The most commonly used grid layouts are GridView.count, which creates a layout with a fixed number of tiles in the cross axis, and GridView.extent, which creates a layout with tiles that have a maximum cross-axis extent. A custom SliverGridDelegate can produce an arbitrary 2D arrangement of children, including arrangements that are unaligned or overlapping.",
     "categories": [
       "Scrolling"
     ],

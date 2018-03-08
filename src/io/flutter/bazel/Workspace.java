@@ -147,7 +147,7 @@ public class Workspace {
   }
 
   /**
-   * Returns true if the pluging config was loaded.
+   * Returns true if the plugin config was loaded.
    */
   public boolean hasPluginConfig() {
     return config != null;

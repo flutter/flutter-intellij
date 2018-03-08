@@ -43,7 +43,7 @@ file.
 ## Running plugin tests
 
 The repository contains two pre-defined test run configurations. One is for 'unit' tests; that is
-currently definied as tests that do not rely on the IntelliJ APIs. The other is for 'integration'
+currently defined as tests that do not rely on the IntelliJ APIs. The other is for 'integration'
 tests - tests that do use the IntelliJ APIs. In the future we would like for the unit tests to be
 able to access IntelliJ APIs, and for the integration tests to be larger, long-running tests that
 excercise app use cases.
@@ -56,7 +56,7 @@ In order to be able to run a single test class or test method you need to do the
   VM Options to the corresponding field
 * Repeat the same with Working directory field - it must point to intellij-community/bin
 
-## Working with Andriod Studio
+## Working with Android Studio
 
 1. Initialize Android Studio sources.
 2. Checkout Flutter plugin sources, tip of tree.

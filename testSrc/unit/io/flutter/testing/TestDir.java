@@ -52,7 +52,7 @@ public class TestDir extends ExternalResource {
    *
    * <p>Creates it if it doesn't exist.
    *
-   * @return The curresponding VirtualFile.
+   * @return The corresponding VirtualFile.
    */
   public VirtualFile writeFile(String path, String text) throws Exception {
     return Testing.computeInWriteAction(() -> fixture.createFile(path, text));
