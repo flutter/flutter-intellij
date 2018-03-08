@@ -102,12 +102,25 @@ public class CustomIconMaker {
     return getCustomIcon(name, isPrivate ? CustomIconMaker.IconKind.kMethod : CustomIconMaker.IconKind.kClass);
   }
 
+  public Icon fromInfo(String name) {
+    if (name == null) {
+      return null;
+    }
+
+    if (name.isEmpty()) {
+      return null;
+    }
+
+    return getCustomIcon(name, CustomIconMaker.IconKind.kInfo);
+  }
+
   public enum IconKind {
     kClass("class", FlutterIcons.CustomClass, FlutterIcons.CustomClassAbstract),
     kField("fields", FlutterIcons.CustomFields),
     kInterface("interface", FlutterIcons.CustomInterface),
     kMethod("method", FlutterIcons.CustomMethod, FlutterIcons.CustomMethodAbstract),
-    kProperty("property", FlutterIcons.CustomProperty);
+    kProperty("property", FlutterIcons.CustomProperty),
+    kInfo("info", FlutterIcons.CustomInfo);
 
     public final String name;
     public final Icon icon;

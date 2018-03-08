@@ -79,7 +79,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   public static final Color SHADOW_COLOR = new JBColor(new Color(250, 250, 250, 140), Gray._0.withAlpha(50));
   @SuppressWarnings("unused") public static final Color STYLE_SEARCH_MATCH_BACKGROUND = SHADOW_COLOR; //api compatibility
-  public static final int FRAGMENT_ICON = -2;
+  public static final int FRAGMENT_ICON = -100;
 
   private final List<String> myFragments;
   private final List<TextLayout> myLayouts;
@@ -594,6 +594,11 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
    */
   public int findFragmentAt(int x) {
     float curX = myIpad.left;
+    if (myBorder != null) {
+      curX += myBorder.getBorderInsets(this).left;
+    }
+
+    curX += computeTextAlignShift();
 
     Font font = getBaseFont();
 
@@ -604,9 +609,9 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     while (true) {
       // Go through all icons before attribute i.
       while (iconIndex < myIcons.size() && myIcons.get(iconIndex).index <= i) {
-        final int iconWidth = myIcons.get(iconIndex).icon.getIconWidth() + myIconTextGap;
+        final int iconWidth = myIcons.get(iconIndex).icon.getIconWidth() + myIconTextGap * 2;
         if (x >= curX && x < curX + iconWidth) {
-          return FRAGMENT_ICON;
+          return FRAGMENT_ICON - iconIndex;
         }
         curX += iconWidth;
         iconIndex++;
@@ -640,6 +645,12 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   public Object getFragmentTagAt(int x) {
     int index = findFragmentAt(x);
     return index < 0 ? null : getFragmentTag(index);
+  }
+
+  @Nullable
+  public Icon getIconAt(int x) {
+    int index = findFragmentAt(x);
+    return index <= FRAGMENT_ICON ? myIcons.get(FRAGMENT_ICON - index).icon : null;
   }
 
   @NotNull
