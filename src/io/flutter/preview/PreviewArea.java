@@ -50,7 +50,7 @@ public class PreviewArea {
   private final JPanel primaryLayer = new JPanel();
   private final JPanel handleLayer = new JPanel(null);
 
-  private boolean isLocked = false;
+  private boolean isBeingRendered = false;
 
   private final Map<Integer, FlutterOutline> idToOutline = new HashMap<>();
 
@@ -118,7 +118,7 @@ public class PreviewArea {
    * It should not ignore incoming events and should not send its events to the listener.
    */
   public void renderingStarted() {
-    isLocked = true;
+    isBeingRendered = true;
   }
 
   /**
@@ -126,7 +126,7 @@ public class PreviewArea {
    * Show the rendered outlines.
    */
   public void show(@NotNull FlutterOutline unitOutline, @NotNull JsonObject renderObject) {
-    isLocked = false;
+    isBeingRendered = false;
 
     idToOutline.clear();
     fillIdToOutline(unitOutline);
@@ -149,7 +149,7 @@ public class PreviewArea {
   }
 
   public void select(@NotNull List<FlutterOutline> outlines) {
-    if (isLocked) {
+    if (isBeingRendered) {
       return;
     }
 
