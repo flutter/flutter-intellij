@@ -125,6 +125,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       if (Objects.equals(currentFilePath, filePath)) {
         ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
         if (myRenderHelper != null && previewArea != null) {
+          previewArea.renderingStarted();
           myRenderHelper.setFile(currentFile, outline, instrumentedCode);
           ApplicationManager.getApplication().invokeLater(() -> {
             final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
@@ -170,6 +171,12 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
           previewArea.show(currentOutline, response);
+
+          final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
+          final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
+          if (outline != null) {
+            previewArea.select(ImmutableList.of(outline));
+          }
         }
       });
     }
@@ -570,7 +577,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     if (FlutterSettings.getInstance().isShowPreviewArea()) {
       if (ModelUtils.containsBuildMethod(outline)) {
-        splitter.setSecondComponent(previewArea.panel);
+        splitter.setSecondComponent(previewArea.getComponent());
       }
       else {
         splitter.setSecondComponent(null);
