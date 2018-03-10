@@ -206,6 +206,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     isActive = true;
     assert (getInspectorService() != null);
     getInspectorService().addClient(this);
+    ArrayList<String> rootDirectories = new ArrayList<>();
+    for (PubRoot root : getFlutterApp().getPubRoots()) {
+      rootDirectories.add(root.getRoot().getCanonicalPath());
+    }
+    getInspectorService().setPubRootDirectories(rootDirectories);
+
     getInspectorService().isWidgetTreeReady().thenAccept((Boolean ready) -> {
       if (ready) {
         recomputeTreeRoot();
@@ -937,6 +943,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   boolean isCreatedByLocalProject(DiagnosticsNode node) {
+    if (node.isCreatedByLocalProject()) {
+      return true;
+    }
+    // TODO(jacobr): remove the following code once the
+    // `setPubRootDirectories` method has been in two revs of the Flutter Alpha
+    // channel. The feature is expected to have landed in the Flutter dev
+    // chanel on March 2, 2018.
     final Location location = node.getCreationLocation();
     if (location == null) {
       return false;

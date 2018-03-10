@@ -555,6 +555,10 @@ public class DiagnosticsNode {
     return getBooleanMember("hasChildren", false);
   }
 
+  public boolean isCreatedByLocalProject() {
+    return getBooleanMember("createdByLocalProject", false);
+  }
+
   /**
    * Check whether children are already available.
    */

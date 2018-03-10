@@ -6,9 +6,7 @@
 package io.flutter.inspector;
 
 import com.google.common.base.Joiner;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.xdebugger.XSourcePosition;
@@ -141,6 +139,26 @@ public class InspectorService implements Disposable {
     }
     scope.put("arg1", arg.getId());
     return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(arg1, \"" + groupName + "\")", scope);
+  }
+
+  public CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
+    // TODO(jacobr): remove call to hasServiceMethod("setPubRootDirectories") after
+    // the `setPubRootDirectories` method has been in two revs of the Flutter Alpha
+    // channel. The feature is expected to have landed in the Flutter dev
+    // chanel on March 2, 2018.
+
+    return hasServiceMethod("setPubRootDirectories").thenComposeAsync((Boolean hasMethod) -> {
+      if (!hasMethod) {
+        return null;
+      }
+      JsonArray jsonArray = new JsonArray();
+      for (String rootDirectory : rootDirectories) {
+        jsonArray.add(rootDirectory);
+      }
+      return getInspectorLibrary().eval(
+        "WidgetInspectorService.instance.setPubRootDirectories(" + new Gson().toJson(jsonArray) + ")", null)
+        .thenApplyAsync((InstanceRef instance) -> null);
+    });
   }
 
   CompletableFuture<DiagnosticsNode> parseDiagnosticsNode(CompletableFuture<InstanceRef> instanceRefFuture) {
