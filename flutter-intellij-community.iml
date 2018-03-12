@@ -14,10 +14,6 @@
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
-      <excludeFolder url="file://$MODULE_DIR$/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/colors/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/icons/packages" />
-      <excludeFolder url="file://$MODULE_DIR$/tool/packages" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
     </content>
@@ -44,7 +40,5 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="snakeyaml" level="project" />
-    <orderEntry type="library" name="Dart SDK" level="project" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

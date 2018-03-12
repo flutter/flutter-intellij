@@ -9,6 +9,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -17,6 +18,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
@@ -279,6 +281,22 @@ public class FlutterUtils {
     catch (IOException e) {
       return false;
     }
+  }
+
+  /**
+   * Return the project located at the <code>path</code> or containing it.
+   *
+   * @param path The path to a project or one of its files
+   * @return The Project located at the path
+   */
+  @Nullable
+  public static Project findProject(@NotNull String path) {
+    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
+      if (ProjectUtil.isSameProject(path, project)) {
+        return project;
+      }
+    }
+    return null;
   }
 
   private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {

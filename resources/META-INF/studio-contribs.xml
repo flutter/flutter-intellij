@@ -15,6 +15,7 @@
   <extensions defaultExtensionNs="com.intellij">
     <androidStudioInitializer implementation="io.flutter.FlutterStudioInitializer"/>
     <postStartupActivity implementation="io.flutter.FlutterStudioStartupActivity"/>
+    <projectOpenProcessor implementation="io.flutter.project.FlutterStudioProjectOpenProcessor" order="after flutter"/>
   </extensions>
 
   <actions>
