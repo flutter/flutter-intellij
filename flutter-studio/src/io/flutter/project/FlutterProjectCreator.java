@@ -31,7 +31,6 @@ import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.startup.StartupManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.Computable;
@@ -168,36 +167,14 @@ public class FlutterProjectCreator {
     return packageName.substring(0, idx);
   }
 
-  private static Project waitForProjectReload(Project project, VirtualFile baseDir) {
-    Project[] openProjects = ProjectManager.getInstance().getOpenProjects();
-    Project[] newProjectRef = new Project[1];
-    newProjectRef[0] = project;
+  private static void reloadProjectNow(Project project) {
     ApplicationManager.getApplication().invokeAndWait(() -> {
-      loop:
-      for (int i = 0; i < 100; i++) {
-        Thread.yield();
-        try {
-          //noinspection BusyWait
-          Thread.sleep(200);
-        }
-        catch (InterruptedException e) {
-          LOG.error("Process not reloaded", e);
-          break loop;
-        }
-        for (Project p : openProjects) {
-          if (p.getBaseDir().equals(baseDir)) {
-            newProjectRef[0] = p;
-          }
-        }
-        if (newProjectRef[0] != project) {
-          break loop;
-        }
+      String presentableUrl = project.getPresentableUrl();
+      if (!ProjectUtil.closeAndDispose(project)) {
+        return;
       }
-    }, ModalityState.NON_MODAL);
-    if (newProjectRef[0] == project) {
-      LOG.error("Timeout during process reload");
-    }
-    return newProjectRef[0];
+      ProjectUtil.openProject(presentableUrl, null, true);
+    });
   }
 
   public void createModule() {
@@ -274,7 +251,6 @@ public class FlutterProjectCreator {
 
     RecentProjectsManager.getInstance().setLastProjectCreationLocation(location.getParent());
 
-    Project[] newProjectRef = new Project[1];
     ProjectOpenedCallback callback =
       (project, module) -> ProgressManager.getInstance().run(new Task.Modal(null, "Creating Flutter Project", false) {
         @Override
@@ -332,16 +308,6 @@ public class FlutterProjectCreator {
       .setKotlin(myModel.useKotlin().get() ? true : null)
       .setSwift(myModel.useSwift().get() ? true : null)
       .build();
-  }
-
-  private static void reloadProjectNow(Project project) {
-    ApplicationManager.getApplication().invokeAndWait(() -> {
-      String presentableUrl = project.getPresentableUrl();
-      if (!ProjectUtil.closeAndDispose(project)) {
-        return;
-      }
-      ProjectUtil.openProject(presentableUrl, null, true);
-    });
   }
 
   public static class MyConversionListener implements ConversionListener {
