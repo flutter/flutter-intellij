@@ -8,6 +8,7 @@ package io.flutter.preview;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -45,8 +46,11 @@ public class PreviewArea {
 
   private final Listener myListener;
 
-  public final JPanel panel = new JPanel();
+  private final JLayeredPane layeredPanel = new JLayeredPane();
+  private final JPanel primaryLayer = new JPanel();
   private final JPanel handleLayer = new JPanel(null);
+
+  private boolean isBeingRendered = false;
 
   private final Map<Integer, FlutterOutline> idToOutline = new HashMap<>();
 
@@ -62,44 +66,75 @@ public class PreviewArea {
   public PreviewArea(Listener listener) {
     this.myListener = listener;
 
-    panel.addComponentListener(new ComponentAdapter() {
+    primaryLayer.addComponentListener(new ComponentAdapter() {
       @Override
       public void componentResized(ComponentEvent e) {
-        final int width = panel.getWidth() - 2 * BORDER_WITH;
-        final int height = panel.getHeight() - 2 * BORDER_WITH;
+        final int width = primaryLayer.getWidth() - 2 * BORDER_WITH;
+        final int height = primaryLayer.getHeight() - 2 * BORDER_WITH;
         listener.resized(width, height);
       }
     });
 
-    panel.setLayout(new BorderLayout());
+    primaryLayer.setLayout(new BorderLayout());
     clear();
 
+    // Layers must be transparent.
     handleLayer.setOpaque(false);
-    panel.addComponentListener(new ComponentAdapter() {
+
+    layeredPanel.add(primaryLayer, Integer.valueOf(0));
+    layeredPanel.add(handleLayer, Integer.valueOf(1));
+
+    // Layers must cover the whole root panel.
+    layeredPanel.addComponentListener(new ComponentAdapter() {
       @Override
       public void componentResized(ComponentEvent e) {
-        handleLayer.setBounds(0, 0, panel.getWidth(), panel.getHeight());
+        final int width = layeredPanel.getWidth();
+        final int height = layeredPanel.getHeight();
+        for (Component child : layeredPanel.getComponents()) {
+          child.setBounds(0, 0, width, height);
+        }
       }
     });
-    panel.add(handleLayer);
+  }
+
+  /**
+   * Return the Swing component of the area.
+   */
+  public JComponent getComponent() {
+    return layeredPanel;
   }
 
   public void clear() {
-    panel.removeAll();
-    panel.setLayout(new BorderLayout());
-    panel.add(new JLabel("Nothing to show", SwingConstants.CENTER), BorderLayout.CENTER);
-    panel.repaint();
+    primaryLayer.removeAll();
+    primaryLayer.setLayout(new BorderLayout());
+    primaryLayer.add(new JLabel("Preview is not available", SwingConstants.CENTER), BorderLayout.CENTER);
+    primaryLayer.revalidate();
+    primaryLayer.repaint();
   }
 
-  public void show(FlutterOutline unitOutline, JsonObject renderObject) {
+  /**
+   * A new outline was received, and we started rendering.
+   * Until rendering is finished, the area is inconsistent with the new outline.
+   * It should not ignore incoming events and should not send its events to the listener.
+   */
+  public void renderingStarted() {
+    isBeingRendered = true;
+  }
+
+  /**
+   * Rendering finished, the new outline and rendering information is available.
+   * Show the rendered outlines.
+   */
+  public void show(@NotNull FlutterOutline unitOutline, @NotNull JsonObject renderObject) {
+    isBeingRendered = false;
+
     idToOutline.clear();
     fillIdToOutline(unitOutline);
 
     fillIdToGlobalBounds(renderObject);
 
-    panel.removeAll();
-    panel.setLayout(null);
-    panel.add(handleLayer, 0);
+    primaryLayer.removeAll();
+    primaryLayer.setLayout(null);
 
     final FlutterOutline rootOutline = idToOutline.get(rootWidgetId);
     if (rootOutline == null) {
@@ -108,11 +143,16 @@ public class PreviewArea {
     }
 
     colorIndex = 0;
+    outlineToComponent.clear();
     renderWidgetOutline(rootOutline);
-    panel.repaint();
+    primaryLayer.repaint();
   }
 
-  public void select(List<FlutterOutline> outlines) {
+  public void select(@NotNull List<FlutterOutline> outlines) {
+    if (isBeingRendered) {
+      return;
+    }
+
     for (SelectionEditPolicy policy : selectionComponents) {
       policy.deactivate();
     }
@@ -127,10 +167,10 @@ public class PreviewArea {
       }
     }
 
-    panel.repaint();
+    primaryLayer.repaint();
   }
 
-  private void fillIdToOutline(FlutterOutline outline) {
+  private void fillIdToOutline(@NotNull FlutterOutline outline) {
     if (outline.getId() != null) {
       idToOutline.put(outline.getId(), outline);
     }
@@ -141,7 +181,7 @@ public class PreviewArea {
     }
   }
 
-  private void fillIdToGlobalBounds(JsonObject renderObject) {
+  private void fillIdToGlobalBounds(@NotNull JsonObject renderObject) {
     rootWidgetBounds = null;
     idToGlobalBounds.clear();
     for (Map.Entry<String, JsonElement> entry : renderObject.entrySet()) {
@@ -169,7 +209,7 @@ public class PreviewArea {
     }
   }
 
-  private void renderWidgetOutline(FlutterOutline outline) {
+  private void renderWidgetOutline(@NotNull FlutterOutline outline) {
     final Integer id = outline.getId();
     if (id != null) {
       Rectangle rect = idToGlobalBounds.get(id);
@@ -204,7 +244,7 @@ public class PreviewArea {
           }
         }
 
-        panel.add(widget);
+        primaryLayer.add(widget);
       }
     }
   }
