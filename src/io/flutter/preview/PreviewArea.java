@@ -107,7 +107,7 @@ public class PreviewArea {
   public void clear() {
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
-    primaryLayer.add(new JLabel("Nothing to show", SwingConstants.CENTER), BorderLayout.CENTER);
+    primaryLayer.add(new JLabel("Preview is not available", SwingConstants.CENTER), BorderLayout.CENTER);
     primaryLayer.revalidate();
     primaryLayer.repaint();
   }
