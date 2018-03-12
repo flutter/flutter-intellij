@@ -13,38 +13,17 @@ import 'package:flutter/material.dart';
 /// canvas, etc.
 void main() async {
   try {
-    var binding = WidgetsFlutterBinding.ensureInitialized();
-
-    var rootWidget = new Container(); // TEMPLATE_VALUE: create widget
-    var app = new _DesignerApp(rootWidget);
-
-    Map<int, Widget> registeredWidgets = {}; // TEMPLATE_VALUE: use flutterDesignerWidgets
-    registeredWidgets.clear();
-
-    {
-      binding.attachRootWidget(app);
-      binding.scheduleFrame();
-      binding.handleBeginFrame(new Duration(milliseconds: 0));
-      binding.handleDrawFrame();
-    }
-
-    Element rootElement = WidgetsBinding.instance.renderViewElement;
-    Iterable<Element> allElements = collectAllElementsFrom(rootElement);
-    var allElementsMap = <Widget, Element>{};
-    for (var element in allElements) {
-      allElementsMap[element.widget] = element;
-    }
-
-    var rootInfo =
-        ElementInfo.buildHierarchy(allElementsMap, registeredWidgets);
-
-    {
-      var json = <String, Object>{};
-      rootInfo.appendToJson(json);
-      io.stdout.writeln(JSON.encode(json));
-    }
-
-    io.exit(0);
+    io.stdin
+        .transform((new Utf8Codec()).decoder)
+        .transform(new LineSplitter())
+        .listen((line) {
+      if (line == null || line == 'exit') {
+        io.exit(0);
+      }
+      if (line == 'render') {
+        renderOnce();
+      }
+    });
   } catch (e, st) {
     var json = {'exception': '$e', 'stackTrace': '$st'};
     io.stdout.writeln(JSON.encode(json));
@@ -54,6 +33,39 @@ void main() async {
 
 Iterable<Element> collectAllElementsFrom(Element rootElement) =>
     new CachingIterable<Element>(new _DepthFirstElementIterator(rootElement));
+
+void renderOnce() {
+  var binding = WidgetsFlutterBinding.ensureInitialized();
+
+  var rootWidget = new Container(); // TEMPLATE_VALUE: create widget
+  var app = new _DesignerApp(rootWidget);
+
+  Map<int, Widget> registeredWidgets =
+      {}; // TEMPLATE_VALUE: use flutterDesignerWidgets
+  registeredWidgets.clear();
+
+  {
+    binding.attachRootWidget(app);
+    binding.scheduleFrame();
+    binding.handleBeginFrame(new Duration(milliseconds: 0));
+    binding.handleDrawFrame();
+  }
+
+  Element rootElement = WidgetsBinding.instance.renderViewElement;
+  Iterable<Element> allElements = collectAllElementsFrom(rootElement);
+  var allElementsMap = <Widget, Element>{};
+  for (var element in allElements) {
+    allElementsMap[element.widget] = element;
+  }
+
+  var rootInfo = ElementInfo.buildHierarchy(allElementsMap, registeredWidgets);
+
+  {
+    var json = <String, Object>{};
+    rootInfo.appendToJson(json);
+    io.stdout.writeln(JSON.encode(json));
+  }
+}
 
 class ElementInfo {
   final ElementInfo parent;
