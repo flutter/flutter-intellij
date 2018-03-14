@@ -6,6 +6,7 @@ packages
 .DS_Store
 .packages
 pubspec.lock
+.pub/
 .dart_tool/
 .idea/
 .vscode/

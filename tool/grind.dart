@@ -21,7 +21,7 @@ colors() async {
   // Get color file from flutter.
   HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
   HttpClientResponse response = await request.close();
-  List<String> data = await response.transform(UTF8.decoder).toList();
+  List<String> data = await response.transform(utf8.decoder).toList();
 
   // Remove an import and define the Color class.
   String str = data.join('');
@@ -50,7 +50,7 @@ icons() async {
   // Get color file from flutter.
   HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
   HttpClientResponse response = await request.close();
-  List<String> data = await response.transform(UTF8.decoder).toList();
+  List<String> data = await response.transform(utf8.decoder).toList();
   File file = new File('tool/icons/update_icons.dart');
   file.writeAsStringSync(data.join(''));
 

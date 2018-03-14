@@ -130,7 +130,7 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   dest.writeln();
   await new File(p.join(rootPath, 'resources', templatePath))
       .openRead()
-      .transform(UTF8.decoder)
+      .transform(utf8.decoder)
       .transform(new LineSplitter())
       .forEach((l) => dest.writeln(substituteTemplateVariables(l, spec)));
   await dest.close();
@@ -250,7 +250,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
 List readProductMatrix() {
   var contents =
       new File(p.join(rootPath, 'product-matrix.json')).readAsStringSync();
-  var map = JSON.decode(contents);
+  var map = json.decode(contents);
   return map['list'];
 }
 
