@@ -15,7 +15,8 @@ const String kOptionCodepointsPath = 'codepoints';
 const String kOptionIconsPath = 'icons';
 const String kOptionDryRun = 'dry-run';
 
-const String kDefaultCodepointsPath = 'bin/cache/artifacts/material_fonts/codepoints';
+const String kDefaultCodepointsPath =
+    'bin/cache/artifacts/material_fonts/codepoints';
 const String kDefaultIconsPath = 'packages/flutter/lib/src/material/icons.dart';
 
 const String kBeginGeneratedMark = '// BEGIN GENERATED';
@@ -34,7 +35,8 @@ void main(List<String> args) {
     Directory.current = Directory.current.parent.parent;
 
   final ArgParser argParser = new ArgParser();
-  argParser.addOption(kOptionCodepointsPath, defaultsTo: kDefaultCodepointsPath);
+  argParser.addOption(kOptionCodepointsPath,
+      defaultsTo: kDefaultCodepointsPath);
   argParser.addOption(kOptionIconsPath, defaultsTo: kDefaultIconsPath);
   argParser.addFlag(kOptionDryRun, defaultsTo: false);
   final ArgResults argResults = argParser.parse(args);
@@ -44,7 +46,8 @@ void main(List<String> args) {
     stderr.writeln('Icons file not found: ${iconFile.path}');
     exit(1);
   }
-  final File codepointsFile = new File(path.absolute(argResults[kOptionCodepointsPath]));
+  final File codepointsFile =
+      new File(path.absolute(argResults[kOptionCodepointsPath]));
   if (!codepointsFile.existsSync()) {
     stderr.writeln('Codepoints file not found: ${codepointsFile.path}');
     exit(1);
@@ -64,8 +67,7 @@ String regenerateIconsFile(String iconData, String codepointData) {
   final StringBuffer buf = new StringBuffer();
   bool generating = false;
   for (String line in LineSplitter.split(iconData)) {
-    if (!generating)
-      buf.writeln(line);
+    if (!generating) buf.writeln(line);
     if (line.contains(kBeginGeneratedMark)) {
       generating = true;
       final String iconDeclarations = generateIconDeclarations(codepointData);
@@ -79,7 +81,8 @@ String regenerateIconsFile(String iconData, String codepointData) {
 }
 
 String generateIconDeclarations(String codepointData) {
-  return LineSplitter.split(codepointData)
+  return LineSplitter
+      .split(codepointData)
       .map((String l) => l.trim())
       .where((String l) => l.isNotEmpty)
       .map(getIconDeclaration)
