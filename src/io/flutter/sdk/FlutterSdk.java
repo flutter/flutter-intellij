@@ -185,8 +185,8 @@ public class FlutterSdk {
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       args.add("--verbose");
     }
-    if (FlutterSettings.getInstance().getPreviewDart2()) {
-      args.add("--preview-dart-2");
+    if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
+      args.add("--no-preview-dart-2");
     }
     if (device != null) {
       args.add("--device-id=" + device.deviceId());
@@ -214,8 +214,8 @@ public class FlutterSdk {
       args.add("--machine");
       // Otherwise, just run it normally and show the output in a non-test console.
     }
-    if (FlutterSettings.getInstance().getPreviewDart2()) {
-      args.add("--preview-dart-2");
+    if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
+      args.add("--no-preview-dart-2");
     }
     if (mode == RunMode.DEBUG) {
       if (!myVersion.flutterTestSupportsMachineMode()) {

@@ -18,7 +18,7 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String previewDart2Key = "io.flutter.getPreviewDart2";
+  private static final String disablePreviewDart2Key = "io.flutter.disablePreviewDart2";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
@@ -43,8 +43,8 @@ public class FlutterSettings {
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
 
-    if (getPreviewDart2()) {
-      analytics.sendEvent("settings", afterLastPeriod(previewDart2Key));
+    if (isDisablePreviewDart2()) {
+      analytics.sendEvent("settings", afterLastPeriod(disablePreviewDart2Key));
     }
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
@@ -72,12 +72,12 @@ public class FlutterSettings {
     listeners.remove(listener);
   }
 
-  public boolean getPreviewDart2() {
-    return getPropertiesComponent().getBoolean(previewDart2Key, false);
+  public boolean isDisablePreviewDart2() {
+    return getPropertiesComponent().getBoolean(disablePreviewDart2Key, false);
   }
 
-  public void setPreviewDart2(boolean value) {
-    getPropertiesComponent().setValue(previewDart2Key, value, false);
+  public void setDisablePreviewDart2(boolean value) {
+    getPropertiesComponent().setValue(disablePreviewDart2Key, value, false);
 
     updateAnalysisServerArgs(value);
 

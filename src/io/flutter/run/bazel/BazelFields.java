@@ -263,8 +263,8 @@ public class BazelFields {
     // Tell the flutter command-line tools that we want a machine interface on stdio.
     commandLine.addParameter("--machine");
 
-    if (FlutterSettings.getInstance().getPreviewDart2()) {
-      commandLine.addParameter("--preview-dart-2");
+    if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
+      commandLine.addParameter("--no-preview-dart-2");
     }
 
     // Pause the app at startup in order to set breakpoints.

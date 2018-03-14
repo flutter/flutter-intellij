@@ -161,7 +161,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.getPreviewDart2() != myPreviewDart2CheckBox.isSelected()) {
+    if (settings.isDisablePreviewDart2() != myPreviewDart2CheckBox.isSelected()) {
       return true;
     }
 
@@ -197,7 +197,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowPreviewAreaKey(myShowPreviewAreaCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setPreviewDart2(myPreviewDart2CheckBox.isSelected());
+    settings.setDisablePreviewDart2(myPreviewDart2CheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -223,7 +223,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    myPreviewDart2CheckBox.setSelected(settings.getPreviewDart2());
+    myPreviewDart2CheckBox.setSelected(settings.isDisablePreviewDart2());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
