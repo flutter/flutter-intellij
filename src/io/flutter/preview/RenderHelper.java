@@ -5,7 +5,6 @@
  */
 package io.flutter.preview;
 
-import com.google.common.base.Stopwatch;
 import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -194,7 +193,8 @@ class RenderRequest {
                 String codeToRender,
                 String widgetClass,
                 String widgetConstructor,
-                int width, int height,
+                int width,
+                int height,
                 RenderHelper.Listener listener) {
     this.testerPath = testerPath;
     this.packages = packages;
