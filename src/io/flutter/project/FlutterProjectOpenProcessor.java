@@ -5,6 +5,7 @@
  */
 package io.flutter.project;
 
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.module.Module;
@@ -14,6 +15,7 @@ import com.intellij.projectImport.ProjectOpenProcessor;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.ProjectOpenActivity;
 import io.flutter.pub.PubRoot;
 import io.flutter.utils.FlutterModuleUtils;
@@ -23,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.Objects;
-
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
 
@@ -46,6 +47,10 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   @Override
   public boolean canOpenProject(@Nullable VirtualFile file) {
     if (file == null) return false;
+    ApplicationInfo info = ApplicationInfo.getInstance();
+    if (FlutterUtils.isAndroidStudio()) {
+      return false;
+    }
     final PubRoot root = PubRoot.forDirectory(file);
     return root != null && root.declaresFlutter();
   }
@@ -86,7 +91,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
    * <p>
    * (It probably wasn't created with "flutter create" and probably didn't have any IntelliJ configuration before.)
    */
-  private void convertToFlutterProject(@NotNull Project project) {
+  private static void convertToFlutterProject(@NotNull Project project) {
     final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
     if (root == null) {
       return; // Either no pub roots, or more than one.

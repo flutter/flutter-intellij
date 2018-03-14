@@ -613,7 +613,7 @@ miscellaneous:
     <projectService serviceInterface="io.flutter.view.FlutterView"
                     serviceImplementation="io.flutter.view.FlutterView"
                     overrides="false"/>
-    <projectOpenProcessor implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
+    <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
     <localInspection bundle="io.flutter.FlutterBundle" key="outdated.dependencies.inspection.name"
                      groupName="Flutter" enabledByDefault="true" level="WARNING" language="Dart"

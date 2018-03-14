@@ -13,13 +13,6 @@ import io.flutter.actions.OpenAndroidModule;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
-  @Override
-  public void runActivity(@NotNull Project project) {
-    // The IntelliJ version of this action spawns a new process for Android Studio.
-    // Since we're already running Android Studio we want to simply open the project in the current process.
-    replaceAction("flutter.androidstudio.open", new OpenAndroidModule());
-  }
-
   public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
     ActionManager actionManager = ActionManager.getInstance();
     AnAction oldAction = actionManager.getAction(actionId);
@@ -30,5 +23,12 @@ public class FlutterStudioStartupActivity implements StartupActivity {
       actionManager.unregisterAction(actionId);
     }
     actionManager.registerAction(actionId, newAction);
+  }
+
+  @Override
+  public void runActivity(@NotNull Project project) {
+    // The IntelliJ version of this action spawns a new process for Android Studio.
+    // Since we're already running Android Studio we want to simply open the project in the current process.
+    replaceAction("flutter.androidstudio.open", new OpenAndroidModule());
   }
 }
