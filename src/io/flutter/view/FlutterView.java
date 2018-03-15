@@ -20,6 +20,7 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -31,7 +32,9 @@ import com.intellij.ui.tabs.TabInfo;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.inspector.HeapDisplay;
 import io.flutter.inspector.InspectorService;
+import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
@@ -80,6 +83,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   @Override
   public void dispose() {
+    Disposer.dispose(this);
   }
 
   @NotNull
@@ -110,7 +114,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     // manually opens the window when there is not yet a running app.
   }
 
-  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, @NotNull FlutterApp app) {
+  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, @NotNull FlutterApp app, Disposable parentDisposable) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(registerAction(new ToggleInspectModeAction(app)));
     toolbarGroup.addSeparator();
@@ -118,9 +122,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
+    // TODO(pq): incorporate these into the heap display (maybe into a single combo selection).
     toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
     toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
-    toolbarGroup.addSeparator();
+    // TODO(pq): push this into preferences or a menu option.
+    if (PerfService.DISPLAY_HEAP_USE) {
+      toolbarGroup.add(new HeapDisplay.ToolbarComponentAction(parentDisposable, app));
+      toolbarGroup.addSeparator();
+    }
     toolbarGroup.add(new OverflowActionsAction(this, app));
     return toolbarGroup;
   }
@@ -135,8 +144,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private PerAppState getOrCreateStateForApp(FlutterApp app) {
-    PerAppState state = perAppViewState.computeIfAbsent(app, k -> new PerAppState());
-    return state;
+    return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
   private void addInspector(FlutterApp app, ToolWindow toolWindow) {
@@ -157,7 +165,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     assert (state.content == null);
     state.content = content;
 
-    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, tabs);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
     addInspectorPanel("Widgets", tabs, state, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);

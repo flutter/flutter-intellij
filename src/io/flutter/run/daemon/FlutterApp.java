@@ -26,6 +26,7 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
 import io.flutter.inspector.InspectorService;
+import io.flutter.perf.PerfService;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
@@ -75,6 +76,7 @@ public class FlutterApp {
   private FlutterDebugProcess myFlutterDebugProcess;
   private VmService myVmService;
   private InspectorService myInspectorService;
+  private PerfService myPerfService;
 
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
@@ -479,6 +481,15 @@ public class FlutterApp {
 
   public void setInspectorService(InspectorService service) {
     myInspectorService = service;
+  }
+
+  @Nullable
+  public PerfService getPerfService() {
+    return myPerfService;
+  }
+
+  public void setPerfService(PerfService perfService) {
+    myPerfService = perfService;
   }
 
   @NotNull
