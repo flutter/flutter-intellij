@@ -153,6 +153,10 @@ public class RenderHelper {
       return;
     }
 
+    if (myTesterPath == null) {
+      return;
+    }
+
     final String widgetClass = myWidgetOutline.getDartElement().getName();
     final String constructor = myWidgetOutline.getRenderConstructor();
     final RenderRequest request =
