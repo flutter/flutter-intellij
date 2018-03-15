@@ -16,16 +16,23 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.consumer.ReloadReportConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RenderHelper {
   private final Project myProject;
@@ -153,131 +160,12 @@ public class RenderHelper {
     myRenderThread.setRequest(request);
   }
 
-  private static void render(@NotNull RenderRequest request) {
-    try {
-      final String toRenderPath = request.file.getParent().getPath() + File.separator + ".to_render._dart";
-      final File toRenderFile = new File(toRenderPath);
-      Files.write(request.codeToRender, toRenderFile, StandardCharsets.UTF_8);
-
-      final String widgetCreation = "new " + request.widgetClass + "." + request.widgetConstructor + "();";
-
-      final URL templateUri = RenderHelper.class.getResource("render_server_template.txt");
-      String template = Resources.toString(templateUri, StandardCharsets.UTF_8);
-      template = template.replace("// TEMPLATE_VALUE: import library to render", "import '" + toRenderFile.toURI() + "';");
-      template = template.replace("new Container(); // TEMPLATE_VALUE: create widget", widgetCreation);
-      template = template.replace("{}; // TEMPLATE_VALUE: use flutterDesignerWidgets", "flutterDesignerWidgets;");
-      template = template.replace("350.0 /*TEMPLATE_VALUE: width*/", request.width + ".0");
-      template = template.replace("400.0 /*TEMPLATE_VALUE: height*/", request.height + ".0");
-
-      final String renderServerPath = request.file.getParent().getPath() + File.separator + ".render_server._dart";
-      final File renderServerFile = new File(renderServerPath);
-      Files.write(template, renderServerFile, StandardCharsets.UTF_8);
-
-      final Process process =
-        new ProcessBuilder(request.testerPath,
-                           "--non-interactive",
-                           "--use-test-fonts",
-                           "--packages=" + request.packages.getPath(),
-                           renderServerPath)
-          .start();
-
-      // Terminate the process if it does not exit fast enough.
-      final CountDownLatch processExitLatch = new CountDownLatch(1);
-      new Thread(() -> {
-        Uninterruptibles.awaitUninterruptibly(processExitLatch, 2000, TimeUnit.MILLISECONDS);
-        if (process.isAlive()) {
-          process.destroyForcibly();
-        }
-      }).start();
-
-      final int exitCode = process.waitFor();
-      processExitLatch.countDown();
-      if (exitCode != 0) {
-        final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        request.listener.onFailure(null);
-        return;
-      }
-
-      // The output stream must have a single line with the JSON response.
-      JsonObject response = null;
-      final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      while (true) {
-        final String responseLine = reader.readLine();
-        if (responseLine == null) {
-          break;
-        }
-        if (responseLine.startsWith("Observatory listening")) {
-          continue;
-        }
-        // The line must be a JSON response.
-        try {
-          response = new Gson().fromJson(responseLine, JsonObject.class);
-        }
-        catch (Throwable ignored) {
-        }
-        break;
-      }
-
-      // Fail if unable to find the valid response.
-      if (response == null) {
-        request.listener.onFailure(null);
-        return;
-      }
-
-      request.listener.onResponse(response);
-    }
-    catch (Throwable e) {
-      request.listener.onFailure(e);
-    }
-  }
-
   public interface Listener {
     void noWidget();
 
     void onResponse(JsonObject response);
 
     void onFailure(Throwable e);
-  }
-
-  private class RenderThread extends Thread {
-    final Object myRequestLock = new Object();
-    RenderRequest myRequest;
-
-    RenderThread() {
-      setDaemon(true);
-    }
-
-    void setRequest(RenderRequest request) {
-      synchronized (myRequestLock) {
-        myRequest = request;
-        myRequestLock.notifyAll();
-      }
-    }
-
-    @Override
-    public void run() {
-      //noinspection InfiniteLoopStatement
-      while (true) {
-        final RenderRequest request;
-        try {
-          synchronized (myRequestLock) {
-            if (myRequest == null) {
-              myRequestLock.wait();
-            }
-            request = myRequest;
-            myRequest = null;
-            if (request == null) {
-              continue;
-            }
-          }
-        }
-        catch (InterruptedException ignored) {
-          continue;
-        }
-
-        render(request);
-      }
-    }
   }
 }
 
@@ -305,7 +193,8 @@ class RenderRequest {
                 String codeToRender,
                 String widgetClass,
                 String widgetConstructor,
-                int width, int height,
+                int width,
+                int height,
                 RenderHelper.Listener listener) {
     this.testerPath = testerPath;
     this.packages = packages;
@@ -316,5 +205,221 @@ class RenderRequest {
     this.width = width;
     this.height = height;
     this.listener = listener;
+  }
+}
+
+class RenderThread extends Thread {
+  final Object myRequestLock = new Object();
+  RenderRequest myRequest;
+
+  RenderRequest myProcessRequest;
+  Process myProcess;
+  BufferedReader myProcessReader;
+  PrintStream myProcessWriter;
+  VmService myVmService;
+
+  RenderThread() {
+    setDaemon(true);
+  }
+
+  void setRequest(RenderRequest request) {
+    synchronized (myRequestLock) {
+      myRequest = request;
+      myRequestLock.notifyAll();
+    }
+  }
+
+  @Override
+  public void run() {
+    //noinspection InfiniteLoopStatement
+    while (true) {
+      final RenderRequest request;
+      try {
+        synchronized (myRequestLock) {
+          if (myRequest == null) {
+            myRequestLock.wait();
+          }
+          request = myRequest;
+          myRequest = null;
+          if (request == null) {
+            continue;
+          }
+        }
+      }
+      catch (InterruptedException ignored) {
+        continue;
+      }
+
+      render(request);
+    }
+  }
+
+  private void render(@NotNull RenderRequest request) {
+    try {
+      final String toRenderPath = request.file.getParent().getPath() + File.separator + ".to_render._dart";
+      final File toRenderFile = new File(toRenderPath);
+      Files.write(request.codeToRender, toRenderFile, StandardCharsets.UTF_8);
+
+      final String widgetCreation = "new " + request.widgetClass + "." + request.widgetConstructor + "();";
+
+      final URL templateUri = RenderHelper.class.getResource("render_server_template.txt");
+      String template = Resources.toString(templateUri, StandardCharsets.UTF_8);
+      template = template.replace("// TEMPLATE_VALUE: import library to render", "import '" + toRenderFile.toURI() + "';");
+      template = template.replace("new Container(); // TEMPLATE_VALUE: create widget", widgetCreation);
+      template = template.replace("{}; // TEMPLATE_VALUE: use flutterDesignerWidgets", "flutterDesignerWidgets;");
+      template = template.replace("350.0 /*TEMPLATE_VALUE: width*/", request.width + ".0");
+      template = template.replace("400.0 /*TEMPLATE_VALUE: height*/", request.height + ".0");
+
+      final String renderServerPath = request.file.getParent().getPath() + File.separator + ".render_server._dart";
+      final File renderServerFile = new File(renderServerPath);
+      Files.write(template, renderServerFile, StandardCharsets.UTF_8);
+
+      // Check if the current render server process is compatible with the new request.
+      // If it is, attempt to perform hot reload.
+      // If not successful, terminate the process.
+      boolean canRenderWithCurrentProcess = false;
+      if (myProcessRequest != null && myProcess != null && myProcess.isAlive() && myVmService != null) {
+        if (Objects.equals(myProcessRequest.packages, request.packages)) {
+          final boolean success = performReload();
+          if (success) {
+            canRenderWithCurrentProcess = true;
+          }
+        }
+
+        if (!canRenderWithCurrentProcess) {
+          terminateCurrentProcess("Project root or file changed, or reload failed");
+        }
+      }
+
+      // If the is no rendering server process, start a new one.
+      boolean newProcess = false;
+      if (myProcess == null) {
+        myProcessRequest = request;
+        myProcess = new ProcessBuilder(request.testerPath,
+                                       "--non-interactive",
+                                       "--use-test-fonts",
+                                       "--packages=" + request.packages.getPath(),
+                                       renderServerPath).start();
+        myProcessReader = new BufferedReader(new InputStreamReader(myProcess.getInputStream()));
+        myProcessWriter = new PrintStream(myProcess.getOutputStream(), true);
+        newProcess = true;
+      }
+
+      // Terminate the process if it does not respond fast enough.
+      final CountDownLatch responseReceivedLatch = new CountDownLatch(1);
+      final Process processToTerminate = myProcess;
+      new Thread(() -> {
+        boolean success = Uninterruptibles.awaitUninterruptibly(responseReceivedLatch, 2000, TimeUnit.MILLISECONDS);
+        if (!success) {
+          processToTerminate.destroyForcibly();
+        }
+      }).start();
+
+      // Get the Observatory URI and connect VmService.
+      if (newProcess) {
+        final String line = myProcessReader.readLine();
+        if (line == null || !line.startsWith("Observatory listening on ")) {
+          terminateCurrentProcess("Observatory URI expected");
+          return;
+        }
+        String uri = line.substring("Observatory listening on ".length());
+        uri = uri.replace("http://", "ws://") + "ws";
+        myVmService = VmService.connect(uri);
+      }
+
+      // Ask to render the widget.
+      myProcessWriter.println("render");
+
+      // Read the response.
+      final JsonObject response;
+      {
+        final String line = myProcessReader.readLine();
+        if (line == null) {
+          terminateCurrentProcess("Response expected");
+          return;
+        }
+        // The line must be a JSON response.
+        try {
+          response = new Gson().fromJson(line, JsonObject.class);
+        }
+        catch (Throwable ignored) {
+          terminateCurrentProcess("JSON response expected");
+          request.listener.onFailure(null);
+          return;
+        }
+      }
+
+      // Fail if unable to find the valid response.
+      if (response == null) {
+        request.listener.onFailure(null);
+        return;
+      }
+
+      // OK, we got all what we need, the process is OK, we can continue using it.
+      responseReceivedLatch.countDown();
+
+      // Send the respose to the client.
+      request.listener.onResponse(response);
+    }
+    catch (Throwable e) {
+      terminateCurrentProcess("Exception");
+      request.listener.onFailure(e);
+    }
+  }
+
+  /**
+   * Attempt to perform hot reload.
+   *
+   * @return true if successful, or false if unsuccessful or timeout.
+   */
+  private boolean performReload() {
+    final CountDownLatch reloadLatch = new CountDownLatch(1);
+    final AtomicBoolean reloadSuccess = new AtomicBoolean(false);
+
+    myVmService.getVM(new VMConsumer() {
+      @Override
+      public void received(VM vm) {
+        final ElementList<IsolateRef> isolates = vm.getIsolates();
+        if (!isolates.isEmpty()) {
+          final String isolateId = isolates.get(0).getId();
+
+          myVmService.reloadSources(isolateId, new ReloadReportConsumer() {
+            @Override
+            public void received(ReloadReport report) {
+              reloadSuccess.set(report.getSuccess());
+              reloadLatch.countDown();
+            }
+
+            @Override
+            public void onError(RPCError error) {
+              reloadLatch.countDown();
+            }
+          });
+        }
+      }
+
+      @Override
+      public void onError(RPCError error) {
+        reloadLatch.countDown();
+      }
+    });
+
+    return Uninterruptibles.awaitUninterruptibly(reloadLatch, 2000, TimeUnit.MILLISECONDS) && reloadSuccess.get();
+  }
+
+  private void terminateCurrentProcess(String reason) {
+    myProcessRequest = null;
+
+    if (myProcess != null) {
+      myProcess.destroyForcibly();
+      myProcess = null;
+    }
+    myProcessReader = null;
+    myProcessWriter = null;
+
+    if (myVmService != null) {
+      myVmService.disconnect();
+      myVmService = null;
+    }
   }
 }
