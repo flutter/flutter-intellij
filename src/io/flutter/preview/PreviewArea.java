@@ -39,13 +39,13 @@ import java.util.Map;
 public class PreviewArea {
   public static int BORDER_WITH = 5;
 
-  // https://material.io/guidelines/style/color.html#color-color-tool
   @SuppressWarnings("UseJBColor")
-  private static final Color[] widgetColors = new Color[]{
-    Color.decode("#0D47A1"),
-    Color.decode("#1976D2"),
-    Color.decode("#2196F3"),
-    Color.decode("#64B5F6")
+  private static final Color[] pastelColors = new Color[]{
+    new Color(255, 132, 203),
+    new Color(168, 231, 234),
+    new Color(251, 255, 147),
+    new Color(143, 255, 159),
+    new Color(193, 149, 255),
   };
 
   private final Listener myListener;
@@ -224,11 +224,9 @@ public class PreviewArea {
         final JLabel label = new JLabel(outline.getClassName());
         label.setBorder(JBUI.Borders.empty(2, 4, 0, 0));
         widget.add(label, BorderLayout.NORTH);
-        widget.setBackground(widgetColors[widgetDepth % widgetColors.length]);
+        widget.setBackground(pastelColors[widgetDepth % pastelColors.length]);
         widget.setBounds(rect);
-        //widget.setBorder(new EtchedBorder());
         widget.setBorder(IdeBorderFactory.createRoundedBorder(2));
-        //widget.validate();
 
         outlineToComponent.put(outline, widget);
 

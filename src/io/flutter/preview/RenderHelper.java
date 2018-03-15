@@ -153,6 +153,7 @@ public class RenderHelper {
       return;
     }
 
+    // TODO: Expose this as an error to the user.
     if (myTesterPath == null) {
       return;
     }
