@@ -118,7 +118,7 @@ public class HeapDisplay extends JPanel {
   }
 
   public static class HeapState implements HeapListener {
-    // Running count of the max help (in bytes).
+    // Running count of the max heap (in bytes).
     private int heapMaxInBytes;
 
     private final HeapSamples samples;
