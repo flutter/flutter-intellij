@@ -7,6 +7,8 @@ package io.flutter.preview;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.ui.IdeBorderFactory;
+import com.intellij.util.ui.JBUI;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
@@ -31,6 +33,8 @@ import java.util.Map;
 
 // TODO: we should be bolding stateful and stateless (and state) classes, not build() methods
 //       or, show all elements of these classes with some additional emphasis (italic? background color?)
+
+// TODO: we need to take the layer (or z-index?) of the widget into account (see Scaffold and its FAB)
 
 public class PreviewArea {
   public static int BORDER_WITH = 5;
@@ -60,8 +64,6 @@ public class PreviewArea {
 
   private final Map<FlutterOutline, JComponent> outlineToComponent = new HashMap<>();
   private final List<SelectionEditPolicy> selectionComponents = new ArrayList<>();
-
-  private int colorIndex = 0;
 
   public PreviewArea(Listener listener) {
     this.myListener = listener;
@@ -142,9 +144,9 @@ public class PreviewArea {
       return;
     }
 
-    colorIndex = 0;
     outlineToComponent.clear();
-    renderWidgetOutline(rootOutline);
+    renderWidgetOutline(rootOutline, 0);
+    primaryLayer.revalidate();
     primaryLayer.repaint();
   }
 
@@ -209,7 +211,7 @@ public class PreviewArea {
     }
   }
 
-  private void renderWidgetOutline(@NotNull FlutterOutline outline) {
+  private void renderWidgetOutline(@NotNull FlutterOutline outline, int widgetDepth) {
     final Integer id = outline.getId();
     if (id != null) {
       Rectangle rect = idToGlobalBounds.get(id);
@@ -218,9 +220,13 @@ public class PreviewArea {
         final int y = BORDER_WITH + rect.y - rootWidgetBounds.y;
         rect = new Rectangle(x, y, rect.width, rect.height);
 
-        final JPanel widget = new JPanel();
-        widget.setBackground(pastelColors[(colorIndex++) % pastelColors.length]);
+        final JPanel widget = new JPanel(new BorderLayout());
+        final JLabel label = new JLabel(outline.getClassName());
+        label.setBorder(JBUI.Borders.empty(2, 4, 0, 0));
+        widget.add(label, BorderLayout.NORTH);
+        widget.setBackground(pastelColors[widgetDepth % pastelColors.length]);
         widget.setBounds(rect);
+        widget.setBorder(IdeBorderFactory.createRoundedBorder(2));
 
         outlineToComponent.put(outline, widget);
 
@@ -240,7 +246,7 @@ public class PreviewArea {
 
         if (outline.getChildren() != null) {
           for (FlutterOutline child : outline.getChildren()) {
-            renderWidgetOutline(child);
+            renderWidgetOutline(child, widgetDepth + 1);
           }
         }
 
