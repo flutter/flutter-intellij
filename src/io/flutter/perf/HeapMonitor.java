@@ -26,7 +26,6 @@ import java.util.concurrent.TimeUnit;
 // TODO(pq): handle GC events
 // TODO(pq): improve error handling
 public class HeapMonitor {
-
   private static final Logger LOG = Logger.getInstance(HeapMonitor.class);
 
   private static final int POLL_PERIOD_IN_MS = 1000;
@@ -93,9 +92,17 @@ public class HeapMonitor {
     final int bytes;
     final boolean isGC;
 
+    public long getSampleTime() {
+      return sampleTime;
+    }
+
+    final long sampleTime;
+
     public HeapSample(int bytes, boolean isGC) {
       this.bytes = bytes;
       this.isGC = isGC;
+
+      this.sampleTime = System.currentTimeMillis();
     }
 
     public int getBytes() {
@@ -134,7 +141,6 @@ public class HeapMonitor {
   }
 
   private void poll() {
-
     final Collection<IsolatesInfo.IsolateInfo> isolateInfos = debugProcess.getIsolateInfos();
     // Stash count so we can know when we've processed them all.
     final int isolateCount = isolateInfos.size();
