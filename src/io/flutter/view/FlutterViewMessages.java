@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
+import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.inspector.InspectorService;
 import org.dartlang.vm.service.VmService;
@@ -42,6 +43,7 @@ public class FlutterViewMessages {
     app.setVmService(vmService);
     assert(app.getFlutterDebugProcess() != null);
     app.setInspectorService( new InspectorService(app.getFlutterDebugProcess(), vmService));
+    app.setPerfService(new PerfService(app.getFlutterDebugProcess(), vmService));
     publisher.debugActive(new FlutterDebugEvent(app, vmService));
   }
 }
