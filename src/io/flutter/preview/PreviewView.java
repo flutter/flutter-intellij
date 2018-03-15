@@ -338,13 +338,17 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     previewArea = new PreviewArea(new PreviewArea.Listener() {
       @Override
       public void clicked(FlutterOutline outline) {
-        applyOutlinesSelectionToTree(ImmutableList.of(outline));
+        final ImmutableList<FlutterOutline> outlines = ImmutableList.of(outline);
+        updateActionsForOutlines(outlines);
+        applyOutlinesSelectionToTree(outlines);
         jumpToOutlineInEditor(outline, false);
       }
 
       @Override
       public void doubleClicked(FlutterOutline outline) {
-        applyOutlinesSelectionToTree(ImmutableList.of(outline));
+        final ImmutableList<FlutterOutline> outlines = ImmutableList.of(outline);
+        updateActionsForOutlines(outlines);
+        applyOutlinesSelectionToTree(outlines);
         jumpToOutlineInEditor(outline, true);
       }
 
