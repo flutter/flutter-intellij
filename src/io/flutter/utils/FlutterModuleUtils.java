@@ -7,7 +7,6 @@ package io.flutter.utils;
 
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
-import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.module.Module;
@@ -271,10 +270,13 @@ public class FlutterModuleUtils {
   public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
     boolean modulesConverted = false;
 
-    for (Module module : getModules(project)) {
-      if (isDeprecatedFlutterModuleType(module)) {
-        setFlutterModuleType(module);
-        modulesConverted = true;
+    // Only automatically convert from older module types to JAVA_MODULE types if we're running in Android Studio.
+    if (FlutterUtils.isAndroidStudio()) {
+      for (Module module : getModules(project)) {
+        if (isDeprecatedFlutterModuleType(module)) {
+          setFlutterModuleType(module);
+          modulesConverted = true;
+        }
       }
     }
 
