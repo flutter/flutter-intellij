@@ -11,6 +11,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.pub.PubRoot;
@@ -23,10 +24,7 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.PrintStream;
+import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -214,6 +212,8 @@ class RenderRequest {
 }
 
 class RenderThread extends Thread {
+  File myTemporaryDirectory;
+
   final Object myRequestLock = new Object();
   RenderRequest myRequest;
 
@@ -225,6 +225,11 @@ class RenderThread extends Thread {
 
   RenderThread() {
     setDaemon(true);
+    try {
+      myTemporaryDirectory = FileUtil.createTempDirectory("flutterDesigner", null);
+    }
+    catch (IOException ignored) {
+    }
   }
 
   void setRequest(RenderRequest request) {
@@ -260,9 +265,13 @@ class RenderThread extends Thread {
   }
 
   private void render(@NotNull RenderRequest request) {
+    if (myTemporaryDirectory == null) {
+      request.listener.onFailure(null);
+      return;
+    }
+
     try {
-      final String toRenderPath = request.file.getParent().getPath() + File.separator + ".to_render._dart";
-      final File toRenderFile = new File(toRenderPath);
+      final File toRenderFile = new File(myTemporaryDirectory, "to_render.dart");
       Files.write(request.codeToRender, toRenderFile, StandardCharsets.UTF_8);
 
       final String widgetCreation = "new " + request.widgetClass + "." + request.widgetConstructor + "();";
@@ -275,8 +284,8 @@ class RenderThread extends Thread {
       template = template.replace("350.0 /*TEMPLATE_VALUE: width*/", request.width + ".0");
       template = template.replace("400.0 /*TEMPLATE_VALUE: height*/", request.height + ".0");
 
-      final String renderServerPath = request.file.getParent().getPath() + File.separator + ".render_server._dart";
-      final File renderServerFile = new File(renderServerPath);
+      final File renderServerFile = new File(myTemporaryDirectory, "render_server.dart");
+      final String renderServerPath = renderServerFile.getPath();
       Files.write(template, renderServerFile, StandardCharsets.UTF_8);
 
       // Check if the current render server process is compatible with the new request.
