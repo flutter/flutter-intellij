@@ -23,6 +23,8 @@ public class FlutterIcons {
   public static final Icon Feedback = load("/icons/feedback.png");
 
   public static final Icon OpenObservatory = load("/icons/observatory.png");
+  public static final Icon OpenObservatoryGroup = load("/icons/observatory_overflow.png");
+
   public static final Icon OpenTimeline = load("/icons/timeline.png");
 
   public static final Icon HotReload = load("/icons/hot-reload.png");
