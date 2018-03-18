@@ -20,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 // TODO(pq): improve error handling
 // TODO(pq): change mode for opting in (preference or inspector view menu)
 public class PerfService {
-  // Enable to see experimental heap status panel in the inspector view.
-  public static final boolean DISPLAY_HEAP_USE = false;
 
   private final VmServiceListener vmServiceListener = new VmServiceListenerAdapter() {
     @Override

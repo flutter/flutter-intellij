@@ -105,7 +105,7 @@
           </component>
         </children>
       </grid>
-      <grid id="23e52" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="23e52" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -126,7 +126,7 @@
           </component>
           <component id="8bd46" class="javax.swing.JCheckBox" binding="myOrganizeImportsOnSaveCheckBox" default-binding="true">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Organize imports on save"/>
@@ -135,7 +135,7 @@
           </component>
           <component id="a0dd8" class="javax.swing.JCheckBox" binding="myFormatCodeOnSaveCheckBox" default-binding="true">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Format code on save"/>
@@ -148,6 +148,14 @@
             </constraints>
             <properties>
               <text value="Show a live preview area in Flutter Outline"/>
+            </properties>
+          </component>
+          <component id="e5c7" class="javax.swing.JCheckBox" binding="myShowHeapDisplayCheckBox">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Display heap usage in the Inspector toolbar"/>
             </properties>
           </component>
         </children>
