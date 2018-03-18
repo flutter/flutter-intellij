@@ -9,10 +9,11 @@ import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
 import com.intellij.concurrency.JobScheduler;
-import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.actions.SaveAllAction;
-import com.intellij.ide.util.PropertiesComponent;
-import com.intellij.notification.*;
+import com.intellij.notification.Notification;
+import com.intellij.notification.NotificationGroup;
+import com.intellij.notification.NotificationListener;
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -48,7 +49,6 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.analyzer.DartServerData;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import icons.FlutterIcons;
-import io.flutter.FlutterMessages;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
@@ -80,15 +80,11 @@ import java.util.stream.Collectors;
  * Handle the mechanics of performing a hot reload on file save.
  */
 public class FlutterReloadManager {
-  public static final String RELOAD_ON_SAVE_FEEDBACK_URL = "https://goo.gl/Pab4Li";
-
   private static final String RESTART_SUGGESTED_TEXT =
     "Not all changed program elements ran during view reassembly; consider restarting ("
     + (SystemInfo.isMac ? "⇧⌘S" : "⇧^S") + ").";
 
   private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class);
-
-  private static final String reloadSaveFeedbackKey = "io.flutter.askedUserReloadSaveFeedback";
 
   private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
 
@@ -162,25 +158,6 @@ public class FlutterReloadManager {
         }
       }
     }, project);
-
-    mySettings.addListener(new FlutterSettings.Listener() {
-      boolean reloadOnSave = mySettings.isReloadOnSave();
-
-      @Override
-      public void settingsChanged() {
-        final boolean newReloadOnSave = mySettings.isReloadOnSave();
-        if (reloadOnSave && !newReloadOnSave) {
-          // The user is turning off reload on save; see if we should ask why.
-          final PropertiesComponent properties = PropertiesComponent.getInstance();
-          if (!properties.getBoolean(reloadSaveFeedbackKey, false)) {
-            properties.setValue(reloadSaveFeedbackKey, true);
-
-            JobScheduler.getScheduler().schedule(() -> showDisableReloadSaveNotification(), 1, TimeUnit.SECONDS);
-          }
-        }
-        reloadOnSave = newReloadOnSave;
-      }
-    });
   }
 
   private final AtomicBoolean handlingSave = new AtomicBoolean(false);
@@ -390,27 +367,5 @@ public class FlutterReloadManager {
     });
 
     return ref.get();
-  }
-
-  private void showDisableReloadSaveNotification() {
-    final Notification notification = new Notification(
-      FlutterMessages.FLUTTER_NOTIFICATION_GOUP_ID,
-      "Flutter Reload on Save",
-      "Disabling reload on save; consider providing feedback on this feature to help us improve future versions.",
-      NotificationType.INFORMATION);
-    notification.addAction(new AnAction("Provide Feedback") {
-      @Override
-      public void actionPerformed(AnActionEvent event) {
-        notification.expire();
-        BrowserUtil.browse(RELOAD_ON_SAVE_FEEDBACK_URL);
-      }
-    });
-    notification.addAction(new AnAction("No thanks") {
-      @Override
-      public void actionPerformed(AnActionEvent event) {
-        notification.expire();
-      }
-    });
-    Notifications.Bus.notify(notification);
   }
 }
