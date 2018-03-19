@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.util.Disposer;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.perf.HeapMonitor;
@@ -31,8 +32,18 @@ import java.util.*;
 import java.util.List;
 
 // TODO(pq): make capacity setting dynamic
-// TODO(pq): add label displaying current/total heap use
 public class HeapDisplay extends JPanel {
+
+  // The width of the drawable heap area.
+  private static final int HEAP_GRAPH_WIDTH = 60;
+  // The height of the drawable heap area.
+  private static final int HEAP_GRAPH_HEIGHT = 16;
+
+  // TODO(pq): consider basing this on available space or user configuration.
+  private static final boolean SHOW_HEAP_SUMMARY = false;
+
+  @Nullable
+  private final SummaryCallback summaryCallback;
 
   public static class ToolbarComponentAction extends AnAction implements CustomComponentAction, HeapListener, Disposable {
     private final List<JPanel> panels = new ArrayList<>();
@@ -60,9 +71,22 @@ public class HeapDisplay extends JPanel {
 
     @Override
     public JComponent createCustomComponent(Presentation presentation) {
-      final JPanel panel = new JPanel(new GridBagLayout());
-      final HeapDisplay graph = new HeapDisplay();
 
+      // Summary label.
+      final JBLabel label = new JBLabel();
+      if (SHOW_HEAP_SUMMARY) {
+        label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+        label.setForeground(getForegroundColor());
+
+        // TODO(pq): calculate minimum width (or pad in text).
+        label.setMinimumSize(new Dimension(100, label.getHeight()));
+        label.setPreferredSize(new Dimension(100, label.getHeight()));
+        label.setHorizontalTextPosition(SwingConstants.LEFT);
+      }
+
+      // Graph component.
+      final JPanel panel = new JPanel(new GridBagLayout());
+      final HeapDisplay graph = new HeapDisplay(SHOW_HEAP_SUMMARY ? label::setText : null);
       panel.add(graph,
                 new GridBagConstraints(0, 0, 1, 1, 1, 1,
                                        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
@@ -70,7 +94,13 @@ public class HeapDisplay extends JPanel {
       // Because there may be multiple toolbars, we need to store (and update) multiple panels.
       panels.add(panel);
       graphs.add(graph);
-      return panel;
+
+      final JPanel container = new JPanel(new BorderLayout(5, 0));
+      if (SHOW_HEAP_SUMMARY) {
+        container.add(label, BorderLayout.WEST);
+      }
+      container.add(panel, BorderLayout.EAST);
+      return container;
     }
 
     @Override
@@ -101,10 +131,11 @@ public class HeapDisplay extends JPanel {
     }
   }
 
-  private static final int TEN_MB = 1024 * 1024 * 10;
+  private static Color getForegroundColor() {
+    return UIUtil.getLabelDisabledForeground();
+  }
 
-  private static final int PREFFERED_WIDTH = 60;
-  private static final int PREFFERED_HEIGHT = 16;
+  private static final int TEN_MB = 1024 * 1024 * 10;
 
   private static final Stroke GRAPH_STROKE = new BasicStroke(2f);
 
@@ -114,9 +145,14 @@ public class HeapDisplay extends JPanel {
     df.setMaximumFractionDigits(1);
   }
 
+  private interface SummaryCallback {
+    void updatedSummary(String summary);
+  }
+
   private @Nullable HeapState heapState;
 
-  public HeapDisplay() {
+  public HeapDisplay(@Nullable SummaryCallback summaryCallback) {
+    this.summaryCallback = summaryCallback;
     setVisible(true);
   }
 
@@ -125,7 +161,13 @@ public class HeapDisplay extends JPanel {
 
     if (!heapState.getSamples().isEmpty()) {
       final HeapSample sample = heapState.getSamples().get(0);
-      setToolTipText(printMb(sample.getBytes()) + " of " + printMb(heapState.getMaxHeapInBytes()));
+      final String summary = printMb(sample.getBytes()) + " of " + printMb(heapState.getMaxHeapInBytes());
+      if (summaryCallback != null) {
+        summaryCallback.updatedSummary(summary);
+      } else {
+        // TODO(pq): if the summary callback is defined, consider displaying a quick pointer or doc in the tooltip.
+        setToolTipText(summary);
+      }
     }
   }
 
@@ -153,23 +195,25 @@ public class HeapDisplay extends JPanel {
     final List<Point> graphPoints = new ArrayList<>();
     for (HeapSample sample : heapState.getSamples()) {
       final int x = width - (int)(((double)(now - sample.getSampleTime())) / ((double)heapState.getMaxSampleSizeMs()) * width);
+      // TODO(pq): consider a Y offset or scaling.
       final int y = (int)(height * sample.getBytes() / maxDataSize);
       graphPoints.add(new Point(x, y));
     }
 
-    graphics2D.setColor(UIUtil.getLabelDisabledForeground());
+    graphics2D.setColor(getForegroundColor());
     graphics2D.setStroke(GRAPH_STROKE);
 
     for (int i = 0; i < graphPoints.size() - 1; i++) {
       final Point p1 = graphPoints.get(i);
       final Point p2 = graphPoints.get(i + 1);
+      // TODO(pq): consider UIUtil.drawLine(...);
       graphics2D.drawLine(p1.x, height - p1.y, p2.x, height - p2.y);
     }
   }
 
   @Override
   public Dimension getPreferredSize() {
-    return new Dimension(PREFFERED_WIDTH, PREFFERED_HEIGHT);
+    return new Dimension(HEAP_GRAPH_WIDTH, HEAP_GRAPH_HEIGHT);
   }
 }
 
