@@ -129,7 +129,6 @@ public class PreviewArea {
    */
   public void renderingStarted() {
     isBeingRendered = true;
-    clear("Rendering...");
   }
 
   /**
