@@ -60,6 +60,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowPreviewAreaCheckBox;
+  private JCheckBox myShowHeapDisplayCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -157,6 +158,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isShowHeapDisplay() != myShowHeapDisplayCheckBox.isSelected()) {
+      return true;
+    }
+
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
       return true;
     }
@@ -195,6 +200,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
     settings.setShowPreviewAreaKey(myShowPreviewAreaCheckBox.isSelected());
+    settings.setShowHeapDisplay(myShowHeapDisplayCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setDisablePreviewDart2(myPreviewDart2CheckBox.isSelected());
@@ -221,6 +227,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
+    myShowHeapDisplayCheckBox.setSelected(settings.isShowHeapDisplay());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     myPreviewDart2CheckBox.setSelected(settings.isDisablePreviewDart2());

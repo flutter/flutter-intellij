@@ -56,7 +56,7 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
       // In the first case, we want to override the defaults from the template.
       // In the second case, don't change anything.
       if (isNewlyGeneratedName(name) && template instanceof BazelRunConfig) {
-        // TODO(skybrian) is this really a good name for a new run config? Not sure why we override this.
+        // TODO(jwren) is this really a good name for a new run config? Not sure why we override this.
         // Note that if the user creates more than one run config, they will need to rename it manually.
         name = template.getProject().getName();
         return ((BazelRunConfig)template).copyTemplateToNonTemplate(name);

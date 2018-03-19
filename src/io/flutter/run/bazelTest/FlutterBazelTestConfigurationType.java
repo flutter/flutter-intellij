@@ -10,15 +10,14 @@ import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.search.FileTypeIndex;
-import com.intellij.psi.search.GlobalSearchScope;
-import com.jetbrains.lang.dart.DartFileType;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * The Bazel version of the {@link io.flutter.run.test.TestConfigType} configuration.
+ */
 public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
   public FlutterBazelTestConfigurationType() {
@@ -49,7 +48,7 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
       // In the first case, we want to override the defaults from the template.
       // In the second case, don't change anything.
       if (isNewlyGeneratedName(name) && template instanceof BazelTestConfig) {
-        // TODO(skybrian) is this really a good name for a new run config? Not sure why we override this.
+        // TODO(jwren) is this really a good name for a new run config? Not sure why we override this.
         // Note that if the user creates more than one run config, they will need to rename it manually.
         name = template.getProject().getName();
         return ((BazelTestConfig)template).copyTemplateToNonTemplate(name);

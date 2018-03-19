@@ -8,17 +8,17 @@ package io.flutter.perf;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.IsolatesInfo;
 import io.flutter.run.FlutterDebugProcess;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
-import org.dartlang.vm.service.element.Isolate;
-import org.dartlang.vm.service.element.Obj;
-import org.dartlang.vm.service.element.RPCError;
-import org.dartlang.vm.service.element.Sentinel;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +31,9 @@ public class HeapMonitor {
   private static final int POLL_PERIOD_IN_MS = 1000;
 
   public interface HeapListener {
-    void update(List<IsolateObject> isolates);
+    void handleIsolatesInfo(List<IsolateObject> isolates);
+
+    void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace);
   }
 
   static class HeapObject extends Obj {
@@ -79,7 +81,7 @@ public class HeapMonitor {
       super(json);
     }
 
-    public Iterable<HeapSpace> getHeaps() {
+    public List<HeapSpace> getHeaps() {
       final List<HeapSpace> heaps = new ArrayList<>();
       for (Map.Entry<String, JsonElement> entry : getEntries("_heaps")) {
         heaps.add(new HeapSpace(entry.getValue().getAsJsonObject()));
@@ -120,12 +122,9 @@ public class HeapMonitor {
 
   @NotNull
   private final VmService vmService;
-  @NotNull
-  private final FlutterDebugProcess debugProcess;
 
   public HeapMonitor(@NotNull VmService vmService, @NotNull FlutterDebugProcess debugProcess) {
     this.vmService = vmService;
-    this.debugProcess = debugProcess;
   }
 
   public void addListener(@NotNull HeapMonitor.HeapListener listener) {
@@ -141,13 +140,28 @@ public class HeapMonitor {
   }
 
   private void poll() {
-    final Collection<IsolatesInfo.IsolateInfo> isolateInfos = debugProcess.getIsolateInfos();
+    vmService.getVM(new VMConsumer() {
+      @Override
+      public void received(VM vm) {
+        collectIsolateInfo(vm);
+      }
+
+      @Override
+      public void onError(RPCError error) {
+      }
+    });
+  }
+
+  private void collectIsolateInfo(VM vm) {
+    final ElementList<IsolateRef> isolateRefs = vm.getIsolates();
+
     // Stash count so we can know when we've processed them all.
-    final int isolateCount = isolateInfos.size();
+    final int isolateCount = isolateRefs.size();
 
     final List<IsolateObject> isolates = new ArrayList<>();
-    for (IsolatesInfo.IsolateInfo info : isolateInfos) {
-      vmService.getIsolate(info.getIsolateId(), new GetIsolateConsumer() {
+
+    for (IsolateRef isolateRef : isolateRefs) {
+      vmService.getIsolate(isolateRef.getId(), new GetIsolateConsumer() {
         @Override
         public void received(Isolate isolateResponse) {
           isolates.add(new IsolateObject(isolateResponse.getJson()));
@@ -171,8 +185,12 @@ public class HeapMonitor {
     }
   }
 
+  void handleGCEvent(IsolateRef isolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
+    heapListeners.forEach(listener -> listener.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace));
+  }
+
   private void notifyListeners(List<IsolateObject> isolates) {
-    heapListeners.forEach(listener -> listener.update(isolates));
+    heapListeners.forEach(listener -> listener.handleIsolatesInfo(isolates));
   }
 
   void stop() {

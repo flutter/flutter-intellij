@@ -11,8 +11,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.perf.HeapMonitor;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.perf.HeapMonitor.HeapSample;
@@ -20,19 +20,18 @@ import io.flutter.perf.HeapMonitor.HeapSpace;
 import io.flutter.perf.HeapMonitor.IsolateObject;
 import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
+import org.dartlang.vm.service.element.IsolateRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 
 // TODO(pq): make capacity setting dynamic
 // TODO(pq): add label displaying current/total heap use
-// TODO(pq): handle GCs
 public class HeapDisplay extends JPanel {
 
   public static class ToolbarComponentAction extends AnAction implements CustomComponentAction, HeapListener, Disposable {
@@ -80,8 +79,19 @@ public class HeapDisplay extends JPanel {
     }
 
     @Override
-    public void update(List<IsolateObject> isolates) {
-      heapState.update(isolates);
+    public void handleIsolatesInfo(List<IsolateObject> isolates) {
+      heapState.handleIsolatesInfo(isolates);
+
+      for (HeapDisplay graph : graphs) {
+        graph.updateFrom(heapState);
+      }
+
+      panels.forEach(panel -> SwingUtilities.invokeLater(panel::repaint));
+    }
+
+    @Override
+    public void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
+      heapState.handleGCEvent(iIsolateRef, newHeapSpace, oldHeapSpace);
 
       for (HeapDisplay graph : graphs) {
         graph.updateFrom(heapState);
@@ -147,7 +157,7 @@ public class HeapDisplay extends JPanel {
       graphPoints.add(new Point(x, y));
     }
 
-    graphics2D.setColor(JBColor.LIGHT_GRAY);
+    graphics2D.setColor(UIUtil.getLabelDisabledForeground());
     graphics2D.setStroke(GRAPH_STROKE);
 
     for (int i = 0; i < graphPoints.size() - 1; i++) {
@@ -177,7 +187,8 @@ class HeapSamples {
   void add(HeapMonitor.HeapSample sample) {
     samples.add(sample);
 
-    final long oldestTime = System.currentTimeMillis() - maxSampleSizeMs;
+    // Leave a little bit extra in the samples we trim off.
+    final long oldestTime = System.currentTimeMillis() - maxSampleSizeMs - 2000;
     while (!samples.isEmpty() && samples.get(0).getSampleTime() < oldestTime) {
       samples.removeFirst();
     }
@@ -189,6 +200,7 @@ class HeapState implements HeapListener {
   private int heapMaxInBytes;
 
   private final HeapSamples samples;
+  private final Map<String, List<HeapSpace>> isolateHeaps = new HashMap<>();
 
   HeapState(int maxSampleSizeMs) {
     samples = new HeapSamples(maxSampleSizeMs);
@@ -203,7 +215,13 @@ class HeapState implements HeapListener {
   }
 
   public int getMaxHeapInBytes() {
-    return heapMaxInBytes;
+    int max = heapMaxInBytes;
+
+    for (HeapSample sample : samples.samples) {
+      max = Math.max(max, sample.getBytes());
+    }
+
+    return max;
   }
 
   void addSample(HeapSample sample) {
@@ -211,11 +229,15 @@ class HeapState implements HeapListener {
   }
 
   @Override
-  public void update(List<IsolateObject> isolates) {
+  public void handleIsolatesInfo(List<IsolateObject> isolates) {
     int current = 0;
     int total = 0;
 
+    isolateHeaps.clear();
+
     for (IsolateObject isolate : isolates) {
+      isolateHeaps.put(isolate.getId(), isolate.getHeaps());
+
       for (HeapSpace heap : isolate.getHeaps()) {
         current += heap.getUsed() + heap.getExternal();
         total += heap.getCapacity() + heap.getExternal();
@@ -223,6 +245,22 @@ class HeapState implements HeapListener {
     }
 
     heapMaxInBytes = total;
+
     addSample(new HeapSample(current, false));
+  }
+
+  @Override
+  public void handleGCEvent(IsolateRef isolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
+    int current = 0;
+
+    isolateHeaps.put(isolateRef.getId(), new ArrayList<>(Arrays.asList(newHeapSpace, oldHeapSpace)));
+
+    for (List<HeapSpace> heaps : isolateHeaps.values()) {
+      for (HeapSpace heap : heaps) {
+        current += heap.getUsed() + heap.getExternal();
+      }
+    }
+
+    addSample(new HeapSample(current, true));
   }
 }

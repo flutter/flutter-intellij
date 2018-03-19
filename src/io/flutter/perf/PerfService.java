@@ -5,20 +5,21 @@
  */
 package io.flutter.perf;
 
+import com.intellij.openapi.util.text.StringUtil;
+import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.IsolateRef;
 import org.jetbrains.annotations.NotNull;
 
 // TODO(pq): rename
 // TODO(pq): improve error handling
 // TODO(pq): change mode for opting in (preference or inspector view menu)
 public class PerfService {
-  // Enable to see experimental heap status panel in the inspector view.
-  public static final boolean DISPLAY_HEAP_USE = false;
 
   private final VmServiceListener vmServiceListener = new VmServiceListenerAdapter() {
     @Override
@@ -51,6 +52,8 @@ public class PerfService {
     if (!isRunning) {
       // Start polling.
       vmService.addVmServiceListener(vmServiceListener);
+      vmService.streamListen("GC", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
       heapMonitor.start();
       isRunning = true;
     }
@@ -73,8 +76,18 @@ public class PerfService {
   }
 
   @SuppressWarnings("EmptyMethod")
-  private void onVmServiceReceived(String id, Event event) {
-    // TODO(pq): handle receive -- errors in particular.
+  private void onVmServiceReceived(String streamId, Event event) {
+    if (!isRunning) {
+      return;
+    }
+
+    if (StringUtil.equals(streamId, VmService.GC_STREAM_ID)) {
+      final IsolateRef isolateRef = event.getIsolate();
+      final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
+      final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
+
+      heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
+    }
   }
 
   /**
