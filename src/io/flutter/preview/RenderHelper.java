@@ -91,6 +91,9 @@ public class RenderHelper {
   public void setOffset(int offset) {
     final FlutterOutline widgetOutline = getContainingWidgetOutline(offset);
     if (widgetOutline == myWidgetOutline) {
+      if (widgetOutline == null) {
+        myListener.noWidget();
+      }
       return;
     }
 
