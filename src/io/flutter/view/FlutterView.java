@@ -34,7 +34,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.inspector.HeapDisplay;
 import io.flutter.inspector.InspectorService;
-import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
@@ -122,11 +121,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
-    // TODO(pq): push this into preferences or a menu option.
-    if (!PerfService.DISPLAY_HEAP_USE) {
+
+    if (!FlutterSettings.getInstance().isShowHeapDisplay()) {
       toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
       toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
-      // TODO(pq): push this into preferences or a menu option.
     } else {
       toolbarGroup.add(new HeapDisplay.ToolbarComponentAction(parentDisposable, app));
       toolbarGroup.add(new ObservatoryActionGroup(this, app));
