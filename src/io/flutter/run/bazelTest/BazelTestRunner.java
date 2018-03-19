@@ -17,25 +17,28 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.xdebugger.XDebugProcess;
-import com.intellij.xdebugger.XDebugProcessStarter;
-import com.intellij.xdebugger.XDebugSession;
-import com.intellij.xdebugger.XDebuggerManager;
+import com.intellij.xdebugger.*;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import gnu.trove.THashSet;
 import io.flutter.run.PositionMapper;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
+import org.dartlang.vm.service.element.ScriptRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
+import java.util.Set;
 
 /**
  * The Bazel version of the {@link io.flutter.run.test.DebugTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
  */
 public class BazelTestRunner extends GenericProgramRunner {
+
+  private static final Logger LOG = Logger.getInstance(BazelTestRunner.class);
 
   @NotNull
   @Override
@@ -222,6 +225,8 @@ public class BazelTestRunner extends GenericProgramRunner {
 
     @NotNull final Connector connector;
 
+    @NotNull Set<String> workspaceLocations = new THashSet<>(1);
+
     public static final String RUNFILES_SLASH = "runfiles/";
 
     public BazelPositionMapper(@NotNull final Project project,
@@ -238,22 +243,67 @@ public class BazelTestRunner extends GenericProgramRunner {
       // Get the results from superclass
       final Collection<String> results = super.getBreakpointUris(file);
 
-      // If a valid runfiles was provided by the test harness, append the runfiles version of the passed file for debugging.
+      // Get the runfiles directory and workspace directory name provided by the test harness.
       final String runfilesDir = connector.getRunfilesDir();
       final String workspaceDirName = connector.getWorkspaceDirName();
-      if (runfilesDir != null && runfilesDir.endsWith(RUNFILES_SLASH) && workspaceDirName != null && !workspaceDirName.isEmpty()) {
-        String filePath = file.getPath();
-        final int workspaceOffset = filePath.lastIndexOf(workspaceDirName + "/");
-        if (workspaceOffset != -1) {
-          // Trim off all directories before the workspace directory.
-          filePath = filePath.substring(workspaceOffset, filePath.length());
-          results.add(runfilesDir + filePath);
-        }
+
+      // Verify the returned runfiles directory and workspace directory name
+      if (!verifyRunFilesAndWorkspaceNameValues(runfilesDir, workspaceDirName)) {
+        return results;
       }
-      // Return the results
+
+      final String filePath = file.getPath();
+      final int workspaceOffset = filePath.lastIndexOf(workspaceDirName + "/");
+      if (workspaceOffset != -1) {
+        // Append the passed runfilesDir + path from workspace to the returned results, this will set an additional breakpoint in the
+        // generated runfiles directory
+        results.add(runfilesDir + filePath.substring(workspaceOffset, filePath.length()));
+
+        // Finally, add the path to the workspace to workspaceLocations so that the original path can be computed in getSourcePosition
+        // method below
+        workspaceLocations.add(filePath.substring(0, workspaceOffset));
+      }
       return results;
     }
-  }
 
-  private static final Logger LOG = Logger.getInstance(BazelTestRunner.class);
+    /**
+     * Returns the local position (to display to the user) corresponding to a token position in Observatory.
+     */
+    @Override
+    @Nullable
+    public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
+      final XSourcePosition xSourcePosition = super.getSourcePosition(isolateId, scriptRef, tokenPos);
+      if (xSourcePosition == null) return null;
+
+      // Get the runfiles directory and workspace directpory name provided by the test harness.
+      final String runfilesDir = connector.getRunfilesDir();
+      final String workspaceDirName = connector.getWorkspaceDirName();
+
+      // Verify the returned runfiles directory and workspace directory name
+      if (!verifyRunFilesAndWorkspaceNameValues(runfilesDir, workspaceDirName)) return xSourcePosition;
+
+      // Get the virtual file computed by the super.getSourcePosition(...)
+      final VirtualFile superVirtualFile = xSourcePosition.getFile();
+      final String filePath = superVirtualFile.getPath();
+      final int workspaceOffset = filePath.lastIndexOf(workspaceDirName + "/");
+      if (filePath.startsWith(runfilesDir) && workspaceOffset != -1) {
+        for (String workspaceLoc : workspaceLocations) {
+          final VirtualFile virtualFileInProject =
+            LocalFileSystem.getInstance().findFileByPath(workspaceLoc + filePath.substring(workspaceOffset, filePath.length()));
+          if (virtualFileInProject != null) {
+            return XDebuggerUtil.getInstance().createPosition(virtualFileInProject, xSourcePosition.getLine(), xSourcePosition.getOffset());
+          }
+        }
+      }
+      return xSourcePosition;
+    }
+
+    /**
+     * Return true if the passed runfilesDir and workspaceDirName are not null, are not empty, and the runfilesDir ends with
+     * {@value RUNFILES_SLASH}.
+     */
+    private boolean verifyRunFilesAndWorkspaceNameValues(@Nullable final String runfilesDir, @Nullable final String workspaceDirName) {
+      return runfilesDir != null && runfilesDir.endsWith(RUNFILES_SLASH) && workspaceDirName != null && !workspaceDirName.isEmpty();
+    }
+  }
 }
