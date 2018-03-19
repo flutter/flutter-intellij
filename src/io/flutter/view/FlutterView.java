@@ -121,12 +121,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
-    // TODO(pq): incorporate these into the heap display (maybe into a single combo selection).
-    toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
-    toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
-    // TODO(pq): consider moving to a menu option.
-    if (FlutterSettings.getInstance().isShowHeapDisplay()) {
+
+    if (!FlutterSettings.getInstance().isShowHeapDisplay()) {
+      toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
+      toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
+    } else {
       toolbarGroup.add(new HeapDisplay.ToolbarComponentAction(parentDisposable, app));
+      toolbarGroup.add(new ObservatoryActionGroup(this, app));
       toolbarGroup.addSeparator();
     }
     toolbarGroup.add(new OverflowActionsAction(this, app));
@@ -684,3 +685,54 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
     return group;
   }
 }
+
+class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
+  private final @NotNull FlutterApp app;
+  private final DefaultActionGroup myActionGroup;
+
+  public ObservatoryActionGroup(@NotNull FlutterView view, @NotNull FlutterApp app) {
+    super("Observatory actions", null, FlutterIcons.OpenObservatoryGroup);
+
+    this.app = app;
+
+    myActionGroup = createPopupActionGroup(view, app);
+  }
+
+  @Override
+  public final void update(AnActionEvent e) {
+    e.getPresentation().setEnabled(app.isSessionActive());
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    final Presentation presentation = e.getPresentation();
+    final JComponent button = (JComponent)presentation.getClientProperty("button");
+    if (button == null) {
+      return;
+    }
+    final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
+      ActionPlaces.UNKNOWN,
+      myActionGroup);
+    popupMenu.getComponent().show(button, button.getWidth(), 0);
+  }
+
+  @Override
+  public JComponent createCustomComponent(Presentation presentation) {
+    final ActionButton button = new ActionButton(
+      this,
+      presentation,
+      ActionPlaces.UNKNOWN,
+      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    );
+    presentation.putClientProperty("button", button);
+    return button;
+  }
+
+  private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
+    final DefaultActionGroup group = new DefaultActionGroup();
+    group.add(view.registerAction(new OpenObservatoryAction(app)));
+    group.add(view.registerAction(new OpenTimelineViewAction(app)));
+    return group;
+  }
+}
+
