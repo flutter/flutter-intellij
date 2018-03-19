@@ -8,6 +8,8 @@ package io.flutter.run.bazelTest;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
@@ -21,13 +23,12 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
-import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The fields in a Bazel test configuration.
+ * The fields in a Bazel test configuration, see {@link io.flutter.run.test.TestFields}.
  */
 public class BazelTestFields {
 
@@ -74,6 +75,16 @@ public class BazelTestFields {
 
   public void setEntryFile(final @Nullable String entryFile) {
     this.entryFile = entryFile;
+  }
+
+  /**
+   * Returns the file or directory containing the tests to run, or null if it doesn't exist.
+   */
+  @Nullable
+  public VirtualFile getFile() {
+    final String path = getEntryFile();
+    if (path == null) return null;
+    return LocalFileSystem.getInstance().findFileByPath(path);
   }
 
   /**
@@ -144,6 +155,7 @@ public class BazelTestFields {
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
+    // TODO (jwren) this is duplicated source from BazelFields.checkRunnable(..), refactor so this is defined only once.
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
 
@@ -153,10 +165,10 @@ public class BazelTestFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
-    //final MainFile.Result main = MainFile.verify(entryFile, project);
-    //if (!main.canLaunch()) {
-    //  throw new RuntimeConfigurationError(main.getError());
-    //}
+    final MainFile.Result main = MainFile.verify(entryFile, project);
+    if (!main.canLaunch()) {
+      throw new RuntimeConfigurationError(main.getError());
+    }
 
     // Check launcher script
     if (StringUtil.isEmptyOrSpaces(launchScript)) {
@@ -180,10 +192,18 @@ public class BazelTestFields {
   }
 
   /**
+   * Starts running the tests.
+   */
+  ProcessHandler run(Project project, RunMode mode) throws ExecutionException {
+    final GeneralCommandLine command = getLaunchCommand(project, mode);
+    final ProcessHandler process = new OSProcessHandler(command);
+    return process;
+  }
+
+  /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
   GeneralCommandLine getLaunchCommand(@NotNull Project project,
-                                      @Nullable FlutterDevice device,
                                       @NotNull RunMode mode)
     throws ExecutionException {
     try {
@@ -209,50 +229,15 @@ public class BazelTestFields {
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
     // Set the mode.
-    if (mode != RunMode.DEBUG) {
-      commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
-    }
-
-    // TODO(jwren) currently a work in progress
-    //// User specified additional arguments.
-    //final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
-    //while (argumentsTokenizer.hasMoreTokens()) {
-    //  final String token = argumentsTokenizer.nextToken();
-    //  if (token.equals("--")) {
-    //    break;
-    //  }
-    //  commandLine.addParameter(token);
+    // TODO (jwren) what should we send, anything?  When should we specify?
+    commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    //if(mode == RunMode.DEBUG) {
+    //  commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    //} else {//(mode != RunMode.DEBUG) {
+    //  commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
     //}
 
     commandLine.addParameter(target);
-
-    // TODO(jwren) currently a work in progress
-    //// Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
-    //commandLine.addParameter("--");
-    //
-    //// Tell the flutter command-line tools that we want a machine interface on stdio.
-    //commandLine.addParameter("--machine");
-    //
-    //if (FlutterSettings.getInstance().getPreviewDart2()) {
-    //  commandLine.addParameter("--preview-dart-2");
-    //}
-    //
-    //// Pause the app at startup in order to set breakpoints.
-    //if (mode == RunMode.DEBUG) {
-    //  commandLine.addParameter("--start-paused");
-    //}
-    //
-    //// More user-specified args.
-    //while (argumentsTokenizer.hasMoreTokens()) {
-    //  commandLine.addParameter(argumentsTokenizer.nextToken());
-    //}
-    //
-    //// Send in the deviceId.
-    //if (device != null) {
-    //  commandLine.addParameter("-d");
-    //  commandLine.addParameter(device.deviceId());
-    //}
-
     return commandLine;
   }
 }

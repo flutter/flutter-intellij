@@ -9,25 +9,19 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
-import io.flutter.run.LaunchState;
-import io.flutter.run.MainFile;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
-public class BazelTestConfig extends RunConfigurationBase
-  implements RunConfigurationWithSuppressedDefaultRunAction, LaunchState.RunConfig {
+/**
+ * The Bazel version of the {@link io.flutter.run.test.TestConfig}.
+ */
+public class BazelTestConfig extends LocatableConfigurationBase {
   @NotNull private BazelTestFields fields = new BazelTestFields();
 
   BazelTestConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
@@ -56,29 +50,8 @@ public class BazelTestConfig extends RunConfigurationBase
 
   @NotNull
   @Override
-  public LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    final BazelTestFields launchFields = fields.copy();
-    try {
-      launchFields.checkRunnable(env.getProject());
-    }
-    catch (RuntimeConfigurationError e) {
-      throw new ExecutionException(e);
-    }
-
-    final MainFile main = MainFile.verify(launchFields.getEntryFile(), env.getProject()).get();
-    final RunMode mode = RunMode.fromEnv(env);
-    final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
-
-    final LaunchState.Callback callback = (device) -> {
-      if (device == null) return null;
-
-      final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
-      System.out.println("BazelRunConfig.getState " + command.toString());
-      return FlutterApp.start(env, env.getProject(), module, mode, device, command,
-                              StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
-    };
-
-    return new LaunchState(env, main.getAppDir(), main.getFile(), this, callback);
+  public CommandLineState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment env) throws ExecutionException {
+    return BazelTestLaunchState.create(env, this);
   }
 
   public BazelTestConfig clone() {
