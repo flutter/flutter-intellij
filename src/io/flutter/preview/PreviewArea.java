@@ -107,11 +107,19 @@ public class PreviewArea {
   }
 
   public void clear() {
+    clear("Preview is not available");
+  }
+
+  private void clear(String message) {
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
-    primaryLayer.add(new JLabel("Preview is not available", SwingConstants.CENTER), BorderLayout.CENTER);
+    primaryLayer.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
     primaryLayer.revalidate();
     primaryLayer.repaint();
+
+    handleLayer.removeAll();
+    handleLayer.revalidate();
+    handleLayer.repaint();
   }
 
   /**
