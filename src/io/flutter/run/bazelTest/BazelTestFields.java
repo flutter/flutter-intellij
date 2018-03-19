@@ -227,16 +227,11 @@ public class BazelTestFields {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // Set the mode.
-    // TODO (jwren) what should we send, anything?  When should we specify?
-    commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
-    //if(mode == RunMode.DEBUG) {
-    //  commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
-    //} else {//(mode != RunMode.DEBUG) {
-    //  commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
-    //}
-
     commandLine.addParameter(target);
+
+    if (mode == RunMode.DEBUG) {
+      commandLine.addParameters("--", "--enable-debugging");
+    }
     return commandLine;
   }
 }
