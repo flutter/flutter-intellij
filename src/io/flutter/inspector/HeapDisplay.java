@@ -165,6 +165,7 @@ public class HeapDisplay extends JPanel {
       if (summaryCallback != null) {
         summaryCallback.updatedSummary(summary);
       } else {
+        // TODO(pq): if the summary callback is defined, consider displaying a quick pointer or doc in the tooltip.
         setToolTipText(summary);
       }
     }
