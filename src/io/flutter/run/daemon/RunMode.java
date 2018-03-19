@@ -32,6 +32,7 @@ public enum RunMode {
     return myModeString;
   }
 
+  @NotNull
   public static RunMode fromEnv(@NotNull ExecutionEnvironment env) throws ExecutionException {
     final String mode = env.getExecutor().getId();
     if (DefaultRunExecutor.EXECUTOR_ID.equals(mode)) {

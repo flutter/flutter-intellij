@@ -211,7 +211,7 @@ public class TestFields {
   /**
    * Starts running the tests.
    */
-  ProcessHandler run(Project project, RunMode mode) throws ExecutionException {
+  ProcessHandler run(@NotNull Project project, @NotNull RunMode mode) throws ExecutionException {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       throw new ExecutionException("The Flutter SDK is not configured");
