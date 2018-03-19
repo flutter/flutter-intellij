@@ -194,10 +194,9 @@ public class BazelTestFields {
   /**
    * Starts running the tests.
    */
-  ProcessHandler run(Project project, RunMode mode) throws ExecutionException {
-    final GeneralCommandLine command = getLaunchCommand(project, mode);
-    final ProcessHandler process = new OSProcessHandler(command);
-    return process;
+  @NotNull
+  ProcessHandler run(@NotNull final Project project, @NotNull RunMode mode) throws ExecutionException {
+    return new OSProcessHandler(getLaunchCommand(project, mode));
   }
 
   /**
