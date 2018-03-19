@@ -125,12 +125,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (!FlutterSettings.getInstance().isShowHeapDisplay()) {
       toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
       toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
-    } else {
+    }
+    else {
       toolbarGroup.add(new HeapDisplay.ToolbarComponentAction(parentDisposable, app));
       toolbarGroup.add(new ObservatoryActionGroup(this, app));
-      toolbarGroup.addSeparator();
     }
-    toolbarGroup.add(new OverflowActionsAction(this, app));
     return toolbarGroup;
   }
 
@@ -180,9 +179,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
                                  boolean selectedTab) {
+    final OverflowAction overflowAction = new OverflowAction(this, flutterApp);
     final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
     final TabInfo tabInfo = new TabInfo(inspectorPanel).setActions(toolbarGroup, ActionPlaces.TOOLBAR)
-      .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+      .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+      .setSideComponent(overflowAction.getActionButton());
     tabs.addTab(tabInfo);
     state.inspectorPanels.add(inspectorPanel);
     if (selectedTab) {
@@ -630,16 +631,28 @@ class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   }
 }
 
-class OverflowActionsAction extends AnAction implements CustomComponentAction {
+class OverflowAction extends AnAction {
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
-  public OverflowActionsAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
+  public OverflowAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
     super("Additional actions", null, AllIcons.General.Gear);
 
     this.app = app;
 
     myActionGroup = createPopupActionGroup(view, app);
+  }
+
+  ActionButton getActionButton() {
+    final Presentation presentation = getTemplatePresentation().clone();
+    final ActionButton actionButton = new ActionButton(
+      this,
+      presentation,
+      ActionPlaces.UNKNOWN,
+      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    );
+    presentation.putClientProperty("button", actionButton);
+    return actionButton;
   }
 
   @Override
@@ -658,18 +671,6 @@ class OverflowActionsAction extends AnAction implements CustomComponentAction {
       ActionPlaces.UNKNOWN,
       myActionGroup);
     popupMenu.getComponent().show(button, button.getWidth(), 0);
-  }
-
-  @Override
-  public JComponent createCustomComponent(Presentation presentation) {
-    final ActionButton button = new ActionButton(
-      this,
-      presentation,
-      ActionPlaces.UNKNOWN,
-      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    );
-    presentation.putClientProperty("button", button);
-    return button;
   }
 
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
