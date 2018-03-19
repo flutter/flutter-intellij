@@ -73,15 +73,11 @@ public class HeapDisplay extends JPanel {
     public JComponent createCustomComponent(Presentation presentation) {
 
       // Summary label.
-      final JBLabel label = new JBLabel();
+      JBLabel label = null;
       if (SHOW_HEAP_SUMMARY) {
+        label = new JBLabel();
         label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
         label.setForeground(getForegroundColor());
-
-        // TODO(pq): calculate minimum width (or pad in text).
-        label.setMinimumSize(new Dimension(100, label.getHeight()));
-        label.setPreferredSize(new Dimension(100, label.getHeight()));
-        label.setHorizontalTextPosition(SwingConstants.LEFT);
       }
 
       // Graph component.
@@ -96,10 +92,11 @@ public class HeapDisplay extends JPanel {
       graphs.add(graph);
 
       final JPanel container = new JPanel(new BorderLayout(5, 0));
-      if (SHOW_HEAP_SUMMARY) {
+      //noinspection ConstantConditions
+      if (label != null) {
         container.add(label, BorderLayout.WEST);
       }
-      container.add(panel, BorderLayout.EAST);
+      container.add(panel, BorderLayout.CENTER);
       return container;
     }
 
@@ -161,11 +158,12 @@ public class HeapDisplay extends JPanel {
 
     if (!heapState.getSamples().isEmpty()) {
       final HeapSample sample = heapState.getSamples().get(0);
-      final String summary = printMb(sample.getBytes()) + " of " + printMb(heapState.getMaxHeapInBytes());
       if (summaryCallback != null) {
-        summaryCallback.updatedSummary(summary);
-      } else {
+        summaryCallback.updatedSummary(printMb(sample.getBytes()));
+      }
+      else {
         // TODO(pq): if the summary callback is defined, consider displaying a quick pointer or doc in the tooltip.
+        final String summary = printMb(sample.getBytes()) + " of " + printMb(heapState.getMaxHeapInBytes());
         setToolTipText(summary);
       }
     }
