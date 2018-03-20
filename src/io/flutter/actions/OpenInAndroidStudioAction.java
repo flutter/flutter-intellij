@@ -124,10 +124,13 @@ public class OpenInAndroidStudioAction extends AnAction {
     return null;
   }
 
+  // Return true if the directory is named android and contains either an app (for applications) or a src (for plugins) directory.
   private static boolean isAndroidWithApp(@NotNull VirtualFile file) {
     return file.getName().equals("android") && (file.findChild("app") != null || file.findChild("src") != null);
   }
 
+  // Return true if the directory has the structure of a plugin example application: a pubspec.yaml and an
+  // android directory with an app. The example app directory name is not specified in case it gets renamed.
   private static boolean isExampleWithAndroidWithApp(@NotNull VirtualFile file) {
     boolean hasPubspec = false;
     boolean hasAndroid = false;
@@ -141,10 +144,9 @@ public class OpenInAndroidStudioAction extends AnAction {
     return false;
   }
 
-  // A Flutter app may contain a plugin. Which project to open if menu invoked on root?
   // A plugin contains an example app, which needs to be opened when the native Android is to be edited.
   // In the case of an app that contains a plugin the flutter_app/flutter_plugin/example/android should be opened when
-  // Open in Android Studio is requested for anything in the plugin, and flutter_app/android for the app.
+  // 'Open in Android Studio' is requested.
   protected static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
@@ -159,7 +161,7 @@ public class OpenInAndroidStudioAction extends AnAction {
             VirtualFile aFile = file;
             while (aFile != null) {
               if (aFile.equals(rootFile)) {
-                // We know a plugin resource is selected. Find the eample app for it.
+                // We know a plugin resource is selected. Find the example app for it.
                 for (VirtualFile child : rootFile.getChildren()) {
                   if (isExampleWithAndroidWithApp(child)) {
                     return child.findChild("android");
