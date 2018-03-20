@@ -42,7 +42,7 @@ public class OpenInAndroidStudioAction extends AnAction {
       final OSProcessHandler handler = new OSProcessHandler(cmd);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
-        public void processTerminated(final ProcessEvent event) {
+        public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
             FlutterMessages.showError("Error Opening", file.getPath());
           }
@@ -124,20 +124,63 @@ public class OpenInAndroidStudioAction extends AnAction {
     return null;
   }
 
+  // Return true if the directory is named android and contains either an app (for applications) or a src (for plugins) directory.
   private static boolean isAndroidWithApp(@NotNull VirtualFile file) {
-    return file.getName().equals("android") && file.findChild("app") != null;
+    return file.getName().equals("android") && (file.findChild("app") != null || file.findChild("src") != null);
   }
 
+  // Return true if the directory has the structure of a plugin example application: a pubspec.yaml and an
+  // android directory with an app. The example app directory name is not specified in case it gets renamed.
+  private static boolean isExampleWithAndroidWithApp(@NotNull VirtualFile file) {
+    boolean hasPubspec = false;
+    boolean hasAndroid = false;
+    for (VirtualFile candidate : file.getChildren()) {
+      if (isAndroidWithApp(candidate)) hasAndroid = true;
+      if (candidate.getName().equals("pubspec.yaml")) hasPubspec = true;
+      if (hasAndroid && hasPubspec) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // A plugin contains an example app, which needs to be opened when the native Android is to be edited.
+  // In the case of an app that contains a plugin the flutter_app/flutter_plugin/example/android should be opened when
+  // 'Open in Android Studio' is requested.
   protected static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
       if (file != null && file.exists()) {
+        // We have a selection. Check if it is within a plugin.
+        final Project project = e.getProject();
+        assert (project != null);
+        final VirtualFile projectDir = project.getBaseDir();
+        for (PubRoot root : PubRoots.forProject(project)) {
+          if (root.isFlutterPlugin()) {
+            VirtualFile rootFile = root.getRoot();
+            VirtualFile aFile = file;
+            while (aFile != null) {
+              if (aFile.equals(rootFile)) {
+                // We know a plugin resource is selected. Find the example app for it.
+                for (VirtualFile child : rootFile.getChildren()) {
+                  if (isExampleWithAndroidWithApp(child)) {
+                    return child.findChild("android");
+                  }
+                }
+              }
+              if (aFile.equals(projectDir)) {
+                aFile = null;
+              }
+              else {
+                aFile = aFile.getParent();
+              }
+            }
+          }
+        }
         if (isProjectFileName(file.getName())) {
           return getProjectForFile(file);
         }
 
-        final Project project = e.getProject();
-        assert (project != null);
         // Return null if this is an ios folder.
         if (FlutterExternalIdeActionGroup.isWithinIOsDirectory(file, project)) {
           return null;

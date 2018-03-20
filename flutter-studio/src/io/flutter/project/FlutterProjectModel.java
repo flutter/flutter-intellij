@@ -140,6 +140,9 @@ public class FlutterProjectModel extends WizardModel {
     assert (!myProjectName.get().isEmpty());
     assert (!myFlutterSdk.get().isEmpty());
     assert (!location.isEmpty());
+    if (location.endsWith("/")) {
+      location = location.substring(0, location.length() - 1);
+    }
     if (!FlutterProjectCreator.finalValidityCheckPassed(location)) {
       // TODO(messick): Navigate to the step that sets location (if that becomes possible in the AS wizard framework).
       // See NewProjectModel.doDryRun();

@@ -24,6 +24,7 @@
     <orderEntry type="module" module-name="lang-impl" />
     <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module" module-name="idea-ui" />
+    <orderEntry type="module" module-name="gradle" />
     <orderEntry type="module" module-name="android-uitests" scope="TEST" />
     <orderEntry type="module" module-name="fest-swing" scope="TEST" />
     <orderEntry type="module" module-name="testFramework" scope="TEST" />
@@ -31,7 +32,6 @@
     <orderEntry type="module" module-name="android-test-framework" scope="TEST" />
     <orderEntry type="module" module-name="external-system-rt" scope="TEST" />
     <orderEntry type="module" module-name="designer" scope="TEST" />
-    <orderEntry type="module" module-name="gradle" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
     <orderEntry type="module" module-name="project-system" />
