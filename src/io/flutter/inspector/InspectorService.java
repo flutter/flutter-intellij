@@ -151,7 +151,7 @@ public class InspectorService implements Disposable {
       if (!hasMethod) {
         return null;
       }
-      JsonArray jsonArray = new JsonArray();
+      final JsonArray jsonArray = new JsonArray();
       for (String rootDirectory : rootDirectories) {
         jsonArray.add(rootDirectory);
       }
