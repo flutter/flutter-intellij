@@ -81,7 +81,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="Scope of the test: either file, directory, or tests in a file and filtered by name"/>
+          <text value="Scope of the test: either file, directory, or tests in a file and filtered by name."/>
         </properties>
       </component>
       <component id="2ce2f" class="javax.swing.JLabel" binding="testFileHintLabel">
