@@ -30,10 +30,6 @@ public class SelectionEditPolicy {
       myIsActive = true;
 
       myHandles.add(new MoveHandle());
-      myHandles.add(new SquareHandle(SquareHandlePosition.TOP_LEFT));
-      myHandles.add(new SquareHandle(SquareHandlePosition.TOP_RIGHT));
-      myHandles.add(new SquareHandle(SquareHandlePosition.BOTTOM_LEFT));
-      myHandles.add(new SquareHandle(SquareHandlePosition.BOTTOM_RIGHT));
 
       final Rectangle componentBoundsInLayer =
         SwingUtilities.convertRectangle(myComponent.getParent(), myComponent.getBounds(), myHandleLayer);
