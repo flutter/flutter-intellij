@@ -27,8 +27,12 @@ import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.content.*;
+import com.intellij.ui.content.Content;
+import com.intellij.ui.content.ContentManager;
+import com.intellij.ui.content.ContentManagerAdapter;
+import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
@@ -44,7 +48,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 
 // TODO(devoncarew): Display an fps graph.
 
@@ -72,9 +78,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @NotNull
   private final Project myProject;
 
-  private String restoreToolWindowId;
-
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
+
+  private Content emptyContent;
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
@@ -96,7 +102,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     this.state.copyFrom(state);
   }
 
-  public void initToolWindow(ToolWindow window) {
+  void initToolWindow(ToolWindow window) {
     // Add a feedback button.
     if (window instanceof ToolWindowEx) {
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
@@ -109,8 +115,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       ((ToolWindowEx)window).setTitleActions(sendFeedbackAction);
     }
 
-    // TODO(jacobr): add a message explaining the empty contents if the user
-    // manually opens the window when there is not yet a running app.
+    displayEmptyContent(window);
   }
 
   private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, @NotNull FlutterApp app, Disposable parentDisposable) {
@@ -148,14 +153,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void addInspector(FlutterApp app, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
-    final ContentFactory contentFactory = ContentFactory.SERVICE.getInstance();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs tabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
     final List<FlutterDevice> existingDevices = new ArrayList<>();
     for (FlutterApp otherApp : perAppViewState.keySet()) {
       existingDevices.add(otherApp.device());
     }
-    final Content content = contentFactory.createContent(null, app.device().getUniqueName(existingDevices), false);
+    final Content content = contentManager.getFactory().createContent(null, app.device().getUniqueName(existingDevices), false);
     content.setComponent(tabs.getComponent());
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
@@ -211,7 +215,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
+    if (isDisplayingEmptyContent()) {
+      removeEmptyContent(toolWindow);
+    }
+
     listenForRenderTreeActivations(toolWindow);
+
     addInspector(app, toolWindow);
 
     event.vmService.addVmServiceListener(new VmServiceListenerAdapter() {
@@ -241,7 +250,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           }
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
-            restorePreviousToolWindow();
+            displayEmptyContent(toolWindow);
           }
         });
       }
@@ -263,6 +272,32 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         }
       }
     });
+  }
+
+  private void displayEmptyContent(ToolWindow toolWindow) {
+    // Display a 'No running applications' message.
+    final ContentManager contentManager = toolWindow.getContentManager();
+    final JPanel panel = new JPanel(new BorderLayout());
+    final JLabel label = new JLabel("No running applications", SwingConstants.CENTER);
+    label.setForeground(UIUtil.getLabelDisabledForeground());
+    panel.add(label, BorderLayout.CENTER);
+    emptyContent = contentManager.getFactory().createContent(panel, null, false);
+    contentManager.addContent(emptyContent);
+
+    toolWindow.setIcon(FlutterIcons.Flutter_13);
+  }
+
+  private boolean isDisplayingEmptyContent() {
+    return emptyContent != null;
+  }
+
+  private void removeEmptyContent(ToolWindow toolWindow) {
+    final ContentManager contentManager = toolWindow.getContentManager();
+    contentManager.removeContent(emptyContent, true);
+
+    toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+
+    emptyContent = null;
   }
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
@@ -331,14 +366,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     if (perAppViewState.isEmpty()) {
-      toolWindow.setIcon(FlutterIcons.Flutter_13);
       notifyActionsAppStopped(app);
     }
     else {
-      toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
       notifyActionsAppStarted(app);
     }
-
 
     final PerAppState state = getStateForApp(app);
     if (state != null) {
@@ -357,46 +389,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    restoreToolWindowId = null;
-
     final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
     if (flutterToolWindow.isVisible()) {
       return;
     }
 
-    final ToolWindowManagerEx toolWindowManagerEx = (ToolWindowManagerEx)toolWindowManager;
-
-    for (String id : toolWindowManagerEx.getIdsOn(flutterToolWindow.getAnchor())) {
-      final ToolWindow toolWindow = toolWindowManagerEx.getToolWindow(id);
-      if (toolWindow.isVisible()) {
-        restoreToolWindowId = id;
-      }
-    }
-
     flutterToolWindow.show(null);
-  }
-
-  private void restorePreviousToolWindow() {
-    if (restoreToolWindowId == null) {
-      return;
-    }
-
-    ApplicationManager.getApplication().invokeLater(() -> {
-      if (myProject.isDisposed()) {
-        return;
-      }
-
-      final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
-      final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
-
-      // Show this view iff the flutter view is the one still visible.
-      if (flutterToolWindow.isVisible()) {
-        final ToolWindow toolWindow = toolWindowManager.getToolWindow(restoreToolWindowId);
-        toolWindow.show(null);
-      }
-
-      restoreToolWindowId = null;
-    });
   }
 }
 

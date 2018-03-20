@@ -16,11 +16,8 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
   public static void init(@NotNull Project project) {
-    //noinspection CodeBlock2Expr
     project.getMessageBus().connect().subscribe(
-      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> {
-        initFlutterView(project, event);
-      }
+      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> initFlutterView(project, event)
     );
   }
 
