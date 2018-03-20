@@ -143,7 +143,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     // TODO(jacobr): surely there is more we should be disposing.
     Disposer.register(this, treeSplitter::dispose);
-    treeSplitter.setFirstComponent(ScrollPaneFactory.createScrollPane(myRootsTree));
+    final JScrollPane rootsTreeScrollPane = ScrollPaneFactory.createScrollPane(myRootsTree);
+    // Add padding on the bottom so users can select an item even if a horizontal scroll bar is visible
+    // (and overlaying the bottom part of the scrollable area).
+    rootsTreeScrollPane.setViewportBorder(BorderFactory.createEmptyBorder(0, 0, JBUI.scale(14), 0));
+    treeSplitter.setFirstComponent(rootsTreeScrollPane);
     treeSplitter.setSecondComponent(ScrollPaneFactory.createScrollPane(myPropertiesPanel));
     add(treeSplitter);
   }
@@ -950,7 +954,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     // `setPubRootDirectories` method has been in two revs of the Flutter Alpha
     // channel. The feature is expected to have landed in the Flutter dev
     // chanel on March 2, 2018.
-    final Location location = node.getCreationLocation();
+    final InspectorSourceLocation location = node.getCreationLocation();
     if (location == null) {
       return false;
     }
@@ -959,9 +963,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       return false;
     }
     final String filePath = file.getCanonicalPath();
-    for (PubRoot root : getFlutterApp().getPubRoots()) {
-      if (filePath.startsWith(root.getRoot().getCanonicalPath())) {
-        return true;
+    if (filePath != null) {
+      for (PubRoot root : getFlutterApp().getPubRoots()) {
+        final String canonicalPath = root.getRoot().getCanonicalPath();
+        if (canonicalPath != null && filePath.startsWith(canonicalPath)) {
+          return true;
+        }
       }
     }
     return false;

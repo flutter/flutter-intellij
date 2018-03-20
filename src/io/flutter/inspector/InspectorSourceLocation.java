@@ -15,11 +15,11 @@ import io.flutter.utils.JsonUtils;
 
 import java.util.ArrayList;
 
-public class Location {
-  final JsonObject json;
-  final Location parent;
+public class InspectorSourceLocation {
+  private final JsonObject json;
+  private final InspectorSourceLocation parent;
 
-  public Location(JsonObject json, Location parent) {
+  public InspectorSourceLocation(JsonObject json, InspectorSourceLocation parent) {
     this.json = json;
     this.parent = parent;
   }
@@ -37,7 +37,7 @@ public class Location {
     }
 
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(fileName);
-    if (!virtualFile.exists()) {
+    if (virtualFile != null && !virtualFile.exists()) {
       return null;
     }
     return virtualFile;
@@ -60,20 +60,20 @@ public class Location {
     if (file == null) {
       return null;
     }
-    int line = getLine();
-    int column = getColumn();
+    final int line = getLine();
+    final int column = getColumn();
     if (line < 0 || column < 0) {
       return null;
     }
     return XSourcePositionImpl.create(file, line - 1, column - 1);
   }
 
-  ArrayList<Location> getParameterLocations() {
+  ArrayList<InspectorSourceLocation> getParameterLocations() {
     if (json.has("parameterLocations")) {
       final JsonArray parametersJson = json.getAsJsonArray("parameterLocations");
-      final ArrayList<Location> ret = new ArrayList<>();
+      final ArrayList<InspectorSourceLocation> ret = new ArrayList<>();
       for (int i = 0; i < parametersJson.size(); ++i) {
-        ret.add(new Location(parametersJson.get(i).getAsJsonObject(), this));
+        ret.add(new InspectorSourceLocation(parametersJson.get(i).getAsJsonObject(), this));
       }
       return ret;
     }

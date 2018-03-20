@@ -55,7 +55,7 @@ import static io.flutter.sdk.FlutterSettingsConfigurable.WIDGET_FILTERING_ENABLE
 public class DiagnosticsNode {
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
 
-  private Location location;
+  private InspectorSourceLocation location;
   private DiagnosticsNode parent;
 
   private CompletableFuture<String> propertyDocFuture;
@@ -388,14 +388,14 @@ public class DiagnosticsNode {
     return location != null || json.has("creationLocation");
   }
 
-  public Location getCreationLocation() {
+  public InspectorSourceLocation getCreationLocation() {
     if (location != null) {
       return location;
     }
     if (!hasCreationLocation()) {
       return null;
     }
-    location = new Location(json.getAsJsonObject("creationLocation"), null);
+    location = new InspectorSourceLocation(json.getAsJsonObject("creationLocation"), null);
     return location;
   }
 
@@ -622,12 +622,12 @@ public class DiagnosticsNode {
     final CompletableFuture<ArrayList<DiagnosticsNode>> properties = inspectorService.getProperties(getDartDiagnosticRef());
     return properties.thenApplyAsync((ArrayList<DiagnosticsNode> nodes) -> {
       // Map locations to property nodes where available.
-      final Location creationLocation = getCreationLocation();
+      final InspectorSourceLocation creationLocation = getCreationLocation();
       if (creationLocation != null) {
-        final ArrayList<Location> parameterLocations = creationLocation.getParameterLocations();
+        final ArrayList<InspectorSourceLocation> parameterLocations = creationLocation.getParameterLocations();
         if (parameterLocations != null) {
-          final Map<String, Location> names = new HashMap<>();
-          for (Location location : parameterLocations) {
+          final Map<String, InspectorSourceLocation> names = new HashMap<>();
+          for (InspectorSourceLocation location : parameterLocations) {
             final String name = location.getName();
             if (name != null) {
               names.put(name, location);
@@ -637,7 +637,7 @@ public class DiagnosticsNode {
             node.setParent(this);
             final String name = node.getName();
             if (name != null) {
-              final Location parameterLocation = names.get(name);
+              final InspectorSourceLocation parameterLocation = names.get(name);
               if (parameterLocation != null) {
                 node.setCreationLocation(parameterLocation);
               }
@@ -689,7 +689,7 @@ public class DiagnosticsNode {
     return app != null ? app.getProject() : ProjectUtil.guessProjectForFile(file);
   }
 
-  private void setCreationLocation(Location location) {
+  private void setCreationLocation(InspectorSourceLocation location) {
     this.location = location;
   }
 
