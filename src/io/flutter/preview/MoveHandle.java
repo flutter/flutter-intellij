@@ -5,8 +5,6 @@
  */
 package io.flutter.preview;
 
-import com.intellij.ui.JBColor;
-
 import java.awt.*;
 
 /**
@@ -16,8 +14,11 @@ public class MoveHandle extends Handle {
   @Override
   public void paint(Graphics g) {
     final Graphics2D g2 = (Graphics2D)g;
-    g2.setStroke(new BasicStroke(2));
-    g2.setColor(JBColor.BLUE);
+
+    //noinspection UseJBColor
+    g2.setColor(Color.BLUE);
+
+    g2.setStroke(new BasicStroke(3));
     g2.drawRect(0, 0, getWidth(), getHeight());
   }
 
