@@ -94,6 +94,10 @@ public class BazelTestRunner extends GenericProgramRunner {
     private String observatoryUri;
     private String runfilesDir;
     private String workspaceDirName;
+    private static final String STARTED_PROCESS = "test.startedProcess";
+    private static final String OBSERVATORY_URI_KEY = "observatoryUri";
+    private static final String RUNFILES_DIR_KEY = "runfilesDir";
+    private static final String WORKSPACE_DIR_NAME_KEY = "workspaceDirName";
 
     public Connector(ProcessHandler handler) {
       listener = new ProcessAdapter() {
@@ -204,16 +208,16 @@ public class BazelTestRunner extends GenericProgramRunner {
         return;
       }
 
-      if (eventName.equals("test.startedProcess")) {
-        final JsonPrimitive primUri = params.getAsJsonPrimitive("observatoryUri");
+      if (eventName.equals(STARTED_PROCESS)) {
+        final JsonPrimitive primUri = params.getAsJsonPrimitive(OBSERVATORY_URI_KEY);
         if (primUri != null) {
           observatoryUri = primUri.getAsString();
         }
-        final JsonPrimitive primRunfilesDir = params.getAsJsonPrimitive("runfilesDir");
+        final JsonPrimitive primRunfilesDir = params.getAsJsonPrimitive(RUNFILES_DIR_KEY);
         if (primRunfilesDir != null) {
           runfilesDir = primRunfilesDir.getAsString();
         }
-        final JsonPrimitive primWorkspaceDirName = params.getAsJsonPrimitive("workspaceDirName");
+        final JsonPrimitive primWorkspaceDirName = params.getAsJsonPrimitive(WORKSPACE_DIR_NAME_KEY);
         if (primWorkspaceDirName != null) {
           workspaceDirName = primWorkspaceDirName.getAsString();
         }
