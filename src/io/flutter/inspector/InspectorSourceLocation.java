@@ -15,11 +15,11 @@ import io.flutter.utils.JsonUtils;
 
 import java.util.ArrayList;
 
-public class SourceLocation {
+public class InspectorSourceLocation {
   private final JsonObject json;
-  private final SourceLocation parent;
+  private final InspectorSourceLocation parent;
 
-  public SourceLocation(JsonObject json, SourceLocation parent) {
+  public InspectorSourceLocation(JsonObject json, InspectorSourceLocation parent) {
     this.json = json;
     this.parent = parent;
   }
@@ -68,12 +68,12 @@ public class SourceLocation {
     return XSourcePositionImpl.create(file, line - 1, column - 1);
   }
 
-  ArrayList<SourceLocation> getParameterLocations() {
+  ArrayList<InspectorSourceLocation> getParameterLocations() {
     if (json.has("parameterLocations")) {
       final JsonArray parametersJson = json.getAsJsonArray("parameterLocations");
-      final ArrayList<SourceLocation> ret = new ArrayList<>();
+      final ArrayList<InspectorSourceLocation> ret = new ArrayList<>();
       for (int i = 0; i < parametersJson.size(); ++i) {
-        ret.add(new SourceLocation(parametersJson.get(i).getAsJsonObject(), this));
+        ret.add(new InspectorSourceLocation(parametersJson.get(i).getAsJsonObject(), this));
       }
       return ret;
     }
