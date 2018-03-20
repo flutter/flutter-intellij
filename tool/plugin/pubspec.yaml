@@ -6,10 +6,11 @@ environment:
   sdk: '>=1.24.0 <2.0.0'
 
 dependencies:
-  args: "^0.13.7"
-  path: "^1.4.2"
-  git: "^0.4.4+2"
+  args: ^0.13.7
+  git: ^0.4.4+2
+  markdown: ^1.0.0
+  path: ^1.4.2
 
 dev_dependencies:
-  test: "^0.12.0"
-  mockito: "^2.2.0"
+  mockito: ^2.2.0
+  test: ^0.12.0

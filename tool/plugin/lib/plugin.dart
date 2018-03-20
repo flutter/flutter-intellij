@@ -8,6 +8,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:git/git.dart';
+import 'package:markdown/markdown.dart';
 import 'package:path/path.dart' as p;
 
 import 'lint.dart';
@@ -110,7 +111,6 @@ List<String> findJavaFiles(String path) {
 }
 
 Future<bool> genPluginFiles(BuildSpec spec, String destDir) async {
-  //TODO(devoncarew): Move the change log to a separate file and insert it here.
   var result = await genPluginXml(spec, destDir, 'META-INF/plugin.xml');
   if (result == null) return false;
   result = await genPluginXml(spec, destDir, 'META-INF/studio-contribs.xml');
@@ -277,6 +277,8 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
         return spec.release == null
             ? ''
             : '<version>${spec.release}.${++pluginCount}</version>';
+      case 'CHANGELOG':
+        return spec.changeLog;
       case 'DEPEND':
         // If found, this is the module that triggers loading the Android Studio
         // support. The public sources and the installable plugin use different ones.
@@ -660,6 +662,7 @@ class BuildSpec {
   final String pluginId = 'io.flutter';
   final String release;
   final List<String> filesToSkip;
+  String _changeLog;
 
   ArtifactManager artifacts = new ArtifactManager();
 
@@ -687,6 +690,14 @@ class BuildSpec {
 
   String get productFile => isAndroidStudio ? "$ideaProduct-ide" : ideaProduct;
 
+  String get changeLog {
+    if (_changeLog == null) {
+      _changeLog = _parseChangelog();
+    }
+
+    return _changeLog;
+  }
+
   void createArtifacts() {
     if (ideaProduct == 'android-studio') {
       product = artifacts.add(new Artifact(
@@ -697,6 +708,11 @@ class BuildSpec {
           output: ideaProduct));
     }
     dartPlugin = artifacts.add(new Artifact('Dart-$dartPluginVersion.zip'));
+  }
+
+  String _parseChangelog() {
+    var text = new File('CHANGELOG.md').readAsStringSync();
+    return markdownToHtml(text);
   }
 
   String toString() {
