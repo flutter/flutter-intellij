@@ -17,11 +17,11 @@ import com.intellij.util.BitUtil;
 import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.gradle.util.GradleConstants;
 
 import java.awt.event.InputEvent;
 
 import static com.android.tools.idea.gradle.project.ProjectImportUtil.findImportTarget;
-import static com.android.tools.idea.gradle.util.GradleProjects.canImportAsGradleProject;
 import static com.intellij.ide.impl.ProjectUtil.*;
 
 /**
@@ -54,6 +54,11 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
       }
     }
     openOrImport(file.getPath(), project, false);
+  }
+
+  public static boolean canImportAsGradleProject(@NotNull VirtualFile importSource) {
+    VirtualFile target = findImportTarget(importSource);
+    return target != null && GradleConstants.EXTENSION.equals(target.getExtension());
   }
 
   @Override
