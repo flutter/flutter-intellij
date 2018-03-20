@@ -211,8 +211,9 @@ public class LaunchState extends CommandLineState {
     final List<AnAction> actions = new ArrayList<>(Arrays.asList(
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
-    actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
     actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
+    actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
+
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));
   }
 
