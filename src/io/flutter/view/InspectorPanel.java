@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -78,7 +79,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final PropertiesPanel myPropertiesPanel;
   private final Computable<Boolean> isApplicable;
   private final InspectorService.FlutterTreeType treeType;
-  private final FlutterView flutterView;
   @NotNull
   private final FlutterApp flutterApp;
   private CompletableFuture<DiagnosticsNode> rootFuture;
@@ -86,9 +86,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static final DataKey<Tree> INSPECTOR_KEY = DataKey.create("Flutter.InspectorKey");
 
   // We have to define this because SimpleTextAttributes does not define a
-  // value for warnings. This color looks reasonable for warnings both
-  // with the Darculaand the default themes.
-  private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.ORANGE);
+  // value for warnings.
+  private static final SimpleTextAttributes WARNING_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.ORANGE);
 
   @NotNull
   public FlutterApp getFlutterApp() {
@@ -112,7 +111,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     super(new BorderLayout());
 
     this.treeType = treeType;
-    this.flutterView = flutterView;
     this.flutterApp = flutterApp;
     this.isApplicable = isApplicable;
 
@@ -210,7 +208,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     isActive = true;
     assert (getInspectorService() != null);
     getInspectorService().addClient(this);
-    ArrayList<String> rootDirectories = new ArrayList<>();
+    final ArrayList<String> rootDirectories = new ArrayList<>();
     for (PubRoot root : getFlutterApp().getPubRoots()) {
       rootDirectories.add(root.getRoot().getCanonicalPath());
     }
@@ -231,7 +229,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (rootFuture != null && !rootFuture.isDone()) {
       return rootFuture;
     }
-    rootFuture = getInspectorService().getRoot(treeType);
+    rootFuture = Objects.requireNonNull(getInspectorService()).getRoot(treeType);
 
     whenCompleteUiThread(rootFuture, (final DiagnosticsNode n, Throwable error) -> {
       if (error != null) {
@@ -303,6 +301,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     refreshRateLimiter.scheduleRequest();
   }
 
+  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   private boolean identicalDiagnosticsNodes(DiagnosticsNode a, DiagnosticsNode b) {
     if (a == b) {
       return true;
@@ -321,7 +320,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         pendingSelectionFuture = null;
       }
     }
-    pendingSelectionFuture = getInspectorService().getSelection(getSelectedDiagnostic(), treeType);
+    pendingSelectionFuture = Objects.requireNonNull(getInspectorService()).getSelection(getSelectedDiagnostic(), treeType);
     whenCompleteUiThread(pendingSelectionFuture, (DiagnosticsNode newSelection, Throwable error) -> {
       pendingSelectionFuture = null;
       if (error != null) {
@@ -347,11 +346,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
             final DiagnosticsNode pathDiagnosticNode = pathNode.getNode();
             final ArrayList<DiagnosticsNode> newChildren = pathNode.getChildren();
             final DiagnosticsNode existingNode = getDiagnosticNode(treeNode);
-            boolean nodeChanged = false;
             if (!identicalDiagnosticsNodes(pathDiagnosticNode, existingNode)) {
               treeNode.setUserObject(pathDiagnosticNode);
-              // Clear children to force an update on this subtree. Not necessarily required.
-              nodeChanged = true;
             }
             treeNode.setAllowsChildren(!newChildren.isEmpty());
             for (int j = 0; j < newChildren.size(); ++j) {
@@ -361,7 +357,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                 if (j >= treeNode.getChildCount()) {
                   child = new DefaultMutableTreeNode();
                   treeNode.add(child);
-                  nodeChanged = true;
                 }
                 else {
                   child = (DefaultMutableTreeNode)treeNode.getChildAt(j);
@@ -376,8 +371,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                   child.removeAllChildren();
                 }
 
-                // TODO(jacobr): this is wrong. We shouldn't always be setting the node as changed.
-                nodeChanged = true;
                 // TODO(jacobr): we are likely calling the wrong node structure changed APIs.
                 // For example, we should be getting these change notifications for free if we
                 // switched to call methods on the model object directly to manipulate the tree.
@@ -438,11 +431,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final Object userObject = selectedNodes[0].getUserObject();
       if (userObject instanceof DiagnosticsNode) {
         final DiagnosticsNode diagnostic = (DiagnosticsNode)userObject;
-        if (diagnostic != null) {
-          if (isCreatedByLocalProject(diagnostic)) {
-            diagnostic.getCreationLocation().getXSourcePosition().createNavigatable(getFlutterApp().getProject())
-              .navigate(false);
-          }
+        if (isCreatedByLocalProject(diagnostic)) {
+          diagnostic.getCreationLocation().getXSourcePosition().createNavigatable(getFlutterApp().getProject())
+            .navigate(false);
         }
         myPropertiesPanel.showProperties(diagnostic);
         if (getInspectorService() != null) {
