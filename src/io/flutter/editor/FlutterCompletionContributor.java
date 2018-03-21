@@ -7,7 +7,9 @@ package io.flutter.editor;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
+import com.intellij.util.ReflectionUtil;
 import com.intellij.util.ui.ColorIcon;
+import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBUI;
 import com.jetbrains.lang.dart.ide.completion.DartCompletionExtension;
 import com.jetbrains.lang.dart.ide.completion.DartServerCompletionContributor;
@@ -18,20 +20,34 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 
 public class FlutterCompletionContributor extends DartCompletionExtension {
 
+  private static final int ICON_SIZE = 16;
+  private static final Icon EMPTY_ICON = JBUI.scale(EmptyIcon.create(ICON_SIZE));
+
   @Nullable
   public LookupElementBuilder createLookupElement(@NotNull final Project project, @NotNull final CompletionSuggestion suggestion) {
     final Icon icon = findIcon(suggestion);
     if (icon != null) {
-      final LookupElementBuilder lookup = DartServerCompletionContributor.createLookupElement(project, suggestion);
-      // In 2018.1:
-      // lookup.withTypeText("", icon, false).withTypeIconRightAligned(true);
-      // TODO(pq): consider using reflection to invoke if available.
-      return lookup.withTypeText("", icon, false); //
+      final LookupElementBuilder lookup = DartServerCompletionContributor.createLookupElement(project, suggestion).withTypeText("", icon, false);
+
+      // 2018.1 introduces a new API to specify right alignment for type icons (the default previously).
+      // TODO(pq): remove reflective access when 2018.1 is our minimum.
+      final Method rightAligned = ReflectionUtil.getMethod(lookup.getClass(), "withTypeIconRightAligned");
+      if (rightAligned != null) {
+        try {
+          return (LookupElementBuilder)rightAligned.invoke(lookup, true);
+        }
+        catch (IllegalAccessException | InvocationTargetException e) {
+          // Shouldn't happen but if it does fall back on default.
+        }
+      }
+      return lookup;
     }
     return null;
   }
@@ -45,13 +61,15 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
         if (name != null) {
           final String declaringType = suggestion.getDeclaringType();
           if (Objects.equals(declaringType, "Colors")) {
-            FlutterColors.FlutterColor color = FlutterColors.getColor(name);
+            final FlutterColors.FlutterColor color = FlutterColors.getColor(name);
             if (color != null) {
-              return JBUI.scale(new ColorIcon(15, color.getAWTColor()));
+              return JBUI.scale(new ColorIcon(ICON_SIZE, color.getAWTColor()));
             }
           }
           else if (Objects.equals(declaringType, "Icons")) {
-            return FlutterMaterialIcons.getMaterialIconForName(name);
+            final Icon icon = FlutterMaterialIcons.getMaterialIconForName(name);
+            // If we have no icon, show an empty node (which is preferable to the default "IconData" text).
+            return  icon != null ? icon : EMPTY_ICON;
           }
         }
       }
