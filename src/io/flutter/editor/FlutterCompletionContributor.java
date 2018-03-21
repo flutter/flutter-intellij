@@ -27,7 +27,7 @@ import java.util.Objects;
 
 public class FlutterCompletionContributor extends DartCompletionExtension {
 
-  private static final int ICON_SIZE = 15;
+  private static final int ICON_SIZE = 16;
   private static final Icon EMPTY_ICON = JBUI.scale(EmptyIcon.create(ICON_SIZE));
 
   @Nullable
