@@ -7,8 +7,12 @@ package io.flutter.preview;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.util.ui.JBUI;
+import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
@@ -50,6 +54,11 @@ public class PreviewArea {
 
   private final Listener myListener;
 
+  private final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+  private final ActionToolbar windowToolbar;
+
+  private final SimpleToolWindowPanel window;
+
   private final JLayeredPane layeredPanel = new JLayeredPane();
   private final JPanel primaryLayer = new JPanel();
   private final JPanel handleLayer = new JPanel(null);
@@ -68,14 +77,10 @@ public class PreviewArea {
   public PreviewArea(Listener listener) {
     this.myListener = listener;
 
-    primaryLayer.addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentResized(ComponentEvent e) {
-        final int width = primaryLayer.getWidth() - 2 * BORDER_WITH;
-        final int height = primaryLayer.getHeight() - 2 * BORDER_WITH;
-        listener.resized(width, height);
-      }
-    });
+    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewArea", toolbarGroup, true);
+
+    window = new SimpleToolWindowPanel(true, true);
+    window.setToolbar(windowToolbar.getComponent());
 
     primaryLayer.setLayout(new BorderLayout());
     clear();
@@ -83,6 +88,7 @@ public class PreviewArea {
     // Layers must be transparent.
     handleLayer.setOpaque(false);
 
+    window.setContent(layeredPanel);
     layeredPanel.add(primaryLayer, Integer.valueOf(0));
     layeredPanel.add(handleLayer, Integer.valueOf(1));
 
@@ -95,6 +101,10 @@ public class PreviewArea {
         for (Component child : layeredPanel.getComponents()) {
           child.setBounds(0, 0, width, height);
         }
+
+        final int renderWidth = width - 2 * BORDER_WITH;
+        final int renderHeight = height - 2 * BORDER_WITH;
+        listener.resized(renderWidth, renderHeight);
       }
     });
   }
@@ -103,7 +113,7 @@ public class PreviewArea {
    * Return the Swing component of the area.
    */
   public JComponent getComponent() {
-    return layeredPanel;
+    return window;
   }
 
   public void clear() {
@@ -111,15 +121,16 @@ public class PreviewArea {
   }
 
   private void clear(String message) {
+    setToolbarTitle(null);
+
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
     primaryLayer.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
-    primaryLayer.revalidate();
-    primaryLayer.repaint();
 
     handleLayer.removeAll();
-    handleLayer.revalidate();
-    handleLayer.repaint();
+
+    window.revalidate();
+    window.repaint();
   }
 
   /**
@@ -135,7 +146,7 @@ public class PreviewArea {
    * Rendering finished, the new outline and rendering information is available.
    * Show the rendered outlines.
    */
-  public void show(@NotNull FlutterOutline unitOutline, @NotNull JsonObject renderObject) {
+  public void show(@NotNull FlutterOutline unitOutline, @NotNull FlutterOutline widgetOutline, @NotNull JsonObject renderObject) {
     isBeingRendered = false;
 
     idToOutline.clear();
@@ -152,10 +163,19 @@ public class PreviewArea {
       return;
     }
 
+    final Element widgetClassElement = widgetOutline.getDartElement();
+    if (widgetClassElement != null) {
+      setToolbarTitle(widgetClassElement.getName() + ".build():");
+    }
+    else {
+      setToolbarTitle(null);
+    }
+
     outlineToComponent.clear();
     renderWidgetOutline(rootOutline, 0);
-    primaryLayer.revalidate();
-    primaryLayer.repaint();
+
+    window.revalidate();
+    window.repaint();
   }
 
   public void select(@NotNull List<FlutterOutline> outlines) {
@@ -263,11 +283,35 @@ public class PreviewArea {
     }
   }
 
+  private void setToolbarTitle(String text) {
+    toolbarGroup.removeAll();
+    if (text != null) {
+      toolbarGroup.add(new TitleAction(text));
+    }
+    windowToolbar.updateActionsImmediately();
+  }
+
   interface Listener {
     void clicked(FlutterOutline outline);
 
     void doubleClicked(FlutterOutline outline);
 
     void resized(int width, int height);
+  }
+}
+
+class TitleAction extends AnAction implements CustomComponentAction {
+  TitleAction(String text) {
+    super(text);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+  }
+
+  @Override
+  public JComponent createCustomComponent(Presentation presentation) {
+    final String text = getTemplatePresentation().getText();
+    return new JLabel(text);
   }
 }
