@@ -31,15 +31,19 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private JPanel form;
 
   private JComboBox<Scope> scope;
+  private JLabel scopeLabelHint;
 
   private JLabel testDirLabel;
   private TextFieldWithBrowseButton testDir;
+  private JLabel testDirHintLabel;
 
   private JLabel testFileLabel;
   private TextFieldWithBrowseButton testFile;
+  private JLabel testFileHintLabel;
 
   private JLabel testNameLabel;
   private JTextField testName;
+  private JLabel testNameHintLabel;
 
   private Scope displayedScope;
 
@@ -148,12 +152,15 @@ public class TestForm extends SettingsEditor<TestConfig> {
   private void render(Scope next) {
 
     testDirLabel.setVisible(next == Scope.DIRECTORY);
+    testDirHintLabel.setVisible(next == Scope.DIRECTORY);
     testDir.setVisible(next == Scope.DIRECTORY);
 
     testFileLabel.setVisible(next != Scope.DIRECTORY);
+    testFileHintLabel.setVisible(next != Scope.DIRECTORY);
     testFile.setVisible(next != Scope.DIRECTORY);
 
     testNameLabel.setVisible(next == Scope.NAME);
+    testNameHintLabel.setVisible(next == Scope.NAME);
     testName.setVisible(next == Scope.NAME);
 
     displayedScope = next;
