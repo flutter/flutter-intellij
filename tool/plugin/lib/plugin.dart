@@ -205,7 +205,7 @@ Future<int> moveToArtifacts(ProductCommand cmd, BuildSpec spec) async {
   var file = plugins[spec.pluginId];
   var args = new List<String>();
   args.add(p.join(rootPath, 'build', file));
-  args.add(cmd.archiveFilePath(spec));
+  args.add(cmd.releasesFilePath(spec));
   return await exec('mv', args);
 }
 
@@ -562,13 +562,13 @@ class BuildCommand extends ProductCommand {
       }
 
       // zip it up
-      result = await zip('build/flutter-intellij', archiveFilePath(spec));
+      result = await zip('build/flutter-intellij', releasesFilePath(spec));
       if (result != 0) {
         log('zip failed: ${result.toString()}');
         return new Future(() => result);
       }
       separator('BUILT');
-      log('${archiveFilePath(spec)}');
+      log('${releasesFilePath(spec)}');
     }
 
     return 0;
@@ -768,7 +768,7 @@ class DeployCommand extends ProductCommand {
     var value = 0;
     try {
       for (var spec in specs) {
-        var filePath = archiveFilePath(spec);
+        var filePath = releasesFilePath(spec);
         value = await upload(filePath, plugins[spec.pluginId]);
         if (value != 0) {
           return value;
@@ -896,10 +896,10 @@ abstract class ProductCommand extends Command {
     return rel;
   }
 
-  String archiveFilePath(BuildSpec spec) {
-    var subDir = isReleaseMode ? 'release_$releaseMajor' : '';
+  String releasesFilePath(BuildSpec spec) {
+    var subDir = isReleaseMode ? 'release_$releaseMajor' : 'release_master';
     var filePath = p.join(
-        rootPath, 'artifacts', subDir, spec.version, 'flutter-intellij.zip');
+        rootPath, 'releases', subDir, spec.version, 'flutter-intellij.zip');
     return filePath;
   }
 
