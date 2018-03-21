@@ -33,6 +33,9 @@ public class BazelTestFields {
   @Nullable private String launchScript;
   @Nullable private String bazelTarget;
 
+  BazelTestFields() {
+  }
+
   /**
    * Copy constructor
    */
