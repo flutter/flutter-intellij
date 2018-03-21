@@ -6,10 +6,10 @@
 package io.flutter.editor;
 
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.util.ui.ColorIcon;
+import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBUI;
 import com.jetbrains.lang.dart.ide.completion.DartCompletionExtension;
 import com.jetbrains.lang.dart.ide.completion.DartServerCompletionContributor;
@@ -26,6 +26,9 @@ import java.util.Objects;
 
 
 public class FlutterCompletionContributor extends DartCompletionExtension {
+
+  private static final int ICON_SIZE = 15;
+  private static final Icon EMPTY_ICON = JBUI.scale(EmptyIcon.create(ICON_SIZE));
 
   @Nullable
   public LookupElementBuilder createLookupElement(@NotNull final Project project, @NotNull final CompletionSuggestion suggestion) {
@@ -60,13 +63,13 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
           if (Objects.equals(declaringType, "Colors")) {
             final FlutterColors.FlutterColor color = FlutterColors.getColor(name);
             if (color != null) {
-              return JBUI.scale(new ColorIcon(15, color.getAWTColor()));
+              return JBUI.scale(new ColorIcon(ICON_SIZE, color.getAWTColor()));
             }
           }
           else if (Objects.equals(declaringType, "Icons")) {
             final Icon icon = FlutterMaterialIcons.getMaterialIconForName(name);
             // If we have no icon, show an empty node (which is preferable to the default "IconData" text).
-            return  icon != null ? icon : AllIcons.Nodes.EmptyNode;
+            return  icon != null ? icon : EMPTY_ICON;
           }
         }
       }
