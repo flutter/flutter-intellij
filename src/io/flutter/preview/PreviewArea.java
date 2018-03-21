@@ -7,6 +7,9 @@ package io.flutter.preview;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
+import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.util.ui.JBUI;
 import org.dartlang.analysis.server.protocol.Element;
@@ -39,7 +42,6 @@ import java.util.Map;
 
 public class PreviewArea {
   public static int BORDER_WITH = 5;
-  public static String EMPTY_HEADER = " ";
 
   @SuppressWarnings("UseJBColor")
   private static final Color[] pastelColors = new Color[]{
@@ -52,8 +54,11 @@ public class PreviewArea {
 
   private final Listener myListener;
 
-  private final JPanel panel = new JPanel();
-  private final JLabel header = new JLabel();
+  private final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+  private final ActionToolbar windowToolbar;
+
+  private final SimpleToolWindowPanel window;
+
   private final JLayeredPane layeredPanel = new JLayeredPane();
   private final JPanel primaryLayer = new JPanel();
   private final JPanel handleLayer = new JPanel(null);
@@ -72,11 +77,10 @@ public class PreviewArea {
   public PreviewArea(Listener listener) {
     this.myListener = listener;
 
-    panel.setLayout(new BorderLayout());
+    windowToolbar = ActionManager.getInstance().createActionToolbar("PreviewArea", toolbarGroup, true);
 
-    panel.add(header, BorderLayout.NORTH);
-    header.setBorder(JBUI.Borders.empty(0, BORDER_WITH));
-    header.setText(EMPTY_HEADER);
+    window = new SimpleToolWindowPanel(true, true);
+    window.setToolbar(windowToolbar.getComponent());
 
     primaryLayer.setLayout(new BorderLayout());
     clear();
@@ -84,7 +88,7 @@ public class PreviewArea {
     // Layers must be transparent.
     handleLayer.setOpaque(false);
 
-    panel.add(layeredPanel, BorderLayout.CENTER);
+    window.setContent(layeredPanel);
     layeredPanel.add(primaryLayer, Integer.valueOf(0));
     layeredPanel.add(handleLayer, Integer.valueOf(1));
 
@@ -109,7 +113,7 @@ public class PreviewArea {
    * Return the Swing component of the area.
    */
   public JComponent getComponent() {
-    return panel;
+    return window;
   }
 
   public void clear() {
@@ -117,7 +121,7 @@ public class PreviewArea {
   }
 
   private void clear(String message) {
-    header.setText(EMPTY_HEADER);
+    setToolbarTitle(null);
 
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
@@ -125,8 +129,8 @@ public class PreviewArea {
 
     handleLayer.removeAll();
 
-    panel.revalidate();
-    panel.repaint();
+    window.revalidate();
+    window.repaint();
   }
 
   /**
@@ -161,16 +165,17 @@ public class PreviewArea {
 
     final Element widgetClassElement = widgetOutline.getDartElement();
     if (widgetClassElement != null) {
-      header.setText("UI preview of " + widgetClassElement.getName() + "’s build() method:");
-    } else {
-      header.setText(EMPTY_HEADER);
+      setToolbarTitle(widgetClassElement.getName() + ".build():");
+    }
+    else {
+      setToolbarTitle(null);
     }
 
     outlineToComponent.clear();
     renderWidgetOutline(rootOutline, 0);
 
-    panel.revalidate();
-    panel.repaint();
+    window.revalidate();
+    window.repaint();
   }
 
   public void select(@NotNull List<FlutterOutline> outlines) {
@@ -278,11 +283,35 @@ public class PreviewArea {
     }
   }
 
+  private void setToolbarTitle(String text) {
+    toolbarGroup.removeAll();
+    if (text != null) {
+      toolbarGroup.add(new TitleAction(text));
+    }
+    windowToolbar.updateActionsImmediately();
+  }
+
   interface Listener {
     void clicked(FlutterOutline outline);
 
     void doubleClicked(FlutterOutline outline);
 
     void resized(int width, int height);
+  }
+}
+
+class TitleAction extends AnAction implements CustomComponentAction {
+  TitleAction(String text) {
+    super(text);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent event) {
+  }
+
+  @Override
+  public JComponent createCustomComponent(Presentation presentation) {
+    final String text = getTemplatePresentation().getText();
+    return new JLabel(text);
   }
 }
