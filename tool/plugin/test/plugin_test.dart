@@ -117,11 +117,11 @@ void main() {
         cmd = (runner.commands['deploy'] as TestDeployCommand);
       });
       expect(
-          cmd.paths.map((p) => p.substring(p.indexOf('artifacts'))),
+          cmd.paths.map((p) => p.substring(p.indexOf('releases'))),
           orderedEquals([
-            'artifacts/release_19/3.0/flutter-intellij.zip',
-            'artifacts/release_19/3.1/flutter-intellij.zip',
-            'artifacts/release_19/2018.1/flutter-intellij.zip',
+            'releases/release_19/3.0/flutter-intellij.zip',
+            'releases/release_19/3.1/flutter-intellij.zip',
+            'releases/release_19/2018.1/flutter-intellij.zip',
           ]));
     });
   });
