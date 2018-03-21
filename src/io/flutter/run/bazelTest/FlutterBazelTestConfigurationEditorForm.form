@@ -15,7 +15,7 @@
         <properties>
           <inheritsPopupMenu value="true"/>
           <labelFor value=""/>
-          <text value="Dart entrypoint:"/>
+          <text value="Dart &amp;entrypoint:"/>
         </properties>
       </component>
       <component id="17e7a" class="com.intellij.openapi.ui.TextFieldWithBrowseButton" binding="myEntryFile">

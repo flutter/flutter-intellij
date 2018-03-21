@@ -245,16 +245,6 @@ public class BazelFields {
       }
     }
 
-    // User specified additional arguments.
-    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
-    while (argumentsTokenizer.hasMoreTokens()) {
-      final String token = argumentsTokenizer.nextToken();
-      if (token.equals("--")) {
-        break;
-      }
-      commandLine.addParameter(token);
-    }
-
     commandLine.addParameter(target);
 
     // Pass additional args to bazel (we currently don't pass --device-id with bazel targets).
@@ -272,7 +262,8 @@ public class BazelFields {
       commandLine.addParameter("--start-paused");
     }
 
-    // More user-specified args.
+    // User specified additional target arguments.
+    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
     while (argumentsTokenizer.hasMoreTokens()) {
       commandLine.addParameter(argumentsTokenizer.nextToken());
     }
