@@ -25,8 +25,8 @@ void main() async {
       }
     });
   } catch (e, st) {
-    var json = {'exception': '$e', 'stackTrace': '$st'};
-    io.stdout.writeln(JSON.encode(json));
+    var map = {'exception': '$e', 'stackTrace': '$st'};
+    io.stdout.writeln(json.encode(map));
     io.exit(1);
   }
 }
@@ -61,9 +61,9 @@ void renderOnce() {
   var rootInfo = ElementInfo.buildHierarchy(allElementsMap, registeredWidgets);
 
   {
-    var json = <String, Object>{};
-    rootInfo.appendToJson(json);
-    io.stdout.writeln(JSON.encode(json));
+    var map = <String, Object>{};
+    rootInfo.appendToJson(map);
+    io.stdout.writeln(json.encode(map));
   }
 }
 
@@ -78,12 +78,16 @@ class ElementInfo {
   }
 
   void appendToJson(Map<String, Object> json) {
+    int left = globalBounds.left.truncate();
+    int top = globalBounds.top.truncate();
+    int right = globalBounds.right.truncate();
+    int bottom = globalBounds.bottom.truncate();
     json['$id'] = {
       'globalBounds': {
-        'left': globalBounds.left.truncate(),
-        'top': globalBounds.top.truncate(),
-        'width': globalBounds.width.truncate(),
-        'height': globalBounds.height.truncate(),
+        'left': left,
+        'top': top,
+        'width': right - left,
+        'height': bottom - top,
       }
     };
 
