@@ -9,6 +9,7 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.ui.ColorIcon;
 import com.intellij.util.ui.JBUI;
+import com.jetbrains.lang.dart.ide.completion.DartCompletionExtension;
 import com.jetbrains.lang.dart.ide.completion.DartServerCompletionContributor;
 import org.apache.commons.lang.StringUtils;
 import org.dartlang.analysis.server.protocol.CompletionSuggestion;
@@ -20,7 +21,7 @@ import javax.swing.*;
 import java.util.Objects;
 
 
-public class FlutterCompletionContributor extends com.jetbrains.lang.dart.ide.completion.DartCompletionExtension {
+public class FlutterCompletionContributor extends DartCompletionExtension {
 
   @Nullable
   public LookupElementBuilder createLookupElement(@NotNull final Project project, @NotNull final CompletionSuggestion suggestion) {

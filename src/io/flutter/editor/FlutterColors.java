@@ -63,13 +63,15 @@ public class FlutterColors {
 
     if (colors.containsKey(key)) {
       final Color color = getColorValue(key);
-      assert color != null;
-      return new FlutterColor(color, false);
+      if (color != null) {
+        return new FlutterColor(color, false);
+      }
     }
     else if (colors.containsKey(key + ".primary")) {
       final Color color = getColorValue(key + ".primary");
-      assert color != null;
-      return new FlutterColor(color, true);
+      if (color != null) {
+        return new FlutterColor(color, true);
+      }
     }
 
     return null;
