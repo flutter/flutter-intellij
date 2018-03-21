@@ -185,9 +185,14 @@ public class FlutterSdk {
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       args.add("--verbose");
     }
-    if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
+
+    if (FlutterSettings.getInstance().isEnablePreviewDart2()) {
+      args.add("--preview-dart-2");
+    }
+    else if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
       args.add("--no-preview-dart-2");
     }
+
     if (device != null) {
       args.add("--device-id=" + device.deviceId());
     }
@@ -214,7 +219,10 @@ public class FlutterSdk {
       args.add("--machine");
       // Otherwise, just run it normally and show the output in a non-test console.
     }
-    if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
+    if (FlutterSettings.getInstance().isEnablePreviewDart2()) {
+      args.add("--preview-dart-2");
+    }
+    else if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
       args.add("--no-preview-dart-2");
     }
     if (mode == RunMode.DEBUG) {
@@ -382,9 +390,11 @@ public class FlutterSdk {
     final String platformString;
     if (SystemInfo.isMac) {
       platformString = "darwin-x64";
-    } else if (SystemInfo.isLinux) {
+    }
+    else if (SystemInfo.isLinux) {
       platformString = "linux-x64";
-    } else {
+    }
+    else {
       return null;
     }
 

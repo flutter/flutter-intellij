@@ -56,11 +56,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myHotReloadOnSaveCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
-  private JCheckBox myPreviewDart2CheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowPreviewAreaCheckBox;
   private JCheckBox myShowHeapDisplayCheckBox;
+  private JComboBox myPreviewDart2Combo;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -166,7 +166,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isDisablePreviewDart2() != myPreviewDart2CheckBox.isSelected()) {
+    if (settings.getDart2ModeSetting().getOrdinal() != myPreviewDart2Combo.getSelectedIndex()) {
       return true;
     }
 
@@ -202,8 +202,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
     settings.setShowHeapDisplay(myShowHeapDisplayCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
+    settings.setDart2ModeSettingOrdinal(myPreviewDart2Combo.getSelectedIndex());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
-    settings.setDisablePreviewDart2(myPreviewDart2CheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -229,8 +229,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myShowHeapDisplayCheckBox.setSelected(settings.isShowHeapDisplay());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
+    myPreviewDart2Combo.setSelectedIndex(settings.getDart2ModeSetting().getOrdinal());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
-    myPreviewDart2CheckBox.setSelected(settings.isDisablePreviewDart2());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
