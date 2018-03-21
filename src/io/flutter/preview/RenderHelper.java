@@ -162,14 +162,16 @@ public class RenderHelper {
     final String widgetClass = myWidgetOutline.getDartElement().getName();
     final String constructor = myWidgetOutline.getRenderConstructor();
     final RenderRequest request =
-      new RenderRequest(myTesterPath, myPackages, myFile, myInstrumentedCode, widgetClass, constructor, myWidth, myHeight, myListener);
+      new RenderRequest(myTesterPath, myPackages, myFile, myInstrumentedCode,
+                        myWidgetOutline, widgetClass, constructor,
+                        myWidth, myHeight, myListener);
     myRenderThread.setRequest(request);
   }
 
   public interface Listener {
     void noWidget();
 
-    void onResponse(JsonObject response);
+    void onResponse(FlutterOutline widget, JsonObject response);
 
     void onFailure(Throwable e);
   }
@@ -188,6 +190,7 @@ class RenderRequest {
   final VirtualFile packages;
   final VirtualFile file;
   final String codeToRender;
+  final FlutterOutline widget;
   final String widgetClass;
   final String widgetConstructor;
   final int width;
@@ -197,6 +200,7 @@ class RenderRequest {
 
   RenderRequest(String testerPath, VirtualFile packages, VirtualFile file,
                 String codeToRender,
+                FlutterOutline widget,
                 String widgetClass,
                 String widgetConstructor,
                 int width,
@@ -206,6 +210,7 @@ class RenderRequest {
     this.packages = packages;
     this.file = file;
     this.codeToRender = codeToRender;
+    this.widget = widget;
     this.widgetClass = widgetClass;
     this.widgetConstructor = widgetConstructor;
     this.width = width;
@@ -376,7 +381,7 @@ class RenderThread extends Thread {
       responseReceivedLatch.countDown();
 
       // Send the respose to the client.
-      request.listener.onResponse(response);
+      request.listener.onResponse(request.widget, response);
     }
     catch (Throwable e) {
       terminateCurrentProcess("Exception");

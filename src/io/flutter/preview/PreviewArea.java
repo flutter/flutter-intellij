@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.util.ui.JBUI;
+import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,6 +39,7 @@ import java.util.Map;
 
 public class PreviewArea {
   public static int BORDER_WITH = 5;
+  public static String EMPTY_HEADER = " ";
 
   @SuppressWarnings("UseJBColor")
   private static final Color[] pastelColors = new Color[]{
@@ -50,6 +52,8 @@ public class PreviewArea {
 
   private final Listener myListener;
 
+  private final JPanel panel = new JPanel();
+  private final JLabel header = new JLabel();
   private final JLayeredPane layeredPanel = new JLayeredPane();
   private final JPanel primaryLayer = new JPanel();
   private final JPanel handleLayer = new JPanel(null);
@@ -68,14 +72,11 @@ public class PreviewArea {
   public PreviewArea(Listener listener) {
     this.myListener = listener;
 
-    primaryLayer.addComponentListener(new ComponentAdapter() {
-      @Override
-      public void componentResized(ComponentEvent e) {
-        final int width = primaryLayer.getWidth() - 2 * BORDER_WITH;
-        final int height = primaryLayer.getHeight() - 2 * BORDER_WITH;
-        listener.resized(width, height);
-      }
-    });
+    panel.setLayout(new BorderLayout());
+
+    panel.add(header, BorderLayout.NORTH);
+    header.setBorder(JBUI.Borders.empty(0, BORDER_WITH));
+    header.setText(EMPTY_HEADER);
 
     primaryLayer.setLayout(new BorderLayout());
     clear();
@@ -83,6 +84,7 @@ public class PreviewArea {
     // Layers must be transparent.
     handleLayer.setOpaque(false);
 
+    panel.add(layeredPanel, BorderLayout.CENTER);
     layeredPanel.add(primaryLayer, Integer.valueOf(0));
     layeredPanel.add(handleLayer, Integer.valueOf(1));
 
@@ -95,6 +97,10 @@ public class PreviewArea {
         for (Component child : layeredPanel.getComponents()) {
           child.setBounds(0, 0, width, height);
         }
+
+        final int renderWidth = width - 2 * BORDER_WITH;
+        final int renderHeight = height - 2 * BORDER_WITH;
+        listener.resized(renderWidth, renderHeight);
       }
     });
   }
@@ -103,7 +109,7 @@ public class PreviewArea {
    * Return the Swing component of the area.
    */
   public JComponent getComponent() {
-    return layeredPanel;
+    return panel;
   }
 
   public void clear() {
@@ -111,15 +117,16 @@ public class PreviewArea {
   }
 
   private void clear(String message) {
+    header.setText(EMPTY_HEADER);
+
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
     primaryLayer.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
-    primaryLayer.revalidate();
-    primaryLayer.repaint();
 
     handleLayer.removeAll();
-    handleLayer.revalidate();
-    handleLayer.repaint();
+
+    panel.revalidate();
+    panel.repaint();
   }
 
   /**
@@ -135,7 +142,7 @@ public class PreviewArea {
    * Rendering finished, the new outline and rendering information is available.
    * Show the rendered outlines.
    */
-  public void show(@NotNull FlutterOutline unitOutline, @NotNull JsonObject renderObject) {
+  public void show(@NotNull FlutterOutline unitOutline, @NotNull FlutterOutline widgetOutline, @NotNull JsonObject renderObject) {
     isBeingRendered = false;
 
     idToOutline.clear();
@@ -152,10 +159,18 @@ public class PreviewArea {
       return;
     }
 
+    final Element widgetClassElement = widgetOutline.getDartElement();
+    if (widgetClassElement != null) {
+      header.setText("UI preview of " + widgetClassElement.getName() + "’s build() method:");
+    } else {
+      header.setText(EMPTY_HEADER);
+    }
+
     outlineToComponent.clear();
     renderWidgetOutline(rootOutline, 0);
-    primaryLayer.revalidate();
-    primaryLayer.repaint();
+
+    panel.revalidate();
+    panel.repaint();
   }
 
   public void select(@NotNull List<FlutterOutline> outlines) {

@@ -167,10 +167,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void onResponse(JsonObject response) {
+    public void onResponse(FlutterOutline widget, JsonObject response) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
-          previewArea.show(currentOutline, response);
+          previewArea.show(currentOutline, widget, response);
 
           final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
           final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
