@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="myMainPanel" default-binding="true" layout-manager="GridLayoutManager" row-count="9" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="690" height="320"/>
+      <xy x="20" y="20" width="721" height="320"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -44,24 +44,9 @@
           <focusable value="true"/>
         </properties>
       </component>
-      <component id="7b562" class="javax.swing.JLabel">
-        <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties>
-          <labelFor value="ada9e"/>
-          <text value="Additional &amp;args:"/>
-        </properties>
-      </component>
-      <component id="ada9e" class="javax.swing.JTextField" binding="myAdditionalArgs">
-        <constraints>
-          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-        </constraints>
-        <properties/>
-      </component>
       <component id="7b563" class="javax.swing.JLabel">
         <constraints>
-          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <labelFor value="ada9f"/>
@@ -70,7 +55,7 @@
       </component>
       <component id="ada9f" class="javax.swing.JTextField" binding="myBuildTarget">
         <constraints>
-          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
       </component>
@@ -97,23 +82,38 @@
           <text value="The absolute path to a Bazel launching script."/>
         </properties>
       </component>
-      <component id="7f926" class="javax.swing.JLabel">
+      <component id="8ebf5" class="javax.swing.JLabel">
         <constraints>
           <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="Additional arguments to the target."/>
+          <text value="The Bazel target. For example: //a/b/c:name."/>
         </properties>
       </component>
-      <component id="8ebf5" class="javax.swing.JLabel">
+      <component id="7b562" class="javax.swing.JLabel">
+        <constraints>
+          <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties>
+          <labelFor value="ada9e"/>
+          <text value="Additional &amp;args:"/>
+        </properties>
+      </component>
+      <component id="7f926" class="javax.swing.JLabel">
         <constraints>
           <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="The Bazel target. For example: //a/b/c:name."/>
+          <text value="Additional arguments to pass to the Flutter runner.  For example, &quot;--enable-software-rendering&quot;."/>
         </properties>
+      </component>
+      <component id="ada9e" class="javax.swing.JTextField" binding="myAdditionalArgs">
+        <constraints>
+          <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
       </component>
     </children>
   </grid>
