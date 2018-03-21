@@ -7,8 +7,6 @@ package io.flutter.preview;
 
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.xmlb.annotations.Attribute;
-import io.flutter.FlutterInitializer;
-import io.flutter.analytics.Analytics;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -22,9 +20,6 @@ public class PreviewViewState {
   @Attribute(value = "splitter-proportion")
   public float splitterProportion;
 
-  @Attribute(value = "show-only-widgets")
-  public boolean showOnlyWidgets = true;
-
   public PreviewViewState() {
   }
 
@@ -34,15 +29,6 @@ public class PreviewViewState {
 
   public void setSplitterProportion(float value) {
     splitterProportion = value;
-    dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
-  }
-
-  public boolean getShowOnlyWidgets() {
-    return showOnlyWidgets;
-  }
-
-  public void setShowOnlyWidgets(boolean value) {
-    showOnlyWidgets = value;
     dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
   }
 
@@ -56,20 +42,5 @@ public class PreviewViewState {
 
   void copyFrom(PreviewViewState other) {
     splitterProportion = other.splitterProportion;
-    showOnlyWidgets = other.showOnlyWidgets;
-
-    sendToAnalytics();
-  }
-
-  private void sendToAnalytics() {
-    final Analytics analytics = FlutterInitializer.getAnalytics();
-
-    // Send the number of times the state is initialized.
-    analytics.sendEvent("previewState", "ping");
-
-    // Send boolean properties turned on.
-    if (showOnlyWidgets) {
-      analytics.sendEvent("previewState", "showOnlyWidgets");
-    }
   }
 }

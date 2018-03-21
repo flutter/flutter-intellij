@@ -199,7 +199,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
-    settings.setShowPreviewAreaKey(myShowPreviewAreaCheckBox.isSelected());
+    settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
     settings.setShowHeapDisplay(myShowHeapDisplayCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
