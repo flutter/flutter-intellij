@@ -16,27 +16,22 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.jetbrains.lang.dart.sdk.DartConfigurable;
-import com.jetbrains.lang.dart.sdk.DartSdk;
-import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
-import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
+import io.flutter.run.bazel.BazelFields;
 import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * The fields in a Bazel test configuration, see {@link io.flutter.run.test.TestFields}.
+ * The fields in a Bazel test run configuration, see {@link io.flutter.run.test.TestFields}.
  */
 public class BazelTestFields {
 
-  private @Nullable String entryFile;
-  private @Nullable String launchScript;
-  // TODO(jwren) figure out if we want additionalArgs as part this configuration
-  //private @Nullable String additionalArgs;
-  private @Nullable String bazelTarget;
+  @Nullable private String entryFile;
+  @Nullable private String launchScript;
+  @Nullable private String bazelTarget;
 
   BazelTestFields() {
   }
@@ -44,23 +39,21 @@ public class BazelTestFields {
   /**
    * Copy constructor
    */
-  private BazelTestFields(@NotNull BazelTestFields original) {
+  private BazelTestFields(@NotNull final BazelTestFields original) {
     entryFile = original.entryFile;
     launchScript = original.launchScript;
-    // TODO(jwren) figure out if we want additionalArgs as part this configuration
-    //additionalArgs = original.additionalArgs;
     bazelTarget = original.bazelTarget;
   }
 
   /**
    * Create non-template from template.
    */
-  private BazelTestFields(@NotNull BazelTestFields template, Workspace w) {
+  private BazelTestFields(@NotNull final BazelTestFields template, @NotNull final Workspace workspace) {
     this(template);
     if (StringUtil.isEmptyOrSpaces(launchScript)) {
-      launchScript = w.getLaunchScript();
+      launchScript = workspace.getLaunchScript();
       if (launchScript != null && !launchScript.startsWith("/")) {
-        launchScript = w.getRoot().getPath() + "/" + launchScript;
+        launchScript = workspace.getRoot().getPath() + "/" + launchScript;
       }
     }
   }
@@ -73,7 +66,7 @@ public class BazelTestFields {
     return entryFile;
   }
 
-  public void setEntryFile(final @Nullable String entryFile) {
+  public void setEntryFile(@Nullable final String entryFile) {
     this.entryFile = entryFile;
   }
 
@@ -100,7 +93,7 @@ public class BazelTestFields {
    * Used only for deserializing old run configs.
    */
   @Deprecated
-  public void setWorkingDirectory(final @Nullable String workDir) {
+  public void setWorkingDirectory(@Nullable final String workDir) {
     if (entryFile == null && workDir != null) {
       entryFile = workDir + "/lib/main.dart";
     }
@@ -111,30 +104,20 @@ public class BazelTestFields {
     return launchScript;
   }
 
-  public void setLaunchingScript(@Nullable String launchScript) {
+  public void setLaunchingScript(@Nullable final String launchScript) {
     this.launchScript = launchScript;
   }
-
-  // TODO(jwren) figure out if we want additionalArgs as part this configuration
-  //@Nullable
-  //public String getAdditionalArgs() {
-  //  return additionalArgs;
-  //}
-
-  // TODO(jwren) figure out if we want additionalArgs as part this configuration
-  //public void setAdditionalArgs(@Nullable String additionalArgs) {
-  //  this.additionalArgs = additionalArgs;
-  //}
 
   @Nullable
   public String getBazelTarget() {
     return bazelTarget;
   }
 
-  public void setBazelTarget(@Nullable String bazelTarget) {
+  public void setBazelTarget(@Nullable final String bazelTarget) {
     this.bazelTarget = bazelTarget;
   }
 
+  @NotNull
   BazelTestFields copy() {
     return new BazelTestFields(this);
   }
@@ -154,56 +137,24 @@ public class BazelTestFields {
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
-  void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
-    // TODO (jwren) this is duplicated source from BazelFields.checkRunnable(..), refactor so this is defined only once.
-    // The UI only shows one error message at a time.
-    // The order we do the checks here determines priority.
-
-    final DartSdk sdk = DartPlugin.getDartSdk(project);
-    if (sdk == null) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
-                                          () -> DartConfigurable.openDartSettings(project));
-    }
-
-    final MainFile.Result main = MainFile.verify(entryFile, project);
-    if (!main.canLaunch()) {
-      throw new RuntimeConfigurationError(main.getError());
-    }
-
-    // Check launcher script
-    if (StringUtil.isEmptyOrSpaces(launchScript)) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
-    }
-
-    final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(launchScript);
-    if (scriptFile == null) {
-      throw new RuntimeConfigurationError(
-        FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(launchScript)));
-    }
-
-    // Check that bazel target is not empty
-    if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
-    }
-    // Check that the bazel target starts with "//"
-    else if (!bazelTarget.startsWith("//")) {
-      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
-    }
+  void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
+    BazelFields.checkRunnable(project, getEntryFile(), getLaunchingScript(), getBazelTarget());
   }
 
   /**
    * Starts running the tests.
    */
   @NotNull
-  ProcessHandler run(@NotNull final Project project, @NotNull RunMode mode) throws ExecutionException {
+  ProcessHandler run(@NotNull final Project project, @NotNull final RunMode mode) throws ExecutionException {
     return new OSProcessHandler(getLaunchCommand(project, mode));
   }
 
   /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
-  GeneralCommandLine getLaunchCommand(@NotNull Project project,
-                                      @NotNull RunMode mode)
+  @NotNull
+  GeneralCommandLine getLaunchCommand(@NotNull final Project project,
+                                      @NotNull final RunMode mode)
     throws ExecutionException {
     try {
       checkRunnable(project);
@@ -219,9 +170,6 @@ public class BazelTestFields {
 
     final String target = getBazelTarget();
     assert target != null; // already checked
-
-    // TODO(jwren) figure out if we want additionalArgs as part this configuration
-    //final String additionalArgs = getAdditionalArgs();
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(appDir.getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);

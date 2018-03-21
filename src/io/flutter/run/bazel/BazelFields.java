@@ -141,7 +141,20 @@ public class BazelFields {
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
-  void checkRunnable(final @NotNull Project project) throws RuntimeConfigurationError {
+  void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
+    checkRunnable(project, getEntryFile(), getLaunchingScript(), getBazelTarget());
+  }
+
+  /**
+   * Reports an error in the run config that the user should correct.
+   * <p>
+   * This will be called while the user is typing into a non-template run config.
+   * (See RunConfiguration.checkConfiguration.)
+   *
+   * @throws RuntimeConfigurationError for an error that that the user must correct before running.
+   */
+  public static void checkRunnable(@NotNull final Project project, @Nullable final String entryFile, @Nullable final String launchScript,
+                                   @Nullable final String bazelTarget) throws RuntimeConfigurationError {
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
 
