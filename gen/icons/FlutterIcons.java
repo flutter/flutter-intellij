@@ -12,8 +12,9 @@ public class FlutterIcons {
 
   public static final Icon Flutter_13 = load("/icons/flutter_13.png");
   public static final Icon Flutter_13_2x = load("/icons/flutter_13@2x.png");
-  public static final Icon Flutter = load("/icons/flutter.png");
   public static final Icon Flutter_64 = load("/icons/Flutter-Mark-square-64.png");
+  public static final Icon Flutter_64_2x = load("/icons/Flutter-Mark-square-64@2x.png");
+  public static final Icon Flutter = load("/icons/flutter.png");
   public static final Icon Flutter_2x = load("/icons/flutter@2x.png");
   public static final Icon Flutter_inspect = load("/icons/flutter_inspect.png");
   public static final Icon Flutter_test = load("/icons/flutter_test.png");
