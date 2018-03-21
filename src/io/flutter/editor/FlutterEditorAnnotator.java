@@ -14,12 +14,11 @@ import com.intellij.util.ui.ColorIcon;
 import com.jetbrains.lang.dart.psi.DartArrayAccessExpression;
 import com.jetbrains.lang.dart.psi.DartNewExpression;
 import com.jetbrains.lang.dart.psi.DartReferenceExpression;
+import io.flutter.editor.FlutterColors.FlutterColor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
-import java.util.Properties;
 
 import static io.flutter.utils.FlutterModuleUtils.isInFlutterModule;
 
@@ -28,19 +27,6 @@ import static io.flutter.utils.FlutterModuleUtils.isInFlutterModule;
  */
 public class FlutterEditorAnnotator implements Annotator {
   private static final Logger LOG = Logger.getInstance(FlutterEditorAnnotator.class);
-
-  private static final Properties colors;
-
-  static {
-    colors = new Properties();
-
-    try {
-      colors.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/colors.properties"));
-    }
-    catch (IOException e) {
-      LOG.warn(e);
-    }
-  }
 
   @Override
   public void annotate(@NotNull PsiElement element, @NotNull AnnotationHolder holder) {
@@ -54,30 +40,20 @@ public class FlutterEditorAnnotator implements Annotator {
       final String text = element.getText();
 
       if (text.startsWith("Colors.")) {
-        String key = text.substring("Colors.".length());
-
-        // Handle things like Colors.blue.shade200; convert the text to blue[200].
-        if (key.contains(".shade")) {
-          key = key.replace(".shade", "[") + "]";
-        }
-
-        if (colors.containsKey(key)) {
-          final Color color = getColor(key);
-          if (color != null) {
-            attachColorIcon(element, holder, color);
-          }
-        }
-        else if (colors.containsKey(key + ".primary")) {
-          // If we're a primary color access, and
-          // - we're not followed by an array access (really referencing a more specific color)
-          // - we're not followed by a shadeXXX access
-          final boolean inColorIndexExpression = element.getParent() instanceof DartArrayAccessExpression;
-          final boolean inShadeExpression =
-            (element.getParent() instanceof DartReferenceExpression && element.getParent().getText().startsWith(text + ".shade"));
-          if (!inShadeExpression && !inColorIndexExpression) {
-            final Color color = getColor(key + ".primary");
-            if (color != null) {
-              attachColorIcon(element, holder, color);
+        final String key = text.substring("Colors.".length());
+        final FlutterColor color = FlutterColors.getColor(key);
+        if (color != null) {
+          if (!color.isPrimary()) {
+            attachColorIcon(element, holder, color.getAWTColor());
+          } else {
+            // If we're a primary color access, and
+            // - we're not followed by an array access (really referencing a more specific color)
+            // - we're not followed by a shadeXXX access
+            final boolean inColorIndexExpression = element.getParent() instanceof DartArrayAccessExpression;
+            final boolean inShadeExpression =
+              (element.getParent() instanceof DartReferenceExpression && element.getParent().getText().startsWith(text + ".shade"));
+            if (!inShadeExpression && !inColorIndexExpression) {
+                attachColorIcon(element, holder, color.getAWTColor());
             }
           }
         }
@@ -128,24 +104,6 @@ public class FlutterEditorAnnotator implements Annotator {
         catch (NumberFormatException ignored) {
         }
       }
-    }
-  }
-
-  private static Color getColor(String name) {
-    try {
-      final String hexValue = colors.getProperty(name);
-      if (hexValue == null) {
-        return null;
-      }
-
-      // argb to r, g, b, a
-      final long value = Long.parseLong(hexValue, 16);
-
-      //noinspection UseJBColor
-      return new Color((int)(value >> 16) & 0xFF, (int)(value >> 8) & 0xFF, (int)value & 0xFF, (int)(value >> 24) & 0xFF);
-    }
-    catch (IllegalArgumentException e) {
-      return null;
     }
   }
 
