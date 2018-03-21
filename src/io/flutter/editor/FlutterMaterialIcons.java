@@ -45,6 +45,6 @@ public class FlutterMaterialIcons {
     if (path == null) {
       return null;
     }
-    return IconLoader.findIcon(path, FlutterEditorAnnotator.class);
+    return IconLoader.findIcon(path, FlutterMaterialIcons.class);
   }
 }
