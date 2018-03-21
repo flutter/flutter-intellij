@@ -280,4 +280,10 @@
 
     <library.type implementation="io.flutter.sdk.FlutterPluginLibraryType"/>
   </extensions>
+
+  <!-- Dart Plugin extensions -->
+  <extensions defaultExtensionNs="Dart">
+    <completionExtension implementation="io.flutter.editor.FlutterCompletionContributor" order="last"/>
+  </extensions>
+
 </idea-plugin>

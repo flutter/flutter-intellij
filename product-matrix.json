@@ -10,7 +10,8 @@
       "untilBuild": "171.*",
       "filesToSkip": [
         "flutter-studio/src/io/flutter/project/FlutterProjectSystemProvider.java",
-        "flutter-studio/src/io/flutter/project/FlutterProjectSystem.java"
+        "flutter-studio/src/io/flutter/project/FlutterProjectSystem.java",
+        "src/io/flutter/editor/FlutterCompletionContributor.java"
       ]
     },
     {
@@ -20,7 +21,10 @@
       "ideaVersion": "173.4595152",
       "dartPluginVersion": "173.4301.22",
       "sinceBuild": "173.0",
-      "untilBuild": "173.*"
+      "untilBuild": "173.*",
+      "filesToSkip": [
+        "src/io/flutter/editor/FlutterCompletionContributor.java"
+      ]
     },
     {
       "name": "IntelliJ",
