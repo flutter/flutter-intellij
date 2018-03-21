@@ -144,14 +144,14 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, true);
   }
 
-  public boolean isShowPreviewArea() {
-    return getPropertiesComponent().getBoolean(showPreviewAreaKey, false);
-  }
-
   public void setShowOnlyWidgets(boolean value) {
     getPropertiesComponent().setValue(showOnlyWidgetsKey, value, true);
 
     fireEvent();
+  }
+
+  public boolean isShowPreviewArea() {
+    return getPropertiesComponent().getBoolean(showPreviewAreaKey, false);
   }
 
   public void setShowPreviewArea(boolean value) {
