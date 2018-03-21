@@ -21,6 +21,7 @@ public class FlutterSettings {
   private static final String disablePreviewDart2Key = "io.flutter.disablePreviewDart2";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
+  private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String showHeapDisplayKey = "io.flutter.showHeapDisplay";
 
@@ -59,6 +60,9 @@ public class FlutterSettings {
     }
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+    }
+    if (isShowOnlyWidgets()) {
+      analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
     }
     if (isShowPreviewArea()) {
       analytics.sendEvent("settings", afterLastPeriod(showPreviewAreaKey));
@@ -136,11 +140,21 @@ public class FlutterSettings {
     fireEvent();
   }
 
+  public boolean isShowOnlyWidgets() {
+    return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, true);
+  }
+
+  public void setShowOnlyWidgets(boolean value) {
+    getPropertiesComponent().setValue(showOnlyWidgetsKey, value, true);
+
+    fireEvent();
+  }
+
   public boolean isShowPreviewArea() {
     return getPropertiesComponent().getBoolean(showPreviewAreaKey, false);
   }
 
-  public void setShowPreviewAreaKey(boolean value) {
+  public void setShowPreviewArea(boolean value) {
     getPropertiesComponent().setValue(showPreviewAreaKey, value, false);
 
     fireEvent();
