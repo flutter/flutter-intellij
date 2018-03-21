@@ -18,8 +18,8 @@
       "name": "IntelliJ",
       "version": "3.1",
       "ideaProduct": "android-studio",
-      "ideaVersion": "173.4595152",
-      "dartPluginVersion": "173.4301.22",
+      "ideaVersion": "173.4658569",
+      "dartPluginVersion": "173.4700",
       "sinceBuild": "173.0",
       "untilBuild": "173.*",
       "filesToSkip": [
@@ -30,8 +30,8 @@
       "name": "IntelliJ",
       "version": "2018.1",
       "ideaProduct": "ideaIC",
-      "ideaVersion": "181.3741.2",
-      "dartPluginVersion": "181.3741.1",
+      "ideaVersion": "181.4203.400",
+      "dartPluginVersion": "181.4203.498",
       "sinceBuild": "181.0",
       "untilBuild": "181.*"
     }

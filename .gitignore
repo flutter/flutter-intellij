@@ -1,6 +1,7 @@
 out/
 artifacts/
 build/
+releases/
 flutter-intellij.jar
 flutter-intellij.zip
 packages
