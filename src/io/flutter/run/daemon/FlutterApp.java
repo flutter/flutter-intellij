@@ -75,7 +75,6 @@ public class FlutterApp {
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
   private VmService myVmService;
-  private InspectorService myInspectorService;
   private PerfService myPerfService;
 
   FlutterApp(@NotNull Project project,
@@ -473,14 +472,6 @@ public class FlutterApp {
 
   public VmService getVmService() {
     return myVmService;
-  }
-
-  public InspectorService getInspectorService() {
-    return myInspectorService;
-  }
-
-  public void setInspectorService(InspectorService service) {
-    myInspectorService = service;
   }
 
   @Nullable

@@ -17,6 +17,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -32,18 +33,60 @@ public class InspectorService implements Disposable {
    * Group name to to manage keeping alive nodes in the tree referenced by the inspector.
    */
   private final String groupName;
-  private final FlutterDebugProcess debugProcess;
-  private final VmService vmService;
-  private final Set<InspectorServiceClient> clients;
+  @NotNull private final FlutterDebugProcess debugProcess;
+  @NotNull private final VmService vmService;
+  @NotNull private final Set<InspectorServiceClient> clients;
   private EvalOnDartLibrary inspectorLibrary;
-  private CompletableFuture<Set<String>> supportedServiceMethods;
+  @NotNull private final Set<String> supportedServiceMethods;
 
-  public InspectorService(FlutterDebugProcess debugProcess, VmService vmService) {
+  // TODO(jacobr): remove this field as soon as
+  // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
+  // Flutter Beta channel. The feature is expected to have landed in the
+  // Flutter dev chanel on March 22, 2018.
+  private final boolean isDaemonApiSupported;
+
+  public static CompletableFuture<InspectorService> create(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
+    final EvalOnDartLibrary inspectorLibrary = new EvalOnDartLibrary(
+      "package:flutter/src/widgets/widget_inspector.dart",
+      debugProcess,
+      vmService
+    );
+    final CompletableFuture<Library> libraryFuture = inspectorLibrary.libraryRef.thenComposeAsync(inspectorLibrary::getLibrary);
+    return libraryFuture.thenComposeAsync((Library library) -> {
+      for (ClassRef classRef : library.getClasses()) {
+        if ("WidgetInspectorService".equals(classRef.getName())) {
+          return inspectorLibrary.getClass(classRef).thenApplyAsync((ClassObj classObj) -> {
+            final Set<String> functionNames = new HashSet<>();
+            for (FuncRef funcRef : classObj.getFunctions()) {
+              functionNames.add(funcRef.getName());
+            }
+            return functionNames;
+          });
+        }
+      }
+      throw new RuntimeException("WidgetInspectorService class not found");
+    }).thenApplyAsync(
+      (supportedServiceMethods) -> new InspectorService(debugProcess, vmService, inspectorLibrary, supportedServiceMethods));
+  }
+
+  private InspectorService(@NotNull FlutterDebugProcess debugProcess,
+                           @NotNull VmService vmService,
+                           EvalOnDartLibrary inspectorLibrary,
+                           Set<String> supportedServiceMethods) {
+    this.vmService = vmService;
+    this.debugProcess = debugProcess;
+    this.inspectorLibrary = inspectorLibrary;
+    this.supportedServiceMethods = supportedServiceMethods;
+
+    // TODO(jacobr): remove this field as soon as
+    // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
+    // Flutter Beta channel. The feature is expected to have landed in the
+    // Flutter dev chanel on March 22, 2018.
+    this.isDaemonApiSupported = hasServiceMethod("initServiceExtensions");
+
     clients = new HashSet<>();
     groupName = "intellij_inspector_" + nextGroupId;
     nextGroupId++;
-    this.vmService = vmService;
-    this.debugProcess = debugProcess;
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -65,7 +108,7 @@ public class InspectorService implements Disposable {
   }
 
   public FlutterApp getApp() {
-    return debugProcess != null ? debugProcess.getApp() : null;
+    return debugProcess.getApp();
   }
 
   public CompletableFuture<XSourcePosition> getPropertyLocation(InstanceRef instanceRef, String name) {
@@ -87,7 +130,6 @@ public class InspectorService implements Disposable {
       return superClass == null ? CompletableFuture.completedFuture(null) : getPropertyLocationHelper(superClass, name);
     });
   }
-
 
   public CompletableFuture<DiagnosticsNode> getRoot(FlutterTreeType type) {
     switch (type) {
@@ -120,11 +162,61 @@ public class InspectorService implements Disposable {
    * <p>
    * Intent is we could refactor how the API is invoked by only changing this call.
    */
-  CompletableFuture<InstanceRef> invokeServiceMethod(String methodName) {
+  // TODO(jacobr): remove this method as soon as
+  // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
+  // Flutter Beta channel. The feature is expected to have landed in the
+  // Flutter dev chanel on March 22, 2018.
+  CompletableFuture<InstanceRef> invokeServiceMethodObservatory(String methodName) {
     return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(\"" + groupName + "\")", null);
   }
 
-  CompletableFuture<InstanceRef> invokeServiceMethod(String methodName, InspectorInstanceRef arg) {
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName) {
+    return invokeServiceMethodDaemon(methodName, groupName);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String objectGroup) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("objectGroup", objectGroup);
+    return invokeServiceMethodDaemon(methodName, params);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String arg, String objectGroup) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("arg", arg);
+    params.put("objectGroup", objectGroup);
+    return invokeServiceMethodDaemon(methodName, params);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, List<String> args) {
+    final Map<String, Object> params = new HashMap<>();
+    for (int i = 0; i < args.size(); ++i) {
+      params.put("arg" + i, args.get(i));
+    }
+    return invokeServiceMethodDaemon(methodName, params);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, Map<String, Object> params) {
+    return getApp().callServiceExtension("ext.flutter.inspector." + methodName, params).thenApply((JsonObject json) -> {
+      if (json.has("errorMessage")) {
+        String message = json.get("errorMessage").getAsString();
+        throw new RuntimeException(methodName + " -- " + message);
+      }
+      return json.get("result");
+    });
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, InspectorInstanceRef arg) {
+    if (arg == null || arg.getId() == null) {
+      return invokeServiceMethodDaemon(methodName, null, groupName);
+    }
+    return invokeServiceMethodDaemon(methodName, arg.getId(), groupName);
+  }
+
+  // TODO(jacobr): remove this method as soon as
+  // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
+  // Flutter Beta channel. The feature is expected to have landed in the
+  // Flutter dev chanel on March 22, 2018.
+  CompletableFuture<InstanceRef> invokeServiceMethodObservatory(String methodName, InspectorInstanceRef arg) {
     if (arg == null || arg.getId() == null) {
       return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", null);
     }
@@ -132,7 +224,17 @@ public class InspectorService implements Disposable {
       .eval("WidgetInspectorService.instance." + methodName + "(\"" + arg.getId() + "\", \"" + groupName + "\")", null);
   }
 
-  CompletableFuture<InstanceRef> invokeServiceMethodOnRef(String methodName, InstanceRef arg) {
+  /**
+   * Call a service method passing in an observatory instance reference.
+   *
+   * This call is useful when receiving an "inspect" event from the
+   * observatory and future use cases such as inspecting a Widget from the
+   * IntelliJ watch window.
+   *
+   * This method will always need to use the observatory service as the input
+   * parameter is an Observatory InstanceRef..
+   */
+  CompletableFuture<InstanceRef> invokeServiceMethodOnRefObservatory(String methodName, InstanceRef arg) {
     final HashMap<String, String> scope = new HashMap<>();
     if (arg == null) {
       return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", scope);
@@ -146,23 +248,34 @@ public class InspectorService implements Disposable {
     // the `setPubRootDirectories` method has been in two revs of the Flutter Alpha
     // channel. The feature is expected to have landed in the Flutter dev
     // chanel on March 2, 2018.
+    if (!hasServiceMethod("setPubRootDirectories")) {
+      return CompletableFuture.completedFuture(null);
+    }
 
-    return hasServiceMethod("setPubRootDirectories").thenComposeAsync((Boolean hasMethod) -> {
-      if (!hasMethod) {
-        return null;
-      }
+    if (isDaemonApiSupported) {
+      return invokeServiceMethodDaemon("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
+    }
+    else {
+      // TODO(jacobr): remove this call as soon as
+      // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
+      // Flutter Beta channel. The feature is expected to have landed in the
+      // Flutter dev chanel on March 22, 2018.
       final JsonArray jsonArray = new JsonArray();
       for (String rootDirectory : rootDirectories) {
         jsonArray.add(rootDirectory);
       }
       return getInspectorLibrary().eval(
         "WidgetInspectorService.instance.setPubRootDirectories(" + new Gson().toJson(jsonArray) + ")", null)
-        .thenApplyAsync((InstanceRef instance) -> null);
-    });
+        .thenApplyAsync((instance) -> null);
+    }
   }
 
-  CompletableFuture<DiagnosticsNode> parseDiagnosticsNode(CompletableFuture<InstanceRef> instanceRefFuture) {
-    return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNode);
+  // TODO(jacobr): remove this method as soon as
+  // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
+  // Flutter Beta channel. The feature is expected to have landed in the
+  // Flutter dev chanel on March 22, 2018.
+  CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeObservatory(CompletableFuture<InstanceRef> instanceRefFuture) {
+    return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNodeObservatory);
   }
 
   /**
@@ -212,7 +325,7 @@ public class InspectorService implements Disposable {
   }
 
   public CompletableFuture<InstanceRef> toObservatoryInstanceRef(InspectorInstanceRef inspectorInstanceRef) {
-    return invokeServiceMethod("toObject", inspectorInstanceRef);
+    return invokeServiceMethodObservatory("toObject", inspectorInstanceRef);
   }
 
   private CompletableFuture<Instance> getInstance(InstanceRef instanceRef) {
@@ -223,11 +336,16 @@ public class InspectorService implements Disposable {
     return instanceRefFuture.thenComposeAsync(this::getInstance);
   }
 
-  CompletableFuture<DiagnosticsNode> parseDiagnosticsNode(InstanceRef instanceRef) {
-    return instanceRefToJson(instanceRef).thenApplyAsync((JsonElement jsonElement) -> {
-      //noinspection CodeBlock2Expr
-      return new DiagnosticsNode(jsonElement.getAsJsonObject(), this);
-    });
+  CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeObservatory(InstanceRef instanceRef) {
+    return instanceRefToJson(instanceRef).thenApplyAsync(this::parseDiagnosticsNodeHelper);
+  }
+
+  CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeDaemon(CompletableFuture<JsonElement> json) {
+    return json.thenApplyAsync(this::parseDiagnosticsNodeHelper);
+  }
+
+  DiagnosticsNode parseDiagnosticsNodeHelper(JsonElement jsonElement) {
+    return new DiagnosticsNode(jsonElement.getAsJsonObject(), this);
   }
 
   /**
@@ -240,15 +358,19 @@ public class InspectorService implements Disposable {
     });
   }
 
-  CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodes(InstanceRef instanceRef) {
+  CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(InstanceRef instanceRef) {
     return instanceRefToJson(instanceRef).thenApplyAsync((JsonElement jsonElement) -> {
       final JsonArray jsonArray = jsonElement.getAsJsonArray();
-      final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
-      for (JsonElement element : jsonArray) {
-        nodes.add(new DiagnosticsNode(element.getAsJsonObject(), this));
-      }
-      return nodes;
+      return parseDiagnosticsNodesHelper(jsonArray);
     });
+  }
+
+  ArrayList<DiagnosticsNode> parseDiagnosticsNodesHelper(JsonArray jsonArray) {
+    final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
+    for (JsonElement element : jsonArray) {
+      nodes.add(new DiagnosticsNode(element.getAsJsonObject(), this));
+    }
+    return nodes;
   }
 
   /**
@@ -260,15 +382,19 @@ public class InspectorService implements Disposable {
    * handle reference expiration gracefully.
    */
   public CompletableFuture<DartVmServiceValue> toDartVmServiceValueForSourceLocation(InspectorInstanceRef inspectorInstanceRef) {
-    return invokeServiceMethod("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
+    return invokeServiceMethodObservatory("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
       (InstanceRef instanceRef) -> {
         //noinspection CodeBlock2Expr
         return new DartVmServiceValue(debugProcess, inspectorLibrary.getIsolateId(), "inspectedObject", instanceRef, null, null, false);
       });
   }
 
-  CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodes(CompletableFuture<InstanceRef> instanceRefFuture) {
-    return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNodes);
+  CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture) {
+    return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNodesObservatory);
+  }
+
+  CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture) {
+    return jsonFuture.thenApplyAsync((json) -> parseDiagnosticsNodesHelper(json.getAsJsonArray()));
   }
 
   CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef) {
@@ -286,97 +412,110 @@ public class InspectorService implements Disposable {
    * new frames will be triggered to draw unless something changes in the UI.
    */
   public CompletableFuture<Boolean> isWidgetTreeReady() {
-    // TODO(jacobr): remove call to hasServiceMethod("isWidgetTreeReady") after
-    // the `isWidgetTreeReady` method has been in two revs of the Flutter Alpha
-    // channel. The feature is expected to have landed in the Flutter dev
-    // channel on January 18, 2018.
-    return hasServiceMethod("isWidgetTreeReady").thenComposeAsync((Boolean hasMethod) -> {
-      if (!hasMethod) {
-        // Fallback if the InspectorService doesn't provide the
-        // isWidgetTreeReady method. In this case, we will fail gracefully
-        // risking not displaying the Widget tree but ensuring we do not throw
-        // exceptions due to accessing the widget tree before it is safe to.
-        final CompletableFuture<Boolean> value = new CompletableFuture<>();
-        value.complete(false);
-        return value;
-      }
-      return invokeServiceMethod("isWidgetTreeReady").thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
-    });
+    if (isDaemonApiSupported) {
+      return invokeServiceMethodDaemon("isWidgetTreeReady").thenApplyAsync((JsonElement element) -> element.getAsBoolean() == true);
+    }
+    else {
+      return invokeServiceMethodObservatory("isWidgetTreeReady").thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
+    }
   }
 
   /**
    * Use this method to write code that is backwards compatible with versions
    * of Flutter that are too old to contain specific service methods.
    */
-  private CompletableFuture<Boolean> hasServiceMethod(String methodName) {
-    if (supportedServiceMethods == null) {
-      final EvalOnDartLibrary inspectorLibrary = getInspectorLibrary();
-      final CompletableFuture<Library> libraryFuture = inspectorLibrary.libraryRef.thenComposeAsync(inspectorLibrary::getLibrary);
-      supportedServiceMethods = libraryFuture.thenComposeAsync((Library library) -> {
-        for (ClassRef classRef : library.getClasses()) {
-          if ("WidgetInspectorService".equals(classRef.getName())) {
-            return inspectorLibrary.getClass(classRef).thenApplyAsync((ClassObj classObj) -> {
-              final Set<String> functionNames = new HashSet<>();
-              for (FuncRef funcRef : classObj.getFunctions()) {
-                functionNames.add(funcRef.getName());
-              }
-              return functionNames;
-            });
-          }
-        }
-        throw new RuntimeException("WidgetInspectorService class not found");
-      });
-    }
-
-    return supportedServiceMethods.thenApplyAsync(methodNames -> methodNames.contains(methodName));
+  private boolean hasServiceMethod(String methodName) {
+    return supportedServiceMethods.contains(methodName);
   }
 
   private CompletableFuture<ArrayList<DiagnosticsNode>> getListHelper(
     InspectorInstanceRef instanceRef, String methodName) {
-    return parseDiagnosticsNodes(invokeServiceMethod(methodName, instanceRef));
+    if (isDaemonApiSupported) {
+      return parseDiagnosticsNodesDaemon(invokeServiceMethodDaemon(methodName, instanceRef));
+    }
+    else {
+      return parseDiagnosticsNodesObservatory(invokeServiceMethodObservatory(methodName, instanceRef));
+    }
+  }
+
+  public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName) {
+    if (isDaemonApiSupported) {
+      return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName));
+    }
+    else {
+      return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName));
+    }
+  }
+
+  public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName, InspectorInstanceRef ref) {
+    if (isDaemonApiSupported) {
+      return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName, ref));
+    }
+    else {
+      return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName, ref));
+    }
+  }
+
+  public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, InspectorInstanceRef ref) {
+    if (isDaemonApiSupported) {
+      return invokeServiceMethodDaemon(methodName, ref).thenApply((ignored) -> null);
+    }
+    else {
+      return invokeServiceMethodObservatory(methodName, ref).thenApply((ignored) -> null);
+    }
   }
 
   public CompletableFuture<DiagnosticsNode> getRootWidget() {
-    return parseDiagnosticsNode(invokeServiceMethod("getRootWidget"));
+    return invokeServiceMethodReturningNode("getRootWidget");
   }
 
   public CompletableFuture<DiagnosticsNode> getRootRenderObject() {
-    return parseDiagnosticsNode(invokeServiceMethod("getRootRenderObject"));
+    return invokeServiceMethodReturningNode("getRootRenderObject");
   }
 
   public CompletableFuture<ArrayList<DiagnosticsPathNode>> getParentChain(DiagnosticsNode target) {
-    return parseDiagnosticsPath(invokeServiceMethod("getParentChain", target.getValueRef()));
+    if (isDaemonApiSupported) {
+      return parseDiagnosticsPathDaeomon(invokeServiceMethodDaemon("getParentChain", target.getValueRef()));
+    }
+    else {
+      return parseDiagnosticsPathObservatory(invokeServiceMethodObservatory("getParentChain", target.getValueRef()));
+    }
   }
 
-  CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPath(CompletableFuture<InstanceRef> instanceRefFuture) {
-    return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsPath);
+  CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathObservatory(CompletableFuture<InstanceRef> instanceRefFuture) {
+    return instanceRefFuture.thenComposeAsync(this::parseDiagnosticsPathObservatory);
   }
 
-  private CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPath(InstanceRef pathRef) {
-    return instanceRefToJson(pathRef).thenApplyAsync((JsonElement jsonElement) -> {
-      final JsonArray jsonArray = jsonElement.getAsJsonArray();
-      final ArrayList<DiagnosticsPathNode> pathNodes = new ArrayList<>();
-      for (JsonElement element : jsonArray) {
-        pathNodes.add(new DiagnosticsPathNode(element.getAsJsonObject(), this));
-      }
-      return pathNodes;
-    });
+  private CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathObservatory(InstanceRef pathRef) {
+    return instanceRefToJson(pathRef).thenApplyAsync(this::parseDiagnosticsPathHelper);
+  }
+
+  CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathDaeomon(CompletableFuture<JsonElement> jsonFuture) {
+    return jsonFuture.thenApplyAsync(this::parseDiagnosticsPathHelper);
+  }
+
+  private ArrayList<DiagnosticsPathNode> parseDiagnosticsPathHelper(JsonElement jsonElement) {
+    final JsonArray jsonArray = jsonElement.getAsJsonArray();
+    final ArrayList<DiagnosticsPathNode> pathNodes = new ArrayList<>();
+    for (JsonElement element : jsonArray) {
+      pathNodes.add(new DiagnosticsPathNode(element.getAsJsonObject(), this));
+    }
+    return pathNodes;
   }
 
   public CompletableFuture<DiagnosticsNode> getSelection(DiagnosticsNode previousSelection, FlutterTreeType treeType) {
-    CompletableFuture<InstanceRef> result = null;
+    CompletableFuture<DiagnosticsNode> result = null;
     final InspectorInstanceRef previousSelectionRef = previousSelection != null ? previousSelection.getDartDiagnosticRef() : null;
 
     switch (treeType) {
       case widget:
-        result = invokeServiceMethod("getSelectedWidget", previousSelectionRef);
+        result = invokeServiceMethodReturningNode("getSelectedWidget", previousSelectionRef);
         break;
       case renderObject:
-        result = invokeServiceMethod("getSelectedRenderObject", previousSelectionRef);
+        result = invokeServiceMethodReturningNode("getSelectedRenderObject", previousSelectionRef);
         break;
     }
-    assert (result != null);
-    return parseDiagnosticsNode(result).thenApplyAsync((DiagnosticsNode newSelection) -> {
+    return result.thenApplyAsync((DiagnosticsNode newSelection) -> {
       if (newSelection.getDartDiagnosticRef().equals(previousSelectionRef)) {
         return previousSelection;
       }
@@ -440,7 +579,12 @@ public class InspectorService implements Disposable {
   }
 
   public void setSelection(InspectorInstanceRef selection, boolean uiAlreadyUpdated) {
-    handleSetSelection(invokeServiceMethod("setSelectionById", selection), uiAlreadyUpdated);
+    if (isDaemonApiSupported) {
+      handleSetSelectionDaemon(invokeServiceMethodDaemon("setSelectionById", selection), uiAlreadyUpdated);
+    }
+    else {
+      handleSetSelectionObservatory(invokeServiceMethodObservatory("setSelectionById", selection), uiAlreadyUpdated);
+    }
   }
 
   /**
@@ -448,17 +592,27 @@ public class InspectorService implements Disposable {
    * instead of an InspectorInstanceRef.
    */
   public void setSelection(InstanceRef selection, boolean uiAlreadyUpdated) {
-    handleSetSelection(invokeServiceMethodOnRef("setSelection", selection), uiAlreadyUpdated);
+    // This call requires the observatory protocol as an observatory InstanceRef is specified.
+    handleSetSelectionObservatory(invokeServiceMethodOnRefObservatory("setSelection", selection), uiAlreadyUpdated);
   }
 
-  private void handleSetSelection(CompletableFuture<InstanceRef> setSelectionResult, boolean uiAlreadyUpdated) {
+  private void handleSetSelectionObservatory(CompletableFuture<InstanceRef> setSelectionResult, boolean uiAlreadyUpdated) {
     // TODO(jacobr): we need to cancel if another inspect request comes in while we are trying this one.
     setSelectionResult.thenAcceptAsync((InstanceRef instanceRef) -> {
-      if ("true".equals(instanceRef.getValueAsString())) {
-        if (!uiAlreadyUpdated) {
-          notifySelectionChanged();
-        }
-      }
+      handleSetSelectionHelper("true".equals(instanceRef.getValueAsString()), uiAlreadyUpdated);
+    });
+  }
+
+  private void handleSetSelectionHelper(boolean selectionChanged, boolean uiAlreadyUpdated) {
+    if (selectionChanged && !uiAlreadyUpdated) {
+      notifySelectionChanged();
+    }
+  }
+
+  private void handleSetSelectionDaemon(CompletableFuture<JsonElement> setSelectionResult, boolean uiAlreadyUpdated) {
+    // TODO(jacobr): we need to cancel if another inspect request comes in while we are trying this one.
+    setSelectionResult.thenAcceptAsync((JsonElement json) -> {
+      handleSetSelectionHelper(json.getAsBoolean(), uiAlreadyUpdated);
     });
   }
 

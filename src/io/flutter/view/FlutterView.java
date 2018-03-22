@@ -18,6 +18,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.util.Disposer;
@@ -52,6 +53,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
+
 // TODO(devoncarew): Display an fps graph.
 
 @com.intellij.openapi.components.State(
@@ -59,6 +62,8 @@ import java.util.List;
   storages = {@Storage("$WORKSPACE_FILE$")}
 )
 public class FlutterView implements PersistentStateComponent<FlutterViewState>, Disposable {
+
+  private static final Logger LOG = Logger.getInstance(FlutterView.class);
 
   private static class PerAppState {
     ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
@@ -151,7 +156,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
-  private void addInspector(FlutterApp app, ToolWindow toolWindow) {
+  private void addInspector(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs tabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
@@ -171,8 +176,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, tabs);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
-    addInspectorPanel("Widgets", tabs, state, InspectorService.FlutterTreeType.widget, app, toolWindow, toolbarGroup, true);
-    addInspectorPanel("Render Tree", tabs, state, InspectorService.FlutterTreeType.renderObject, app, toolWindow, toolbarGroup, false);
+    addInspectorPanel("Widgets", tabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow, toolbarGroup,
+                      true);
+    addInspectorPanel("Render Tree", tabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow,
+                      toolbarGroup, false);
   }
 
   private void addInspectorPanel(String displayName,
@@ -180,11 +187,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  PerAppState state,
                                  InspectorService.FlutterTreeType treeType,
                                  FlutterApp flutterApp,
+                                 InspectorService inspectorService,
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
                                  boolean selectedTab) {
     final OverflowAction overflowAction = new OverflowAction(this, flutterApp);
-    final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, flutterApp::isSessionActive, treeType);
+    final InspectorPanel inspectorPanel = new InspectorPanel(this, flutterApp, inspectorService, flutterApp::isSessionActive, treeType);
     final TabInfo tabInfo = new TabInfo(inspectorPanel).setActions(toolbarGroup, ActionPlaces.TOOLBAR)
       .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
       .setSideComponent(overflowAction.getActionButton());
@@ -199,11 +207,22 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
    * Called when a debug connection starts.
    */
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
+    final FlutterApp app = event.app;
+
+    whenCompleteUiThread(InspectorService.create(app.getFlutterDebugProcess(), app.getVmService()),
+                         (InspectorService inspectorService, Throwable throwable) -> {
+                           if (throwable != null) {
+                             LOG.warn(throwable);
+                             return;
+                           }
+                           debugActiveHelper(app, inspectorService);
+                         });
+  }
+
+  private void debugActiveHelper(@NotNull FlutterApp app, @NotNull InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       autoActivateToolWindow();
     }
-
-    final FlutterApp app = event.app;
 
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
@@ -221,9 +240,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     listenForRenderTreeActivations(toolWindow);
 
-    addInspector(app, toolWindow);
+    addInspector(app, inspectorService, toolWindow);
 
-    event.vmService.addVmServiceListener(new VmServiceListenerAdapter() {
+    app.getVmService().addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void connectionOpened() {
         onAppChanged(app);

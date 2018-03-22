@@ -82,6 +82,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final InspectorService.FlutterTreeType treeType;
   @NotNull
   private final FlutterApp flutterApp;
+  @NotNull private final InspectorService inspectorService;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
   private static final DataKey<Tree> INSPECTOR_KEY = DataKey.create("Flutter.InspectorKey");
@@ -107,12 +108,14 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   public InspectorPanel(FlutterView flutterView,
                         @NotNull FlutterApp flutterApp,
+                        @NotNull InspectorService inspectorService,
                         Computable<Boolean> isApplicable,
                         InspectorService.FlutterTreeType treeType) {
     super(new BorderLayout());
 
     this.treeType = treeType;
     this.flutterApp = flutterApp;
+    this.inspectorService = inspectorService;
     this.isApplicable = isApplicable;
 
     refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh);
@@ -190,9 +193,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     setActivate(isApplicable.compute());
   }
 
-  @Nullable
+  @NotNull
   private InspectorService getInspectorService() {
-    return flutterApp.getInspectorService();
+    return inspectorService;
   }
 
   void setActivate(boolean enabled) {
