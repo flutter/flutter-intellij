@@ -10,6 +10,8 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
+import com.intellij.execution.executors.DefaultDebugExecutor;
+import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.process.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
@@ -46,10 +48,13 @@ public class BazelTestRunner extends GenericProgramRunner {
     return "FlutterBazelTestRunner";
   }
 
+  /**
+   * Only allow this runner to execute for the Run and Debug executors.
+   */
   @Override
   public boolean canRun(@NotNull String executorId, @NotNull RunProfile profile) {
-    // TODO(jwren) not sure what we want here, go look at DebugTestRunner.canRun
-    return true;
+    return (DefaultRunExecutor.EXECUTOR_ID.equals(executorId) || DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)) &&
+           profile instanceof BazelTestConfig;
   }
 
   @Nullable
@@ -65,7 +70,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     final ExecutionResult executionResult = launcher.execute(env.getExecutor(), this);
     final Connector connector = new Connector(executionResult.getProcessHandler());
 
-    //// Set up source file mapping.
+    // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
     final PositionMapper.Analyzer analyzer = PositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
     final BazelPositionMapper mapper =
