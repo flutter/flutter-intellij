@@ -18,12 +18,28 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String disablePreviewDart2Key = "io.flutter.disablePreviewDart2";
+  private static final String previewDart2Key = "io.flutter.previewDart2";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String showHeapDisplayKey = "io.flutter.showHeapDisplay";
+
+  public enum Dart2ModeSettings {
+    useSdkDefault(0),
+    enablePreviewDart2(1),
+    disablePreviewDart2(2);
+
+    private final int ordinal;
+
+    Dart2ModeSettings(int ordinal) {
+      this.ordinal = ordinal;
+    }
+
+    public int getOrdinal() {
+      return ordinal;
+    }
+  }
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -45,9 +61,13 @@ public class FlutterSettings {
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
 
-    if (isDisablePreviewDart2()) {
-      analytics.sendEvent("settings", afterLastPeriod(disablePreviewDart2Key));
+    if (isEnablePreviewDart2()) {
+      analytics.sendEvent("settings", "enableDart2");
     }
+    else if (isDisablePreviewDart2()) {
+      analytics.sendEvent("settings", "disableDart2");
+    }
+
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
@@ -80,34 +100,14 @@ public class FlutterSettings {
     listeners.remove(listener);
   }
 
+  // We have both an enable and a disable flag as the could set one, the other, or rely on the SDK default.
+
+  public boolean isEnablePreviewDart2() {
+    return getDart2ModeSetting() == Dart2ModeSettings.enablePreviewDart2;
+  }
+
   public boolean isDisablePreviewDart2() {
-    return getPropertiesComponent().getBoolean(disablePreviewDart2Key, false);
-  }
-
-  public void setDisablePreviewDart2(boolean value) {
-    getPropertiesComponent().setValue(disablePreviewDart2Key, value, false);
-
-    updateAnalysisServerArgs(value);
-
-    fireEvent();
-  }
-
-  private void updateAnalysisServerArgs(boolean previewDart2) {
-    final String serverRegistryKey = "dart.server.additional.arguments";
-    final String previewDart2Flag = "--preview-dart-2";
-
-    final List<String> params = StringUtil.split(Registry.stringValue(serverRegistryKey), " ");
-
-    if (previewDart2 && !params.contains(previewDart2Flag)) {
-      final List<String> copy = new ArrayList<>(params);
-      copy.add(previewDart2Flag);
-      Registry.get(serverRegistryKey).setValue(StringUtil.join(copy, " "));
-    }
-    else if (!previewDart2 && params.contains(previewDart2Flag)) {
-      final List<String> copy = new ArrayList<>(params);
-      copy.removeIf(previewDart2Flag::equals);
-      Registry.get(serverRegistryKey).setValue(StringUtil.join(copy, " "));
-    }
+    return getDart2ModeSetting() == Dart2ModeSettings.disablePreviewDart2;
   }
 
   public boolean isReloadOnSave() {
@@ -178,6 +178,43 @@ public class FlutterSettings {
     getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, true);
 
     fireEvent();
+  }
+
+  public Dart2ModeSettings getDart2ModeSetting() {
+    final int ordinal = getPropertiesComponent().getInt(previewDart2Key, 0);
+
+    if (ordinal == Dart2ModeSettings.enablePreviewDart2.getOrdinal()) {
+      return Dart2ModeSettings.enablePreviewDart2;
+    }
+    else if (ordinal == Dart2ModeSettings.disablePreviewDart2.getOrdinal()) {
+      return Dart2ModeSettings.disablePreviewDart2;
+    }
+    else {
+      return Dart2ModeSettings.useSdkDefault;
+    }
+  }
+
+  public void setDart2ModeSettingOrdinal(int ordinal) {
+    getPropertiesComponent().setValue(previewDart2Key, ordinal, 0);
+
+    updateAnalysisServerArgs();
+  }
+
+  private void updateAnalysisServerArgs() {
+    final String serverRegistryKey = "dart.server.additional.arguments";
+    final String previewDart2FlagSuffix = "preview-dart-2";
+
+    final List<String> params = new ArrayList<>(StringUtil.split(Registry.stringValue(serverRegistryKey), " "));
+    params.removeIf((s) -> s.endsWith(previewDart2FlagSuffix));
+
+    if (isEnablePreviewDart2()) {
+      params.add("--" + previewDart2FlagSuffix);
+    }
+    else if (isDisablePreviewDart2()) {
+      params.add("--no-" + previewDart2FlagSuffix);
+    }
+
+    Registry.get(serverRegistryKey).setValue(StringUtil.join(params, " "));
   }
 
   public boolean isVerboseLogging() {
