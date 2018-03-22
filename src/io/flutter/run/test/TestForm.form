@@ -90,7 +90,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="The entry-point for the test. Generally, something like test/simple_test.dart."/>
+          <text value="The entry-point for the test (e.g. 'test/simple_test.dart')."/>
         </properties>
       </component>
       <component id="9ab03" class="javax.swing.JLabel" binding="testDirHintLabel">
@@ -99,7 +99,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="The directory scoping the run tests.  Generally something like /.../test/."/>
+          <text value="The directory scoping the run tests (e.g. '/.../test/')."/>
         </properties>
       </component>
       <component id="965ee" class="javax.swing.JLabel" binding="testNameHintLabel">

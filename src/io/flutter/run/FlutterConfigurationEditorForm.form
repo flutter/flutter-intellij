@@ -64,7 +64,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="The entry-point for the application. Generally, something like lib/main.dart."/>
+          <text value="The entry-point for the application (e.g. lib/main.dart)."/>
         </properties>
       </component>
       <component id="e7876" class="javax.swing.JTextField" binding="myAdditionalArgumentsField">
