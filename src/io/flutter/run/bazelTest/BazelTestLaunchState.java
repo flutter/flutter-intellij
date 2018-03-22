@@ -11,7 +11,10 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.bazel.Workspace;
+import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -54,9 +57,11 @@ public class BazelTestLaunchState extends CommandLineState {
     final VirtualFile virtualFile = fields.getFile();
     assert (virtualFile != null);
 
-    return new BazelTestLaunchState(env, config, virtualFile);
-    // TODO(jwren) do we want to use the DaemonConsoleView?
-    //DaemonConsoleView.install(launcher, env, pubRoot.getRoot());
-    //return launcher;
+    final BazelTestLaunchState launcher = new BazelTestLaunchState(env, config, virtualFile);
+    final Workspace workspace = FlutterModuleUtils.getFlutterBazelWorkspace(env.getProject());
+    if (workspace != null) {
+      DaemonConsoleView.install(launcher, env, workspace.getRoot());
+    }
+    return launcher;
   }
 }
