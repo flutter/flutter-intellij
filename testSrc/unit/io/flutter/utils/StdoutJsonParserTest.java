@@ -26,7 +26,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void appends_without_line_breaks() throws Exception {
+  public void appendsWithoutLineBreaks() throws Exception {
     StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\nnow\n");
     parser.appendOutput("there");
@@ -50,7 +50,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void split_json() throws Exception {
+  public void splitJson() throws Exception {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
@@ -66,7 +66,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void deep_nested_json() throws Exception {
+  public void deepNestedJson() throws Exception {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
@@ -82,7 +82,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void unterminated_json() throws Exception {
+  public void unterminatedJson() throws Exception {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");

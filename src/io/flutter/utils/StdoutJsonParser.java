@@ -11,10 +11,10 @@ import java.util.List;
 /**
  * A class to process regular text output intermixed with newline-delimited JSON.
  *
- * JSON lines starting with [{ are never be split into multiple lines even
- * if they are emitted over the course of multiple calls to appendOutput.
- * Regular lines on the other hand are emitted immediately so that debug output
- * always shows up when expected..
+ * JSON lines starting with [{ are never split into multiple lines even if they
+ * are emitted over the course of multiple calls to appendOutput. Regular lines
+ * on the other hand are emitted immediately so users do not have to wait for
+ * debug output.
  */
 public class StdoutJsonParser {
   private final StringBuilder buffer = new StringBuilder();
