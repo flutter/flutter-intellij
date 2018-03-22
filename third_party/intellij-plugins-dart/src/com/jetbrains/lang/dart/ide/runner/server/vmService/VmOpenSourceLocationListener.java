@@ -13,6 +13,7 @@ import de.roderick.weberknecht.WebSocket;
 import de.roderick.weberknecht.WebSocketEventHandler;
 import de.roderick.weberknecht.WebSocketException;
 import de.roderick.weberknecht.WebSocketMessage;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -171,12 +172,12 @@ public class VmOpenSourceLocationListener {
       }
 
       isolateId = params.get("isolateId").getAsString();
-      if (isolateId == null || isolateId.isEmpty()) {
+      if (StringUtils.isEmpty(isolateId)) {
         return;
       }
 
       scriptId = params.get("scriptId").getAsString();
-      if (scriptId == null || scriptId.isEmpty()) {
+      if (StringUtils.isEmpty(scriptId)) {
         return;
       }
 
