@@ -33,9 +33,9 @@ import java.util.function.Function;
 
 /**
  * Sends JSON commands to a flutter daemon process, assigning a new id to each one.
- *
+ * <p>
  * <p>Also handles dispatching incoming responses and events.
- *
+ * <p>
  * <p>The protocol is specified in
  * <a href="https://github.com/flutter/flutter/wiki/The-flutter-daemon-mode"
  * >The Flutter Daemon Mode</a>.
@@ -238,11 +238,7 @@ public class DaemonApi {
         return null;
       }
       final JsonObject params = obj.getAsJsonObject("params");
-      if (params == null) {
-        return null;
-      }
-      final DaemonEvent event = DaemonEvent.create(eventName, params);
-      return event == null ? null : obj;
+      return params == null ? null : obj;
     }
     else {
       // id
