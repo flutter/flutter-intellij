@@ -80,6 +80,24 @@ public class DaemonApiTest {
     assertNull(result.get());
   }
 
+  @Test
+  public void parseAndValidateDaemonEventGood() {
+    final JsonObject result = DaemonApi.parseAndValidateDaemonEvent("[{'id':23}]");
+    assertNotNull(result);
+  }
+
+  @Test
+  public void parseAndValidateDaemonEventBad() {
+    JsonObject result = DaemonApi.parseAndValidateDaemonEvent("[{id:'23'}]");
+    assertNull(result);
+
+    result = DaemonApi.parseAndValidateDaemonEvent("[{}]");
+    assertNull(result);
+
+    result = DaemonApi.parseAndValidateDaemonEvent("[{'foo':'bar");
+    assertNull(result);
+  }
+
   // helpers
 
   private void checkSent(Future result, String expectedMethod, String expectedParamsJson) {

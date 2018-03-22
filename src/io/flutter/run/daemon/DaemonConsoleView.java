@@ -84,12 +84,12 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     for (String line : stdoutParser.getAvailableLines()) {
       if (DaemonApi.parseAndValidateDaemonEvent(line.trim()) != null) {
         if (FlutterSettings.getInstance().isVerboseLogging()) {
-          LOG.info(line.trim().trim());
+          LOG.info(line.trim());
         }
         return;
       }
       else {
-        // We're seeing a spurious newline before some launches; this removed any single newline that occur
+        // We're seeing a spurious newline before some launches; this removes any single newline that occurred
         // before we've printed text.
         if (!hasPrintedText && line.equals(("\n"))) {
           continue;

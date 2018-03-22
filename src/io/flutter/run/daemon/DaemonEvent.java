@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -242,7 +243,7 @@ abstract class DaemonEvent {
 
     @NotNull
     String getType() {
-      return progressId == null ? "" : progressId;
+      return StringUtil.notNullize(progressId);
     }
 
     boolean isStarting() {

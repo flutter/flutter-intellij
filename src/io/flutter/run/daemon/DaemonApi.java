@@ -204,26 +204,26 @@ public class DaemonApi {
   }
 
   /**
-   * Parse the given string; if it's valid JSON, and a valid Daemon response of event, then return
+   * Parse the given string; if it is valid JSON - and a valid Daemon message - then return
    * the parsed JsonObject.
    */
-  static JsonObject parseAndValidateDaemonEvent(String str) {
-    if (!str.startsWith("[{")) {
+  static JsonObject parseAndValidateDaemonEvent(String message) {
+    if (!message.startsWith("[{")) {
       return null;
     }
 
-    str = str.trim();
-    if (!str.endsWith("}]")) {
+    message = message.trim();
+    if (!message.endsWith("}]")) {
       return null;
     }
 
-    str = str.substring(1, str.length() - 1);
+    message = message.substring(1, message.length() - 1);
 
     final JsonObject obj;
 
     try {
       final JsonParser jsonParser = new JsonParser();
-      final JsonElement element = jsonParser.parse(str);
+      final JsonElement element = jsonParser.parse(message);
       obj = element.getAsJsonObject();
     }
     catch (JsonSyntaxException e) {
@@ -247,7 +247,7 @@ public class DaemonApi {
     else {
       // id
       final JsonPrimitive idField = obj.getAsJsonPrimitive("id");
-      if (idField == null) {
+      if (idField == null || !idField.isNumber()) {
         return null;
       }
 
