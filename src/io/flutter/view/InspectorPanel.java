@@ -82,7 +82,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private final InspectorService.FlutterTreeType treeType;
   @NotNull
   private final FlutterApp flutterApp;
-  private final InspectorService inspectorService;
+  @NotNull private final InspectorService inspectorService;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
   private static final DataKey<Tree> INSPECTOR_KEY = DataKey.create("Flutter.InspectorKey");
@@ -193,7 +193,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     setActivate(isApplicable.compute());
   }
 
-  @Nullable
+  @NotNull
   private InspectorService getInspectorService() {
     return inspectorService;
   }

@@ -82,7 +82,7 @@ public class InspectorService implements Disposable {
     // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
     // Flutter Beta channel. The feature is expected to have landed in the
     // Flutter dev chanel on March 22, 2018.
-    this.isDaemonApiSupported = hasServiceMethod("callMethod");
+    this.isDaemonApiSupported = hasServiceMethod("initServiceExtensions");
 
     clients = new HashSet<>();
     groupName = "intellij_inspector_" + nextGroupId;
@@ -174,25 +174,29 @@ public class InspectorService implements Disposable {
     return invokeServiceMethodDaemon(methodName, groupName);
   }
 
-  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String arg1) {
-    final JsonArray args = new JsonArray();
-    args.add(arg1);
-    return invokeServiceMethodDaemon(methodName, args);
-  }
-
-  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String arg1, String arg2) {
-    final JsonArray args = new JsonArray();
-    args.add(arg1);
-    args.add(arg2);
-    return invokeServiceMethodDaemon(methodName, args);
-  }
-
-  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, JsonArray args) {
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String objectGroup) {
     final Map<String, Object> params = new HashMap<>();
-    params.put("method", methodName);
-    // The parameter map is from String->String so we have to JSON encode the args.
-    params.put("args", new Gson().toJson(args));
-    return getApp().callServiceExtension("ext.flutter.debugCallWidgetInspectorService", params).thenApply((JsonObject json) -> {
+    params.put("objectGroup", objectGroup);
+    return invokeServiceMethodDaemon(methodName, params);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String arg, String objectGroup) {
+    final Map<String, Object> params = new HashMap<>();
+    params.put("arg", arg);
+    params.put("objectGroup", objectGroup);
+    return invokeServiceMethodDaemon(methodName, params);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, List<String> args) {
+    final Map<String, Object> params = new HashMap<>();
+    for (int i = 0; i < args.size(); ++i) {
+      params.put("arg" + i, args.get(i));
+    }
+    return invokeServiceMethodDaemon(methodName, params);
+  }
+
+  CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, Map<String, Object> params) {
+    return getApp().callServiceExtension("ext.flutter.inspector." + methodName, params).thenApply((JsonObject json) -> {
       if (json.has("errorMessage")) {
         String message = json.get("errorMessage").getAsString();
         throw new RuntimeException(methodName + " -- " + message);
@@ -221,8 +225,14 @@ public class InspectorService implements Disposable {
   }
 
   /**
-   * This API requires using the observatory service a the input parameter is an
-   * Observatory InstanceRef..
+   * Call a service method passing in an observatory instance reference.
+   *
+   * This call is useful when receiving an "inspect" event from the
+   * observatory and future use cases such as inspecting a Widget from the
+   * IntelliJ watch window.
+   *
+   * This method will always need to use the observatory service as the input
+   * parameter is an Observatory InstanceRef..
    */
   CompletableFuture<InstanceRef> invokeServiceMethodOnRefObservatory(String methodName, InstanceRef arg) {
     final HashMap<String, String> scope = new HashMap<>();
@@ -242,20 +252,18 @@ public class InspectorService implements Disposable {
       return CompletableFuture.completedFuture(null);
     }
 
-    final JsonArray jsonArray = new JsonArray();
-    for (String rootDirectory : rootDirectories) {
-      jsonArray.add(rootDirectory);
-    }
     if (isDaemonApiSupported) {
-      final JsonArray args = new JsonArray();
-      args.add(jsonArray);
-      return invokeServiceMethodDaemon("setPubRootDirectories", args).thenApplyAsync((ignored) -> null);
+      return invokeServiceMethodDaemon("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
     }
     else {
       // TODO(jacobr): remove this call as soon as
       // `ext.flutter.debugCallWidgetInspectorService` has been in two revs of the
       // Flutter Beta channel. The feature is expected to have landed in the
       // Flutter dev chanel on March 22, 2018.
+      final JsonArray jsonArray = new JsonArray();
+      for (String rootDirectory : rootDirectories) {
+        jsonArray.add(rootDirectory);
+      }
       return getInspectorLibrary().eval(
         "WidgetInspectorService.instance.setPubRootDirectories(" + new Gson().toJson(jsonArray) + ")", null)
         .thenApplyAsync((instance) -> null);

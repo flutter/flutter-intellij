@@ -212,7 +212,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     whenCompleteUiThread(InspectorService.create(app.getFlutterDebugProcess(), app.getVmService()),
                          (InspectorService inspectorService, Throwable throwable) -> {
                            if (throwable != null) {
-                             LOG.error(throwable);
+                             LOG.warn(throwable);
                              return;
                            }
                            debugActiveHelper(app, inspectorService);
