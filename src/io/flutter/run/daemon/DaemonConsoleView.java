@@ -82,15 +82,15 @@ public class DaemonConsoleView extends ConsoleViewImpl {
 
   private void writeAvailableLines() {
     for (String line : stdoutParser.getAvailableLines()) {
-      final String trimmed = line.trim();
-
-      if (trimmed.startsWith("[{") && trimmed.endsWith("}]")) {
-        LOG.info(trimmed);
+      if (DaemonApi.parseAndValidateDaemonEvent(line.trim()) != null) {
+        if (FlutterSettings.getInstance().isVerboseLogging()) {
+          LOG.info(line.trim());
+        }
         return;
       }
       else {
-        // We're seeing a spurious newline before some launches; this removed any single
-        // newline that occur before we've printed text.
+        // We're seeing a spurious newline before some launches; this removes any single newline that occurred
+        // before we've printed text.
         if (!hasPrintedText && line.equals(("\n"))) {
           continue;
         }

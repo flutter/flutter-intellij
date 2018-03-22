@@ -33,9 +33,9 @@ import java.util.function.Function;
 
 /**
  * Sends JSON commands to a flutter daemon process, assigning a new id to each one.
- * <p>
+ *
  * <p>Also handles dispatching incoming responses and events.
- * <p>
+ *
  * <p>The protocol is specified in
  * <a href="https://github.com/flutter/flutter/wiki/The-flutter-daemon-mode"
  * >The Flutter Daemon Mode</a>.
@@ -126,11 +126,9 @@ public class DaemonApi {
           stdoutParser.appendOutput(text);
 
           for (String line : stdoutParser.getAvailableLines()) {
-            if (line.startsWith("[{")) {
-              line = line.trim();
-
-              final String json = line.substring(1, line.length() - 1);
-              dispatch(json, listener);
+            final JsonObject obj = parseAndValidateDaemonEvent(line);
+            if (obj != null) {
+              dispatch(obj, listener);
             }
           }
         }
@@ -154,59 +152,28 @@ public class DaemonApi {
   /**
    * Parses some JSON and handles it as either a command's response or an event.
    */
-  void dispatch(@NotNull String json, @Nullable DaemonEvent.Listener listener) {
-    final JsonObject obj;
-    try {
-      final JsonParser jp = new JsonParser();
-      final JsonElement elem = jp.parse(json);
-      obj = elem.getAsJsonObject();
-    }
-    catch (JsonSyntaxException e) {
-      LOG.error("Unable to parse response from Flutter daemon", e);
-      return;
-    }
-
-    final JsonPrimitive primId = obj.getAsJsonPrimitive("id");
-    if (primId == null) {
+  void dispatch(@NotNull JsonObject obj, @Nullable DaemonEvent.Listener eventListener) {
+    final JsonPrimitive idField = obj.getAsJsonPrimitive("id");
+    if (idField == null) {
       // It's an event.
-      if (listener != null) {
-        DaemonEvent.dispatch(obj, listener);
+      if (eventListener != null) {
+        DaemonEvent.dispatch(obj, eventListener);
+      }
+    }
+    else {
+      final Command cmd = takePending(idField.getAsInt());
+      if (cmd == null) {
+        return;
+      }
+
+      final JsonElement error = obj.get("error");
+      if (error != null) {
+        cmd.completeExceptionally(new IOException("unexpected response: " + obj));
       }
       else {
-        LOG.info("ignored event from Flutter daemon: " + json);
-      }
-      return;
-    }
-
-    final int id;
-    try {
-      id = primId.getAsInt();
-    }
-    catch (NumberFormatException e) {
-      LOG.error("Unable to parse response from Flutter daemon", e);
-      return;
-    }
-
-    final JsonElement error = obj.get("error");
-    if (error != null) {
-      LOG.warn("Flutter process returned an error: " + json);
-      final Command cmd = takePending(id);
-      if (cmd != null) {
-        cmd.completeExceptionally(new IOException("unexpected response: " + json));
+        cmd.complete(obj.get("result"));
       }
     }
-
-    final JsonElement result = obj.get("result");
-    complete(id, result);
-  }
-
-  /**
-   * Completes the pending command with the given id.
-   */
-  private void complete(int id, @Nullable JsonElement result) {
-    final Command cmd = takePending(id);
-    if (cmd == null) return;
-    cmd.complete(result);
   }
 
   @Nullable
@@ -233,6 +200,64 @@ public class DaemonApi {
       }
       callback.accept(json);
       return command.done;
+    }
+  }
+
+  /**
+   * Parse the given string; if it is valid JSON - and a valid Daemon message - then return
+   * the parsed JsonObject.
+   */
+  static JsonObject parseAndValidateDaemonEvent(String message) {
+    if (!message.startsWith("[{")) {
+      return null;
+    }
+
+    message = message.trim();
+    if (!message.endsWith("}]")) {
+      return null;
+    }
+
+    message = message.substring(1, message.length() - 1);
+
+    final JsonObject obj;
+
+    try {
+      final JsonParser jsonParser = new JsonParser();
+      final JsonElement element = jsonParser.parse(message);
+      obj = element.getAsJsonObject();
+    }
+    catch (JsonSyntaxException e) {
+      return null;
+    }
+
+    // obj must contain either an "id" (int), or an "event" field
+    final JsonPrimitive eventField = obj.getAsJsonPrimitive("event");
+    if (eventField != null) {
+      final String eventName = eventField.getAsString();
+      if (eventName == null) {
+        return null;
+      }
+      final JsonObject params = obj.getAsJsonObject("params");
+      if (params == null) {
+        return null;
+      }
+      final DaemonEvent event = DaemonEvent.create(eventName, params);
+      return event == null ? null : obj;
+    }
+    else {
+      // id
+      final JsonPrimitive idField = obj.getAsJsonPrimitive("id");
+      if (idField == null || !idField.isNumber()) {
+        return null;
+      }
+
+      try {
+        final int id = idField.getAsInt();
+        return obj;
+      }
+      catch (NumberFormatException e) {
+        return null;
+      }
     }
   }
 

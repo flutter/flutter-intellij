@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSyntaxException;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,26 +22,25 @@ import org.jetbrains.annotations.Nullable;
  * >The Flutter Daemon Mode</a>.
  */
 abstract class DaemonEvent {
-
   /**
    * Parses an event and sends it to the listener.
    */
   static void dispatch(@NotNull JsonObject obj, @NotNull Listener listener) {
     final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
     if (primEvent == null) {
-      LOG.error("Missing event field in JSON from flutter process: " + obj);
+      LOG.info("Missing event field in JSON from flutter process: " + obj);
       return;
     }
 
     final String eventName = primEvent.getAsString();
     if (eventName == null) {
-      LOG.error("Unexpected event field in JSON from flutter process: " + obj);
+      LOG.info("Unexpected event field in JSON from flutter process: " + obj);
       return;
     }
 
     final JsonObject params = obj.getAsJsonObject("params");
     if (params == null) {
-      LOG.error("Missing parameters in event from flutter process: " + obj);
+      LOG.info("Missing parameters in event from flutter process: " + obj);
       return;
     }
 
@@ -53,7 +53,7 @@ abstract class DaemonEvent {
   }
 
   @Nullable
-  private static DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
+  static DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
     try {
       switch (eventName) {
         case "daemon.logMessage":
@@ -79,8 +79,9 @@ abstract class DaemonEvent {
         default:
           return null; // Drop an unknown event.
       }
-    } catch (JsonSyntaxException e) {
-      LOG.error("Unexpected parameters in event from flutter process: " + params);
+    }
+    catch (JsonSyntaxException e) {
+      LOG.info("Unexpected parameters in event from flutter process: " + params);
       return null;
     }
   }
@@ -99,37 +100,50 @@ abstract class DaemonEvent {
 
     // process lifecycle
 
-    default void processWillTerminate() {}
+    default void processWillTerminate() {
+    }
 
-    default void processTerminated(int exitCode) {}
+    default void processTerminated(int exitCode) {
+    }
 
     // daemon domain
 
-    default void onDaemonLogMessage(LogMessage event) {}
+    default void onDaemonLogMessage(LogMessage event) {
+    }
 
-    default void onDaemonShowMessage(ShowMessage event) {}
+    default void onDaemonShowMessage(ShowMessage event) {
+    }
 
     // app domain
 
-    default void onAppStarting(AppStarting event) {}
+    default void onAppStarting(AppStarting event) {
+    }
 
-    default void onAppDebugPort(AppDebugPort event) {}
+    default void onAppDebugPort(AppDebugPort event) {
+    }
 
-    default void onAppStarted(AppStarted event) {}
+    default void onAppStarted(AppStarted event) {
+    }
 
-    default void onAppLog(AppLog event) {}
+    default void onAppLog(AppLog event) {
+    }
 
-    default void onAppProgressStarting(AppProgress event) {}
+    default void onAppProgressStarting(AppProgress event) {
+    }
 
-    default void onAppProgressFinished(AppProgress event) {}
+    default void onAppProgressFinished(AppProgress event) {
+    }
 
-    default void onAppStopped(AppStopped event) {}
+    default void onAppStopped(AppStopped event) {
+    }
 
     // device domain
 
-    default void onDeviceAdded(DeviceAdded event) {}
+    default void onDeviceAdded(DeviceAdded event) {
+    }
 
-    default void onDeviceRemoved(DeviceRemoved event) {}
+    default void onDeviceRemoved(DeviceRemoved event) {
+    }
   }
 
   // daemon domain
@@ -227,8 +241,9 @@ abstract class DaemonEvent {
 
     private Boolean finished;
 
-    @NotNull String getType() {
-      return progressId == null ? "" : progressId;
+    @NotNull
+    String getType() {
+      return StringUtil.notNullize(progressId);
     }
 
     boolean isStarting() {
@@ -242,7 +257,8 @@ abstract class DaemonEvent {
     void accept(Listener listener) {
       if (isStarting()) {
         listener.onAppProgressStarting(this);
-      } else {
+      }
+      else {
         listener.onAppProgressFinished(this);
       }
     }

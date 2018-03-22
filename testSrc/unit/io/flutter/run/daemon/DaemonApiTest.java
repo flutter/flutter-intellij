@@ -7,6 +7,7 @@ package io.flutter.run.daemon;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,9 +75,27 @@ public class DaemonApiTest {
     checkLog("{\"method\":\"device.enable\",\"id\":0}");
     assertFalse(result.isDone());
 
-    api.dispatch("{id: \"0\"}", null);
+    api.dispatch(new JsonParser().parse("{id: \"0\"}").getAsJsonObject(), null);
     assertTrue(result.isDone());
     assertNull(result.get());
+  }
+
+  @Test
+  public void parseAndValidateDaemonEventGood() {
+    final JsonObject result = DaemonApi.parseAndValidateDaemonEvent("[{'id':23}]");
+    assertNotNull(result);
+  }
+
+  @Test
+  public void parseAndValidateDaemonEventBad() {
+    JsonObject result = DaemonApi.parseAndValidateDaemonEvent("[{id:'23'}]");
+    assertNull(result);
+
+    result = DaemonApi.parseAndValidateDaemonEvent("[{}]");
+    assertNull(result);
+
+    result = DaemonApi.parseAndValidateDaemonEvent("[{'foo':'bar");
+    assertNull(result);
   }
 
   // helpers
@@ -87,7 +106,7 @@ public class DaemonApiTest {
   }
 
   private void replyWithResult(Future result, String resultJson) {
-    api.dispatch("{id: \"0\", result: " + resultJson + "}", null);
+    api.dispatch(new JsonParser().parse("{id: \"0\", result: " + resultJson + "}").getAsJsonObject(), null);
     assertTrue(result.isDone());
   }
 
