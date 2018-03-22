@@ -10,59 +10,50 @@ import java.util.List;
 
 /**
  * A class to process regular text output intermixed with newline-delimited JSON.
+ *
+ * JSON lines starting with [{ are never split into multiple lines even if they
+ * are emitted over the course of multiple calls to appendOutput. Regular lines
+ * on the other hand are emitted immediately so users do not have to wait for
+ * debug output.
  */
 public class StdoutJsonParser {
   private final StringBuilder buffer = new StringBuilder();
+  private boolean bufferIsJson = false;
   private final List<String> lines = new ArrayList<>();
 
   /**
    * Write new output to this [StdoutJsonParser].
    */
   public void appendOutput(String output) {
-    buffer.append(output);
+    for (int i = 0; i < output.length(); ++i) {
+      final char c = output.charAt(i);
+      buffer.append(c);
+      if (!bufferIsJson && buffer.length() == 2 && buffer.charAt(0) == '[' && c == '{') {
+        bufferIsJson = true;
+      }
+      if (c == '\n') {
+        flushLine();
+      }
+    }
 
-    while (buffer.length() > 0) {
-      if (buffer.length() >= 2 && buffer.charAt(0) == '[' && buffer.charAt(1) == '{') {
-        final int endIndex = buffer.indexOf("}]");
-        if (endIndex != -1) {
-          String line = buffer.substring(0, endIndex + 2);
-          buffer.delete(0, endIndex + 2);
-          if (buffer.length() > 0 && buffer.charAt(0) == '\n') {
-            line += "\n";
-            buffer.delete(0, 1);
-          }
-          lines.add(line);
-        }
-        else {
-          // Wait for a json terminator.
-          break;
-        }
-      }
-      else if (buffer.indexOf("\n") != -1) {
-        final int endIndex = buffer.indexOf("\n");
-        final String line = buffer.substring(0, endIndex + 1);
-        buffer.delete(0, endIndex + 1);
-        lines.add(line);
-      }
-      else {
-        break;
-      }
+    // Eagerly flush if we are not within JSON so regular log text is written
+    // as soon as possible.
+    if (!bufferIsJson) {
+      flushLine();
     }
   }
 
-  /**
-   * Flush any written but un-consumed output to [getAvailableLines].
-   */
-  public void flush() {
+  private void flushLine() {
     if (buffer.length() > 0) {
       lines.add(buffer.toString());
       buffer.setLength(0);
     }
+    bufferIsJson = false;
   }
 
-  /**
-   * Read any lines available from the processed output.
-   */
+    /**
+     * Read any lines available from the processed output.
+     */
   public List<String> getAvailableLines() {
     final List<String> copy = new ArrayList<>(lines);
     lines.clear();
