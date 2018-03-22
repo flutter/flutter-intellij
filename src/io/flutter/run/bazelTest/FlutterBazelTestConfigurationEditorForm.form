@@ -70,7 +70,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="The absolute entry-point path for the application. Generally, something like /.../lib/main_test.dart."/>
+          <text value="The absolute entry-point path for the application (e.g. /.../lib/main_test.dart)."/>
         </properties>
       </component>
       <component id="8e5b7" class="javax.swing.JLabel">
@@ -88,7 +88,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="The Bazel target. For example: //a/b/c:name."/>
+          <text value="The Bazel target (e.g. //a/b/c:name)."/>
         </properties>
       </component>
     </children>
