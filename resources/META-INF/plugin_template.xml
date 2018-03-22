@@ -171,8 +171,8 @@
     <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
     <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
 
-    <!--<configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>-->
-    <!--<programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>-->
+    <configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>
+    <programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>
 
     <configurationType implementation="io.flutter.run.test.TestConfigType"/>
     <runConfigurationProducer implementation="io.flutter.run.test.TestConfigProducer"/>

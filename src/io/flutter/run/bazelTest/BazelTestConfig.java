@@ -24,7 +24,7 @@ import org.jetbrains.annotations.NotNull;
 public class BazelTestConfig extends LocatableConfigurationBase {
   @NotNull private BazelTestFields fields = new BazelTestFields();
 
-  BazelTestConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
+  BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
   }
 
@@ -54,12 +54,14 @@ public class BazelTestConfig extends LocatableConfigurationBase {
     return BazelTestLaunchState.create(env, this);
   }
 
+  @NotNull
   public BazelTestConfig clone() {
     final BazelTestConfig clone = (BazelTestConfig)super.clone();
     clone.fields = fields.copy();
     return clone;
   }
 
+  @NotNull
   RunConfiguration copyTemplateToNonTemplate(String name) {
     final BazelTestConfig copy = (BazelTestConfig)super.clone();
     copy.setName(name);
