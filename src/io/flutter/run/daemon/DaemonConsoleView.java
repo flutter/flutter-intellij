@@ -70,7 +70,6 @@ public class DaemonConsoleView extends ConsoleViewImpl {
     }
 
     if (contentType != ConsoleViewContentType.NORMAL_OUTPUT) {
-      stdoutParser.flush();
       writeAvailableLines();
 
       super.print(text, contentType);

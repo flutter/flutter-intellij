@@ -17,7 +17,6 @@ public class StdoutJsonParserTest {
     parser.appendOutput("there\n");
     parser.appendOutput("[{'foo':'bar'}]\n");
     parser.appendOutput("bye\n");
-    parser.flush();
 
     assertArrayEquals(
       "validating parser results",
@@ -27,15 +26,15 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void flush() throws Exception {
+  public void appends_without_line_breaks() throws Exception {
     StdoutJsonParser parser = new StdoutJsonParser();
-    parser.appendOutput("hello\n");
+    parser.appendOutput("hello\nnow\n");
     parser.appendOutput("there");
-    parser.flush();
+    parser.appendOutput("world");
 
     assertArrayEquals(
       "validating parser results",
-      new String[]{"hello\n", "there"},
+      new String[]{"hello\n", "now\n", "there", "world"},
       parser.getAvailableLines().toArray()
     );
 
@@ -45,7 +44,7 @@ public class StdoutJsonParserTest {
 
     assertArrayEquals(
       "validating parser results",
-      new String[]{"hello\n"},
+      new String[]{"hello\n", "there"},
       parser.getAvailableLines().toArray()
     );
   }
@@ -58,11 +57,42 @@ public class StdoutJsonParserTest {
     parser.appendOutput("[{'foo':");
     parser.appendOutput("'bar'}]\n");
     parser.appendOutput("bye\n");
-    parser.flush();
 
     assertArrayEquals(
       "validating parser results",
       new String[]{"hello\n", "there\n", "[{'foo':'bar'}]\n", "bye\n"},
+      parser.getAvailableLines().toArray()
+    );
+  }
+
+  @Test
+  public void deep_nested_json() throws Exception {
+    final StdoutJsonParser parser = new StdoutJsonParser();
+    parser.appendOutput("hello\n");
+    parser.appendOutput("there\n");
+    parser.appendOutput("[{'foo':");
+    parser.appendOutput("[{'bar':'baz'}]}]\n");
+    parser.appendOutput("bye\n");
+
+    assertArrayEquals(
+      "validating parser results",
+      new String[]{"hello\n", "there\n", "[{'foo':[{'bar':'baz'}]}]\n", "bye\n"},
+      parser.getAvailableLines().toArray()
+    );
+  }
+
+  @Test
+  public void unterminated_json() throws Exception {
+    final StdoutJsonParser parser = new StdoutJsonParser();
+    parser.appendOutput("hello\n");
+    parser.appendOutput("there\n");
+    parser.appendOutput("[{'foo':");
+    parser.appendOutput("[{'bar':'baz'}]");
+    // The JSON has not yet terminated with a \n.
+
+    assertArrayEquals(
+      "validating parser results",
+      new String[]{"hello\n", "there\n"},
       parser.getAvailableLines().toArray()
     );
   }
