@@ -19,6 +19,7 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceVa
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
+import org.apache.commons.lang.StringUtils;
 import org.dartlang.analysis.server.protocol.HoverInformation;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
@@ -77,7 +78,7 @@ public class DiagnosticsNode {
   @Override
   public String toString() {
     final String name = getName();
-    if (name == null || name.isEmpty() || !getShowName()) {
+    if (StringUtils.isEmpty(name) || !getShowName()) {
       return getDescription();
     }
 

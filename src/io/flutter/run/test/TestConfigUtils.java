@@ -16,6 +16,7 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartSyntax;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,7 +133,7 @@ public class TestConfigUtils {
     @NotNull
     String getTooltip(@NotNull PsiElement element) {
       final String testName = findTestName(element);
-      if (testName != null && !testName.isEmpty()) {
+      if (StringUtils.isNotEmpty(testName)) {
         return "Run '" + testName + "'";
       }
 

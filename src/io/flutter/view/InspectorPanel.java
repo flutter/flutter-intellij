@@ -32,6 +32,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncRateLimiter;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.ColorIconMaker;
+import org.apache.commons.lang.StringUtils;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -890,7 +891,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final DiagnosticsNode node = (DiagnosticsNode)userObject;
       final String name = node.getName();
       SimpleTextAttributes textAttributes = textAttributesForLevel(node.getLevel());
-      if (name != null && !name.isEmpty() && node.getShowName()) {
+      if (StringUtils.isNotEmpty(name) && node.getShowName()) {
         // color in name?
         if (name.equals("child") || name.startsWith("child ")) {
           appendText(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
