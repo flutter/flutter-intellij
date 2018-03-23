@@ -15,10 +15,10 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
-import org.jdesktop.swingx.border.DropShadowBorder;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.border.AbstractBorder;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -262,9 +262,6 @@ public class PreviewArea {
 
     final JPanel widget = new JPanel(new BorderLayout());
     final DropShadowBorder shadowBorder = new DropShadowBorder();
-    shadowBorder.setShadowSize(3);
-    shadowBorder.setShowRightShadow(true);
-    shadowBorder.setShowBottomShadow(true);
     widget.setBorder(shadowBorder);
     widget.setOpaque(false);
     final Insets insets = shadowBorder.getBorderInsets(widget);
@@ -336,5 +333,27 @@ class TitleAction extends AnAction implements CustomComponentAction {
   public JComponent createCustomComponent(Presentation presentation) {
     final String text = getTemplatePresentation().getText();
     return new JLabel(text);
+  }
+}
+
+class DropShadowBorder extends AbstractBorder {
+  @SuppressWarnings("UseJBColor") private static final Color borderColor = new Color(0x7F000000, true);
+
+  public DropShadowBorder() {
+  }
+
+  public Insets getBorderInsets(Component component) {
+    //noinspection UseDPIAwareInsets
+    return new Insets(0, 0, 1, 1);
+  }
+
+  public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+    g.setColor(borderColor);
+    final int x1 = x + 1;
+    final int y1 = y + 1;
+    final int x2 = x + width - 1;
+    final int y2 = y + height - 1;
+    g.drawLine(x1, y2, x2, y2);
+    g.drawLine(x2, y1, x2, y2 - 1);
   }
 }
