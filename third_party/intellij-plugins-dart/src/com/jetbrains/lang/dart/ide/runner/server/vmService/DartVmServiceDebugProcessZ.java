@@ -190,22 +190,15 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
   public void scheduleConnectNew() {
     ApplicationManager.getApplication().executeOnPooledThread(() -> {
-      // Allow 10 minutes for flutter run to start; the user can cancel manually in the interim.
-      final long timeout = (long)10 * 60 * 1000;
-      final long startTime = System.currentTimeMillis();
-
-      // Wait for "flutter run" to give us a websocket.
+      // Poll, waiting for "flutter run" to give us a websocket.
+      // Don't use a timeout - the user can cancel manually the operation.
       String url = myConnector.getWebSocketUrl();
+
       while (url == null) {
         if (getSession().isStopped()) return;
 
-        if (System.currentTimeMillis() > startTime + timeout) {
-          onConnectFailed("Observatory connection never became ready.");
-          return;
-        }
-        else {
-          TimeoutUtil.sleep(50);
-        }
+        TimeoutUtil.sleep(100);
+
         url = myConnector.getWebSocketUrl();
       }
 
@@ -304,7 +297,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
                 if (SystemInfo.isLinux) {
                   // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
                   focusProject(project);
-                } else {
+                }
+                else {
                   ProjectUtil.focusProjectWindow(project, true);
                 }
               }));
@@ -333,26 +327,32 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
       // restore the frame if it is minimized
       projectFrame.setExtendedState(frameState ^ Frame.ICONIFIED);
       projectFrame.toFront();
-    } else {
+    }
+    else {
       final JFrame anchor = new JFrame();
       anchor.setType(Window.Type.UTILITY);
       anchor.setUndecorated(true);
-      anchor.setSize(0,0);
+      anchor.setSize(0, 0);
       anchor.addWindowListener(new WindowListener() {
         @Override
-        public void windowOpened(WindowEvent e) {}
+        public void windowOpened(WindowEvent e) {
+        }
 
         @Override
-        public void windowClosing(WindowEvent e) {}
+        public void windowClosing(WindowEvent e) {
+        }
 
         @Override
-        public void windowClosed(WindowEvent e) {}
+        public void windowClosed(WindowEvent e) {
+        }
 
         @Override
-        public void windowIconified(WindowEvent e) {}
+        public void windowIconified(WindowEvent e) {
+        }
 
         @Override
-        public void windowDeiconified(WindowEvent e) {}
+        public void windowDeiconified(WindowEvent e) {
+        }
 
         @Override
         public void windowActivated(WindowEvent e) {
@@ -361,7 +361,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         }
 
         @Override
-        public void windowDeactivated(WindowEvent e) {}
+        public void windowDeactivated(WindowEvent e) {
+        }
       });
       anchor.pack();
       anchor.setVisible(true);
@@ -372,7 +373,8 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   /**
    * Callback for subclass.
    */
-  protected void onVmConnected(@NotNull VmService vmService) {}
+  protected void onVmConnected(@NotNull VmService vmService) {
+  }
 
   @NotNull
   @Override
@@ -532,6 +534,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     void onConnect(ScriptProvider provider, String remoteBaseUrl);
 
     // TODO(skybrian) this is called once per isolate. Should we pass in the isolate id?
+
     /**
      * Just after connecting, the debugger downloads the list of Dart libraries from Observatory and reports it here.
      */
@@ -539,7 +542,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
     /**
      * Returns all possible Observatory URI's corresponding to a local file.
-     *
+     * <p>
      * (A breakpoint will be set in all of them that exist.)
      */
     Collection<String> getBreakpointUris(VirtualFile file);
