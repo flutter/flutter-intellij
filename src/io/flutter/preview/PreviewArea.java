@@ -10,10 +10,13 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.ColorUtil;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.jdesktop.swingx.border.DropShadowBorder;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -41,16 +44,18 @@ import java.util.Map;
 // TODO: we need to take the layer (or z-index?) of the widget into account (see Scaffold and its FAB)
 
 public class PreviewArea {
-  public static int BORDER_WITH = 5;
+  public static int BORDER_WIDTH = 0;
 
   @SuppressWarnings("UseJBColor")
   private static final Color[] pastelColors = new Color[]{
-    new Color(255, 132, 203),
-    new Color(168, 231, 234),
-    new Color(251, 255, 147),
-    new Color(143, 255, 159),
-    new Color(193, 149, 255),
+    new Color(0x455A64),
+    new Color(0x546E7A),
+    new Color(0x607D8B),
+    new Color(0x78909C),
   };
+
+  @SuppressWarnings("UseJBColor") private static final Color labelDarkColor = new Color(0xcccccc);
+  @SuppressWarnings("UseJBColor") private static final Color labelLightColor = new Color(0x333333);
 
   private final Listener myListener;
 
@@ -102,8 +107,8 @@ public class PreviewArea {
           child.setBounds(0, 0, width, height);
         }
 
-        final int renderWidth = width - 2 * BORDER_WITH;
-        final int renderHeight = height - 2 * BORDER_WITH;
+        final int renderWidth = width - 2 * BORDER_WIDTH;
+        final int renderHeight = height - 2 * BORDER_WIDTH;
         listener.resized(renderWidth, renderHeight);
       }
     });
@@ -241,46 +246,67 @@ public class PreviewArea {
 
   private void renderWidgetOutline(@NotNull FlutterOutline outline, int widgetDepth) {
     final Integer id = outline.getId();
-    if (id != null) {
-      Rectangle rect = idToGlobalBounds.get(id);
-      if (rect != null) {
-        final int x = BORDER_WITH + rect.x - rootWidgetBounds.x;
-        final int y = BORDER_WITH + rect.y - rootWidgetBounds.y;
-        rect = new Rectangle(x, y, rect.width, rect.height);
+    if (id == null) {
+      return;
+    }
 
-        final JPanel widget = new JPanel(new BorderLayout());
-        final JLabel label = new JLabel(outline.getClassName());
-        label.setBorder(JBUI.Borders.empty(2, 4, 0, 0));
-        widget.add(label, BorderLayout.NORTH);
-        widget.setBackground(pastelColors[widgetDepth % pastelColors.length]);
-        widget.setBounds(rect);
-        widget.setBorder(IdeBorderFactory.createRoundedBorder(2));
+    final Rectangle rect = idToGlobalBounds.get(id);
+    if (rect == null) {
+      return;
+    }
 
-        outlineToComponent.put(outline, widget);
+    final boolean isDarkBackground = UIUtil.isUnderDarcula();
 
-        widget.addMouseListener(new MouseAdapter() {
-          @Override
-          public void mouseClicked(MouseEvent e) {
-            if (e.getClickCount() >= 2) {
-              myListener.doubleClicked(outline);
-            }
-          }
+    final int x = BORDER_WIDTH + rect.x - rootWidgetBounds.x;
+    final int y = BORDER_WIDTH + rect.y - rootWidgetBounds.y;
 
-          @Override
-          public void mousePressed(MouseEvent e) {
-            myListener.clicked(outline);
-          }
-        });
+    final JPanel widget = new JPanel(new BorderLayout());
+    final DropShadowBorder shadowBorder = new DropShadowBorder();
+    shadowBorder.setShadowSize(3);
+    shadowBorder.setShowRightShadow(true);
+    shadowBorder.setShowBottomShadow(true);
+    widget.setBorder(shadowBorder);
+    widget.setOpaque(false);
+    final Insets insets = shadowBorder.getBorderInsets(widget);
+    widget.setBounds(new Rectangle(x, y, rect.width + insets.right, rect.height + insets.bottom));
 
-        if (outline.getChildren() != null) {
-          for (FlutterOutline child : outline.getChildren()) {
-            renderWidgetOutline(child, widgetDepth + 1);
-          }
+    final JPanel inner = new JPanel(new BorderLayout());
+    inner.setBackground(pastelColors[widgetDepth % pastelColors.length]);
+    inner.setBorder(BorderFactory.createLineBorder(inner.getBackground().darker()));
+    widget.add(inner, BorderLayout.CENTER);
+
+    final JBLabel label = new JBLabel(outline.getClassName());
+    label.setBorder(JBUI.Borders.empty(2, 4, 0, 0));
+    label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+    final boolean widgetIsDark = ColorUtil.isDark(inner.getBackground());
+    if (widgetIsDark != isDarkBackground) {
+      label.setForeground(widgetIsDark ? labelDarkColor : labelLightColor);
+    }
+    inner.add(label, BorderLayout.NORTH);
+
+    outlineToComponent.put(outline, inner);
+
+    inner.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (e.getClickCount() >= 2) {
+          myListener.doubleClicked(outline);
         }
+      }
 
-        primaryLayer.add(widget);
+      @Override
+      public void mousePressed(MouseEvent e) {
+        myListener.clicked(outline);
+      }
+    });
+
+    if (outline.getChildren() != null) {
+      for (FlutterOutline child : outline.getChildren()) {
+        renderWidgetOutline(child, widgetDepth + 1);
       }
     }
+
+    primaryLayer.add(widget);
   }
 
   private void setToolbarTitle(String text) {
