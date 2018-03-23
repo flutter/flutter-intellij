@@ -92,7 +92,7 @@ public class RenderHelper {
     final FlutterOutline widgetOutline = getContainingWidgetOutline(offset);
     if (widgetOutline == myWidgetOutline) {
       if (widgetOutline == null) {
-        myListener.noWidget();
+        myListener.onFailure(RenderProblemKind.NO_WIDGET);
       }
       return;
     }
@@ -102,7 +102,7 @@ public class RenderHelper {
       scheduleRendering();
     }
     else {
-      myListener.noWidget();
+      myListener.onFailure(RenderProblemKind.NO_WIDGET);
     }
   }
 
@@ -169,11 +169,9 @@ public class RenderHelper {
   }
 
   public interface Listener {
-    void noWidget();
-
     void onResponse(FlutterOutline widget, JsonObject response);
 
-    void onFailure(Throwable e);
+    void onFailure(RenderProblemKind kind);
   }
 }
 
@@ -274,7 +272,7 @@ class RenderThread extends Thread {
 
   private void render(@NotNull RenderRequest request) {
     if (myTemporaryDirectory == null) {
-      request.listener.onFailure(null);
+      request.listener.onFailure(RenderProblemKind.NO_TEMPORARY_DIRECTORY);
       return;
     }
 
@@ -358,6 +356,7 @@ class RenderThread extends Thread {
         final String line = myProcessReader.readLine();
         if (line == null) {
           terminateCurrentProcess("Response expected");
+          request.listener.onFailure(RenderProblemKind.TIMEOUT);
           return;
         }
         // The line must be a JSON response.
@@ -366,14 +365,14 @@ class RenderThread extends Thread {
         }
         catch (Throwable ignored) {
           terminateCurrentProcess("JSON response expected");
-          request.listener.onFailure(null);
+          request.listener.onFailure(RenderProblemKind.EXCEPTION);
           return;
         }
       }
 
       // Fail if unable to find the valid response.
       if (response == null) {
-        request.listener.onFailure(null);
+        request.listener.onFailure(RenderProblemKind.EXCEPTION);
         return;
       }
 
@@ -385,7 +384,7 @@ class RenderThread extends Thread {
     }
     catch (Throwable e) {
       terminateCurrentProcess("Exception");
-      request.listener.onFailure(e);
+      request.listener.onFailure(RenderProblemKind.EXCEPTION);
     }
   }
 

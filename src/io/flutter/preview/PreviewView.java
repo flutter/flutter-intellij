@@ -158,15 +158,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   final RenderHelper.Listener renderListener = new RenderHelper.Listener() {
     @Override
-    public void noWidget() {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        if (previewArea != null) {
-          previewArea.clear();
-        }
-      });
-    }
-
-    @Override
     public void onResponse(FlutterOutline widget, JsonObject response) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
@@ -182,8 +173,23 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void onFailure(Throwable e) {
-      noWidget();
+    public void onFailure(RenderProblemKind kind) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        if (previewArea != null) {
+          switch (kind) {
+            case EXCEPTION:
+            case NO_TEMPORARY_DIRECTORY:
+              previewArea.clear("There was an exception during rendering");
+              break;
+            case NO_WIDGET:
+              previewArea.clear("The selection does not correspond to a widget");
+              break;
+            case TIMEOUT:
+              previewArea.clear("Timeout during rendering");
+              break;
+          }
+        }
+      });
     }
   };
 

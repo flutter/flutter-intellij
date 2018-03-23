@@ -126,8 +126,8 @@ public class PreviewArea {
     clear("Preview is not available");
   }
 
-  private void clear(String message) {
-    setToolbarTitle(null);
+  public void clear(String message) {
+    setToolbarTitle(" ");
 
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
