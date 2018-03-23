@@ -604,7 +604,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
 
 class HideSlowBannerAction extends FlutterViewToggleableAction {
   HideSlowBannerAction(@NotNull FlutterApp app) {
-    super(app, "Hide Slow Mode Banner");
+    super(app, "Hide Debug Mode Banner");
   }
 
   @Override
