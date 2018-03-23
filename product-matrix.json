@@ -22,9 +22,6 @@
       "dartPluginVersion": "173.4700",
       "sinceBuild": "173.0",
       "untilBuild": "173.*",
-      "filesToSkip": [
-        "src/io/flutter/editor/FlutterCompletionContributor.java"
-      ]
     },
     {
       "name": "IntelliJ",
