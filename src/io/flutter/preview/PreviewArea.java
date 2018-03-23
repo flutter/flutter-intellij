@@ -10,10 +10,9 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.ColorUtil;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
-import com.intellij.util.ui.UIUtil;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jdesktop.swingx.border.DropShadowBorder;
@@ -46,18 +45,16 @@ import java.util.Map;
 public class PreviewArea {
   public static int BORDER_WIDTH = 0;
 
-  @SuppressWarnings("UseJBColor")
   private static final Color[] widgetColors = new Color[]{
-    new Color(0x546E7A),
-    new Color(0x008975),
-    new Color(0x757575),
-    new Color(0x0288D1),
-    new Color(0x607D8B),
-    new Color(0x8D6E63),
+    new JBColor(new Color(0xB8F1FF), new Color(0x546E7A)),
+    new JBColor(new Color(0x80FFF2), new Color(0x008975)),
+    new JBColor(new Color(0xE1E1E1), new Color(0x757575)),
+    new JBColor(new Color(0x80DBFF), new Color(0x0288D1)),
+    new JBColor(new Color(0xA0FFCA), new Color(0x607D8B)),
+    new JBColor(new Color(0xFFD0B5), new Color(0x8D6E63)),
   };
 
-  @SuppressWarnings("UseJBColor") private static final Color labelDarkColor = new Color(0xcccccc);
-  @SuppressWarnings("UseJBColor") private static final Color labelLightColor = new Color(0x333333);
+  private static final Color labelColor = new JBColor(new Color(0x333333), new Color(0xcccccc));
 
   private final Listener myListener;
 
@@ -260,8 +257,6 @@ public class PreviewArea {
       return;
     }
 
-    final boolean isDarkBackground = UIUtil.isUnderDarcula();
-
     final int x = BORDER_WIDTH + rect.x - rootWidgetBounds.x;
     final int y = BORDER_WIDTH + rect.y - rootWidgetBounds.y;
 
@@ -283,10 +278,7 @@ public class PreviewArea {
 
     final JBLabel label = new JBLabel(outline.getClassName());
     label.setBorder(JBUI.Borders.empty(1, 4, 0, 0));
-    final boolean widgetIsDark = ColorUtil.isDark(inner.getBackground());
-    if (widgetIsDark != isDarkBackground) {
-      label.setForeground(widgetIsDark ? labelDarkColor : labelLightColor);
-    }
+    label.setForeground(labelColor);
     inner.add(label, BorderLayout.NORTH);
 
     outlineToComponent.put(outline, inner);
