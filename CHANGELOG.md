@@ -1,5 +1,17 @@
 ## 23.0
-- todo:
+- outline view: removed the experimental flag
+- outline view: filter the outline view to only show widgets by default
+- inspector: several stability and polish improvements
+- inspector: now supports inspecting multiple running apps at the same time
+- we now show material icons and colors in code completion (requires 2017.3 or AS 3.1)
+- running and debugging flutter test adding for Bazel launch configurations
+- added an 'Extract method' refactoring
+- the preview dart 2 flag can now accept the SDK default, be set to on, or set to off
+- Android Studio: we now support 3.1
+- Android Studio: fixed an issue where Android Studio was indexing frequently
+- experimental: added a live sparkline of the app's memory usage
+- experimental: added a live preview area in the Outline view
+- experimental: added the ability to format (and organize imports) on save
 
 ## 22.2
 - when installing the Flutter SDK, use the 'beta' channel instead of 'dev'
