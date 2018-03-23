@@ -278,7 +278,7 @@ public class PreviewArea {
     label.setForeground(labelColor);
     inner.add(label, BorderLayout.NORTH);
 
-    outlineToComponent.put(outline, inner);
+    outlineToComponent.put(outline, widget);
 
     inner.addMouseListener(new MouseAdapter() {
       @Override
