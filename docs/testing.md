@@ -34,19 +34,24 @@ Validate basic project creation.
   * Code completion works.
     * Change `primarySwatch: Colors` to some other color and validate that you
       get completions.
+  * `File > Project Structure` works.
 
 * Create a **plugin project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`), specify "Plugin" as the project type and select "Swift" for the iOS language.
 * Confirm that:
   * Project contents are created.
     * Verify that `<project root>/ios/Classes/Swift<Project Name>Plugin.swift` exists.
     * Verify that a run configuration (`<Project Name>.dart`) is enabled in the run/debug selector.
+  * `Open Android module in Android Studio` does the right thing
+    * Navigate to and select `<project root>/android/src/main`
+    * Select `Flutter > Open Android module in Android Studio` from the project list menu
+    * Verify that the new project window allows editing of `<project root>/example/android/app`
     
 ## Project Open
 
 Validate that our example projects can be opened.
 
 * close any open projects in IDEA
-* choose `File > Open...`
+* from the Welcome screen choose `Open` (IntelliJ) or `Open an existing Android Studio project` (AS)
 * browse to and select `<flutter-root>/examples/flutter_gallery`
 * ensure there are no analysis errors or warnings
 * test that code completion is working as expected
