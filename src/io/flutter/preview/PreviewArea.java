@@ -47,11 +47,13 @@ public class PreviewArea {
   public static int BORDER_WIDTH = 0;
 
   @SuppressWarnings("UseJBColor")
-  private static final Color[] pastelColors = new Color[]{
-    new Color(0x455A64),
+  private static final Color[] widgetColors = new Color[]{
     new Color(0x546E7A),
+    new Color(0x008975),
+    new Color(0x757575),
+    new Color(0x0288D1),
     new Color(0x607D8B),
-    new Color(0x78909C),
+    new Color(0x8D6E63),
   };
 
   @SuppressWarnings("UseJBColor") private static final Color labelDarkColor = new Color(0xcccccc);
@@ -78,6 +80,8 @@ public class PreviewArea {
 
   private final Map<FlutterOutline, JComponent> outlineToComponent = new HashMap<>();
   private final List<SelectionEditPolicy> selectionComponents = new ArrayList<>();
+
+  private int widgetIndex = 0;
 
   public PreviewArea(Listener listener) {
     this.myListener = listener;
@@ -177,7 +181,8 @@ public class PreviewArea {
     }
 
     outlineToComponent.clear();
-    renderWidgetOutline(rootOutline, 0);
+    widgetIndex = 0;
+    renderWidgetOutline(rootOutline);
 
     window.revalidate();
     window.repaint();
@@ -244,7 +249,7 @@ public class PreviewArea {
     }
   }
 
-  private void renderWidgetOutline(@NotNull FlutterOutline outline, int widgetDepth) {
+  private void renderWidgetOutline(@NotNull FlutterOutline outline) {
     final Integer id = outline.getId();
     if (id == null) {
       return;
@@ -271,13 +276,13 @@ public class PreviewArea {
     widget.setBounds(new Rectangle(x, y, rect.width + insets.right, rect.height + insets.bottom));
 
     final JPanel inner = new JPanel(new BorderLayout());
-    inner.setBackground(pastelColors[widgetDepth % pastelColors.length]);
+    inner.setBackground(widgetColors[widgetIndex % widgetColors.length]);
+    widgetIndex++;
     inner.setBorder(BorderFactory.createLineBorder(inner.getBackground().darker()));
     widget.add(inner, BorderLayout.CENTER);
 
     final JBLabel label = new JBLabel(outline.getClassName());
-    label.setBorder(JBUI.Borders.empty(2, 4, 0, 0));
-    label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+    label.setBorder(JBUI.Borders.empty(1, 4, 0, 0));
     final boolean widgetIsDark = ColorUtil.isDark(inner.getBackground());
     if (widgetIsDark != isDarkBackground) {
       label.setForeground(widgetIsDark ? labelDarkColor : labelLightColor);
@@ -302,7 +307,7 @@ public class PreviewArea {
 
     if (outline.getChildren() != null) {
       for (FlutterOutline child : outline.getChildren()) {
-        renderWidgetOutline(child, widgetDepth + 1);
+        renderWidgetOutline(child);
       }
     }
 
