@@ -89,27 +89,21 @@ public class RenderHelper {
    * Set the offset in the current file, and render if a new widget.
    */
   public void setOffset(int offset) {
-    final FlutterOutline widgetOutline = getContainingWidgetOutline(offset);
-    if (widgetOutline == myWidgetOutline) {
-      if (widgetOutline == null) {
-        myListener.onFailure(RenderProblemKind.NO_WIDGET);
-      }
-      return;
-    }
-
-    myWidgetOutline = widgetOutline;
-    if (myWidgetOutline != null) {
-      scheduleRendering();
-    }
-    else {
+    final FlutterOutline previousWidgetOutline = myWidgetOutline;
+    myWidgetOutline = getContainingWidgetOutline(offset);
+    if (myWidgetOutline == null) {
       myListener.onFailure(RenderProblemKind.NO_WIDGET);
+    } else if (myWidgetOutline.getRenderConstructor() == null) {
+      myListener.onFailure(RenderProblemKind.NOT_RENDERABLE_WIDGET);
+    } else if (myWidgetOutline != previousWidgetOutline) {
+      scheduleRendering();
     }
   }
 
   /**
-   * Return the outline for the widget class that is associated with the given offset, and can be rendered.
+   * Return the outline for the widget class that is associated with the given offset.
    * <p>
-   * Return null if there is not such widget class outline.
+   * Return null if there is no associated widget class outline.
    */
   private FlutterOutline getContainingWidgetOutline(int offset) {
     if (myFileOutline != null && myFileOutline.getChildren() != null) {
@@ -126,9 +120,7 @@ public class RenderHelper {
 
         if (outlineStart < offset && offset < outlineEnd ||
             stateStart < offset && offset < stateEnd) {
-          if (outline.getRenderConstructor() != null) {
-            return outline;
-          }
+          return outline;
         }
       }
     }

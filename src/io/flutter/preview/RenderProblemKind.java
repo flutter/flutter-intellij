@@ -18,9 +18,14 @@ public enum RenderProblemKind {
   NO_TEMPORARY_DIRECTORY,
 
   /**
-   * The offset does not correspond to a renderable widget.
+   * The offset does not correspond to a widget.
    */
   NO_WIDGET,
+
+  /**
+   * The offset corresponds to a widget, but it cannot be rendered.
+   */
+  NOT_RENDERABLE_WIDGET,
 
   /**
    * There was a timeout during rendering the widget.
