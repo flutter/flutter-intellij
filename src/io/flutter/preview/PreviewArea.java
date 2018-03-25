@@ -171,7 +171,10 @@ public class PreviewArea {
 
     final Element widgetClassElement = widgetOutline.getDartElement();
     if (widgetClassElement != null) {
-      setToolbarTitle(widgetClassElement.getName() + ".build():");
+      final String widgetClassName = widgetClassElement.getName();
+      final String stateClassName = widgetOutline.getStateClassName();
+      final String title = widgetClassName + (stateClassName != null ? " : " + stateClassName : "");
+      setToolbarTitle(title);
     }
     else {
       setToolbarTitle(null);
