@@ -182,7 +182,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               previewArea.clear("There was an exception during rendering");
               break;
             case NO_WIDGET:
-              previewArea.clear("The selection does not correspond to a widget");
+              previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
+              break;
+            case NOT_RENDERABLE_WIDGET:
+              previewArea.clear("The selection does not correspond to a renderable widget");
               break;
             case TIMEOUT:
               previewArea.clear("Timeout during rendering");
@@ -744,6 +747,9 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     // Set the new file, without outline.
     if (myRenderHelper != null) {
       myRenderHelper.setFile(newFile, null, null);
+      if (newFile == null && previewArea != null) {
+        previewArea.clear(PreviewArea.NOTHING_TO_SHOW);
+      }
     }
 
     // Subscribe for the outline for the new file.

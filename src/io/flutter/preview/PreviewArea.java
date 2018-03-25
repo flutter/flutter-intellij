@@ -44,6 +44,8 @@ import java.util.Map;
 
 public class PreviewArea {
   public static int BORDER_WIDTH = 0;
+  public static final String NOTHING_TO_SHOW = "Nothing to show";
+  public static final String NO_WIDGET_MESSAGE = "The selection does not correspond to a widget";
 
   private static final Color[] widgetColors = new Color[]{
     new JBColor(new Color(0xB8F1FF), new Color(0x546E7A)),
@@ -89,7 +91,7 @@ public class PreviewArea {
     window.setToolbar(windowToolbar.getComponent());
 
     primaryLayer.setLayout(new BorderLayout());
-    clear();
+    clear(NO_WIDGET_MESSAGE);
 
     // Layers must be transparent.
     handleLayer.setOpaque(false);
@@ -122,16 +124,15 @@ public class PreviewArea {
     return window;
   }
 
-  public void clear() {
-    clear("Preview is not available");
-  }
-
   public void clear(String message) {
     setToolbarTitle(" ");
 
     primaryLayer.removeAll();
-    primaryLayer.setLayout(new BorderLayout());
-    primaryLayer.add(new JLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
+
+    if (message != null) {
+      primaryLayer.setLayout(new BorderLayout());
+      primaryLayer.add(new JBLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
+    }
 
     handleLayer.removeAll();
 
@@ -165,7 +166,7 @@ public class PreviewArea {
 
     final FlutterOutline rootOutline = idToOutline.get(rootWidgetId);
     if (rootOutline == null) {
-      clear();
+      clear(NO_WIDGET_MESSAGE);
       return;
     }
 
