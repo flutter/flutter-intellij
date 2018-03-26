@@ -192,6 +192,11 @@
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
 
+    <!-- refactoring menu -->
+    <action class="io.flutter.actions.ExtractWidgetAction" id="Flutter.ExtractWidget" text="Flutter Widget...">
+      <add-to-group group-id="IntroduceActionsGroup" anchor="after" relative-to-action="ExtractMethod"/>
+    </action>
+
     <!-- help menu -->
     <action class="io.flutter.actions.FlutterGettingStartedAction" id="Flutter.FlutterHelp" text="Flutter Plugin Help">
       <add-to-group group-id="HelpMenu" anchor="after" relative-to-action="HelpTopics"/>
