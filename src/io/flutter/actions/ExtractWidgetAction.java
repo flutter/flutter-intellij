@@ -92,7 +92,7 @@ class ExtractWidgetDialog extends ServerRefactoringDialog<ExtractWidgetRefactori
     gbConstraints.weighty = 0;
     gbConstraints.fill = GridBagConstraints.NONE;
     gbConstraints.anchor = GridBagConstraints.WEST;
-    final JLabel nameLabel = new JLabel("Widget class name:");
+    final JLabel nameLabel = new JLabel("Widget name:");
     panel.add(nameLabel, gbConstraints);
 
     gbConstraints.insets = JBUI.insets(0, 4, 4, 0);

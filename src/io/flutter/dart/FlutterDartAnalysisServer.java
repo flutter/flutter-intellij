@@ -6,7 +6,6 @@
 package io.flutter.dart;
 
 import com.google.common.collect.Lists;
-import com.google.dart.server.GetRefactoringConsumer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.concurrency.JobScheduler;
@@ -16,7 +15,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterService;
-import org.dartlang.analysis.server.protocol.RefactoringOptions;
 import org.dartlang.analysis.server.protocol.SourceChange;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -96,16 +94,6 @@ public class FlutterDartAnalysisServer {
       return dartServiceEx.base.edit_getAssists(file, offset, length);
     }
     return Collections.emptyList();
-  }
-
-  public boolean edit_getRefactoring(@NotNull String kind,
-                                     VirtualFile file,
-                                     int offset,
-                                     int length,
-                                     boolean validateOnly,
-                                     @NotNull RefactoringOptions options,
-                                     @NotNull GetRefactoringConsumer consumer) {
-    return dartServiceEx != null && dartServiceEx.base.edit_getRefactoring(kind, file, offset, length, validateOnly, options, consumer);
   }
 
   /**
