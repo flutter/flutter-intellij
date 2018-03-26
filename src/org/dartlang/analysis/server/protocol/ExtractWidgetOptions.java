@@ -8,24 +8,16 @@
  */
 package org.dartlang.analysis.server.protocol;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import com.google.common.collect.Lists;
-import com.google.dart.server.utilities.general.JsonUtilities;
 import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import java.util.ArrayList;
-import java.util.Iterator;
-import org.apache.commons.lang3.StringUtils;
 
-/**
- * @coverage dart.server.generated.types
- */
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings("unused")
 public class ExtractWidgetOptions extends RefactoringOptions {
 
@@ -54,7 +46,7 @@ public class ExtractWidgetOptions extends RefactoringOptions {
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof ExtractWidgetOptions) {
-      ExtractWidgetOptions other = (ExtractWidgetOptions) obj;
+      final ExtractWidgetOptions other = (ExtractWidgetOptions) obj;
       return
         ObjectUtilities.equals(other.name, name) &&
         other.stateful == stateful;
@@ -63,8 +55,8 @@ public class ExtractWidgetOptions extends RefactoringOptions {
   }
 
   public static ExtractWidgetOptions fromJson(JsonObject jsonObject) {
-    String name = jsonObject.get("name").getAsString();
-    boolean stateful = jsonObject.get("stateful").getAsBoolean();
+    final String name = jsonObject.get("name").getAsString();
+    final boolean stateful = jsonObject.get("stateful").getAsBoolean();
     return new ExtractWidgetOptions(name, stateful);
   }
 
@@ -72,10 +64,9 @@ public class ExtractWidgetOptions extends RefactoringOptions {
     if (jsonArray == null) {
       return EMPTY_LIST;
     }
-    ArrayList<ExtractWidgetOptions> list = new ArrayList<ExtractWidgetOptions>(jsonArray.size());
-    Iterator<JsonElement> iterator = jsonArray.iterator();
-    while (iterator.hasNext()) {
-      list.add(fromJson(iterator.next().getAsJsonObject()));
+    final ArrayList<ExtractWidgetOptions> list = new ArrayList<>(jsonArray.size());
+    for (JsonElement aJsonArray : jsonArray) {
+      list.add(fromJson(aJsonArray.getAsJsonObject()));
     }
     return list;
   }
@@ -96,7 +87,7 @@ public class ExtractWidgetOptions extends RefactoringOptions {
 
   @Override
   public int hashCode() {
-    HashCodeBuilder builder = new HashCodeBuilder();
+    final HashCodeBuilder builder = new HashCodeBuilder();
     builder.append(name);
     builder.append(stateful);
     return builder.toHashCode();
@@ -117,7 +108,7 @@ public class ExtractWidgetOptions extends RefactoringOptions {
   }
 
   public JsonObject toJson() {
-    JsonObject jsonObject = new JsonObject();
+    final JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("name", name);
     jsonObject.addProperty("stateful", stateful);
     return jsonObject;
@@ -125,10 +116,11 @@ public class ExtractWidgetOptions extends RefactoringOptions {
 
   @Override
   public String toString() {
-    StringBuilder builder = new StringBuilder();
+    final StringBuilder builder = new StringBuilder();
     builder.append("[");
     builder.append("name=");
-    builder.append(name + ", ");
+    builder.append(name);
+    builder.append(", ");
     builder.append("stateful=");
     builder.append(stateful);
     builder.append("]");
