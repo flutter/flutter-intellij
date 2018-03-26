@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.actions.FlutterShowStructureSettingsAction;
 import io.flutter.actions.OpenAndroidModule;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
@@ -28,6 +29,9 @@ public class FlutterStudioStartupActivity implements StartupActivity {
 
   @Override
   public void runActivity(@NotNull Project project) {
+    if (!FlutterModuleUtils.hasFlutterModule(project)) {
+      return;
+    }
     // The IntelliJ version of this action spawns a new process for Android Studio.
     // Since we're already running Android Studio we want to simply open the project in the current process.
     replaceAction("flutter.androidstudio.open", new OpenAndroidModule());
