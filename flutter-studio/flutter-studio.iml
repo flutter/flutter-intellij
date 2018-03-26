@@ -25,6 +25,7 @@
     <orderEntry type="module" module-name="xdebugger-api" />
     <orderEntry type="module" module-name="idea-ui" />
     <orderEntry type="module" module-name="gradle" />
+    <orderEntry type="module" module-name="flags" />
     <orderEntry type="module" module-name="android-uitests" scope="TEST" />
     <orderEntry type="module" module-name="fest-swing" scope="TEST" />
     <orderEntry type="module" module-name="testFramework" scope="TEST" />
@@ -37,5 +38,6 @@
     <orderEntry type="module" module-name="project-system" />
     <orderEntry type="module" module-name="project-system-gradle" />
     <orderEntry type="module" module-name="android-ndk" />
+    <orderEntry type="module" module-name="android-common" />
   </component>
 </module>
