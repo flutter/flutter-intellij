@@ -30,6 +30,7 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
   private static final int ICON_SIZE = 16;
   private static final Icon EMPTY_ICON = JBUI.scale(EmptyIcon.create(ICON_SIZE));
 
+  @Override
   @Nullable
   public LookupElementBuilder createLookupElement(@NotNull final Project project, @NotNull final CompletionSuggestion suggestion) {
     final Icon icon = findIcon(suggestion);
