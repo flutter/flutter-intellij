@@ -12,7 +12,6 @@ import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,8 +56,7 @@ public class ExtractWidgetFeedback extends RefactoringFeedback {
 
   @Override
   public int hashCode() {
-    final HashCodeBuilder builder = new HashCodeBuilder();
-    return builder.toHashCode();
+    return 0;
   }
 
   public JsonObject toJson() {

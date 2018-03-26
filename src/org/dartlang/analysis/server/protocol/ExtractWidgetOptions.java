@@ -13,7 +13,6 @@ import com.google.dart.server.utilities.general.ObjectUtilities;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -87,10 +86,7 @@ public class ExtractWidgetOptions extends RefactoringOptions {
 
   @Override
   public int hashCode() {
-    final HashCodeBuilder builder = new HashCodeBuilder();
-    builder.append(name);
-    builder.append(stateful);
-    return builder.toHashCode();
+    return name.hashCode();
   }
 
   /**
