@@ -21,17 +21,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-// TODO(pq): handle GC events
 // TODO(pq): improve error handling
 public class HeapMonitor {
   private static final Logger LOG = Logger.getInstance(HeapMonitor.class);
 
+  private static final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+
   private static final int POLL_PERIOD_IN_MS = 1000;
 
   public interface HeapListener {
-    void handleIsolatesInfo(List<IsolateObject> isolates);
+    void handleIsolatesInfo(VM vm, List<IsolateObject> isolates);
 
     void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace);
   }
@@ -98,7 +100,7 @@ public class HeapMonitor {
       return sampleTime;
     }
 
-    final long sampleTime;
+    public final long sampleTime;
 
     public HeapSample(int bytes, boolean isGC) {
       this.bytes = bytes;
@@ -117,8 +119,8 @@ public class HeapMonitor {
     }
   }
 
-  private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
   private final List<HeapMonitor.HeapListener> heapListeners = new ArrayList<>();
+  private ScheduledFuture pollingScheduler;
 
   @NotNull
   private final VmService vmService;
@@ -135,8 +137,12 @@ public class HeapMonitor {
     heapListeners.add(listener);
   }
 
+  public boolean hasListeners() {
+    return !heapListeners.isEmpty();
+  }
+
   void start() {
-    executor.scheduleAtFixedRate(this::poll, 0, POLL_PERIOD_IN_MS, TimeUnit.MILLISECONDS);
+    pollingScheduler = executor.scheduleAtFixedRate(this::poll, 0, POLL_PERIOD_IN_MS, TimeUnit.MILLISECONDS);
   }
 
   private void poll() {
@@ -168,7 +174,7 @@ public class HeapMonitor {
 
           // Only update when we're done collecting from all isolates.
           if (isolates.size() == isolateCount) {
-            notifyListeners(isolates);
+            notifyListeners(vm, isolates);
           }
         }
 
@@ -189,19 +195,14 @@ public class HeapMonitor {
     heapListeners.forEach(listener -> listener.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace));
   }
 
-  private void notifyListeners(List<IsolateObject> isolates) {
-    heapListeners.forEach(listener -> listener.handleIsolatesInfo(isolates));
+  private void notifyListeners(VM vm, List<IsolateObject> isolates) {
+    heapListeners.forEach(listener -> listener.handleIsolatesInfo(vm, isolates));
   }
 
   void stop() {
-    try {
-      if (!executor.isShutdown()) {
-        executor.shutdown();
-      }
-    }
-    catch (SecurityException e) {
-      // TODO(pq): ignore?
-      LOG.warn(e);
+    if (pollingScheduler != null) {
+      pollingScheduler.cancel(false);
+      pollingScheduler = null;
     }
   }
 }

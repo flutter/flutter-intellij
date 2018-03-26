@@ -11,7 +11,6 @@ import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.jetbrains.annotations.NotNull;
@@ -19,30 +18,29 @@ import org.jetbrains.annotations.NotNull;
 // TODO(pq): rename
 // TODO(pq): improve error handling
 // TODO(pq): change mode for opting in (preference or inspector view menu)
+
 public class PerfService {
-
-  private final VmServiceListener vmServiceListener = new VmServiceListenerAdapter() {
-    @Override
-    public void received(String streamId, Event event) {
-      onVmServiceReceived(streamId, event);
-    }
-
-    @Override
-    public void connectionClosed() {
-      onVmConnectionClosed();
-    }
-  };
-
-  @NotNull
-  private final HeapMonitor heapMonitor;
-  @NotNull
-  private final VmService vmService;
+  @NotNull private final HeapMonitor heapMonitor;
+  @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
 
   private boolean isRunning;
 
   public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
     this.heapMonitor = new HeapMonitor(vmService, debugProcess);
-    this.vmService = vmService;
+    this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
+
+    vmService.addVmServiceListener(new VmServiceListenerAdapter() {
+      @Override
+      public void received(String streamId, Event event) {
+        onVmServiceReceived(streamId, event);
+      }
+
+      @Override
+      public void connectionClosed() {
+        onVmConnectionClosed();
+      }
+    });
+    vmService.streamListen("GC", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
   }
 
   /**
@@ -51,9 +49,6 @@ public class PerfService {
   public void start() {
     if (!isRunning) {
       // Start polling.
-      vmService.addVmServiceListener(vmServiceListener);
-      vmService.streamListen("GC", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-
       heapMonitor.start();
       isRunning = true;
     }
@@ -73,6 +68,8 @@ public class PerfService {
     if (isRunning) {
       heapMonitor.stop();
     }
+
+    isRunning = false;
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -90,11 +87,22 @@ public class PerfService {
     }
   }
 
+  @NotNull
+  public FlutterFramesMonitor getFlutterFramesMonitor() {
+    return flutterFramesMonitor;
+  }
+
   /**
    * Add a listener for heap state updates.
    */
   public void addListener(@NotNull HeapListener listener) {
+    final boolean hadListeners = heapMonitor.hasListeners();
+
     heapMonitor.addListener(listener);
+
+    if (!hadListeners) {
+      start();
+    }
   }
 
   /**
@@ -102,5 +110,9 @@ public class PerfService {
    */
   public void removeListener(@NotNull HeapListener listener) {
     heapMonitor.removeListener(listener);
+
+    if (!heapMonitor.hasListeners()) {
+      stop();
+    }
   }
 }
