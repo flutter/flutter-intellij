@@ -13,6 +13,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
@@ -335,8 +336,15 @@ class TitleAction extends AnAction implements CustomComponentAction {
 
   @Override
   public JComponent createCustomComponent(Presentation presentation) {
+    final JPanel panel = new JPanel(new BorderLayout());
+
+    // Add left border to make the title look similar to the tool window title.
+    panel.setBorder(BorderFactory.createEmptyBorder(0, JBUI.scale(3), 0, 0));
+
     final String text = getTemplatePresentation().getText();
-    return new JLabel(text);
+    panel.add(new JBLabel(text != null ? text : "", UIUtil.ComponentStyle.SMALL));
+
+    return panel;
   }
 }
 
