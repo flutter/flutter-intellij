@@ -43,7 +43,6 @@ public class ExtractWidgetAction extends DumbAwareAction {
 class ExtractWidgetDialog extends ServerRefactoringDialog<ExtractWidgetRefactoring> {
   @NotNull final ExtractWidgetRefactoring myRefactoring;
   private final JTextField myNameField = new JTextField();
-  private final JCheckBox myStatefulCheckBox = new JCheckBox("Extract StatefulWidget");
 
   public ExtractWidgetDialog(@NotNull Project project,
                              @Nullable Editor editor,
@@ -62,15 +61,11 @@ class ExtractWidgetDialog extends ServerRefactoringDialog<ExtractWidgetRefactori
       }
     });
 
-    myStatefulCheckBox.setSelected(false);
-    myStatefulCheckBox.addActionListener(e -> updateRefactoringOptions());
-
     updateRefactoringOptions();
   }
 
   private void updateRefactoringOptions() {
     myRefactoring.setName(myNameField.getText());
-    myRefactoring.setStateful(myStatefulCheckBox.isSelected());
     myRefactoring.sendOptions();
   }
 
@@ -105,16 +100,6 @@ class ExtractWidgetDialog extends ServerRefactoringDialog<ExtractWidgetRefactori
     gbConstraints.anchor = GridBagConstraints.WEST;
     panel.add(myNameField, gbConstraints);
     myNameField.setPreferredSize(new Dimension(200, myNameField.getPreferredSize().height));
-
-    gbConstraints.insets = JBUI.insetsBottom(4);
-    gbConstraints.gridx = 0;
-    gbConstraints.gridy = 1;
-    gbConstraints.gridwidth = 2;
-    gbConstraints.weightx = 1;
-    gbConstraints.weighty = 0;
-    gbConstraints.fill = GridBagConstraints.HORIZONTAL;
-    gbConstraints.anchor = GridBagConstraints.WEST;
-    panel.add(myStatefulCheckBox, gbConstraints);
 
     return panel;
   }

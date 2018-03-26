@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
  * LTK wrapper around Analysis Server 'Extract Widget' refactoring.
  */
 public class ExtractWidgetRefactoring extends ServerRefactoring {
-  private final ExtractWidgetOptions options = new ExtractWidgetOptions("NewWidget", false);
+  private final ExtractWidgetOptions options = new ExtractWidgetOptions("NewWidget");
 
   public ExtractWidgetRefactoring(@NotNull final Project project,
                                   @NotNull final VirtualFile file,
@@ -30,10 +30,6 @@ public class ExtractWidgetRefactoring extends ServerRefactoring {
   @Override
   protected RefactoringOptions getOptions() {
     return options;
-  }
-
-  public void setStateful(boolean value) {
-    options.setStateful(value);
   }
 
   @Override
