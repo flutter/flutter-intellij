@@ -46,7 +46,7 @@ import java.util.Map;
 public class PreviewArea {
   public static int BORDER_WIDTH = 0;
   public static final String NOTHING_TO_SHOW = "Nothing to show";
-  public static final String NO_WIDGET_MESSAGE = "The selection does not correspond to a widget";
+  public static final String NO_WIDGET_MESSAGE = "No widget selected";
 
   private static final Color[] widgetColors = new Color[]{
     new JBColor(new Color(0xB8F1FF), new Color(0x546E7A)),
@@ -126,7 +126,7 @@ public class PreviewArea {
   }
 
   public void clear(String message) {
-    setToolbarTitle(" ");
+    setToolbarTitle(null);
 
     primaryLayer.removeAll();
 
@@ -175,7 +175,7 @@ public class PreviewArea {
     if (widgetClassElement != null) {
       final String widgetClassName = widgetClassElement.getName();
       final String stateClassName = widgetOutline.getStateClassName();
-      final String title = widgetClassName + (stateClassName != null ? " : " + stateClassName : "");
+      final String title = widgetClassName + (stateClassName != null ? " > " + stateClassName : "");
       setToolbarTitle(title);
     }
     else {
@@ -310,9 +310,7 @@ public class PreviewArea {
 
   private void setToolbarTitle(String text) {
     toolbarGroup.removeAll();
-    if (text != null) {
-      toolbarGroup.add(new TitleAction(text));
-    }
+    toolbarGroup.add(new TitleAction(text == null ? "Preview" : ("Preview: " + text)));
     windowToolbar.updateActionsImmediately();
   }
 

@@ -179,13 +179,13 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
           switch (kind) {
             case EXCEPTION:
             case NO_TEMPORARY_DIRECTORY:
-              previewArea.clear("There was an exception during rendering");
+              previewArea.clear("Encountered an exception during rendering");
               break;
             case NO_WIDGET:
               previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
               break;
             case NOT_RENDERABLE_WIDGET:
-              previewArea.clear("The selection does not correspond to a renderable widget");
+              previewArea.clear("Selection does not correspond to a renderable widget");
               break;
             case TIMEOUT:
               previewArea.clear("Timeout during rendering");
