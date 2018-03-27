@@ -30,33 +30,24 @@ public class ExtractWidgetOptions extends RefactoringOptions {
   private String name;
 
   /**
-   * True if a StatefulWidget should be created.
-   */
-  private boolean stateful;
-
-  /**
    * Constructor for {@link ExtractWidgetOptions}.
    */
-  public ExtractWidgetOptions(String name, boolean stateful) {
+  public ExtractWidgetOptions(String name) {
     this.name = name;
-    this.stateful = stateful;
   }
 
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof ExtractWidgetOptions) {
-      final ExtractWidgetOptions other = (ExtractWidgetOptions) obj;
-      return
-        ObjectUtilities.equals(other.name, name) &&
-        other.stateful == stateful;
+      final ExtractWidgetOptions other = (ExtractWidgetOptions)obj;
+      return ObjectUtilities.equals(other.name, name);
     }
     return false;
   }
 
   public static ExtractWidgetOptions fromJson(JsonObject jsonObject) {
     final String name = jsonObject.get("name").getAsString();
-    final boolean stateful = jsonObject.get("stateful").getAsBoolean();
-    return new ExtractWidgetOptions(name, stateful);
+    return new ExtractWidgetOptions(name);
   }
 
   public static List<ExtractWidgetOptions> fromJsonArray(JsonArray jsonArray) {
@@ -77,13 +68,6 @@ public class ExtractWidgetOptions extends RefactoringOptions {
     return name;
   }
 
-  /**
-   * True if a StatefulWidget should be created.
-   */
-  public boolean stateful() {
-    return stateful;
-  }
-
   @Override
   public int hashCode() {
     return name.hashCode();
@@ -96,17 +80,9 @@ public class ExtractWidgetOptions extends RefactoringOptions {
     this.name = name;
   }
 
-  /**
-   * True if a StatefulWidget should be created.
-   */
-  public void setStateful(boolean stateful) {
-    this.stateful = stateful;
-  }
-
   public JsonObject toJson() {
     final JsonObject jsonObject = new JsonObject();
     jsonObject.addProperty("name", name);
-    jsonObject.addProperty("stateful", stateful);
     return jsonObject;
   }
 
@@ -116,11 +92,7 @@ public class ExtractWidgetOptions extends RefactoringOptions {
     builder.append("[");
     builder.append("name=");
     builder.append(name);
-    builder.append(", ");
-    builder.append("stateful=");
-    builder.append(stateful);
     builder.append("]");
     return builder.toString();
   }
-
 }
