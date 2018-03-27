@@ -37,6 +37,7 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.inspector.FPSDisplay;
 import io.flutter.inspector.HeapDisplay;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
@@ -103,7 +104,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   @Override
-  public void loadState(FlutterViewState state) {
+  public void loadState(@NotNull FlutterViewState state) {
     this.state.copyFrom(state);
   }
 
@@ -132,14 +133,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
 
-    if (!FlutterSettings.getInstance().isShowHeapDisplay()) {
+    final boolean isHorizontal = toolWindow.getAnchor().isHorizontal();
+    if (FlutterSettings.getInstance().isShowHeapDisplay() && isHorizontal) {
+      toolbarGroup.add(HeapDisplay.createToolbarAction(parentDisposable, app));
+      toolbarGroup.addSeparator();
+      toolbarGroup.add(FPSDisplay.createToolbarAction(parentDisposable, app));
+      toolbarGroup.addSeparator();
+      toolbarGroup.add(new ObservatoryActionGroup(this, app));
+    }
+    else {
       toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
       toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
     }
-    else {
-      toolbarGroup.add(new HeapDisplay.ToolbarComponentAction(parentDisposable, app));
-      toolbarGroup.add(new ObservatoryActionGroup(this, app));
-    }
+
     return toolbarGroup;
   }
 
@@ -164,8 +170,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     for (FlutterApp otherApp : perAppViewState.keySet()) {
       existingDevices.add(otherApp.device());
     }
+    final JPanel tabContainer = new JPanel(new BorderLayout());
     final Content content = contentManager.getFactory().createContent(null, app.device().getUniqueName(existingDevices), false);
-    content.setComponent(tabs.getComponent());
+    tabContainer.add(tabs.getComponent(), BorderLayout.CENTER);
+    content.setComponent(tabContainer);
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
@@ -180,6 +188,17 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                       true);
     addInspectorPanel("Render Tree", tabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow,
                       toolbarGroup, false);
+
+    final boolean isVertical = !toolWindow.getAnchor().isHorizontal();
+    if (isVertical) {
+      final JPanel dashboardsPanel = new JPanel(new BorderLayout());
+      tabContainer.add(dashboardsPanel, BorderLayout.SOUTH);
+
+      if (FlutterSettings.getInstance().isShowHeapDisplay()) {
+        dashboardsPanel.add(FPSDisplay.createJPanelView(tabs, app), BorderLayout.NORTH);
+        dashboardsPanel.add(HeapDisplay.createJPanelView(tabs, app), BorderLayout.SOUTH);
+      }
+    }
   }
 
   private void addInspectorPanel(String displayName,
@@ -748,8 +767,8 @@ class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
 
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
     final DefaultActionGroup group = new DefaultActionGroup();
-    group.add(view.registerAction(new OpenObservatoryAction(app)));
     group.add(view.registerAction(new OpenTimelineViewAction(app)));
+    group.add(view.registerAction(new OpenObservatoryAction(app)));
     return group;
   }
 }
