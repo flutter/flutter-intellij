@@ -139,11 +139,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       toolbarGroup.addSeparator();
       toolbarGroup.add(FPSDisplay.createToolbarAction(parentDisposable, app));
       toolbarGroup.addSeparator();
-      //toolbarGroup.add(new ObservatoryActionGroup(this, app));
+      toolbarGroup.add(new ObservatoryActionGroup(this, app));
     }
-
-    toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
-    toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
+    else {
+      toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
+      toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
+    }
 
     return toolbarGroup;
   }
@@ -766,8 +767,8 @@ class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
 
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
     final DefaultActionGroup group = new DefaultActionGroup();
-    group.add(view.registerAction(new OpenObservatoryAction(app)));
     group.add(view.registerAction(new OpenTimelineViewAction(app)));
+    group.add(view.registerAction(new OpenObservatoryAction(app)));
     return group;
   }
 }

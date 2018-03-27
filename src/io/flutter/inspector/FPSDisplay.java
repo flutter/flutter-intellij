@@ -93,8 +93,7 @@ public class FPSDisplay {
   }
 
   public static class ToolbarComponentAction extends AnAction implements CustomComponentAction {
-    // The width of the drawable fps area.
-    private static final int HEAP_GRAPH_WIDTH = 60;
+    private static final int DRAWABLE_HEAP_WIDTH = 60;
 
     final @NotNull Disposable parent;
     final @NotNull FlutterApp app;
@@ -127,7 +126,7 @@ public class FPSDisplay {
 
       // Graph component.
       final FPSPanel fpsPanel = new FPSPanel(flutterFramesMonitor);
-      fpsPanel.setPreferredSize(new Dimension(HEAP_GRAPH_WIDTH, -1));
+      fpsPanel.setPreferredSize(new Dimension(DRAWABLE_HEAP_WIDTH, -1));
 
       final FlutterFramesMonitor.Listener listener = event -> {
         fpsPanel.update();

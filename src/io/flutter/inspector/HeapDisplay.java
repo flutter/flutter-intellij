@@ -99,8 +99,7 @@ public class HeapDisplay extends JPanel {
   }
 
   public static class ToolbarComponentAction extends AnAction implements CustomComponentAction, HeapListener, Disposable {
-    // The width of the drawable heap area.
-    private static final int HEAP_GRAPH_WIDTH = 60;
+    private static final int DRAWABLE_HEAP_WIDTH = 60;
 
     private final List<JPanel> panels = new ArrayList<>();
     private final List<HeapDisplay> graphs = new ArrayList<>();
@@ -141,7 +140,7 @@ public class HeapDisplay extends JPanel {
         label.setText(state.getSimpleHeapSummary());
         SwingUtilities.invokeLater(label::repaint);
       });
-      graph.setPreferredSize(new Dimension(HEAP_GRAPH_WIDTH, -1));
+      graph.setPreferredSize(new Dimension(DRAWABLE_HEAP_WIDTH, -1));
       panel.add(graph, new GridBagConstraints(
         0, 0, 1, 1, 1, 1,
         GridBagConstraints.CENTER, GridBagConstraints.BOTH,
