@@ -1,3 +1,6 @@
+## 23.1
+- disabled an Android facet's ALLOW_USER_CONFIGURATION setting, to address a continuous indexing issue
+
 ## 23.0
 - outline view: removed the experimental flag
 - outline view: filter the outline view to only show widgets by default
