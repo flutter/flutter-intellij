@@ -11,9 +11,13 @@ import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.element.Event;
-import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.consumer.GetIsolateConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashSet;
+import java.util.Set;
 
 // TODO(pq): rename
 // TODO(pq): improve error handling
@@ -22,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 public class PerfService {
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
+  @NotNull private Set<String> serviceExtensions = new HashSet<>();
 
   private boolean isRunning;
 
@@ -40,7 +45,37 @@ public class PerfService {
         onVmConnectionClosed();
       }
     });
-    vmService.streamListen("GC", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
+    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    vmService.streamListen(VmService.ISOLATE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
+    // Populate the service extensions info.
+    vmService.getVM(new VMConsumer() {
+      @Override
+      public void received(VM vm) {
+        for (IsolateRef ref : vm.getIsolates()) {
+          vmService.getIsolate(ref.getId(), new GetIsolateConsumer() {
+            @Override
+            public void onError(RPCError error) {
+            }
+
+            @Override
+            public void received(Isolate isolate) {
+              serviceExtensions.addAll(isolate.getExtensionRPCs());
+            }
+
+            @Override
+            public void received(Sentinel sentinel) {
+            }
+          });
+        }
+      }
+
+      @Override
+      public void onError(RPCError error) {
+      }
+    });
   }
 
   /**
@@ -85,6 +120,9 @@ public class PerfService {
 
       heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
     }
+    else if (StringUtil.equals(streamId, VmService.ISOLATE_STREAM_ID) && event.getKind() == EventKind.ServiceExtensionAdded) {
+      serviceExtensions.add(event.getExtensionRPC());
+    }
   }
 
   @NotNull
@@ -114,5 +152,9 @@ public class PerfService {
     if (!heapMonitor.hasListeners()) {
       stop();
     }
+  }
+
+  public boolean hasServiceExtension(String name) {
+    return serviceExtensions.contains(name);
   }
 }

@@ -54,6 +54,11 @@ import java.util.List;
  * Normally creates a debugging session, which is needed for hot reload.
  */
 public class LaunchState extends CommandLineState {
+  // We use the profile launch type, contributed by the Android IntelliJ plugins
+  // in 2017.3 and Android Studio 3.0, if it's available. This allows us to support
+  // their 'profile' launch button, next to the regular run and debug ones.
+  public static final String ANDROID_PROFILER_EXECUTOR_ID = "Android Profiler";
+
   private final @NotNull VirtualFile workDir;
 
   /**
@@ -99,7 +104,6 @@ public class LaunchState extends CommandLineState {
 
     // Remember the run configuration that started this process.
     app.getProcessHandler().putUserData(FLUTTER_RUN_CONFIG_KEY, runConfig);
-    assert (app.getMode().mode().equals(getEnvironment().getExecutor().getId()));
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
@@ -131,11 +135,10 @@ public class LaunchState extends CommandLineState {
     }
 
     final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
-    if (launchMode.supportsReload()) {
+    if (launchMode.supportsDebugConnection()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
     }
     else {
-      // Not used yet. See https://github.com/flutter/flutter-intellij/issues/410
       return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
   }
@@ -163,7 +166,6 @@ public class LaunchState extends CommandLineState {
       @Override
       @NotNull
       public XDebugProcess start(@NotNull final XDebugSession session) {
-
         return new FlutterDebugProcess(app, env, session, executionResult, resolver, mapper);
       }
     });
@@ -212,6 +214,8 @@ public class LaunchState extends CommandLineState {
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
     actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
+    actions.add(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
+    actions.add(new Separator());
     actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[actions.size()]));
@@ -263,7 +267,9 @@ public class LaunchState extends CommandLineState {
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
     public final boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
-      if (!DefaultRunExecutor.EXECUTOR_ID.equals(executorId) && !DefaultDebugExecutor.EXECUTOR_ID.equals(executorId)) {
+      if (!DefaultRunExecutor.EXECUTOR_ID.equals(executorId) &&
+          !DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) &&
+          !ANDROID_PROFILER_EXECUTOR_ID.equals(executorId)) {
         return false;
       }
 

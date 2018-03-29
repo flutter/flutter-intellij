@@ -14,11 +14,11 @@ import org.jetbrains.annotations.NotNull;
  * --profile, and --release.
  */
 public enum FlutterLaunchMode {
-  DEBUG("debug", true),
+  DEBUG("debug"),
 
-  PROFILE("profile", false),
+  PROFILE("profile"),
 
-  RELEASE("release", false);
+  RELEASE("release");
 
   public static final Key<FlutterLaunchMode> LAUNCH_MODE_KEY = Key.create("FlutterLaunchMode");
 
@@ -29,22 +29,27 @@ public enum FlutterLaunchMode {
   }
 
   final private String myCliCommand;
-  final private boolean mySupportsDebugging;
 
-  FlutterLaunchMode(String cliCommand, boolean supportsDebugging) {
+  FlutterLaunchMode(String cliCommand) {
     this.myCliCommand = cliCommand;
-    this.mySupportsDebugging = supportsDebugging;
   }
 
   public String getCliCommand() {
     return myCliCommand;
   }
 
-  public boolean supportsDebugging() {
-    return mySupportsDebugging;
+  /**
+   * This mode supports a debug connection (but, doesn't necessarily support breakpoints and debugging).
+   */
+  public boolean supportsDebugConnection() {
+    return this == DEBUG || this == PROFILE;
   }
 
   public boolean supportsReload() {
-    return supportsDebugging();
+    return this == DEBUG;
+  }
+
+  public boolean isProfiling() {
+    return this == PROFILE;
   }
 }

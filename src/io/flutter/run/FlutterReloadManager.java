@@ -279,7 +279,7 @@ public class FlutterReloadManager {
   }
 
   private Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
-    final String toolWindowId = app.getMode() == RunMode.RUN ? ToolWindowId.RUN : ToolWindowId.DEBUG;
+    final String toolWindowId = app.getMode() == RunMode.DEBUG ? ToolWindowId.DEBUG : ToolWindowId.RUN;
     final NotificationGroup notificationGroup = getNotificationGroup(toolWindowId);
     final Notification notification;
     if (title == null) {

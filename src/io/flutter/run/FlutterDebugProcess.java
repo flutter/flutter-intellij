@@ -112,6 +112,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
     topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
+    topToolbar.addAction(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
+    topToolbar.addSeparator();
     topToolbar.addAction(new OpenFlutterViewAction(isSessionActive));
 
     // Don't call super since we have our own observatory action.

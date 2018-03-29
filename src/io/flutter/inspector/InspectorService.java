@@ -100,7 +100,7 @@ public class InspectorService implements Disposable {
       }
     });
 
-    vmService.streamListen("Extension", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
   }
 
   public FlutterDebugProcess getDebugProcess() {
@@ -226,11 +226,11 @@ public class InspectorService implements Disposable {
 
   /**
    * Call a service method passing in an observatory instance reference.
-   *
+   * <p>
    * This call is useful when receiving an "inspect" event from the
    * observatory and future use cases such as inspecting a Widget from the
    * IntelliJ watch window.
-   *
+   * <p>
    * This method will always need to use the observatory service as the input
    * parameter is an Observatory InstanceRef..
    */
@@ -527,7 +527,6 @@ public class InspectorService implements Disposable {
 
   @Override
   public void dispose() {
-    vmService.streamCancel("Extension", VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     // TODO(jacobr): dispose everything that needs to be disposed of.
   }
 

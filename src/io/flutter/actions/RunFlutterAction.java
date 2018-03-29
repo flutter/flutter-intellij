@@ -27,7 +27,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 public abstract class RunFlutterAction extends AnAction {
-
   private final @NotNull String myDetailedTextKey;
   private final @NotNull FlutterLaunchMode myLaunchMode;
   private final @NotNull String myExecutorId;
@@ -123,9 +122,12 @@ public abstract class RunFlutterAction extends AnAction {
   }
 
   @Nullable
-  private static RunnerAndConfigurationSettings getRunConfigSettings(@Nullable AnActionEvent e) {
-    if (e == null) return null;
-    final Project project = e.getProject();
+  private static RunnerAndConfigurationSettings getRunConfigSettings(@Nullable AnActionEvent event) {
+    if (event == null) {
+      return null;
+    }
+
+    final Project project = event.getProject();
     if (project == null) {
       return null;
     }

@@ -262,7 +262,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     remoteDebug = false;
 
     final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(executionEnvironment);
-    if (launchMode.supportsDebugging()) {
+    if (launchMode.supportsDebugConnection()) {
       myVmServiceWrapper.handleDebuggerConnected();
     }
 

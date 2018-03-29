@@ -27,7 +27,10 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
@@ -162,17 +165,17 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
-  private void addInspector(FlutterApp app, InspectorService inspectorService, ToolWindow toolWindow) {
+  private void addInspector(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
-    final JBRunnerTabs tabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
+    final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
     final List<FlutterDevice> existingDevices = new ArrayList<>();
     for (FlutterApp otherApp : perAppViewState.keySet()) {
       existingDevices.add(otherApp.device());
     }
     final JPanel tabContainer = new JPanel(new BorderLayout());
     final Content content = contentManager.getFactory().createContent(null, app.device().getUniqueName(existingDevices), false);
-    tabContainer.add(tabs.getComponent(), BorderLayout.CENTER);
+    tabContainer.add(runnerTabs.getComponent(), BorderLayout.CENTER);
     content.setComponent(tabContainer);
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
@@ -181,13 +184,30 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     assert (state.content == null);
     state.content = content;
 
-    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, tabs);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
-    addInspectorPanel("Widgets", tabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow, toolbarGroup,
-                      true);
-    addInspectorPanel("Render Tree", tabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow,
-                      toolbarGroup, false);
+    // If the inspector is available (non-profile mode), then show it.
+    if (inspectorService != null) {
+      addInspectorPanel("Widgets", runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
+                        toolbarGroup,
+                        true);
+      addInspectorPanel("Render Tree", runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow,
+                        toolbarGroup, false);
+    }
+    else {
+      toolbarGroup.add(new OverflowAction(this, app));
+
+      final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("InspectorToolbar", toolbarGroup, true);
+      final JComponent toolbarComponent = toolbar.getComponent();
+      toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
+      tabContainer.add(toolbarComponent, BorderLayout.NORTH);
+
+      // Add a message about the inspector not being available in profile mode.
+      final JBLabel label = new JBLabel("Widget info not available in profile mode", SwingConstants.CENTER);
+      label.setForeground(UIUtil.getLabelDisabledForeground());
+      tabContainer.add(label, BorderLayout.CENTER);
+    }
 
     final boolean isVertical = !toolWindow.getAnchor().isHorizontal();
     if (isVertical) {
@@ -195,8 +215,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       tabContainer.add(dashboardsPanel, BorderLayout.SOUTH);
 
       if (FlutterSettings.getInstance().isShowHeapDisplay()) {
-        dashboardsPanel.add(FPSDisplay.createJPanelView(tabs, app), BorderLayout.NORTH);
-        dashboardsPanel.add(HeapDisplay.createJPanelView(tabs, app), BorderLayout.SOUTH);
+        dashboardsPanel.add(FPSDisplay.createJPanelView(runnerTabs, app), BorderLayout.NORTH);
+        dashboardsPanel.add(HeapDisplay.createJPanelView(runnerTabs, app), BorderLayout.SOUTH);
       }
     }
   }
@@ -228,17 +248,25 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     final FlutterApp app = event.app;
 
-    whenCompleteUiThread(InspectorService.create(app.getFlutterDebugProcess(), app.getVmService()),
-                         (InspectorService inspectorService, Throwable throwable) -> {
-                           if (throwable != null) {
-                             LOG.warn(throwable);
-                             return;
-                           }
-                           debugActiveHelper(app, inspectorService);
-                         });
+    if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        debugActiveHelper(app, null);
+      });
+    }
+    else {
+      whenCompleteUiThread(
+        InspectorService.create(app.getFlutterDebugProcess(), app.getVmService()),
+        (InspectorService inspectorService, Throwable throwable) -> {
+          if (throwable != null) {
+            LOG.warn(throwable);
+            return;
+          }
+          debugActiveHelper(app, inspectorService);
+        });
+    }
   }
 
-  private void debugActiveHelper(@NotNull FlutterApp app, @NotNull InspectorService inspectorService) {
+  private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       autoActivateToolWindow();
     }
@@ -269,7 +297,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
       @Override
       public void received(String streamId, Event event) {
-        // Note: we depend here on the streamListen("Extension") call in InspectorService.
         if (StringUtil.equals(streamId, VmService.EXTENSION_STREAM_ID)) {
           if (StringUtil.equals("Flutter.Frame", event.getExtensionKind())) {
             handleFlutterFrame(app);
@@ -440,6 +467,8 @@ class DebugDrawAction extends FlutterViewToggleableAction {
   DebugDrawAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
           AllIcons.General.TbShown);
+
+    setExtensionCommand("ext.flutter.debugPaint");
   }
 
   protected void perform(AnActionEvent event) {
@@ -462,6 +491,8 @@ class DebugDrawAction extends FlutterViewToggleableAction {
 class PerformanceOverlayAction extends FlutterViewToggleableAction {
   PerformanceOverlayAction(@NotNull FlutterApp app) {
     super(app, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
+
+    setExtensionCommand("ext.flutter.showPerformanceOverlay");
   }
 
   protected void perform(@Nullable AnActionEvent event) {
@@ -524,6 +555,11 @@ class TogglePlatformAction extends FlutterViewAction {
   }
 
   @Override
+  public void update(@NotNull AnActionEvent e) {
+    e.getPresentation().setEnabled(app.isSessionActive() && app.hasServiceExtension("ext.flutter.platformOverride"));
+  }
+
+  @Override
   public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       app.togglePlatform().thenAccept(isAndroid -> {
@@ -555,6 +591,8 @@ class TogglePlatformAction extends FlutterViewAction {
 class RepaintRainbowAction extends FlutterViewToggleableAction {
   RepaintRainbowAction(@NotNull FlutterApp app) {
     super(app, "Enable Repaint Rainbow");
+
+    setExtensionCommand("ext.flutter.repaintRainbow");
   }
 
   protected void perform(@Nullable AnActionEvent event) {
@@ -577,6 +615,8 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
 class TimeDilationAction extends FlutterViewToggleableAction {
   TimeDilationAction(@NotNull FlutterApp app) {
     super(app, "Enable Slow Animations");
+
+    setExtensionCommand("ext.flutter.timeDilation");
   }
 
   protected void perform(@Nullable AnActionEvent event) {
@@ -597,6 +637,8 @@ class TimeDilationAction extends FlutterViewToggleableAction {
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
     super(app, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
+
+    setExtensionCommand("ext.flutter.debugWidgetInspector");
   }
 
   protected void perform(AnActionEvent event) {
@@ -624,6 +666,8 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
 class HideSlowBannerAction extends FlutterViewToggleableAction {
   HideSlowBannerAction(@NotNull FlutterApp app) {
     super(app, "Hide Debug Mode Banner");
+
+    setExtensionCommand("ext.flutter.debugAllowBanner");
   }
 
   @Override
@@ -647,6 +691,8 @@ class HideSlowBannerAction extends FlutterViewToggleableAction {
 class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   ShowPaintBaselinesAction(@NotNull FlutterApp app) {
     super(app, "Show Paint Baselines");
+
+    setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
   }
 
   @Override
@@ -667,7 +713,7 @@ class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   }
 }
 
-class OverflowAction extends AnAction {
+class OverflowAction extends AnAction implements RightAlignedToolbarAction {
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
@@ -699,14 +745,17 @@ class OverflowAction extends AnAction {
   @Override
   public void actionPerformed(AnActionEvent e) {
     final Presentation presentation = e.getPresentation();
-    final JComponent button = (JComponent)presentation.getClientProperty("button");
-    if (button == null) {
+    JComponent component = (JComponent)presentation.getClientProperty("button");
+    if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
+      component = (JComponent)e.getInputEvent().getSource();
+    }
+    if (component == null) {
       return;
     }
     final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
       ActionPlaces.UNKNOWN,
       myActionGroup);
-    popupMenu.getComponent().show(button, button.getWidth(), 0);
+    popupMenu.getComponent().show(component, component.getWidth(), 0);
   }
 
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {

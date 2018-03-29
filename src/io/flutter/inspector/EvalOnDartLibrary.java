@@ -214,7 +214,6 @@ public class EvalOnDartLibrary implements Disposable {
 
   private void initialize() {
     vmService.getIsolate(isolateId, new GetIsolateConsumer() {
-
       @Override
       public void received(Isolate response) {
         for (LibraryRef library : response.getLibraries()) {
