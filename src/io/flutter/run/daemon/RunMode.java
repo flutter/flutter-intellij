@@ -9,6 +9,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
 import com.intellij.execution.runners.ExecutionEnvironment;
+import io.flutter.run.LaunchState;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 
@@ -17,19 +18,32 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum RunMode {
   @NonNls
-  DEBUG(DefaultDebugExecutor.EXECUTOR_ID),
+  DEBUG(DefaultDebugExecutor.EXECUTOR_ID, true),
 
   @NonNls
-  RUN(DefaultRunExecutor.EXECUTOR_ID);
+  RUN(DefaultRunExecutor.EXECUTOR_ID, true),
+
+  @NonNls
+  PROFILE("PROFILE", false);
 
   private final String myModeString;
+  private final boolean mySupportsReload;
 
-  RunMode(String modeString) {
+  RunMode(String modeString, boolean supportsReload) {
     myModeString = modeString;
+    mySupportsReload = supportsReload;
   }
 
   public String mode() {
     return myModeString;
+  }
+
+  public boolean supportsReload() {
+    return mySupportsReload;
+  }
+
+  public boolean isProfiling() {
+    return this == PROFILE;
   }
 
   @NotNull
@@ -40,6 +54,9 @@ public enum RunMode {
     }
     else if (DefaultDebugExecutor.EXECUTOR_ID.equals(mode)) {
       return DEBUG;
+    }
+    else if (LaunchState.ANDROID_PROFILER_EXECUTOR_ID.equals(mode)) {
+      return PROFILE;
     }
     else {
       throw new ExecutionException("unsupported run mode: " + mode);

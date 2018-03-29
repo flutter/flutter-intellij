@@ -17,6 +17,7 @@ import javax.swing.*;
 
 abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable {
   private boolean selected = false;
+  private String extensionCommand;
 
   FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
     super(app, text);
@@ -26,9 +27,16 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     super(app, text, description, icon);
   }
 
+  protected void setExtensionCommand(String extensionCommand) {
+    this.extensionCommand = extensionCommand;
+  }
+
   @Override
   public final void update(@NotNull AnActionEvent e) {
-    final boolean hasFlutterApp = app.isSessionActive();
+    boolean enabled = app.isSessionActive();
+    if (enabled && extensionCommand != null) {
+      enabled = app.hasServiceExtension(extensionCommand);
+    }
 
     // selected
     final boolean selected = this.isSelected();
@@ -36,7 +44,7 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     presentation.putClientProperty("selected", selected);
 
     // enabled
-    e.getPresentation().setEnabled(hasFlutterApp);
+    e.getPresentation().setEnabled(enabled);
   }
 
   @Override

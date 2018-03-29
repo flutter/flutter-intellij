@@ -66,7 +66,8 @@ abstract public class FlutterAppAction extends DumbAwareAction {
     updateActionRegistration(myApp.isConnected());
 
     final boolean isConnected = myIsApplicable.compute();
-    e.getPresentation().setEnabled(myApp.isStarted() && isConnected);
+    final boolean supportsReload = myApp.getMode().supportsReload();
+    e.getPresentation().setEnabled(myApp.isStarted() && isConnected && supportsReload);
 
     if (isConnected) {
       if (!myIsListening) {

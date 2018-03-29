@@ -17,7 +17,6 @@ public class RunProfileFlutterApp extends RunFlutterAction {
   private static final String TEXT_DETAIL_MSG_KEY = "app.profile.config.action.text";
 
   public RunProfileFlutterApp() {
-    super(TEXT, TEXT_DETAIL_MSG_KEY, DESCRIPTION, AllIcons.Actions.Execute, FlutterLaunchMode.PROFILE, ToolWindowId.RUN
-    );
+    super(TEXT, TEXT_DETAIL_MSG_KEY, DESCRIPTION, AllIcons.Actions.Execute, FlutterLaunchMode.PROFILE, ToolWindowId.RUN);
   }
 }

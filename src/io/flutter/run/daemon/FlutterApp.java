@@ -354,6 +354,10 @@ public class FlutterApp {
     });
   }
 
+  public boolean hasServiceExtension(String name) {
+    return getPerfService().hasServiceExtension(name);
+  }
+
   public void setConsole(@Nullable ConsoleView console) {
     myConsole = console;
   }

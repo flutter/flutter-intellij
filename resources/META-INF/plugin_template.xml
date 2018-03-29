@@ -134,7 +134,7 @@
       </action>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Flutter Run Profile Mode"
-              icon="AllIcons.Actions.Profile">
+              icon="AllIcons.Actions.Execute">
       </action>
       <action id="Flutter.Menu.RunReleaseAction" class="io.flutter.actions.RunReleaseFlutterApp"
               description="Flutter Run Release Mode"
