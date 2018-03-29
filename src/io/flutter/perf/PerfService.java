@@ -7,6 +7,7 @@ package io.flutter.perf;
 
 import com.intellij.openapi.util.text.StringUtil;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
+import gnu.trove.THashSet;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -16,7 +17,6 @@ import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
 import java.util.Set;
 
 // TODO(pq): rename
@@ -26,7 +26,7 @@ import java.util.Set;
 public class PerfService {
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
-  @NotNull private Set<String> serviceExtensions = new HashSet<>();
+  @NotNull private final Set<String> serviceExtensions = new THashSet<>();
 
   private boolean isRunning;
 
