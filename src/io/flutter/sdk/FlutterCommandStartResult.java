@@ -8,8 +8,7 @@ package io.flutter.sdk;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.process.OSProcessHandler;
 import org.jetbrains.annotations.NotNull;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterCommandStartResult {
   @NotNull
