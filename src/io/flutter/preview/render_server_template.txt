@@ -70,10 +70,11 @@ void renderOnce() {
 class ElementInfo {
   final ElementInfo parent;
   final int id;
+  final int depth;
   final ui.Rect globalBounds;
   final List<ElementInfo> children = <ElementInfo>[];
 
-  ElementInfo(this.parent, this.id, this.globalBounds) {
+  ElementInfo(this.parent, this.id, this.depth, this.globalBounds) {
     parent?.children?.add(this);
   }
 
@@ -83,6 +84,7 @@ class ElementInfo {
     int right = globalBounds.right.truncate();
     int bottom = globalBounds.bottom.truncate();
     json['$id'] = {
+      'depth': depth,
       'globalBounds': {
         'left': left,
         'top': top,
@@ -126,10 +128,12 @@ class ElementInfo {
       if (info == null) {
         Element ancestor = getInterestingAncestor(element);
         ElementInfo ancestorInfo = createInfoForElement(ancestor);
-        ui.Rect globalBounds = getGlobalBounds(element);
+        RenderObject renderObject = element.renderObject;
+        int depth = renderObject.depth;
+        ui.Rect globalBounds = getGlobalBounds(renderObject);
         // TODO(scheglov) Think about offstage elements.
         // https://github.com/flutter/flutter-intellij/pull/1882#discussion_r172446305
-        info = new ElementInfo(ancestorInfo, id, globalBounds);
+        info = new ElementInfo(ancestorInfo, id, depth, globalBounds);
         elementToInfoMap[element] = info;
       }
       return info;
@@ -146,8 +150,7 @@ class ElementInfo {
     return null;
   }
 
-  static ui.Rect getGlobalBounds(Element element) {
-    RenderObject renderObject = element.renderObject;
+  static ui.Rect getGlobalBounds(RenderObject renderObject) {
     ui.Rect semanticBounds = renderObject.semanticBounds;
     Matrix4 globalTransform = renderObject.getTransformTo(null);
     return MatrixUtils.transformRect(globalTransform, semanticBounds);

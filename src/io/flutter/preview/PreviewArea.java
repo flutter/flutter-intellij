@@ -75,8 +75,8 @@ public class PreviewArea {
   private final Map<Integer, FlutterOutline> idToOutline = new HashMap<>();
 
   private int rootWidgetId;
-  private Rectangle rootWidgetBounds;
-  private final Map<Integer, Rectangle> idToGlobalBounds = new HashMap<>();
+  private RenderObject rootRenderObject;
+  private final Map<Integer, RenderObject> idToRenderObject = new HashMap<>();
 
   private final Map<FlutterOutline, JComponent> outlineToComponent = new HashMap<>();
   private final List<SelectionEditPolicy> selectionComponents = new ArrayList<>();
@@ -160,7 +160,7 @@ public class PreviewArea {
     idToOutline.clear();
     fillIdToOutline(unitOutline);
 
-    fillIdToGlobalBounds(renderObject);
+    fillIdToRenderObject(renderObject);
 
     primaryLayer.removeAll();
     primaryLayer.setLayout(null);
@@ -223,14 +223,16 @@ public class PreviewArea {
     }
   }
 
-  private void fillIdToGlobalBounds(@NotNull JsonObject renderObject) {
-    rootWidgetBounds = null;
-    idToGlobalBounds.clear();
-    for (Map.Entry<String, JsonElement> entry : renderObject.entrySet()) {
+  private void fillIdToRenderObject(@NotNull JsonObject renderJson) {
+    rootRenderObject = null;
+    idToRenderObject.clear();
+    for (Map.Entry<String, JsonElement> entry : renderJson.entrySet()) {
       try {
         final int id = Integer.parseInt(entry.getKey());
 
         final JsonObject widgetObject = (JsonObject)entry.getValue();
+
+        final int depth = widgetObject.getAsJsonPrimitive("depth").getAsInt();
 
         final JsonObject boundsObject = widgetObject.getAsJsonObject("globalBounds");
         final int left = boundsObject.getAsJsonPrimitive("left").getAsInt();
@@ -239,12 +241,14 @@ public class PreviewArea {
         final int height = boundsObject.getAsJsonPrimitive("height").getAsInt();
         final Rectangle rect = new Rectangle(left, top, width, height);
 
-        if (rootWidgetBounds == null) {
+        final RenderObject renderObject = new RenderObject(depth, rect);
+
+        if (rootRenderObject == null) {
           rootWidgetId = id;
-          rootWidgetBounds = rect;
+          rootRenderObject = renderObject;
         }
 
-        idToGlobalBounds.put(id, rect);
+        idToRenderObject.put(id, renderObject);
       }
       catch (Throwable ignored) {
       }
@@ -257,13 +261,14 @@ public class PreviewArea {
       return;
     }
 
-    final Rectangle rect = idToGlobalBounds.get(id);
-    if (rect == null) {
+    final RenderObject renderObject = idToRenderObject.get(id);
+    if (renderObject == null) {
       return;
     }
 
-    final int x = BORDER_WIDTH + rect.x - rootWidgetBounds.x;
-    final int y = BORDER_WIDTH + rect.y - rootWidgetBounds.y;
+    final Rectangle rect = renderObject.globalBounds;
+    final int x = BORDER_WIDTH + rect.x - rootRenderObject.globalBounds.x;
+    final int y = BORDER_WIDTH + rect.y - rootRenderObject.globalBounds.y;
 
     final JPanel widget = new JPanel(new BorderLayout());
     final DropShadowBorder shadowBorder = new DropShadowBorder();
@@ -299,8 +304,21 @@ public class PreviewArea {
       }
     });
 
-    if (outline.getChildren() != null) {
-      for (FlutterOutline child : outline.getChildren()) {
+    final List<FlutterOutline> children = outline.getChildren();
+    if (children != null) {
+      // Sort children by depth, so that the children with greatest depth are first.
+      // In Swing siblings added first are rendered on top of siblings added later.
+      final ArrayList<FlutterOutline> sortedChildren = new ArrayList<>(children);
+      sortedChildren.sort((a, b) -> {
+        final RenderObject aObject = idToRenderObject.get(a.getId());
+        final RenderObject bObject = idToRenderObject.get(b.getId());
+        if (aObject == bObject) return 0;
+        if (aObject == null) return 1;
+        if (bObject == null) return -1;
+        return bObject.depth - aObject.depth;
+      });
+
+      for (FlutterOutline child : sortedChildren) {
         renderWidgetOutline(child);
       }
     }
@@ -320,6 +338,16 @@ public class PreviewArea {
     void doubleClicked(FlutterOutline outline);
 
     void resized(int width, int height);
+  }
+}
+
+class RenderObject {
+  final int depth;
+  final Rectangle globalBounds;
+
+  RenderObject(int depth, Rectangle globalBounds) {
+    this.depth = depth;
+    this.globalBounds = globalBounds;
   }
 }
 
