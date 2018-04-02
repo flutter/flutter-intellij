@@ -25,12 +25,12 @@ import com.intellij.openapi.util.Key;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
-import io.flutter.inspector.InspectorService;
 import io.flutter.perf.PerfService;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
+import io.flutter.run.FlutterReloadCoverageManager;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +53,7 @@ public class FlutterApp {
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
+  private @Nullable FlutterReloadCoverageManager myFlutterReloadCoverageManager;
 
   private @Nullable String myAppId;
   private @Nullable String myWsUrl;
@@ -74,7 +75,7 @@ public class FlutterApp {
 
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
-  private VmService myVmService;
+  private @Nullable VmService myVmService;
   private PerfService myPerfService;
 
   FlutterApp(@NotNull Project project,
@@ -226,7 +227,7 @@ public class FlutterApp {
   }
 
   public boolean isReloading() {
-    return myState.get() == State.RELOADING;
+    return myState.get() == State.RELOADING || myState.get() == State.RESTARTING;
   }
 
   public boolean isConnected() {
@@ -260,7 +261,7 @@ public class FlutterApp {
     restartCount++;
 
     final long reloadTimestamp = System.currentTimeMillis();
-    changeState(State.RELOADING);
+    changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
       myDaemonApi.restartApp(myAppId, true, false);
@@ -355,7 +356,7 @@ public class FlutterApp {
   }
 
   public boolean hasServiceExtension(String name) {
-    return getPerfService().hasServiceExtension(name);
+    return getPerfService() != null && getPerfService().hasServiceExtension(name);
   }
 
   public void setConsole(@Nullable ConsoleView console) {
@@ -470,10 +471,15 @@ public class FlutterApp {
     return myFlutterDebugProcess;
   }
 
-  public void setVmService(VmService vmService) {
+  public void setVmService(@NotNull VmService vmService) {
     myVmService = vmService;
+
+    if (getMode().supportsReload()) {
+      myFlutterReloadCoverageManager = new FlutterReloadCoverageManager(this);
+    }
   }
 
+  @Nullable
   public VmService getVmService() {
     return myVmService;
   }
@@ -513,5 +519,5 @@ public class FlutterApp {
     }
   }
 
-  public enum State {STARTING, STARTED, RELOADING, TERMINATING, TERMINATED}
+  public enum State {STARTING, STARTED, RELOADING, RESTARTING, TERMINATING, TERMINATED}
 }
