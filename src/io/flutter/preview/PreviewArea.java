@@ -306,7 +306,7 @@ public class PreviewArea {
 
     final List<FlutterOutline> children = outline.getChildren();
     if (children != null) {
-      // Sort children by depth, so that the children with greatest depath are first.
+      // Sort children by depth, so that the children with greatest depth are first.
       // In Swing siblings added first are rendered on top of siblings added later.
       final ArrayList<FlutterOutline> sortedChildren = new ArrayList<>(children);
       sortedChildren.sort((a, b) -> {
