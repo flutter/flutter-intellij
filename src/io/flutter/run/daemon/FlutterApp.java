@@ -17,6 +17,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.history.LocalHistory;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -63,6 +64,7 @@ public class FlutterApp {
   private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
+  private int userReloadCount;
   private int restartCount;
 
   /**
@@ -259,6 +261,9 @@ public class FlutterApp {
     }
 
     restartCount++;
+    userReloadCount = 0;
+
+    LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter full restart");
 
     final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RESTARTING);
@@ -296,6 +301,9 @@ public class FlutterApp {
     }
 
     reloadCount++;
+    userReloadCount++;
+
+    LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
     final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
