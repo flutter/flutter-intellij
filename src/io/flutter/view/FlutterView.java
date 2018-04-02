@@ -307,6 +307,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       @Override
       public void connectionClosed() {
         ApplicationManager.getApplication().invokeLater(() -> {
+          if (toolWindow.isDisposed()) return;
           final ContentManager contentManager = toolWindow.getContentManager();
           onAppChanged(app);
           final PerAppState state = perAppViewState.remove(app);
