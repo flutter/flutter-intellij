@@ -29,6 +29,7 @@ import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.popup.Balloon;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -44,6 +45,7 @@ import com.intellij.psi.search.SearchScope;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.LightweightHint;
 import com.intellij.util.ReflectionUtil;
+import com.intellij.util.ui.UIUtil;
 import com.jetbrains.lang.dart.DartPluginCapabilities;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.analyzer.DartServerData;
@@ -99,6 +101,8 @@ public class FlutterReloadManager {
 
   private final @NotNull Project myProject;
   private final FlutterSettings mySettings;
+
+  private Notification lastNotification;
 
   /**
    * Initialize the reload manager for the given project.
@@ -196,6 +200,8 @@ public class FlutterReloadManager {
     handlingSave.set(true);
 
     JobScheduler.getScheduler().schedule(() -> {
+      clearLastNotification();
+
       if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
         handlingSave.set(false);
 
@@ -203,15 +209,31 @@ public class FlutterReloadManager {
       }
       else {
         final Notification notification = showRunNotification(app, null, "Reloading…", false);
+        final long startTime = System.currentTimeMillis();
 
         app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
-          notification.expire();
-
           if (!result.ok()) {
+            notification.expire();
             showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
           }
           else if (result.isRestartRecommended()) {
+            notification.expire();
             showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
+          }
+          else {
+            // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
+            final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
+
+            JobScheduler.getScheduler().schedule(() -> {
+              UIUtil.invokeLaterIfNeeded(() -> {
+                notification.expire();
+
+                // If the 'Reloading…' notification is still the most recent one, then clear it.
+                if (isLastNotification(notification)) {
+                  removeRunNotifications(app);
+                }
+              });
+            }, delay, TimeUnit.MILLISECONDS);
           }
         }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
       }
@@ -241,6 +263,7 @@ public class FlutterReloadManager {
           showRunNotification(app, "Full Restart", result.getMessage(), true);
         }
       });
+
       final FlutterDevice device = DeviceService.getInstance(myProject).getSelectedDevice();
       if (device != null) {
         device.bringToFront();
@@ -276,6 +299,8 @@ public class FlutterReloadManager {
         });
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
+
+    lastNotification = notification;
   }
 
   private Notification showRunNotification(@NotNull FlutterApp app, @Nullable String title, @NotNull String content, boolean isError) {
@@ -291,7 +316,26 @@ public class FlutterReloadManager {
     }
     notification.setIcon(FlutterIcons.Flutter);
     notification.notify(myProject);
+
+    lastNotification = notification;
+
     return notification;
+  }
+
+  private boolean isLastNotification(final Notification notification) {
+    return notification == lastNotification;
+  }
+
+  private void clearLastNotification() {
+    lastNotification = null;
+  }
+
+  private void removeRunNotifications(FlutterApp app) {
+    final String toolWindowId = app.getMode() == RunMode.DEBUG ? ToolWindowId.DEBUG : ToolWindowId.RUN;
+    final Balloon balloon = ToolWindowManager.getInstance(myProject).getToolWindowBalloon(toolWindowId);
+    if (balloon != null) {
+      balloon.hide();
+    }
   }
 
   private FlutterApp getApp() {
