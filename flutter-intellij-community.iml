@@ -11,9 +11,11 @@
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />
     </content>
@@ -40,5 +42,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="snakeyaml" level="project" />
+    <orderEntry type="library" name="Dart SDK" level="project" />
+    <orderEntry type="library" name="Dart Packages" level="project" />
   </component>
 </module>

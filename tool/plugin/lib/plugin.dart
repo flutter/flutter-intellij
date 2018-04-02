@@ -287,6 +287,7 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
             : 'com.android.tools.apk';
       case 'PROJECTSYSTEM':
         // Temporary work-around for 3.0 vs 3.1 AS incompatibility.
+        // TODO(messick) Delete this when we are SURE we do not need to build version < 3.1
         return spec.version == '3.1'
             ? '<projectsystem implementation="io.flutter.project.FlutterProjectSystemProvider"/>'
             : '';
