@@ -25,7 +25,7 @@ import java.util.WeakHashMap;
 /**
  * Wrapper around the standard {@link DartAnalysisServerService} that adds ability to send arbitrary JSON requests and listen for all JSON
  * responses.
- *
+ * <p>
  * TODO(scheglov) Remove this class when we get listening for arbitrary responses in <code>DartAnalysisServerService</code>.
  */
 public class DartAnalysisServerServiceEx {

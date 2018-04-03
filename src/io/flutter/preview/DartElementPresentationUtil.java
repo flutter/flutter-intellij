@@ -45,9 +45,8 @@ public class DartElementPresentationUtil {
         return element.isAbstract() ? AbstractClass : Class;
       case ElementKind.CONSTRUCTOR:
         return Method;
-      // TODO(scheglov) Enable once minimal version is 2017.3
-      //case ElementKind.CONSTRUCTOR_INVOCATION:
-      //  return CONSTRUCTOR_INVOCATION_ICON;
+      case ElementKind.CONSTRUCTOR_INVOCATION:
+        return CONSTRUCTOR_INVOCATION_ICON;
       case ElementKind.ENUM:
         return Enum;
       case ElementKind.ENUM_CONSTANT:
@@ -59,9 +58,8 @@ public class DartElementPresentationUtil {
         return Field;
       case ElementKind.FUNCTION:
         return element.isTopLevelOrStatic() ? TOP_LEVEL_FUNCTION_ICON : Function;
-      // TODO(scheglov) Enable once minimal version is 2017.3
-      //case ElementKind.FUNCTION_INVOCATION:
-      //  return FUNCTION_INVOCATION_ICON;
+      case ElementKind.FUNCTION_INVOCATION:
+        return FUNCTION_INVOCATION_ICON;
       case ElementKind.FUNCTION_TYPE_ALIAS:
         return DartComponentType.TYPEDEF.getIcon();
       case ElementKind.GETTER:
