@@ -27,10 +27,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterBundle;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterCommandStartResult;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -91,7 +93,19 @@ class TestLaunchState extends CommandLineState {
   @Override
   protected ProcessHandler startProcess() throws ExecutionException {
     final RunMode mode = RunMode.fromEnv(getEnvironment());
-    return fields.run(getEnvironment().getProject(), mode);
+    final FlutterCommandStartResult result = fields.run(getEnvironment().getProject(), mode);
+    switch (result.status) {
+      case OK:
+        assert result.processHandler != null;
+        return result.processHandler;
+      case ANOTHER_RUNNING:
+        throw new ExecutionException("Flutter instance already running");
+      case EXCEPTION:
+        assert result.exception != null;
+        throw new ExecutionException(FlutterBundle.message("flutter.command.exception.message" + result.exception.getMessage()));
+      default:
+        throw new ExecutionException("Unexpected state");
+    }
   }
 
   @Nullable

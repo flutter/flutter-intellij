@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterCommandStartResult;
 import io.flutter.sdk.FlutterSdk;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -211,7 +212,8 @@ public class TestFields {
   /**
    * Starts running the tests.
    */
-  ProcessHandler run(@NotNull Project project, @NotNull RunMode mode) throws ExecutionException {
+  @NotNull
+  FlutterCommandStartResult run(@NotNull Project project, @NotNull RunMode mode) throws ExecutionException {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       throw new ExecutionException("The Flutter SDK is not configured");
