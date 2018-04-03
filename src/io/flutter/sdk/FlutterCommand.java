@@ -200,7 +200,7 @@ public class FlutterCommand {
   public FlutterCommandStartResult startProcess(@Nullable Project project) {
     // TODO(devoncarew): Many flutter commands can legitimately be run in parallel.
     if (!inProgress.compareAndSet(null, this)) {
-      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING, null, null);
+      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING);
     }
 
     if (isPubRelatedCommand()) {
@@ -222,14 +222,14 @@ public class FlutterCommand {
         }
       });
       type.sendAnalyticsEvent();
-      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.OK, handler, null);
+      return new FlutterCommandStartResult(handler);
     }
     catch (ExecutionException e) {
       inProgress.compareAndSet(this, null);
       if (isPubRelatedCommand()) {
         DartPlugin.setPubActionInProgress(false);
       }
-      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.EXCEPTION, null, e);
+      return new FlutterCommandStartResult(e);
     }
   }
 

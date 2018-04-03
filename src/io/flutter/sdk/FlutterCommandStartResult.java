@@ -20,6 +20,18 @@ public class FlutterCommandStartResult {
   @Nullable
   public final ExecutionException exception;
 
+  public FlutterCommandStartResult(@NotNull FlutterCommandStartResultStatus status) {
+    this(status, null, null);
+  }
+
+  public FlutterCommandStartResult(@Nullable OSProcessHandler processHandler) {
+    this(FlutterCommandStartResultStatus.OK, processHandler, null);
+  }
+
+  public FlutterCommandStartResult(@Nullable ExecutionException exception) {
+    this(FlutterCommandStartResultStatus.EXCEPTION, null, exception);
+  }
+
   public FlutterCommandStartResult(@NotNull FlutterCommandStartResultStatus status,
                                    @Nullable OSProcessHandler processHandler,
                                    @Nullable ExecutionException exception) {

@@ -99,7 +99,7 @@ class TestLaunchState extends CommandLineState {
         assert result.processHandler != null;
         return result.processHandler;
       case ANOTHER_RUNNING:
-        throw new ExecutionException("There is another Flutter command running");
+        throw new ExecutionException("Flutter instance already running");
       case EXCEPTION:
         assert result.exception != null;
         throw new ExecutionException(FlutterBundle.message("flutter.command.exception.message" + result.exception.getMessage()));
