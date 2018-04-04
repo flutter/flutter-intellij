@@ -3,7 +3,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-// TODO(jacobr): which should we keep.
 /*
  * Copyright 2000-2017 JetBrains s.r.o.
  *
@@ -21,8 +20,6 @@
  */
 package io.flutter.view;
 
-
-
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.ui.UISettings;
 import com.intellij.openapi.application.Application;
@@ -31,10 +28,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.ColoredTextContainer;
-import com.intellij.ui.Gray;
-import com.intellij.ui.JBColor;
-import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.*;
 import com.intellij.ui.paint.EffectPainter;
 import com.intellij.util.ui.JBInsets;
 import com.intellij.util.ui.JBUI;
@@ -71,6 +65,16 @@ import java.util.List;
  */
 @SuppressWarnings({"NonPrivateFieldAccessedInSynchronizedContext", "FieldAccessedSynchronizedAndUnsynchronized"})
 public class MultiIconSimpleColoredComponent extends JComponent implements Accessible, ColoredTextContainer {
+  static class PositionedIcon {
+    final Icon icon;
+    final int index;
+
+    public PositionedIcon(Icon icon, int index) {
+      this.icon = icon;
+      this.index = index;
+    }
+  }
+
   private static final Logger LOG = Logger.getInstance("#io.flutter.view.MultiIconSimpleColoredComponent");
 
   public static final Color SHADOW_COLOR = new JBColor(new Color(250, 250, 250, 140), Gray._0.withAlpha(50));
@@ -79,15 +83,13 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   private final List<String> myFragments;
   private final List<TextLayout> myLayouts;
+  private final List<PositionedIcon> myIcons;
   private Font myLayoutFont;
   private final List<SimpleTextAttributes> myAttributes;
+
   private List<Object> myFragmentTags = null;
   private TIntIntHashMap myFragmentAlignment;
 
-  /**
-   * Component's icon. It can be <code>null</code>.
-   */
-  private Icon myIcon;
   /**
    * Internal padding
    */
@@ -123,13 +125,13 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   private boolean myAutoInvalidate = !(this instanceof TreeCellRenderer);
 
-  private boolean myIconOnTheRight = false;
   private boolean myTransparentIconBackground;
 
   public MultiIconSimpleColoredComponent() {
     myFragments = new ArrayList<>(3);
     myLayouts = new ArrayList<>(3);
     myAttributes = new ArrayList<>(3);
+    myIcons = new ArrayList<>(3);
     myIpad = new JBInsets(1, 2, 1, 2);
     myIconTextGap = JBUI.scale(2);
     myBorder = new MyBorder();
@@ -149,17 +151,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     return new MyIterator();
   }
 
-  @SuppressWarnings("unused")
-  public boolean isIconOnTheRight() {
-    return myIconOnTheRight;
-  }
-
-  public void setIconOnTheRight(boolean iconOnTheRight) {
-    myIconOnTheRight = iconOnTheRight;
-  }
-
   @NotNull
-  public final SimpleColoredComponent append(@NotNull String fragment) {
+  public final MultiIconSimpleColoredComponent append(@NotNull String fragment) {
     append(fragment, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     return this;
   }
@@ -179,12 +172,16 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   /**
    * Appends text fragment and sets it's end offset and alignment.
    * See SimpleColoredComponent#appendTextPadding for details
-   * @param fragment text fragment
+   *
+   * @param fragment   text fragment
    * @param attributes text attributes
-   * @param padding end offset of the text
-   * @param align alignment between current offset and padding
+   * @param padding    end offset of the text
+   * @param align      alignment between current offset and padding
    */
-  public final void append(@NotNull final String fragment, @NotNull final SimpleTextAttributes attributes, int padding, @JdkConstants.HorizontalAlignment int align) {
+  public final void append(@NotNull final String fragment,
+                           @NotNull final SimpleTextAttributes attributes,
+                           int padding,
+                           @JdkConstants.HorizontalAlignment int align) {
     append(fragment, attributes, myMainTextLastIndex < 0);
     appendTextPadding(padding, align);
   }
@@ -224,6 +221,20 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     revalidateAndRepaint();
   }
 
+  /**
+   * Adds the icon at the beginning of the line unlike addIcon, which adds the
+   * icon after the already appended text.
+   */
+  @Override
+  public void setIcon(@Nullable Icon icon) {
+    assert (myIcons.size() == 0);
+    if (icon == null) {
+      return;
+    }
+
+    myIcons.add(new PositionedIcon(icon, 0));
+  }
+
   private synchronized void _append(String fragment, SimpleTextAttributes attributes, Object tag) {
     append(fragment, attributes);
     if (myFragmentTags == null) {
@@ -237,6 +248,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   /**
    * fragment width isn't a right name, it is actually a padding
+   *
    * @deprecated remove in IDEA 16
    */
   @Deprecated
@@ -250,9 +262,9 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   /**
    * @param padding end offset that will be set after drawing current text fragment
-   * @param align alignment of the current text fragment, if it is SwingConstants.RIGHT
-   *              or SwingConstants.TRAILING then the text fragment will be aligned to the right at
-   *              the padding, otherwise it will be aligned to the left
+   * @param align   alignment of the current text fragment, if it is SwingConstants.RIGHT
+   *                or SwingConstants.TRAILING then the text fragment will be aligned to the right at
+   *                the padding, otherwise it will be aligned to the left
    */
   public synchronized void appendTextPadding(int padding, @JdkConstants.HorizontalAlignment int align) {
     final int alignIndex = myFragments.size() - 1;
@@ -274,8 +286,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   private synchronized void _clear() {
-    myIcon = null;
     myPaintFocusBorder = false;
+    myIcons.clear();
     myFragments.clear();
     myLayouts.clear();
     myAttributes.clear();
@@ -285,21 +297,15 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   /**
-   * @return component's icon. This method returns <code>null</code>
-   * if there is no icon.
-   */
-  public final Icon getIcon() {
-    return myIcon;
-  }
-
-  /**
    * Sets a new component icon
    *
    * @param icon icon
    */
-  @Override
-  public final void setIcon(@Nullable final Icon icon) {
-    myIcon = icon;
+  public final void addIcon(@NotNull final Icon icon) {
+    assert (icon != null);
+    assert (myFragments.size() == myAttributes.size());
+    // Add an icon that should be displayed after any already inserted fragments.
+    myIcons.add(new PositionedIcon(icon, myFragments.size()));
     revalidateAndRepaint();
   }
 
@@ -334,7 +340,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
    *
    * @param iconTextGap the gap between text and icon
    * @throws IllegalArgumentException if the <code>iconTextGap</code>
-   *                                            has a negative value
+   *                                  has a negative value
    */
   public void setIconTextGap(final int iconTextGap) {
     if (iconTextGap < 0) {
@@ -411,8 +417,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     // Calculate width
     int width = myIpad.left;
 
-    if (myIcon != null) {
-      width += myIcon.getIconWidth() + myIconTextGap;
+    for (PositionedIcon icon : myIcons) {
+      width += icon.icon.getIconWidth() + myIconTextGap;
     }
 
     final Insets borderInsets = myBorder != null ? myBorder.getBorderInsets(this) : JBUI.emptyInsets();
@@ -445,8 +451,10 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     Insets borderInsets = myBorder != null ? myBorder.getBorderInsets(this) : JBUI.emptyInsets();
     textHeight += borderInsets.top + borderInsets.bottom;
 
-    if (myIcon != null) {
-      height += Math.max(myIcon.getIconHeight(), textHeight);
+    if (!myIcons.isEmpty()) {
+      for (PositionedIcon icon : myIcons) {
+        height += Math.max(icon.icon.getIconHeight(), textHeight);
+      }
     }
     else {
       height += textHeight;
@@ -540,14 +548,18 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     AttributedCharacterIterator it = string.getIterator(new AttributedCharacterIterator.Attribute[0], start, end);
     Font currentFont = basefont;
     int currentIndex = start;
-    for(char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
+    for (char c = it.first(); c != CharacterIterator.DONE; c = it.next()) {
       Font font = basefont;
+      // TODO(jacobr): SuitableFontProvider is a private class so we can't
+      // easily use it. How important is supporting this use case?
+      /*
       if (!font.canDisplay(c)) {
         for (SuitableFontProvider provider : SuitableFontProvider.EP_NAME.getExtensions()) {
           font = provider.getFontAbleToDisplay(c, basefont.getSize(), basefont.getStyle(), basefont.getFamily());
           if (font != null) break;
         }
       }
+      */
       int i = it.getIndex();
       if (!Comparing.equal(currentFont, font)) {
         if (i > currentIndex) {
@@ -582,19 +594,27 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
    */
   public int findFragmentAt(int x) {
     float curX = myIpad.left;
-    if (myIcon != null && !myIconOnTheRight) {
-      final int iconRight = myIcon.getIconWidth() + myIconTextGap;
-      if (x < iconRight) {
-        return FRAGMENT_ICON;
-      }
-      curX += iconRight;
-    }
 
     Font font = getBaseFont();
 
     int baseSize = font.getSize();
     boolean wasSmaller = false;
-    for (int i = 0; i < myAttributes.size(); i++) {
+    int i = 0;
+    int iconIndex = 0;
+    while (true) {
+      // Go through all icons before attribute i.
+      while (iconIndex < myIcons.size() && myIcons.get(iconIndex).index <= i) {
+        final int iconWidth = myIcons.get(iconIndex).icon.getIconWidth() + myIconTextGap;
+        if (x >= curX && x < curX + iconWidth) {
+          return FRAGMENT_ICON;
+        }
+        curX += iconWidth;
+        iconIndex++;
+      }
+
+      if (i >= myAttributes.size()) {
+        break;
+      }
       SimpleTextAttributes attributes = myAttributes.get(i);
       boolean isSmaller = attributes.isSmaller();
       if (font.getStyle() != attributes.getFontStyle() || isSmaller != wasSmaller) { // derive font only if it is necessary
@@ -611,13 +631,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       if (fragmentPadding > 0 && curX < fragmentPadding) {
         curX = fragmentPadding;
       }
-    }
-
-    if (myIcon != null && myIconOnTheRight) {
-      curX += myIconTextGap;
-      if (x >= curX && x < curX + myIcon.getIconWidth()) {
-        return FRAGMENT_ICON;
-      }
+      i++;
     }
     return -1;
   }
@@ -630,7 +644,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   @NotNull
   protected JLabel formatToLabel(@NotNull JLabel label) {
-    label.setIcon(myIcon);
+    // TODO(jacobr): interleave icons inline?
+    label.setIcon(myIcons.size() > 0 ? myIcons.get(0).icon : null);
 
     if (!myFragments.isEmpty()) {
       final StringBuilder text = new StringBuilder();
@@ -725,18 +740,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   }
 
   protected void doPaint(final Graphics2D g) {
-    int offset = 0;
-    final Icon icon = myIcon; // guard against concurrent modification (IDEADEV-12635)
-    if (icon != null && !myIconOnTheRight) {
-      doPaintIcon(g, icon, 0);
-      offset += myIpad.left + icon.getIconWidth() + myIconTextGap;
-    }
-
-    doPaintTextBackground(g, offset);
-    offset = doPaintText(g, offset, myFocusBorderAroundIcon || icon == null);
-    if (icon != null && myIconOnTheRight) {
-      doPaintIcon(g, icon, offset);
-    }
+    doPaintTextBackground(g, 0);
+    doPaintTextAndIcons(g, myFocusBorderAroundIcon || myIcons.isEmpty());
   }
 
   private void doPaintTextBackground(Graphics2D g, int offset) {
@@ -770,13 +775,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     paintIcon(g, icon, offset + myIpad.left);
   }
 
-  protected int doPaintText(Graphics2D g, int textStart, boolean focusAroundIcon) {
-    // If there is no icon, then we have to add left internal padding
-    if (textStart == 0) {
-      textStart = myIpad.left;
-    }
-
-    float offset = textStart;
+  protected int doPaintTextAndIcons(Graphics2D g, boolean focusAroundIcon) {
+    float offset = myIpad.left;
     if (myBorder != null) {
       offset += myBorder.getBorderInsets(this).left;
     }
@@ -792,7 +792,23 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     Rectangle area = computePaintArea();
     final int textBaseline = area.y + getTextBaseLine(baseMetrics, area.height);
     boolean wasSmaller = false;
-    for (int i = 0; i < myFragments.size(); i++) {
+    assert (myFragments.size() == myAttributes.size());
+    int i = 0;
+    int iconIndex = 0;
+    while (true) {
+      // Go through all icons up to attribute i.
+      while (iconIndex < myIcons.size() && myIcons.get(iconIndex).index <= i) {
+        final Icon icon = myIcons.get(iconIndex).icon;
+        final int iconWidth = icon.getIconWidth() + myIconTextGap;
+        doPaintIcon(g, icon, (int)offset);
+        offset += iconWidth + myIconTextGap;
+        iconIndex++;
+      }
+
+      if (i >= myFragments.size()) {
+        break;
+      }
+
       final SimpleTextAttributes attributes = myAttributes.get(i);
 
       Font font = g.getFont();
@@ -882,6 +898,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       }
 
       offset = endOffset;
+      i++;
     }
 
     // Paint focus border around the text and icon (if necessary)
@@ -890,6 +907,15 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
         myBorder.paintBorder(this, g, 0, 0, getWidth(), getHeight());
       }
       else {
+        int textStart = 0;
+        // Skip all icons that occur before any text.
+        for (PositionedIcon positionedIcon : myIcons) {
+          if (positionedIcon.index != 0) {
+            break;
+          }
+          textStart += positionedIcon.icon.getIconWidth() + myIconTextGap;
+        }
+
         myBorder.paintBorder(this, g, textStart, 0, getWidth() - textStart, getHeight());
       }
     }
@@ -1082,6 +1108,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     public String getAccessibleName() {
       return getCharSequence(false).toString();
     }
+
     @Override
     public AccessibleRole getAccessibleRole() {
       return AccessibleRole.LABEL;
