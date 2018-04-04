@@ -185,7 +185,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
               break;
             case NOT_RENDERABLE_WIDGET:
-              previewArea.clear("Selection does not correspond to a renderable widget");
+              previewArea.clear("Selection is not a renderable widget");
               break;
             case TIMEOUT:
               previewArea.clear("Timeout during rendering");
