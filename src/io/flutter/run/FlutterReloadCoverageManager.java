@@ -346,7 +346,7 @@ public class FlutterReloadCoverageManager {
 
       //final Color coveredColor = new JBColor(new Color(0x0091ea), new Color(0x0091ea));
       //final Color uncoveredColor = JBColor.GRAY;
-      final Color coveredColor = new JBColor(new Color(0x00a572), new Color(0x00a572));
+      final Color coveredColor = new JBColor(new Color(0x37b258), new Color(0x37b258));
       final LineMarkerRenderer coveredRenderer = new MyLineMarkerRenderer(coveredColor);
 
       final Color uncoveredColor = JBColor.LIGHT_GRAY;
@@ -423,11 +423,17 @@ public class FlutterReloadCoverageManager {
   }
 }
 
-class MyLineMarkerRenderer implements LineMarkerRenderer {
+class MyLineMarkerRenderer implements LineMarkerRenderer, LineMarkerRendererEx {
   private final Color myColor;
 
   MyLineMarkerRenderer(@NotNull Color color) {
     this.myColor = color;
+  }
+
+  @NotNull
+  @Override
+  public LineMarkerRendererEx.Position getPosition() {
+    return LineMarkerRendererEx.Position.LEFT;
   }
 
   public void paint(Editor editor, Graphics g, Rectangle r) {
