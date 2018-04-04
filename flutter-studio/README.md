@@ -9,7 +9,7 @@ To set up a development environment:
     - you do not need to clone the intellij-community repo
     - open studio-master-dev/tools/idea in IntelliJ
     - possibly skip running intellij-community/getPlugins.sh
-4. Checkout Dart plugin sources, branch 171.4772.
+4. Checkout Dart plugin sources, branch 173.
 5. Using the Project Structure editor, import
     - intellij-plugins/Dart/Dart-community.iml
     - flutter-intellij/flutter-intellij-community.iml
@@ -19,7 +19,7 @@ To set up a development environment:
    and `flutter-studio`.
 
 The GUI tests must be run in the same version of IntelliJ used by
-the Android Studio dev team. Currently that is 2017.1.5.
+the Android Studio dev team. Currently that is 2017.3.5.
 
 To run the tests create a Junit Run Configuration for class
 `io.flutter.tests.gui.NewProjectTest`. Set its working directory
