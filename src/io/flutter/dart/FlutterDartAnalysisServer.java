@@ -8,7 +8,6 @@ package io.flutter.dart;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -17,16 +16,17 @@ import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterService;
 import org.dartlang.analysis.server.protocol.SourceChange;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class FlutterDartAnalysisServer {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
 
-  @Nullable
-  private DartAnalysisServerServiceEx dartServiceEx;
+  @NotNull
+  final DartAnalysisServerService analysisService;
 
   /**
    * Each key is a notification identifier.
@@ -42,15 +42,8 @@ public class FlutterDartAnalysisServer {
   }
 
   private FlutterDartAnalysisServer(@NotNull Project project) {
-    JobScheduler.getScheduler().scheduleWithFixedDelay(() -> {
-      final DartAnalysisServerService analysisService = DartPlugin.getInstance().getAnalysisService(project);
-      final DartAnalysisServerServiceEx analysisServiceEx = DartAnalysisServerServiceEx.get(analysisService);
-      if (analysisServiceEx != null && analysisServiceEx != dartServiceEx) {
-        dartServiceEx = analysisServiceEx;
-        dartServiceEx.addListener(FlutterDartAnalysisServer.this::processNotification);
-        sendSubscriptions();
-      }
-    }, 100, 100, TimeUnit.MILLISECONDS);
+    analysisService = DartPlugin.getInstance().getAnalysisService(project);
+      analysisService.addResponseListener(FlutterDartAnalysisServer.this::processNotification);
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
@@ -82,18 +75,13 @@ public class FlutterDartAnalysisServer {
   }
 
   private void sendSubscriptions() {
-    if (dartServiceEx != null) {
-      final String id = dartServiceEx.generateUniqueId();
-      dartServiceEx.sendRequest(FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
-    }
+      final String id = analysisService.generateUniqueId();
+      analysisService.sendRequest(id, FlutterRequestUtilities.generateAnalysisSetSubscriptions(id, subscriptions));
   }
 
   @NotNull
   public List<SourceChange> edit_getAssists(@NotNull VirtualFile file, int offset, int length) {
-    if (dartServiceEx != null) {
-      return dartServiceEx.base.edit_getAssists(file, offset, length);
-    }
-    return Collections.emptyList();
+      return analysisService.edit_getAssists(file, offset, length);
   }
 
   /**
