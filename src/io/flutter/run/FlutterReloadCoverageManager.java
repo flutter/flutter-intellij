@@ -324,10 +324,10 @@ public class FlutterReloadCoverageManager {
           //final int startIndex = reportRange.getStartPos();
           //final int endIndex = reportRange.getEndPos();
 
-          //final Pair<Integer, Integer> lineColumn = scriptManager.getLineColumnPosForTokenPos(scriptRef, startIndex);
-          //if (lineColumn != null) {
-          //  System.out.println(scriptRef.getUri() + ":" + lineColumn.first);
-          //}
+          final Script script = scriptManager.getScriptFor(scriptRef);
+          for (List<Integer> encoded : script.getTokenPosTable()) {
+            coverageInfo.addUncovered(encoded.get(0) - 1);
+          }
 
           for (int tokenPos : coverage.getHits()) {
             coverageInfo.addCovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
@@ -352,7 +352,9 @@ public class FlutterReloadCoverageManager {
       final Color uncoveredColor = JBColor.LIGHT_GRAY;
       final LineMarkerRenderer uncoveredRenderer = new MyLineMarkerRenderer(uncoveredColor);
 
-      final TextAttributes attributes = new TextAttributes();
+      final TextAttributes coveredAttributes = new TextAttributes();
+      final TextAttributes uncoveredAttributes = new TextAttributes();
+      //uncoveredAttributes.setBackgroundColor(Color.lightGray);
 
       for (FileEditor editor : editors) {
         if (!(editor instanceof TextEditor)) {
@@ -364,15 +366,16 @@ public class FlutterReloadCoverageManager {
         final MarkupModel markupModel = ((TextEditor)editor).getEditor().getMarkupModel();
 
         for (int line : coverageInfo.getCoveredLines()) {
-          final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, attributes);
-          rangeHighlighter.setErrorStripeMarkColor(coveredColor);
-          rangeHighlighter.setThinErrorStripeMark(true);
+          final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, coveredAttributes);
+          //rangeHighlighter.setErrorStripeMarkColor(coveredColor);
+          //rangeHighlighter.setThinErrorStripeMark(true);
           rangeHighlighter.setLineMarkerRenderer(coveredRenderer);
         }
 
         for (int line : coverageInfo.getUncoveredLines()) {
-          final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, attributes);
-          rangeHighlighter.setErrorStripeMarkColor(uncoveredColor);
+          final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, uncoveredAttributes);
+          //rangeHighlighter.setErrorStripeMarkColor(uncoveredColor);
+          //rangeHighlighter.setThinErrorStripeMark(true);
           rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
         }
       }
@@ -526,6 +529,10 @@ class ScriptManager {
 
     return result;
   }
+
+  public Script getScriptFor(ScriptRef ref) {
+    return scriptMap.get(ref.getId());
+  }
 }
 
 class FileCoverageInfo {
@@ -550,6 +557,12 @@ class FileCoverageInfo {
     final int line = pos.first;
     coveredLines.add(line);
     uncoveredLines.remove(line);
+  }
+
+  public void addUncovered(int line) {
+    if (!coveredLines.contains(line)) {
+      uncoveredLines.add(line);
+    }
   }
 
   public void addUncovered(Pair<Integer, Integer> pos) {
