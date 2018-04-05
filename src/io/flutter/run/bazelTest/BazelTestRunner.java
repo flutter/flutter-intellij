@@ -36,6 +36,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.PositionMapper;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -258,7 +259,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       final String workspaceDirName = connector.getWorkspaceDirName();
 
       // Verify the returned workspace directory name
-      if (!verifyWorkspaceNameValue(workspaceDirName)) return results;
+      if (StringUtils.isEmpty(workspaceDirName)) return results;
 
       final String filePath = file.getPath();
       int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
@@ -281,7 +282,7 @@ public class BazelTestRunner extends GenericProgramRunner {
 
       // Verify the returned workspace directory name, we weren't passed a workspace name or if the valid workspace name does not start the
       // uri then return the super invocation of this method. This prevents the unknown URI type from being passed to the analysis server.
-      if (!verifyWorkspaceNameValue(workspaceDirName) || !uri.startsWith(workspaceDirName + ":/")) return super.findLocalFile(uri);
+      if (StringUtils.isEmpty(workspaceDirName) || !uri.startsWith(workspaceDirName + ":/")) return super.findLocalFile(uri);
 
       final String pathFromWorkspace = uri.substring(workspaceDirName.length() + 1, uri.length());
 
@@ -305,13 +306,6 @@ public class BazelTestRunner extends GenericProgramRunner {
         }
         return super.findLocalFile(uri);
       });
-    }
-
-    /**
-     * Return true if the passed workspaceDirName is not null and is not empty.
-     */
-    private boolean verifyWorkspaceNameValue(@Nullable final String workspaceDirName) {
-      return workspaceDirName != null && !workspaceDirName.isEmpty();
     }
   }
 }
