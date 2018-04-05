@@ -4,7 +4,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:plugin/plugin.dart' as plugin;
+import 'package:plugin_tool/plugin.dart' as plugin;
 
 /// Run from IntelliJ with a run configuration that has the working directory
 /// set to the project root directory.

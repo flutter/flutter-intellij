@@ -4,7 +4,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:plugin/plugin.dart';
+import 'package:plugin_tool/plugin.dart';
 import 'package:test/test.dart';
 
 void main() {
