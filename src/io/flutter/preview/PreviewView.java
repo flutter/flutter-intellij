@@ -32,6 +32,8 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.*;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -50,6 +52,7 @@ import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.CustomIconMaker;
+import net.miginfocom.swing.MigLayout;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -173,7 +176,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void onFailure(RenderProblemKind kind) {
+    public void onFailure(RenderProblemKind kind, @Nullable FlutterOutline widget) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
           switch (kind) {
@@ -185,7 +188,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
               break;
             case NOT_RENDERABLE_WIDGET:
-              previewArea.clear("Selection is not a renderable widget");
+              assert widget != null;
+              showNotRenderableInPreviewArea(widget);
               break;
             case TIMEOUT:
               previewArea.clear("Timeout during rendering");
@@ -843,6 +847,34 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
+  private void showNotRenderableInPreviewArea(@NotNull FlutterOutline widget) {
+    final JPanel panel = new JPanel();
+    panel.setLayout(new MigLayout("", "[grow, center]", "[grow][][][grow 200]"));
+
+    panel.add(new JBLabel(PreviewArea.NOT_RENDERABLE), "cell 0 1");
+
+    final LinkLabel linkLabel = LinkLabel.create("Add forDesignTime() constructor...", () -> {
+      final SourceChange change = flutterAnalysisServer.flutter_getChangeAddForDesignTimeConstructor(currentFile, widget.getOffset());
+      if (change != null) {
+        applyChangeAndShowException(change);
+      }
+    });
+    panel.add(linkLabel, "cell 0 2");
+
+    previewArea.clear(panel);
+  }
+
+  private void applyChangeAndShowException(SourceChange change) {
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      try {
+        AssistUtils.applySourceChange(project, change, false);
+      }
+      catch (DartSourceEditException exception) {
+        FlutterMessages.showError("Error applying change", exception.getMessage());
+      }
+    });
+  }
+
   private void sendAnalyticEvent(@NotNull String name) {
     FlutterInitializer.getAnalytics().sendEvent("preview", name);
   }
@@ -865,14 +897,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         actionToChangeMap.clear();
       }
       if (change != null) {
-        ApplicationManager.getApplication().runWriteAction(() -> {
-          try {
-            AssistUtils.applySourceChange(project, change, false);
-          }
-          catch (DartSourceEditException exception) {
-            FlutterMessages.showError("Error applying change", exception.getMessage());
-          }
-        });
+        applyChangeAndShowException(change);
       }
     }
 
