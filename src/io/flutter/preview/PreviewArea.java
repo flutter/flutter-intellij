@@ -14,6 +14,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import net.miginfocom.swing.MigLayout;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
@@ -47,6 +48,7 @@ public class PreviewArea {
   public static int BORDER_WIDTH = 0;
   public static final String NOTHING_TO_SHOW = "Nothing to show";
   public static final String NO_WIDGET_MESSAGE = "No widget selected";
+  public static final String NOT_RENDERABLE = "Selection is not a renderable widget";
 
   private static final Color[] widgetColors = new Color[]{
     new JBColor(new Color(0xB8F1FF), new Color(0x546E7A)),
@@ -126,14 +128,19 @@ public class PreviewArea {
   }
 
   public void clear(String message) {
+    final JPanel panel = new JPanel();
+    panel.setLayout(new MigLayout("", "[grow, center]", "[grow][][grow 200]"));
+
+    panel.add(new JBLabel(message, SwingConstants.CENTER), "cell 0 1");
+    clear(panel);
+  }
+
+  public void clear(JComponent component) {
     setToolbarTitle(null);
 
     primaryLayer.removeAll();
-
-    if (message != null) {
-      primaryLayer.setLayout(new BorderLayout());
-      primaryLayer.add(new JBLabel(message, SwingConstants.CENTER), BorderLayout.CENTER);
-    }
+    primaryLayer.setLayout(new BorderLayout());
+    primaryLayer.add(component, BorderLayout.CENTER);
 
     handleLayer.removeAll();
 

@@ -92,10 +92,12 @@ public class RenderHelper {
     final FlutterOutline previousWidgetOutline = myWidgetOutline;
     myWidgetOutline = getContainingWidgetOutline(offset);
     if (myWidgetOutline == null) {
-      myListener.onFailure(RenderProblemKind.NO_WIDGET);
-    } else if (myWidgetOutline.getRenderConstructor() == null) {
-      myListener.onFailure(RenderProblemKind.NOT_RENDERABLE_WIDGET);
-    } else if (myWidgetOutline != previousWidgetOutline) {
+      myListener.onFailure(RenderProblemKind.NO_WIDGET, null);
+    }
+    else if (myWidgetOutline.getRenderConstructor() == null) {
+      myListener.onFailure(RenderProblemKind.NOT_RENDERABLE_WIDGET, myWidgetOutline);
+    }
+    else if (myWidgetOutline != previousWidgetOutline) {
       scheduleRendering();
     }
   }
@@ -163,7 +165,7 @@ public class RenderHelper {
   public interface Listener {
     void onResponse(FlutterOutline widget, JsonObject response);
 
-    void onFailure(RenderProblemKind kind);
+    void onFailure(RenderProblemKind kind, FlutterOutline widget);
   }
 }
 
@@ -263,8 +265,10 @@ class RenderThread extends Thread {
   }
 
   private void render(@NotNull RenderRequest request) {
+    final FlutterOutline widget = request.widget;
+
     if (myTemporaryDirectory == null) {
-      request.listener.onFailure(RenderProblemKind.NO_TEMPORARY_DIRECTORY);
+      request.listener.onFailure(RenderProblemKind.NO_TEMPORARY_DIRECTORY, widget);
       return;
     }
 
@@ -348,7 +352,7 @@ class RenderThread extends Thread {
         final String line = myProcessReader.readLine();
         if (line == null) {
           terminateCurrentProcess("Response expected");
-          request.listener.onFailure(RenderProblemKind.TIMEOUT);
+          request.listener.onFailure(RenderProblemKind.TIMEOUT, widget);
           return;
         }
         // The line must be a JSON response.
@@ -357,14 +361,14 @@ class RenderThread extends Thread {
         }
         catch (Throwable ignored) {
           terminateCurrentProcess("JSON response expected");
-          request.listener.onFailure(RenderProblemKind.EXCEPTION);
+          request.listener.onFailure(RenderProblemKind.EXCEPTION, widget);
           return;
         }
       }
 
       // Fail if unable to find the valid response.
       if (response == null) {
-        request.listener.onFailure(RenderProblemKind.EXCEPTION);
+        request.listener.onFailure(RenderProblemKind.EXCEPTION, widget);
         return;
       }
 
@@ -372,11 +376,11 @@ class RenderThread extends Thread {
       responseReceivedLatch.countDown();
 
       // Send the respose to the client.
-      request.listener.onResponse(request.widget, response);
+      request.listener.onResponse(widget, response);
     }
     catch (Throwable e) {
       terminateCurrentProcess("Exception");
-      request.listener.onFailure(RenderProblemKind.EXCEPTION);
+      request.listener.onFailure(RenderProblemKind.EXCEPTION, widget);
     }
   }
 
