@@ -75,7 +75,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     }
   }
 
-  private static final Logger LOG = Logger.getInstance("#io.flutter.view.MultiIconSimpleColoredComponent");
+  private static final Logger LOG = Logger.getInstance(MultiIconSimpleColoredComponent.class);
 
   public static final Color SHADOW_COLOR = new JBColor(new Color(250, 250, 250, 140), Gray._0.withAlpha(50));
   @SuppressWarnings("unused") public static final Color STYLE_SEARCH_MATCH_BACKGROUND = SHADOW_COLOR; //api compatibility

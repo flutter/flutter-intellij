@@ -76,7 +76,7 @@ import static com.intellij.util.containers.ContainerUtil.getFirstItem;
  * </ul>
  */
 public class FlutterProjectCreator {
-  private static final Logger LOG = Logger.getInstance(FlutterProjectModel.class);
+  private static final Logger LOG = Logger.getInstance(FlutterProjectCreator.class);
   private static final String SEPARATOR = "/";
   @NotNull private final FlutterProjectModel myModel;
 
