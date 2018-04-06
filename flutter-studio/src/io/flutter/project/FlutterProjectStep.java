@@ -8,10 +8,11 @@ package io.flutter.project;
 import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
-import com.android.tools.idea.npw.project.NewProjectModel;
 import com.android.tools.idea.observable.BindingsManager;
 import com.android.tools.idea.observable.ListenerManager;
-import com.android.tools.idea.observable.core.*;
+import com.android.tools.idea.observable.core.ObservableBool;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.observable.expressions.Expression;
 import com.android.tools.idea.observable.expressions.value.TransformOptionalExpression;
 import com.android.tools.idea.observable.ui.SelectedItemProperty;
@@ -30,7 +31,10 @@ import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.IconLoader;
-import com.intellij.ui.*;
+import com.intellij.ui.ColorUtil;
+import com.intellij.ui.ComboboxWithBrowseButton;
+import com.intellij.ui.DocumentAdapter;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
@@ -87,12 +91,11 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
     myValidatorPanel = new ValidatorPanel(this, myPanel);
 
-    Expression<String> computedLocation = model.projectName().transform(FlutterProjectStep::findProjectLocation);
+    String initialLocation = WizardUtils.getProjectLocationParent().getPath();
+    // Directionality matters. Let the bindings set the model's value from the text field.
+    myProjectLocation.getChildComponent().setText(initialLocation);
     TextProperty locationText = new TextProperty(myProjectLocation.getChildComponent());
-    BoolProperty isLocationSynced = new BoolValueProperty(true);
-    myBindings.bind(locationText, computedLocation, isLocationSynced);
     myBindings.bind(model.projectLocation(), locationText);
-    myListeners.receive(locationText, value -> isLocationSynced.set(value.equals(computedLocation.get())));
     myBindings.bindTwoWay(new TextProperty(myProjectName), model.projectName());
 
     myBindings.bind(model.description(), new TextProperty(myDescription));
@@ -124,7 +127,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
     if (isProject()) {
       Expression<File> locationFile = model.projectLocation().transform(File::new);
-      myValidatorPanel.registerValidator(locationFile, PathValidator.createDefault("project location"));
+      myValidatorPanel.registerValidator(locationFile, new PathValidator.Builder().withCommonRules().build("project location"));
       final JTextComponent sdkEditor = (JTextComponent)myFlutterSdkPath.getComboBox().getEditor().getEditorComponent();
       sdkBackgroundColor = sdkEditor.getBackground();
       sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -181,19 +184,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   }
 
   @NotNull
-  @SuppressWarnings("Duplicates") // Copied from ConfigureAndroidProjectStep
   private static String findProjectLocation(@NotNull String appName) {
-    String applicationName = NewProjectModel.sanitizeApplicationName(appName);
-    File baseDirectory = WizardUtils.getProjectLocationParent();
-    File projectDirectory = new File(baseDirectory, applicationName);
-
-    // Try appName, appName2, appName3, ...
-    int counter = 2;
-    while (projectDirectory.exists()) {
-      projectDirectory = new File(baseDirectory, String.format("%s%d", applicationName, counter++));
-    }
-
-    return projectDirectory.getPath();
+    return WizardUtils.getProjectLocationParent().getPath();
   }
 
   private static Validator.Result errorResult(String message) {
