@@ -853,7 +853,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     panel.add(new JBLabel(PreviewArea.NOT_RENDERABLE), "cell 0 1");
 
-    final LinkLabel linkLabel = LinkLabel.create("Add forDesignTime() constructor", () -> {
+    final LinkLabel linkLabel = LinkLabel.create("Add forDesignTime() constructor...", () -> {
       final SourceChange change = flutterAnalysisServer.flutter_getChangeAddForDesignTimeConstructor(currentFile, widget.getOffset());
       if (change != null) {
         applyChangeAndShowException(change);

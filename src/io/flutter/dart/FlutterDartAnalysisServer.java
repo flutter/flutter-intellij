@@ -190,6 +190,8 @@ public class FlutterDartAnalysisServer {
    * Must use it right before sending any offsets and lengths to the AnalysisServer.
    */
   private int getOriginalOffset(@Nullable final VirtualFile file, final int convertedOffset) {
+    // TODO(scheglov) Remove reflection when the method is made public everywhere.
+    // https://github.com/JetBrains/intellij-plugins/pull/572
     final Method method = ReflectionUtil.getDeclaredMethod(analysisService.getClass(), "getOriginalOffset", VirtualFile.class, int.class);
     if (method != null) {
       try {
