@@ -44,7 +44,7 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
   @NotNull
   public FlutterProjectStepFixture enterSdkPath(@NotNull String text) {
     JComboBoxFixture comboBox = findComboBox();
-    comboBox.replaceText(text);
+    //comboBox.replaceText(text);
     FlutterProjectStep.ensureComboModelContainsCurrentItem(comboBox.target());
     return this;
   }
