@@ -241,15 +241,18 @@ public class FlutterProjectCreator {
       Messages.showErrorDialog(projectToClose, message, ActionsBundle.message("action.NewDirectoryProject.title"));
       return;
     }
+    final File baseFile = new File(location, myModel.projectName().get());
+    //noinspection ResultOfMethodCallIgnored
+    baseFile.mkdirs();
     final VirtualFile baseDir = ApplicationManager
-      .getApplication().runWriteAction((Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(location));
+      .getApplication().runWriteAction((Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(baseFile));
     if (baseDir == null) {
       LOG.error("Couldn't find '" + location + "' in VFS");
       return;
     }
     VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
 
-    RecentProjectsManager.getInstance().setLastProjectCreationLocation(location.getParent());
+    RecentProjectsManager.getInstance().setLastProjectCreationLocation(location.getPath());
 
     ProjectOpenedCallback callback =
       (project, module) -> ProgressManager.getInstance().run(new Task.Modal(null, "Creating Flutter Project", false) {
@@ -258,7 +261,7 @@ public class FlutterProjectCreator {
           indicator.setIndeterminate(true);
 
           // The IDE has already created some files. Flutter won't overwrite them, but we want the versions provided by Flutter.
-          deleteDirectoryContents(location);
+          deleteDirectoryContents(baseFile);
 
           // Add an Android facet if needed by the project type.
           if (myModel.projectType().getValue() != FlutterProjectType.PACKAGE) {
@@ -266,8 +269,8 @@ public class FlutterProjectCreator {
             AndroidFacetType facetType = AndroidFacet.getFacetType();
             AndroidFacet facet = facetType.createFacet(module, AndroidFacet.NAME, facetType.createDefaultConfiguration(), null);
             model.addFacet(facet);
-            configureFacet(facet, location, "android");
-            File appLocation = new File(location, "android");
+            configureFacet(facet, baseFile, "android");
+            File appLocation = new File(baseFile, "android");
             //noinspection ResultOfMethodCallIgnored
             appLocation.mkdirs();
             AndroidFacet appFacet = facetType.createFacet(module, AndroidFacet.NAME, facetType.createDefaultConfiguration(), null);
