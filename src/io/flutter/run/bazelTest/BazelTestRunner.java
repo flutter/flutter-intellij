@@ -16,24 +16,31 @@ import com.intellij.execution.process.*;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ContentEntry;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.xdebugger.*;
+import com.intellij.xdebugger.XDebugProcess;
+import com.intellij.xdebugger.XDebugProcessStarter;
+import com.intellij.xdebugger.XDebugSession;
+import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
+import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import gnu.trove.THashSet;
 import io.flutter.run.PositionMapper;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
-import org.dartlang.vm.service.element.ScriptRef;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * The Bazel version of the {@link io.flutter.run.test.DebugTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
@@ -234,10 +241,6 @@ public class BazelTestRunner extends GenericProgramRunner {
 
     @NotNull final Connector connector;
 
-    @NotNull Set<String> workspaceLocations = new THashSet<>(1);
-
-    public static final String RUNFILES_SLASH = "runfiles/";
-
     public BazelPositionMapper(@NotNull final Project project,
                                @NotNull final VirtualFile sourceRoot,
                                @NotNull final DartUrlResolver resolver,
@@ -252,67 +255,57 @@ public class BazelTestRunner extends GenericProgramRunner {
       // Get the results from superclass
       final Collection<String> results = super.getBreakpointUris(file);
 
-      // Get the runfiles directory and workspace directory name provided by the test harness.
-      final String runfilesDir = connector.getRunfilesDir();
+      // Get the workspace directory name provided by the test harness.
       final String workspaceDirName = connector.getWorkspaceDirName();
 
-      // Verify the returned runfiles directory and workspace directory name
-      if (!verifyRunFilesAndWorkspaceNameValues(runfilesDir, workspaceDirName)) {
-        return results;
-      }
+      // Verify the returned workspace directory name
+      if (StringUtils.isEmpty(workspaceDirName)) return results;
 
       final String filePath = file.getPath();
-      final int workspaceOffset = filePath.lastIndexOf(workspaceDirName + "/");
-      if (workspaceOffset != -1) {
-        // Append the passed runfilesDir + path from workspace to the returned results, this will set an additional breakpoint in the
-        // generated runfiles directory
-        results.add(runfilesDir + filePath.substring(workspaceOffset, filePath.length()));
-
-        // Finally, add the path to the workspace to workspaceLocations so that the original path can be computed in getSourcePosition
-        // method below
-        workspaceLocations.add(filePath.substring(0, workspaceOffset));
+      int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
+      if (workspaceEndOffset != -1) {
+        workspaceEndOffset += workspaceDirName.length();
+        results.add(workspaceDirName + ":" + filePath.substring(workspaceEndOffset, filePath.length()));
       }
       return results;
     }
 
-    /**
-     * Returns the local position (to display to the user) corresponding to a token position in Observatory.
-     */
-    @Override
-    @Nullable
-    public XSourcePosition getSourcePosition(@NotNull final String isolateId, @NotNull final ScriptRef scriptRef, int tokenPos) {
-      final XSourcePosition xSourcePosition = super.getSourcePosition(isolateId, scriptRef, tokenPos);
-      if (xSourcePosition == null) return null;
 
-      // Get the runfiles directory and workspace directpory name provided by the test harness.
-      final String runfilesDir = connector.getRunfilesDir();
+    /**
+     * Attempt to find a local Dart file corresponding to a script in Observatory.
+     */
+    @Nullable
+    @Override
+    protected VirtualFile findLocalFile(@NotNull final String uri) {
+      // Get the workspace directory name provided by the test harness.
       final String workspaceDirName = connector.getWorkspaceDirName();
 
-      // Verify the returned runfiles directory and workspace directory name
-      if (!verifyRunFilesAndWorkspaceNameValues(runfilesDir, workspaceDirName)) return xSourcePosition;
+      // Verify the returned workspace directory name, we weren't passed a workspace name or if the valid workspace name does not start the
+      // uri then return the super invocation of this method. This prevents the unknown URI type from being passed to the analysis server.
+      if (StringUtils.isEmpty(workspaceDirName) || !uri.startsWith(workspaceDirName + ":/")) return super.findLocalFile(uri);
 
-      // Get the virtual file computed by the super.getSourcePosition(...)
-      final VirtualFile superVirtualFile = xSourcePosition.getFile();
-      final String filePath = superVirtualFile.getPath();
-      final int workspaceOffset = filePath.lastIndexOf(workspaceDirName + "/");
-      if (filePath.startsWith(runfilesDir) && workspaceOffset != -1) {
-        for (String workspaceLoc : workspaceLocations) {
-          final VirtualFile virtualFileInProject =
-            LocalFileSystem.getInstance().findFileByPath(workspaceLoc + filePath.substring(workspaceOffset, filePath.length()));
-          if (virtualFileInProject != null) {
-            return XDebuggerUtil.getInstance().createPosition(virtualFileInProject, xSourcePosition.getLine(), xSourcePosition.getOffset());
+      final String pathFromWorkspace = uri.substring(workspaceDirName.length() + 1, uri.length());
+
+      // For each root in each module, look for a bazel workspace path, if found attempt to compute the VirtualFile, return when found.
+      return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
+        for (Module module : DartSdkLibUtil.getModulesWithDartSdkEnabled(getProject())) {
+          for (ContentEntry contentEntry : ModuleRootManager.getInstance(module).getContentEntries()) {
+            final VirtualFile includedRoot = contentEntry.getFile();
+            if (includedRoot == null) continue;
+
+            final String includedRootPath = includedRoot.getPath();
+            final int workspaceOffset = includedRootPath.indexOf(workspaceDirName);
+            if (workspaceOffset == -1) continue;
+
+            final String pathToWorkspace = includedRootPath.substring(0, workspaceOffset + workspaceDirName.length());
+            final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(pathToWorkspace + pathFromWorkspace);
+            if (virtualFile != null) {
+              return virtualFile;
+            }
           }
         }
-      }
-      return xSourcePosition;
-    }
-
-    /**
-     * Return true if the passed runfilesDir and workspaceDirName are not null, are not empty, and the runfilesDir ends with
-     * {@value RUNFILES_SLASH}.
-     */
-    private boolean verifyRunFilesAndWorkspaceNameValues(@Nullable final String runfilesDir, @Nullable final String workspaceDirName) {
-      return runfilesDir != null && runfilesDir.endsWith(RUNFILES_SLASH) && workspaceDirName != null && !workspaceDirName.isEmpty();
+        return super.findLocalFile(uri);
+      });
     }
   }
 }

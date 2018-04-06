@@ -26,8 +26,8 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import io.flutter.dart.DartPlugin;
 import org.dartlang.vm.service.element.LibraryRef;
-import org.dartlang.vm.service.element.ScriptRef;
 import org.dartlang.vm.service.element.Script;
+import org.dartlang.vm.service.element.ScriptRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -103,6 +103,11 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
     this.sourceRoot = sourceRoot;
     this.resolver = resolver;
     this.analyzer = analyzer;
+  }
+
+  @NotNull
+  public Project getProject() {
+    return project;
   }
 
   public void onConnect(@NotNull DartVmServiceDebugProcessZ.ScriptProvider provider, @Nullable String remoteBaseUri) {
@@ -283,7 +288,7 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
    * Attempt to find a local Dart file corresponding to a script in Observatory.
    */
   @Nullable
-  private VirtualFile findLocalFile(@NotNull String uri) {
+  protected VirtualFile findLocalFile(@NotNull String uri) {
     return ApplicationManager.getApplication().runReadAction((Computable<VirtualFile>)() -> {
       // This can be a remote file or URI.
       final String remote = uri;
