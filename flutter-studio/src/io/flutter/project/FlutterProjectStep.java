@@ -91,8 +91,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
     myValidatorPanel = new ValidatorPanel(this, myPanel);
 
-    String initialLocation =
-      WizardUtils.getProjectLocationParent().getPath();//model.projectName().transform(FlutterProjectStep::findProjectLocation);
+    String initialLocation = WizardUtils.getProjectLocationParent().getPath();
     // Directionality matters. Let the bindings set the model's value from the text field.
     myProjectLocation.getChildComponent().setText(initialLocation);
     TextProperty locationText = new TextProperty(myProjectLocation.getChildComponent());
