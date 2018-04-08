@@ -81,7 +81,7 @@ public class FlutterCommand {
    */
   public Process start(@Nullable Consumer<ProcessOutput> onDone, @Nullable ProcessListener processListener) {
     // TODO(skybrian) add Project parameter if it turns out later that we need to set ANDROID_HOME.
-    final OSProcessHandler handler = startProcess(null);
+    final OSProcessHandler handler = startProcessOrShowError(null);
     if (handler == null) {
       return null;
     }
@@ -117,7 +117,7 @@ public class FlutterCommand {
    * If unable to start (for example, if a command is already running), returns null.
    */
   public Process startInConsole(@NotNull Project project) {
-    final OSProcessHandler handler = startProcess(project);
+    final OSProcessHandler handler = startProcessOrShowError(project);
     if (handler == null) {
       return null;
     }
@@ -134,7 +134,7 @@ public class FlutterCommand {
    * If unable to start (for example, if a command is already running), returns null.
    */
   public Process startInModuleConsole(@NotNull Module module, @Nullable Runnable onDone, @Nullable ProcessListener processListener) {
-    final OSProcessHandler handler = startProcess(module.getProject());
+    final OSProcessHandler handler = startProcessOrShowError(module.getProject());
     if (handler == null) {
       return null;
     }
@@ -196,11 +196,11 @@ public class FlutterCommand {
    * <p>
    * Returns the handler if successfully started.
    */
-  @Nullable
-  public OSProcessHandler startProcess(@Nullable Project project) {
+  @NotNull
+  public FlutterCommandStartResult startProcess(@Nullable Project project) {
     // TODO(devoncarew): Many flutter commands can legitimately be run in parallel.
     if (!inProgress.compareAndSet(null, this)) {
-      return null;
+      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING);
     }
 
     if (isPubRelatedCommand()) {
@@ -222,18 +222,33 @@ public class FlutterCommand {
         }
       });
       type.sendAnalyticsEvent();
-      return handler;
+      return new FlutterCommandStartResult(handler);
     }
     catch (ExecutionException e) {
       inProgress.compareAndSet(this, null);
       if (isPubRelatedCommand()) {
         DartPlugin.setPubActionInProgress(false);
       }
+      return new FlutterCommandStartResult(e);
+    }
+  }
+
+  /**
+   * Starts a process that runs a flutter command, unless one is already running.
+   * <p>
+   * If a project is supplied, it will be used to determine the ANDROID_HOME variable for the subprocess.
+   * <p>
+   * Returns the handler if successfully started, or null if there was a problem.
+   */
+  @Nullable
+  public OSProcessHandler startProcessOrShowError(@Nullable Project project)  {
+    final FlutterCommandStartResult result = startProcess(project);
+    if (result.status == FlutterCommandStartResultStatus.EXCEPTION && result.exception != null) {
       FlutterMessages.showError(
         type.title,
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-      return null;
+        FlutterBundle.message("flutter.command.exception.message", result.exception.getMessage()));
     }
+    return result.processHandler;
   }
 
   /**

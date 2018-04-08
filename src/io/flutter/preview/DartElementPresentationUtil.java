@@ -10,6 +10,7 @@ import com.intellij.ui.LayeredIcon;
 import com.intellij.ui.SimpleTextAttributes;
 import com.jetbrains.lang.dart.DartComponentType;
 import com.jetbrains.lang.dart.util.DartPresentableUtil;
+import icons.DartIcons;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.ElementKind;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +21,7 @@ import javax.swing.*;
 import static com.intellij.icons.AllIcons.Nodes.*;
 import static com.intellij.icons.AllIcons.Nodes.Class;
 import static com.intellij.icons.AllIcons.Nodes.Enum;
+import static com.intellij.icons.AllIcons.RunConfigurations.Junit;
 
 /**
  * Most of the class is copied from Dart Plugin.
@@ -45,9 +47,8 @@ public class DartElementPresentationUtil {
         return element.isAbstract() ? AbstractClass : Class;
       case ElementKind.CONSTRUCTOR:
         return Method;
-      // TODO(scheglov) Enable once minimal version is 2017.3
-      //case ElementKind.CONSTRUCTOR_INVOCATION:
-      //  return CONSTRUCTOR_INVOCATION_ICON;
+      case ElementKind.CONSTRUCTOR_INVOCATION:
+        return CONSTRUCTOR_INVOCATION_ICON;
       case ElementKind.ENUM:
         return Enum;
       case ElementKind.ENUM_CONSTANT:
@@ -59,9 +60,8 @@ public class DartElementPresentationUtil {
         return Field;
       case ElementKind.FUNCTION:
         return element.isTopLevelOrStatic() ? TOP_LEVEL_FUNCTION_ICON : Function;
-      // TODO(scheglov) Enable once minimal version is 2017.3
-      //case ElementKind.FUNCTION_INVOCATION:
-      //  return FUNCTION_INVOCATION_ICON;
+      case ElementKind.FUNCTION_INVOCATION:
+        return FUNCTION_INVOCATION_ICON;
       case ElementKind.FUNCTION_TYPE_ALIAS:
         return DartComponentType.TYPEDEF.getIcon();
       case ElementKind.GETTER:
@@ -73,6 +73,10 @@ public class DartElementPresentationUtil {
         return element.isTopLevelOrStatic() ? PropertyWriteStatic : PropertyWrite;
       case ElementKind.TOP_LEVEL_VARIABLE:
         return finalOrConst ? TOP_LEVEL_CONST_ICON : TOP_LEVEL_VAR_ICON;
+      case ElementKind.UNIT_TEST_GROUP:
+        return Junit;
+      case ElementKind.UNIT_TEST_TEST:
+        return DartIcons.TestNode;
 
       case ElementKind.CLASS_TYPE_ALIAS:
       case ElementKind.COMPILATION_UNIT:

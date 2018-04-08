@@ -4,7 +4,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:plugin/plugin.dart';
+import 'package:plugin_tool/plugin.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -119,8 +119,8 @@ void main() {
       expect(
           cmd.paths.map((p) => p.substring(p.indexOf('releases'))),
           orderedEquals([
-            'releases/release_19/3.0/flutter-intellij.zip',
             'releases/release_19/3.1/flutter-intellij.zip',
+            'releases/release_19/3.2/flutter-intellij.zip',
             'releases/release_19/2018.1/flutter-intellij.zip',
           ]));
     });

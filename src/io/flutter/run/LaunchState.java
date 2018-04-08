@@ -29,11 +29,11 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
+import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.daemon.*;
@@ -41,9 +41,6 @@ import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -119,18 +116,7 @@ public class LaunchState extends CommandLineState {
         final SdkFields sdkFields = config.getFields();
         final MainFile mainFile = MainFile.verify(sdkFields.getFilePath(), env.getProject()).get();
 
-        // TODO(devoncarew): Remove the use of reflection when we rev our min version to 2017.2.
-        //DartExecutionHelper.displayIssues(project, mainFile.getFile(), message, env.getRunProfile().getIcon());
-        try {
-          final Method displayIssues =
-            ReflectionUtil.getMethod(dartExecutionHelper, "displayIssues", Project.class, VirtualFile.class, String.class, Icon.class);
-          if (displayIssues != null) {
-            displayIssues.invoke(null, project, mainFile.getFile(), message, env.getRunProfile().getIcon());
-          }
-        }
-        catch (IllegalAccessException | InvocationTargetException e) {
-          // ignore
-        }
+        DartExecutionHelper.displayIssues(project, mainFile.getFile(), message, env.getRunProfile().getIcon());
       }
     }
 

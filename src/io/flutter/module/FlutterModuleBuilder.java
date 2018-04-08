@@ -68,19 +68,13 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return FlutterBundle.message("flutter.project.description");
   }
 
-  // This method does not exist in 2017.2.
-  @SuppressWarnings({"override", "SameReturnValue"})
-  public Icon getBigIcon() {
-    return FlutterIcons.Flutter_2x;
-  }
-
   @Override
   public Icon getNodeIcon() {
     return FlutterIcons.Flutter;
   }
 
   @Override
-  public void setupRootModel(ModifiableRootModel model) throws ConfigurationException {
+  public void setupRootModel(ModifiableRootModel model) {
     doAddContentEntry(model);
     // Add a reference to Dart SDK project library, without committing.
     model.addInvalidLibrary("Dart SDK", "project");
@@ -244,6 +238,12 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     return wizard;
   }
 
+  @Override
+  public ModuleWizardStep modifyProjectTypeStep(@NotNull SettingsStep settingsStep) {
+    // Don't allow super to add an SDK selection field (#2052).
+    return null;
+  }
+
   @Nullable
   @Override
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
@@ -313,7 +313,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     @Override
-    public boolean validate() throws ConfigurationException {
+    public boolean validate() {
       final boolean valid = myPeer.validate();
       if (valid) {
         myPeer.apply();

@@ -61,7 +61,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
   private VmServiceWrapper myVmServiceWrapper;
   private VmOpenSourceLocationListener myVmOpenSourceLocationListener;
 
-  @NotNull private final Set<String> mySuspendedIsolateIds = Collections.synchronizedSet(new THashSet<String>());
+  @NotNull private final Set<String> mySuspendedIsolateIds = Collections.synchronizedSet(new THashSet<>());
   private String myLatestCurrentIsolateId;
 
   @NotNull private final ObservatoryConnector myConnector;

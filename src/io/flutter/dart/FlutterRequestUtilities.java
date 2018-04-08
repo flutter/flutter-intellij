@@ -22,11 +22,34 @@ public class FlutterRequestUtilities {
   private static final String ID = "id";
   private static final String METHOD = "method";
   private static final String PARAMS = "params";
+  private static final String OFFSET = "offset";
   private static final String SUBSCRIPTIONS = "subscriptions";
 
+  private static final String METHOD_FLUTTER_GET_CHANGE_ADD_FOR_DESIGN_TIME_CONSTRUCTOR = "flutter.getChangeAddForDesignTimeConstructor";
   private static final String METHOD_FLUTTER_SET_SUBSCRIPTIONS = "flutter.setSubscriptions";
 
   private FlutterRequestUtilities() {
+  }
+
+  /**
+   * Generate and return a {@value #METHOD_FLUTTER_GET_CHANGE_ADD_FOR_DESIGN_TIME_CONSTRUCTOR} request.
+   * <p>
+   * <pre>
+   * request: {
+   *   "id": String
+   *   "method": "flutter.getChangeAddForDesignTimeConstructor"
+   *   "params": {
+   *     "file": FilePath
+   *     "offset": int
+   *   }
+   * }
+   * </pre>
+   */
+  public static JsonObject generateFlutterGetChangeAddForDesignTimeConstructor(String id, String file, int offset) {
+    final JsonObject params = new JsonObject();
+    params.addProperty(FILE, file);
+    params.addProperty(OFFSET, offset);
+    return buildJsonObjectRequest(id, METHOD_FLUTTER_GET_CHANGE_ADD_FOR_DESIGN_TIME_CONSTRUCTOR, params);
   }
 
   /**

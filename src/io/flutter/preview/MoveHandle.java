@@ -18,8 +18,10 @@ public class MoveHandle extends Handle {
     //noinspection UseJBColor
     g2.setColor(Color.BLUE);
 
-    g2.setStroke(new BasicStroke(3));
-    g2.drawRect(0, 0, getWidth(), getHeight());
+    final int width = getWidth();
+    final int height = getHeight();
+    g2.drawRect(0, 0, width - 1, height - 1);
+    g2.drawRect(1, 1, width - 3, height - 3);
   }
 
   @Override

@@ -30,21 +30,14 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowId;
 import com.intellij.openapi.wm.ToolWindowManager;
-import com.intellij.psi.PsiDocumentManager;
-import com.intellij.psi.PsiErrorElement;
-import com.intellij.psi.PsiFile;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectAndLibrariesScope;
-import com.intellij.psi.search.SearchScope;
-import com.intellij.psi.util.PsiTreeUtil;
 import com.intellij.ui.LightweightHint;
-import com.intellij.util.ReflectionUtil;
 import com.intellij.util.ui.UIUtil;
 import com.jetbrains.lang.dart.DartPluginCapabilities;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
@@ -68,8 +61,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -224,16 +215,14 @@ public class FlutterReloadManager {
             // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
             final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
 
-            JobScheduler.getScheduler().schedule(() -> {
-              UIUtil.invokeLaterIfNeeded(() -> {
-                notification.expire();
+            JobScheduler.getScheduler().schedule(() -> UIUtil.invokeLaterIfNeeded(() -> {
+              notification.expire();
 
-                // If the 'Reloading…' notification is still the most recent one, then clear it.
-                if (isLastNotification(notification)) {
-                  removeRunNotifications(app);
-                }
-              });
-            }, delay, TimeUnit.MILLISECONDS);
+              // If the 'Reloading…' notification is still the most recent one, then clear it.
+              if (isLastNotification(notification)) {
+                removeRunNotifications(app);
+              }
+            }), delay, TimeUnit.MILLISECONDS);
           }
         }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
       }
@@ -348,33 +337,11 @@ public class FlutterReloadManager {
   }
 
   private boolean hasErrors(@NotNull Project project, @Nullable Module module, @NotNull Document document) {
-    // For 2017.1, we use the IntelliJ parser and look for syntax errors in the current document.
-    // For 2017.2 and later, we instead rely on the analysis server's results for files in the app's module.
-
     final DartAnalysisServerService analysisServerService = DartAnalysisServerService.getInstance(project);
-
-    // TODO(devoncarew): Remove the use of reflection when our minimum revs to 2017.2.
-    final Method getErrorsMethod = ReflectionUtil.getMethod(analysisServerService.getClass(), "getErrors", SearchScope.class);
-    if (getErrorsMethod == null) {
-      final PsiErrorElement firstError = ApplicationManager.getApplication().runReadAction((Computable<PsiErrorElement>)() -> {
-        final PsiFile psiFile = PsiDocumentManager.getInstance(myProject).getPsiFile(document);
-        return PsiTreeUtil.findChildOfType(psiFile, PsiErrorElement.class, false);
-      });
-      return firstError != null;
-    }
-    else {
-      final GlobalSearchScope scope = module == null ? new ProjectAndLibrariesScope(project) : module.getModuleContentScope();
-      try {
-        //List<DartServerData.DartError> errors = analysisServerService.getErrors(scope);
-        //noinspection unchecked
-        List<DartServerData.DartError> errors = (List<DartServerData.DartError>)getErrorsMethod.invoke(analysisServerService, scope);
-        errors = errors.stream().filter(error -> shouldBlockReload(error, project, module)).collect(Collectors.toList());
-        return !errors.isEmpty();
-      }
-      catch (IllegalAccessException | InvocationTargetException e) {
-        return false;
-      }
-    }
+    final GlobalSearchScope scope = module == null ? new ProjectAndLibrariesScope(project) : module.getModuleContentScope();
+    List<DartServerData.DartError> errors = analysisServerService.getErrors(scope);
+    errors = errors.stream().filter(error -> shouldBlockReload(error, project, module)).collect(Collectors.toList());
+    return !errors.isEmpty();
   }
 
   private static boolean shouldBlockReload(@NotNull DartServerData.DartError error, @NotNull Project project, @Nullable Module module) {

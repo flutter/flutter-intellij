@@ -50,6 +50,7 @@ public class FlutterSdkManager {
       timer.cancel(false);
     });
 
+    //noinspection deprecation
     ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
       @Override
       public void projectOpened(@NotNull Project project) {
@@ -108,26 +109,25 @@ public class FlutterSdkManager {
   }
 
   // Listens for changes in Flutter Library configuration state in the Library table.
-  @SuppressWarnings("NullableProblems") //TODO(pq): replace w/ @NotNull annotations when we move to 2017.2
   private final class LibraryTableListener implements LibraryTable.Listener {
     @Override
-    public void afterLibraryAdded(Library newLibrary) {
+    public void afterLibraryAdded(@NotNull Library newLibrary) {
       checkForFlutterSdkChange();
     }
 
     @Override
-    public void afterLibraryRenamed(Library library) {
+    public void afterLibraryRenamed(@NotNull Library library) {
       // Since we key off name, test to be safe.
       checkForFlutterSdkChange();
     }
 
     @Override
-    public void beforeLibraryRemoved(Library library) {
+    public void beforeLibraryRemoved(@NotNull Library library) {
       // Test after.
     }
 
     @Override
-    public void afterLibraryRemoved(Library library) {
+    public void afterLibraryRemoved(@NotNull Library library) {
       checkForFlutterSdkChange();
     }
   }

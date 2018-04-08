@@ -1,24 +1,19 @@
 {
   "list": [
     {
-      "name": "Android Studio",
-      "version": "3.0",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "171.4408382",
-      "dartPluginVersion": "171.4424.10",
-      "sinceBuild": "171.1",
-      "untilBuild": "171.*",
-      "filesToSkip": [
-        "flutter-studio/src/io/flutter/project/FlutterProjectSystemProvider.java",
-        "flutter-studio/src/io/flutter/project/FlutterProjectSystem.java",
-        "src/io/flutter/editor/FlutterCompletionContributor.java"
-      ]
-    },
-    {
       "name": "IntelliJ",
       "version": "3.1",
       "ideaProduct": "android-studio",
-      "ideaVersion": "173.4658569",
+      "ideaVersion": "173.4670197",
+      "dartPluginVersion": "173.4700",
+      "sinceBuild": "173.0",
+      "untilBuild": "173.*"
+    },
+    {
+      "name": "IntelliJ",
+      "version": "3.2",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "173.4688006",
       "dartPluginVersion": "173.4700",
       "sinceBuild": "173.0",
       "untilBuild": "173.*"

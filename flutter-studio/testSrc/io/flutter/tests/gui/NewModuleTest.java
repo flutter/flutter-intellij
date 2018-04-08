@@ -12,20 +12,37 @@ import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterSettingsStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterModuleWizardFixture;
+import com.intellij.openapi.application.PathManager;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.tests.util.WizardUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
 
 import static com.google.common.truth.Truth.assertThat;
 
-@RunWith(GuiTestRunner.class)
+@RunWith(NewModuleTest.CustomRunner.class)
 public class NewModuleTest {
+
+  /**
+   * CustomRunner sets a custom path to the GUI tests.
+   * This needs to be done by the test runner because the test framework
+   * initializes the path before the test class is loaded.
+   */
+  public static class CustomRunner extends GuiTestRunner {
+
+    public CustomRunner(Class<?> testClass) throws InitializationError {
+      super(testClass);
+      System.setProperty("gui.tests.root.dir.path", "somewhere");
+    }
+
+  }
   @Rule public final FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
 
   @Test
   public void createNewAppModule() {
+    PathManager.getHomePath();
     WizardUtils.createNewApplication(myGuiTest);
     FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
     EditorFixture editor = ideFrame.getEditor();

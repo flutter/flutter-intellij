@@ -3,10 +3,8 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.dart;
+package io.flutter.sdk;
 
-import com.google.gson.JsonObject;
-
-public interface DartAnalysisServerServiceExResponseListener {
-  void onResponse(JsonObject json);
+public enum FlutterCommandStartResultStatus {
+  OK, ANOTHER_RUNNING, EXCEPTION
 }

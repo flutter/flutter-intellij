@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
 import static com.intellij.util.ReflectionUtil.getMethod;
 
 public class FlutterNewProjectAction extends AnAction implements DumbAware {
-  private static final Logger LOG = Logger.getInstance("#io.flutter.actions.FlutterNewProjectAction");
+  private static final Logger LOG = Logger.getInstance(FlutterNewProjectAction.class);
 
   public FlutterNewProjectAction() {
     this("New Flutter Project...");
