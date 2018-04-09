@@ -9,6 +9,7 @@ import com.google.common.base.Joiner;
 import com.google.gson.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
@@ -33,6 +34,7 @@ public class InspectorService implements Disposable {
    * Group name to to manage keeping alive nodes in the tree referenced by the inspector.
    */
   private final String groupName;
+  @NotNull private final FlutterApp app;
   @NotNull private final FlutterDebugProcess debugProcess;
   @NotNull private final VmService vmService;
   @NotNull private final Set<InspectorServiceClient> clients;
@@ -45,11 +47,14 @@ public class InspectorService implements Disposable {
   // Flutter dev chanel on March 22, 2018.
   private final boolean isDaemonApiSupported;
 
-  public static CompletableFuture<InspectorService> create(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
+  public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
+                                                           @NotNull FlutterDebugProcess debugProcess,
+                                                           @NotNull VmService vmService) {
+    assert app.getPerfService() != null;
     final EvalOnDartLibrary inspectorLibrary = new EvalOnDartLibrary(
       "package:flutter/src/widgets/widget_inspector.dart",
-      debugProcess,
-      vmService
+      vmService,
+      app.getPerfService()
     );
     final CompletableFuture<Library> libraryFuture = inspectorLibrary.libraryRef.thenComposeAsync(inspectorLibrary::getLibrary);
     return libraryFuture.thenComposeAsync((Library library) -> {
@@ -66,14 +71,17 @@ public class InspectorService implements Disposable {
       }
       throw new RuntimeException("WidgetInspectorService class not found");
     }).thenApplyAsync(
-      (supportedServiceMethods) -> new InspectorService(debugProcess, vmService, inspectorLibrary, supportedServiceMethods));
+      (supportedServiceMethods) -> new InspectorService(
+        app, debugProcess, vmService, inspectorLibrary, supportedServiceMethods));
   }
 
-  private InspectorService(@NotNull FlutterDebugProcess debugProcess,
+  private InspectorService(@NotNull FlutterApp app,
+                           @NotNull FlutterDebugProcess debugProcess,
                            @NotNull VmService vmService,
                            EvalOnDartLibrary inspectorLibrary,
-                           Set<String> supportedServiceMethods) {
+                           @NotNull Set<String> supportedServiceMethods) {
     this.vmService = vmService;
+    this.app = app;
     this.debugProcess = debugProcess;
     this.inspectorLibrary = inspectorLibrary;
     this.supportedServiceMethods = supportedServiceMethods;
@@ -103,6 +111,7 @@ public class InspectorService implements Disposable {
     vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
   }
 
+  @NotNull
   public FlutterDebugProcess getDebugProcess() {
     return debugProcess;
   }
@@ -143,10 +152,11 @@ public class InspectorService implements Disposable {
 
   private EvalOnDartLibrary getInspectorLibrary() {
     if (inspectorLibrary == null) {
+      assert app.getPerfService() != null;
       inspectorLibrary = new EvalOnDartLibrary(
         "package:flutter/src/widgets/widget_inspector.dart",
-        debugProcess,
-        vmService
+        vmService,
+        app.getPerfService()
       );
     }
     return inspectorLibrary;
@@ -530,7 +540,7 @@ public class InspectorService implements Disposable {
     // TODO(jacobr): dispose everything that needs to be disposed of.
   }
 
-  private void maybeDisposeInspectorLibrary() {
+  private void disposeInspectorLibrary() {
     if (inspectorLibrary != null) {
       inspectorLibrary.dispose();
       inspectorLibrary = null;
@@ -540,16 +550,19 @@ public class InspectorService implements Disposable {
   private void onVmServiceReceived(String streamId, Event event) {
     switch (streamId) {
       case VmService.ISOLATE_STREAM_ID:
-        if (event.getKind() == EventKind.IsolateStart) {
-          maybeDisposeInspectorLibrary();
-        }
-        else if (event.getKind() == EventKind.IsolateExit) {
-          maybeDisposeInspectorLibrary();
-          ApplicationManager.getApplication().invokeLater(() -> {
-            for (InspectorServiceClient client : clients) {
-              client.onIsolateStopped();
-            }
-          });
+        if (event.getKind() == EventKind.IsolateExit) {
+          assert app.getPerfService() != null;
+          final IsolateRef flutterIsolate = app.getPerfService().getCurrentFlutterIsolate();
+
+          // Only call disposeInspectorLibrary() if it was the flutter isolate that exited.
+          if (flutterIsolate != null && StringUtil.equals(flutterIsolate.getId(), event.getIsolate().getId())) {
+            disposeInspectorLibrary();
+            ApplicationManager.getApplication().invokeLater(() -> {
+              for (InspectorServiceClient client : clients) {
+                client.onIsolateStopped();
+              }
+            });
+          }
         }
         break;
 
