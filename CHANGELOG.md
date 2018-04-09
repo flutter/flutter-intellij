@@ -1,3 +1,6 @@
+## 23.2
+- updated some Bazel breakpoint logic
+
 ## 23.1
 - disabled an Android facet's ALLOW_USER_CONFIGURATION setting, to address a continuous indexing issue
 
