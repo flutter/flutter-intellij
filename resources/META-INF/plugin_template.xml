@@ -237,6 +237,8 @@
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 
     <library.type implementation="io.flutter.sdk.FlutterPluginLibraryType"/>
+
+    <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->

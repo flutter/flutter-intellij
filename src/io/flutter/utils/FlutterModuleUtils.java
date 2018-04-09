@@ -308,7 +308,7 @@ public class FlutterModuleUtils {
     ProjectManager.getInstance().reloadProject(project);
   }
 
-  private static void enableDartSDK(@NotNull Module module) {
+  public static void enableDartSDK(@NotNull Module module) {
     if (DartPlugin.isDartSdkEnabled(module)) {
       return;
     }
