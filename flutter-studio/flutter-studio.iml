@@ -33,6 +33,7 @@
     <orderEntry type="module" module-name="android-test-framework" scope="TEST" />
     <orderEntry type="module" module-name="external-system-rt" scope="TEST" />
     <orderEntry type="module" module-name="designer" scope="TEST" />
+    <orderEntry type="module" module-name="testutils" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
     <orderEntry type="module" module-name="project-system" />
