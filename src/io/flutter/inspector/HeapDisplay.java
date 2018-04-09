@@ -92,8 +92,8 @@ public class HeapDisplay extends JPanel {
     };
 
     assert app.getPerfService() != null;
-    app.getPerfService().addListener(listener);
-    Disposer.register(parentDisposable, () -> app.getPerfService().removeListener(listener));
+    app.getPerfService().addHeapListener(listener);
+    Disposer.register(parentDisposable, () -> app.getPerfService().removeHeapListener(listener));
 
     return panel;
   }
@@ -112,7 +112,7 @@ public class HeapDisplay extends JPanel {
 
       final PerfService service = app.getPerfService();
       assert service != null;
-      app.getPerfService().addListener(this);
+      app.getPerfService().addHeapListener(this);
       Disposer.register(parent, this);
     }
 
@@ -158,7 +158,7 @@ public class HeapDisplay extends JPanel {
     @Override
     public void dispose() {
       if (app.getPerfService() != null) {
-        app.getPerfService().removeListener(this);
+        app.getPerfService().removeHeapListener(this);
       }
     }
 

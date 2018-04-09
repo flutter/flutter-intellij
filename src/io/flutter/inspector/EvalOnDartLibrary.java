@@ -5,7 +5,6 @@
  */
 package io.flutter.inspector;
 
-import com.google.common.collect.Iterables;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
@@ -13,16 +12,18 @@ import com.intellij.util.Alarm;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.IsolatesInfo;
-import io.flutter.run.FlutterDebugProcess;
+import io.flutter.perf.PerfService;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.*;
+import org.dartlang.vm.service.consumer.Consumer;
+import org.dartlang.vm.service.consumer.EvaluateConsumer;
+import org.dartlang.vm.service.consumer.GetIsolateConsumer;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -32,46 +33,35 @@ import java.util.concurrent.CompletableFuture;
 public class EvalOnDartLibrary implements Disposable {
   private String isolateId;
   private final VmService vmService;
+  @SuppressWarnings("FieldCanBeLocal") private final PerfService perfService;
   private final String libraryName;
   final CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
 
-  public EvalOnDartLibrary(String libraryName, FlutterDebugProcess debugProcess, VmService vmService) {
-    this.vmService = vmService;
-    final Collection<IsolatesInfo.IsolateInfo> isolates = debugProcess.getIsolateInfos();
+  public EvalOnDartLibrary(String libraryName, VmService vmService, PerfService perfService) {
     this.libraryName = libraryName;
+    this.vmService = vmService;
+    this.perfService = perfService;
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
     libraryRef = new CompletableFuture<>();
 
-    if (isolates.isEmpty()) {
-      // Due to a race condition that would take fixing the Dart plugin to fix,
-      // it is possible the debugProcess doesn't yet show any isolate infos
-      // even though the isolates have started so we get the isolate info
-      // ourselves in that case.
-      vmService.getVM(new VMConsumer() {
+    if (perfService.getCurrentFlutterIsolate() == null) {
+      //noinspection Convert2Lambda
+      final PerfService.FlutterIsolateListener listener = new PerfService.FlutterIsolateListener() {
         @Override
-        public void received(VM vm) {
-          final ElementList<IsolateRef> isolatesList = vm.getIsolates();
-          // If Flutter applications support multiple isolates we need to add
-          // logic to determine which isolate is running Flutter UI code.
-          assert(isolatesList.size() == 1);
-          isolateId = isolatesList.get(0).getId();
-          initialize();
-        }
+        public void handleFutterIsolateChanged(@Nullable IsolateRef isolateRef) {
+          if (libraryRef.isDone()) {
+            return;
+          }
 
-        @Override
-        public void onError(RPCError error) {
-          libraryRef.completeExceptionally(new RuntimeException(error.toString()));
+          initialize(perfService.getCurrentFlutterIsolate().getId());
         }
-      });
+      };
+      perfService.addFlutterIsolateListener(listener);
     }
     else {
-      // If Flutter applications support multiple isolates we need to add
-      // logic to determine which isolate is running Flutter UI code.
-      assert(isolates.size() == 1);
-      isolateId = Iterables.get(isolates, 0).getIsolateId();
-      initialize();
+      initialize(perfService.getCurrentFlutterIsolate().getId());
     }
   }
 
@@ -169,7 +159,7 @@ public class EvalOnDartLibrary implements Disposable {
   }
 
   @NotNull
-  public CompletableFuture<XSourcePosition> getSourcePosition(DartVmServiceDebugProcess debugProcess,  ScriptRef script, int tokenPos) {
+  public CompletableFuture<XSourcePosition> getSourcePosition(DartVmServiceDebugProcess debugProcess, ScriptRef script, int tokenPos) {
     final CompletableFuture<XSourcePosition> future = new CompletableFuture<>();
     myRequestsScheduler.addRequest(() -> future.complete(debugProcess.getSourcePosition(isolateId, script, tokenPos)), 0);
     return future;
@@ -212,7 +202,9 @@ public class EvalOnDartLibrary implements Disposable {
     return obj;
   }
 
-  private void initialize() {
+  private void initialize(String isolateId) {
+    this.isolateId = isolateId;
+
     vmService.getIsolate(isolateId, new GetIsolateConsumer() {
       @Override
       public void received(Isolate response) {
