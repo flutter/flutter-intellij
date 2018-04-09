@@ -9,7 +9,6 @@ import com.google.common.base.Joiner;
 import com.google.gson.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
@@ -38,7 +37,7 @@ public class InspectorService implements Disposable {
   @NotNull private final FlutterDebugProcess debugProcess;
   @NotNull private final VmService vmService;
   @NotNull private final Set<InspectorServiceClient> clients;
-  private EvalOnDartLibrary inspectorLibrary;
+  @NotNull private final EvalOnDartLibrary inspectorLibrary;
   @NotNull private final Set<String> supportedServiceMethods;
 
   // TODO(jacobr): remove this field as soon as
@@ -151,14 +150,6 @@ public class InspectorService implements Disposable {
   }
 
   private EvalOnDartLibrary getInspectorLibrary() {
-    if (inspectorLibrary == null) {
-      assert app.getPerfService() != null;
-      inspectorLibrary = new EvalOnDartLibrary(
-        "package:flutter/src/widgets/widget_inspector.dart",
-        vmService,
-        app.getPerfService()
-      );
-    }
     return inspectorLibrary;
   }
 
@@ -537,35 +528,11 @@ public class InspectorService implements Disposable {
 
   @Override
   public void dispose() {
-    // TODO(jacobr): dispose everything that needs to be disposed of.
-  }
-
-  private void disposeInspectorLibrary() {
-    if (inspectorLibrary != null) {
-      inspectorLibrary.dispose();
-      inspectorLibrary = null;
-    }
+    inspectorLibrary.dispose();
   }
 
   private void onVmServiceReceived(String streamId, Event event) {
     switch (streamId) {
-      case VmService.ISOLATE_STREAM_ID:
-        if (event.getKind() == EventKind.IsolateExit) {
-          assert app.getPerfService() != null;
-          final IsolateRef flutterIsolate = app.getPerfService().getCurrentFlutterIsolate();
-
-          // Only call disposeInspectorLibrary() if it was the flutter isolate that exited.
-          if (flutterIsolate != null && StringUtil.equals(flutterIsolate.getId(), event.getIsolate().getId())) {
-            disposeInspectorLibrary();
-            ApplicationManager.getApplication().invokeLater(() -> {
-              for (InspectorServiceClient client : clients) {
-                client.onIsolateStopped();
-              }
-            });
-          }
-        }
-        break;
-
       case VmService.DEBUG_STREAM_ID: {
         if (event.getKind() == EventKind.Inspect) {
           // Make sure the WidgetInspector on the device switches to show the inspected object
@@ -683,7 +650,5 @@ public class InspectorService implements Disposable {
     void onInspectorSelectionChanged();
 
     void onFlutterFrame();
-
-    void onIsolateStopped();
   }
 }

@@ -32,7 +32,9 @@ import io.flutter.FlutterBundle;
 import io.flutter.run.FlutterLaunchMode;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
+import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -267,6 +269,41 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(executionEnvironment);
     if (launchMode.supportsDebugConnection()) {
       myVmServiceWrapper.handleDebuggerConnected();
+
+      // TODO(jacobr): the following code is a workaround for issues
+      // auto-resuming isolates paused at their creation while running in
+      // debug mode.
+      // The ideal fix would by to fix VMServiceWrapper so that it checks
+      // for already running isolates like we do here or to refactor where we
+      // create our VmServiceWrapper so we can listen for isolate creation soon
+      // enough that we never miss an isolate creation message.
+      vmService.getVM(new VMConsumer() {
+        @Override
+        public void received(VM vm) {
+          final ElementList<IsolateRef> isolates = vm.getIsolates();
+          // There is a risk the isolate we care about loaded before the call
+          // to handleDebuggerConnected was made and so
+          for (IsolateRef isolateRef : isolates) {
+            vmService.getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
+              public void received(Isolate isolate) {
+                final Event event = isolate.getPauseEvent();
+                final EventKind eventKind = event.getKind();
+                if (eventKind == EventKind.PauseStart) {
+                  ApplicationManager.getApplication().invokeLater(() -> {
+                    // We are assuming it is safe to call handleIsolate multiple times.
+                    myVmServiceWrapper.handleIsolate(isolateRef, true);
+                  });
+                }
+              }
+            });
+          }
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          System.out.println("XXX got an error" + error);
+        }
+      });
     }
 
     // We re-enable the remote debug flag so that the service wrapper will call our guessRemoteProjectRoot()

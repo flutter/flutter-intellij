@@ -32,8 +32,10 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncRateLimiter;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.ColorIconMaker;
+import io.flutter.utils.StreamSubscription;
 import org.apache.commons.lang.StringUtils;
 import org.dartlang.vm.service.element.InstanceRef;
+import org.dartlang.vm.service.element.IsolateRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -83,6 +85,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   @NotNull
   private final FlutterApp flutterApp;
   @NotNull private final InspectorService inspectorService;
+  private final StreamSubscription<IsolateRef> flutterIsolateSubscription;
   private CompletableFuture<DiagnosticsNode> rootFuture;
 
   private static final DataKey<Tree> INSPECTOR_KEY = DataKey.create("Flutter.InspectorKey");
@@ -152,6 +155,12 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     treeSplitter.setFirstComponent(rootsTreeScrollPane);
     treeSplitter.setSecondComponent(ScrollPaneFactory.createScrollPane(myPropertiesPanel));
     add(treeSplitter);
+
+    flutterIsolateSubscription = inspectorService.getApp().getPerfService().getCurrentFlutterIsolate((IsolateRef flutterIsolate) -> {
+      if (flutterIsolate == null) {
+        onIsolateStopped();
+      }
+    }, true);
   }
 
   static DiagnosticsNode getDiagnosticNode(TreeNode treeNode) {
@@ -481,6 +490,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
   @Override
   public void dispose() {
+    flutterIsolateSubscription.dispose();
     // TODO(jacobr): actually implement.
   }
 
