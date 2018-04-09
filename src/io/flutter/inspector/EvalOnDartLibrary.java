@@ -13,6 +13,7 @@ import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
 import io.flutter.perf.PerfService;
+import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.Consumer;
 import org.dartlang.vm.service.consumer.EvaluateConsumer;
@@ -20,7 +21,6 @@ import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,11 +31,12 @@ import java.util.concurrent.CompletableFuture;
  * Invoke methods from a specified Dart library using the observatory protocol.
  */
 public class EvalOnDartLibrary implements Disposable {
+  private final StreamSubscription<IsolateRef> subscription;
   private String isolateId;
   private final VmService vmService;
   @SuppressWarnings("FieldCanBeLocal") private final PerfService perfService;
   private final String libraryName;
-  final CompletableFuture<LibraryRef> libraryRef;
+  CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
 
@@ -46,23 +47,15 @@ public class EvalOnDartLibrary implements Disposable {
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
     libraryRef = new CompletableFuture<>();
 
-    if (perfService.getCurrentFlutterIsolate() == null) {
-      //noinspection Convert2Lambda
-      final PerfService.FlutterIsolateListener listener = new PerfService.FlutterIsolateListener() {
-        @Override
-        public void handleFutterIsolateChanged(@Nullable IsolateRef isolateRef) {
-          if (libraryRef.isDone()) {
-            return;
-          }
+    subscription = perfService.getCurrentFlutterIsolate((isolate) -> {
+      if (libraryRef.isDone()) {
+        libraryRef = new CompletableFuture<>();
+      }
 
-          initialize(perfService.getCurrentFlutterIsolate().getId());
-        }
-      };
-      perfService.addFlutterIsolateListener(listener);
-    }
-    else {
-      initialize(perfService.getCurrentFlutterIsolate().getId());
-    }
+      if (isolate != null) {
+        initialize(isolate.getId());
+      }
+    }, true);
   }
 
   public String getIsolateId() {
@@ -71,6 +64,7 @@ public class EvalOnDartLibrary implements Disposable {
 
   public void dispose() {
     myRequestsScheduler.dispose();
+    subscription.dispose();
     // TODO(jacobr): complete all pending futures as cancelled?
   }
 

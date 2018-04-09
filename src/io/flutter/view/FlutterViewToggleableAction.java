@@ -5,19 +5,22 @@
  */
 package io.flutter.view;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable {
+abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
   private boolean selected = false;
   private String extensionCommand;
+  private StreamSubscription<Boolean> subscription;
 
   FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
     super(app, text);
@@ -33,18 +36,33 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
 
   @Override
   public final void update(@NotNull AnActionEvent e) {
-    boolean enabled = app.isSessionActive();
-    if (enabled && extensionCommand != null) {
-      enabled = app.hasServiceExtension(extensionCommand);
-    }
-
     // selected
     final boolean selected = this.isSelected();
     final Presentation presentation = e.getPresentation();
     presentation.putClientProperty("selected", selected);
 
-    // enabled
-    e.getPresentation().setEnabled(enabled);
+    if (!app.isSessionActive()) {
+      if (subscription != null) {
+        subscription.dispose();
+        subscription = null;
+      }
+      e.getPresentation().setEnabled(false);
+      return;
+    }
+
+    if (subscription == null) {
+      subscription = app.hasServiceExtension(extensionCommand, (enabled) -> {
+        e.getPresentation().setEnabled(app.isSessionActive() && enabled);
+      });
+    }
+  }
+
+  @Override
+  public void dispose() {
+    if (subscription != null) {
+      subscription.dispose();
+      subscription = null;
+    }
   }
 
   @Override

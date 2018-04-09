@@ -5,44 +5,42 @@
  */
 package io.flutter.perf;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
-import gnu.trove.THashSet;
+import gnu.trove.THashMap;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.utils.EventStream;
+import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.EventListener;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.function.Consumer;
 
 // TODO(pq): rename
 // TODO(pq): improve error handling
 // TODO(pq): change mode for opting in (preference or inspector view menu)
 
 public class PerfService {
-  public interface FlutterIsolateListener extends EventListener {
-    void handleFutterIsolateChanged(@Nullable IsolateRef isolateRef);
-  }
-
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
-  @NotNull private final Set<String> serviceExtensions = new THashSet<>();
+  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
 
-  private final EventDispatcher<FlutterIsolateListener> myIsolateEventDispatcher = EventDispatcher.create(FlutterIsolateListener.class);
+  private final EventStream<IsolateRef> flutterIsolateRefStream;
 
-  private IsolateRef flutterIsolateRef;
   private boolean isRunning;
 
   public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
     this.heapMonitor = new HeapMonitor(vmService, debugProcess);
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
+    flutterIsolateRefStream = new EventStream<>(null);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -76,17 +74,20 @@ public class PerfService {
             @Override
             public void received(Isolate isolate) {
               // Populate flutter isolate info.
-              if (flutterIsolateRef == null) {
+              if (flutterIsolateRefStream.getValue() == null) {
                 for (String extensionName : isolate.getExtensionRPCs()) {
                   if (extensionName.startsWith("ext.flutter.")) {
-                    flutterIsolateRef = isolateRef;
-                    myIsolateEventDispatcher.getMulticaster().handleFutterIsolateChanged(flutterIsolateRef);
+                    setFlutterIsolate(isolateRef);
                     break;
                   }
                 }
               }
 
-              serviceExtensions.addAll(isolate.getExtensionRPCs());
+              ApplicationManager.getApplication().invokeLater(() -> {
+                for (String extension : isolate.getExtensionRPCs()) {
+                  addServiceExtension(extension);
+                }
+              });
             }
 
             @Override
@@ -114,13 +115,13 @@ public class PerfService {
   }
 
   /**
-   * Return the current Flutter isolate.
+   * Returns a StreamSubscription providing the current Flutter isolate.
    * <p>
-   * This can be null occasionally during initial application startup and for a brief time when doing a full restart.
+   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
+   * full restart.
    */
-  @Nullable
-  public IsolateRef getCurrentFlutterIsolate() {
-    return flutterIsolateRef;
+  public StreamSubscription<IsolateRef> getCurrentFlutterIsolate(Consumer<IsolateRef> onValue, boolean onUIThread) {
+    return flutterIsolateRefStream.listen(onValue, onUIThread);
   }
 
   /**
@@ -141,23 +142,47 @@ public class PerfService {
     isRunning = false;
   }
 
+  private void setFlutterIsolate(IsolateRef ref) {
+    synchronized (flutterIsolateRefStream) {
+      final IsolateRef existing = flutterIsolateRefStream.getValue();
+      if (existing == ref || (existing != null && ref != null && StringUtil.equals(existing.getId(), ref.getId()))) {
+        // Isolate didn't change.
+        return;
+      }
+      flutterIsolateRefStream.setValue(ref);
+    }
+  }
+
   @SuppressWarnings("EmptyMethod")
   private void onVmServiceReceived(String streamId, Event event) {
     // Check for the current Flutter isolate exiting.
+    final IsolateRef flutterIsolateRef = flutterIsolateRefStream.getValue();
     if (flutterIsolateRef != null) {
       if (event.getKind() == EventKind.IsolateExit && StringUtil.equals(event.getIsolate().getId(), flutterIsolateRef.getId())) {
-        flutterIsolateRef = null;
-        myIsolateEventDispatcher.getMulticaster().handleFutterIsolateChanged(flutterIsolateRef);
+        setFlutterIsolate(null);
+
+        Iterable<EventStream<Boolean>> existingExtensions;
+        synchronized (serviceExtensions) {
+          existingExtensions = new ArrayList<>(serviceExtensions.values());
+        }
+        for (EventStream<Boolean> serviceExtension : existingExtensions) {
+          // The next Flutter isolate to load might not support this service
+          // extension.
+          serviceExtension.setValue(false);
+        }
       }
     }
 
+    if (event.getKind() == EventKind.ServiceExtensionAdded) {
+      addServiceExtension(event.getExtensionRPC());
+    }
+
     // Check to see if there's a new Flutter isolate.
-    if (flutterIsolateRef == null) {
+    if (flutterIsolateRefStream.getValue() == null) {
       // Check for Flutter frame events.
       if (event.getKind() == EventKind.Extension && event.getExtensionKind().startsWith("Flutter.")) {
         // Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame
-        flutterIsolateRef = event.getIsolate();
-        myIsolateEventDispatcher.getMulticaster().handleFutterIsolateChanged(flutterIsolateRef);
+        setFlutterIsolate(event.getIsolate());
       }
 
       // Check for service extension registrations.
@@ -165,8 +190,7 @@ public class PerfService {
         final String extensionName = event.getExtensionRPC();
 
         if (extensionName.startsWith("ext.flutter.")) {
-          flutterIsolateRef = event.getIsolate();
-          myIsolateEventDispatcher.getMulticaster().handleFutterIsolateChanged(flutterIsolateRef);
+          setFlutterIsolate(event.getIsolate());
         }
       }
     }
@@ -182,8 +206,20 @@ public class PerfService {
 
       heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
     }
-    else if (StringUtil.equals(streamId, VmService.ISOLATE_STREAM_ID) && event.getKind() == EventKind.ServiceExtensionAdded) {
-      serviceExtensions.add(event.getExtensionRPC());
+  }
+
+  /**
+   * This method must only be called on the UI thread.
+   */
+  private void addServiceExtension(String name) {
+    synchronized (serviceExtensions) {
+      EventStream<Boolean> stream = serviceExtensions.get(name);
+      if (stream == null) {
+        serviceExtensions.put(name, new EventStream<>(true));
+      }
+      else if (stream.getValue() == false) {
+        stream.setValue(true);
+      }
     }
   }
 
@@ -216,15 +252,16 @@ public class PerfService {
     }
   }
 
-  public void addFlutterIsolateListener(@NotNull FlutterIsolateListener listener) {
-    myIsolateEventDispatcher.addListener(listener);
-  }
-
-  public void removeFlutterIsolateListener(@NotNull FlutterIsolateListener listener) {
-    myIsolateEventDispatcher.removeListener(listener);
-  }
-
-  public boolean hasServiceExtension(String name) {
-    return serviceExtensions.contains(name);
+  public @NotNull
+  StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
+    EventStream<Boolean> stream;
+    synchronized (serviceExtensions) {
+      stream = serviceExtensions.get(name);
+      if (stream == null) {
+        stream = new EventStream<>(false);
+        serviceExtensions.put(name, stream);
+      }
+    }
+    return stream.listen(onData, true);
   }
 }
