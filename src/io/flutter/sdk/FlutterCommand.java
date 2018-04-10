@@ -112,17 +112,16 @@ public class FlutterCommand {
    * Starts running the command, showing its output in a non-module console.
    * <p>
    * Shows the output in a tab in the tool window that's not associated
-   * with a particular module. Returns the process.
+   * with a particular module. Returns the process handler.
    * <p>
    * If unable to start (for example, if a command is already running), returns null.
    */
-  public Process startInConsole(@NotNull Project project) {
+  public OSProcessHandler startInConsole(@NotNull Project project) {
     final OSProcessHandler handler = startProcessOrShowError(project);
-    if (handler == null) {
-      return null;
+    if (handler != null) {
+      FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
     }
-    FlutterConsoles.displayProcessLater(handler, project, null, handler::startNotify);
-    return handler.getProcess();
+    return handler;
   }
 
   /**
@@ -143,7 +142,7 @@ public class FlutterCommand {
     }
     handler.addProcessListener(new ProcessAdapter() {
       @Override
-      public void processTerminated(ProcessEvent event) {
+      public void processTerminated(@NotNull ProcessEvent event) {
         if (onDone != null) {
           onDone.run();
         }
@@ -214,7 +213,7 @@ public class FlutterCommand {
       handler = new OSProcessHandler(commandLine);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
-        public void processTerminated(final ProcessEvent event) {
+        public void processTerminated(@NotNull final ProcessEvent event) {
           inProgress.compareAndSet(FlutterCommand.this, null);
           if (isPubRelatedCommand()) {
             DartPlugin.setPubActionInProgress(false);
