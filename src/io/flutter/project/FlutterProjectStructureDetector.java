@@ -10,10 +10,10 @@ import com.intellij.ide.util.importProject.ProjectDescriptor;
 import com.intellij.ide.util.projectWizard.importSources.DetectedProjectRoot;
 import com.intellij.ide.util.projectWizard.importSources.ProjectFromSourcesBuilder;
 import com.intellij.ide.util.projectWizard.importSources.ProjectStructureDetector;
-import com.intellij.openapi.module.JavaModuleType;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.pub.PubRoot;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -57,7 +57,7 @@ public class FlutterProjectStructureDetector extends ProjectStructureDetector {
                                     @NotNull ProjectFromSourcesBuilder builder) {
     final List<ModuleDescriptor> modules = new ArrayList<>();
     for (DetectedProjectRoot root : roots) {
-      modules.add(new ModuleDescriptor(root.getDirectory(), JavaModuleType.getModuleType(), Collections.emptyList()));
+      modules.add(new ModuleDescriptor(root.getDirectory(), FlutterModuleUtils.getFlutterModuleType(), Collections.emptyList()));
     }
 
     projectDescriptor.setModules(modules);
