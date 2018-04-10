@@ -15,6 +15,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ProjectRootManager;
 import com.intellij.openapi.startup.StartupActivity;
@@ -130,26 +132,33 @@ public class FlutterInitializer implements StartupActivity {
     FlutterViewFactory.init(project);
 
     // If the project declares a Flutter dependency, do some extra initialization.
-    final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
-    if (root != null && root.declaresFlutter()) {
-      // Set Android SDK.
-      if (root.hasAndroidModule(project)) {
-        ensureAndroidSdk(project);
-      }
+    for (Module module : ModuleManager.getInstance(project).getModules()) {
+      final PubRoot root = PubRoot.forModuleWithRefresh(module);
+      if (root != null && root.declaresFlutter()) {
 
-      // Setup a default run configuration for 'main.dart' (if it's not there already and the file exists).
-      FlutterModuleUtils.autoCreateRunConfig(project, root);
+        // Ensure SDKs are configured; needed for clean module import.
+        FlutterModuleUtils.setFlutterModuleType(module);
+        FlutterModuleUtils.enableDartSDK(module);
 
-      // Ensure a run config is selected and ready to go.
-      FlutterModuleUtils.ensureRunConfigSelected(project);
+        // Set Android SDK.
+        if (root.hasAndroidModule(project)) {
+          ensureAndroidSdk(project);
+        }
 
-      // If there are no open editors, show main.
-      final FileEditorManager editorManager = FileEditorManager.getInstance(project);
-      if (editorManager.getOpenFiles().length == 0) {
-        FlutterModuleUtils.autoShowMain(project, root);
+        // Setup a default run configuration for 'main.dart' (if it's not there already and the file exists).
+        FlutterModuleUtils.autoCreateRunConfig(project, root);
+
+        // Ensure a run config is selected and ready to go.
+        FlutterModuleUtils.ensureRunConfigSelected(project);
+
+        // If there are no open editors, show main.
+        final FileEditorManager editorManager = FileEditorManager.getInstance(project);
+        if (editorManager.getOpenFiles().length == 0) {
+          FlutterModuleUtils.autoShowMain(project, root);
+        }
       }
     }
-
+    
     FlutterRunNotifications.init(project);
 
     // Watch save actions for reload on save.

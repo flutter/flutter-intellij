@@ -9,10 +9,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -55,6 +52,10 @@ public class FlutterModuleUtils {
   @NotNull
   public static String getModuleTypeIDForFlutter() {
     return "JAVA_MODULE";
+  }
+
+  public static ModuleType getFlutterModuleType() {
+    return ModuleTypeManager.getInstance().findByID(getModuleTypeIDForFlutter());
   }
 
   /**
@@ -308,7 +309,7 @@ public class FlutterModuleUtils {
     ProjectManager.getInstance().reloadProject(project);
   }
 
-  private static void enableDartSDK(@NotNull Module module) {
+  public static void enableDartSDK(@NotNull Module module) {
     if (DartPlugin.isDartSdkEnabled(module)) {
       return;
     }
