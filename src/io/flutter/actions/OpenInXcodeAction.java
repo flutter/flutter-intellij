@@ -72,19 +72,29 @@ public class OpenInXcodeAction extends AnAction {
       final ProgressHelper progressHelper = new ProgressHelper(project);
       progressHelper.start("Building for iOS");
 
-      sdk.flutterBuild(pubRoot, "ios", "--debug").start(null, new ProcessAdapter() {
-        @Override
-        public void processTerminated(@NotNull ProcessEvent event) {
-          progressHelper.done();
+      // TODO(pq): consider a popup explaining why we're doing a build.
+      // Note: we build only for the simulator to bypass device provisioning issues.
+      final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", "--simulator").startInConsole(project);
+      if (processHandler == null) {
+        progressHelper.done();
+        FlutterMessages.showError("Error Opening Xcode", "unable to run `flutter build`");
+      }
+      else {
+        processHandler.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void processTerminated(@NotNull ProcessEvent event) {
+            progressHelper.done();
 
-          if (event.getExitCode() != 0) {
-            FlutterMessages.showError("Error Opening Xcode", "`flutter build` returned: " + event.getExitCode());
-            return;
+            final int exitCode = event.getExitCode();
+            if (exitCode != 0) {
+              FlutterMessages.showError("Error Opening Xcode", "`flutter build` returned: " + exitCode);
+              return;
+            }
+
+            openWithXcode(file.getPath());
           }
-
-          openWithXcode(file.getPath());
-        }
-      });
+        });
+      }
     }
     else {
       openWithXcode(file.getPath());
@@ -102,7 +112,7 @@ public class OpenInXcodeAction extends AnAction {
       final OSProcessHandler handler = new OSProcessHandler(cmd);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
-        public void processTerminated(final ProcessEvent event) {
+        public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
             FlutterMessages.showError("Error Opening", path);
           }

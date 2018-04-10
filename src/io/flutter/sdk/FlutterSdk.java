@@ -268,10 +268,11 @@ public class FlutterSdk {
    */
   public boolean sync(@NotNull Project project) {
     try {
-      final Process process = flutterVersion().startInConsole(project);
-      if (process == null) {
+      final OSProcessHandler handler = flutterVersion().startInConsole(project);
+      if (handler == null) {
         return false;
       }
+      final Process process = handler.getProcess();
       process.waitFor();
       if (process.exitValue() != 0) {
         return false;
@@ -431,7 +432,7 @@ public class FlutterSdk {
       boolean hasSeenStartingBrace = false;
 
       @Override
-      public void onTextAvailable(ProcessEvent event, Key outputType) {
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
         // {"android-studio-dir":"/Applications/Android Studio 3.0 Preview.app/Contents"}
         if (outputType == ProcessOutputTypes.STDOUT) {
           // Ignore any non-json starting lines (like "Building flutter tool...").
