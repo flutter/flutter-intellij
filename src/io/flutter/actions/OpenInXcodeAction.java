@@ -72,7 +72,7 @@ public class OpenInXcodeAction extends AnAction {
       final ProgressHelper progressHelper = new ProgressHelper(project);
       progressHelper.start("Building for iOS");
 
-      // TODO(pq): consider a popup explaing why we're doing a build.
+      // TODO(pq): consider a popup explaining why we're doing a build.
       // Note: we build only for the simulator to bypass device provisioning issues.
       final OSProcessHandler processHandler = sdk.flutterBuild(pubRoot, "ios", "--simulator").startInConsole(project);
       if (processHandler == null) {
