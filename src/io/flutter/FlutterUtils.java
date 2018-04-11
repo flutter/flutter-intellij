@@ -93,7 +93,7 @@ public class FlutterUtils {
    */
   public static boolean isInFlutterProject(@NotNull PsiElement element) {
     final Module module = ModuleUtil.findModuleForPsiElement(element);
-    return module != null && FlutterModuleUtils.usesFlutter(module);
+    return module != null && FlutterModuleUtils.declaresFlutter(module);
   }
 
   public static boolean isInTestDir(@Nullable DartFile file) {
