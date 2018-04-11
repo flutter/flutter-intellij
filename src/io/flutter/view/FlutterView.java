@@ -112,6 +112,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   void initToolWindow(ToolWindow window) {
+    if (window.isDisposed()) return;
+
     // Add a feedback button.
     if (window instanceof ToolWindowEx) {
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
