@@ -301,7 +301,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
         @Override
         public void onError(RPCError error) {
-          System.out.println("XXX got an error" + error);
+          LOG.error(error.toString());
         }
       });
     }

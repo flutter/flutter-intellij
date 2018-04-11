@@ -40,7 +40,7 @@ public class PerfService {
   public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
     this.heapMonitor = new HeapMonitor(vmService, debugProcess);
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
-    flutterIsolateRefStream = new EventStream<>(null);
+    flutterIsolateRefStream = new EventStream<>();
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
