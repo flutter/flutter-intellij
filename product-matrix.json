@@ -13,10 +13,11 @@
       "name": "IntelliJ",
       "version": "3.2",
       "ideaProduct": "android-studio",
-      "ideaVersion": "173.4688006",
-      "dartPluginVersion": "173.4700",
-      "sinceBuild": "173.0",
-      "untilBuild": "173.*"
+      "ideaVersion": "181.4705630",
+      "dartPluginVersion": "181.2784.29",
+      "sinceBuild": "181.0",
+      "untilBuild": "181.*",
+      "filesToSkip": ["src/io/flutter/editor/FlutterCompletionContributor.java"]
     },
     {
       "name": "IntelliJ",
