@@ -311,11 +311,15 @@ class RenderThread extends Thread {
       boolean newProcess = false;
       if (myProcess == null) {
         myProcessRequest = request;
-        myProcess = new ProcessBuilder(request.testerPath,
-                                       "--non-interactive",
-                                       "--use-test-fonts",
-                                       "--packages=" + request.packages.getPath(),
-                                       renderServerPath).start();
+        final ProcessBuilder processBuilder =
+          new ProcessBuilder(request.testerPath,
+                             "--enable-checked-mode",
+                             "--non-interactive",
+                             "--use-test-fonts",
+                             "--packages=" + request.packages.getPath(),
+                             renderServerPath);
+        processBuilder.environment().put("FLUTTER_TEST", "true");
+        myProcess = processBuilder.start();
         myProcessReader = new BufferedReader(new InputStreamReader(myProcess.getInputStream()));
         myProcessWriter = new PrintStream(myProcess.getOutputStream(), true);
         newProcess = true;

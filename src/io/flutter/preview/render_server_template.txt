@@ -11,7 +11,7 @@ import 'package:flutter/material.dart';
 /// should be replaced with actual values that depend on the which library to
 /// import, which widget to instantiate and render, the size of the preview
 /// canvas, etc.
-void main() async {
+void main() {
   try {
     io.stdin
         .transform((new Utf8Codec()).decoder)
