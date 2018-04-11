@@ -33,7 +33,7 @@ public class FlutterIconProvider extends IconProvider {
   @Nullable
   public Icon getIcon(@NotNull final PsiElement element, @Iconable.IconFlags final int flags) {
     final Project project = element.getProject();
-    if (!FlutterModuleUtils.usesFlutter(project)) return null;
+    if (!FlutterModuleUtils.declaresFlutter(project)) return null;
 
     // Directories.
     if (element instanceof PsiDirectory) {

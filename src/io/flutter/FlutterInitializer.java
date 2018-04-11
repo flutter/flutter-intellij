@@ -25,6 +25,7 @@ import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
@@ -132,14 +133,19 @@ public class FlutterInitializer implements StartupActivity {
     FlutterViewFactory.init(project);
 
     // If the project declares a Flutter dependency, do some extra initialization.
+    boolean hasFlutterModule = false;
+
     for (Module module : ModuleManager.getInstance(project).getModules()) {
-      final PubRoot root = PubRoot.forModuleWithRefresh(module);
-      if (root != null && root.declaresFlutter()) {
+      if (!FlutterModuleUtils.declaresFlutter(module)) {
+        continue;
+      }
 
-        // Ensure SDKs are configured; needed for clean module import.
-        FlutterModuleUtils.setFlutterModuleType(module);
-        FlutterModuleUtils.enableDartSDK(module);
+      hasFlutterModule = true;
 
+      // Ensure SDKs are configured; needed for clean module import.
+      FlutterModuleUtils.enableDartSDK(module);
+
+      for (PubRoot root : PubRoots.forModule(module)) {
         // Set Android SDK.
         if (root.hasAndroidModule(project)) {
           ensureAndroidSdk(project);
@@ -148,17 +154,18 @@ public class FlutterInitializer implements StartupActivity {
         // Setup a default run configuration for 'main.dart' (if it's not there already and the file exists).
         FlutterModuleUtils.autoCreateRunConfig(project, root);
 
-        // Ensure a run config is selected and ready to go.
-        FlutterModuleUtils.ensureRunConfigSelected(project);
-
         // If there are no open editors, show main.
-        final FileEditorManager editorManager = FileEditorManager.getInstance(project);
-        if (editorManager.getOpenFiles().length == 0) {
+        if (FileEditorManager.getInstance(project).getOpenFiles().length == 0) {
           FlutterModuleUtils.autoShowMain(project, root);
         }
       }
     }
-    
+
+    if (hasFlutterModule) {
+      // Ensure a run config is selected and ready to go.
+      FlutterModuleUtils.ensureRunConfigSelected(project);
+    }
+
     FlutterRunNotifications.init(project);
 
     // Watch save actions for reload on save.
@@ -200,7 +207,7 @@ public class FlutterInitializer implements StartupActivity {
           notification.expire();
           final Analytics analytics = getAnalytics();
           // We only track for flutter projects.
-          if (FlutterModuleUtils.usesFlutter(project)) {
+          if (FlutterModuleUtils.declaresFlutter(project)) {
             ToolWindowTracker.track(project, analytics);
           }
         }
@@ -216,7 +223,7 @@ public class FlutterInitializer implements StartupActivity {
     }
     else {
       // We only track for flutter projects.
-      if (FlutterModuleUtils.usesFlutter(project)) {
+      if (FlutterModuleUtils.declaresFlutter(project)) {
         ToolWindowTracker.track(project, getAnalytics());
       }
     }
