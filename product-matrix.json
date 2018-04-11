@@ -7,7 +7,8 @@
       "ideaVersion": "173.4670197",
       "dartPluginVersion": "181.4203.498",
       "sinceBuild": "173.0",
-      "untilBuild": "173.*"
+      "untilBuild": "173.*",
+      "filesToSkip": ["src/io/flutter/editor/FlutterCompletionContributor.java"]
     },
     {
       "name": "IntelliJ",
@@ -16,7 +17,8 @@
       "ideaVersion": "181.4705630",
       "dartPluginVersion": "181.4203.498",
       "sinceBuild": "181.0",
-      "untilBuild": "181.*"
+      "untilBuild": "181.*",
+      "filesToSkip": ["src/io/flutter/editor/FlutterCompletionContributor.java"]
     },
     {
       "name": "IntelliJ",
