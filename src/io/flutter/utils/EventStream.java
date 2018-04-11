@@ -18,14 +18,14 @@ import java.util.function.Consumer;
 /**
  * Simple class for listening for a value that can be repeatedly updated.
  * <p>
- * The  benefit of this class instead of listening for events is you don't have
- * to worry about missing values posted to the stream before your code started
- * listening.
+ * The  benefit of using this class instead of listening for events is you
+ * don't have to worry about missing values posted to the stream before your
+ * code started listening which can lead to hard to find bugs.
+ *
  * The benefit of using this class over awaiting a Future is that the value can
  * update multiple times.
  * <p>
- * New values to the EventStream can be posted on any thread to listen can be
- * made from any thread.
+ * The value associated with the EventStream can be set on any thread.
  * <p>
  * The class is inspired by listen method on the Stream class in Dart.
  */
@@ -34,6 +34,10 @@ public class EventStream<T> {
   protected final HashSet<StreamSubscription<T>> subscriptions = new LinkedHashSet<>();
 
   private volatile T currentValue;
+
+  public EventStream() {
+    this(null);
+  }
 
   public EventStream(T initialValue) {
     currentValue = initialValue;

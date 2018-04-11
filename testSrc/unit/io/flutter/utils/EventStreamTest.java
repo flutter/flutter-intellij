@@ -41,14 +41,14 @@ public class EventStreamTest {
     eventStream = new EventStream<>(42);
   }
 
-  void logValueListener(int value) {
+  void logValueListener(Integer value) {
     synchronized (logValueListenerLock) {
       if (onUiThread && !SwingUtilities.isEventDispatchThread()) {
         log("subscriber should be called on Swing thread");
         return;
       }
 
-      log(Integer.toString(value));
+      log("" + value);
 
       numEvents++;
       if (numEvents == expectedEvents) {
@@ -98,6 +98,19 @@ public class EventStreamTest {
     });
 
     checkLog("42", "100", "100", "100", "200", "200");
+  }
+
+  @Test
+  public void nullInitialValue() {
+    expectedEvents = 3;
+    SwingUtilities.invokeLater(() -> {
+      eventStream = new EventStream<>();
+      addLogValueListener(true);
+      eventStream.setValue(100);
+      eventStream.setValue(200);
+    });
+
+    checkLog("null", "100", "200");
   }
 
   @Test
