@@ -39,7 +39,7 @@ else
   ./bin/plugin lint
 
 if [ "$IDEA_VERSION" = "3.1" ] ; then
-  sed -i '' 's/npw\.model\.NewModuleModel/npw.module.NewModuleModel/' flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java
+  sed -i '' -e 's/npw\.model\.NewModuleModel/npw.module.NewModuleModel/' flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java
 fi
 
   # Run the build.
