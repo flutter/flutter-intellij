@@ -161,10 +161,12 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
 
       @Override
       public void logError(final String message, final Throwable exception) {
-        if (!getVmConnected()) {
+        if (!getVmConnected() || getSession() == null) {
           return;
         }
-        getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        if (message != null) {
+          getSession().getConsoleView().print(message.trim() + "\n", ConsoleViewContentType.ERROR_OUTPUT);
+        }
         LOG.warn(message, exception);
       }
 
