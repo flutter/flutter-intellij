@@ -46,6 +46,7 @@ import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
@@ -56,10 +57,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
-
-// TODO(devoncarew): Display an fps graph.
 
 @com.intellij.openapi.components.State(
   name = "FlutterView",
@@ -112,6 +112,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   void initToolWindow(ToolWindow window) {
+    if (window.isDisposed()) return;
+
     // Add a feedback button.
     if (window instanceof ToolWindowEx) {
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
@@ -255,7 +257,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
     else {
       whenCompleteUiThread(
-        InspectorService.create(app.getFlutterDebugProcess(), app.getVmService()),
+        InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService()),
         (InspectorService inspectorService, Throwable throwable) -> {
           if (throwable != null) {
             LOG.warn(throwable);
@@ -548,6 +550,8 @@ class OpenTimelineViewAction extends FlutterViewAction {
 
 class TogglePlatformAction extends FlutterViewAction {
   private Boolean isCurrentlyAndroid;
+  CompletableFuture<Boolean> cachedHasExtensionFuture;
+  private StreamSubscription<Boolean> subscription;
 
   TogglePlatformAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("flutter.view.togglePlatform.text"),
@@ -557,7 +561,20 @@ class TogglePlatformAction extends FlutterViewAction {
 
   @Override
   public void update(@NotNull AnActionEvent e) {
-    e.getPresentation().setEnabled(app.isSessionActive() && app.hasServiceExtension("ext.flutter.platformOverride"));
+    if (!app.isSessionActive()) {
+      if (subscription != null) {
+        subscription.dispose();
+        subscription = null;
+      }
+      e.getPresentation().setEnabled(false);
+      return;
+    }
+
+    if (subscription == null) {
+      subscription = app.hasServiceExtension("ext.flutter.platformOverride", (enabled) -> {
+        e.getPresentation().setEnabled(app.isSessionActive() && enabled);
+      });
+    }
   }
 
   @Override

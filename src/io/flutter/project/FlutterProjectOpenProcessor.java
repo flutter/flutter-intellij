@@ -27,7 +27,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
-
   private static final Logger LOG = Logger.getInstance(FlutterProjectOpenProcessor.class);
 
   private static void handleError(@NotNull Exception e) {
@@ -47,7 +46,7 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   @Override
   public boolean canOpenProject(@Nullable VirtualFile file) {
     if (file == null) return false;
-    ApplicationInfo info = ApplicationInfo.getInstance();
+    final ApplicationInfo info = ApplicationInfo.getInstance();
     if (FlutterUtils.isAndroidStudio()) {
       return false;
     }
@@ -65,7 +64,6 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
   @Nullable
   @Override
   public Project doOpenProject(@NotNull VirtualFile file, @Nullable Project projectToClose, boolean forceOpenInNewFrame) {
-
     // Delegate opening to the platform open processor.
     final ProjectOpenProcessor importProvider = getDelegateImportProvider(file);
     if (importProvider == null) return null;
@@ -73,9 +71,9 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     final Project project = importProvider.doOpenProject(file, projectToClose, forceOpenInNewFrame);
     if (project == null || project.isDisposed()) return project;
 
-    if (FlutterModuleUtils.usesFlutter(project) && !FlutterModuleUtils.hasFlutterModule(project)) {
-      convertToFlutterProject(project);
-    }
+    // Convert any modules that use Flutter but don't have IntelliJ Flutter metadata.
+    convertToFlutterProject(project);
+
     return project;
   }
 
@@ -92,17 +90,11 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
    * (It probably wasn't created with "flutter create" and probably didn't have any IntelliJ configuration before.)
    */
   private static void convertToFlutterProject(@NotNull Project project) {
-    final PubRoot root = PubRoot.singleForProjectWithRefresh(project);
-    if (root == null) {
-      return; // Either no pub roots, or more than one.
+    for (Module module : FlutterModuleUtils.getModules(project)) {
+      if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
+        FlutterModuleUtils.setFlutterModuleAndReload(module, project);
+      }
     }
-
-    final Module module = root.getModule(project);
-    if (module == null) {
-      return; // Shouldn't happen or root would have been null.
-    }
-
-    FlutterModuleUtils.setFlutterModuleAndReload(module, project);
   }
 
   @Override

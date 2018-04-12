@@ -9,10 +9,7 @@ import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -57,28 +54,32 @@ public class FlutterModuleUtils {
     return "JAVA_MODULE";
   }
 
+  public static ModuleType getFlutterModuleType() {
+    return ModuleTypeManager.getInstance().findByID(getModuleTypeIDForFlutter());
+  }
+
   /**
-   * Return true if the passed module is of a Flutter type. Before version M16 this plugin had its own Flutter {@link ModuleType}. Post M16
-   * a Flutter module is defined by the following:
-   * <p>
+   * Return true if the passed module is of a Flutter type. Before version M16 this plugin had its own Flutter {@link ModuleType}.
+   * Post M16 a Flutter module is defined by the following:
+   *
    * <code>
    * [Flutter support enabled for a module] ===
-   * [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
+   *   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
    * </code>
    */
   public static boolean isFlutterModule(@Nullable final Module module) {
     if (module == null) return false;
 
-    // If not IntelliJ, assume a small IDE (no multi-module project support).
-    if (!PlatformUtils.isIntelliJ()) {
-      return usesFlutter(module);
-    }
-    else {
+    if (PlatformUtils.isIntelliJ() || FlutterUtils.isAndroidStudio()) {
       // [Flutter support enabled for a module] ===
-      // [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
+      //   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
       final DartSdk dartSdk = DartPlugin.getDartSdk(module.getProject());
       final String dartSdkPath = dartSdk != null ? dartSdk.getHomePath() : null;
       return dartSdkPath != null && dartSdkPath.endsWith(DART_SDK_SUFFIX) && DartPlugin.isDartSdkEnabled(module);
+    }
+    else {
+      // If not IntelliJ, assume a small IDE (no multi-module project support).
+      return declaresFlutter(module);
     }
   }
 
@@ -97,13 +98,16 @@ public class FlutterModuleUtils {
   @Nullable
   public static Workspace getFlutterBazelWorkspace(@Nullable Project project) {
     if (project == null) return null;
+
     final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
     if (workspace == null) return null;
+
     for (Module module : getModules(project)) {
       if (DartPlugin.isDartSdkEnabled(module) && workspace.usesFlutter(module)) {
         return workspace;
       }
     }
+
     return null;
   }
 
@@ -164,10 +168,10 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Check if any module in this project {@link #usesFlutter(Module)}.
+   * Check if any module in this project {@link #declaresFlutter(Module)}.
    */
-  public static boolean usesFlutter(@NotNull Project project) {
-    return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::usesFlutter);
+  public static boolean declaresFlutter(@NotNull Project project) {
+    return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::declaresFlutter);
   }
 
   /**
@@ -246,7 +250,7 @@ public class FlutterModuleUtils {
    * <p/>
    * True is returned if any of the PubRoots associated with the {@link Module} have a pubspec that declares flutter.
    */
-  public static boolean usesFlutter(@NotNull Module module) {
+  public static boolean declaresFlutter(@NotNull Module module) {
     for (PubRoot root : PubRoots.forModule(module)) {
       if (root.declaresFlutter()) {
         return true;
@@ -264,7 +268,7 @@ public class FlutterModuleUtils {
    */
   @NotNull
   public static List<Module> findModulesWithFlutterContents(@NotNull Project project) {
-    return CollectionUtils.filter(getModules(project), m -> isFlutterModule(m) || usesFlutter(m));
+    return CollectionUtils.filter(getModules(project), module -> isFlutterModule(module) || declaresFlutter(module));
   }
 
   public static boolean convertFromDeprecatedModuleType(@NotNull Project project) {
@@ -289,7 +293,7 @@ public class FlutterModuleUtils {
     }
 
     // Validate that the pubspec references flutter.
-    return FlutterModuleUtils.usesFlutter(module);
+    return FlutterModuleUtils.declaresFlutter(module);
   }
 
   /**
@@ -308,7 +312,7 @@ public class FlutterModuleUtils {
     ProjectManager.getInstance().reloadProject(project);
   }
 
-  private static void enableDartSDK(@NotNull Module module) {
+  public static void enableDartSDK(@NotNull Module module) {
     if (DartPlugin.isDartSdkEnabled(module)) {
       return;
     }

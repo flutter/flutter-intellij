@@ -8,6 +8,7 @@ package io.flutter.pub;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
@@ -28,6 +29,8 @@ import java.util.List;
  * That is, a directory containing (at a minimum) a pubspec.yaml file.
  */
 public class PubRoot {
+  private static final Logger LOG = Logger.getInstance(PubRoot.class);
+
   @NotNull
   private final VirtualFile root;
 
@@ -35,16 +38,16 @@ public class PubRoot {
   private final VirtualFile pubspec;
 
   @Nullable
-  private final VirtualFile packages;
+  private final VirtualFile packagesFile;
 
   @Nullable
   private final VirtualFile lib;
 
-  private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec, @Nullable VirtualFile packages, @Nullable VirtualFile lib) {
+  private PubRoot(@NotNull VirtualFile root, @NotNull VirtualFile pubspec, @Nullable VirtualFile packagesFile, @Nullable VirtualFile lib) {
     assert (!root.getPath().endsWith("/"));
     this.root = root;
     this.pubspec = pubspec;
-    this.packages = packages;
+    this.packagesFile = packagesFile;
     this.lib = lib;
   }
 
@@ -63,57 +66,9 @@ public class PubRoot {
   }
 
   /**
-   * Returns the unique pub root for a project.
-   * <p>
-   * If there is more than one, returns null.
-   */
-  @Nullable
-  public static PubRoot singleForProject(@NotNull Project project) {
-    final List<PubRoot> roots = PubRoots.forProject(project);
-    if (roots.size() != 1) {
-      return null;
-    }
-    return roots.get(0);
-  }
-
-  /**
-   * Returns the unique pub root for a project.
-   * <p>
-   * If there is more than one, returns null.
-   * <p>
-   * Refreshes the returned pubroot's directory. (Not any others.)
-   */
-  @Nullable
-  public static PubRoot singleForProjectWithRefresh(@NotNull Project project) {
-    final PubRoot root = singleForProject(project);
-    return root == null ? null : root.refresh();
-  }
-
-  @NotNull
-  public static List<PubRoot> multipleForProject(@NotNull Project project) {
-    return PubRoots.forProject(project);
-  }
-
-  /**
-   * Returns the unique pub root for a module.
-   * <p>
-   * If there is more than one, returns null.
-   * <p>
-   * Refreshes the returned pubroot's directory. (Not any others.)
-   */
-  @Nullable
-  public static PubRoot forModuleWithRefresh(@NotNull Module module) {
-    final List<PubRoot> roots = PubRoots.forModule(module);
-    if (roots.size() != 1) {
-      return null;
-    }
-    return roots.get(0).refresh();
-  }
-
-  /**
    * Returns the appropriate pub root for an event.
    * <p>
-   * Refreshes the returned pubroot's directory. (Not any others.)
+   * Refreshes the returned pubroot's directory (not any others).
    */
   @Nullable
   public static PubRoot forEventWithRefresh(@NotNull final AnActionEvent event) {
@@ -125,12 +80,18 @@ public class PubRoot {
 
     final Module module = LangDataKeys.MODULE.getData(event.getDataContext());
     if (module != null) {
-      return forModuleWithRefresh(module);
+      final List<PubRoot> roots = PubRoots.forModule(module);
+      if (!roots.isEmpty()) {
+        return roots.get(0);
+      }
     }
 
     final Project project = event.getData(CommonDataKeys.PROJECT);
     if (project != null) {
-      return singleForProjectWithRefresh(project);
+      final List<PubRoot> roots = PubRoots.forProject(project);
+      if (!roots.isEmpty()) {
+        return roots.get(0);
+      }
     }
 
     return null;
@@ -210,12 +171,7 @@ public class PubRoot {
     // Ensure file existence and timestamps are up to date.
     dir.refresh(false, false);
 
-    final PubRoot root = forDirectory(dir);
-    if (root == null) return null;
-
-    final VirtualFile lib = root.getLib();
-    if (lib != null) lib.refresh(false, false);
-    return root;
+    return forDirectory(dir);
   }
 
   /**
@@ -293,8 +249,8 @@ public class PubRoot {
   }
 
   @Nullable
-  public VirtualFile getPackages() {
-    return packages;
+  public VirtualFile getPackagesFile() {
+    return packagesFile;
   }
 
   /**
@@ -302,7 +258,7 @@ public class PubRoot {
    */
   @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public boolean hasUpToDatePackages() {
-    return packages != null && pubspec.getTimeStamp() < packages.getTimeStamp();
+    return packagesFile != null && pubspec.getTimeStamp() < packagesFile.getTimeStamp();
   }
 
   @Nullable
@@ -400,7 +356,9 @@ public class PubRoot {
    */
   @Nullable
   public Module getModule(@NotNull Project project) {
-    if (project.isDisposed()) return null;
+    if (project.isDisposed()) {
+      return null;
+    }
     return ProjectRootManager.getInstance(project).getFileIndex().getModuleForFile(pubspec);
   }
 

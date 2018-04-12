@@ -38,6 +38,12 @@ else
   # Run some validations on the repo code.
   ./bin/plugin lint
 
+if [ "$IDEA_VERSION" = "3.1" ] ; then
+  # The 3.1 sources have a class defined in a different package than 3.2 and later.
+  # Here we adjust the import statement for that change.
+  sed -i 's/npw\.model\.NewModuleModel/npw.module.NewModuleModel/' flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java
+fi
+
   # Run the build.
   ./bin/plugin build --only-version=$IDEA_VERSION
 fi

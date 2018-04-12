@@ -5,11 +5,14 @@
  */
 package io.flutter.perf;
 
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
-import gnu.trove.THashSet;
+import gnu.trove.THashMap;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.utils.EventStream;
+import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
@@ -17,7 +20,9 @@ import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.function.Consumer;
 
 // TODO(pq): rename
 // TODO(pq): improve error handling
@@ -26,13 +31,16 @@ import java.util.Set;
 public class PerfService {
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
-  @NotNull private final Set<String> serviceExtensions = new THashSet<>();
+  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
+
+  private final EventStream<IsolateRef> flutterIsolateRefStream;
 
   private boolean isRunning;
 
   public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
     this.heapMonitor = new HeapMonitor(vmService, debugProcess);
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
+    flutterIsolateRefStream = new EventStream<>();
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -46,23 +54,40 @@ public class PerfService {
       }
     });
 
-    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     vmService.streamListen(VmService.ISOLATE_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
-    // Populate the service extensions info.
+    // Populate the service extensions info and look for any Flutter views.
+    // TODO(devoncarew): This currently returns the first Flutter view found as the
+    // current Flutter isolate, and ignores any other Flutter views running in the app.
+    // In the future, we could add more first class support for multiple Flutter views.
     vmService.getVM(new VMConsumer() {
       @Override
       public void received(VM vm) {
-        for (IsolateRef ref : vm.getIsolates()) {
-          vmService.getIsolate(ref.getId(), new GetIsolateConsumer() {
+        for (final IsolateRef isolateRef : vm.getIsolates()) {
+          vmService.getIsolate(isolateRef.getId(), new GetIsolateConsumer() {
             @Override
             public void onError(RPCError error) {
             }
 
             @Override
             public void received(Isolate isolate) {
-              serviceExtensions.addAll(isolate.getExtensionRPCs());
+              // Populate flutter isolate info.
+              if (flutterIsolateRefStream.getValue() == null) {
+                for (String extensionName : isolate.getExtensionRPCs()) {
+                  if (extensionName.startsWith("ext.flutter.")) {
+                    setFlutterIsolate(isolateRef);
+                    break;
+                  }
+                }
+              }
+
+              ApplicationManager.getApplication().invokeLater(() -> {
+                for (String extension : isolate.getExtensionRPCs()) {
+                  addServiceExtension(extension);
+                }
+              });
             }
 
             @Override
@@ -90,6 +115,16 @@ public class PerfService {
   }
 
   /**
+   * Returns a StreamSubscription providing the current Flutter isolate.
+   * <p>
+   * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
+   * full restart.
+   */
+  public StreamSubscription<IsolateRef> getCurrentFlutterIsolate(Consumer<IsolateRef> onValue, boolean onUIThread) {
+    return flutterIsolateRefStream.listen(onValue, onUIThread);
+  }
+
+  /**
    * Stop the Perf service.
    */
   public void stop() {
@@ -107,8 +142,59 @@ public class PerfService {
     isRunning = false;
   }
 
+  private void setFlutterIsolate(IsolateRef ref) {
+    synchronized (flutterIsolateRefStream) {
+      final IsolateRef existing = flutterIsolateRefStream.getValue();
+      if (existing == ref || (existing != null && ref != null && StringUtil.equals(existing.getId(), ref.getId()))) {
+        // Isolate didn't change.
+        return;
+      }
+      flutterIsolateRefStream.setValue(ref);
+    }
+  }
+
   @SuppressWarnings("EmptyMethod")
   private void onVmServiceReceived(String streamId, Event event) {
+    // Check for the current Flutter isolate exiting.
+    final IsolateRef flutterIsolateRef = flutterIsolateRefStream.getValue();
+    if (flutterIsolateRef != null) {
+      if (event.getKind() == EventKind.IsolateExit && StringUtil.equals(event.getIsolate().getId(), flutterIsolateRef.getId())) {
+        setFlutterIsolate(null);
+
+        Iterable<EventStream<Boolean>> existingExtensions;
+        synchronized (serviceExtensions) {
+          existingExtensions = new ArrayList<>(serviceExtensions.values());
+        }
+        for (EventStream<Boolean> serviceExtension : existingExtensions) {
+          // The next Flutter isolate to load might not support this service
+          // extension.
+          serviceExtension.setValue(false);
+        }
+      }
+    }
+
+    if (event.getKind() == EventKind.ServiceExtensionAdded) {
+      addServiceExtension(event.getExtensionRPC());
+    }
+
+    // Check to see if there's a new Flutter isolate.
+    if (flutterIsolateRefStream.getValue() == null) {
+      // Check for Flutter frame events.
+      if (event.getKind() == EventKind.Extension && event.getExtensionKind().startsWith("Flutter.")) {
+        // Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame
+        setFlutterIsolate(event.getIsolate());
+      }
+
+      // Check for service extension registrations.
+      if (event.getKind() == EventKind.ServiceExtensionAdded) {
+        final String extensionName = event.getExtensionRPC();
+
+        if (extensionName.startsWith("ext.flutter.")) {
+          setFlutterIsolate(event.getIsolate());
+        }
+      }
+    }
+
     if (!isRunning) {
       return;
     }
@@ -120,8 +206,20 @@ public class PerfService {
 
       heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
     }
-    else if (StringUtil.equals(streamId, VmService.ISOLATE_STREAM_ID) && event.getKind() == EventKind.ServiceExtensionAdded) {
-      serviceExtensions.add(event.getExtensionRPC());
+  }
+
+  /**
+   * This method must only be called on the UI thread.
+   */
+  private void addServiceExtension(String name) {
+    synchronized (serviceExtensions) {
+      EventStream<Boolean> stream = serviceExtensions.get(name);
+      if (stream == null) {
+        serviceExtensions.put(name, new EventStream<>(true));
+      }
+      else if (stream.getValue() == false) {
+        stream.setValue(true);
+      }
     }
   }
 
@@ -133,7 +231,7 @@ public class PerfService {
   /**
    * Add a listener for heap state updates.
    */
-  public void addListener(@NotNull HeapListener listener) {
+  public void addHeapListener(@NotNull HeapListener listener) {
     final boolean hadListeners = heapMonitor.hasListeners();
 
     heapMonitor.addListener(listener);
@@ -146,7 +244,7 @@ public class PerfService {
   /**
    * Remove a heap listener.
    */
-  public void removeListener(@NotNull HeapListener listener) {
+  public void removeHeapListener(@NotNull HeapListener listener) {
     heapMonitor.removeListener(listener);
 
     if (!heapMonitor.hasListeners()) {
@@ -154,7 +252,16 @@ public class PerfService {
     }
   }
 
-  public boolean hasServiceExtension(String name) {
-    return serviceExtensions.contains(name);
+  public @NotNull
+  StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
+    EventStream<Boolean> stream;
+    synchronized (serviceExtensions) {
+      stream = serviceExtensions.get(name);
+      if (stream == null) {
+        stream = new EventStream<>(false);
+        serviceExtensions.put(name, stream);
+      }
+    }
+    return stream.listen(onData, true);
   }
 }

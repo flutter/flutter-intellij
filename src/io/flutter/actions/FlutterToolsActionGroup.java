@@ -13,13 +13,12 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterToolsActionGroup extends DefaultActionGroup {
-
   @Override
   public void update(@Nullable AnActionEvent e) {
     final Project project = e == null ? null : e.getProject();
     final Presentation presentation = e == null ? null : e.getPresentation();
     if (presentation != null) {
-      final boolean visible = project != null && FlutterModuleUtils.usesFlutter(project);
+      final boolean visible = project != null && FlutterModuleUtils.declaresFlutter(project);
       presentation.setEnabled(visible);
       presentation.setVisible(visible);
     }

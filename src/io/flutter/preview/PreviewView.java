@@ -485,13 +485,13 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       return;
     }
     final int offset = outline.getDartElement() != null ? outline.getDartElement().getLocation().getOffset() : outline.getOffset();
+    final int editorOffset = getConvertedFileOffset(offset);
 
     sendAnalyticEvent("jumpToSource");
 
     if (currentFile != null) {
       currentEditor.getCaretModel().removeCaretListener(caretListener);
       try {
-        final int editorOffset = getConvertedFileOffset(offset);
         new OpenFileDescriptor(project, currentFile, editorOffset).navigate(focusEditor);
       }
       finally {
@@ -500,7 +500,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     if (myRenderHelper != null) {
-      myRenderHelper.setOffset(offset);
+      myRenderHelper.setOffset(editorOffset);
       previewArea.select(ImmutableList.of(outline));
     }
   }

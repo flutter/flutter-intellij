@@ -268,10 +268,11 @@ public class FlutterSdk {
    */
   public boolean sync(@NotNull Project project) {
     try {
-      final Process process = flutterVersion().startInConsole(project);
-      if (process == null) {
+      final OSProcessHandler handler = flutterVersion().startInConsole(project);
+      if (handler == null) {
         return false;
       }
+      final Process process = handler.getProcess();
       process.waitFor();
       if (process.exitValue() != 0) {
         return false;
@@ -391,17 +392,24 @@ public class FlutterSdk {
   @Nullable
   public VirtualFile getTester() {
     final String platformString;
+    final String executableExtension;
     if (SystemInfo.isMac) {
       platformString = "darwin-x64";
+      executableExtension = "";
     }
     else if (SystemInfo.isLinux) {
       platformString = "linux-x64";
+      executableExtension = "";
+    }
+    else if (SystemInfo.isWindows) {
+      platformString = "windows-x64";
+      executableExtension = ".exe";
     }
     else {
       return null;
     }
 
-    final String relativePath = "bin/cache/artifacts/engine/" + platformString + "/flutter_tester";
+    final String relativePath = "bin/cache/artifacts/engine/" + platformString + "/flutter_tester" + executableExtension;
     return getHome().findFileByRelativePath(relativePath);
   }
 
@@ -431,7 +439,7 @@ public class FlutterSdk {
       boolean hasSeenStartingBrace = false;
 
       @Override
-      public void onTextAvailable(ProcessEvent event, Key outputType) {
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
         // {"android-studio-dir":"/Applications/Android Studio 3.0 Preview.app/Contents"}
         if (outputType == ProcessOutputTypes.STDOUT) {
           // Ignore any non-json starting lines (like "Building flutter tool...").

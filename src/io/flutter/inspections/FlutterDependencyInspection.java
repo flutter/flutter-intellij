@@ -55,7 +55,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
 
     // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 
-    if (root.getPackages() == null) {
+    if (root.getPackagesFile() == null) {
       return createProblemDescriptors(manager, psiFile, root, FlutterBundle.message("packages.get.never.done"));
     }
 

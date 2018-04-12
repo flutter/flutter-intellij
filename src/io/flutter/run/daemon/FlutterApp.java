@@ -33,6 +33,7 @@ import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.FlutterReloadCoverageManager;
+import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -40,6 +41,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * A running Flutter app.
@@ -367,8 +369,9 @@ public class FlutterApp {
     });
   }
 
-  public boolean hasServiceExtension(String name) {
-    return getPerfService() != null && getPerfService().hasServiceExtension(name);
+  @NotNull
+  public StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
+    return getPerfService().hasServiceExtension(name, onData);
   }
 
   public void setConsole(@Nullable ConsoleView console) {
@@ -528,7 +531,7 @@ public class FlutterApp {
     return myLastReloadFile;
   }
 
-  public void setLastReloadFile(VirtualFile file) {
+  public void setLastReloadFile(@Nullable VirtualFile file) {
     myLastReloadFile = file;
   }
 

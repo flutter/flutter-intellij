@@ -42,17 +42,6 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-// TextAnnotationGutterProvider, EditorGutter, EditorGutterComponentEx
-// GutterIconRenderer, GutterMark, LineMarkerRenderer
-// RangeHighlighter#setLineMarkerRenderer(LineMarkerRenderer)
-// MarkupModel#addRangeHighlighter(int, int, int, TextAttributes, HighlighterTargetArea)
-// DiffMarkup
-// CoverageLineMarkerRenderer
-// LineMarkerRenderer
-// EditorColors.ADDED_LINES_COLOR
-// LineStatusMarkerRenderer
-// highligher, with a linemarkerrenderer
-
 public class FlutterReloadCoverageManager {
   private static final long RESPONSE_WAIT_TIMEOUT = 3000;
 
@@ -346,7 +335,7 @@ public class FlutterReloadCoverageManager {
 
       //final Color coveredColor = new JBColor(new Color(0x0091ea), new Color(0x0091ea));
       //final Color uncoveredColor = JBColor.GRAY;
-      final Color coveredColor = new JBColor(new Color(0x37b258), new Color(0x37b258));
+      final Color coveredColor = new JBColor(new Color(0x0091ea), new Color(0x0091ea));
       final LineMarkerRenderer coveredRenderer = new MyLineMarkerRenderer(coveredColor);
 
       final Color uncoveredColor = JBColor.LIGHT_GRAY;
@@ -365,19 +354,26 @@ public class FlutterReloadCoverageManager {
 
         final MarkupModel markupModel = ((TextEditor)editor).getEditor().getMarkupModel();
 
+        // TODO: rounded corners
+        // TODO: extend the coverage info to methods, if all the lines are reported as covered
+        // TODO: if the file is part of the app (if it could contain coverage info),
+        //       add at least one marker (even if a hidden one)
+        // TODO: auto-update when we receive frames
+        // TODO: auto-update when the active editor changes
+
         for (int line : coverageInfo.getCoveredLines()) {
           final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, coveredAttributes);
-          //rangeHighlighter.setErrorStripeMarkColor(coveredColor);
-          //rangeHighlighter.setThinErrorStripeMark(true);
+          rangeHighlighter.setErrorStripeMarkColor(coveredColor);
+          rangeHighlighter.setThinErrorStripeMark(true);
           rangeHighlighter.setLineMarkerRenderer(coveredRenderer);
         }
 
-        for (int line : coverageInfo.getUncoveredLines()) {
-          final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, uncoveredAttributes);
-          //rangeHighlighter.setErrorStripeMarkColor(uncoveredColor);
-          //rangeHighlighter.setThinErrorStripeMark(true);
-          rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
-        }
+        //for (int line : coverageInfo.getUncoveredLines()) {
+        //  final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, uncoveredAttributes);
+        //  //rangeHighlighter.setErrorStripeMarkColor(uncoveredColor);
+        //  //rangeHighlighter.setThinErrorStripeMark(true);
+        //  rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
+        //}
       }
     });
   }

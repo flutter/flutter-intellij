@@ -5,7 +5,6 @@
  */
 package io.flutter.module;
 
-
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
@@ -14,6 +13,8 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.fileChooser.FileChooser;
 import com.intellij.openapi.fileChooser.FileChooserDescriptor;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
@@ -21,10 +22,10 @@ import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -197,6 +198,8 @@ public class InstallSdkAction extends DumbAwareAction {
           @Override
           public void validateSelectedFiles(VirtualFile[] files) throws Exception {
             for (VirtualFile file : files) {
+              // Eliminate some false positives, which occurs when an existing directory is deleted.
+              VfsUtil.markDirtyAndRefresh(false, true, true, file);
               if (file.findChild("flutter") != null) {
                 throw new IllegalArgumentException("A file called 'flutter' already exists in this location.");
               }
@@ -390,7 +393,8 @@ public class InstallSdkAction extends DumbAwareAction {
 
       @Override
       void onSuccess(@NotNull ProcessEvent event) {
-        UIUtil.invokeAndWaitIfNeeded(() -> LocalFileSystem.getInstance().refreshAndFindFileByPath(mySdkDir));
+        ApplicationManager.getApplication().invokeAndWait(
+          () -> LocalFileSystem.getInstance().refreshAndFindFileByPath(mySdkDir), ModalityState.NON_MODAL);
         requestNextStep();
       }
 

@@ -26,6 +26,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import io.flutter.FlutterBundle;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.System;
 import org.jetbrains.annotations.NotNull;
@@ -246,24 +247,22 @@ public class FlutterSdkUtil {
    */
   @Nullable
   public static String guessFlutterSdkFromPackagesFile(@NotNull Module module) {
-    final PubRoot pubRoot = PubRoot.forModuleWithRefresh(module);
-    if (pubRoot == null) {
-      return null;
+    for (PubRoot pubRoot : PubRoots.forModule(module)) {
+      final VirtualFile packagesFile = pubRoot.getPackagesFile();
+      if (packagesFile == null) {
+        continue;
+      }
+
+      // parse it
+      try {
+        final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
+        return parseFlutterSdkPath(contents);
+      }
+      catch (IOException ignored) {
+      }
     }
 
-    final VirtualFile packagesFile = pubRoot.getPackages();
-    if (packagesFile == null) {
-      return null;
-    }
-
-    // parse it
-    try {
-      final String contents = new String(packagesFile.contentsToByteArray(true /* cache contents */));
-      return parseFlutterSdkPath(contents);
-    }
-    catch (IOException e) {
-      return null;
-    }
+    return null;
   }
 
   @VisibleForTesting

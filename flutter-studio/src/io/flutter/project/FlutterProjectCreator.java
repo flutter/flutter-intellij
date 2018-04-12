@@ -85,7 +85,7 @@ public class FlutterProjectCreator {
   }
 
   public static void disableUserConfig(Project project) {
-    if (FlutterModuleUtils.usesFlutter(project)) {
+    if (FlutterModuleUtils.declaresFlutter(project)) {
       for (Module module : ModuleManager.getInstance(project).getModules()) {
         final AndroidFacet facet = AndroidFacet.getInstance(module);
         if (facet == null) {

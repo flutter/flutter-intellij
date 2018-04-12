@@ -5,11 +5,15 @@
  */
 package com.android.tools.idea.tests.gui.framework;
 
+import com.android.testutils.TestUtils;
 import com.android.tools.idea.gradle.util.LocalProperties;
 import com.android.tools.idea.sdk.IdeSdks;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
+import com.android.tools.idea.tests.gui.framework.fixture.IdeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.IdeaFrameFixture;
+import com.android.tools.idea.tests.gui.framework.guitestprojectsystem.GuiTestProjectSystem;
+import com.android.tools.idea.tests.gui.framework.guitestsystem.CurrentGuiTestProjectSystem;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.application.ApplicationManager;
@@ -38,14 +42,17 @@ import org.junit.runners.model.Statement;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import static com.android.testutils.TestUtils.*;
 import static com.android.tools.idea.tests.gui.framework.GuiTests.setUpDefaultProjectCreationLocationPath;
 import static com.google.common.truth.TruthJUnit.assume;
 import static com.intellij.openapi.util.io.FileUtil.sanitizeFileName;
@@ -77,8 +84,16 @@ public class FlutterGuiTestRule implements TestRule {
    * Hack to solve focus issue when running with no window manager
    */
   private static final boolean HAS_EXTERNAL_WINDOW_MANAGER = Toolkit.getDefaultToolkit().isFrameStateSupported(Frame.MAXIMIZED_BOTH);
+
+  private FlutterFrameFixture myIdeFrameFixture;
+  @Nullable private String myTestDirectory;
+
   private final RobotTestRule myRobotTestRule = new RobotTestRule();
   private final LeakCheck myLeakCheck = new LeakCheck();
+  private final CurrentGuiTestProjectSystem myCurrentProjectSystem = new CurrentGuiTestProjectSystem();
+
+  private Timeout myTimeout = new Timeout(5, TimeUnit.MINUTES);
+
   private final PropertyChangeListener myGlobalFocusListener = e -> {
     Object oldValue = e.getOldValue();
     if ("permanentFocusOwner".equals(e.getPropertyName()) && oldValue instanceof Component && e.getNewValue() == null) {
@@ -86,37 +101,12 @@ public class FlutterGuiTestRule implements TestRule {
       if (parentWindow instanceof Dialog && ((Dialog)parentWindow).isModal()) {
         Container parent = parentWindow.getParent();
         if (parent != null && parent.isVisible()) {
-          System.out.println("Focus Listener: Request focus!");
           parent.requestFocus();
         }
       }
     }
   };
-  private FlutterFrameFixture myIdeFrameFixture;
-  @Nullable private String myTestDirectory;
-  private Timeout myTimeout = new Timeout(5, TimeUnit.MINUTES);
-
-  private static ImmutableList<Throwable> thrownFromRunning(Runnable r) {
-    try {
-      r.run();
-      return ImmutableList.of();
-    }
-    catch (Throwable e) {
-      return ImmutableList.of(e);
-    }
-  }
-
-  // Note: this works with a cooperating window manager that returns focus properly. It does not work on bare Xvfb.
-  private static Dialog getActiveModalDialog() {
-    Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
-    if (activeWindow instanceof Dialog) {
-      Dialog dialog = (Dialog)activeWindow;
-      if (dialog.getModalityType() == Dialog.ModalityType.APPLICATION_MODAL) {
-        return dialog;
-      }
-    }
-    return null;
-  }
+  private IdeFrameFixture myOldIdeFrameFixture;
 
   public FlutterGuiTestRule withLeakCheck() {
     myLeakCheck.setEnabled(true);
@@ -126,14 +116,60 @@ public class FlutterGuiTestRule implements TestRule {
   @NotNull
   @Override
   public Statement apply(final Statement base, final Description description) {
-    return RuleChain.emptyRuleChain()
+    RuleChain chain = RuleChain.emptyRuleChain()
+      .around(new LogStartAndStop())
       .around(new BlockReloading())
+      .around(new BazelUndeclaredOutputs())
+      .around(myCurrentProjectSystem)
       .around(myRobotTestRule)
       .around(myLeakCheck)
       .around(new IdeHandling())
       .around(new ScreenshotOnFailure())
-      .around(myTimeout)
-      .apply(base, description);
+      .around(myTimeout);
+
+    // Perf logging currently writes data to the Bazel-specific TEST_UNDECLARED_OUTPUTS_DIR. Skipp logging if running outside of Bazel.
+    if (runningFromBazel()) {
+      chain = chain.around(new GuiPerfLogger(description));
+    }
+
+    return chain.apply(base, description);
+  }
+
+  private class IdeHandling implements TestRule {
+    @NotNull
+    @Override
+    public Statement apply(final Statement base, final Description description) {
+      return new Statement() {
+        @Override
+        public void evaluate() throws Throwable {
+          if (!runningFromBazel()) {
+            // when state can be bad from previous tests, check and skip in that case
+            assume().that(GuiTests.fatalErrorsFromIde()).named("IDE errors").isEmpty();
+            assumeOnlyWelcomeFrameShowing();
+          }
+          setUp(description.getMethodName());
+          List<Throwable> errors = new ArrayList<>();
+          try {
+            base.evaluate();
+          } catch (MultipleFailureException e) {
+            errors.addAll(e.getFailures());
+          } catch (Throwable e) {
+            errors.add(e);
+          } finally {
+            try {
+              boolean hasTestPassed = errors.isEmpty();
+              errors.addAll(tearDown());  // shouldn't throw, but called inside a try-finally for defense in depth
+              if (hasTestPassed && !errors.isEmpty()) { // If we get a problem during tearDown, take a snapshot.
+                new ScreenshotOnFailure().failed(errors.get(0), description);
+              }
+            } finally {
+              //noinspection ThrowFromFinallyBlock; assertEmpty is intended to throw here
+              MultipleFailureException.assertEmpty(errors);
+            }
+          }
+        }
+      };
+    }
   }
 
   private void assumeOnlyWelcomeFrameShowing() {
@@ -152,8 +188,21 @@ public class FlutterGuiTestRule implements TestRule {
     GuiTests.setIdeSettings();
     GuiTests.setUpSdks();
 
+    // Compute the workspace root before any IDE code starts messing with user.dir:
+    getWorkspaceRoot();
+
     if (!HAS_EXTERNAL_WINDOW_MANAGER) {
       KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(myGlobalFocusListener);
+    }
+  }
+
+  private static ImmutableList<Throwable> thrownFromRunning(Runnable r) {
+    try {
+      r.run();
+      return ImmutableList.of();
+    }
+    catch (Throwable e) {
+      return ImmutableList.of(e);
     }
   }
 
@@ -167,6 +216,7 @@ public class FlutterGuiTestRule implements TestRule {
   private ImmutableList<Throwable> tearDown() {
     ImmutableList.Builder<Throwable> errors = ImmutableList.builder();
     errors.addAll(thrownFromRunning(this::waitForBackgroundTasks));
+    errors.addAll(checkForPopupMenus());
     errors.addAll(checkForModalDialogs());
     errors.addAll(thrownFromRunning(this::tearDownProject));
     if (!HAS_EXTERNAL_WINDOW_MANAGER) {
@@ -181,12 +231,46 @@ public class FlutterGuiTestRule implements TestRule {
     List<AssertionError> errors = new ArrayList<>();
     // We close all modal dialogs left over, because they block the AWT thread and could trigger a deadlock in the next test.
     Dialog modalDialog;
-    while ((modalDialog = getActiveModalDialog()) != null) {
+
+    // Loop can be infinite loop when a modal dialog opens itself again after closing.
+    // Prevent infinite loop without a timeout
+    long startTime = System.currentTimeMillis();
+    long endTime = startTime + TimeUnit.SECONDS.toMillis(10);
+    while ((modalDialog = getActiveModalDialog()) != null && System.currentTimeMillis() < endTime) {
       robot().close(modalDialog);
       errors.add(new AssertionError(
         String.format("Modal dialog showing: %s with title '%s'", modalDialog.getClass().getName(), modalDialog.getTitle())));
     }
+    if (System.currentTimeMillis() >= endTime) {
+      errors.add(new AssertionError("Potential modal dialog infinite loop"));
+    }
     return errors;
+  }
+
+  private List<AssertionError> checkForPopupMenus() {
+    List<AssertionError> errors = new ArrayList<>();
+
+    // Close all opened popup menu items (File > New > etc) before continuing.
+    Collection<JPopupMenu> popupMenus = robot().finder().findAll(Matchers.byType(JPopupMenu.class).andIsShowing());
+    if (!popupMenus.isEmpty()) {
+      errors.add(new AssertionError(String.format("%d Popup Menus left open", popupMenus.size())));
+      for (int i = 0; i <= popupMenus.size(); i++) {
+        robot().pressAndReleaseKey(KeyEvent.VK_ESCAPE);
+      }
+    }
+    return errors;
+  }
+
+  // Note: this works with a cooperating window manager that returns focus properly. It does not work on bare Xvfb.
+  private static Dialog getActiveModalDialog() {
+    Window activeWindow = KeyboardFocusManager.getCurrentKeyboardFocusManager().getActiveWindow();
+    if (activeWindow instanceof Dialog) {
+      Dialog dialog = (Dialog)activeWindow;
+      if (dialog.getModalityType() == Dialog.ModalityType.APPLICATION_MODAL) {
+        return dialog;
+      }
+    }
+    return null;
   }
 
   private void fixMemLeaks() {
@@ -199,12 +283,39 @@ public class FlutterGuiTestRule implements TestRule {
     field("containerMap").ofType(Hashtable.class).in(manager).get().clear();
   }
 
-  public IdeaFrameFixture importProject(@NotNull String projectDirName) throws IOException {
-    VirtualFile toSelect = VfsUtil.findFileByIoFile(setUpProject(projectDirName), true);
-    ApplicationManager.getApplication().invokeAndWait(() -> {
-      /* TODO(messick): Open the project in a new window. */
-    });
-    waitForBackgroundTasks();
+  public FlutterFrameFixture importSimpleLocalApplication() throws IOException {
+    return importProjectAndWaitForProjectSyncToFinish("SimpleLocalApplication");
+  }
+
+  /**
+   * @deprecated use importSimpleLocalApplication that doesn't use remote repositories.
+   */
+  @Deprecated()
+  public FlutterFrameFixture importSimpleApplication() throws IOException {
+    return importProjectAndWaitForProjectSyncToFinish("SimpleApplication");
+  }
+
+  public FlutterFrameFixture importMultiModule() throws IOException {
+    return importProjectAndWaitForProjectSyncToFinish("MultiModule");
+  }
+
+  public FlutterFrameFixture importProjectAndWaitForProjectSyncToFinish(@NotNull String projectDirName) throws IOException {
+    return importProjectAndWaitForProjectSyncToFinish(projectDirName, null);
+  }
+
+  public FlutterFrameFixture importProjectAndWaitForProjectSyncToFinish(@NotNull String projectDirName, @Nullable String buildFilePath) throws IOException {
+    importProject(projectDirName, buildFilePath);
+    testSystem().waitForProjectSyncToFinish(baseIdeFrame());
+    return ideFrame();
+  }
+
+  public FlutterFrameFixture importProject(@NotNull String projectDirName) throws IOException {
+    return importProject(projectDirName, null);
+  }
+
+  public FlutterFrameFixture importProject(@NotNull String projectDirName, @Nullable String buildFilePath) throws IOException {
+    File testProjectDir = setUpProject(projectDirName);
+    testSystem().importProject(testProjectDir, robot(), buildFilePath);
     return ideFrame();
   }
 
@@ -241,7 +352,6 @@ public class FlutterGuiTestRule implements TestRule {
       FileUtilRt.delete(projectPath);
     }
     FileUtil.copyDir(masterProjectPath, projectPath);
-    System.out.println(String.format("Copied project '%1$s' to path '%2$s'", projectDirName, projectPath.getPath()));
     return projectPath;
   }
 
@@ -305,9 +415,18 @@ public class FlutterGuiTestRule implements TestRule {
     return myRobotTestRule.getRobot();
   }
 
+  public GuiTestProjectSystem testSystem() {
+    return myCurrentProjectSystem.getTestProjectSystem();
+  }
+
   @NotNull
   public File getProjectPath() {
     return ideFrame().getProjectPath();
+  }
+
+  @NotNull
+  public File getProjectPath(@NotNull String child) {
+    return new File(ideFrame().getProjectPath(), child);
   }
 
   @NotNull
@@ -322,62 +441,27 @@ public class FlutterGuiTestRule implements TestRule {
       // and registers it with GradleSyncState. This keeps adding more and more listeners, and the new recent listeners are only updated
       // with gradle State when that State changes. This means the listeners may have outdated info.
       myIdeFrameFixture = FlutterFrameFixture.find(robot());
+      myIdeFrameFixture.setTestProjectSystem(myCurrentProjectSystem.getTestProjectSystem());
       myIdeFrameFixture.requestFocusIfLost();
     }
     return myIdeFrameFixture;
   }
 
+  @NotNull
+  public IdeFrameFixture baseIdeFrame() {
+    if (myOldIdeFrameFixture == null || myOldIdeFrameFixture.isClosed()) {
+      // This call to find() creates a new IdeFrameFixture object every time. Each of these Objects creates a new gradleProjectEventListener
+      // and registers it with GradleSyncState. This keeps adding more and more listeners, and the new recent listeners are only updated
+      // with gradle State when that State changes. This means the listeners may have outdated info.
+      myOldIdeFrameFixture = IdeFrameFixture.find(robot());
+      myOldIdeFrameFixture.setTestProjectSystem(myCurrentProjectSystem.getTestProjectSystem());
+      myOldIdeFrameFixture.requestFocusIfLost();
+    }
+    return myOldIdeFrameFixture;
+  }
+
   public FlutterGuiTestRule withTimeout(long timeout, @NotNull TimeUnit timeUnits) {
     myTimeout = new Timeout(timeout, timeUnits);
     return this;
-  }
-/*
-  @NotNull
-  public File getTestProjectsRootDirPath() {
-    String testDataPath = PathManager.getHomePath() + "/../adt/idea/android-uitests";
-    if (!new File(testDataPath).exists()) {
-      testDataPath = PathManagerEx.findFileUnderCommunityHome("plugins/android").getPath();
-    }
-    testDataPath = toCanonicalPath(toSystemDependentName(testDataPath));
-    return new File(testDataPath, "testData");
-  }
-*/
-  private class IdeHandling implements TestRule {
-    @NotNull
-    @Override
-    public Statement apply(final Statement base, final Description description) {
-      return new Statement() {
-        @Override
-        public void evaluate() throws Throwable {
-          System.out.println("Starting " + description.getDisplayName());
-          assume().that(GuiTests.fatalErrorsFromIde()).named("IDE errors").isEmpty();
-          assumeOnlyWelcomeFrameShowing();
-          setUp(description.getMethodName());
-          List<Throwable> errors = new ArrayList<>();
-          try {
-            base.evaluate();
-          }
-          catch (MultipleFailureException e) {
-            errors.addAll(e.getFailures());
-          }
-          catch (Throwable e) {
-            errors.add(e);
-          }
-          finally {
-            try {
-              boolean hasTestPassed = errors.isEmpty();
-              errors.addAll(tearDown());  // shouldn't throw, but called inside a try-finally for defense in depth
-              if (hasTestPassed && !errors.isEmpty()) { // If we get a problem during tearDown, take a snapshot.
-                new ScreenshotOnFailure().failed(errors.get(0), description);
-              }
-            }
-            finally {
-              //noinspection ThrowFromFinallyBlock; assertEmpty is intended to throw here
-              MultipleFailureException.assertEmpty(errors);
-            }
-          }
-        }
-      };
-    }
   }
 }

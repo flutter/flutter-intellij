@@ -39,7 +39,7 @@ public class RenderHelper {
   private String myTesterPath = null;
   private final RenderThread myRenderThread = new RenderThread();
 
-  private VirtualFile myPackages;
+  private VirtualFile myPackagesFile;
   private VirtualFile myFile;
   private FlutterOutline myFileOutline;
   private String myInstrumentedCode;
@@ -67,10 +67,10 @@ public class RenderHelper {
     myFileOutline = fileOutline;
     myInstrumentedCode = instrumentedCode;
 
-    myPackages = null;
+    myPackagesFile = null;
     final PubRoot pubRoot = PubRoot.forFile(file);
     if (pubRoot != null) {
-      myPackages = pubRoot.getPackages();
+      myPackagesFile = pubRoot.getPackagesFile();
     }
 
     myWidgetOutline = null;
@@ -144,7 +144,7 @@ public class RenderHelper {
   }
 
   private void scheduleRendering() {
-    if (myPackages == null || myInstrumentedCode == null || myWidgetOutline == null || myWidth == 0 || myHeight == 0) {
+    if (myPackagesFile == null || myInstrumentedCode == null || myWidgetOutline == null || myWidth == 0 || myHeight == 0) {
       return;
     }
 
@@ -156,7 +156,7 @@ public class RenderHelper {
     final String widgetClass = myWidgetOutline.getDartElement().getName();
     final String constructor = myWidgetOutline.getRenderConstructor();
     final RenderRequest request =
-      new RenderRequest(myTesterPath, myPackages, myFile, myInstrumentedCode,
+      new RenderRequest(myTesterPath, myPackagesFile, myFile, myInstrumentedCode,
                         myWidgetOutline, widgetClass, constructor,
                         myWidth, myHeight, myListener);
     myRenderThread.setRequest(request);
@@ -311,11 +311,15 @@ class RenderThread extends Thread {
       boolean newProcess = false;
       if (myProcess == null) {
         myProcessRequest = request;
-        myProcess = new ProcessBuilder(request.testerPath,
-                                       "--non-interactive",
-                                       "--use-test-fonts",
-                                       "--packages=" + request.packages.getPath(),
-                                       renderServerPath).start();
+        final ProcessBuilder processBuilder =
+          new ProcessBuilder(request.testerPath,
+                             "--enable-checked-mode",
+                             "--non-interactive",
+                             "--use-test-fonts",
+                             "--packages=" + request.packages.getPath(),
+                             renderServerPath);
+        processBuilder.environment().put("FLUTTER_TEST", "true");
+        myProcess = processBuilder.start();
         myProcessReader = new BufferedReader(new InputStreamReader(myProcess.getInputStream()));
         myProcessWriter = new PrintStream(myProcess.getOutputStream(), true);
         newProcess = true;

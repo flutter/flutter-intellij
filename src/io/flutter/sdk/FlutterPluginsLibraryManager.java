@@ -24,6 +24,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.*;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -98,12 +99,12 @@ public class FlutterPluginsLibraryManager {
   }
 
   private void updateFlutterPluginsImpl() {
-    final boolean usesFlutter = FlutterModuleUtils.usesFlutter(project);
+    final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(project);
 
     final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
     final Library existingLibrary = projectLibraryTable.getLibraryByName(FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME);
 
-    if (!usesFlutter) {
+    if (!declaresFlutter) {
       // If we have a Flutter library, remove it.
       if (existingLibrary != null) {
         WriteAction.compute(() -> {
@@ -130,7 +131,7 @@ public class FlutterPluginsLibraryManager {
                               return lib;
                             });
 
-    final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoot.multipleForProject(project));
+    final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoots.forProject(project));
     final Set<String> flutterPluginUrls = new HashSet<>();
     for (String path : flutterPluginPaths) {
       flutterPluginUrls.add(VfsUtilCore.pathToUrl(path));
@@ -161,7 +162,7 @@ public class FlutterPluginsLibraryManager {
     });
 
     for (final Module module : ModuleManager.getInstance(project).getModules()) {
-      if (FlutterModuleUtils.usesFlutter(module)) {
+      if (FlutterModuleUtils.declaresFlutter(module)) {
         addFlutterLibraryDependency(module, library);
       }
       else {
@@ -174,11 +175,11 @@ public class FlutterPluginsLibraryManager {
     final Set<String> paths = new HashSet<>();
 
     for (PubRoot pubRoot : roots) {
-      if (pubRoot.getPackages() == null) {
+      if (pubRoot.getPackagesFile() == null) {
         continue;
       }
 
-      final Map<String, String> map = DotPackagesFileUtil.getPackagesMap(pubRoot.getPackages());
+      final Map<String, String> map = DotPackagesFileUtil.getPackagesMap(pubRoot.getPackagesFile());
       if (map == null) {
         continue;
       }
