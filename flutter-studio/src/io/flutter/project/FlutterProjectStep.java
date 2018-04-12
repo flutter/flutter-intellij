@@ -152,7 +152,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myInstallActionLink.setText(myInstallSdkAction.getLinkText());
 
     //noinspection unchecked
-    myInstallActionLink.setListener((label, linkUrl) -> myInstallSdkAction.actionPerformed(null), null);
+    myInstallActionLink.setListener((label, linkUrl) ->
+                                      myInstallSdkAction.actionPerformed(null), null);
 
     myProgressText.setFont(UIUtil.getLabelFont(UIUtil.FontSize.NORMAL).deriveFont(Font.ITALIC));
 
