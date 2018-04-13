@@ -28,6 +28,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   private TextFieldWithBrowseButton myLaunchingScript;
   private JTextField myAdditionalArgs;
   private JTextField myBuildTarget;
+  private JCheckBox myEnableReleaseModeCheckBox;
 
   public FlutterBazelConfigurationEditorForm(final Project project) {
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
@@ -42,6 +43,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
     myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
     myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
     myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getLaunchingScript())));
+    myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
 
@@ -51,6 +53,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
     fields.setEntryFile(StringUtil.nullize(FileUtil.toSystemIndependentName(myEntryFile.getText().trim()), true));
     fields.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
     fields.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
+    fields.setEnableReleaseMode(myEnableReleaseModeCheckBox.isSelected());
     fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgs.getText().trim(), true));
     configuration.setFields(fields);
   }

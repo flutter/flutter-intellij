@@ -35,8 +35,9 @@ public class BazelFields {
 
   private @Nullable String entryFile;
   private @Nullable String launchScript;
-  private @Nullable String additionalArgs;
   private @Nullable String bazelTarget;
+  private boolean enableReleaseMode = false;
+  private @Nullable String additionalArgs;
 
   BazelFields() {
   }
@@ -47,8 +48,9 @@ public class BazelFields {
   private BazelFields(@NotNull BazelFields original) {
     entryFile = original.entryFile;
     launchScript = original.launchScript;
-    additionalArgs = original.additionalArgs;
     bazelTarget = original.bazelTarget;
+    enableReleaseMode = original.enableReleaseMode;
+    additionalArgs = original.additionalArgs;
   }
 
   /**
@@ -120,6 +122,14 @@ public class BazelFields {
 
   public void setBazelTarget(@Nullable String bazelTarget) {
     this.bazelTarget = bazelTarget;
+  }
+
+  public boolean getEnableReleaseMode() {
+    return enableReleaseMode;
+  }
+
+  public void setEnableReleaseMode(boolean enableReleaseMode) {
+    this.enableReleaseMode = enableReleaseMode;
   }
 
   BazelFields copy() {
@@ -219,9 +229,13 @@ public class BazelFields {
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
     // Set the mode.
-    if (mode != RunMode.DEBUG) {
+    if (enableReleaseMode) {
+      commandLine.addParameters("--define", "flutter_build_mode=release");
+    }
+    else if (mode != RunMode.DEBUG) {
       commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
     }
+    // (the implicit else here is the debug case)
 
     // Send in platform architecture based in the device info.
     if (device != null) {
@@ -274,7 +288,7 @@ public class BazelFields {
     }
 
     // Pause the app at startup in order to set breakpoints.
-    if (mode == RunMode.DEBUG) {
+    if (!enableReleaseMode && mode == RunMode.DEBUG) {
       commandLine.addParameter("--start-paused");
     }
 

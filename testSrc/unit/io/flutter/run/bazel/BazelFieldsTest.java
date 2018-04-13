@@ -25,57 +25,61 @@ public class BazelFieldsTest {
   public void shouldReadFieldsFromXml() {
     final Element elt = new Element("test");
     addOption(elt, "entryFile", "/tmp/test/dir/lib/main.dart");
-    addOption(elt, "additionalArgs", "--android_cpu=x86");
-    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
     addOption(elt, "launchingScript", "path/to/bazel-run.sh");
+    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
+    addOption(elt, "enableReleaseMode", "true");
+    addOption(elt, "additionalArgs", "--android_cpu=x86");
 
     final BazelFields fields = new BazelFields();
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
-    assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
-    assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
     assertEquals("path/to/bazel-run.sh", fields.getLaunchingScript());
+    assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
+    assertEquals(true, fields.getEnableReleaseMode());
+    assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
   }
 
   @Test
   public void shouldUpgradeFieldsFromOldXml() {
     final Element elt = new Element("test");
-    addOption(elt, "additionalArgs", "--android_cpu=x86");
-    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
-    addOption(elt, "launchingScript", "path/to/bazel-run.sh");
     addOption(elt, "workingDirectory", "/tmp/test/dir"); // obsolete
+    addOption(elt, "launchingScript", "path/to/bazel-run.sh");
+    addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
+    addOption(elt, "additionalArgs", "--android_cpu=x86");
 
     final BazelFields fields = new BazelFields();
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
-    assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
-    assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
     assertEquals("path/to/bazel-run.sh", fields.getLaunchingScript());
+    assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
+    assertEquals("--android_cpu=x86", fields.getAdditionalArgs());
   }
 
   @Test
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields();
     before.setEntryFile("/tmp/foo/lib/main.dart");
-    before.setAdditionalArgs("args");
-    before.setBazelTarget("target");
     before.setLaunchingScript("launch");
+    before.setBazelTarget("target");
+    before.setEnableReleaseMode(true);
+    before.setAdditionalArgs("args");
 
     final Element elt = new Element("test");
     XmlSerializer.serializeInto(before, elt, new SkipDefaultValuesSerializationFilters());
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"additionalArgs", "bazelTarget", "entryFile", "launchingScript"},
+      new String[]{"additionalArgs", "bazelTarget", "enableReleaseMode", "entryFile", "launchingScript"},
       getOptionNames(elt).toArray());
 
     final BazelFields after = new BazelFields();
     XmlSerializer.deserializeInto(after, elt);
 
-    assertEquals("args", after.getAdditionalArgs());
-    assertEquals("target", after.getBazelTarget());
-    assertEquals("launch", after.getLaunchingScript());
     assertEquals("/tmp/foo/lib/main.dart", after.getEntryFile());
+    assertEquals("launch", after.getLaunchingScript());
+    assertEquals("target", after.getBazelTarget());
+    assertEquals(true, after.getEnableReleaseMode());
+    assertEquals("args", after.getAdditionalArgs());
   }
 
   private void addOption(Element elt, String name, String value) {
