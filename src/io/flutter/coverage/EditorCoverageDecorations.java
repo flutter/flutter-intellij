@@ -24,6 +24,8 @@ import java.util.List;
 class EditorCoverageDecorations implements Disposable {
   private static final VirtualFileManager virtualFileManager = VirtualFileManager.getInstance();
 
+  private static final int HIGHLIGHTERLAYER = HighlighterLayer.SELECTION - 1;
+
   @NotNull
   private final FileEditor fileEditor;
 
@@ -44,7 +46,7 @@ class EditorCoverageDecorations implements Disposable {
       }
 
       final RangeHighlighter rangeHighlighter =
-        markupModel.addLineHighlighter(0, HighlighterLayer.SELECTION - 1, new TextAttributes());
+        markupModel.addLineHighlighter(0, HIGHLIGHTERLAYER, new TextAttributes());
       rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
 
       hasDecorations = true;
@@ -116,7 +118,7 @@ class EditorCoverageDecorations implements Disposable {
       int markerCount = 0;
 
       for (int line : coverageInfo.getCoveredLines()) {
-        final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, coveredAttributes);
+        final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HIGHLIGHTERLAYER, coveredAttributes);
 
         final CoveredLineMarkerRenderer renderer =
           new CoveredLineMarkerRenderer(!coverageInfo.isCovered(line - 1), !coverageInfo.isCovered(line + 1));
@@ -129,7 +131,7 @@ class EditorCoverageDecorations implements Disposable {
 
       for (int line : coverageInfo.getUncoveredLines()) {
         final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(line, HighlighterLayer.SELECTION - 1, uncoveredAttributes);
+          markupModel.addLineHighlighter(line, HIGHLIGHTERLAYER, uncoveredAttributes);
         rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
 
         markerCount++;
@@ -137,7 +139,7 @@ class EditorCoverageDecorations implements Disposable {
 
       if (markerCount == 0) {
         final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(0, HighlighterLayer.SELECTION - 1, new TextAttributes());
+          markupModel.addLineHighlighter(0, HIGHLIGHTERLAYER, new TextAttributes());
         rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
       }
 

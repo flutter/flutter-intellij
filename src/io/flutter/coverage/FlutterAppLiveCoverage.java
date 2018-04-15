@@ -14,12 +14,11 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
-import org.dartlang.vm.service.element.IsolateRef;
-import org.dartlang.vm.service.element.RPCError;
-import org.dartlang.vm.service.element.ScriptRef;
-import org.dartlang.vm.service.element.SourceReport;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -39,6 +38,8 @@ class FlutterAppLiveCoverage implements Disposable {
   private boolean requestInProgress = false;
 
   private ScriptManager scriptManager;
+  @SuppressWarnings("FieldCanBeLocal")
+  private VmServiceListener vmServiceListener;
 
   private final Map<FileEditor, EditorCoverageDecorations> editorDecorations = new HashMap<>();
 
@@ -106,11 +107,32 @@ class FlutterAppLiveCoverage implements Disposable {
       return;
     }
 
+    if (scriptManager != null) {
+      return;
+    }
+
     scriptManager = new ScriptManager(vmService);
 
     assert app.getPerfService() != null;
     isolateRefStreamSubscription = app.getPerfService().getCurrentFlutterIsolate(
       (isolateRef) -> requestRepaint(When.soon), false);
+
+    vmServiceListener = new VmServiceListenerAdapter() {
+      @Override
+      public void received(String streamId, Event event) {
+        if (isDisposed) {
+          return;
+        }
+
+        final EventKind kind = event.getKind();
+
+        if (kind == EventKind.PauseBreakpoint || kind == EventKind.PauseException ||
+            kind == EventKind.PauseInterrupted) {
+          requestRepaint(When.soon);
+        }
+      }
+    };
+    vmService.addVmServiceListener(vmServiceListener);
 
     requestRepaint(When.soon);
   }
@@ -123,18 +145,11 @@ class FlutterAppLiveCoverage implements Disposable {
    * When.soon will schedule a repaint shortly; that can get delayed by another request, with a maximum delay.
    */
   private void requestRepaint(When when) {
-    //if (isDirty) {
-    //  return;
-    //}
-
     isDirty = true;
 
     if (requestInProgress) {
       return;
     }
-
-    // if we get another request in - while retreiving information - we should display the
-    // info when it's available, but perform another repaint (the info is likely out of date).
 
     if (!isConnected() || this.currentFile == null || this.currentEditor == null) {
       return;
@@ -255,6 +270,11 @@ class FlutterAppLiveCoverage implements Disposable {
     app.removeStateListener(appListener);
 
     scriptManager = null;
+
+    // TODO(devoncarew): This method will be available in a future version of the service protocol library.
+    //if (vmServiceListener != null) {
+    //  app.getVmService().removeEventListener(vmServiceListener);
+    //}
 
     for (EditorCoverageDecorations decorations : editorDecorations.values()) {
       decorations.dispose();
