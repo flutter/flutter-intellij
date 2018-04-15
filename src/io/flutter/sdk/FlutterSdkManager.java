@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
  * Monitors the application library table to notify clients when Flutter SDK configuration changes.
  */
 public class FlutterSdkManager {
-  private final EventDispatcher<Listener> myDispatcher = EventDispatcher.create(Listener.class);
+  private final EventDispatcher<Listener> myListenerDispatcher = EventDispatcher.create(Listener.class);
   private boolean isFlutterConfigured;
   private final @NotNull Project myProject;
 
@@ -71,20 +71,20 @@ public class FlutterSdkManager {
   public void checkForFlutterSdkChange() {
     if (!isFlutterConfigured && isFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = true;
-      myDispatcher.getMulticaster().flutterSdkAdded();
+      myListenerDispatcher.getMulticaster().flutterSdkAdded();
     }
     else if (isFlutterConfigured && !isFlutterSdkSetAndNeeded()) {
       isFlutterConfigured = false;
-      myDispatcher.getMulticaster().flutterSdkRemoved();
+      myListenerDispatcher.getMulticaster().flutterSdkRemoved();
     }
   }
 
   public void addListener(@NotNull Listener listener) {
-    myDispatcher.addListener(listener);
+    myListenerDispatcher.addListener(listener);
   }
 
   public void removeListener(@NotNull Listener listener) {
-    myDispatcher.removeListener(listener);
+    myListenerDispatcher.removeListener(listener);
   }
 
   private boolean isFlutterSdkSetAndNeeded() {

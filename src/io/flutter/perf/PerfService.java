@@ -125,6 +125,19 @@ public class PerfService {
   }
 
   /**
+   * Return the current Flutter IsolateRef, if any.
+   *
+   * Note that this may not be immediately populated at app startup for Flutter apps; clients that wish to
+   * be notified when the Flutter isolate is discovered should prefer the StreamSubscription varient of this
+   * method (getCurrentFlutterIsolate()).
+   */
+  public IsolateRef getCurrentFlutterIsolateRaw() {
+    synchronized (flutterIsolateRefStream) {
+      return flutterIsolateRefStream.getValue();
+    }
+  }
+
+  /**
    * Stop the Perf service.
    */
   public void stop() {

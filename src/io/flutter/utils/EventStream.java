@@ -21,7 +21,7 @@ import java.util.function.Consumer;
  * The  benefit of using this class instead of listening for events is you
  * don't have to worry about missing values posted to the stream before your
  * code started listening which can lead to hard to find bugs.
- *
+ * <p>
  * The benefit of using this class over awaiting a Future is that the value can
  * update multiple times.
  * <p>
@@ -79,6 +79,18 @@ public class EventStream<T> {
         SwingUtilities.invokeLater(doRun);
       }
     }
+  }
+
+  /**
+   * Listens for changes to the value tracked by the EventStream.
+   * onData is always called immediately with the current value specified
+   * by the EventStream.
+   *
+   * @param onData is called every time the value associated with the EventStream changes.
+   * @return a StreamSubscription object that is used to cancel the subscription.
+   */
+  public StreamSubscription<T> listen(Consumer<T> onData) {
+    return listen(onData, false);
   }
 
   /**
