@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.Alarm;
+import com.intellij.util.Producer;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
@@ -39,6 +40,71 @@ public class EvalOnDartLibrary implements Disposable {
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
+
+  /**
+   * For robustness we ensure at most one pending request is issued at a time.
+   */
+  private CompletableFuture<?> allPendingRequestsDone;
+  private final Object pendingRequestLock = new Object();
+
+  /**
+   * Public so that other related classes such as InspectorService can ensure their
+   * requests are in a consistent order with requests which eliminates otherwise
+   * surprising timing bugs such as if a request to dispose an
+   * InspectorService.ObjectGroup was issued after a request to read properties
+   * from an object in a group but the request to dispose the object group
+   * occurred first.
+   * <p>
+   * The design is we have at most 1 pending request at a time. This sacrifices
+   * some throughput with the advantage of predictable semantics and the benefit
+   * that we are able to skip large numbers of requests if they happen to be
+   * from groups of objects that should no longer be kept alive.
+   * <p>
+   * The optional ObjectGroup specified by isAlive, indicates whether the
+   * request is still relevant or should be cancelled. This is an optimization
+   * for the Inspector to avoid overloading the service with stale requests if
+   * the user is quickly navigating through the UI generating lots of stale
+   * requests to view specific details subtrees.
+   */
+  public <T> CompletableFuture<T> addRequest(InspectorService.ObjectGroup isAlive, Producer<CompletableFuture<T>> request) {
+    if (isAlive != null && isAlive.isDisposed()) {
+      return CompletableFuture.completedFuture(null);
+    }
+
+    // Future that completes when the request has finished.
+    final CompletableFuture<T> response = new CompletableFuture<>();
+    // This is an optimization to avoid sending stale requests across the wire.
+    final Runnable wrappedRequest = () -> {
+      if (isAlive != null && isAlive.isDisposed()) {
+        response.complete(null);
+        return;
+      }
+      final CompletableFuture<T> future = request.produce();
+      future.whenCompleteAsync((v, t) -> {
+        if (t != null) {
+          response.completeExceptionally(t);
+        }
+        else {
+          response.complete(v);
+        }
+      });
+    };
+    synchronized (pendingRequestLock) {
+      if (allPendingRequestsDone == null || allPendingRequestsDone.isDone()) {
+        allPendingRequestsDone = response;
+        myRequestsScheduler.addRequest(wrappedRequest, 0);
+      }
+      else {
+        final CompletableFuture<?> previousDone = allPendingRequestsDone;
+        allPendingRequestsDone = response;
+        // Actually schedule this request only after the previous request completes.
+        previousDone.whenCompleteAsync((v, error) -> {
+          myRequestsScheduler.addRequest(wrappedRequest, 0);
+        });
+      }
+    }
+    return response;
+  }
 
   public EvalOnDartLibrary(String libraryName, VmService vmService, PerfService perfService) {
     this.libraryName = libraryName;
@@ -88,11 +154,9 @@ public class EvalOnDartLibrary implements Disposable {
     }
   }
 
-  public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope) {
-    final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
-    //noinspection CodeBlock2Expr
-    myRequestsScheduler.addRequest(() -> {
-      //noinspection CodeBlock2Expr
+  public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {
+    return addRequest(isAlive, () -> {
+      final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
       libraryRef.thenAcceptAsync((LibraryRef ref) -> {
         evaluateHelper(
           getIsolateId(), ref.getId(), expression, scope,
@@ -105,7 +169,7 @@ public class EvalOnDartLibrary implements Disposable {
 
             @Override
             public void received(ErrorRef response) {
-              LOG.error("Error evaluating expression:\n" + response.getMessage());
+              LOG.error("Error evaluating expression:\n" + expression + "\nResponse:" + response.getMessage());
               future.completeExceptionally(new RuntimeException(response.toString()));
             }
 
@@ -121,15 +185,14 @@ public class EvalOnDartLibrary implements Disposable {
           }
         );
       });
-    }, 0);
-    return future;
+      return future;
+    });
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends Obj> CompletableFuture<T> getObjHelper(ObjRef instance) {
-    final CompletableFuture<T> future = new CompletableFuture<>();
-    //noinspection CodeBlock2Expr
-    myRequestsScheduler.addRequest(() -> {
+  public <T extends Obj> CompletableFuture<T> getObjHelper(ObjRef instance, InspectorService.ObjectGroup isAlive) {
+    return addRequest(isAlive, () -> {
+      final CompletableFuture<T> future = new CompletableFuture<>();
       vmService.getObject(
         getIsolateId(), instance.getId(), new GetObjectConsumer() {
           @Override
@@ -148,35 +211,36 @@ public class EvalOnDartLibrary implements Disposable {
           }
         }
       );
-    }, 0);
-    return future;
+      return future;
+    });
   }
 
   @NotNull
-  public CompletableFuture<XSourcePosition> getSourcePosition(DartVmServiceDebugProcess debugProcess, ScriptRef script, int tokenPos) {
-    final CompletableFuture<XSourcePosition> future = new CompletableFuture<>();
-    myRequestsScheduler.addRequest(() -> future.complete(debugProcess.getSourcePosition(isolateId, script, tokenPos)), 0);
-    return future;
+  public CompletableFuture<XSourcePosition> getSourcePosition(DartVmServiceDebugProcess debugProcess,
+                                                              ScriptRef script,
+                                                              int tokenPos,
+                                                              InspectorService.ObjectGroup isAlive) {
+    return addRequest(isAlive, () -> CompletableFuture.completedFuture(debugProcess.getSourcePosition(isolateId, script, tokenPos)));
   }
 
-  public CompletableFuture<Instance> getInstance(InstanceRef instance) {
-    return getObjHelper(instance);
+  public CompletableFuture<Instance> getInstance(InstanceRef instance, InspectorService.ObjectGroup isAlive) {
+    return getObjHelper(instance, isAlive);
   }
 
-  public CompletableFuture<Library> getLibrary(LibraryRef instance) {
-    return getObjHelper(instance);
+  public CompletableFuture<Library> getLibrary(LibraryRef instance, InspectorService.ObjectGroup isAlive) {
+    return getObjHelper(instance, isAlive);
   }
 
-  public CompletableFuture<ClassObj> getClass(ClassRef instance) {
-    return getObjHelper(instance);
+  public CompletableFuture<ClassObj> getClass(ClassRef instance, InspectorService.ObjectGroup isAlive) {
+    return getObjHelper(instance, isAlive);
   }
 
-  public CompletableFuture<Func> getFunc(FuncRef instance) {
-    return getObjHelper(instance);
+  public CompletableFuture<Func> getFunc(FuncRef instance, InspectorService.ObjectGroup isAlive) {
+    return getObjHelper(instance, isAlive);
   }
 
-  public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture) {
-    return instanceFuture.thenComposeAsync(this::getInstance);
+  public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture, InspectorService.ObjectGroup isAlive) {
+    return instanceFuture.thenComposeAsync((instance) -> getInstance(instance, isAlive));
   }
 
   private void evaluateHelper(String isolateId, String targetId, String expression, Map<String, String> scope, EvaluateConsumer consumer) {

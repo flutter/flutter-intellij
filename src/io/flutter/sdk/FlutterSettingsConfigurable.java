@@ -41,8 +41,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
-  public static final boolean WIDGET_FILTERING_ENABLED = false;
-
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
   private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
