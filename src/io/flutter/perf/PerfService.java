@@ -161,7 +161,7 @@ public class PerfService {
       if (event.getKind() == EventKind.IsolateExit && StringUtil.equals(event.getIsolate().getId(), flutterIsolateRef.getId())) {
         setFlutterIsolate(null);
 
-        Iterable<EventStream<Boolean>> existingExtensions;
+        final Iterable<EventStream<Boolean>> existingExtensions;
         synchronized (serviceExtensions) {
           existingExtensions = new ArrayList<>(serviceExtensions.values());
         }
@@ -213,11 +213,11 @@ public class PerfService {
    */
   private void addServiceExtension(String name) {
     synchronized (serviceExtensions) {
-      EventStream<Boolean> stream = serviceExtensions.get(name);
+      final EventStream<Boolean> stream = serviceExtensions.get(name);
       if (stream == null) {
         serviceExtensions.put(name, new EventStream<>(true));
       }
-      else if (stream.getValue() == false) {
+      else if (!stream.getValue()) {
         stream.setValue(true);
       }
     }
