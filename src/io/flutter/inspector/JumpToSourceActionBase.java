@@ -55,7 +55,7 @@ public abstract class JumpToSourceActionBase extends InspectorTreeActionBase {
       return;
     }
     // We have to get a DartVmServiceValue to compute the source position.
-    final InspectorService inspectorService = diagnosticsNode.getInspectorService();
+    final InspectorService.ObjectGroup inspectorService = diagnosticsNode.getInspectorService();
     final CompletableFuture<DartVmServiceValue> valueFuture =
       inspectorService.toDartVmServiceValueForSourceLocation(diagnosticsNode.getValueRef());
     AsyncUtils.whenCompleteUiThread(valueFuture, (DartVmServiceValue value, Throwable throwable) -> {

@@ -158,7 +158,7 @@ public class FlutterWidgetTest {
     private final String description;
 
     public FakeNode(String description) {
-      super(null, null);
+      super(null, null, false);
       this.description = description;
     }
 

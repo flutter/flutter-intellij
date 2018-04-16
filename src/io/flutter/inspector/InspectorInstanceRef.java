@@ -7,7 +7,7 @@ package io.flutter.inspector;
 
 /**
  * Reference to a Dart object.
- *
+ * <p>
  * This class is similar to the Observatory protocol InstanceRef with the
  * difference that InspectorInstanceRef objects do not expire and all
  * instances of the same Dart object are guaranteed to have the same
@@ -23,9 +23,15 @@ public class InspectorInstanceRef {
   public boolean equals(Object other) {
     //noinspection SimplifiableIfStatement
     if (other instanceof InspectorInstanceRef) {
-      return ((InspectorInstanceRef)other).id.equals(id);
+      final InspectorInstanceRef otherRef = (InspectorInstanceRef)other;
+      return id == null ? otherRef.id == null : id.equals(otherRef.id);
     }
     return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return id != null ? id.hashCode() : 0;
   }
 
   @Override
