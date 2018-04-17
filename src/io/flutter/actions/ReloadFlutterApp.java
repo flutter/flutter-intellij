@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -58,7 +59,7 @@ public class ReloadFlutterApp extends FlutterAppAction {
       if (file != null && !file.isInLocalFileSystem()) {
         file = null;
       }
-      if (file != null && !file.getPath().endsWith(".dart")) {
+      if (file != null && !FlutterUtils.isDartFile(file)) {
         file = null;
       }
       FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), file);

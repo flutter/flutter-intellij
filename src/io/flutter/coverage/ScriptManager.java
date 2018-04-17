@@ -92,6 +92,7 @@ class ScriptManager {
           final Library library = getLibrary(libraryRef);
           if (library != null) {
             if (!library.getScripts().isEmpty()) {
+              // TODO(devoncarew): If more than one, should we return the newest script?
               return library.getScripts().get(0);
             }
           }
@@ -104,6 +105,9 @@ class ScriptManager {
 
   @Nullable
   private Library getLibrary(LibraryRef libraryRef) {
+    // TODO(devoncarew): Consider changing the signature to `CompletableFuture getLibrary(LibraryRef instance)`
+    // (see also the EvalOnDartLibrary implementation).
+
     final Ref<Library> resultRef = Ref.create();
     final Semaphore semaphore = new Semaphore();
     semaphore.down();
@@ -131,7 +135,7 @@ class ScriptManager {
     }
   }
 
-  public Pair<Integer, Integer> getLineColumnPosForTokenPos(ScriptRef scriptRef, int tokenPos) {
+  public Pair<Integer, Integer> getLineColumnPosForTokenPos(@NotNull ScriptRef scriptRef, int tokenPos) {
     final TIntObjectHashMap<Pair<Integer, Integer>> map = linesAndColumnsMap.get(scriptRef.getId());
     return map == null ? null : map.get(tokenPos);
   }
@@ -185,7 +189,8 @@ class ScriptManager {
     return result;
   }
 
-  public Script getScriptFor(ScriptRef ref) {
+  @Nullable
+  public Script getScriptFor(@NotNull ScriptRef ref) {
     return scriptMap.get(ref.getId());
   }
 }

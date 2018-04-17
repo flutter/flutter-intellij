@@ -24,7 +24,7 @@ import java.util.List;
 class EditorCoverageDecorations implements Disposable {
   private static final VirtualFileManager virtualFileManager = VirtualFileManager.getInstance();
 
-  private static final int HIGHLIGHTERLAYER = HighlighterLayer.SELECTION - 1;
+  private static final int HIGHLIGHTER_LAYER = HighlighterLayer.SELECTION - 1;
 
   @NotNull
   private final FileEditor fileEditor;
@@ -46,7 +46,7 @@ class EditorCoverageDecorations implements Disposable {
       }
 
       final RangeHighlighter rangeHighlighter =
-        markupModel.addLineHighlighter(0, HIGHLIGHTERLAYER, new TextAttributes());
+        markupModel.addLineHighlighter(0, HIGHLIGHTER_LAYER, new TextAttributes());
       rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
 
       hasDecorations = true;
@@ -84,10 +84,11 @@ class EditorCoverageDecorations implements Disposable {
         if (file != null && file.equals(reloadFile)) {
           scriptManager.populateFor(scriptRef);
 
-          //final int startIndex = reportRange.getStartPos();
-          //final int endIndex = reportRange.getEndPos();
-
           final Script script = scriptManager.getScriptFor(scriptRef);
+          if (script == null) {
+            continue;
+          }
+
           for (List<Integer> encoded : script.getTokenPosTable()) {
             coverageInfo.addUncovered(encoded.get(0) - 1);
           }
@@ -118,7 +119,7 @@ class EditorCoverageDecorations implements Disposable {
       int markerCount = 0;
 
       for (int line : coverageInfo.getCoveredLines()) {
-        final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HIGHLIGHTERLAYER, coveredAttributes);
+        final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HIGHLIGHTER_LAYER, coveredAttributes);
 
         final CoveredLineMarkerRenderer renderer =
           new CoveredLineMarkerRenderer(!coverageInfo.isCovered(line - 1), !coverageInfo.isCovered(line + 1));
@@ -131,7 +132,7 @@ class EditorCoverageDecorations implements Disposable {
 
       for (int line : coverageInfo.getUncoveredLines()) {
         final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(line, HIGHLIGHTERLAYER, uncoveredAttributes);
+          markupModel.addLineHighlighter(line, HIGHLIGHTER_LAYER, uncoveredAttributes);
         rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
 
         markerCount++;
@@ -139,7 +140,7 @@ class EditorCoverageDecorations implements Disposable {
 
       if (markerCount == 0) {
         final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(0, HIGHLIGHTERLAYER, new TextAttributes());
+          markupModel.addLineHighlighter(0, HIGHLIGHTER_LAYER, new TextAttributes());
         rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
       }
 

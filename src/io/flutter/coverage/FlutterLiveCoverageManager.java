@@ -35,6 +35,14 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterLiveCoverageManager implements Disposable {
   public static final boolean ENABLE_LIVE_COVERAGE = false;
 
+  /**
+   * Initialize the live coverage manager for the given project.
+   */
+  public static void init(@NotNull Project project) {
+    // Call getInstance() will init FlutterLiveCoverageManager for the given project.
+    getInstance(project);
+  }
+
   public static FlutterLiveCoverageManager getInstance(@NotNull Project project) {
     return ServiceManager.getService(project, FlutterLiveCoverageManager.class);
   }

@@ -233,7 +233,7 @@ class FlutterAppLiveCoverage implements Disposable {
     this.currentFile = file;
     this.currentEditor = fileEditor;
 
-    // harvest old editors
+    // Harvest old editors.
     harvestInvalidEditors();
 
     if (fileEditor != null) {

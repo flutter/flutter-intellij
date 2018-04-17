@@ -171,7 +171,7 @@ public class FlutterInitializer implements StartupActivity {
     FlutterRunNotifications.init(project);
 
     // Start the live coverage manager.
-    FlutterLiveCoverageManager.getInstance(project);
+    FlutterLiveCoverageManager.init(project);
 
     // Watch save actions for reload on save.
     FlutterReloadManager.init(project);

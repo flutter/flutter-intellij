@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
-// TODO(pq): rename
+// TODO(pq/devoncarew): Find a better name for this class; VMServiceWrapper? VMServiceManager?
 // TODO(pq): improve error handling
 // TODO(pq): change mode for opting in (preference or inspector view menu)
 
