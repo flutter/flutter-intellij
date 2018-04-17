@@ -37,7 +37,7 @@ public class FlutterCreateParams {
     // Check to see if the pub site is accessible to indicate whether we're online
     // and if we should expect pub commands to succeed.
     try {
-      new Socket(InetAddress.getByName("pub.dartlang.org"), 80);
+      new Socket(InetAddress.getByName("pub.dartlang.org"), 80).close();
       return true;
     } catch (IOException ex) {
       // Ignore.
