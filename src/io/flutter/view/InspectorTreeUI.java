@@ -299,10 +299,6 @@ public class InspectorTreeUI extends BasicTreeUI {
       return;
     }
 
-    final int clipLeft = clipBounds.x;
-    final int clipRight = clipBounds.x + clipBounds.width;
-    final int clipTop = clipBounds.y;
-    final int clipBottom = clipBounds.y + clipBounds.height;
     final int lineY = bounds.y + bounds.height / 2;
     final int leafChildLineInset = 4;
 
@@ -314,12 +310,7 @@ public class InspectorTreeUI extends BasicTreeUI {
       nodeX = isLeaf ? getRowX(row, depth) - leafChildLineInset:
               getRowX(row, depth - 1);
       nodeX += insets.left;
-      if(lineY >= clipTop
-         && lineY < clipBottom
-         && nodeX >= clipLeft
-         && leftX < clipRight
-         && leftX < nodeX) {
-
+      if(clipBounds.intersects(leftX, lineY, nodeX - leftX, 1)) {
         g.setColor(JBColor.GRAY);
         if (dashed) {
           drawDashedHorizontalLine(g, lineY, leftX, nodeX - 1);
