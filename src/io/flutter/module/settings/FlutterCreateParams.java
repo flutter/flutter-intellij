@@ -34,7 +34,7 @@ public class FlutterCreateParams {
   }
 
   private static boolean isPubAvailable() {
-    // Check to see if the pub site is accessible as an indicator for whether we're online
+    // Check to see if the pub site is accessible to indicate whether we're online
     // and if we should expect pub commands to succeed.
     try {
       new Socket(InetAddress.getByName("pub.dartlang.org"), 80);
