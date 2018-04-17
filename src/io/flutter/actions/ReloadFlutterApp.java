@@ -7,11 +7,16 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
+import com.intellij.openapi.fileEditor.FileEditorManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
+import com.intellij.openapi.vfs.VirtualFile;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -48,7 +53,16 @@ public class ReloadFlutterApp extends FlutterAppAction {
     else {
       // Else perform a hot reload.
       FlutterInitializer.sendAnalyticsAction(this);
-      FlutterReloadManager.getInstance(project).saveAllAndReload(getApp());
+      final Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
+
+      VirtualFile file = editor == null ? null : FileDocumentManager.getInstance().getFile(editor.getDocument());
+      if (file != null && !file.isInLocalFileSystem()) {
+        file = null;
+      }
+      if (file != null && !FlutterUtils.isDartFile(file)) {
+        file = null;
+      }
+      FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), file);
     }
   }
 }

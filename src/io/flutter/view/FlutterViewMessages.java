@@ -39,9 +39,8 @@ public class FlutterViewMessages {
                                      @NotNull VmService vmService) {
     final MessageBus bus = project.getMessageBus();
     final FlutterDebugNotifier publisher = bus.syncPublisher(FLUTTER_DEBUG_TOPIC);
-    app.setVmService(vmService);
     assert(app.getFlutterDebugProcess() != null);
-    app.setPerfService(new PerfService(app.getFlutterDebugProcess(), vmService));
+    app.setVmServices(vmService, new PerfService(app.getFlutterDebugProcess(), vmService));
 
     publisher.debugActive(new FlutterDebugEvent(app, vmService));
   }

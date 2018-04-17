@@ -23,9 +23,11 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
+import io.flutter.coverage.FlutterLiveCoverageManager;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
+import io.flutter.run.FlutterAppManager;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
@@ -167,6 +169,9 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     FlutterRunNotifications.init(project);
+
+    // Start the live coverage manager.
+    FlutterLiveCoverageManager.init(project);
 
     // Watch save actions for reload on save.
     FlutterReloadManager.init(project);

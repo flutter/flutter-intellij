@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
-// TODO(pq): rename
+// TODO(pq/devoncarew): Find a better name for this class; VMServiceWrapper? VMServiceManager?
 // TODO(pq): improve error handling
 // TODO(pq): change mode for opting in (preference or inspector view menu)
 
@@ -122,6 +122,19 @@ public class PerfService {
    */
   public StreamSubscription<IsolateRef> getCurrentFlutterIsolate(Consumer<IsolateRef> onValue, boolean onUIThread) {
     return flutterIsolateRefStream.listen(onValue, onUIThread);
+  }
+
+  /**
+   * Return the current Flutter IsolateRef, if any.
+   *
+   * Note that this may not be immediately populated at app startup for Flutter apps; clients that wish to
+   * be notified when the Flutter isolate is discovered should prefer the StreamSubscription varient of this
+   * method (getCurrentFlutterIsolate()).
+   */
+  public IsolateRef getCurrentFlutterIsolateRaw() {
+    synchronized (flutterIsolateRefStream) {
+      return flutterIsolateRefStream.getValue();
+    }
   }
 
   /**

@@ -202,7 +202,7 @@ public class FlutterReloadManager {
         final Notification notification = showRunNotification(app, null, "Reloading…", false);
         final long startTime = System.currentTimeMillis();
 
-        app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
+        app.performHotReload(file, supportsPauseAfterReload()).thenAccept(result -> {
           if (!result.ok()) {
             notification.expire();
             showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
@@ -229,11 +229,11 @@ public class FlutterReloadManager {
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
-  public void saveAllAndReload(@NotNull FlutterApp app) {
+  public void saveAllAndReload(@NotNull FlutterApp app, @Nullable VirtualFile currentFile) {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
 
-      app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
+      app.performHotReload(currentFile, supportsPauseAfterReload()).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
         }

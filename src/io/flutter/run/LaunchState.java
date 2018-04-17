@@ -282,7 +282,9 @@ public class LaunchState extends CommandLineState {
           }
 
           // Disable the run/debug buttons if the app is starting up.
-          if (app.getState() == FlutterApp.State.STARTING || app.getState() == FlutterApp.State.RELOADING) {
+          if (app.getState() == FlutterApp.State.STARTING ||
+              app.getState() == FlutterApp.State.RELOADING ||
+              app.getState() == FlutterApp.State.RESTARTING) {
             return false;
           }
         }
