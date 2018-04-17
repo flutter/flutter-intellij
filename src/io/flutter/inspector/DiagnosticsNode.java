@@ -458,7 +458,7 @@ public class DiagnosticsNode {
 
   private CompletableFuture<Map<String, InstanceRef>> valueProperties;
 
-  private final boolean isProperty;
+  private final boolean isProperty = false;
 
   public boolean isProperty() {
     return isProperty;
