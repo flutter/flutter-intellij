@@ -13,33 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.intellij.util.ui.tree;
+/*
+ * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.view;
 
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Conditions;
 import com.intellij.openapi.util.registry.Registry;
+import com.intellij.ui.Gray;
+import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.MouseEventAdapter;
 import com.intellij.util.ui.UIUtil;
+import icons.FlutterIcons;
+import io.flutter.inspector.DiagnosticsNode;
+import io.flutter.inspector.DiagnosticsTreeStyle;
+import io.flutter.inspector.InspectorTree;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.Border;
-import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicTreeUI;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
-/**
-* @author Konstantin Bulenkov
-*/
-public class WideSelectionTreeUI extends BasicTreeUI {
+import static io.flutter.inspector.TreeUtils.maybeGetDiagnostic;
+
+public class InspectorTreeUI extends BasicTreeUI {
   public static final String TREE_TABLE_TREE_KEY = "TreeTableTree";
 
   @NonNls public static final String SOURCE_LIST_CLIENT_PROPERTY = "mac.ui.source.list";
@@ -48,26 +59,29 @@ public class WideSelectionTreeUI extends BasicTreeUI {
   private static final Border LIST_BACKGROUND_PAINTER = UIManager.getBorder("List.sourceListBackgroundPainter");
   private static final Border LIST_SELECTION_BACKGROUND_PAINTER = UIManager.getBorder("List.sourceListSelectionBackgroundPainter");
   private static final Border LIST_FOCUSED_SELECTION_BACKGROUND_PAINTER = UIManager.getBorder("List.sourceListFocusedSelectionBackgroundPainter");
-  
+
   @NotNull private final Condition<Integer> myWideSelectionCondition;
   private boolean myWideSelection;
   private boolean myOldRepaintAllRowValue;
-  private boolean myForceDontPaintLines = false;
   private boolean mySkinny = false;
 
+  boolean leftToRight = true; /// TODO(jacobr): actually support RTL mode.
+
+  static final JBColor SUBTREE_BOUNDS_COLOR = new JBColor(Color.WHITE, Gray._43);
+
   @SuppressWarnings("unchecked")
-  public WideSelectionTreeUI() {
-    this(true, Conditions.<Integer>alwaysTrue());
+  public InspectorTreeUI() {
+    this(false, Conditions.<Integer>alwaysFalse());
   }
 
   /**
-   * Creates new {@code WideSelectionTreeUI} object.
-   * 
+   * Creates new {@code InspectorTreeUI} object.
+   *
    * @param wideSelection           flag that determines if wide selection should be used
    * @param wideSelectionCondition  strategy that determine if wide selection should be used for a target row (it's zero-based index
    *                                is given to the condition as an argument)
    */
-  public WideSelectionTreeUI(final boolean wideSelection, @NotNull Condition<Integer> wideSelectionCondition) {
+  public InspectorTreeUI(final boolean wideSelection, @NotNull Condition<Integer> wideSelectionCondition) {
     myWideSelection = wideSelection;
     myWideSelectionCondition = wideSelectionCondition;
   }
@@ -93,7 +107,7 @@ public class WideSelectionTreeUI extends BasicTreeUI {
         JTree tree = (JTree)event.getSource();
         Object property = tree.getClientProperty("DnD Source"); // DnDManagerImpl.SOURCE_KEY
         if (property == null) {
-          super.mouseDragged(event); // use Swing-based DnD only if custom DnD is not set 
+          super.mouseDragged(event); // use Swing-based DnD only if custom DnD is not set
         }
       }
 
@@ -225,17 +239,13 @@ public class WideSelectionTreeUI extends BasicTreeUI {
     });
   }
 
-  public void setForceDontPaintLines() {
-    myForceDontPaintLines = true;
-  }
-
   private abstract static class TreeUIAction extends AbstractAction implements UIResource {
   }
 
   @Override
   protected int getRowX(int row, int depth) {
     if (isCustomIndent()) {
-      int off = tree.isRootVisible() ? 8 : 0;
+      final int off = tree.isRootVisible() ? 8 : 0;
       return 8 * depth + 8 + off;
     } else {
       return super.getRowX(row, depth);
@@ -252,16 +262,73 @@ public class WideSelectionTreeUI extends BasicTreeUI {
                                           final boolean isExpanded,
                                           final boolean hasBeenExpanded,
                                           final boolean isLeaf) {
-    if (shouldPaintLines()) {
-      super.paintHorizontalPartOfLeg(g, clipBounds, insets, bounds, path, row, isExpanded, hasBeenExpanded, isLeaf);
+    if (path.getPathCount() < 2) {
+      // We could draw lines for nodes with a single child but we omit them
+      // to more of an emphasis of lines for nodes with multiple children.
+      return;
     }
-  }
+    if (path.getPathCount() >= 2) {
+      final Object treeNode = path.getPathComponent(path.getPathCount() - 2);
+      if (treeNode instanceof DefaultMutableTreeNode) {
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode) treeNode;
+        if (node.getChildCount() < 2) {
+          return;
+        }
+      }
+    }
+    boolean dashed = false;
+    final DiagnosticsNode diagnosticsNode = maybeGetDiagnostic((DefaultMutableTreeNode)path.getLastPathComponent());
+    if (diagnosticsNode != null) {
+      if (diagnosticsNode.isProperty()) {
+        // Intentionally avoid ever drawing lines for properties as we need to
+        // distinguish them from other nodes. See the DiagnosticsNode class in
+        // Flutter which applies the same concept rendering properties inline
+        // as part of ascii art tree display.
+        return;
+      }
+      // This also consistent with the ascii art tree display where offstage
+      // nodes are rendered using dashed lines.
+      if (diagnosticsNode.getStyle() == DiagnosticsTreeStyle.offstage) {
+        dashed = true;
+      }
+    }
 
-  private boolean shouldPaintLines() {
-    if (UIUtil.isUnderAquaBasedLookAndFeel() || UIUtil.isUnderDarcula() || UIUtil.isUnderIntelliJLaF()) {
-      return false;
+    final int depth = path.getPathCount() - 1;
+    if((depth == 0 || (depth == 1 && !isRootVisible())) &&
+       !getShowsRootHandles()) {
+      return;
     }
-    return myForceDontPaintLines || !"None".equals(tree.getClientProperty("JTree.lineStyle"));
+
+    final int clipLeft = clipBounds.x;
+    final int clipRight = clipBounds.x + clipBounds.width;
+    final int clipTop = clipBounds.y;
+    final int clipBottom = clipBounds.y + clipBounds.height;
+    final int lineY = bounds.y + bounds.height / 2;
+    final int leafChildLineInset = 4;
+
+    if (leftToRight) {
+      int leftX = bounds.x - getRightChildIndent();
+      int nodeX = bounds.x - getHorizontalLegBuffer();
+
+      leftX = getRowX(row, depth - 1) - getRightChildIndent() + insets.left;
+      nodeX = isLeaf ? getRowX(row, depth) - leafChildLineInset:
+              getRowX(row, depth - 1);
+      nodeX += insets.left;
+      if(lineY >= clipTop
+         && lineY < clipBottom
+         && nodeX >= clipLeft
+         && leftX < clipRight
+         && leftX < nodeX) {
+
+        g.setColor(JBColor.GRAY);
+        if (dashed) {
+          drawDashedHorizontalLine(g, lineY, leftX, nodeX - 1);
+        } else {
+          paintHorizontalLine(g, tree, lineY, leftX, nodeX - 1);
+        }
+      }
+    }
+    // TODO(jacobr): implement RTL case.
   }
 
   @Override
@@ -271,16 +338,146 @@ public class WideSelectionTreeUI extends BasicTreeUI {
 
   @Override
   protected void paintVerticalPartOfLeg(final Graphics g, final Rectangle clipBounds, final Insets insets, final TreePath path) {
-    if (shouldPaintLines()) {
-      super.paintVerticalPartOfLeg(g, clipBounds, insets, path);
+    final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+    if (node.getChildCount() < 2) {
+      // We could draw lines for nodes with a single child but we omit them
+      // to more of an emphasis of lines for nodes with multiple children.
+      return;
+    }
+    final DiagnosticsNode diagnostic = maybeGetDiagnostic(node);
+    if (diagnostic != null && !diagnostic.hasChildren()) {
+      // This avoids drawing lines for nodes with only property children.
+      return;
+    }
+
+    final int depth = path.getPathCount() - 1;
+    if (depth == 0 && !getShowsRootHandles() && !isRootVisible()) {
+      return;
+    }
+
+    int lineX = getRowX(-1, depth);
+    if (leftToRight) {
+      lineX = lineX - getRightChildIndent() + insets.left;
+    }
+    else {
+      lineX = tree.getWidth() - lineX - insets.right +
+              getRightChildIndent() - 1;
+    }
+    final int clipLeft = clipBounds.x;
+    final int clipRight = clipBounds.x + (clipBounds.width - 1);
+
+    if (lineX >= clipLeft && lineX <= clipRight) {
+      final int clipTop = clipBounds.y;
+      final int clipBottom = clipBounds.y + clipBounds.height;
+      Rectangle parentBounds = getPathBounds(tree, path);
+      boolean previousDashed = false;
+
+      int top;
+      if (parentBounds == null) {
+        top = Math.max(insets.top + getVerticalLegBuffer(),
+                       clipTop);
+      }
+      else {
+        top = Math.max(parentBounds.y + parentBounds.height +
+                       getVerticalLegBuffer(), clipTop);
+      }
+
+      if (depth == 0 && !isRootVisible()) {
+        final TreeModel model = getModel();
+
+        if (model != null) {
+          final Object root = model.getRoot();
+
+          if (model.getChildCount(root) > 0) {
+            parentBounds = getPathBounds(tree, path.
+              pathByAddingChild(model.getChild(root, 0)));
+            if (parentBounds != null) {
+              top = Math.max(insets.top + getVerticalLegBuffer(),
+                             parentBounds.y +
+                             parentBounds.height / 2);
+            }
+          }
+        }
+      }
+
+      for (int i = 0; i < node.getChildCount(); ++i) {
+        final DefaultMutableTreeNode child = (DefaultMutableTreeNode)node.getChildAt(i);
+        final DiagnosticsNode childDiagnostic = maybeGetDiagnostic(child);
+        boolean dashed = false;
+        if (childDiagnostic != null) {
+          dashed = childDiagnostic.getStyle() == DiagnosticsTreeStyle.offstage;
+        }
+
+        final Rectangle childBounds = getPathBounds(tree, path.pathByAddingChild(child));
+        if (childBounds == null)
+        // This shouldn't happen, but if the model is modified
+        // in another thread it is possible for this to happen.
+        // Swing isn't multithreaded, but I'll add this check in
+        // anyway.
+        {
+          continue;
+        }
+
+       final int bottom = Math.min(childBounds.y +
+                              (childBounds.height / 2), clipBottom);
+
+        if (top <= bottom && bottom >= clipTop  && top <= clipBottom) {
+          g.setColor(JBColor.GRAY);
+          paintVerticalLine(g, tree, lineX, top, bottom, dashed);
+        }
+        top = bottom;
+        previousDashed = dashed;
+      }
     }
   }
 
-  @Override
-  protected void paintVerticalLine(Graphics g, JComponent c, int x, int top, int bottom) {
-    if (shouldPaintLines()) {
-      super.paintVerticalLine(g, c, x, top, bottom);
+  protected void paintVerticalLine(Graphics g, JComponent c, int x, int top, int bottom, boolean dashed) {
+    if (dashed) {
+      drawDashedVerticalLine(g, x, top, bottom);
+    } else {
+      g.drawLine(x, top, x, bottom);
     }
+  }
+
+
+  public @NotNull TreePath getLastExpandedDescendant(TreePath path) {
+    while (tree.isExpanded(path)) {
+      final DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+      if (node.isLeaf()) {
+        break;
+      }
+      path = path.pathByAddingChild(node.getLastChild());
+    }
+    return path;
+  }
+
+  private Rectangle getSubtreeBounds(DefaultMutableTreeNode node, Rectangle clipBounds) {
+    if (node == null) {
+      return null;
+    }
+    final TreePath path = new TreePath(node.getPath());
+    final int depth = path.getPathCount() - 1;
+    final Rectangle rootBounds = tree.getPathBounds(path);
+    if (rootBounds == null) {
+      return null;
+    }
+    // We use getRowX instead of the value from rootBounds as we want to include
+    // the down arrows
+    final int minX = getRowX(-1, depth - 1);
+    final int minY = rootBounds.y;
+
+    Rectangle bounds;
+    final Rectangle descendantBounds = tree.getPathBounds(getLastExpandedDescendant(path));
+    if (descendantBounds != null) {
+      final int maxY = (int)descendantBounds.getMaxY();
+      final int maxX = (int)clipBounds.getMaxX();
+      bounds = new Rectangle(minX, minY, maxX - minX, maxY - minY);
+    } else {
+      // This case shouldn't really happen unless we have a bug but using just
+      // the root node bounds is a safe fallback.
+      bounds = rootBounds;
+    }
+    return bounds.intersection(clipBounds);
   }
 
   @Override
@@ -296,11 +493,6 @@ public class WideSelectionTreeUI extends BasicTreeUI {
 
   public boolean isWideSelection() {
     return myWideSelection;
-  }
-
-  public static boolean isWideSelection(@NotNull JTree tree) {
-    TreeUI ui = tree.getUI();
-    return ui instanceof WideSelectionTreeUI && ((WideSelectionTreeUI)ui).isWideSelection();
   }
 
   @Override
@@ -366,43 +558,58 @@ public class WideSelectionTreeUI extends BasicTreeUI {
   }
 
   @Override
+   protected void paintExpandControl(Graphics g,
+                                     Rectangle clipBounds,
+                                     Insets insets,
+                                     Rectangle bounds,
+                                     TreePath path,
+                                     int row,
+                                     boolean isExpanded,
+                                     boolean hasBeenExpanded,
+                                     boolean isLeaf) {
+     final boolean isPathSelected = tree.getSelectionModel().isPathSelected(path);
+     boolean isPropertyNode = false;
+     if (!isLeaf(row)) {
+       Object lastPathComponent = path.getLastPathComponent();
+       if (lastPathComponent instanceof DefaultMutableTreeNode) {
+         final DiagnosticsNode diagnostic = maybeGetDiagnostic((DefaultMutableTreeNode) lastPathComponent);
+         if (diagnostic != null) {
+           isPropertyNode = diagnostic.isProperty();
+         }
+       }
+       if (isPropertyNode) {
+         setExpandedIcon(FlutterIcons.CollapseProperty);
+         setCollapsedIcon(FlutterIcons.ExpandProperty);
+       } else {
+         setExpandedIcon(UIUtil.getTreeNodeIcon(true, false, false));
+         setCollapsedIcon(UIUtil.getTreeNodeIcon(false, false, false));
+       }
+     }
+
+     super.paintExpandControl(g, clipBounds, insets, bounds, path, row, isExpanded, hasBeenExpanded, isLeaf);
+   }
+
+  @Override
   public void paint(Graphics g, JComponent c) {
-    if (myWideSelection && !UIUtil.isUnderAquaBasedLookAndFeel() && !UIUtil.isUnderDarcula() && !UIUtil.isUnderIntelliJLaF()) {
-      paintSelectedRows(g, ((JTree)c));
+    if (tree != c) {
+      throw new InternalError("incorrect component");
     }
-    if (myWideSelection) {
-      final int containerWidth = tree.getParent() instanceof JViewport ? tree.getParent().getWidth() : tree.getWidth();
-      final int xOffset = tree.getParent() instanceof JViewport ? ((JViewport)tree.getParent()).getViewPosition().x : 0;
-      final Rectangle bounds = g.getClipBounds();
 
-      // draw background for the given clip bounds
-      final Object sourceList = tree.getClientProperty(SOURCE_LIST_CLIENT_PROPERTY);
-      if (sourceList != null && (Boolean)sourceList) {
-        Graphics2D backgroundGraphics = (Graphics2D)g.create();
-        backgroundGraphics.setClip(xOffset, bounds.y, containerWidth, bounds.height);
-        LIST_BACKGROUND_PAINTER.paintBorder(tree, backgroundGraphics, xOffset, bounds.y, containerWidth, bounds.height);
-        backgroundGraphics.dispose();
+    if (tree instanceof InspectorTree) {
+      InspectorTree inspectorTree = (InspectorTree)tree;
+      DefaultMutableTreeNode highlightedRooot = inspectorTree.getHighlightedRoot();
+      if (highlightedRooot == null) {
+        highlightedRooot = (DefaultMutableTreeNode)tree.getModel().getRoot();
+      }
+      if (highlightedRooot != null && highlightedRooot.getUserObject() != null) {
+        Rectangle subtreeBounds = getSubtreeBounds(highlightedRooot, g.getClipBounds());
+        if (subtreeBounds != null && !subtreeBounds.isEmpty()) {
+          g.setColor(SUBTREE_BOUNDS_COLOR);
+          g.fillRect(subtreeBounds.x, subtreeBounds.y, subtreeBounds.width, subtreeBounds.height);
+        }
       }
     }
-
     super.paint(g, c);
-  }
-
-  protected void paintSelectedRows(Graphics g, JTree tr) {
-    final Rectangle rect = tr.getVisibleRect();
-    final int firstVisibleRow = tr.getClosestRowForLocation(rect.x, rect.y);
-    final int lastVisibleRow = tr.getClosestRowForLocation(rect.x, rect.y + rect.height);
-
-    for (int row = firstVisibleRow; row <= lastVisibleRow; row++) {
-      if (tr.getSelectionModel().isRowSelected(row) && myWideSelectionCondition.value(row)) {
-          final Rectangle bounds = tr.getRowBounds(row);
-          Color color = getSelectionBackground(tr, false);
-          if (color != null) {
-            g.setColor(color);
-            g.fillRect(0, bounds.y, tr.getWidth(), bounds.height);
-          }
-      }
-    }
   }
 
   @Override
@@ -419,25 +626,6 @@ public class WideSelectionTreeUI extends BasicTreeUI {
         super.paintComponent(g, c, p, x, y, w, h, shouldValidate);
       }
     };
-  }
-
-  @Override
-  protected void paintExpandControl(Graphics g,
-                                    Rectangle clipBounds,
-                                    Insets insets,
-                                    Rectangle bounds,
-                                    TreePath path,
-                                    int row,
-                                    boolean isExpanded,
-                                    boolean hasBeenExpanded,
-                                    boolean isLeaf) {
-    boolean isPathSelected = tree.getSelectionModel().isPathSelected(path);
-    if (!isLeaf(row)) {
-      setExpandedIcon(UIUtil.getTreeNodeIcon(true, isPathSelected, tree.hasFocus()));
-      setCollapsedIcon(UIUtil.getTreeNodeIcon(false, isPathSelected, tree.hasFocus()));
-    }
-
-    super.paintExpandControl(g, clipBounds, insets, bounds, path, row, isExpanded, hasBeenExpanded, isLeaf);
   }
 
   @Nullable
