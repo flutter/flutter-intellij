@@ -103,7 +103,7 @@ public class FlutterCreateAdditionalSettingsFields {
       settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
     }
 
-    settingsStep.addSettingsComponent(createParams.getComponent());
+    settingsStep.addSettingsComponent(createParams.setInitialValues().getComponent());
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
