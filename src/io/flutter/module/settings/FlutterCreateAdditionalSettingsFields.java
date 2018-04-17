@@ -25,6 +25,7 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm androidLanguageRadios;
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
+  private final FlutterCreateParams createParams;
 
   public FlutterCreateAdditionalSettingsFields() {
     this(new FlutterCreateAdditionalSettings());
@@ -78,6 +79,8 @@ public class FlutterCreateAdditionalSettingsFields {
       }
     );
     iosLanguageRadios.setToolTipText(FlutterBundle.message("flutter.module.create.settings.radios.ios.tip"));
+
+    createParams = new FlutterCreateParams();
   }
 
   private void changeVisibility(boolean areLanguageFeaturesVisible) {
@@ -99,6 +102,8 @@ public class FlutterCreateAdditionalSettingsFields {
     if (!PlatformUtils.isWebStorm()) {
       settingsStep.addSettingsComponent(new SettingsHelpForm().getComponent());
     }
+
+    settingsStep.addSettingsComponent(createParams.getComponent());
   }
 
   public FlutterCreateAdditionalSettings getAdditionalSettings() {
@@ -108,6 +113,7 @@ public class FlutterCreateAdditionalSettingsFields {
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
+      .setOffline(createParams.isOfflineSelected())
       .build();
   }
 

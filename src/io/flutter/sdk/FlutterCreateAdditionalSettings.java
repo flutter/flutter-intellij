@@ -25,6 +25,8 @@ public class FlutterCreateAdditionalSettings {
   private Boolean swift;
   @Nullable
   private Boolean kotlin;
+  @Nullable
+  private Boolean offlineMode;
 
   public FlutterCreateAdditionalSettings() {
     type = FlutterProjectType.APP;
@@ -37,13 +39,15 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable String description,
                                           @Nullable String org,
                                           @Nullable Boolean swift,
-                                          @Nullable Boolean kotlin) {
+                                          @Nullable Boolean kotlin,
+                                          @Nullable Boolean offlineMode) {
     this.includeDriverTest = includeDriverTest;
     this.type = type;
     this.description = description;
     this.org = org;
     this.swift = swift;
     this.kotlin = kotlin;
+    this.offlineMode = offlineMode;
   }
 
   public void setType(@Nullable FlutterProjectType value) {
@@ -69,6 +73,10 @@ public class FlutterCreateAdditionalSettings {
 
   public List<String> getArgs() {
     final List<String> args = new ArrayList<>();
+
+    if (Boolean.TRUE.equals(offlineMode)) {
+      args.add("--offline");
+    }
 
     if (Boolean.TRUE.equals(includeDriverTest)) {
       args.add("--with-driver-test");
@@ -134,6 +142,8 @@ public class FlutterCreateAdditionalSettings {
     private Boolean swift;
     @Nullable
     private Boolean kotlin;
+    @Nullable
+    private Boolean offlineMode;
 
     public Builder() {
     }
@@ -168,8 +178,13 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
+    public Builder setOffline(@Nullable Boolean offlineMode) {
+      this.offlineMode = offlineMode;
+      return this;
+    }
+
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode);
     }
   }
 }
