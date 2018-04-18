@@ -5,6 +5,8 @@
  */
 package io.flutter.inspector;
 
+import java.util.Objects;
+
 /**
  * Reference to a Dart object.
  * <p>
@@ -24,7 +26,7 @@ public class InspectorInstanceRef {
     //noinspection SimplifiableIfStatement
     if (other instanceof InspectorInstanceRef) {
       final InspectorInstanceRef otherRef = (InspectorInstanceRef)other;
-      return id == null ? otherRef.id == null : id.equals(otherRef.id);
+      return Objects.equals(id, otherRef.id);
     }
     return false;
   }
