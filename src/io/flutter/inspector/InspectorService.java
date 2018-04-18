@@ -286,13 +286,12 @@ public class ObjectGroup implements Disposable {
   }
 
   /**
-   * Once an ObjecGroup has been disposed, all methods returning
+   * Once an ObjectGroup has been disposed, all methods returning
    * DiagnosticsNode objects will return a placeholder dummy node and all methods
    * returning lists or maps will return empty lists and all other methods will
-   * return null. Generally code should not be written to never call methods on
-   * a disposed object group but
-   * sometimes due to chained futures that can be difficult and it is simpler
-   * to just return an empty result that will be ignored anyway that to
+   * return null. Generally code should never call methods on a disposed object
+   * group but sometimes due to chained futures that can be difficult to avoid
+   * and it is simpler return an empty result that will be ignored anyway than to
    * attempt carefully cancel futures.
    */
   @Override

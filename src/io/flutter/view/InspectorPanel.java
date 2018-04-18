@@ -49,6 +49,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.System;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -282,13 +283,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
       @Override
       public void componentShown(ComponentEvent e) {
-        // We should start updating here
         determineSplitterOrientation();
       }
 
       @Override
       public void componentHidden(ComponentEvent e) {
-        // We should pause updating here.
       }
     });
 
@@ -616,7 +615,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * Show the details subtree starting with node subtreeRoot highlighting
    * node subtreeSelection.
    */
-
   public void showDetailSubtrees(DiagnosticsNode subtreeRoot, DiagnosticsNode subtreeSelection) {
     // TODO(jacobr): handle render objects subtree panel and other subtree panels here.
     assert (!legacyMode);
@@ -1505,7 +1503,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       groups.getNext()
         .safeWhenComplete(diagnostic.getProperties(groups.getNext()), (ArrayList<DiagnosticsNode> properties, Throwable throwable) -> {
           if (throwable != null || propertiesIdentical(properties, currentProperties)) {
-            // Dispose the new group as it wasn't used
+            // Dispose the new group as it wasn't used.
             groups.cancelNext();
             return;
           }

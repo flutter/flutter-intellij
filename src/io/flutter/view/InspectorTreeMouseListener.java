@@ -117,7 +117,7 @@ class InspectorTreeMouseListener extends MouseAdapter {
                                                                 tree.getModel().isLeaf(node), row, true);
     final Rectangle pathBounds = tree.getPathBounds(path);
     if (pathBounds == null) {
-      // Something went wrong and thepath isn't really visible.
+      // Something went wrong and the path isn't really visible.
       return;
     }
     p.translate(-pathBounds.x, -pathBounds.y);
