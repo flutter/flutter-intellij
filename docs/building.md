@@ -1,5 +1,3 @@
-_Note: this doc is out of date_
-
 ## The build pre-reqs
 
 Several large files required for building the plugin are downloaded from Google Storage
