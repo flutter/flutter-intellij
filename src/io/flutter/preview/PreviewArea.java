@@ -107,15 +107,8 @@ public class PreviewArea {
     layeredPanel.addComponentListener(new ComponentAdapter() {
       @Override
       public void componentResized(ComponentEvent e) {
-        final int width = layeredPanel.getWidth();
-        final int height = layeredPanel.getHeight();
-        for (Component child : layeredPanel.getComponents()) {
-          child.setBounds(0, 0, width, height);
-        }
-
-        final int renderWidth = width - 2 * BORDER_WIDTH;
-        final int renderHeight = height - 2 * BORDER_WIDTH;
-        listener.resized(renderWidth, renderHeight);
+        final Dimension renderSize = getRenderSize();
+        listener.resized(renderSize.width, renderSize.height);
       }
     });
   }
@@ -337,6 +330,18 @@ public class PreviewArea {
     toolbarGroup.removeAll();
     toolbarGroup.add(new TitleAction(text == null ? "Preview" : ("Preview: " + text)));
     windowToolbar.updateActionsImmediately();
+  }
+
+  public Dimension getRenderSize() {
+    final int width = layeredPanel.getWidth();
+    final int height = layeredPanel.getHeight();
+    for (Component child : layeredPanel.getComponents()) {
+      child.setBounds(0, 0, width, height);
+    }
+
+    final int renderWidth = width - 2 * BORDER_WIDTH;
+    final int renderHeight = height - 2 * BORDER_WIDTH;
+    return new Dimension(renderWidth, renderHeight);
   }
 
   interface Listener {

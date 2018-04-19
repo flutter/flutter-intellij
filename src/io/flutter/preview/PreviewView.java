@@ -106,6 +106,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final Map<String, AnAction> messageToActionMap = new HashMap<>();
   private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
 
+  private boolean isSettingSplitterProportion = false;
   private Splitter splitter;
   private JScrollPane scrollPane;
   private OutlineTree tree;
@@ -197,6 +198,13 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
           }
         }
       });
+    }
+
+    @Override
+    public void onRenderableWidget(FlutterOutline widget) {
+      setSplitterProportion(getState().getSplitterProportion());
+      final Dimension renderSize = previewArea.getRenderSize();
+      myRenderHelper.setSize(renderSize.width, renderSize.height);
     }
   };
 
@@ -374,18 +382,20 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     });
 
     splitter = new Splitter(true);
-    splitter.setProportion(getState().getSplitterProportion());
+    setSplitterProportion(getState().getSplitterProportion());
     getState().addListener(e -> {
       final float newProportion = getState().getSplitterProportion();
       if (splitter.getProportion() != newProportion) {
-        splitter.setProportion(newProportion);
+        setSplitterProportion(newProportion);
       }
     });
     //noinspection Convert2Lambda
     splitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
       @Override
       public void propertyChange(PropertyChangeEvent evt) {
-        getState().setSplitterProportion(splitter.getProportion());
+        if (!isSettingSplitterProportion) {
+          getState().setSplitterProportion(splitter.getProportion());
+        }
       }
     });
     splitter.setFirstComponent(scrollPane);
@@ -847,11 +857,34 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   }
 
+  private void setSplitterProportion(float value) {
+    isSettingSplitterProportion = true;
+    try {
+      splitter.setProportion(value);
+    }
+    finally {
+      isSettingSplitterProportion = false;
+    }
+    doLayoutRecursively(splitter);
+  }
+
+  private static void doLayoutRecursively(Component component) {
+    if (component != null) {
+      component.doLayout();
+      if (component instanceof Container) {
+        final Container container = (Container)component;
+        for (Component child : container.getComponents()) {
+          doLayoutRecursively(child);
+        }
+      }
+    }
+  }
+
   private void showNotRenderableInPreviewArea(@NotNull FlutterOutline widget) {
     final JPanel panel = new JPanel();
-    panel.setLayout(new MigLayout("", "[grow, center]", "[grow][][][grow 200]"));
+    panel.setLayout(new MigLayout("insets 0", "[grow, center]", "[grow, bottom][grow 200, top]"));
 
-    panel.add(new JBLabel(PreviewArea.NOT_RENDERABLE), "cell 0 1");
+    panel.add(new JBLabel(PreviewArea.NOT_RENDERABLE), "cell 0 0");
 
     final LinkLabel linkLabel = LinkLabel.create("Add forDesignTime() constructor...", () -> {
       final SourceChange change = flutterAnalysisServer.flutter_getChangeAddForDesignTimeConstructor(currentFile, widget.getOffset());
@@ -859,9 +892,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         applyChangeAndShowException(change);
       }
     });
-    panel.add(linkLabel, "cell 0 2");
+    panel.add(linkLabel, "cell 0 1");
 
     previewArea.clear(panel);
+
+    setSplitterProportion(0.9f);
   }
 
   private void applyChangeAndShowException(SourceChange change) {
