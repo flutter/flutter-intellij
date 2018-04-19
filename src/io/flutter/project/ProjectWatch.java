@@ -9,7 +9,6 @@ import com.intellij.ProjectTopics;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerAdapter;
 import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
@@ -33,7 +32,7 @@ public class ProjectWatch implements Closeable {
   private ProjectWatch(@NotNull Project project, @NotNull Runnable callback) {
     this.callback = callback;
 
-    final ProjectManagerListener listener = new ProjectManagerAdapter() {
+    final ProjectManagerListener listener = new ProjectManagerListener() {
       @Override
       public void projectClosed(Project project) {
         fireEvent();
