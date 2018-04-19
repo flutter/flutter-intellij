@@ -263,14 +263,13 @@ public class InspectorService implements Disposable {
   }
 
   // TODO(jacobr): fix indent of this class before landing.
-
   /**
    * Class managing a group of inspector objects that can be freed by
    * a single call to dispose().
    * After dispose is called, all pending requests made with the ObjectGroup
    * will be skipped. This means that clients should not have to write any
    * special logic to handle orphaned requests.
-   * <p>
+   *
    * safeWhenComplete is the recommended way to await futures returned by the
    * ObjectGroup as with that method the callback will be skipped if the
    * ObjectGroup is disposed making it easy to get the correct behavior of
@@ -841,8 +840,8 @@ public class InspectorService implements Disposable {
     }
 
     /**
-     * Await a Future invoking the callback on completion on the UI thread only if the ObjectGroup is
-     * still alive when the Future completes.
+     * Await a Future invoking the callback on completion on the UI thread only if the
+     * rhis ObjectGroup is still alive when the Future completes.
      */
     public <T> void safeWhenComplete(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
       if (future == null) {
