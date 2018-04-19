@@ -49,7 +49,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.System;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -177,7 +176,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh);
 
-    String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
+    final String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
 
     myRootsTree = new InspectorTree(
       new DefaultMutableTreeNode(null),
@@ -429,8 +428,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   private CompletableFuture<?> getPendingUpdateDone() {
-    // Wait for the selection to be resolved followed by waiting for the tree
-    // to be computed.
+    // Wait for the selection to be resolved followed by waiting for the tree to be computed.
     final CompletableFuture<?> ret = new CompletableFuture<>();
     AsyncUtils.whenCompleteUiThread(selectionGroups.getPendingUpdateDone(), (value, error) -> {
       treeGroups.getPendingUpdateDone().whenCompleteAsync((value2, error2) -> {
@@ -495,9 +493,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   @Override
-  public void onForceRefresh() {
+  public CompletableFuture<?> onForceRefresh() {
     if (!visibleToUser) {
-      return;
+      final CompletableFuture<?> ret = new CompletableFuture<>();
+      ret.complete(null);
+      return ret;
     }
     if (!legacyMode) {
       // We can't efficiently refresh the full tree in legacy mode.
@@ -506,6 +506,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (myPropertiesPanel != null) {
       myPropertiesPanel.refresh();
     }
+
+    return getPendingUpdateDone();
   }
 
   public void onAppChanged() {
