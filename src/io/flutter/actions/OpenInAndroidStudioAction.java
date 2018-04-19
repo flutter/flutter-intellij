@@ -154,6 +154,12 @@ public class OpenInAndroidStudioAction extends AnAction {
         // We have a selection. Check if it is within a plugin.
         final Project project = e.getProject();
         assert (project != null);
+
+        // Return null if this is an ios folder.
+        if (FlutterExternalIdeActionGroup.isWithinIOsDirectory(file, project)) {
+          return null;
+        }
+
         final VirtualFile projectDir = project.getBaseDir();
         for (PubRoot root : PubRoots.forProject(project)) {
           if (root.isFlutterPlugin()) {
@@ -179,11 +185,6 @@ public class OpenInAndroidStudioAction extends AnAction {
         }
         if (isProjectFileName(file.getName())) {
           return getProjectForFile(file);
-        }
-
-        // Return null if this is an ios folder.
-        if (FlutterExternalIdeActionGroup.isWithinIOsDirectory(file, project)) {
-          return null;
         }
       }
 
