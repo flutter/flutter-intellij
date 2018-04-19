@@ -9,7 +9,7 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.project.ProjectManagerAdapter;
+import com.intellij.openapi.project.ProjectManagerListener;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -50,8 +50,7 @@ public class FlutterSdkManager {
       timer.cancel(false);
     });
 
-    //noinspection deprecation
-    ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerAdapter() {
+    ProjectManager.getInstance().addProjectManagerListener(new ProjectManagerListener() {
       @Override
       public void projectOpened(@NotNull Project project) {
         checkForFlutterSdkChange();

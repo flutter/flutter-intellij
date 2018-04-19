@@ -52,9 +52,8 @@ public class FlutterPluginLibraryType extends LibraryType<FlutterPluginLibraryPr
     return null;
   }
 
-  @Override
   @Nullable
-  public Icon getIcon() {
+  public Icon getIcon(@Nullable FlutterPluginLibraryProperties properties) {
     return FlutterIcons.Flutter;
   }
 }
