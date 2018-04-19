@@ -395,6 +395,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void displayEmptyContent(ToolWindow toolWindow) {
+    // There's a possible race here where the tool window gets disposed while we're displaying contents.
+    if (toolWindow.isDisposed()) {
+      return;
+    }
+
     // Display a 'No running applications' message.
     final ContentManager contentManager = toolWindow.getContentManager();
     final JPanel panel = new JPanel(new BorderLayout());
