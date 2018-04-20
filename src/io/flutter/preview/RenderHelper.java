@@ -96,8 +96,10 @@ public class RenderHelper {
     }
     else if (myWidgetOutline.getRenderConstructor() == null) {
       myListener.onFailure(RenderProblemKind.NOT_RENDERABLE_WIDGET, myWidgetOutline);
+      myWidgetOutline = null;
     }
     else if (myWidgetOutline != previousWidgetOutline) {
+      myListener.onRenderableWidget(myWidgetOutline);
       scheduleRendering();
     }
   }
@@ -166,6 +168,8 @@ public class RenderHelper {
     void onResponse(FlutterOutline widget, JsonObject response);
 
     void onFailure(RenderProblemKind kind, FlutterOutline widget);
+
+    void onRenderableWidget(FlutterOutline widget);
   }
 }
 
