@@ -74,14 +74,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private static final Logger LOG = Logger.getInstance(InspectorPanel.class);
   protected final boolean detailsSubtree;
   protected final boolean isSummaryTree;
-  @Nullable
   /**
    * Parent InspectorPanel if this is a details subtree
    */
-  protected final InspectorPanel parentTree;
+  @Nullable protected final InspectorPanel parentTree;
   protected final InspectorPanel subtreePanel;
   final CustomIconMaker iconMaker = new CustomIconMaker();
-  @NotNull final Splitter treeSplitter;
+  final Splitter treeSplitter;
   final Icon defaultIcon;
   final JBScrollPane treeScrollPane;
   private final InspectorTree myRootsTree;
@@ -220,16 +219,13 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     treeScrollPane = (JBScrollPane)ScrollPaneFactory.createScrollPane(myRootsTree);
     treeScrollPane.setAutoscrolls(false);
-    // Add padding on the bottom so users can select an item even if a horizontal scroll bar is visible
-    // (and overlaying the bottom part of the scrollable area).
-    treeScrollPane.setViewportBorder(BorderFactory.createEmptyBorder(0, 0, JBUI.scale(14), 0));
 
     scrollAnimator = new TreeScrollAnimator(myRootsTree, treeScrollPane);
     shouldAutoHorizontalScroll.listen(scrollAnimator::setAutoHorizontalScroll, true);
     myRootsTree.setScrollAnimator(scrollAnimator);
 
     if (!detailsSubtree) {
-      treeSplitter = new Splitter(detailsSubtree);
+      treeSplitter = new Splitter(false);
       treeSplitter.setProportion(flutterView.getState().getSplitterProportion());
       flutterView.getState().addListener(e -> {
         final float newProportion = flutterView.getState().getSplitterProportion();
@@ -251,11 +247,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       }
       else {
         myPropertiesPanel = null; /// This InspectorPanel doesn't have its own property panel.
-        final JBRunnerTabs tabs = new JBRunnerTabs(flutterView.getProject(), ActionManager.getInstance(), null, this);
-        tabs.addTab(new TabInfo(subtreePanel)
-                      .append("Details", SimpleTextAttributes.REGULAR_ATTRIBUTES));
-
-        treeSplitter.setSecondComponent(tabs.getComponent());
+        treeSplitter.setSecondComponent(subtreePanel);
       }
 
       Disposer.register(this, treeSplitter::dispose);

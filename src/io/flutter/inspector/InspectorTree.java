@@ -93,7 +93,8 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
     super(treemodel);
     setUI(new InspectorTreeUI());
     final BasicTreeUI ui = (BasicTreeUI)getUI();
-    if (!legacyMode) {
+    // TODO: Consider making changing the background a user preference, in order to do user testing.
+    if (!detailsSubtree && !legacyMode) {
       setBackground(VERY_LIGHT_GREY);
     }
     this.detailsSubtree = detailsSubtree;
@@ -102,6 +103,7 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
     getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     registerShortcuts();
     if (detailsSubtree) {
+      // TODO(devoncarew): This empty text is not showing up for the details area, even when there are no detail nodes.
       getEmptyText().setText(treeName + " subtree of the selected " + parentTreeName);
     }
     else {
