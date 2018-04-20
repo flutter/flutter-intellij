@@ -22,6 +22,7 @@ import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.run.LaunchState;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -72,12 +73,19 @@ public class BazelRunConfig extends RunConfigurationBase
     final LaunchState.Callback callback = (device) -> {
       if (device == null) return null;
 
-      final GeneralCommandLine command = launchFields.getLaunchCommand(env.getProject(), device, mode);
+      final GeneralCommandLine command = getCommand(env, device);
       return FlutterApp.start(env, env.getProject(), module, mode, device, command,
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
     return new LaunchState(env, main.getAppDir(), main.getFile(), this, callback);
+  }
+
+  @Override
+  public GeneralCommandLine getCommand(ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
+    final BazelFields launchFields = fields.copy();
+    final RunMode mode = RunMode.fromEnv(env);
+    return launchFields.getLaunchCommand(env.getProject(), device, mode);
   }
 
   public BazelRunConfig clone() {
