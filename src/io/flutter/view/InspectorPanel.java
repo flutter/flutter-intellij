@@ -495,9 +495,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   @Override
   public CompletableFuture<?> onForceRefresh() {
     if (!visibleToUser) {
-      final CompletableFuture<?> ret = new CompletableFuture<>();
-      ret.complete(null);
-      return ret;
+      return CompletableFuture.completedFuture(null);
     }
     if (!legacyMode) {
       // We can't efficiently refresh the full tree in legacy mode.
