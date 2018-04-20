@@ -177,7 +177,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     refreshRateLimiter = new AsyncRateLimiter(REFRESH_FRAMES_PER_SECOND, this::refresh);
 
-    String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
+    final String parentTreeDisplayName = (parentTree != null) ? parentTree.treeType.displayName : null;
 
     myRootsTree = new InspectorTree(
       new DefaultMutableTreeNode(null),

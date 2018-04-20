@@ -18,13 +18,14 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-class FlutterViewLocalToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
+abstract class FlutterViewLocalToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
   private boolean selected = false;
   private StreamSubscription<Boolean> subscription;
   private final EventStream<Boolean> stream;
 
   FlutterViewLocalToggleableAction(@NotNull FlutterApp app, @Nullable String text, EventStream<Boolean> stream) {
     super(app, text);
+
     this.stream = stream;
   }
 
@@ -34,6 +35,7 @@ class FlutterViewLocalToggleableAction extends FlutterViewAction implements Togg
                                    @Nullable Icon icon,
                                    EventStream<Boolean> stream) {
     super(app, text, description, icon);
+
     this.stream = stream;
   }
 
