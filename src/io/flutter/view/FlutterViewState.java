@@ -15,10 +15,15 @@ import javax.swing.event.ChangeListener;
  * State for the Flutter view.
  */
 public class FlutterViewState {
+  public static final boolean AUTO_SCROLL_DEFAULT = false;
+
   private final EventDispatcher<ChangeListener> dispatcher = EventDispatcher.create(ChangeListener.class);
 
   @Attribute(value = "splitter-proportion")
   public float splitterProportion;
+
+  @Attribute(value = "should-auto-scroll")
+  public boolean shouldAutoScroll = AUTO_SCROLL_DEFAULT;
 
   public FlutterViewState() {
   }
@@ -29,6 +34,15 @@ public class FlutterViewState {
 
   public void setSplitterProportion(float value) {
     splitterProportion = value;
+    dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
+  }
+
+  public boolean getShouldAutoScroll() {
+    return shouldAutoScroll;
+  }
+
+  public void setShouldAutoScroll(boolean value) {
+    shouldAutoScroll = value;
     dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
   }
 

@@ -21,9 +21,9 @@ import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.ActionCallback;
 import com.intellij.openapi.util.ActiveRunnable;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
@@ -85,7 +85,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String WIDGET_TREE_LABEL = "Widgets";
   public static final String RENDER_TREE_LABEL = "Render Tree";
 
-  protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(true);
+  protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
 
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
@@ -99,6 +99,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   public FlutterView(@NotNull Project project) {
     myProject = project;
+
+    shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
   }
 
   @Override
@@ -120,6 +122,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   @Override
   public void loadState(@NotNull FlutterViewState state) {
     this.state.copyFrom(state);
+
+    shouldAutoHorizontalScroll.setValue(this.state.getShouldAutoScroll());
   }
 
   void initToolWindow(ToolWindow window) {
