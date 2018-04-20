@@ -48,6 +48,7 @@ import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -144,7 +145,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     displayEmptyContent(window);
   }
 
-  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow, @NotNull FlutterApp app, Disposable parentDisposable, InspectorService inspectorService) {
+  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow,
+                                           @NotNull FlutterApp app,
+                                           Disposable parentDisposable,
+                                           InspectorService inspectorService) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(registerAction(new ToggleInspectModeAction(app)));
     if (inspectorService != null) {
@@ -213,9 +217,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (inspectorService != null) {
       final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
       runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
-      addInspectorPanel("Widgets", runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow, toolbarGroup, true,
+      addInspectorPanel("Widgets", runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
+                        toolbarGroup, true,
                         detailsSummaryViewSupported);
-      addInspectorPanel("Render Tree", runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow, toolbarGroup, false,
+      addInspectorPanel("Render Tree", runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow,
+                        toolbarGroup, false,
                         false);
     }
     else {
@@ -244,7 +250,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private ActionCallback onTabSelectionChange(TabInfo info, boolean requestFocus, @NotNull ActiveRunnable doChangeSelection)  {
+  private ActionCallback onTabSelectionChange(TabInfo info, boolean requestFocus, @NotNull ActiveRunnable doChangeSelection) {
     final InspectorPanel panel = (InspectorPanel)info.getComponent();
     panel.setVisibleToUser(true);
     final TabInfo previous = info.getPreviousSelection();
@@ -255,10 +261,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   public void switchToRenderTree(FlutterApp app) {
-    PerAppState state = perAppViewState.get(app);
+    final PerAppState state = perAppViewState.get(app);
     for (TabInfo tabInfo : state.tabs.getTabs()) {
       if (tabInfo.getComponent() instanceof InspectorPanel) {
-        final InspectorPanel panel = (InspectorPanel) tabInfo.getComponent();
+        final InspectorPanel panel = (InspectorPanel)tabInfo.getComponent();
         if (panel.getTreeType() == InspectorService.FlutterTreeType.renderObject) {
           state.tabs.select(tabInfo, true);
           return;
@@ -745,15 +751,35 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
 class ForceRefreshAction extends FlutterViewAction {
   final @NotNull InspectorService inspectorService;
 
+  private boolean enabled = true;
+
   ForceRefreshAction(@NotNull FlutterApp app, @NotNull InspectorService inspectorService) {
-    super(app, "Force Refresh Action", "For Refresh", AllIcons.Actions.ForceRefresh);
+    super(app, "Refresh Widget Info", "Refresh Widget Info", AllIcons.Actions.ForceRefresh);
+
     this.inspectorService = inspectorService;
   }
 
-  protected void perform(AnActionEvent event) {
+  private void setEnabled(AnActionEvent event, boolean enabled) {
+    this.enabled = enabled;
+
+    update(event);
+  }
+
+  protected void perform(final AnActionEvent event) {
     if (app.isSessionActive()) {
-      inspectorService.forceRefresh();
+      setEnabled(event, false);
+
+      final CompletableFuture<?> future = inspectorService.forceRefresh();
+
+      AsyncUtils.whenCompleteUiThread(future, (o, throwable) -> {
+        setEnabled(event, true);
+      });
     }
+  }
+
+  @Override
+  public void update(@NotNull AnActionEvent e) {
+    e.getPresentation().setEnabled(app.isSessionActive() && enabled);
   }
 }
 

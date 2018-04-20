@@ -142,10 +142,15 @@ public class InspectorService implements Disposable {
     inspectorLibrary.dispose();
   }
 
-  public void forceRefresh() {
+  public CompletableFuture<?> forceRefresh() {
+    final List<CompletableFuture<?>> futures = new ArrayList<>();
+
     for (InspectorServiceClient client : clients) {
-      client.onForceRefresh();
+      final CompletableFuture<?> future = client.onForceRefresh();
+      futures.add(future);
     }
+
+    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
   }
 
   private void notifySelectionChanged() {
@@ -872,6 +877,6 @@ public class ObjectGroup implements Disposable {
 
     void onFlutterFrame();
 
-    void onForceRefresh();
+    CompletableFuture<?> onForceRefresh();
   }
 }
