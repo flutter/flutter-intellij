@@ -187,6 +187,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               break;
             case NO_WIDGET:
               previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
+              setSplitterProportion(0.9f);
               break;
             case NOT_RENDERABLE_WIDGET:
               assert widget != null;

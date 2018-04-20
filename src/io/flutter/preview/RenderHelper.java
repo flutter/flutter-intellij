@@ -124,7 +124,11 @@ public class RenderHelper {
 
         if (outlineStart < offset && offset < outlineEnd ||
             stateStart < offset && offset < stateEnd) {
-          return outline;
+          if (outline.isWidgetClass()) {
+            return outline;
+          } else {
+            return null;
+          }
         }
       }
     }
