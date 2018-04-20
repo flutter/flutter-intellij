@@ -93,9 +93,6 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
     super(treemodel);
     setUI(new InspectorTreeUI());
     final BasicTreeUI ui = (BasicTreeUI)getUI();
-    if (!legacyMode) {
-      setBackground(VERY_LIGHT_GREY);
-    }
     this.detailsSubtree = detailsSubtree;
 
     setRootVisible(rootVisible);
