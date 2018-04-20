@@ -6,7 +6,6 @@
 package io.flutter.bazel;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.annotations.SerializedName;
@@ -20,8 +19,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.List;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -29,39 +26,23 @@ import java.util.regex.PatternSyntaxException;
  */
 class PluginConfig {
   private final @NotNull Fields fields;
-  private final @Nullable List<Pattern> directoryPatterns;
 
-  private PluginConfig(@NotNull Fields fields, @Nullable List<Pattern> patterns) {
+  private PluginConfig(@NotNull Fields fields) {
     this.fields = fields;
-    this.directoryPatterns = patterns;
   }
 
-  /**
-   * Returns true if the given path is within a flutter project in this workspace.
-   *
-   * <p>The path should be relative to the workspace root.
-   */
-  boolean withinFlutterDirectory(@NotNull String path) {
-    if (directoryPatterns == null) {
-      // Default if unconfigured.
-      return path.contains("flutter");
-    }
-
-    for (Pattern p : directoryPatterns) {
-      if (p.matcher(path).find()) return true;
-    }
-    return false;
-  }
-
-  @Nullable String getDaemonScript() {
+  @Nullable
+  String getDaemonScript() {
     return fields.daemonScript;
   }
 
-  @Nullable String getDoctorScript() {
+  @Nullable
+  String getDoctorScript() {
     return fields.doctorScript;
   }
 
-  @Nullable String getLaunchScript() {
+  @Nullable
+  String getLaunchScript() {
     return fields.launchScript;
   }
 
@@ -80,23 +61,28 @@ class PluginConfig {
   /**
    * Reads plugin configuration from a file, if possible.
    */
-  public static @Nullable PluginConfig load(@NotNull VirtualFile file) {
+  public static @Nullable
+  PluginConfig load(@NotNull VirtualFile file) {
     final Computable<PluginConfig> readAction = () -> {
       try {
         final InputStreamReader input = new InputStreamReader(file.getInputStream(), "UTF-8");
         final Fields fields = GSON.fromJson(input, Fields.class);
-        return new PluginConfig(fields, compilePatterns(fields.directoryPatterns));
-      } catch (FileNotFoundException e) {
+        return new PluginConfig(fields);
+      }
+      catch (FileNotFoundException e) {
         LOG.info("Flutter plugin didn't find flutter.json at " + file.getPath());
         return null;
-      } catch (IOException e) {
+      }
+      catch (IOException e) {
         LOG.warn("Flutter plugin failed to load config file at " + file.getPath(), e);
         return null;
-      } catch (JsonSyntaxException e) {
+      }
+      catch (JsonSyntaxException e) {
         LOG.warn("Flutter plugin failed to parse JSON in config file at " + file.getPath());
         return null;
-      } catch (PatternSyntaxException e) {
-        LOG.warn("Flutter plugin failed to parse directory pattern (" + e.getPattern() +  ") in config file at " + file.getPath());
+      }
+      catch (PatternSyntaxException e) {
+        LOG.warn("Flutter plugin failed to parse directory pattern (" + e.getPattern() + ") in config file at " + file.getPath());
         return null;
       }
     };
@@ -104,29 +90,11 @@ class PluginConfig {
     return ApplicationManager.getApplication().runReadAction(readAction);
   }
 
-  @Nullable
-  private static List<Pattern> compilePatterns(@Nullable Iterable<String> patterns) {
-    if (patterns == null) return null;
-
-    final ImmutableList.Builder<Pattern> result = ImmutableList.builder();
-    for (String regexp : patterns) {
-      result.add(Pattern.compile(regexp));
-    }
-    return result.build();
-  }
-
   /**
    * The JSON fields in a PluginConfig, as loaded from disk.
    */
   @SuppressWarnings("unused")
   private static class Fields {
-    /**
-     * A list of regular expressions that match workspace-relative paths that contain flutter apps.
-     * (Used to decide whether to show the device menu.)
-     */
-    @SerializedName("directoryPatterns")
-    private List<String> directoryPatterns;
-
     /**
      * The script to run to start 'flutter daemon'.
      */
@@ -145,21 +113,21 @@ class PluginConfig {
     @SerializedName("launchScript")
     private String launchScript;
 
-    Fields() {}
+    Fields() {
+    }
 
     @Override
     public boolean equals(Object obj) {
       if (!(obj instanceof Fields)) return false;
       final Fields other = (Fields)obj;
-      return Objects.equal(directoryPatterns, other.directoryPatterns)
-             && Objects.equal(daemonScript, other.daemonScript)
+      return Objects.equal(daemonScript, other.daemonScript)
              && Objects.equal(doctorScript, other.doctorScript)
              && Objects.equal(launchScript, other.launchScript);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(directoryPatterns, daemonScript, doctorScript, launchScript);
+      return Objects.hashCode(daemonScript, doctorScript, launchScript);
     }
   }
 

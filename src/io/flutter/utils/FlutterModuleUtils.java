@@ -61,10 +61,10 @@ public class FlutterModuleUtils {
   /**
    * Return true if the passed module is of a Flutter type. Before version M16 this plugin had its own Flutter {@link ModuleType}.
    * Post M16 a Flutter module is defined by the following:
-   *
+   * <p>
    * <code>
    * [Flutter support enabled for a module] ===
-   *   [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
+   * [Dart support enabled && referenced Dart SDK is the one inside a Flutter SDK]
    * </code>
    */
   public static boolean isFlutterModule(@Nullable final Module module) {
@@ -103,7 +103,7 @@ public class FlutterModuleUtils {
     if (workspace == null) return null;
 
     for (Module module : getModules(project)) {
-      if (DartPlugin.isDartSdkEnabled(module) && workspace.usesFlutter(module)) {
+      if (DartPlugin.isDartSdkEnabled(module)) {
         return workspace;
       }
     }
