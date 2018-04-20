@@ -5,12 +5,16 @@
  */
 package io.flutter.run;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.*;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.options.SettingsEditor;
@@ -32,17 +36,27 @@ import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSdkManager;
+import org.codehaus.plexus.util.FileUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Run configuration used for launching a Flutter app using the Flutter SDK.
  */
 public class SdkRunConfig extends LocatableConfigurationBase
   implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
+
+  private static final Logger LOG = Logger.getInstance(SdkRunConfig.class);
+
   private @NotNull SdkFields fields = new SdkFields();
 
   SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
@@ -84,11 +98,56 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtil.findModuleForFile(mainFile.getFile(), env.getProject());
-
     final LaunchState.Callback callback = (device) -> {
       if (device == null) return null;
 
-      final GeneralCommandLine command = fields.createFlutterSdkRunCommand(project, device, mode);
+      final GeneralCommandLine command = getCommand(env, device);
+      {
+        // Workaround for https://github.com/flutter/flutter/issues/16766
+        // TODO(jacobr): remove once flutter tool incremental building works
+        // properly with --track-widget-creation.
+        final Path buildPath = command.getWorkDirectory().toPath().resolve("build");
+        final Path cachedParametersPath = buildPath.resolve("last_build_run.json");
+        final String[] parametersToTrack = {"--preview-dart-2", "--track-widget-creation"};
+        final JsonArray jsonArray = new JsonArray();
+        for (String parameter : command.getParametersList().getList()) {
+          for (String allowedParameter : parametersToTrack) {
+            if (parameter.startsWith(allowedParameter)) {
+              jsonArray.add(new JsonPrimitive(parameter));
+              break;
+            }
+          }
+        }
+        String json = new Gson().toJson(jsonArray);
+        String existingJson = null;
+        if (Files.exists(cachedParametersPath)) {
+          try {
+            existingJson = new String(Files.readAllBytes(cachedParametersPath), StandardCharsets.UTF_8);
+          }
+          catch (IOException e) {
+            LOG.warn("Unable to get existing json from " + cachedParametersPath);
+          }
+        }
+        if (!json.equals(existingJson)) {
+          // We don't have proof the current run is consistent with the existing run.
+          // Be safe and delete cached files that could cause problems due to
+          // https://github.com/flutter/flutter/issues/16766
+          // We could just delete app.dill and snapshot_blob.bin.d.fingerprint
+          // but it is safer to just delete everything as we won't be broken by future changes
+          // to the underlying Flutter build rules.
+          try {
+            if (Files.exists(buildPath) && Files.isDirectory(buildPath)) {
+              FileUtils.deleteDirectory(buildPath.toFile());
+            }
+            Files.createDirectory(buildPath);
+            Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
+          }
+          catch (IOException e) {
+            LOG.error(e);
+          }
+        }
+      }
+
       final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
                                               StringUtil.capitalize(mode.mode()) + "App",
                                               "StopApp");
@@ -117,6 +176,14 @@ public class SdkRunConfig extends LocatableConfigurationBase
     }
 
     return launcher;
+  }
+
+  @Override
+  public GeneralCommandLine getCommand(ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
+    final SdkFields launchFields = fields.copy();
+    final Project project = env.getProject();
+    final RunMode mode = RunMode.fromEnv(env);
+    return fields.createFlutterSdkRunCommand(project, device, mode);
   }
 
   @Nullable

@@ -93,6 +93,7 @@ public class FlutterApp {
   private FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
   private PerfService myPerfService;
+  private GeneralCommandLine myCommand;
 
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
@@ -100,7 +101,8 @@ public class FlutterApp {
              @NotNull FlutterDevice device,
              @NotNull ProcessHandler processHandler,
              @NotNull ExecutionEnvironment executionEnvironment,
-             @NotNull DaemonApi daemonApi) {
+             @NotNull DaemonApi daemonApi,
+             @NotNull GeneralCommandLine command) {
     myProject = project;
     myModule = module;
     myMode = mode;
@@ -109,6 +111,7 @@ public class FlutterApp {
     myProcessHandler.putUserData(FLUTTER_APP_KEY, this);
     myExecutionEnvironment = executionEnvironment;
     myDaemonApi = daemonApi;
+    myCommand = command;
     myConnector = new ObservatoryConnector() {
       @Override
       public @Nullable
@@ -146,6 +149,11 @@ public class FlutterApp {
         myResume = null;
       }
     };
+  }
+
+  @NotNull
+  public GeneralCommandLine getCommand() {
+    return myCommand;
   }
 
   @Nullable
@@ -195,7 +203,7 @@ public class FlutterApp {
     FlutterInitializer.sendAnalyticsAction(analyticsStart);
 
     final DaemonApi api = new DaemonApi(process);
-    final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api);
+    final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);
 
     process.addProcessListener(new ProcessAdapter() {
       @Override

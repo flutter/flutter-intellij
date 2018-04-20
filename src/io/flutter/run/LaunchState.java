@@ -7,6 +7,7 @@ package io.flutter.run;
 
 import com.intellij.execution.*;
 import com.intellij.execution.configurations.CommandLineState;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
@@ -41,9 +42,7 @@ import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Launches a flutter app, showing it in the console.
@@ -238,6 +237,9 @@ public class LaunchState extends CommandLineState {
 
     @NotNull
     LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
+
+    @NotNull
+    GeneralCommandLine getCommand(ExecutionEnvironment environment, FlutterDevice device) throws ExecutionException;
   }
 
   /**
@@ -326,6 +328,21 @@ public class LaunchState extends CommandLineState {
 
         if (app != null && StringUtil.equals(app.deviceId(), selectedDeviceId)) {
           if (executorId.equals(app.getMode().mode())) {
+
+            if (!identicalCommands(app.getCommand(), launchState.runConfig.getCommand(env, app.device()))) {
+              // To be safe, relaunch as the arguments to launch have changed.
+              try {
+                // TODO(jacobr): ideally we shouldn't be synchronously waiting
+                // for futures like this but I don't see a better option.
+                // In practice this seems fine.
+                app.shutdownAsync().get();
+              }
+              catch (InterruptedException | java.util.concurrent.ExecutionException e) {
+                LOG.error(e);
+              }
+              return launchState.launch(env);
+            }
+            app.getCommand().getParametersList().getList();
             final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
             if (launchMode.supportsReload() && app.isStarted()) {
               // Map a re-run action to a flutter full restart.
@@ -340,6 +357,21 @@ public class LaunchState extends CommandLineState {
 
       // Else, launch the app.
       return launchState.launch(env);
+    }
+
+    private static boolean identicalCommands(GeneralCommandLine a, GeneralCommandLine b) {
+      final List<String> paramsA = a.getParametersList().getList();
+      final List<String> paramsB = b.getParametersList().getList();
+      // TODO(jacobr): there is probably an existing helper that compares lists of strings.
+      if (paramsA.size() != paramsB.size()) {
+        return false;
+      }
+      for (int i = 0; i < paramsA.size(); ++i) {
+        if (!Objects.equals(paramsA.get(i), paramsB.get(i))) {
+          return false;
+        }
+      }
+      return true;
     }
 
     @Nullable
