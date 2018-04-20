@@ -28,11 +28,4 @@ public class PluginConfigTest {
     final PluginConfig result = PluginConfig.load(config);
     assertNull(result);
   }
-
-  @Test
-  public void shouldReturnNullForBadRegexp() throws Exception {
-    final VirtualFile config = dir.writeFile("config.json", "{\"directoryPatterns\": [\"*hello\"]}");
-    final PluginConfig result = PluginConfig.load(config);
-    assertNull(result);
-  }
 }

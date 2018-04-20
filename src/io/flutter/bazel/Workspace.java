@@ -23,9 +23,9 @@ import java.util.*;
 
 /**
  * The directory tree for a Bazel workspace.
- *
+ * <p>
  * <p>Bazel workspaces are identified by looking for a WORKSPACE file.
- *
+ * <p>
  * <p>Also includes the flutter.json config file, which is loaded at the same time.
  */
 public class Workspace {
@@ -47,22 +47,8 @@ public class Workspace {
   }
 
   /**
-   * Returns true for a module that uses flutter code within this workspace.
-   *
-   * <p>This is determined by looking for content roots that match a pattern.
-   * By default, any path containing 'flutter' will match, but this can be configured
-   * using the 'directoryPatterns' variable in flutter.json.
-   */
-  public boolean usesFlutter(@NotNull final Module module) {
-    for (String path : getContentPaths(module)) {
-      if (withinFlutterDirectory(path)) return true;
-    }
-    return false;
-  }
-
-  /**
    * Returns the path to each content root within the module that is below the workspace root.
-   *
+   * <p>
    * <p>Each path will be relative to the workspace root directory.
    */
   @NotNull
@@ -81,7 +67,7 @@ public class Workspace {
 
   /**
    * Returns a VirtualFile's path relative to the workspace's root directory.
-   *
+   * <p>
    * <p>Returns null for the workspace root or anything outside the workspace.
    */
   @Nullable
@@ -99,19 +85,6 @@ public class Workspace {
       file = file.getParent();
     }
     return null;
-  }
-
-  /**
-   * Returns true if the given path is within a flutter project.
-   *
-   * <p>The path should be relative to the workspace root.
-   */
-  public boolean withinFlutterDirectory(@NotNull String path) {
-    if (config != null) {
-      return config.withinFlutterDirectory(path);
-    }
-    // Default if unconfigured.
-    return path.contains("flutter");
   }
 
   /**
@@ -155,7 +128,7 @@ public class Workspace {
 
   /**
    * Returns relative paths to the files within the workspace that it depends on.
-   *
+   * <p>
    * <p>When they change, the Workspace should be reloaded.
    */
   @NotNull
@@ -166,7 +139,7 @@ public class Workspace {
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof Workspace)) return false;
-    final Workspace other = (Workspace) obj;
+    final Workspace other = (Workspace)obj;
     return Objects.equal(root, other.root) && Objects.equal(config, other.config);
   }
 
@@ -177,9 +150,9 @@ public class Workspace {
 
   /**
    * Loads the Bazel workspace from the filesystem.
-   *
+   * <p>
    * <p>Also loads flutter.plugin if present.
-   *
+   * <p>
    * <p>(Note that we might not load all the way from disk due to the VirtualFileSystem's caching.)
    *
    * @return the Workspace, or null if there is none.
@@ -201,14 +174,17 @@ public class Workspace {
     final String daemonScript;
     if (config == null || config.getDaemonScript() == null) {
       daemonScript = null;
-    } else {
+    }
+    else {
       final String script = config.getDaemonScript();
       final String readonlyScript = readonlyPath + "/" + script;
       if (root.findFileByRelativePath(script) != null) {
         daemonScript = script;
-      } else if (root.findFileByRelativePath(readonlyScript) != null) {
+      }
+      else if (root.findFileByRelativePath(readonlyScript) != null) {
         daemonScript = readonlyScript;
-      } else {
+      }
+      else {
         daemonScript = null;
       }
     }
@@ -216,14 +192,17 @@ public class Workspace {
     final String doctorScript;
     if (config == null || config.getDoctorScript() == null) {
       doctorScript = null;
-    } else {
+    }
+    else {
       final String script = config.getDoctorScript();
       final String readonlyScript = readonlyPath + "/" + script;
       if (root.findFileByRelativePath(script) != null) {
         doctorScript = script;
-      } else if (root.findFileByRelativePath(readonlyScript) != null) {
+      }
+      else if (root.findFileByRelativePath(readonlyScript) != null) {
         doctorScript = readonlyScript;
-      } else {
+      }
+      else {
         doctorScript = null;
       }
     }
@@ -233,7 +212,7 @@ public class Workspace {
 
   /**
    * Returns the Bazel WORKSPACE file for a Project, or null if not using Bazel.
-   *
+   * <p>
    * At least one content root must be within the workspace, and the project cannot have
    * content roots in more than one workspace.
    */
