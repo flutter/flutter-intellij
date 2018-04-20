@@ -225,7 +225,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     myRootsTree.setScrollAnimator(scrollAnimator);
 
     if (!detailsSubtree) {
-      treeSplitter = new Splitter(detailsSubtree);
+      treeSplitter = new Splitter(false);
       treeSplitter.setProportion(flutterView.getState().getSplitterProportion());
       flutterView.getState().addListener(e -> {
         final float newProportion = flutterView.getState().getSplitterProportion();
@@ -247,10 +247,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       }
       else {
         myPropertiesPanel = null; /// This InspectorPanel doesn't have its own property panel.
-        //final JBRunnerTabs tabs = new JBRunnerTabs(flutterView.getProject(), ActionManager.getInstance(), null, this);
-        //tabs.addTab(new TabInfo(subtreePanel)
-        //              .append("Details", SimpleTextAttributes.REGULAR_ATTRIBUTES));
-
         treeSplitter.setSecondComponent(subtreePanel);
       }
 
