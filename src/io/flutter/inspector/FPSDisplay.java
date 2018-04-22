@@ -6,10 +6,6 @@
 package io.flutter.inspector;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
@@ -18,7 +14,6 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.perf.FlutterFramesMonitor;
 import io.flutter.run.daemon.FlutterApp;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,8 +22,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
-// TODO(devoncarew): Have the preference to enable the view in the overflow menu.
-
 public class FPSDisplay {
   static final DecimalFormat df = new DecimalFormat();
 
@@ -36,15 +29,11 @@ public class FPSDisplay {
     df.setMaximumFractionDigits(1);
   }
 
-  public static AnAction createToolbarAction(Disposable parentDisposable, FlutterApp app) {
-    return new FPSDisplay.ToolbarComponentAction(parentDisposable, app);
-  }
-
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
-    panel.setDoubleBuffered(true);
-    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP));
-    panel.setPreferredSize(new Dimension(100, HeapDisplay.PANEL_HEIGHT));
+    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
+    panel.setPreferredSize(new Dimension(-1, HeapDisplay.PANEL_HEIGHT));
+    panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 
     assert app.getPerfService() != null;
     final FlutterFramesMonitor flutterFramesMonitor = app.getPerfService().getFlutterFramesMonitor();
@@ -90,59 +79,6 @@ public class FPSDisplay {
     Disposer.register(parentDisposable, () -> flutterFramesMonitor.removeListener(listener));
 
     return panel;
-  }
-
-  public static class ToolbarComponentAction extends AnAction implements CustomComponentAction {
-    private static final int DRAWABLE_HEAP_WIDTH = 60;
-
-    final @NotNull Disposable parent;
-    final @NotNull FlutterApp app;
-
-    public ToolbarComponentAction(@NotNull Disposable parent, @NotNull FlutterApp app) {
-      this.parent = parent;
-      this.app = app;
-    }
-
-    @Override
-    public void update(AnActionEvent e) {
-      // No-op.
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-      // No-op.
-    }
-
-    @Override
-    public JComponent createCustomComponent(Presentation presentation) {
-      // Summary label.
-      final JBLabel fpsLabel = new JBLabel();
-      fpsLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-      fpsLabel.setForeground(UIUtil.getLabelDisabledForeground());
-      //fpsLabel.setPreferredSize(new Dimension(75, -1));
-
-      assert app.getPerfService() != null;
-      final FlutterFramesMonitor flutterFramesMonitor = app.getPerfService().getFlutterFramesMonitor();
-
-      // Graph component.
-      final FPSPanel fpsPanel = new FPSPanel(flutterFramesMonitor);
-      fpsPanel.setPreferredSize(new Dimension(DRAWABLE_HEAP_WIDTH, -1));
-
-      final FlutterFramesMonitor.Listener listener = event -> {
-        fpsPanel.update();
-
-        fpsLabel.setText(df.format(flutterFramesMonitor.getFPS()) + " FPS");
-        SwingUtilities.invokeLater(fpsLabel::repaint);
-      };
-
-      flutterFramesMonitor.addListener(listener);
-      Disposer.register(parent, () -> flutterFramesMonitor.removeListener(listener));
-
-      final JPanel container = new JPanel(new BorderLayout(5, 0));
-      container.add(fpsLabel, BorderLayout.WEST);
-      container.add(fpsPanel, BorderLayout.CENTER);
-      return container;
-    }
   }
 }
 

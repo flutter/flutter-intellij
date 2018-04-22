@@ -125,6 +125,8 @@ public class HeapMonitor {
   @NotNull
   private final VmService vmService;
 
+  private boolean isPolling;
+
   public HeapMonitor(@NotNull VmService vmService, @NotNull FlutterDebugProcess debugProcess) {
     this.vmService = vmService;
   }
@@ -142,10 +144,23 @@ public class HeapMonitor {
   }
 
   void start() {
+    isPolling = true;
     pollingScheduler = executor.scheduleAtFixedRate(this::poll, 0, POLL_PERIOD_IN_MS, TimeUnit.MILLISECONDS);
   }
 
+  public void pausePolling() {
+    isPolling = false;
+  }
+
+  public void resumePolling() {
+    isPolling = true;
+  }
+
   private void poll() {
+    if (!isPolling) {
+      return;
+    }
+
     vmService.getVM(new VMConsumer() {
       @Override
       public void received(VM vm) {
