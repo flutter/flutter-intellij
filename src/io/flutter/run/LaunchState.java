@@ -342,7 +342,6 @@ public class LaunchState extends CommandLineState {
               }
               return launchState.launch(env);
             }
-            app.getCommand().getParametersList().getList();
             final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
             if (launchMode.supportsReload() && app.isStarted()) {
               // Map a re-run action to a flutter full restart.
@@ -360,18 +359,7 @@ public class LaunchState extends CommandLineState {
     }
 
     private static boolean identicalCommands(GeneralCommandLine a, GeneralCommandLine b) {
-      final List<String> paramsA = a.getParametersList().getList();
-      final List<String> paramsB = b.getParametersList().getList();
-      // TODO(jacobr): there is probably an existing helper that compares lists of strings.
-      if (paramsA.size() != paramsB.size()) {
-        return false;
-      }
-      for (int i = 0; i < paramsA.size(); ++i) {
-        if (!Objects.equals(paramsA.get(i), paramsB.get(i))) {
-          return false;
-        }
-      }
-      return true;
+      return a.getParametersList().getList().equals(b.getParametersList().getList());
     }
 
     @Nullable

@@ -46,8 +46,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
+
+import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Run configuration used for launching a Flutter app using the Flutter SDK.
@@ -81,6 +83,46 @@ public class SdkRunConfig extends LocatableConfigurationBase
   @Override
   public SettingsEditor<? extends RunConfiguration> getConfigurationEditor() {
     return new FlutterConfigurationEditorForm(getProject());
+  }
+
+  public static class RecursiveDeleter
+    extends SimpleFileVisitor<Path> {
+
+    private final PathMatcher matcher;
+
+    RecursiveDeleter(String pattern) {
+      matcher = FileSystems.getDefault()
+        .getPathMatcher("glob:" + pattern);
+    }
+
+    @Override
+    public FileVisitResult visitFile(Path file,
+                                     BasicFileAttributes attrs) {
+      final Path name = file.getFileName();
+      if (name != null && matcher.matches(name)) {
+        try {
+          Files.delete(file);
+        }
+        catch (IOException e) {
+          LOG.error(e);
+          // TODO(jacobr): consider aborting.
+        }
+      }
+      return CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult preVisitDirectory(Path dir,
+                                             BasicFileAttributes attrs) {
+      return CONTINUE;
+    }
+
+    @Override
+    public FileVisitResult visitFileFailed(Path file,
+                                           IOException exc) {
+      LOG.error(exc);
+      return CONTINUE;
+    }
   }
 
   @NotNull
@@ -118,7 +160,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
             }
           }
         }
-        String json = new Gson().toJson(jsonArray);
+        final String json = new Gson().toJson(jsonArray);
         String existingJson = null;
         if (Files.exists(cachedParametersPath)) {
           try {
@@ -128,7 +170,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
             LOG.warn("Unable to get existing json from " + cachedParametersPath);
           }
         }
-        if (!json.equals(existingJson)) {
+        if (!StringUtil.equals(json, existingJson)) {
           // We don't have proof the current run is consistent with the existing run.
           // Be safe and delete cached files that could cause problems due to
           // https://github.com/flutter/flutter/issues/16766
@@ -136,10 +178,13 @@ public class SdkRunConfig extends LocatableConfigurationBase
           // but it is safer to just delete everything as we won't be broken by future changes
           // to the underlying Flutter build rules.
           try {
-            if (Files.exists(buildPath) && Files.isDirectory(buildPath)) {
-              FileUtils.deleteDirectory(buildPath.toFile());
+            if (Files.exists(buildPath)) {
+              if (Files.isDirectory(buildPath)) {
+                Files.walkFileTree(buildPath, new RecursiveDeleter("*.{fingerprint,dill}"));
+              }
+            } else {
+              Files.createDirectory(buildPath);
             }
-            Files.createDirectory(buildPath);
             Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
           }
           catch (IOException e) {
