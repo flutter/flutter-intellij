@@ -6,7 +6,6 @@
 package io.flutter.view;
 
 import com.google.common.base.Joiner;
-import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.diagnostic.Logger;
@@ -17,7 +16,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.*;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.dualView.TreeTableView;
-import com.intellij.ui.tabs.TabInfo;
 import com.intellij.ui.treeStructure.Tree;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
@@ -522,12 +520,6 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     isActive = true;
     getInspectorService().addClient(this);
-    final ArrayList<String> rootDirectories = new ArrayList<>();
-    for (PubRoot root : getFlutterApp().getPubRoots()) {
-      rootDirectories.add(root.getRoot().getCanonicalPath());
-    }
-    inspectorService.setPubRootDirectories(rootDirectories);
-
     maybeLoadUI();
   }
 
