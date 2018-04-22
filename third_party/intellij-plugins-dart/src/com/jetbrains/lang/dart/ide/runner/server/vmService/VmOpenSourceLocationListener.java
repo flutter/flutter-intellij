@@ -54,7 +54,7 @@ public class VmOpenSourceLocationListener {
     catch (URISyntaxException e) {
       throw new IOException("Invalid URL: " + url, e);
     }
-    String wsScheme = uri.getScheme();
+    final String wsScheme = uri.getScheme();
     if (!"ws".equals(wsScheme) && !"wss".equals(wsScheme)) {
       throw new IOException("Unsupported URL scheme: " + wsScheme);
     }
