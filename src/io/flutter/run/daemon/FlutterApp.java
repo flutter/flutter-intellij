@@ -68,6 +68,7 @@ public class FlutterApp {
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
+  private final @NotNull GeneralCommandLine myCommand;
   private @Nullable VirtualFile myLastReloadFile;
 
   private @Nullable String myAppId;
@@ -93,7 +94,6 @@ public class FlutterApp {
   private FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
   private PerfService myPerfService;
-  private GeneralCommandLine myCommand;
 
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
