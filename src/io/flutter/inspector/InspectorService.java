@@ -12,8 +12,10 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
+import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.*;
@@ -44,6 +46,7 @@ public class InspectorService implements Disposable {
   // channel. The feature landed in the Flutter dev chanel on
   // April 16, 2018.
   private final boolean isDaemonApiSupported;
+  private final StreamSubscription<Boolean> setPubRootDirectoriesSubscription;
 
   public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
                                                            @NotNull FlutterDebugProcess debugProcess,
@@ -106,6 +109,19 @@ public class InspectorService implements Disposable {
     });
 
     vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
+    assert (app.getPerfService() != null);
+    setPubRootDirectoriesSubscription =
+      app.getPerfService().hasServiceExtension("ext.flutter.inspector.setPubRootDirectories", (Boolean available) -> {
+        if (!available) {
+          return;
+        }
+        final ArrayList<String> rootDirectories = new ArrayList<>();
+        for (PubRoot root : app.getPubRoots()) {
+          rootDirectories.add(root.getRoot().getCanonicalPath());
+        }
+        setPubRootDirectories(rootDirectories);
+      });
   }
 
   public boolean isDetailsSummaryViewSupported() {
@@ -140,6 +156,7 @@ public class InspectorService implements Disposable {
   @Override
   public void dispose() {
     inspectorLibrary.dispose();
+    setPubRootDirectoriesSubscription.dispose();
   }
 
   public CompletableFuture<?> forceRefresh() {
@@ -219,8 +236,7 @@ public class InspectorService implements Disposable {
     return invokeServiceMethodDaemonNoGroup(methodName, params);
   }
 
-
-  public CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
+  private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
     // TODO(jacobr): remove call to hasServiceMethod("setPubRootDirectories") after
     // the `setPubRootDirectories` method has been in two revs of the Flutter Alpha
     // channel. The feature is expected to have landed in the Flutter dev
