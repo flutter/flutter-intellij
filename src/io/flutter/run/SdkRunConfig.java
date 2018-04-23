@@ -39,7 +39,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSdkManager;
-import org.codehaus.plexus.util.FileUtils;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
