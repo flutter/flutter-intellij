@@ -1,5 +1,26 @@
 ## 24.0
-- todo: update changelog
+- inspector: significant UI refactoring to show the tree in a master / details format
+- inspector: add a 'Performance' tab to the Inspector, to show application FPS and memory usage
+- inspector: fix issues turning --track-widget-creation on and off
+- inspector: handle apps with multiple isolates in the inspector
+
+- live preview: suggest 'Add forDesignTime() constructor' for widgets
+- live preview: make the preview area smaller if the widget is not renderable
+- live preview: fixes to make outline preview working on Windows
+- live preview: sort children outlines by their RenderObject.depth during preview
+
+- add support for Android Studio Canary 12
+- simplify how we recognize Flutter projects when using Bazel
+- fix the "Open in Android Studio" action to not show for the ios dir
+- add an option to create projects in “offline” mode
+- better support for using multiple Flutter modules per IntelliJ project
+- improvments to the "Open in XCode…" menu item
+- better support for importing Flutter projects
+- several fixes for issues with using resources that had been disposed
+- add local history labels on reloads and restarts
+- have the 'reloading...'' notification timeout after the reload completes
+- improved support of running in --profile mode
+- expose the new 'Extract Widget' refactoring
 
 ## 23.2
 - updated some Bazel breakpoint logic
