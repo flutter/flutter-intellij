@@ -221,7 +221,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
         vmService = VmService.connect(url);
         vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
       }
-      catch (IOException e) {
+      catch (IOException | RuntimeException e) {
         onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
                         + e.toString() + "\n" +
                         formatStackTraces(e));
