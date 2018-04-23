@@ -27,6 +27,7 @@
 
   <change-notes>
     <![CDATA[
+<h2>24.0</h2><ul><li>todo: update changelog</li></ul>
 <h2>23.2</h2><ul><li>updated some Bazel breakpoint logic</li></ul>
 <h2>23.1</h2><ul><li>disabled an Android facet's ALLOW_USER_CONFIGURATION setting, to address a continuous indexing issue</li></ul>
 <h2>23.0</h2><ul><li>outline view: removed the experimental flag</li><li>outline view: filter the outline view to only show widgets by default</li><li>inspector: several stability and polish improvements</li><li>inspector: now supports inspecting multiple running apps at the same time</li><li>we now show material icons and colors in code completion (requires 2017.3 or AS 3.1)</li><li>running and debugging flutter test adding for Bazel launch configurations</li><li>added an 'Extract method' refactoring</li><li>the preview dart 2 flag can now accept the SDK default, be set to on, or set to off</li><li>Android Studio: we now support 3.1</li><li>Android Studio: fixed an issue where Android Studio was indexing frequently</li><li>experimental: added a live sparkline of the app's memory usage</li><li>experimental: added a live preview area in the Outline view</li><li>experimental: added the ability to format (and organize imports) on save</li></ul>
