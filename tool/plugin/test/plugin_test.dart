@@ -30,7 +30,7 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC']));
       });
     });
     test('test', () async {
@@ -39,7 +39,7 @@ void main() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC']));
       });
     });
     test('deploy', () async {
@@ -48,7 +48,7 @@ void main() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
+            orderedEquals(['android-studio', 'ideaIC']));
       });
     });
   });
@@ -119,8 +119,7 @@ void main() {
       expect(
           cmd.paths.map((p) => p.substring(p.indexOf('releases'))),
           orderedEquals([
-            'releases/release_19/3.1/flutter-intellij.zip',
-            'releases/release_19/3.2/flutter-intellij.zip',
+            'releases/release_19/2017.3/flutter-intellij.zip',
             'releases/release_19/2018.1/flutter-intellij.zip',
           ]));
     });

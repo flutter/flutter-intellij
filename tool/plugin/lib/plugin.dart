@@ -497,7 +497,7 @@ class BuildCommand extends ProductCommand {
     // Check to see if we should only be building a specific version.
     String onlyVersion = argResults['only-version'];
 
-    List buildSpecs = specs;
+    var buildSpecs = specs;
     if (onlyVersion != null && onlyVersion.isNotEmpty) {
       buildSpecs = specs.where((spec) => spec.version == onlyVersion).toList();
       if (buildSpecs.isEmpty) {
@@ -523,12 +523,34 @@ class BuildCommand extends ProductCommand {
 
       separator('Building flutter-intellij.jar');
       await removeAll('build');
+
+      // Handle skipped files.
       for (var file in spec.filesToSkip) {
         await new File(file).rename('$file~');
       }
+
+      // TODO(devoncarew): Remove this when we no longer support AS 3.1.
+      var processedFile = new File(
+          'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
+      var oldSource;
+      if (spec.version == '2017.3') {
+        oldSource = processedFile.readAsStringSync();
+        var newSource = oldSource.replaceAll(
+          'import com.android.tools.idea.npw.model.NewModuleModel',
+          'import com.android.tools.idea.npw.module.NewModuleModel',
+        );
+        processedFile.writeAsStringSync(newSource);
+      }
+
       try {
         result = await runner.javac2(spec);
       } finally {
+        // Restore 3.2 sources.
+        if (oldSource != null) {
+          processedFile.writeAsStringSync(oldSource);
+        }
+
+        // Restore skipped files.
         for (var file in spec.filesToSkip) {
           await new File('$file~').rename(file);
         }

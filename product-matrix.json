@@ -2,22 +2,12 @@
   "list": [
     {
       "name": "IntelliJ",
-      "version": "3.1",
+      "version": "2017.3",
       "ideaProduct": "android-studio",
-      "ideaVersion": "173.4670197",
-      "dartPluginVersion": "181.4203.498",
+      "ideaVersion": "173.4697961",
+      "dartPluginVersion": "173.4700",
       "sinceBuild": "173.0",
       "untilBuild": "173.*",
-      "filesToSkip": ["src/io/flutter/editor/FlutterCompletionContributor.java"]
-    },
-    {
-      "name": "IntelliJ",
-      "version": "3.2",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "181.4705630",
-      "dartPluginVersion": "181.4203.498",
-      "sinceBuild": "181.0",
-      "untilBuild": "181.*",
       "filesToSkip": ["src/io/flutter/editor/FlutterCompletionContributor.java"]
     },
     {
