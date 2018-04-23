@@ -8,7 +8,8 @@ package io.flutter.inspector;
 import com.intellij.openapi.Disposable;
 import com.intellij.ui.components.JBScrollBar;
 import gnu.trove.THashSet;
-import javafx.animation.Interpolator;
+import io.flutter.utils.animation.Curve;
+import io.flutter.utils.animation.Curves;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -88,7 +89,7 @@ public class TreeScrollAnimator implements Disposable {
   private Point animationStart;
   private Point animationEnd;
 
-  private Interpolator animationInterpolator;
+  private Curve animationCurve;
 
   private boolean scrollTriggeredAnimator = false;
 
@@ -282,7 +283,7 @@ public class TreeScrollAnimator implements Disposable {
     final long currentTime = System.currentTimeMillis();
 
     if (!timer.isRunning()) {
-      animationInterpolator = Interpolator.LINEAR;
+      animationCurve = Curves.LINEAR;
       animationDuration = DEFAULT_ANIMATE_X_DURATION;
     }
     else {
@@ -297,7 +298,7 @@ public class TreeScrollAnimator implements Disposable {
       // animation was already at a moderate speed when the
       // destination position was updated.
 
-      animationInterpolator = Interpolator.LINEAR;
+      animationCurve = Curves.LINEAR;
     }
     animationStartTime = currentTime;
 
@@ -363,7 +364,7 @@ public class TreeScrollAnimator implements Disposable {
 
     // Primary bounds fit. Expand the bounds proportionally both before and after the primaryBounds;
     final double desiredSpace = ideal.length - required.length;
-    return new Interval(Interpolator.LINEAR.interpolate(required.start, ideal.start, extraSpace / desiredSpace), clampLength);
+    return new Interval(Curves.LINEAR.interpolate(required.start, ideal.start, extraSpace / desiredSpace), clampLength);
   }
 
   public void animateTo(Rectangle rect) {
@@ -460,7 +461,7 @@ public class TreeScrollAnimator implements Disposable {
     final long currentTime = System.currentTimeMillis();
 
     if (newTarget) {
-      animationInterpolator = Interpolator.EASE_BOTH;
+      animationCurve = Curves.EASE_IN_OUT;
       animationDuration = DEFAULT_ANIMATION_DURATION;
     }
     else {
@@ -475,7 +476,7 @@ public class TreeScrollAnimator implements Disposable {
       // animation was already at a moderate speed when the
       // destination position was updated.
 
-      animationInterpolator = Interpolator.EASE_OUT;
+      animationCurve = Curves.EASE_OUT;
     }
     animationStartTime = currentTime;
 
@@ -499,8 +500,8 @@ public class TreeScrollAnimator implements Disposable {
     final boolean animateX = animationStart.x != animationEnd.x;
     final boolean animateY = animationStart.y != animationEnd.y;
     final Point current = scrollPane.getViewport().getViewPosition();
-    final int x = animateX ? animationInterpolator.interpolate(animationStart.x, animationEnd.x, fraction) : current.x;
-    final int y = animateY ? animationInterpolator.interpolate(animationStart.y, animationEnd.y, fraction) : current.y;
+    final int x = animateX ? animationCurve.interpolate(animationStart.x, animationEnd.x, fraction) : current.x;
+    final int y = animateY ? animationCurve.interpolate(animationStart.y, animationEnd.y, fraction) : current.y;
     setScrollPosition(x, y);
     if (fraction >= 1.0) {
       targets = null;
