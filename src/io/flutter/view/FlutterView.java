@@ -42,8 +42,6 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
-import io.flutter.inspector.FPSDisplay;
-import io.flutter.inspector.HeapDisplay;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -83,8 +81,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
 
-  public static final String WIDGET_TREE_LABEL = "Widgets";
-  public static final String RENDER_TREE_LABEL = "Render Tree";
+  public static final String WIDGET_TAB_LABEL = "Widgets";
+  public static final String RENDER_TAB_LABEL = "Render Tree";
+  public static final String PERFORMANCE_TAB_LABEL = "Performance";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
 
@@ -160,19 +159,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
-
-    final boolean isHorizontal = toolWindow.getAnchor().isHorizontal();
-    if (FlutterSettings.getInstance().isShowHeapDisplay() && isHorizontal) {
-      toolbarGroup.add(HeapDisplay.createToolbarAction(parentDisposable, app));
-      toolbarGroup.addSeparator();
-      toolbarGroup.add(FPSDisplay.createToolbarAction(parentDisposable, app));
-      toolbarGroup.addSeparator();
-      toolbarGroup.add(new ObservatoryActionGroup(this, app));
-    }
-    else {
-      toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
-      toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
-    }
+    toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
+    toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
 
     return toolbarGroup;
   }
@@ -213,49 +201,53 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs, inspectorService);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
+    toolbarGroup.add(new OverflowAction(this, app));
+
+    final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("InspectorToolbar", toolbarGroup, true);
+    final JComponent toolbarComponent = toolbar.getComponent();
+    toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
+    tabContainer.add(toolbarComponent, BorderLayout.NORTH);
+
+    final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
+    final boolean hasInspectorService = inspectorService != null;
+
     // If the inspector is available (non-profile mode), then show it.
-    if (inspectorService != null) {
-      final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
-      runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
-      addInspectorPanel("Widgets", runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
-                        toolbarGroup, true,
-                        detailsSummaryViewSupported);
-      addInspectorPanel("Render Tree", runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService, toolWindow,
-                        toolbarGroup, false,
-                        false);
+    if (debugConnectionAvailable) {
+      if (hasInspectorService) {
+        final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
+        runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
+
+        addInspectorPanel(WIDGET_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
+                          toolbarGroup, true, detailsSummaryViewSupported);
+        addInspectorPanel(RENDER_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService,
+                          toolWindow,
+                          toolbarGroup, false, false);
+      }
+      else {
+        // If in profile mode, add disabled tabs for the inspector.
+        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, app, toolbarGroup);
+        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, app, toolbarGroup);
+      }
+
+      addPerformanceTab(runnerTabs, app, !hasInspectorService);
     }
     else {
-      toolbarGroup.add(new OverflowAction(this, app));
-
-      final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("InspectorToolbar", toolbarGroup, true);
-      final JComponent toolbarComponent = toolbar.getComponent();
-      toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
-      tabContainer.add(toolbarComponent, BorderLayout.NORTH);
-
-      // Add a message about the inspector not being available in profile mode.
-      final JBLabel label = new JBLabel("Widget info not available in profile mode", SwingConstants.CENTER);
+      // Add a message about the inspector not being available in release mode.
+      final JBLabel label = new JBLabel("Inspector not available in release mode", SwingConstants.CENTER);
       label.setForeground(UIUtil.getLabelDisabledForeground());
       tabContainer.add(label, BorderLayout.CENTER);
-    }
-
-    final boolean isVertical = !toolWindow.getAnchor().isHorizontal();
-    if (isVertical) {
-      final JPanel dashboardsPanel = new JPanel(new BorderLayout());
-      tabContainer.add(dashboardsPanel, BorderLayout.SOUTH);
-
-      if (FlutterSettings.getInstance().isShowHeapDisplay()) {
-        dashboardsPanel.add(FPSDisplay.createJPanelView(runnerTabs, app), BorderLayout.NORTH);
-        dashboardsPanel.add(HeapDisplay.createJPanelView(runnerTabs, app), BorderLayout.SOUTH);
-      }
     }
   }
 
   private ActionCallback onTabSelectionChange(TabInfo info, boolean requestFocus, @NotNull ActiveRunnable doChangeSelection) {
-    final InspectorPanel panel = (InspectorPanel)info.getComponent();
-    panel.setVisibleToUser(true);
+    if (info.getComponent() instanceof InspectorTabPanel) {
+      final InspectorTabPanel panel = (InspectorTabPanel)info.getComponent();
+      panel.setVisibleToUser(true);
+    }
     final TabInfo previous = info.getPreviousSelection();
-    if (previous != null) {
-      ((InspectorPanel)previous.getComponent()).setVisibleToUser(false);
+    if (previous != null && previous.getComponent() instanceof InspectorTabPanel) {
+      final InspectorTabPanel panel = (InspectorTabPanel)previous.getComponent();
+      panel.setVisibleToUser(false);
     }
     return doChangeSelection.run();
   }
@@ -283,7 +275,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  DefaultActionGroup toolbarGroup,
                                  boolean selectedTab,
                                  boolean useSummaryTree) {
-    final OverflowAction overflowAction = new OverflowAction(this, flutterApp);
     final InspectorPanel inspectorPanel = new InspectorPanel(
       this,
       flutterApp,
@@ -296,13 +287,43 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       treeType != InspectorService.FlutterTreeType.widget || !inspectorService.isDetailsSummaryViewSupported(),
       shouldAutoHorizontalScroll
     );
-    final TabInfo tabInfo = new TabInfo(inspectorPanel).setActions(toolbarGroup, ActionPlaces.TOOLBAR)
-      .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-      .setSideComponent(overflowAction.getActionButton());
+    final TabInfo tabInfo = new TabInfo(inspectorPanel)
+      .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     tabs.addTab(tabInfo);
     state.inspectorPanels.add(inspectorPanel);
     if (selectedTab) {
       tabs.select(tabInfo, false);
+    }
+  }
+
+  private void addDisabledTab(String displayName,
+                              JBRunnerTabs runnerTabs,
+                              FlutterApp app,
+                              DefaultActionGroup toolbarGroup) {
+    final JPanel panel = new JPanel(new BorderLayout());
+    final JBLabel label = new JBLabel("Widget info not available in profile mode", SwingConstants.CENTER);
+    label.setForeground(UIUtil.getLabelDisabledForeground());
+    panel.add(label, BorderLayout.CENTER);
+
+    final TabInfo tabInfo = new TabInfo(panel)
+      .append(displayName, SimpleTextAttributes.GRAYED_ATTRIBUTES);
+    runnerTabs.addTab(tabInfo);
+  }
+
+  private void addPerformanceTab(JBRunnerTabs runnerTabs,
+                                 FlutterApp app,
+                                 boolean selectedTab) {
+    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app);
+    final TabInfo tabInfo = new TabInfo(perfTab)
+      .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    runnerTabs.addTab(tabInfo);
+    if (selectedTab) {
+      runnerTabs.select(tabInfo, false);
+    }
+
+    if (!selectedTab) {
+      assert app.getPerfService() != null;
+      app.getPerfService().pausePolling();
     }
   }
 
@@ -443,10 +464,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         final ContentManagerEvent.ContentOperation operation = event.getOperation();
         if (operation == ContentManagerEvent.ContentOperation.add) {
           final String name = event.getContent().getTabName();
-          if (Objects.equals(name, RENDER_TREE_LABEL)) {
+          if (Objects.equals(name, RENDER_TAB_LABEL)) {
             FlutterInitializer.getAnalytics().sendEvent("inspector", "renderTreeSelected");
           }
-          else if (Objects.equals(name, WIDGET_TREE_LABEL)) {
+          else if (Objects.equals(name, WIDGET_TAB_LABEL)) {
             FlutterInitializer.getAnalytics().sendEvent("inspector", "widgetTreeSelected");
           }
         }

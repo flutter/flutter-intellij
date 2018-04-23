@@ -23,7 +23,6 @@ public class FlutterSettings {
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
-  private static final String showHeapDisplayKey = "io.flutter.showHeapDisplay";
 
   public enum Dart2ModeSettings {
     useSdkDefault(0),
@@ -86,9 +85,6 @@ public class FlutterSettings {
     }
     if (isShowPreviewArea()) {
       analytics.sendEvent("settings", afterLastPeriod(showPreviewAreaKey));
-    }
-    if (isShowHeapDisplay()) {
-      analytics.sendEvent("settings", afterLastPeriod(showHeapDisplayKey));
     }
   }
 
@@ -156,16 +152,6 @@ public class FlutterSettings {
 
   public void setShowPreviewArea(boolean value) {
     getPropertiesComponent().setValue(showPreviewAreaKey, value, false);
-
-    fireEvent();
-  }
-
-  public boolean isShowHeapDisplay() {
-    return getPropertiesComponent().getBoolean(showHeapDisplayKey, false);
-  }
-
-  public void setShowHeapDisplay(boolean value) {
-    getPropertiesComponent().setValue(showHeapDisplayKey, value, false);
 
     fireEvent();
   }

@@ -51,11 +51,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-// TODO(devoncarew): Should we filter out the CheckedModeBanner node type?
-// TODO(devoncarew): Should we filter out the WidgetInspector node type?
-
-public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient {
-
+public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient, InspectorTabPanel {
   /**
    * Maximum frame rate to refresh the inspector panel at to avoid taxing the
    * physical device with too many requests to recompute properties and trees.

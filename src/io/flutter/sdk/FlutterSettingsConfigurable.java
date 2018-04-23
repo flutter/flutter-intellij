@@ -156,10 +156,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isShowHeapDisplay() != myShowHeapDisplayCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
       return true;
     }
@@ -198,7 +194,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
-    settings.setShowHeapDisplay(myShowHeapDisplayCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDart2ModeSettingOrdinal(myPreviewDart2Combo.getSelectedIndex());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
@@ -225,7 +220,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
-    myShowHeapDisplayCheckBox.setSelected(settings.isShowHeapDisplay());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myPreviewDart2Combo.setSelectedIndex(settings.getDart2ModeSetting().getOrdinal());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());

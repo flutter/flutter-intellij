@@ -6,10 +6,6 @@
 package io.flutter.inspector;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
@@ -21,11 +17,9 @@ import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.perf.HeapMonitor.HeapSample;
 import io.flutter.perf.HeapMonitor.HeapSpace;
 import io.flutter.perf.HeapMonitor.IsolateObject;
-import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -37,16 +31,13 @@ import java.util.List;
 
 // TODO(pq): make capacity setting dynamic
 public class HeapDisplay extends JPanel {
-  static final int PANEL_HEIGHT = 48;
-
-  public static AnAction createToolbarAction(Disposable parentDisposable, FlutterApp app) {
-    return new HeapDisplay.ToolbarComponentAction(parentDisposable, app);
-  }
+  static final int PANEL_HEIGHT = 100;
 
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP));
-    panel.setPreferredSize(new Dimension(100, PANEL_HEIGHT));
+    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
+    panel.setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
+    panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 
     final JBLabel rssLabel = new JBLabel();
     rssLabel.setAlignmentY(Component.BOTTOM_ALIGNMENT);
@@ -96,93 +87,6 @@ public class HeapDisplay extends JPanel {
     Disposer.register(parentDisposable, () -> app.getPerfService().removeHeapListener(listener));
 
     return panel;
-  }
-
-  public static class ToolbarComponentAction extends AnAction implements CustomComponentAction, HeapListener, Disposable {
-    private static final int DRAWABLE_HEAP_WIDTH = 60;
-
-    private final List<JPanel> panels = new ArrayList<>();
-    private final List<HeapDisplay> graphs = new ArrayList<>();
-
-    final HeapState heapState = new HeapState(20 * 1000);
-    final @NotNull FlutterApp app;
-
-    public ToolbarComponentAction(@NotNull Disposable parent, @NotNull FlutterApp app) {
-      this.app = app;
-
-      final PerfService service = app.getPerfService();
-      assert service != null;
-      app.getPerfService().addHeapListener(this);
-      Disposer.register(parent, this);
-    }
-
-    @Override
-    public void update(AnActionEvent e) {
-      // No-op.
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-      // No-op.
-    }
-
-    @Override
-    public JComponent createCustomComponent(Presentation presentation) {
-      // Summary label.
-      final JBLabel label = new JBLabel("", SwingConstants.RIGHT);
-      label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-      label.setForeground(getForegroundColor());
-      label.setMinimumSize(new Dimension(75, -1));
-
-      // Graph component.
-      final JPanel panel = new JPanel(new GridBagLayout());
-      final HeapDisplay graph = new HeapDisplay(state -> {
-        label.setText(state.getSimpleHeapSummary());
-        SwingUtilities.invokeLater(label::repaint);
-      });
-      graph.setPreferredSize(new Dimension(DRAWABLE_HEAP_WIDTH, -1));
-      panel.add(graph, new GridBagConstraints(
-        0, 0, 1, 1, 1, 1,
-        GridBagConstraints.CENTER, GridBagConstraints.BOTH,
-        JBUI.insets(0, 3, 0, 3), 0, 0));
-      // Because there may be multiple toolbars, we need to store (and update) multiple panels.
-      panels.add(panel);
-      graphs.add(graph);
-
-      final JPanel container = new JPanel(new BorderLayout(5, 0));
-      container.add(label, BorderLayout.WEST);
-      container.add(panel, BorderLayout.CENTER);
-      return container;
-    }
-
-    @Override
-    public void dispose() {
-      if (app.getPerfService() != null) {
-        app.getPerfService().removeHeapListener(this);
-      }
-    }
-
-    @Override
-    public void handleIsolatesInfo(VM vm, List<IsolateObject> isolates) {
-      heapState.handleIsolatesInfo(vm, isolates);
-
-      for (HeapDisplay graph : graphs) {
-        graph.updateFrom(heapState);
-      }
-
-      panels.forEach(panel -> SwingUtilities.invokeLater(panel::repaint));
-    }
-
-    @Override
-    public void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
-      heapState.handleGCEvent(iIsolateRef, newHeapSpace, oldHeapSpace);
-
-      for (HeapDisplay graph : graphs) {
-        graph.updateFrom(heapState);
-      }
-
-      panels.forEach(panel -> SwingUtilities.invokeLater(panel::repaint));
-    }
   }
 
   private static Color getForegroundColor() {
