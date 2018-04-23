@@ -30,7 +30,7 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC']));
+            orderedEquals(['android-studio', 'android-studio']));
       });
     });
     test('test', () async {
@@ -39,7 +39,7 @@ void main() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC']));
+            orderedEquals(['android-studio', 'android-studio']));
       });
     });
     test('deploy', () async {
@@ -48,7 +48,7 @@ void main() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'ideaIC']));
+            orderedEquals(['android-studio', 'android-studio']));
       });
     });
   });
