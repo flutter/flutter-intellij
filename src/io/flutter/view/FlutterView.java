@@ -187,6 +187,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
+    runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
     final List<FlutterDevice> existingDevices = new ArrayList<>();
     for (FlutterApp otherApp : perAppViewState.keySet()) {
       existingDevices.add(otherApp.device());
@@ -233,7 +234,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       addPerformanceTab(runnerTabs, app, !hasInspectorService);
-      runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
     }
     else {
       // Add a message about the inspector not being available in release mode.
