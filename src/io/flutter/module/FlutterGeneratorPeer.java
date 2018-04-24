@@ -23,6 +23,7 @@ import com.intellij.util.ReflectionUtil;
 import com.intellij.util.ui.UIUtil;
 import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
+import io.flutter.actions.InstallSdkAction;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
