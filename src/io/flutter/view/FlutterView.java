@@ -86,7 +86,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
-  protected final EventStream<Boolean> highlightNodesShownInBothTrees = new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
+  protected final EventStream<Boolean> highlightNodesShownInBothTrees =
+    new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
 
 
   @NotNull
@@ -219,8 +220,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (debugConnectionAvailable) {
       if (hasInspectorService) {
         final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
-        runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
-
         addInspectorPanel(WIDGET_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
                           toolbarGroup, true, detailsSummaryViewSupported);
         addInspectorPanel(RENDER_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService,
@@ -234,6 +233,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       addPerformanceTab(runnerTabs, app, !hasInspectorService);
+      runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -248,7 +248,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       final InspectorTabPanel panel = (InspectorTabPanel)info.getComponent();
       panel.setVisibleToUser(true);
     }
+
     final TabInfo previous = info.getPreviousSelection();
+
+    // Track analytics for explicit inspector tab selections.
+    // (The initial selection will have no previous, so we filter that out.)
+    if (previous != null) {
+      FlutterInitializer.getAnalytics().sendScreenView(
+        FlutterView.TOOL_WINDOW_ID.toLowerCase() + "/" + info.getText().toLowerCase());
+    }
+
     if (previous != null && previous.getComponent() instanceof InspectorTabPanel) {
       final InspectorTabPanel panel = (InspectorTabPanel)previous.getComponent();
       panel.setVisibleToUser(false);
