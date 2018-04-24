@@ -31,6 +31,7 @@ public class FPSDisplay {
 
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
+    panel.setDoubleBuffered(true);
     panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
     panel.setPreferredSize(new Dimension(-1, HeapDisplay.PANEL_HEIGHT));
     panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
