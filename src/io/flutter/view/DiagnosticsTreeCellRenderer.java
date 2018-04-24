@@ -89,7 +89,7 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
     boolean isLinkedChild = false;
     // Highlight nodes that exist in both the details and summary tree to
     // show how the trees are linked together.
-    if (!highlight) {
+    if (!highlight && panel.isHighlightNodesShownInBothTrees()) {
       if (panel.detailsSubtree && panel.isCreatedByLocalProject(node)) {
         isLinkedChild = panel.parentTree.hasDiagnosticsValue(node.getValueRef());
       }
@@ -107,7 +107,7 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
       // TODO(jacobr): consider using UIUtil.getTreeSelectionBackground());
       // instead.
     }
-    else if (isLinkedChild) {
+    else if (isLinkedChild || panel.currentShowNode == value) {
       setOpaque(true);
       setIconOpaque(false);
       setTransparentIconBackground(true);
