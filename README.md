@@ -79,3 +79,6 @@ Please note the following known issues:
 - We are seeing occasional timeouts when trying to connect to Observatory when
   debugging against the iOS simulator; restarting the simulator should get you
   back on track.
+- If you are building Flutter plugins using Swift, be sure you have at least`cocoapods 1.5.0` 
+  installed; an issue tracking a corresponding update to `flutter doctor` is:
+  [flutter/#16930](https://github.com/flutter/flutter/issues/16930).
