@@ -254,7 +254,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     // Track analytics for explicit inspector tab selections.
     // (The initial selection will have no previous, so we filter that out.)
     if (previous != null) {
-      FlutterInitializer.getAnalytics().sendScreenView("flutter inspector/" + info.getText().toLowerCase());
+      FlutterInitializer.getAnalytics().sendScreenView(
+        FlutterView.TOOL_WINDOW_ID.toLowerCase() + "/" + info.getText().toLowerCase());
     }
 
     if (previous != null && previous.getComponent() instanceof InspectorTabPanel) {
