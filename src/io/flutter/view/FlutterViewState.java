@@ -16,6 +16,7 @@ import javax.swing.event.ChangeListener;
  */
 public class FlutterViewState {
   public static final boolean AUTO_SCROLL_DEFAULT = false;
+  public static final boolean HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT = false;
 
   private final EventDispatcher<ChangeListener> dispatcher = EventDispatcher.create(ChangeListener.class);
 
@@ -24,6 +25,9 @@ public class FlutterViewState {
 
   @Attribute(value = "should-auto-scroll")
   public boolean shouldAutoScroll = AUTO_SCROLL_DEFAULT;
+
+  @Attribute(value = "highlight-nodes-shown-in-both-trees")
+  public boolean highlightNodesShownInBothTrees = HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT;
 
   public FlutterViewState() {
   }
@@ -56,5 +60,14 @@ public class FlutterViewState {
 
   void copyFrom(FlutterViewState other) {
     splitterProportion = other.splitterProportion;
+  }
+
+  public void setHighlightNodesShownInBothTrees(Boolean value) {
+    highlightNodesShownInBothTrees = value;
+    dispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
+  }
+
+  public boolean getHighlightNodesShownInBothTrees() {
+    return highlightNodesShownInBothTrees;
   }
 }

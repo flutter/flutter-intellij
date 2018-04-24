@@ -129,6 +129,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
    * not perform any actions.
    */
   private boolean visibleToUser = false;
+  private boolean highlightNodesShownInBothTrees = false;
 
   public InspectorPanel(FlutterView flutterView,
                         @NotNull FlutterApp flutterApp,
@@ -137,9 +138,11 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                         @NotNull InspectorService.FlutterTreeType treeType,
                         boolean isSummaryTree,
                         boolean legacyMode,
-                        @NotNull EventStream<Boolean> shouldAutoHorizontalScroll) {
+                        @NotNull EventStream<Boolean> shouldAutoHorizontalScroll,
+                        @NotNull EventStream<Boolean> highlightNodesShownInBothTrees
+                        ) {
     this(flutterView, flutterApp, inspectorService, isApplicable, treeType, false, null, isSummaryTree, legacyMode,
-         shouldAutoHorizontalScroll);
+         shouldAutoHorizontalScroll, highlightNodesShownInBothTrees);
   }
 
   private InspectorPanel(FlutterView flutterView,
@@ -151,7 +154,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                          @Nullable InspectorPanel parentTree,
                          boolean isSummaryTree,
                          boolean legacyMode,
-                         @NotNull EventStream<Boolean> shouldAutoHorizontalScroll) {
+                         @NotNull EventStream<Boolean> shouldAutoHorizontalScroll,
+                         @NotNull EventStream<Boolean> highlightNodesShownInBothTrees) {
     super(new BorderLayout());
 
     this.treeType = treeType;
@@ -201,7 +205,8 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         this,
         false,
         legacyMode,
-        shouldAutoHorizontalScroll
+        shouldAutoHorizontalScroll,
+        highlightNodesShownInBothTrees
       );
     }
     else {
@@ -216,6 +221,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     scrollAnimator = new TreeScrollAnimator(myRootsTree, treeScrollPane);
     shouldAutoHorizontalScroll.listen(scrollAnimator::setAutoHorizontalScroll, true);
+    highlightNodesShownInBothTrees.listen(this::setHighlightNodesShownInBothTrees, true);
     myRootsTree.setScrollAnimator(scrollAnimator);
 
     if (!detailsSubtree) {
@@ -283,6 +289,17 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         onIsolateStopped();
       }
     }, true);
+  }
+
+  public boolean isHighlightNodesShownInBothTrees() {
+    return highlightNodesShownInBothTrees;
+  }
+
+  private void setHighlightNodesShownInBothTrees(boolean value) {
+    if (highlightNodesShownInBothTrees != value) {
+      highlightNodesShownInBothTrees = value;
+      myRootsTree.repaint();
+    }
   }
 
   static DiagnosticsNode getDiagnosticNode(TreeNode treeNode) {
