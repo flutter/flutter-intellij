@@ -193,6 +193,10 @@ public class FlutterSdk {
       args.add("--no-preview-dart-2");
     }
 
+    if (!FlutterSettings.getInstance().isDisablePreviewDart2() && FlutterSettings.getInstance().isTrackWidgetCreation()) {
+      args.add("--track-widget-creation");
+    }
+
     if (device != null) {
       args.add("--device-id=" + device.deviceId());
     }
