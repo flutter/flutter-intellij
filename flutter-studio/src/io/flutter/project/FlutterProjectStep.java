@@ -31,6 +31,7 @@ import com.intellij.openapi.roots.ui.configuration.ProjectStructureConfigurable;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
@@ -234,6 +235,13 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private Validator.Result validateFlutterModuleName(@NotNull String moduleName) {
     if (moduleName.isEmpty()) {
       return errorResult("Please enter a name for the " + getContainerName() + ".");
+    }
+    //noinspection ConstantConditions
+    if (getModel().projectType().get().get() == FlutterProjectType.APP) {
+      File loc = new File(FileUtil.toSystemDependentName(getModel().projectLocation().get()), getModel().projectName().get());
+      if (loc.exists()) {
+        return errorResult("Project location already exists: " + loc.getPath());
+      }
     }
     if (!FlutterUtils.isValidPackageName(moduleName)) {
       return errorResult(
