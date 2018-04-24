@@ -38,6 +38,7 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.ui.tabs.TabsListener;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -86,7 +87,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
-  protected final EventStream<Boolean> highlightNodesShownInBothTrees = new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
+  protected final EventStream<Boolean> highlightNodesShownInBothTrees =
+    new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
 
 
   @NotNull
@@ -234,6 +236,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       addPerformanceTab(runnerTabs, app, !hasInspectorService);
+
+      // Track inspector tab selection analytics.
+      runnerTabs.addListener(new TabsListener.Adapter() {
+        @Override
+        public void selectionChanged(TabInfo oldSelection, TabInfo newSelection) {
+          FlutterInitializer.getAnalytics().sendScreenView("flutter inspector/" + newSelection.getText().toLowerCase());
+        }
+      });
     }
     else {
       // Add a message about the inspector not being available in release mode.
