@@ -86,6 +86,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
+  protected final EventStream<Boolean> highlightNodesShownInBothTrees = new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
+
 
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
@@ -101,6 +103,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     myProject = project;
 
     shouldAutoHorizontalScroll.listen(state::setShouldAutoScroll);
+    highlightNodesShownInBothTrees.listen(state::setHighlightNodesShownInBothTrees);
   }
 
   @Override
@@ -124,6 +127,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     this.state.copyFrom(state);
 
     shouldAutoHorizontalScroll.setValue(this.state.getShouldAutoScroll());
+    highlightNodesShownInBothTrees.setValue(this.state.getHighlightNodesShownInBothTrees());
   }
 
   void initToolWindow(ToolWindow window) {
@@ -285,7 +289,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       // TODO(jacobr): support the summary tree view for the RenderObject
       // tree instead of forcing the legacy view for the RenderObject tree.
       treeType != InspectorService.FlutterTreeType.widget || !inspectorService.isDetailsSummaryViewSupported(),
-      shouldAutoHorizontalScroll
+      shouldAutoHorizontalScroll,
+      highlightNodesShownInBothTrees
     );
     final TabInfo tabInfo = new TabInfo(inspectorPanel)
       .append(displayName, SimpleTextAttributes.REGULAR_ATTRIBUTES);
@@ -835,6 +840,12 @@ class AutoHorizontalScrollAction extends FlutterViewLocalToggleableAction {
   }
 }
 
+class HighlightNodesShownInBothTrees extends FlutterViewLocalToggleableAction {
+  HighlightNodesShownInBothTrees(@NotNull FlutterApp app, EventStream<Boolean> value) {
+    super(app, "Highlight nodes displayed in both trees", value);
+  }
+}
+
 class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   ShowPaintBaselinesAction(@NotNull FlutterApp app) {
     super(app, "Show Paint Baselines");
@@ -916,6 +927,8 @@ class OverflowAction extends AnAction implements RightAlignedToolbarAction {
     group.add(view.registerAction(new HideSlowBannerAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
+    group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
+
     return group;
   }
 }
