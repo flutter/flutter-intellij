@@ -23,6 +23,7 @@ public class FlutterSettings {
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
+  private static final String trackWidgetCreationKey = "io.flutter.trackWidgetCreation";
 
   public enum Dart2ModeSettings {
     useSdkDefault(0),
@@ -109,6 +110,17 @@ public class FlutterSettings {
   public boolean isReloadOnSave() {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
+
+  public boolean isTrackWidgetCreation() {
+    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, false);
+  }
+
+  public void setTrackWidgetCreation(boolean value) {
+    getPropertiesComponent().setValue(trackWidgetCreationKey, value);
+
+    fireEvent();
+  }
+
 
   public void setReloadOnSave(boolean value) {
     getPropertiesComponent().setValue(reloadOnSaveKey, value, true);

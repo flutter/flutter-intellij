@@ -59,6 +59,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowPreviewAreaCheckBox;
   private JCheckBox myShowHeapDisplayCheckBox;
   private JComboBox myPreviewDart2Combo;
+  private JCheckBox myTrackWidgetCreationCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -95,11 +96,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     });
 
     //noinspection Convert2Lambda
-    myFormatCodeOnSaveCheckBox.addChangeListener(new ChangeListener() {
-      @Override
-      public void stateChanged(ChangeEvent e) {
-        myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
-      }
+    myFormatCodeOnSaveCheckBox
+      .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+
+    myPreviewDart2Combo.addActionListener((e) -> {
+      final boolean disableDart2 =
+        myPreviewDart2Combo.getSelectedIndex() == FlutterSettings.Dart2ModeSettings.disablePreviewDart2.getOrdinal();
+      myTrackWidgetCreationCheckBox.setEnabled(!disableDart2);
     });
   }
 
@@ -163,6 +166,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.getDart2ModeSetting().getOrdinal() != myPreviewDart2Combo.getSelectedIndex()) {
       return true;
     }
+    if (settings.isTrackWidgetCreation() != myTrackWidgetCreationCheckBox.isSelected()) {
+      return true;
+    }
 
     //noinspection RedundantIfStatement
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
@@ -196,6 +202,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDart2ModeSettingOrdinal(myPreviewDart2Combo.getSelectedIndex());
+    settings.setTrackWidgetCreation(myTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
@@ -222,6 +229,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myPreviewDart2Combo.setSelectedIndex(settings.getDart2ModeSetting().getOrdinal());
+    myTrackWidgetCreationCheckBox.setSelected(settings.isTrackWidgetCreation());
+    myTrackWidgetCreationCheckBox.setEnabled(!settings.getDart2ModeSetting().equals(FlutterSettings.Dart2ModeSettings.disablePreviewDart2));
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
