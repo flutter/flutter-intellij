@@ -108,8 +108,10 @@ public class SdkFields {
    * Create a command to run 'flutter run --machine'.
    */
   public GeneralCommandLine createFlutterSdkRunCommand(@NotNull Project project,
-                                                       @Nullable FlutterDevice device,
-                                                       @NotNull RunMode mode) throws ExecutionException {
+                                                       @NotNull RunMode runMode,
+                                                       @NotNull FlutterLaunchMode flutterLaunchMode,
+                                                       @Nullable FlutterDevice device
+  ) throws ExecutionException {
     final MainFile main = MainFile.verify(filePath, project).get();
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
@@ -126,7 +128,7 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, mode, args);
+    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
 

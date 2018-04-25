@@ -474,7 +474,7 @@ public class FlutterApp {
   }
 
   public FlutterLaunchMode getLaunchMode() {
-    return FlutterLaunchMode.getMode(myExecutionEnvironment);
+    return FlutterLaunchMode.fromEnv(myExecutionEnvironment);
   }
 
   public boolean isSessionActive() {

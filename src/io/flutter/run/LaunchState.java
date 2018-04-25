@@ -84,6 +84,11 @@ public class LaunchState extends CommandLineState {
   private RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
     FileDocumentManager.getInstance().saveAllDocuments();
 
+    // Set our FlutterLaunchMode up in the ExecutionEnvironment.
+    if (RunMode.fromEnv(env).isProfiling()) {
+      FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.PROFILE);
+    }
+
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
     final FlutterApp app = callback.createApp(device);
@@ -119,7 +124,7 @@ public class LaunchState extends CommandLineState {
       }
     }
 
-    final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
+    final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
     if (launchMode.supportsDebugConnection()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
     }
@@ -342,7 +347,7 @@ public class LaunchState extends CommandLineState {
               }
               return launchState.launch(env);
             }
-            final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(env);
+            final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
             if (launchMode.supportsReload() && app.isStarted()) {
               // Map a re-run action to a flutter full restart.
               FileDocumentManager.getInstance().saveAllDocuments();
