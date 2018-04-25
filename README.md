@@ -6,10 +6,6 @@
 An IntelliJ plugin for [Flutter](https://flutter.io/) development. Flutter is a new mobile
 app SDK to help developers and designers build modern mobile apps for iOS and Android.
 
-_Android Studio and M18.3:_ Using version 18.3 of the plugin with Android Studio? See this
-[known issue](https://github.com/flutter/flutter-intellij#known-issues) for help upgrading from that
-version.
-
 ## Documentation
 
 - [flutter.io](https://flutter.io)
@@ -32,7 +28,7 @@ A brief summary of the [getting started guide](https://flutter.io/intellij-ide/)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported [IntelliJ development environment](https://www.jetbrains.com/idea/download), either:
   - IntelliJ 2017.3 or 2018.1, Community or Ultimate Edition, or
-  - Android Studio 3.0 (note: Android Studio 3.1 Beta is currently _not_ supported)
+  - Android Studio 3.1 (note: Android Studio 3.2 Canary is currently _not_ supported)
 - open the plugin preferences
   - `Preferences > Plugins` on macOS, `File > Settings > Plugins` on Linux, select "Browse repositories…"
 - search for and install the 'Flutter' plugin
@@ -52,8 +48,8 @@ By default, we pick up the base setting from the Flutter SDK. This can be overri
 Preferences dialog, in `Languages & Settings` > `Flutter`. You can change the 'Run applications in
 Dart 2.0 mode' preference from:
 - using the Flutter SDK default
-- explicitly enabled preview Dart 2.0, and 
-- explicitly disabling preview of Dart 2.0
+- enabling preview Dart 2.0, or
+- disabling preview Dart 2.0
 
 ## Filing issues
 
@@ -69,16 +65,10 @@ for Flutter IntelliJ issues.
 
 Please note the following known issues:
 
-- If you are using version 18.3 of the Flutter plugin with Android Studio, it will not
-  upgrade to newer versions of the plugin. In order to upgrade, you'll need to uninstall
-  the plugin and re-install it (this can be done from the plugins preference page).
 - [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will
   read the PATH variable just once on startup. Thus, if you change PATH later to
   include the Flutter SDK path, this will not have an affect in IntelliJ until you
   restart the IDE.
-- We are seeing occasional timeouts when trying to connect to Observatory when
-  debugging against the iOS simulator; restarting the simulator should get you
-  back on track.
 - If you are building Flutter plugins using Swift, be sure you have at least`cocoapods 1.5.0` 
   installed; an issue tracking a corresponding update to `flutter doctor` is:
   [flutter/#16930](https://github.com/flutter/flutter/issues/16930).
