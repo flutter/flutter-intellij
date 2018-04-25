@@ -55,4 +55,9 @@ public enum FlutterLaunchMode {
   public boolean isProfiling() {
     return this == PROFILE;
   }
+
+  @Override
+  public String toString() {
+    return myCliCommand;
+  }
 }

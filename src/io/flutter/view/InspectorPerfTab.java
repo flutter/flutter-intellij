@@ -27,7 +27,7 @@ public class InspectorPerfTab extends JPanel implements InspectorTabPanel {
     add(Box.createVerticalStrut(6));
 
     Box labelBox = Box.createHorizontalBox();
-    labelBox.add(new JLabel("Running in debug mode"));
+    labelBox.add(new JLabel("Running in " + app.getLaunchMode() + " mode"));
     labelBox.add(Box.createHorizontalGlue());
     labelBox.setBorder(JBUI.Borders.empty(3, 10));
     add(labelBox);
