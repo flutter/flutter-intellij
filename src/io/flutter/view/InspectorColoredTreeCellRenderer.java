@@ -12,7 +12,6 @@ import com.intellij.util.ui.UIUtil;
 import com.intellij.util.ui.tree.WideSelectionTreeUI;
 import org.jetbrains.annotations.NotNull;
 
-import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
@@ -115,12 +114,14 @@ abstract class InspectorColoredTreeCellRenderer extends MultiIconSimpleColoredCo
 
   @Override
   public Font getFont() {
-    Font font = super.getFont();
-
+    final Font font = super.getFont();
     // Cell renderers could have no parent and no explicit set font.
     // Take tree font in this case.
-    if (font != null) return font;
-    JTree tree = getTree();
+    if (font != null) {
+      return font;
+    }
+
+    final JTree tree = getTree();
     return tree != null ? tree.getFont() : null;
   }
 
