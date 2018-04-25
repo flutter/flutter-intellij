@@ -223,11 +223,11 @@ public class SdkRunConfig extends LocatableConfigurationBase
   }
 
   @Override
-  public GeneralCommandLine getCommand(ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
+  public GeneralCommandLine getCommand(@NotNull ExecutionEnvironment env, @Nullable FlutterDevice device) throws ExecutionException {
     final SdkFields launchFields = fields.copy();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
-    return fields.createFlutterSdkRunCommand(project, device, mode);
+    return fields.createFlutterSdkRunCommand(project, mode, FlutterLaunchMode.fromEnv(env), device);
   }
 
   @Nullable

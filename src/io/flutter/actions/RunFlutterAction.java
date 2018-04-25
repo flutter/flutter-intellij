@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.google.common.base.Joiner;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
@@ -25,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class RunFlutterAction extends AnAction {
   private final @NotNull String myDetailedTextKey;
@@ -62,19 +65,21 @@ public abstract class RunFlutterAction extends AnAction {
     final SdkRunConfig sdkRunConfig = (SdkRunConfig)configuration.clone();
     final SdkFields fields = sdkRunConfig.getFields();
     final String additionalArgs = fields.getAdditionalArgs();
-    final String runArg = "--" + myLaunchMode.getCliCommand();
-    String flavorArg = "";
+
+    String flavorArg = null;
     if (fields.getBuildFlavor() != null) {
-      flavorArg = " --flavor=" + fields.getBuildFlavor();
+      flavorArg = "--flavor=" + fields.getBuildFlavor();
     }
 
-    if (additionalArgs == null) {
-      fields.setAdditionalArgs(runArg + flavorArg);
+    final List<String> args = new ArrayList<>();
+    if (additionalArgs != null) {
+      args.add(additionalArgs);
     }
-    else {
-      if (!additionalArgs.contains(runArg)) {
-        fields.setAdditionalArgs(additionalArgs + flavorArg + " " + runArg);
-      }
+    if (flavorArg != null) {
+      args.add(flavorArg);
+    }
+    if (!args.isEmpty()) {
+      fields.setAdditionalArgs(Joiner.on(" ").join(args));
     }
 
     final Executor executor = getExecutor(myExecutorId);
@@ -83,9 +88,9 @@ public abstract class RunFlutterAction extends AnAction {
     }
 
     final ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
-    final ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
 
-    env.putUserData(FlutterLaunchMode.LAUNCH_MODE_KEY, myLaunchMode);
+    final ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
+    FlutterLaunchMode.addToEnvironment(env, myLaunchMode);
 
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }

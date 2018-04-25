@@ -10,8 +10,7 @@ import com.intellij.openapi.util.Key;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The Flutter launch mode. This corresponds to the flutter run modes: --debug,
- * --profile, and --release.
+ * The Flutter launch mode. This corresponds to the flutter run modes: --debug, --profile, and --release.
  */
 public enum FlutterLaunchMode {
   DEBUG("debug"),
@@ -20,10 +19,14 @@ public enum FlutterLaunchMode {
 
   RELEASE("release");
 
-  public static final Key<FlutterLaunchMode> LAUNCH_MODE_KEY = Key.create("FlutterLaunchMode");
+  private static final Key<FlutterLaunchMode> LAUNCH_MODE_KEY = Key.create("FlutterLaunchMode");
+
+  public static void addToEnvironment(ExecutionEnvironment env, FlutterLaunchMode mode) {
+    env.putUserData(FlutterLaunchMode.LAUNCH_MODE_KEY, mode);
+  }
 
   @NotNull
-  public static FlutterLaunchMode getMode(@NotNull ExecutionEnvironment env) {
+  public static FlutterLaunchMode fromEnv(@NotNull ExecutionEnvironment env) {
     final FlutterLaunchMode launchMode = env.getUserData(FlutterLaunchMode.LAUNCH_MODE_KEY);
     return launchMode == null ? DEBUG : launchMode;
   }
