@@ -124,7 +124,7 @@ public class LaunchState extends CommandLineState {
       }
     }
 
-    final FlutterLaunchMode launchMode = FlutterLaunchMode.getFromEnvironment(env);
+    final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
     if (launchMode.supportsDebugConnection()) {
       return createDebugSession(env, app, result).getRunContentDescriptor();
     }
@@ -347,7 +347,7 @@ public class LaunchState extends CommandLineState {
               }
               return launchState.launch(env);
             }
-            final FlutterLaunchMode launchMode = FlutterLaunchMode.getFromEnvironment(env);
+            final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
             if (launchMode.supportsReload() && app.isStarted()) {
               // Map a re-run action to a flutter full restart.
               FileDocumentManager.getInstance().saveAllDocuments();

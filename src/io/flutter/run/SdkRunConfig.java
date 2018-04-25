@@ -227,7 +227,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final SdkFields launchFields = fields.copy();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
-    return fields.createFlutterSdkRunCommand(project, mode, FlutterLaunchMode.getFromEnvironment(env), device);
+    return fields.createFlutterSdkRunCommand(project, mode, FlutterLaunchMode.fromEnv(env), device);
   }
 
   @Nullable

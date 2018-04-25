@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.google.common.base.Joiner;
 import com.intellij.execution.Executor;
 import com.intellij.execution.ProgramRunnerUtil;
 import com.intellij.execution.RunManagerEx;
@@ -25,6 +26,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class RunFlutterAction extends AnAction {
   private final @NotNull String myDetailedTextKey;
@@ -68,12 +71,15 @@ public abstract class RunFlutterAction extends AnAction {
       flavorArg = "--flavor=" + fields.getBuildFlavor();
     }
 
-    if (additionalArgs != null && flavorArg != null) {
-      fields.setAdditionalArgs(additionalArgs + " " + flavorArg);
-    } else if (flavorArg != null) {
-      fields.setAdditionalArgs(flavorArg);
-    } else if (additionalArgs != null) {
-      fields.setAdditionalArgs(additionalArgs);
+    final List<String> args = new ArrayList<>();
+    if (additionalArgs != null) {
+      args.add(additionalArgs);
+    }
+    if (flavorArg != null) {
+      args.add(flavorArg);
+    }
+    if (!args.isEmpty()) {
+      fields.setAdditionalArgs(Joiner.on(" ").join(args));
     }
 
     final Executor executor = getExecutor(myExecutorId);

@@ -26,7 +26,7 @@ public enum FlutterLaunchMode {
   }
 
   @NotNull
-  public static FlutterLaunchMode getFromEnvironment(@NotNull ExecutionEnvironment env) {
+  public static FlutterLaunchMode fromEnv(@NotNull ExecutionEnvironment env) {
     final FlutterLaunchMode launchMode = env.getUserData(FlutterLaunchMode.LAUNCH_MODE_KEY);
     return launchMode == null ? DEBUG : launchMode;
   }
