@@ -268,7 +268,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     // stderr streams (this would duplicate what we get over daemon logging).
     remoteDebug = false;
 
-    final FlutterLaunchMode launchMode = FlutterLaunchMode.getMode(executionEnvironment);
+    final FlutterLaunchMode launchMode = FlutterLaunchMode.getFromEnvironment(executionEnvironment);
     if (launchMode.supportsDebugConnection()) {
       myVmServiceWrapper.handleDebuggerConnected();
 

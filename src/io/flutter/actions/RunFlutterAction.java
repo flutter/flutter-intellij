@@ -62,19 +62,18 @@ public abstract class RunFlutterAction extends AnAction {
     final SdkRunConfig sdkRunConfig = (SdkRunConfig)configuration.clone();
     final SdkFields fields = sdkRunConfig.getFields();
     final String additionalArgs = fields.getAdditionalArgs();
-    final String runArg = "--" + myLaunchMode.getCliCommand();
-    String flavorArg = "";
+
+    String flavorArg = null;
     if (fields.getBuildFlavor() != null) {
-      flavorArg = " --flavor=" + fields.getBuildFlavor();
+      flavorArg = "--flavor=" + fields.getBuildFlavor();
     }
 
-    if (additionalArgs == null) {
-      fields.setAdditionalArgs(runArg + flavorArg);
-    }
-    else {
-      if (!additionalArgs.contains(runArg)) {
-        fields.setAdditionalArgs(additionalArgs + flavorArg + " " + runArg);
-      }
+    if (additionalArgs != null && flavorArg != null) {
+      fields.setAdditionalArgs(additionalArgs + " " + flavorArg);
+    } else if (flavorArg != null) {
+      fields.setAdditionalArgs(flavorArg);
+    } else if (additionalArgs != null) {
+      fields.setAdditionalArgs(additionalArgs);
     }
 
     final Executor executor = getExecutor(myExecutorId);
@@ -83,9 +82,9 @@ public abstract class RunFlutterAction extends AnAction {
     }
 
     final ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
-    final ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
 
-    env.putUserData(FlutterLaunchMode.LAUNCH_MODE_KEY, myLaunchMode);
+    final ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
+    FlutterLaunchMode.addToEnvironment(env, myLaunchMode);
 
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }

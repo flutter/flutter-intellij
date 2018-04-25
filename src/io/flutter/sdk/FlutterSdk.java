@@ -24,6 +24,7 @@ import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.settings.FlutterSettings;
@@ -178,8 +179,8 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
   }
 
-  public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main,
-                                   @Nullable FlutterDevice device, @NotNull RunMode mode, String... additionalArgs) {
+  public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
+                                   @NotNull RunMode mode, @NotNull FlutterLaunchMode flutterLaunchMode, String... additionalArgs) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
@@ -193,19 +194,26 @@ public class FlutterSdk {
       args.add("--no-preview-dart-2");
     }
 
-    if (!FlutterSettings.getInstance().isDisablePreviewDart2() && FlutterSettings.getInstance().isTrackWidgetCreation()) {
-      args.add("--track-widget-creation");
+    if (flutterLaunchMode == FlutterLaunchMode.DEBUG) {
+      if (!FlutterSettings.getInstance().isDisablePreviewDart2() && FlutterSettings.getInstance().isTrackWidgetCreation()) {
+        args.add("--track-widget-creation");
+      }
     }
 
     if (device != null) {
       args.add("--device-id=" + device.deviceId());
     }
+
     if (mode == RunMode.DEBUG) {
       args.add("--start-paused");
     }
-    if (mode == RunMode.PROFILE) {
+
+    if (flutterLaunchMode == FlutterLaunchMode.PROFILE) {
       args.add("--profile");
+    } else if (flutterLaunchMode == FlutterLaunchMode.RELEASE) {
+      args.add("--release");
     }
+
     args.addAll(asList(additionalArgs));
 
     // Make the path to main relative (to make the command line prettier).
