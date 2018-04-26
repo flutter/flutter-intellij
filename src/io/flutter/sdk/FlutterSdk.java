@@ -146,7 +146,7 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterDoctor() {
-    return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR, "-v");
   }
 
   public FlutterCommand flutterCreate(@NotNull VirtualFile appDir, @Nullable FlutterCreateAdditionalSettings additionalSettings) {
