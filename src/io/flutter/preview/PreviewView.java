@@ -47,6 +47,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
@@ -69,6 +70,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -177,14 +180,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void onFailure(RenderProblemKind kind, @Nullable FlutterOutline widget) {
+    public void onFailure(RenderProblemKind kind, FlutterOutline widget) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
           switch (kind) {
-            case EXCEPTION:
-            case NO_TEMPORARY_DIRECTORY:
-              previewArea.clear("Encountered an exception during rendering");
-              break;
             case NO_WIDGET:
               previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
               setSplitterProportion(0.9f);
@@ -193,8 +192,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               assert widget != null;
               showNotRenderableInPreviewArea(widget);
               break;
+            case NO_TEMPORARY_DIRECTORY:
+              previewArea.clear("Internal error");
+              break;
             case TIMEOUT:
               previewArea.clear("Timeout during rendering");
+              break;
+            case INVALID_JSON:
+              previewArea.clear("Invalid JSON reponse");
               break;
           }
         }
@@ -206,6 +211,16 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       setSplitterProportion(getState().getSplitterProportion());
       final Dimension renderSize = previewArea.getRenderSize();
       myRenderHelper.setSize(renderSize.width, renderSize.height);
+    }
+
+    @Override
+    public void onLocalException(FlutterOutline widget, @NotNull Throwable localException) {
+      ApplicationManager.getApplication().invokeLater(() -> showLocalException(localException));
+    }
+
+    @Override
+    public void onRemoteException(FlutterOutline widget, @NotNull JsonObject remoteException) {
+      ApplicationManager.getApplication().invokeLater(() -> showRemoteException(remoteException));
     }
   };
 
@@ -898,6 +913,46 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     previewArea.clear(panel);
 
     setSplitterProportion(0.9f);
+  }
+
+  private void showLocalException(@NotNull Throwable localException) {
+    final JPanel panel = new JPanel();
+    panel.setLayout(new MigLayout("insets 0", "[grow, center]", "[grow, bottom][grow 200, top]"));
+
+    panel.add(new JBLabel("Encountered an exception during rendering"), "cell 0 0");
+
+    final LinkLabel linkLabel = LinkLabel.create("Show the exception...", () -> {
+      final StringWriter stringWriter = new StringWriter();
+      final PrintWriter printWriter = new PrintWriter(stringWriter);
+      printWriter.println(localException.getMessage());
+      localException.printStackTrace(printWriter);
+      printWriter.println();
+      printWriter.println();
+      FlutterConsoles.displayMessage(project, null, stringWriter.toString());
+    });
+    panel.add(linkLabel, "cell 0 1");
+
+    previewArea.clear(panel);
+  }
+
+  private void showRemoteException(@NotNull JsonObject remoteException) {
+    final JPanel panel = new JPanel();
+    panel.setLayout(new MigLayout("insets 0", "[grow, center]", "[grow, bottom][grow 200, top]"));
+
+    panel.add(new JBLabel("Encountered an exception during rendering"), "cell 0 0");
+
+    final LinkLabel linkLabel = LinkLabel.create("Show the exception...", () -> {
+      final StringWriter stringWriter = new StringWriter();
+      final PrintWriter printWriter = new PrintWriter(stringWriter);
+      printWriter.println(remoteException.get("exception").getAsString());
+      printWriter.println(remoteException.get("stackTrace").getAsString());
+      printWriter.println();
+      printWriter.println();
+      FlutterConsoles.displayMessage(project, null, stringWriter.toString());
+    });
+    panel.add(linkLabel, "cell 0 1");
+
+    previewArea.clear(panel);
   }
 
   private void applyChangeAndShowException(SourceChange change) {
