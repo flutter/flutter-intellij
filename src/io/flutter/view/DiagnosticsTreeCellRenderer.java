@@ -196,6 +196,11 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
         }
       }
 
+      if (panel.detailsSubtree && panel.isCreatedByLocalProject(node) && !panel.isHighlightNodesShownInBothTrees()) {
+        textAttributes = textAttributes.derive(
+          SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.getStyle(), null, null, null);
+      }
+
       final String description = node.getDescription();
       final Matcher match = primaryDescriptionPattern.matcher(description);
       if (match.matches()) {
