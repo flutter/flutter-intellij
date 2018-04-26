@@ -120,7 +120,7 @@ public class FlutterConsoleFilter implements Filter {
     final String[] parts = pathPart.split(" ");
     for (String part : parts) {
       // "(lib/main.dart:49)"
-      if (part.startsWith("(") && pathPart.endsWith(")")) {
+      if (part.startsWith("(") && part.endsWith(")")) {
         part = part.substring(1, part.length() - 1);
         final String[] split = part.split(":");
         if (split.length == 2) {
