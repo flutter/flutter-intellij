@@ -165,7 +165,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   final RenderHelper.Listener renderListener = new RenderHelper.Listener() {
     @Override
-    public void onResponse(FlutterOutline widget, JsonObject response) {
+    public void onResponse(@NotNull FlutterOutline widget, @NotNull JsonObject response) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
           previewArea.show(currentOutline, widget, response);
@@ -180,7 +180,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void onFailure(RenderProblemKind kind, FlutterOutline widget) {
+    public void onFailure(@NotNull RenderProblemKind kind, @Nullable FlutterOutline widget) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
           switch (kind) {
@@ -199,7 +199,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               previewArea.clear("Timeout during rendering");
               break;
             case INVALID_JSON:
-              previewArea.clear("Invalid JSON reponse");
+              previewArea.clear("Invalid JSON response");
               break;
           }
         }
@@ -207,19 +207,19 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void onRenderableWidget(FlutterOutline widget) {
+    public void onRenderableWidget(@NotNull FlutterOutline widget) {
       setSplitterProportion(getState().getSplitterProportion());
       final Dimension renderSize = previewArea.getRenderSize();
       myRenderHelper.setSize(renderSize.width, renderSize.height);
     }
 
     @Override
-    public void onLocalException(FlutterOutline widget, @NotNull Throwable localException) {
+    public void onLocalException(@NotNull FlutterOutline widget, @NotNull Throwable localException) {
       ApplicationManager.getApplication().invokeLater(() -> showLocalException(localException));
     }
 
     @Override
-    public void onRemoteException(FlutterOutline widget, @NotNull JsonObject remoteException) {
+    public void onRemoteException(@NotNull FlutterOutline widget, @NotNull JsonObject remoteException) {
       ApplicationManager.getApplication().invokeLater(() -> showRemoteException(remoteException));
     }
   };
@@ -921,7 +921,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     panel.add(new JBLabel("Encountered an exception during rendering"), "cell 0 0");
 
-    final LinkLabel linkLabel = LinkLabel.create("Show the exception...", () -> {
+    final LinkLabel linkLabel = LinkLabel.create("Show exception...", () -> {
       final StringWriter stringWriter = new StringWriter();
       final PrintWriter printWriter = new PrintWriter(stringWriter);
       printWriter.println(localException.getMessage());
@@ -941,7 +941,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     panel.add(new JBLabel("Encountered an exception during rendering"), "cell 0 0");
 
-    final LinkLabel linkLabel = LinkLabel.create("Show the exception...", () -> {
+    final LinkLabel linkLabel = LinkLabel.create("Show exception...", () -> {
       final StringWriter stringWriter = new StringWriter();
       final PrintWriter printWriter = new PrintWriter(stringWriter);
       printWriter.println(remoteException.get("exception").getAsString());

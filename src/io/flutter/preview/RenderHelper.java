@@ -170,15 +170,15 @@ public class RenderHelper {
   }
 
   public interface Listener {
-    void onResponse(FlutterOutline widget, JsonObject response);
+    void onResponse(@NotNull FlutterOutline widget, @NotNull JsonObject response);
 
-    void onFailure(RenderProblemKind kind, FlutterOutline widget);
+    void onFailure(@NotNull RenderProblemKind kind, @Nullable FlutterOutline widget);
 
-    void onRenderableWidget(FlutterOutline widget);
+    void onRenderableWidget(@NotNull FlutterOutline widget);
 
-    void onLocalException(FlutterOutline widget, @NotNull Throwable localException);
+    void onLocalException(@NotNull FlutterOutline widget, @NotNull Throwable localException);
 
-    void onRemoteException(FlutterOutline widget, @NotNull JsonObject remoteException);
+    void onRemoteException(@NotNull FlutterOutline widget, @NotNull JsonObject remoteException);
   }
 }
 
