@@ -6,17 +6,6 @@
 package io.flutter.preview;
 
 public enum RenderProblemKind {
-
-  /**
-   * There was an exception during preparing for rendering, or rendering the widget.
-   */
-  EXCEPTION,
-
-  /**
-   * The temporary directory was not created.
-   */
-  NO_TEMPORARY_DIRECTORY,
-
   /**
    * The offset does not correspond to a widget.
    */
@@ -28,7 +17,17 @@ public enum RenderProblemKind {
   NOT_RENDERABLE_WIDGET,
 
   /**
+   * The temporary directory was not created.
+   */
+  NO_TEMPORARY_DIRECTORY,
+
+  /**
    * There was a timeout during rendering the widget.
    */
   TIMEOUT,
+
+  /**
+   * There was an exception during the JSON response parsing.
+   */
+  INVALID_JSON,
 }

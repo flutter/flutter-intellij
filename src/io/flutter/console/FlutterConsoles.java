@@ -6,6 +6,7 @@
 package io.flutter.console;
 
 import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -39,11 +40,7 @@ public class FlutterConsoles {
     ApplicationManager.getApplication().invokeLater(() -> {
       final MessageView messageView = MessageView.SERVICE.getInstance(project);
       messageView.runWhenInitialized(() -> {
-        FlutterConsole console = find(project, module);
-        if (console == null) {
-          console = FlutterConsole.create(project, module);
-          console.content.putUserData(FlutterConsoles.KEY, console);
-        }
+        final FlutterConsole console = findOrCreate(project, module);
         console.watchProcess(process);
         console.bringToFront();
         onReady.run();
@@ -51,8 +48,20 @@ public class FlutterConsoles {
     });
   }
 
-  @Nullable
-  static FlutterConsole find(@NotNull Project project, @Nullable Module module) {
+  public static void displayMessage(@NotNull Project project, @Nullable Module module, @NotNull String message) {
+    // Getting a MessageView has to happen on the UI thread.
+    ApplicationManager.getApplication().invokeLater(() -> {
+      final MessageView messageView = MessageView.SERVICE.getInstance(project);
+      messageView.runWhenInitialized(() -> {
+        final FlutterConsole console = findOrCreate(project, module);
+        console.view.print(message, ConsoleViewContentType.NORMAL_OUTPUT);
+        console.bringToFront();
+      });
+    });
+  }
+
+  @NotNull
+  static FlutterConsole findOrCreate(@NotNull Project project, @Nullable Module module) {
     for (Content content : MessageView.SERVICE.getInstance(project).getContentManager().getContents()) {
       final FlutterConsole console = content.getUserData(KEY);
       if (console != null && console.module == module) {
@@ -60,7 +69,9 @@ public class FlutterConsoles {
         return console;
       }
     }
-    return null;
+    final FlutterConsole console = FlutterConsole.create(project, module);
+    console.content.putUserData(FlutterConsoles.KEY, console);
+    return console;
   }
 
   static final Key<FlutterConsole> KEY = Key.create("FLUTTER_CONSOLE_KEY");

@@ -11,24 +11,23 @@ import 'package:flutter/material.dart';
 /// should be replaced with actual values that depend on the which library to
 /// import, which widget to instantiate and render, the size of the preview
 /// canvas, etc.
-void main() {
-  try {
-    io.stdin
-        .transform((new Utf8Codec()).decoder)
-        .transform(new LineSplitter())
-        .listen((line) {
-      if (line == null || line == 'exit') {
-        io.exit(0);
-      }
-      if (line == 'render') {
+void main() async {
+  io.stdin
+      .transform((new Utf8Codec()).decoder)
+      .transform(new LineSplitter())
+      .listen((line) {
+    if (line == null || line == 'exit') {
+      io.exit(0);
+    }
+    if (line == 'render') {
+      try {
         renderOnce();
+      } catch (e, st) {
+        var map = {'exception': '$e', 'stackTrace': '$st'};
+        io.stdout.writeln(json.encode(map));
       }
-    });
-  } catch (e, st) {
-    var map = {'exception': '$e', 'stackTrace': '$st'};
-    io.stdout.writeln(json.encode(map));
-    io.exit(1);
-  }
+    }
+  });
 }
 
 Iterable<Element> collectAllElementsFrom(Element rootElement) =>

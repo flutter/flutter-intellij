@@ -126,7 +126,8 @@ public class RenderHelper {
             stateStart < offset && offset < stateEnd) {
           if (outline.isWidgetClass()) {
             return outline;
-          } else {
+          }
+          else {
             return null;
           }
         }
@@ -169,11 +170,15 @@ public class RenderHelper {
   }
 
   public interface Listener {
-    void onResponse(FlutterOutline widget, JsonObject response);
+    void onResponse(@NotNull FlutterOutline widget, @NotNull JsonObject response);
 
-    void onFailure(RenderProblemKind kind, FlutterOutline widget);
+    void onFailure(@NotNull RenderProblemKind kind, @Nullable FlutterOutline widget);
 
-    void onRenderableWidget(FlutterOutline widget);
+    void onRenderableWidget(@NotNull FlutterOutline widget);
+
+    void onLocalException(@NotNull FlutterOutline widget, @NotNull Throwable localException);
+
+    void onRemoteException(@NotNull FlutterOutline widget, @NotNull JsonObject remoteException);
   }
 }
 
@@ -371,28 +376,33 @@ class RenderThread extends Thread {
         try {
           response = new Gson().fromJson(line, JsonObject.class);
         }
-        catch (Throwable ignored) {
+        catch (Throwable e) {
           terminateCurrentProcess("JSON response expected");
-          request.listener.onFailure(RenderProblemKind.EXCEPTION, widget);
+          request.listener.onFailure(RenderProblemKind.INVALID_JSON, widget);
           return;
         }
       }
 
       // Fail if unable to find the valid response.
       if (response == null) {
-        request.listener.onFailure(RenderProblemKind.EXCEPTION, widget);
+        request.listener.onFailure(RenderProblemKind.INVALID_JSON, widget);
         return;
       }
 
       // OK, we got all what we need, the process is OK, we can continue using it.
       responseReceivedLatch.countDown();
 
+      if (response.has("exception")) {
+        request.listener.onRemoteException(widget, response);
+        return;
+      }
+
       // Send the respose to the client.
       request.listener.onResponse(widget, response);
     }
     catch (Throwable e) {
       terminateCurrentProcess("Exception");
-      request.listener.onFailure(RenderProblemKind.EXCEPTION, widget);
+      request.listener.onLocalException(widget, e);
     }
   }
 
