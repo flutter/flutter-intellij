@@ -30,17 +30,16 @@ import java.util.regex.Pattern;
 import static io.flutter.utils.JsonUtils.getIntMember;
 
 class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
-  // TODO(jacobr): enable this experiment once we make the link actually
-  // clickable.
+  // TODO(jacobr): enable this experiment once we make the link actually clickable.
   private static final boolean SHOW_RENDER_OBJECT_PROPERTIES_AS_LINKS = false;
 
   private final InspectorPanel panel;
+
   /**
-   * Split text into two groups, word characters at the start of a string
-   * and all other characters. Skip an <code>-</code> or <code>#</code> between the
-   * two groups.
+   * Split text into two groups, word characters at the start of a string and all other
+   * characters. Skip an <code>-</code> or <code>#</code> between the two groups.
    */
-  private final Pattern primaryDescriptionPattern = Pattern.compile("(\\w+)[-#]?(.*)");
+  private final Pattern primaryDescriptionPattern = Pattern.compile("([\\w ]+)[-#]?(.*)");
 
   private JTree tree;
   private boolean selected;
@@ -53,9 +52,9 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
   // The main problem is in the regular scheme, selected but not focused
   // nodes are grey which makes the correlation between the selection in
   // the two views less obvious.
-  final JBColor HIGHLIGHT_COLOR = new JBColor(new Color(202, 191, 69), new Color(99, 101, 103));
-  final JBColor SHOW_MATCH_COLOR = new JBColor(new Color(225, 225, 0), new Color(90, 93, 96));
-  final JBColor LINKED_COLOR = new JBColor(new Color(255, 255, 220), new Color(70, 73, 76));
+  private static final JBColor HIGHLIGHT_COLOR = new JBColor(new Color(202, 191, 69), new Color(99, 101, 103));
+  private static final JBColor SHOW_MATCH_COLOR = new JBColor(new Color(225, 225, 0), new Color(90, 93, 96));
+  private static final JBColor LINKED_COLOR = new JBColor(new Color(255, 255, 220), new Color(70, 73, 76));
 
   public DiagnosticsTreeCellRenderer(InspectorPanel panel) {
     this.panel = panel;
@@ -104,8 +103,7 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
       setIconOpaque(false);
       setTransparentIconBackground(true);
       setBackground(HIGHLIGHT_COLOR);
-      // TODO(jacobr): consider using UIUtil.getTreeSelectionBackground());
-      // instead.
+      // TODO(jacobr): consider using UIUtil.getTreeSelectionBackground() instead.
     }
     else if (isLinkedChild || panel.currentShowNode == value) {
       setOpaque(true);
@@ -182,9 +180,8 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
     }
     else {
       // Non property, regular node case.
-      if (StringUtils.isNotEmpty(name) && node.getShowName()) {
-        // color in name?
-        if (name.equals("child") || name.startsWith("child ")) {
+      if (StringUtils.isNotEmpty(name) && node.getShowName() && !name.equals("child")) {
+        if (name.startsWith("child ")) {
           appendText(name, SimpleTextAttributes.GRAYED_ATTRIBUTES);
         }
         else {
@@ -192,7 +189,6 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
         }
 
         if (node.getShowSeparator()) {
-          // Is this good?
           appendText(node.getSeparator(), SimpleTextAttributes.GRAY_ATTRIBUTES);
         }
         else {
@@ -200,8 +196,9 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
         }
       }
 
-      if (panel.isCreatedByLocalProject(node)) {
-        textAttributes = textAttributes.derive(SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.getStyle(), null, null, null);
+      if (panel.detailsSubtree && panel.isCreatedByLocalProject(node) && !panel.isHighlightNodesShownInBothTrees()) {
+        textAttributes = textAttributes.derive(
+          SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.getStyle(), null, null, null);
       }
 
       final String description = node.getDescription();
@@ -216,6 +213,9 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
         appendText(" ", SimpleTextAttributes.GRAY_ATTRIBUTES);
         appendText(node.getDescription(), textAttributes);
       }
+
+      // TODO(devoncarew): For widgets that are definied in the current project, we could consider
+      // appending the relative path to the defining library ('lib/src/foo_page.dart').
 
       final Icon icon = node.getIcon();
       if (icon != null) {
