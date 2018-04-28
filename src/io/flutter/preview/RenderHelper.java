@@ -303,6 +303,11 @@ class RenderThread extends Thread {
       final String renderServerPath = renderServerFile.getPath();
       Files.write(template, renderServerFile, StandardCharsets.UTF_8);
 
+      // If the process is dead, clear the instance.
+      if (myProcess != null && !myProcess.isAlive()) {
+        myProcess = null;
+      }
+
       // Check if the current render server process is compatible with the new request.
       // If it is, attempt to perform hot reload.
       // If not successful, terminate the process.

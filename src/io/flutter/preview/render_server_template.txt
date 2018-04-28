@@ -12,6 +12,20 @@ import 'package:flutter/material.dart';
 /// import, which widget to instantiate and render, the size of the preview
 /// canvas, etc.
 void main() async {
+  // Report errors to the client in JSON format.
+  FlutterError.onError = (e) {
+    if (!e.silent) {
+      var map = {
+        'exception': '${e.exception}',
+        'stackTrace': '${e.stack}',
+        'library': e.library,
+        'context': e.context
+      };
+      io.stdout.writeln(json.encode(map));
+      io.exit(1);
+    }
+  };
+
   io.stdin
       .transform((new Utf8Codec()).decoder)
       .transform(new LineSplitter())
