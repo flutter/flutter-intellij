@@ -49,11 +49,18 @@ public class FlutterConsoles {
   }
 
   public static void displayMessage(@NotNull Project project, @Nullable Module module, @NotNull String message) {
+    displayMessage(project, module, message, false);
+  }
+
+  public static void displayMessage(@NotNull Project project, @Nullable Module module, @NotNull String message, boolean clearContent) {
     // Getting a MessageView has to happen on the UI thread.
     ApplicationManager.getApplication().invokeLater(() -> {
       final MessageView messageView = MessageView.SERVICE.getInstance(project);
       messageView.runWhenInitialized(() -> {
         final FlutterConsole console = findOrCreate(project, module);
+        if (clearContent) {
+          console.view.clear();
+        }
         console.view.print(message, ConsoleViewContentType.NORMAL_OUTPUT);
         console.bringToFront();
       });

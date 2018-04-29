@@ -346,8 +346,9 @@ class RenderThread extends Thread {
       // Terminate the process if it does not respond fast enough.
       final CountDownLatch responseReceivedLatch = new CountDownLatch(1);
       final Process processToTerminate = myProcess;
+
       new Thread(() -> {
-        boolean success = Uninterruptibles.awaitUninterruptibly(responseReceivedLatch, 2000, TimeUnit.MILLISECONDS);
+        boolean success = Uninterruptibles.awaitUninterruptibly(responseReceivedLatch, 4000, TimeUnit.MILLISECONDS);
         if (!success) {
           processToTerminate.destroyForcibly();
         }

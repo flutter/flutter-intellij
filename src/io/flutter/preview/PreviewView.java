@@ -23,6 +23,8 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.openapi.ui.Splitter;
@@ -186,7 +188,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
           switch (kind) {
             case NO_WIDGET:
               previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
-              setSplitterProportion(0.9f);
+              minimizePreviewArea();
               break;
             case NOT_RENDERABLE_WIDGET:
               assert widget != null;
@@ -224,8 +226,15 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
   };
 
+  private void minimizePreviewArea() {
+    // TODO(devoncarew): We should size the preview area to a fixed, smaller size (based on the largest
+    //                   non-preview sized content).
+    setSplitterProportion(0.85f);
+  }
+
   public PreviewView(@NotNull Project project) {
     this.project = project;
+
     flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
 
     if (FlutterSettings.getInstance().isShowPreviewArea()) {
@@ -277,7 +286,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   }
 
   @Override
-  public void loadState(PreviewViewState state) {
+  public void loadState(@NotNull PreviewViewState state) {
     this.state.copyFrom(state);
   }
 
@@ -853,7 +862,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     // Now actually select the node.
     tree.removeTreeSelectionListener(treeSelectionListener);
-    tree.setSelectionPaths(selectedPaths.toArray(new TreePath[selectedPaths.size()]));
+    tree.setSelectionPaths(selectedPaths.toArray(new TreePath[0]));
     tree.addTreeSelectionListener(treeSelectionListener);
 
     // JTree attempts to show as much of the node as possible, so scrolls horizontally.
@@ -912,7 +921,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     previewArea.clear(panel);
 
-    setSplitterProportion(0.9f);
+    minimizePreviewArea();
   }
 
   private void showLocalException(@NotNull Throwable localException) {
@@ -926,9 +935,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       final PrintWriter printWriter = new PrintWriter(stringWriter);
       printWriter.println(localException.getMessage());
       localException.printStackTrace(printWriter);
-      printWriter.println();
-      printWriter.println();
-      FlutterConsoles.displayMessage(project, null, stringWriter.toString());
+      final Module module = currentFile == null ? null : ModuleUtil.findModuleForFile(currentFile, project);
+      FlutterConsoles.displayMessage(project, module, stringWriter.toString().trim(), true);
     });
     panel.add(linkLabel, "cell 0 1");
 
@@ -946,9 +954,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       final PrintWriter printWriter = new PrintWriter(stringWriter);
       printWriter.println(remoteException.get("exception").getAsString());
       printWriter.println(remoteException.get("stackTrace").getAsString());
-      printWriter.println();
-      printWriter.println();
-      FlutterConsoles.displayMessage(project, null, stringWriter.toString());
+      final Module module = currentFile == null ? null : ModuleUtil.findModuleForFile(currentFile, project);
+      FlutterConsoles.displayMessage(project, module, stringWriter.toString().trim(), true);
     });
     panel.add(linkLabel, "cell 0 1");
 

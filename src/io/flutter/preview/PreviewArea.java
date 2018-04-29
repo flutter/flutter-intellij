@@ -5,6 +5,7 @@
  */
 package io.flutter.preview;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.actionSystem.*;
@@ -232,8 +233,6 @@ public class PreviewArea {
 
         final JsonObject widgetObject = (JsonObject)entry.getValue();
 
-        final int depth = widgetObject.getAsJsonPrimitive("depth").getAsInt();
-
         final JsonObject boundsObject = widgetObject.getAsJsonObject("globalBounds");
         final int left = boundsObject.getAsJsonPrimitive("left").getAsInt();
         final int top = boundsObject.getAsJsonPrimitive("top").getAsInt();
@@ -241,7 +240,7 @@ public class PreviewArea {
         final int height = boundsObject.getAsJsonPrimitive("height").getAsInt();
         final Rectangle rect = new Rectangle(left, top, width, height);
 
-        final RenderObject renderObject = new RenderObject(depth, rect);
+        final RenderObject renderObject = new RenderObject(rect);
 
         if (rootRenderObject == null) {
           rootWidgetId = id;
@@ -306,19 +305,9 @@ public class PreviewArea {
 
     final List<FlutterOutline> children = outline.getChildren();
     if (children != null) {
-      // Sort children by depth, so that the children with greatest depth are first.
-      // In Swing siblings added first are rendered on top of siblings added later.
-      final ArrayList<FlutterOutline> sortedChildren = new ArrayList<>(children);
-      sortedChildren.sort((a, b) -> {
-        final RenderObject aObject = idToRenderObject.get(a.getId());
-        final RenderObject bObject = idToRenderObject.get(b.getId());
-        if (aObject == bObject) return 0;
-        if (aObject == null) return 1;
-        if (bObject == null) return -1;
-        return bObject.depth - aObject.depth;
-      });
-
-      for (FlutterOutline child : sortedChildren) {
+      // In Swing siblings added first are rendered on top of siblings added later. And,
+      // Flutter children generally paint back to front, and Swing front to back; ¯\_(ツ)_/¯.
+      for (FlutterOutline child : Lists.reverse(children)) {
         renderWidgetOutline(child);
       }
     }
@@ -354,11 +343,9 @@ public class PreviewArea {
 }
 
 class RenderObject {
-  final int depth;
   final Rectangle globalBounds;
 
-  RenderObject(int depth, Rectangle globalBounds) {
-    this.depth = depth;
+  RenderObject(Rectangle globalBounds) {
     this.globalBounds = globalBounds;
   }
 }
