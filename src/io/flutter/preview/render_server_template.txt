@@ -13,17 +13,20 @@ import 'package:flutter/material.dart';
 /// canvas, etc.
 void main() async {
   // Report errors to the client in JSON format.
-  FlutterError.onError = (e) {
-    if (!e.silent) {
-      var map = {
-        'exception': '${e.exception}',
-        'stackTrace': '${e.stack}',
-        'library': e.library,
-        'context': e.context
-      };
-      io.stdout.writeln(json.encode(map));
-      io.exit(1);
-    }
+  FlutterError.onError = (FlutterErrorDetails e) {
+    if (e.silent) return;
+
+    // TODO(devoncarew): Should we report and display non-fatal errors?
+    if (e.stack == null) return;
+
+    var map = {
+      'exception': '${e.exception}',
+      'stackTrace': '${e.stack}',
+      'library': e.library,
+      'context': e.context
+    };
+    io.stdout.writeln(json.encode(map));
+    io.exit(1);
   };
 
   io.stdin
@@ -83,11 +86,10 @@ void renderOnce() {
 class ElementInfo {
   final ElementInfo parent;
   final int id;
-  final int depth;
   final ui.Rect globalBounds;
   final List<ElementInfo> children = <ElementInfo>[];
 
-  ElementInfo(this.parent, this.id, this.depth, this.globalBounds) {
+  ElementInfo(this.parent, this.id, this.globalBounds) {
     parent?.children?.add(this);
   }
 
@@ -97,7 +99,6 @@ class ElementInfo {
     int right = globalBounds.right.truncate();
     int bottom = globalBounds.bottom.truncate();
     json['$id'] = {
-      'depth': depth,
       'globalBounds': {
         'left': left,
         'top': top,
@@ -118,8 +119,9 @@ class ElementInfo {
 
     registeredWidgets.forEach((id, widget) {
       final Element element = elementsMap[widget];
-      assert(element != null);
-      elementToId[element] = id;
+      if (element != null) {
+        elementToId[element] = id;
+      }
     });
 
     Element getInterestingAncestor(Element element) {
@@ -142,11 +144,10 @@ class ElementInfo {
         Element ancestor = getInterestingAncestor(element);
         ElementInfo ancestorInfo = createInfoForElement(ancestor);
         RenderObject renderObject = element.renderObject;
-        int depth = renderObject.depth;
         ui.Rect globalBounds = getGlobalBounds(renderObject);
         // TODO(scheglov) Think about offstage elements.
         // https://github.com/flutter/flutter-intellij/pull/1882#discussion_r172446305
-        info = new ElementInfo(ancestorInfo, id, depth, globalBounds);
+        info = new ElementInfo(ancestorInfo, id, globalBounds);
         elementToInfoMap[element] = info;
       }
       return info;
