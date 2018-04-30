@@ -38,6 +38,11 @@ public class ExtractWidgetAction extends DumbAwareAction {
       new ExtractWidgetDialog(project, editor, refactoring).show();
     }
   }
+
+  @Override
+  public boolean startInTransaction() {
+    return true;
+  }
 }
 
 class ExtractWidgetDialog extends ServerRefactoringDialog<ExtractWidgetRefactoring> {
