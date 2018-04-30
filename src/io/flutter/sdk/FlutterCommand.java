@@ -277,6 +277,7 @@ public class FlutterCommand {
 
   enum Type {
     BUILD("Flutter build", "build"),
+    CLEAN("Flutter clean", "clean"),
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
     DOCTOR("Flutter doctor", "doctor"),

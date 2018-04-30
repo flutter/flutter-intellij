@@ -75,6 +75,10 @@
               text="Flutter Packages Upgrade"
               description="Run 'flutter packages upgrade'"/>
       <separator/>
+      <action id="flutter.clean" class="io.flutter.actions.FlutterCleanAction"
+              text="Flutter Clean"
+              description="Run 'flutter clean'"/>
+      <separator/>
       <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
               text="Open Android module in Android Studio"
               description="Launch Android Studio to edit the Android module as a top-level project"/>
