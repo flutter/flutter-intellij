@@ -22,10 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -33,9 +30,9 @@ import java.util.function.Function;
 
 /**
  * Sends JSON commands to a flutter daemon process, assigning a new id to each one.
- * <p>
+ *
  * <p>Also handles dispatching incoming responses and events.
- * <p>
+ *
  * <p>The protocol is specified in
  * <a href="https://github.com/flutter/flutter/wiki/The-flutter-daemon-mode"
  * >The Flutter Daemon Mode</a>.
@@ -78,6 +75,19 @@ public class DaemonApi {
     return send("app.stop", new AppStop(appId));
   }
 
+  void cancelPending() {
+    final List<Command> commands;
+
+    synchronized (pending) {
+      commands = new ArrayList<>(pending.values());
+      pending.clear();
+    }
+
+    for (Command command : commands) {
+      command.completeExceptionally(new IOException("Application terminated"));
+    }
+  }
+
   /**
    * Used to invoke an arbitrary service protocol extension.
    */
@@ -99,7 +109,7 @@ public class DaemonApi {
   void listen(@NotNull ProcessHandler process, @NotNull DaemonEvent.Listener listener) {
     process.addProcessListener(new ProcessAdapter() {
       @Override
-      public void onTextAvailable(ProcessEvent event, Key outputType) {
+      public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
         if (outputType.equals(ProcessOutputTypes.STDERR)) {
           // Append text to last line in buffer.
           final String last = stderr.peekLast();
@@ -135,12 +145,12 @@ public class DaemonApi {
       }
 
       @Override
-      public void processWillTerminate(ProcessEvent event, boolean willBeDestroyed) {
+      public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
         listener.processWillTerminate();
       }
 
       @Override
-      public void processTerminated(ProcessEvent event) {
+      public void processTerminated(@NotNull ProcessEvent event) {
         listener.processTerminated(event.getExitCode());
       }
     });
