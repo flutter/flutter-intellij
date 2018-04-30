@@ -36,7 +36,6 @@
 <p>live preview: make the preview area smaller if the widget is not renderable</p></li><li>
 <p>live preview: fixes to make outline preview working on Windows</p></li><li>
 <p>live preview: sort children outlines by their RenderObject.depth during preview</p></li><li>
-<p>add support for Android Studio Canary 12</p></li><li>
 <p>simplify how we recognize Flutter projects when using Bazel</p></li><li>
 <p>fix the "Open in Android Studio" action to not show for the ios dir</p></li><li>
 <p>add an option to create projects in “offline” mode</p></li><li>
