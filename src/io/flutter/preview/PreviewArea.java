@@ -132,6 +132,13 @@ public class PreviewArea {
   public void clear(JComponent component) {
     setToolbarTitle(null);
 
+    rootWidgetId = 0;
+    rootRenderObject = null;
+    idToRenderObject.clear();
+
+    idToOutline.clear();
+    outlineToComponent.clear();
+
     primaryLayer.removeAll();
     primaryLayer.setLayout(new BorderLayout());
     primaryLayer.add(component, BorderLayout.CENTER);
