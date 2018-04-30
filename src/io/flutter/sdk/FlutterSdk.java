@@ -145,6 +145,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.UPGRADE);
   }
 
+  public FlutterCommand flutterClean(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.CLEAN);
+  }
+
   public FlutterCommand flutterDoctor() {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.DOCTOR);
   }
