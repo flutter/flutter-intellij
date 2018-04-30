@@ -29,7 +29,6 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
-// TODO(pq): make capacity setting dynamic
 public class HeapDisplay extends JPanel {
   static final int PANEL_HEIGHT = 100;
 
@@ -147,7 +146,6 @@ public class HeapDisplay extends JPanel {
 
     for (HeapSample sample : heapState.getSamples()) {
       final double x = width - (((double)(now - sample.getSampleTime())) / ((double)heapState.getMaxSampleSizeMs()) * width);
-      // TODO(pq): consider a Y offset or scaling.
       final double y = (double)height * sample.getBytes() / maxDataSize;
 
       if (path == null) {

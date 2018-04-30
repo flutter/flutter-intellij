@@ -84,7 +84,6 @@ class InspectorTreeMouseListener extends MouseAdapter {
         panel.subtreePanel.highlightShowNode(node.getValueRef());
       }
       panel.highlightShowNode(treeNode);
-      return;
     }
   }
 
