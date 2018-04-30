@@ -9,13 +9,8 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.ui.Messages;
 
 public class FlutterStudioInitializer implements Runnable {
-
   private static void reportVersionIncompatibility(ApplicationInfo info) {
     Messages.showErrorDialog("The Flutter plugin requires a more recent version of Android Studio.", "Version Mismatch");
-  }
-
-  private static void reportCanaryIncompatibility() {
-    Messages.showErrorDialog("The Flutter plugin does not work properly with Canary versions of Android Studio.", "Version Mismatch");
   }
 
   @Override
@@ -27,8 +22,6 @@ public class FlutterStudioInitializer implements Runnable {
       String version = info.getFullVersion();
       if (version.startsWith("2.")) {
         reportVersionIncompatibility(info);
-      } else if (version.contains("Canary")) {
-        reportCanaryIncompatibility();
       }
     }
   }

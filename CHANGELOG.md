@@ -9,7 +9,6 @@
 - live preview: fixes to make outline preview working on Windows
 - live preview: sort children outlines by their RenderObject.depth during preview
 
-- add support for Android Studio Canary 12
 - simplify how we recognize Flutter projects when using Bazel
 - fix the "Open in Android Studio" action to not show for the ios dir
 - add an option to create projects in “offline” mode
