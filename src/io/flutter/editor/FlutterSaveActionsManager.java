@@ -126,6 +126,10 @@ public class FlutterSaveActionsManager {
       ApplicationManager.getApplication().invokeLater(() -> new WriteCommandAction.Simple(myProject) {
         @Override
         protected void run() {
+          if (myProject.isDisposed()) {
+            return;
+          }
+
           AssistUtils.applySourceEdits(myProject, file, document, fileEdit.getEdits(), Collections.emptySet());
 
           // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
@@ -155,6 +159,10 @@ public class FlutterSaveActionsManager {
     ApplicationManager.getApplication().invokeLater(() -> new WriteCommandAction.Simple(myProject) {
       @Override
       protected void run() {
+        if (myProject.isDisposed()) {
+          return;
+        }
+
         boolean didFormat = false;
 
         final List<SourceEdit> edits = formatResult.getEdits();
@@ -177,4 +185,3 @@ public class FlutterSaveActionsManager {
     return CodeStyleSettingsManager.getSettings(project).getCommonSettings(DartLanguage.INSTANCE).RIGHT_MARGIN;
   }
 }
-
