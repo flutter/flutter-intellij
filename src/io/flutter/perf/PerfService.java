@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 // TODO(pq/devoncarew): Find a better name for this class; VMServiceWrapper? VMServiceManager?
-// TODO(pq): improve error handling
-// TODO(pq): change mode for opting in (preference or inspector view menu)
 
 public class PerfService {
   @NotNull private final HeapMonitor heapMonitor;

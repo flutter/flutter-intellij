@@ -27,7 +27,6 @@ import io.flutter.coverage.FlutterLiveCoverageManager;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
-import io.flutter.run.FlutterAppManager;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;

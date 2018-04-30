@@ -67,7 +67,7 @@ public class SdkConfigurationNotificationProvider extends EditorNotifications.Pr
     if (psiFile == null || psiFile.getLanguage() != DartLanguage.INSTANCE) return null;
 
     final Module module = ModuleUtilCore.findModuleForPsiElement(psiFile);
-    if (module == null || !FlutterModuleUtils.isFlutterModule(module)) return null;
+    if (!FlutterModuleUtils.isFlutterModule(module)) return null;
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk == null) {
