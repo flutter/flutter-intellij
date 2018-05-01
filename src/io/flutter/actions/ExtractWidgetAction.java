@@ -5,6 +5,7 @@
  */
 package io.flutter.actions;
 
+import com.intellij.CommonBundle;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.actionSystem.PlatformDataKeys;
@@ -13,9 +14,11 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.refactoring.util.CommonRefactoringUtil;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.ui.JBUI;
 import com.jetbrains.lang.dart.ide.refactoring.ServerRefactoringDialog;
+import com.jetbrains.lang.dart.ide.refactoring.status.RefactoringStatus;
 import io.flutter.refactoring.ExtractWidgetRefactoring;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +38,19 @@ public class ExtractWidgetAction extends DumbAwareAction {
 
     if (project != null && file != null && editor != null && caret != null) {
       final ExtractWidgetRefactoring refactoring = new ExtractWidgetRefactoring(project, file, caret.getOffset(), 0);
+
+      // Validate the initial status.
+      final RefactoringStatus initialStatus = refactoring.checkInitialConditions();
+      if (initialStatus == null) {
+        return;
+      }
+      if (initialStatus.hasError()) {
+        final String message = initialStatus.getMessage();
+        assert message != null;
+        CommonRefactoringUtil.showErrorHint(project, editor, message, CommonBundle.getErrorTitle(), null);
+        return;
+      }
+
       new ExtractWidgetDialog(project, editor, refactoring).show();
     }
   }
