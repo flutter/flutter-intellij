@@ -194,9 +194,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               assert widget != null;
               showNotRenderableInPreviewArea(widget);
               break;
-            case NO_TEMPORARY_DIRECTORY:
-              previewArea.clear("Internal error");
-              break;
             case TIMEOUT:
               previewArea.clear("Timeout during rendering");
               break;
