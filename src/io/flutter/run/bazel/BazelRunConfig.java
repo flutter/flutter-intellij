@@ -81,6 +81,7 @@ public class BazelRunConfig extends RunConfigurationBase
     return new LaunchState(env, main.getAppDir(), main.getFile(), this, callback);
   }
 
+  @NotNull
   @Override
   public GeneralCommandLine getCommand(ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
     final BazelFields launchFields = fields.copy();

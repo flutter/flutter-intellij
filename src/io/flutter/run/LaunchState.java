@@ -37,12 +37,16 @@ import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.FlutterLog;
+import io.flutter.logging.FlutterLogView;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Launches a flutter app, showing it in the console.
@@ -79,6 +83,16 @@ public class LaunchState extends CommandLineState {
     this.runConfig = runConfig;
     this.callback = callback;
     DaemonConsoleView.install(this, env, workDir);
+  }
+
+
+  @Nullable
+  protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
+    if (FlutterLog.LOGGING_ENABLED) {
+      return new FlutterLogView();
+    }
+
+    return super.createConsole(executor);
   }
 
   private RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
