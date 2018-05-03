@@ -230,6 +230,14 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
+  public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
+    final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    args.add("--device-id=flutter-tester");
+    args.add(mainPath);
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
+  }
+
   public FlutterCommand flutterTest(@NotNull PubRoot root, @NotNull VirtualFile fileOrDir, @Nullable String testNameSubstring,
                                     @NotNull RunMode mode) {
 
@@ -400,33 +408,6 @@ public class FlutterSdk {
   @Nullable
   public String getDartSdkPath() {
     return FlutterSdkUtil.pathToDartSdk(getHomePath());
-  }
-
-  /**
-   * Return the existing 'flutter_tester' executable.
-   */
-  @Nullable
-  public VirtualFile getTester() {
-    final String platformString;
-    final String executableExtension;
-    if (SystemInfo.isMac) {
-      platformString = "darwin-x64";
-      executableExtension = "";
-    }
-    else if (SystemInfo.isLinux) {
-      platformString = "linux-x64";
-      executableExtension = "";
-    }
-    else if (SystemInfo.isWindows) {
-      platformString = "windows-x64";
-      executableExtension = ".exe";
-    }
-    else {
-      return null;
-    }
-
-    final String relativePath = "bin/cache/artifacts/engine/" + platformString + "/flutter_tester" + executableExtension;
-    return getHome().findFileByRelativePath(relativePath);
   }
 
   /**

@@ -96,4 +96,11 @@ public class FlutterDevice {
       new OpenSimulatorAction(true).actionPerformed(null);
     }
   }
+
+  /**
+   * Return the "flutter-tester" device.
+   */
+  public static FlutterDevice getTester() {
+    return new FlutterDevice("flutter-tester", "Flutter test device", null, false);
+  }
 }

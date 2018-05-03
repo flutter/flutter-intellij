@@ -190,8 +190,8 @@ public class FlutterApp {
                                  @NotNull RunMode mode,
                                  @NotNull FlutterDevice device,
                                  @NotNull GeneralCommandLine command,
-                                 @NotNull String analyticsStart,
-                                 @NotNull String analyticsStop)
+                                 @Nullable String analyticsStart,
+                                 @Nullable String analyticsStop)
     throws ExecutionException {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
@@ -200,7 +200,9 @@ public class FlutterApp {
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.
-    FlutterInitializer.sendAnalyticsAction(analyticsStart);
+    if (analyticsStart != null) {
+      FlutterInitializer.sendAnalyticsAction(analyticsStart);
+    }
 
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);
@@ -209,7 +211,9 @@ public class FlutterApp {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
-        FlutterInitializer.sendAnalyticsAction(analyticsStop);
+        if (analyticsStop != null) {
+          FlutterInitializer.sendAnalyticsAction(analyticsStop);
+        }
 
         // Send analytics about whether this session used the reload workflow, the restart workflow, or neither.
         final String workflowType = app.reloadCount > 0 ? "reload" : (app.restartCount > 0 ? "restart" : "none");

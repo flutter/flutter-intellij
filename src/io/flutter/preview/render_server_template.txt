@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:ui' as ui;
 
@@ -12,47 +11,53 @@ import 'package:flutter/material.dart';
 /// import, which widget to instantiate and render, the size of the preview
 /// canvas, etc.
 void main() async {
-  // Report errors to the client in JSON format.
+  Map<String, dynamic> asyncError;
   FlutterError.onError = (FlutterErrorDetails e) {
     if (e.silent) return;
 
     // TODO(devoncarew): Should we report and display non-fatal errors?
     if (e.stack == null) return;
 
-    var map = {
+    asyncError = {
+      'when': 'async',
       'exception': '${e.exception}',
       'stackTrace': '${e.stack}',
       'library': e.library,
       'context': e.context
     };
-    io.stdout.writeln(json.encode(map));
-    io.exit(1);
   };
 
-  io.stdin
-      .transform((new Utf8Codec()).decoder)
-      .transform(new LineSplitter())
-      .listen((line) {
-    if (line == null || line == 'exit') {
-      io.exit(0);
-    }
-    if (line == 'render') {
+  final binding = WidgetsFlutterBinding.ensureInitialized();
+
+  // ignore: invalid_use_of_protected_member
+  binding.registerServiceExtension(
+    name: 'designer.render',
+    callback: (request) async {
       try {
-        renderOnce();
+        asyncError = null;
+        var result = renderOnce(binding);
+        if (asyncError != null) {
+          return asyncError;
+        }
+        return result ?? {};
       } catch (e, st) {
-        var map = {'exception': '$e', 'stackTrace': '$st'};
-        io.stdout.writeln(json.encode(map));
+        return {
+          'when': 'sync',
+          'exception': '$e',
+          'stackTrace': '$st',
+        };
       }
-    }
-  });
+    },
+  );
+
+  // Listen for the stream to keep the process alive.
+  io.stdin.listen((bytes) {});
 }
 
 Iterable<Element> collectAllElementsFrom(Element rootElement) =>
     new CachingIterable<Element>(new _DepthFirstElementIterator(rootElement));
 
-void renderOnce() {
-  var binding = WidgetsFlutterBinding.ensureInitialized();
-
+Map<String, dynamic> renderOnce(WidgetsBinding binding) {
   var rootWidget = new Container(); // TEMPLATE_VALUE: create widget
   var app = new _DesignerApp(rootWidget);
 
@@ -75,12 +80,13 @@ void renderOnce() {
   }
 
   var rootInfo = ElementInfo.buildHierarchy(allElementsMap, registeredWidgets);
-
-  {
-    var map = <String, Object>{};
-    rootInfo.appendToJson(map);
-    io.stdout.writeln(json.encode(map));
+  if (rootInfo == null) {
+    return null;
   }
+
+  var map = <String, Object>{};
+  rootInfo.appendToJson(map);
+  return map;
 }
 
 class ElementInfo {

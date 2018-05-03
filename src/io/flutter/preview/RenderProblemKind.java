@@ -17,11 +17,6 @@ public enum RenderProblemKind {
   NOT_RENDERABLE_WIDGET,
 
   /**
-   * The temporary directory was not created.
-   */
-  NO_TEMPORARY_DIRECTORY,
-
-  /**
    * There was a timeout during rendering the widget.
    */
   TIMEOUT,

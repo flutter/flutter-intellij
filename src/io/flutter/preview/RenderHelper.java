@@ -5,41 +5,44 @@
  */
 package io.flutter.preview;
 
-import com.google.common.io.Files;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.intellij.execution.runners.ExecutionEnvironment;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.daemon.DaemonApi;
+import io.flutter.run.daemon.FlutterApp;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.ReloadReportConsumer;
-import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class RenderHelper {
   private final Project myProject;
   private final Listener myListener;
 
-  private String myTesterPath = null;
+  private final FlutterSdk myFlutterSdk;
   private final RenderThread myRenderThread = new RenderThread();
 
-  private VirtualFile myPackagesFile;
+  private PubRoot myPubRoot;
+  private Module myModule;
+
   private VirtualFile myFile;
   private FlutterOutline myFileOutline;
   private String myInstrumentedCode;
@@ -52,7 +55,8 @@ public class RenderHelper {
   public RenderHelper(@NotNull Project project, @NotNull Listener listener) {
     myProject = project;
     myListener = listener;
-    initializeTesterPath();
+
+    myFlutterSdk = FlutterSdk.getFlutterSdk(myProject);
 
     myRenderThread.start();
   }
@@ -67,10 +71,9 @@ public class RenderHelper {
     myFileOutline = fileOutline;
     myInstrumentedCode = instrumentedCode;
 
-    myPackagesFile = null;
-    final PubRoot pubRoot = PubRoot.forFile(file);
-    if (pubRoot != null) {
-      myPackagesFile = pubRoot.getPackagesFile();
+    myPubRoot = PubRoot.forFile(file);
+    if (myPubRoot != null) {
+      myModule = myPubRoot.getModule(myProject);
     }
 
     myWidgetOutline = null;
@@ -136,36 +139,33 @@ public class RenderHelper {
     return null;
   }
 
-  private void initializeTesterPath() {
-    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(myProject);
-    if (flutterSdk != null) {
-      final VirtualFile tester = flutterSdk.getTester();
-      if (tester != null) {
-        myTesterPath = tester.getPath();
-      }
-    }
-  }
-
   private int getConvertedFileOffset(int offset) {
     return DartAnalysisServerService.getInstance(myProject).getConvertedOffset(myFile, offset);
   }
 
   private void scheduleRendering() {
-    if (myPackagesFile == null || myInstrumentedCode == null || myWidgetOutline == null || myWidth == 0 || myHeight == 0) {
+    if (myPubRoot == null ||
+        myModule == null ||
+        myInstrumentedCode == null ||
+        myWidgetOutline == null ||
+        myWidth == 0 || myHeight == 0) {
       return;
     }
 
     // TODO: Expose this as an error to the user.
-    if (myTesterPath == null) {
+    if (myFlutterSdk == null) {
       return;
     }
 
     final String widgetClass = myWidgetOutline.getDartElement().getName();
     final String constructor = myWidgetOutline.getRenderConstructor();
     final RenderRequest request =
-      new RenderRequest(myTesterPath, myPackagesFile, myFile, myInstrumentedCode,
+      new RenderRequest(myFlutterSdk,
+                        myProject, myPubRoot, myModule,
+                        myInstrumentedCode,
                         myWidgetOutline, widgetClass, constructor,
-                        myWidth, myHeight, myListener);
+                        myWidth, myHeight,
+                        myListener);
     myRenderThread.setRequest(request);
   }
 
@@ -190,30 +190,37 @@ class RenderRequest {
 
   final int id = nextId++;
 
-  final String testerPath;
+  @NotNull final FlutterSdk flutterSdk;
 
-  final VirtualFile packages;
-  final VirtualFile file;
-  final String codeToRender;
-  final FlutterOutline widget;
-  final String widgetClass;
-  final String widgetConstructor;
+  @NotNull final Project project;
+  @NotNull final PubRoot pubRoot;
+  @NotNull final Module module;
+
+  @NotNull final String codeToRender;
+  @NotNull final FlutterOutline widget;
+  @NotNull final String widgetClass;
+  @NotNull final String widgetConstructor;
+
   final int width;
   final int height;
 
   final RenderHelper.Listener listener;
 
-  RenderRequest(String testerPath, VirtualFile packages, VirtualFile file,
-                String codeToRender,
-                FlutterOutline widget,
-                String widgetClass,
-                String widgetConstructor,
+  RenderRequest(@NotNull FlutterSdk flutterSdk,
+                @NotNull Project project,
+                @NotNull PubRoot pubRoot,
+                @NotNull Module module,
+                @NotNull String codeToRender,
+                @NotNull FlutterOutline widget,
+                @NotNull String widgetClass,
+                @NotNull String widgetConstructor,
                 int width,
                 int height,
                 RenderHelper.Listener listener) {
-    this.testerPath = testerPath;
-    this.packages = packages;
-    this.file = file;
+    this.flutterSdk = flutterSdk;
+    this.project = project;
+    this.pubRoot = pubRoot;
+    this.module = module;
     this.codeToRender = codeToRender;
     this.widget = widget;
     this.widgetClass = widgetClass;
@@ -225,24 +232,14 @@ class RenderRequest {
 }
 
 class RenderThread extends Thread {
-  File myTemporaryDirectory;
-
   final Object myRequestLock = new Object();
   RenderRequest myRequest;
 
   RenderRequest myProcessRequest;
-  Process myProcess;
-  BufferedReader myProcessReader;
-  PrintStream myProcessWriter;
-  VmService myVmService;
+  FlutterApp myApp;
 
   RenderThread() {
     setDaemon(true);
-    try {
-      myTemporaryDirectory = FileUtil.createTempDirectory("flutterDesigner", null);
-    }
-    catch (IOException ignored) {
-    }
   }
 
   void setRequest(RenderRequest request) {
@@ -280,43 +277,47 @@ class RenderThread extends Thread {
   private void render(@NotNull RenderRequest request) {
     final FlutterOutline widget = request.widget;
 
-    if (myTemporaryDirectory == null) {
-      request.listener.onFailure(RenderProblemKind.NO_TEMPORARY_DIRECTORY, widget);
-      return;
-    }
-
     try {
-      final File toRenderFile = new File(myTemporaryDirectory, "to_render.dart");
-      Files.write(request.codeToRender, toRenderFile, StandardCharsets.UTF_8);
+      final String packagePath = request.pubRoot.getPath();
+      final File dartToolDirectory = new File(packagePath, ".dart_tool");
+      final File flutterDirectory = new File(dartToolDirectory, "flutter");
+      final File designerDirectory = new File(flutterDirectory, "designer");
+
+      final File toRenderFile = new File(designerDirectory, "to_render.dart");
+      FileUtil.writeToFile(toRenderFile, request.codeToRender);
 
       final String widgetCreation = "new " + request.widgetClass + "." + request.widgetConstructor + "();";
 
       final URL templateUri = RenderHelper.class.getResource("render_server_template.txt");
       String template = Resources.toString(templateUri, StandardCharsets.UTF_8);
-      template = template.replace("// TEMPLATE_VALUE: import library to render", "import '" + toRenderFile.toURI() + "';");
+      template = template.replace("// TEMPLATE_VALUE: import library to render", "import '" + toRenderFile.getName() + "';");
       template = template.replace("new Container(); // TEMPLATE_VALUE: create widget", widgetCreation);
       template = template.replace("{}; // TEMPLATE_VALUE: use flutterDesignerWidgets", "flutterDesignerWidgets;");
       template = template.replace("350.0 /*TEMPLATE_VALUE: width*/", request.width + ".0");
       template = template.replace("400.0 /*TEMPLATE_VALUE: height*/", request.height + ".0");
 
-      final File renderServerFile = new File(myTemporaryDirectory, "render_server.dart");
+      final File renderServerFile = new File(designerDirectory, "render_server.dart");
       final String renderServerPath = renderServerFile.getPath();
-      Files.write(template, renderServerFile, StandardCharsets.UTF_8);
+      FileUtil.writeToFile(renderServerFile, template);
 
       // If the process is dead, clear the instance.
-      if (myProcess != null && !myProcess.isAlive()) {
-        myProcess = null;
+      if (myApp != null && !myApp.isConnected()) {
+        myApp = null;
       }
 
       // Check if the current render server process is compatible with the new request.
       // If it is, attempt to perform hot reload.
       // If not successful, terminate the process.
       boolean canRenderWithCurrentProcess = false;
-      if (myProcessRequest != null && myProcess != null && myProcess.isAlive() && myVmService != null) {
-        if (Objects.equals(myProcessRequest.packages, request.packages)) {
-          final boolean success = performReload();
-          if (success) {
-            canRenderWithCurrentProcess = true;
+      if (myProcessRequest != null && myApp != null) {
+        if (Objects.equals(myProcessRequest.pubRoot.getPath(), packagePath)) {
+          try {
+            final DaemonApi.RestartResult restartResult = myApp.performHotReload(null, false).get(5000, TimeUnit.MILLISECONDS);
+            if (restartResult.ok()) {
+              canRenderWithCurrentProcess = true;
+            }
+          }
+          catch (Throwable ignored) {
           }
         }
 
@@ -325,78 +326,62 @@ class RenderThread extends Thread {
         }
       }
 
-      // If the is no rendering server process, start a new one.
-      boolean newProcess = false;
-      if (myProcess == null) {
+      // If there is no rendering server process, start a new one.
+      // Wait for it to start.
+      if (myApp == null) {
         myProcessRequest = request;
-        final ProcessBuilder processBuilder =
-          new ProcessBuilder(request.testerPath,
-                             "--enable-checked-mode",
-                             "--non-interactive",
-                             "--use-test-fonts",
-                             "--packages=" + request.packages.getPath(),
-                             renderServerPath);
-        processBuilder.environment().put("FLUTTER_TEST", "true");
-        myProcess = processBuilder.start();
-        myProcessReader = new BufferedReader(new InputStreamReader(myProcess.getInputStream()));
-        myProcessWriter = new PrintStream(myProcess.getOutputStream(), true);
-        newProcess = true;
-      }
 
-      // Terminate the process if it does not respond fast enough.
-      final CountDownLatch responseReceivedLatch = new CountDownLatch(1);
-      final Process processToTerminate = myProcess;
+        final FlutterCommand command = request.flutterSdk.flutterRunOnTester(request.pubRoot, renderServerPath);
+        final FlutterApp app = FlutterApp.start(
+          new ExecutionEnvironment(),
+          request.project,
+          request.module,
+          RunMode.DEBUG,
+          FlutterDevice.getTester(),
+          command.createGeneralCommandLine(request.project),
+          null,
+          null);
 
-      new Thread(() -> {
-        boolean success = Uninterruptibles.awaitUninterruptibly(responseReceivedLatch, 4000, TimeUnit.MILLISECONDS);
-        if (!success) {
-          processToTerminate.destroyForcibly();
-        }
-      }).start();
+        final CountDownLatch startedLatch = new CountDownLatch(1);
+        app.addStateListener(new FlutterApp.FlutterAppListener() {
+          @Override
+          public void stateChanged(FlutterApp.State newState) {
+            if (newState == FlutterApp.State.STARTED) {
+              myApp = app;
+              startedLatch.countDown();
+            }
+            if (newState == FlutterApp.State.TERMINATING) {
+              myApp = null;
+            }
+          }
+        });
 
-      // Get the Observatory URI and connect VmService.
-      if (newProcess) {
-        final String line = myProcessReader.readLine();
-        if (line == null || !line.startsWith("Observatory listening on ")) {
-          terminateCurrentProcess("Observatory URI expected");
+        final boolean started = Uninterruptibles.awaitUninterruptibly(startedLatch, 10000, TimeUnit.MILLISECONDS);
+        if (!started) {
+          terminateCurrentProcess("Initial start timeout.");
+          request.listener.onFailure(RenderProblemKind.TIMEOUT, request.widget);
           return;
         }
-        String uri = line.substring("Observatory listening on ".length());
-        uri = uri.replace("http://", "ws://") + "ws";
-        myVmService = VmService.connect(uri);
+
+        myApp = app;
       }
 
       // Ask to render the widget.
-      myProcessWriter.println("render");
+      final CountDownLatch responseReceivedLatch = new CountDownLatch(1);
+      final AtomicReference<JsonObject> responseRef = new AtomicReference<>();
+      myApp.callServiceExtension("ext.flutter.designer.render").thenAccept((response) -> {
+        responseRef.set(response);
+        responseReceivedLatch.countDown();
+      });
 
-      // Read the response.
-      final JsonObject response;
-      {
-        final String line = myProcessReader.readLine();
-        if (line == null) {
-          terminateCurrentProcess("Response expected");
-          request.listener.onFailure(RenderProblemKind.TIMEOUT, widget);
-          return;
-        }
-        // The line must be a JSON response.
-        try {
-          response = new Gson().fromJson(line, JsonObject.class);
-        }
-        catch (Throwable e) {
-          terminateCurrentProcess("JSON response expected");
-          request.listener.onFailure(RenderProblemKind.INVALID_JSON, widget);
-          return;
-        }
-      }
-
-      // Fail if unable to find the valid response.
-      if (response == null) {
-        request.listener.onFailure(RenderProblemKind.INVALID_JSON, widget);
+      // Wait for the response.
+      final boolean responseReceived = Uninterruptibles.awaitUninterruptibly(responseReceivedLatch, 4000, TimeUnit.MILLISECONDS);
+      if (!responseReceived) {
+        terminateCurrentProcess("Render response timeout.");
+        request.listener.onFailure(RenderProblemKind.TIMEOUT, widget);
         return;
       }
-
-      // OK, we got all what we need, the process is OK, we can continue using it.
-      responseReceivedLatch.countDown();
+      final JsonObject response = responseRef.get();
 
       if (response.has("exception")) {
         request.listener.onRemoteException(widget, response);
@@ -412,59 +397,12 @@ class RenderThread extends Thread {
     }
   }
 
-  /**
-   * Attempt to perform hot reload.
-   *
-   * @return true if successful, or false if unsuccessful or timeout.
-   */
-  private boolean performReload() {
-    final CountDownLatch reloadLatch = new CountDownLatch(1);
-    final AtomicBoolean reloadSuccess = new AtomicBoolean(false);
-
-    myVmService.getVM(new VMConsumer() {
-      @Override
-      public void received(VM vm) {
-        final ElementList<IsolateRef> isolates = vm.getIsolates();
-        if (!isolates.isEmpty()) {
-          final String isolateId = isolates.get(0).getId();
-
-          myVmService.reloadSources(isolateId, new ReloadReportConsumer() {
-            @Override
-            public void received(ReloadReport report) {
-              reloadSuccess.set(report.getSuccess());
-              reloadLatch.countDown();
-            }
-
-            @Override
-            public void onError(RPCError error) {
-              reloadLatch.countDown();
-            }
-          });
-        }
-      }
-
-      @Override
-      public void onError(RPCError error) {
-        reloadLatch.countDown();
-      }
-    });
-
-    return Uninterruptibles.awaitUninterruptibly(reloadLatch, 2000, TimeUnit.MILLISECONDS) && reloadSuccess.get();
-  }
-
   private void terminateCurrentProcess(String reason) {
     myProcessRequest = null;
 
-    if (myProcess != null) {
-      myProcess.destroyForcibly();
-      myProcess = null;
-    }
-    myProcessReader = null;
-    myProcessWriter = null;
-
-    if (myVmService != null) {
-      myVmService.disconnect();
-      myVmService = null;
+    if (myApp != null) {
+      myApp.getProcessHandler().destroyProcess();
+      myApp = null;
     }
   }
 }
