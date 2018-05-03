@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterLogEntry {
 
+  // TODO(pq): assuming we keep a timestamp, consider making it a long.
   @NotNull
   private final String timestamp;
   @NotNull

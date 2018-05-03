@@ -19,7 +19,6 @@ import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugPro
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
-import io.flutter.logging.FlutterLog;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.view.FlutterViewMessages;
@@ -63,7 +62,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
   protected void onVmConnected(@NotNull VmService vmService) {
     app.setFlutterDebugProcess(this);
     FlutterViewMessages.sendDebugActive(getSession().getProject(), app, vmService);
-    FlutterLog.getInstance().listenToVm(vmService);
   }
 
   @Override

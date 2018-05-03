@@ -23,9 +23,9 @@ import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
 public class FlutterLogEntryParser {
 
   // Known entry categories.
-  public static final String LOG_CATEGORY = "LOG";
-  public static final String DAEMON_CATEGORY = "DAEMON";
-  public static final String RAW_CATEGORY = "RAW";
+  public static final String LOG_CATEGORY = "flutter.log";
+  public static final String DAEMON_CATEGORY = "flutter.daemon";
+  public static final String STDIO_STDOUT_CATEGORY = "stdio.stdout";
 
   @Nullable
   public static FlutterLogEntry parse(@Nullable String id, @Nullable Event event) {
@@ -75,8 +75,8 @@ public class FlutterLogEntryParser {
       }
     }
     catch (Throwable e) {
-      // TODO(pq): for now, text that does not parse to JSON is categorized as "RAW"; this will change.
-      return new FlutterLogEntry(timestamp(), RAW_CATEGORY, eventText);
+      // TODO(pq): for now, text that does not parse to JSON is categorized simply as STDOUT; this will change.
+      return new FlutterLogEntry(timestamp(), STDIO_STDOUT_CATEGORY, eventText);
     }
 
     return null;

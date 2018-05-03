@@ -12,6 +12,7 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ScrollPaneFactory;
@@ -22,6 +23,7 @@ import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.Alarm;
+import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +57,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       @Override
       Object getValue(Object node) {
         if (node instanceof FlutterEventNode) {
-          return ((FlutterEventNode)node).entry.getCategory();
+          // TODO(pq): consider showing the category prefix.
+          final String category = ((FlutterEventNode)node).entry.getCategory();
+          // Strip prefix.
+          final int dotIndex = category.indexOf('.');
+          return dotIndex != -1 ? category.substring(dotIndex + 1) : category;
         }
         return super.getValue(node);
       }
@@ -96,15 +102,16 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
-  final FlutterLog flutterLog;
+  @NotNull
+  final FlutterApp app;
   final FlutterLogTreeTableModel model;
   private final FlutterLogTreeTable treeTable;
-  private final JScrollPane pane;
   private SimpleTreeBuilder builder;
 
-  public FlutterLogView() {
+  public FlutterLogView(@NotNull FlutterApp app) {
+    this.app = app;
 
-    flutterLog = FlutterLog.getInstance();
+    final FlutterLog flutterLog = app.getLog();
     flutterLog.addListener(this, this);
 
     final DefaultActionGroup toolbarGroup = createToolbar();
@@ -136,9 +143,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       logTreeColumn.setBounds(treeTable.getColumnModel().getColumn(logTreeColumn.ordinal()));
     }
 
-    pane = ScrollPaneFactory.createScrollPane(treeTable,
-                                              ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                              ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    final JScrollPane pane = ScrollPaneFactory.createScrollPane(treeTable,
+                                                                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                                                                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     toolWindowPanel.setContent(pane);
   }
@@ -171,7 +178,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void attachToProcess(ProcessHandler processHandler) {
-    flutterLog.listenToProcess(processHandler, this);
+    app.getLog().listenToProcess(processHandler, this);
   }
 
   @Override
@@ -322,20 +329,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       treeTable = ((TreeTableTree)tree).getTreeTable();
     }
 
-    // A temporary child counter; to be replaced w/ root.getChildCount()
-    int childCount;
-
     public void onEvent(FlutterLogEntry entry) {
       final MutableTreeNode root = (MutableTreeNode)getRoot();
       final FlutterEventNode node = new FlutterEventNode(entry);
-      // TODO(pq): both of these techniques are reliably getting out of sync with the actual index
-      // TODO(pq): fix insertion (possibly by chunking updates or adding locking).
-      //insertNodeInto(node, root, root.getChildCount());
-      insertNodeInto(node, root, childCount++);
-
-      // TODO(pq): setup Auto-scroll
-      //treeTable.getTree().setVisibleRow(root.getChildCount());
-      update();
+      ApplicationManager.getApplication().invokeLater(() -> {
+        insertNodeInto(node, root, root.getChildCount());
+        // TODO(pq): setup Auto-scroll
+        //treeTable.getTree().setVisibleRow(root.getChildCount());
+        update();
+      });
     }
   }
 
@@ -358,6 +360,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       model.setTree(this.getTree());
     }
 
+    @SuppressWarnings("EmptyMethod")
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
       // TODO(pq): add cell renderer

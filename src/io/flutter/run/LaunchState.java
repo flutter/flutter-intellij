@@ -85,14 +85,15 @@ public class LaunchState extends CommandLineState {
     DaemonConsoleView.install(this, env, workDir);
   }
 
-
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     if (FlutterLog.LOGGING_ENABLED) {
-      return new FlutterLogView();
+      final FlutterApp app = FlutterLaunchMode.appFromEnv(getEnvironment());
+      assert app != null;
+      return new FlutterLogView(app);
+    } else {
+      return super.createConsole(executor);
     }
-
-    return super.createConsole(executor);
   }
 
   private RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
@@ -106,6 +107,8 @@ public class LaunchState extends CommandLineState {
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
     final FlutterApp app = callback.createApp(device);
+    // Cache for use in console configuration.
+    FlutterLaunchMode.addToEnvironment(env, app);
 
     if (device == null) {
       Messages.showDialog(

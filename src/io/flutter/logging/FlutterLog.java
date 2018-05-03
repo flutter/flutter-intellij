@@ -27,17 +27,7 @@ public class FlutterLog {
   public static final boolean LOGGING_ENABLED = false;
   public static final String LOGGING_STREAM_ID = "_Logging";
 
-  private static final FlutterLog INSTANCE = new FlutterLog();
-
   private final List<Listener> listeners = new ArrayList<>();
-
-  // Shared instance.
-  private FlutterLog() {
-  }
-
-  public static FlutterLog getInstance() {
-    return INSTANCE;
-  }
 
   public void addListener(@NotNull Listener listener, @Nullable Disposable parent) {
     listeners.add(listener);
@@ -58,6 +48,7 @@ public class FlutterLog {
     }
   }
 
+  // TODO(pq): consider inverting and having services do their own listening, and just push entries.
   public void listenToProcess(@NotNull ProcessHandler processHandler, @NotNull Disposable parent) {
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
@@ -71,6 +62,7 @@ public class FlutterLog {
     // No-op if disabled.
     if (!LOGGING_ENABLED) return;
 
+    // TODO(pq): consider moving into PerfService to consolidate vm service listeners.
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
@@ -85,6 +77,8 @@ public class FlutterLog {
 
     // Listen for logging events (note: no way to unregister).
     vmService.streamListen(LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
+    // TODO(pq): listen for GC and frame events (Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame, etc).
   }
 
   private void onVmServiceReceived(String id, Event event) {
