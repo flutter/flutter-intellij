@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
@@ -69,7 +68,6 @@ public class FlutterApp {
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
   private final @NotNull GeneralCommandLine myCommand;
-  private @Nullable VirtualFile myLastReloadFile;
 
   private @Nullable String myAppId;
   private @Nullable String myWsUrl;
@@ -190,8 +188,8 @@ public class FlutterApp {
                                  @NotNull RunMode mode,
                                  @NotNull FlutterDevice device,
                                  @NotNull GeneralCommandLine command,
-                                 @NotNull String analyticsStart,
-                                 @NotNull String analyticsStop)
+                                 @Nullable String analyticsStart,
+                                 @Nullable String analyticsStop)
     throws ExecutionException {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
@@ -200,7 +198,9 @@ public class FlutterApp {
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.
-    FlutterInitializer.sendAnalyticsAction(analyticsStart);
+    if (analyticsStart != null) {
+      FlutterInitializer.sendAnalyticsAction(analyticsStart);
+    }
 
     final DaemonApi api = new DaemonApi(process);
     final FlutterApp app = new FlutterApp(project, module, mode, device, process, env, api, command);
@@ -209,7 +209,9 @@ public class FlutterApp {
       @Override
       public void processTerminated(@NotNull ProcessEvent event) {
         LOG.info(analyticsStop + " " + project.getName() + " (" + mode.mode() + ")");
-        FlutterInitializer.sendAnalyticsAction(analyticsStop);
+        if (analyticsStop != null) {
+          FlutterInitializer.sendAnalyticsAction(analyticsStop);
+        }
 
         // Send analytics about whether this session used the reload workflow, the restart workflow, or neither.
         final String workflowType = app.reloadCount > 0 ? "reload" : (app.restartCount > 0 ? "restart" : "none");
@@ -283,7 +285,6 @@ public class FlutterApp {
 
     restartCount++;
     userReloadCount = 0;
-    setLastReloadFile(null);
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter full restart");
 
@@ -312,7 +313,7 @@ public class FlutterApp {
   /**
    * Perform a hot reload of the app.
    */
-  public CompletableFuture<DaemonApi.RestartResult> performHotReload(VirtualFile currentActiveFile, boolean pauseAfterRestart) {
+  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart) {
     if (myAppId == null) {
       LOG.warn("cannot reload Flutter app because app id is not set");
 
@@ -323,7 +324,6 @@ public class FlutterApp {
 
     reloadCount++;
     userReloadCount++;
-    setLastReloadFile(currentActiveFile);
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
@@ -543,15 +543,6 @@ public class FlutterApp {
   @Nullable
   public Module getModule() {
     return myModule;
-  }
-
-  @Nullable
-  public VirtualFile getLastReloadFile() {
-    return myLastReloadFile;
-  }
-
-  public void setLastReloadFile(@Nullable VirtualFile file) {
-    myLastReloadFile = file;
   }
 
   @Override

@@ -15,14 +15,11 @@ import io.flutter.run.test.TestFields.Scope;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-
 import java.awt.event.ActionEvent;
 import java.io.File;
 
 import static com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse;
-import static io.flutter.run.test.TestFields.Scope.DIRECTORY;
-import static io.flutter.run.test.TestFields.Scope.FILE;
-import static io.flutter.run.test.TestFields.Scope.NAME;
+import static io.flutter.run.test.TestFields.Scope.*;
 
 /**
  * Settings editor for running Flutter tests.
