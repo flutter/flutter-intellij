@@ -183,6 +183,10 @@ public class FlutterReloadManager {
     final EditorEx editorEx = (EditorEx)editor;
     final VirtualFile file = editorEx.getVirtualFile();
 
+    if (!app.getLaunchMode().supportsReload()) {
+      return;
+    }
+
     // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
     // small pause to return error results in the (relatively infrequent) case where the user makes a bad
     // edit and immediately hits save.
