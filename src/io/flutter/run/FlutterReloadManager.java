@@ -176,6 +176,10 @@ public class FlutterReloadManager {
       return;
     }
 
+    if (!app.getLaunchMode().supportsReload()) {
+      return;
+    }
+
     if (!(editor instanceof EditorEx)) {
       return;
     }
