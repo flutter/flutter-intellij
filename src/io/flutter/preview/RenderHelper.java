@@ -41,6 +41,8 @@ public class RenderHelper {
   private final RenderThread myRenderThread = new RenderThread();
 
   private PubRoot myPubRoot;
+  private Module myModule;
+
   private VirtualFile myFile;
   private FlutterOutline myFileOutline;
   private String myInstrumentedCode;
@@ -70,6 +72,10 @@ public class RenderHelper {
     myInstrumentedCode = instrumentedCode;
 
     myPubRoot = PubRoot.forFile(file);
+    if (myPubRoot != null) {
+      myModule = myPubRoot.getModule(myProject);
+    }
+
     myWidgetOutline = null;
   }
 
@@ -138,7 +144,11 @@ public class RenderHelper {
   }
 
   private void scheduleRendering() {
-    if (myPubRoot == null || myInstrumentedCode == null || myWidgetOutline == null || myWidth == 0 || myHeight == 0) {
+    if (myPubRoot == null ||
+        myModule == null ||
+        myInstrumentedCode == null ||
+        myWidgetOutline == null ||
+        myWidth == 0 || myHeight == 0) {
       return;
     }
 
@@ -151,7 +161,7 @@ public class RenderHelper {
     final String constructor = myWidgetOutline.getRenderConstructor();
     final RenderRequest request =
       new RenderRequest(myFlutterSdk,
-                        myProject, myPubRoot,
+                        myProject, myPubRoot, myModule,
                         myInstrumentedCode,
                         myWidgetOutline, widgetClass, constructor,
                         myWidth, myHeight,
@@ -180,34 +190,37 @@ class RenderRequest {
 
   final int id = nextId++;
 
-  final FlutterSdk flutterSdk;
+  @NotNull final FlutterSdk flutterSdk;
 
-  final Project project;
-  final PubRoot pubRoot;
+  @NotNull final Project project;
+  @NotNull final PubRoot pubRoot;
+  @NotNull final Module module;
 
-  final String codeToRender;
-  final FlutterOutline widget;
-  final String widgetClass;
-  final String widgetConstructor;
+  @NotNull final String codeToRender;
+  @NotNull final FlutterOutline widget;
+  @NotNull final String widgetClass;
+  @NotNull final String widgetConstructor;
 
   final int width;
   final int height;
 
   final RenderHelper.Listener listener;
 
-  RenderRequest(FlutterSdk flutterSdk,
-                Project project,
-                PubRoot pubRoot,
-                String codeToRender,
-                FlutterOutline widget,
-                String widgetClass,
-                String widgetConstructor,
+  RenderRequest(@NotNull FlutterSdk flutterSdk,
+                @NotNull Project project,
+                @NotNull PubRoot pubRoot,
+                @NotNull Module module,
+                @NotNull String codeToRender,
+                @NotNull FlutterOutline widget,
+                @NotNull String widgetClass,
+                @NotNull String widgetConstructor,
                 int width,
                 int height,
                 RenderHelper.Listener listener) {
     this.flutterSdk = flutterSdk;
     this.project = project;
     this.pubRoot = pubRoot;
+    this.module = module;
     this.codeToRender = codeToRender;
     this.widget = widget;
     this.widgetClass = widgetClass;
@@ -215,10 +228,6 @@ class RenderRequest {
     this.width = width;
     this.height = height;
     this.listener = listener;
-  }
-
-  Module getModule() {
-    return pubRoot.getModule(project);
   }
 }
 
@@ -317,7 +326,7 @@ class RenderThread extends Thread {
         }
       }
 
-      // If there is no the rendering server process, start a new one.
+      // If there is no rendering server process, start a new one.
       // Wait for it to start.
       if (myApp == null) {
         myProcessRequest = request;
@@ -326,7 +335,7 @@ class RenderThread extends Thread {
         final FlutterApp app = FlutterApp.start(
           new ExecutionEnvironment(),
           request.project,
-          request.getModule(),
+          request.module,
           RunMode.DEBUG,
           FlutterDevice.getTester(),
           command.createGeneralCommandLine(request.project),

@@ -233,7 +233,6 @@ public class FlutterSdk {
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
-    args.add("--track-widget-creation");
     args.add("--device-id=flutter-tester");
     args.add(mainPath);
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
