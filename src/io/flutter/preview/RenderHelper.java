@@ -312,7 +312,7 @@ class RenderThread extends Thread {
       if (myProcessRequest != null && myApp != null) {
         if (Objects.equals(myProcessRequest.pubRoot.getPath(), packagePath)) {
           try {
-            final DaemonApi.RestartResult restartResult = myApp.performHotReload(null, false).get(5000, TimeUnit.MILLISECONDS);
+            final DaemonApi.RestartResult restartResult = myApp.performHotReload(false).get(5000, TimeUnit.MILLISECONDS);
             if (restartResult.ok()) {
               canRenderWithCurrentProcess = true;
             }
