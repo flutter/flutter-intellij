@@ -25,7 +25,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -176,13 +175,6 @@ public class FlutterReloadManager {
       return;
     }
 
-    if (!(editor instanceof EditorEx)) {
-      return;
-    }
-
-    final EditorEx editorEx = (EditorEx)editor;
-    final VirtualFile file = editorEx.getVirtualFile();
-
     // Add an arbitrary 125ms delay to allow analysis to catch up. This delay gives the analysis server a
     // small pause to return error results in the (relatively infrequent) case where the user makes a bad
     // edit and immediately hits save.
@@ -210,7 +202,7 @@ public class FlutterReloadManager {
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
-      app.performHotReload(file, supportsPauseAfterReload()).thenAccept(result -> {
+      app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
         if (!result.ok()) {
           notification.expire();
           showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
@@ -236,11 +228,11 @@ public class FlutterReloadManager {
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
-  public void saveAllAndReload(@NotNull FlutterApp app, @Nullable VirtualFile currentFile) {
+  public void saveAllAndReload(@NotNull FlutterApp app) {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
 
-      app.performHotReload(currentFile, supportsPauseAfterReload()).thenAccept(result -> {
+      app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
         }

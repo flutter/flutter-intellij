@@ -25,7 +25,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
@@ -69,7 +68,6 @@ public class FlutterApp {
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
   private final @NotNull GeneralCommandLine myCommand;
-  private @Nullable VirtualFile myLastReloadFile;
 
   private @Nullable String myAppId;
   private @Nullable String myWsUrl;
@@ -287,7 +285,6 @@ public class FlutterApp {
 
     restartCount++;
     userReloadCount = 0;
-    setLastReloadFile(null);
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter full restart");
 
@@ -316,7 +313,7 @@ public class FlutterApp {
   /**
    * Perform a hot reload of the app.
    */
-  public CompletableFuture<DaemonApi.RestartResult> performHotReload(VirtualFile currentActiveFile, boolean pauseAfterRestart) {
+  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart) {
     if (myAppId == null) {
       LOG.warn("cannot reload Flutter app because app id is not set");
 
@@ -327,7 +324,6 @@ public class FlutterApp {
 
     reloadCount++;
     userReloadCount++;
-    setLastReloadFile(currentActiveFile);
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
@@ -547,15 +543,6 @@ public class FlutterApp {
   @Nullable
   public Module getModule() {
     return myModule;
-  }
-
-  @Nullable
-  public VirtualFile getLastReloadFile() {
-    return myLastReloadFile;
-  }
-
-  public void setLastReloadFile(@Nullable VirtualFile file) {
-    myLastReloadFile = file;
   }
 
   @Override

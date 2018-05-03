@@ -5,8 +5,6 @@
  */
 package io.flutter.utils.animation;
 
-import io.flutter.utils.animation.Curve;
-
 /**
  * A curve that is the reversed inversion of its given curve.
  * <p>
