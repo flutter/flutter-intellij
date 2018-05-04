@@ -29,6 +29,7 @@ import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
+import io.flutter.logging.FlutterLog;
 import io.flutter.perf.PerfService;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -88,10 +89,22 @@ public class FlutterApp {
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final EventDispatcher<FlutterAppListener> listenersDispatcher = EventDispatcher.create(FlutterAppListener.class);
 
+  private @NotNull final FlutterLog myFlutterLog = new FlutterLog();
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
   private PerfService myPerfService;
+
+  private static final Key<FlutterApp> APP_KEY = Key.create("FlutterApp");
+
+  public static void addToEnvironment(@NotNull ExecutionEnvironment env, @NotNull FlutterApp app) {
+    env.putUserData(APP_KEY, app);
+  }
+
+  @Nullable
+  public static FlutterApp fromEnv(@NotNull ExecutionEnvironment env) {
+    return env.getUserData(APP_KEY);
+  }
 
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
@@ -147,6 +160,11 @@ public class FlutterApp {
         myResume = null;
       }
     };
+  }
+
+  @NotNull
+  public FlutterLog getFlutterLog() {
+    return myFlutterLog;
   }
 
   @NotNull

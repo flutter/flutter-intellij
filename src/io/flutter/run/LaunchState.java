@@ -37,6 +37,8 @@ import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
+import io.flutter.logging.FlutterLog;
+import io.flutter.logging.FlutterLogView;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
@@ -83,6 +85,17 @@ public class LaunchState extends CommandLineState {
     DaemonConsoleView.install(this, env, workDir);
   }
 
+  @Nullable
+  protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
+    if (FlutterLog.LOGGING_ENABLED) {
+      final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
+      assert app != null;
+      return new FlutterLogView(app);
+    } else {
+      return super.createConsole(executor);
+    }
+  }
+
   private RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
     FileDocumentManager.getInstance().saveAllDocuments();
 
@@ -94,6 +107,8 @@ public class LaunchState extends CommandLineState {
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
     final FlutterApp app = callback.createApp(device);
+    // Cache for use in console configuration.
+    FlutterApp.addToEnvironment(env, app);
 
     if (device == null) {
       Messages.showDialog(
