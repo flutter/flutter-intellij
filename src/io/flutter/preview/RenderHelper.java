@@ -302,6 +302,7 @@ class RenderThread extends Thread {
 
       // If the process is dead, clear the instance.
       if (myApp != null && !myApp.isConnected()) {
+        myProcessRequest = null;
         myApp = null;
       }
 
@@ -329,8 +330,6 @@ class RenderThread extends Thread {
       // If there is no rendering server process, start a new one.
       // Wait for it to start.
       if (myApp == null) {
-        myProcessRequest = request;
-
         final FlutterCommand command = request.flutterSdk.flutterRunOnTester(request.pubRoot, renderServerPath);
         final FlutterApp app = FlutterApp.start(
           new ExecutionEnvironment(),
@@ -347,10 +346,10 @@ class RenderThread extends Thread {
           @Override
           public void stateChanged(FlutterApp.State newState) {
             if (newState == FlutterApp.State.STARTED) {
-              myApp = app;
               startedLatch.countDown();
             }
             if (newState == FlutterApp.State.TERMINATING) {
+              myProcessRequest = null;
               myApp = null;
             }
           }
@@ -363,6 +362,7 @@ class RenderThread extends Thread {
           return;
         }
 
+        myProcessRequest = request;
         myApp = app;
       }
 
