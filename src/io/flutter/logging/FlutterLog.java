@@ -24,7 +24,7 @@ import java.util.List;
 public class FlutterLog {
 
   // (Temporary) flag to enable logging support.
-  public static final boolean LOGGING_ENABLED = false;
+  public static final boolean LOGGING_ENABLED = true;
   public static final String LOGGING_STREAM_ID = "_Logging";
 
   private final List<Listener> listeners = new ArrayList<>();

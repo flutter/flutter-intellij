@@ -48,10 +48,10 @@ public class FlutterLogEntryParser {
           final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
           final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
 
-          // TODO(devoncarew): update the VM library - timestamp is a long
+          // TODO(devoncarew): Update the VM library - timestamp is a long.
           final long timestamp;
 
-          if (event.getJson().get("timestamp") == null) {
+          if (event.getJson().has("timestamp")) {
             timestamp = event.getJson().get("timestamp").getAsLong();
           }
           else {
@@ -69,9 +69,9 @@ public class FlutterLogEntryParser {
 
           return new FlutterLogEntry(
             timestamp,
-            "vm.gc", isolateRef.getId() + " • collection time " +
-                     nf.format(timeMs) + "ms • " +
-                     df1.format(usedMB) + "MB used of " + df1.format(maxMB) + "MB");
+            "runtime.gc", isolateRef.getId() + " • collection time " +
+                          nf.format(timeMs) + "ms • " +
+                          df1.format(usedMB) + "MB used of " + df1.format(maxMB) + "MB");
       }
     }
 
