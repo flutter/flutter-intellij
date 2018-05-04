@@ -41,7 +41,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   private final SimpleToolWindowPanel toolWindowPanel;
 
-  private static final SimpleDateFormat TIMESTAMP_FORMAT =  new SimpleDateFormat("HH:mm:ss.SSS");
+  private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
 
   // TODO(pq): migrate to defining columninfo objects and then add rendering to them.
   // see: ListTreeTableModelOnColumns use PropertiesPanel setup
@@ -56,15 +56,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         return super.getValue(node);
       }
     },
-    CATEGORY(80, "category", String.class) {
+    CATEGORY(110, "category", String.class) {
       @Override
       Object getValue(Object node) {
         if (node instanceof FlutterEventNode) {
-          // TODO(pq): consider showing the category prefix.
-          final String category = ((FlutterEventNode)node).entry.getCategory();
-          // Strip prefix.
-          final int dotIndex = category.indexOf('.');
-          return dotIndex != -1 ? category.substring(dotIndex + 1) : category;
+          return ((FlutterEventNode)node).entry.getCategory();
         }
         return super.getValue(node);
       }
@@ -105,8 +101,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
-  @NotNull
-  final FlutterApp app;
+  @NotNull final FlutterApp app;
   final FlutterLogTreeTableModel model;
   private final FlutterLogTreeTable treeTable;
   private SimpleTreeBuilder builder;
@@ -119,7 +114,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     final DefaultActionGroup toolbarGroup = createToolbar();
 
-    final Content content =  ContentFactory.SERVICE.getInstance().createContent(null, null, false);
+    final Content content = ContentFactory.SERVICE.getInstance().createContent(null, null, false);
     content.setCloseable(false);
 
     toolWindowPanel = new SimpleToolWindowPanel(true, true);
