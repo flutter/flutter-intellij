@@ -87,8 +87,8 @@ Future<int> exec(String cmd, List<String> args, {String cwd}) async {
   }
 
   final process = await Process.start(cmd, args, workingDirectory: cwd);
-  _toLineStream(process.stderr, SYSTEM_ENCODING).listen(log);
-  _toLineStream(process.stdout, SYSTEM_ENCODING).listen(log);
+  _toLineStream(process.stderr, utf8).listen(log);
+  _toLineStream(process.stdout, utf8).listen(log);
 
   return await process.exitCode;
 }
