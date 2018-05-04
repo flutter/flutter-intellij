@@ -11,22 +11,19 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterLogEntry {
 
-  // TODO(pq): assuming we keep a timestamp, consider making it a long.
-  @NotNull
-  private final String timestamp;
+  private final long timestamp;
   @NotNull
   private final String category;
   @NotNull
   private final String message;
 
-  public FlutterLogEntry(@NotNull String timestamp, @NotNull String category, @Nullable String message) {
+  public FlutterLogEntry(long timestamp, @NotNull String category, @Nullable String message) {
     this.timestamp = timestamp;
     this.category = category;
     this.message = StringUtil.notNullize(message);
   }
 
-  @NotNull
-  public String getTimestamp() {
+  public long getTimestamp() {
     return timestamp;
   }
 

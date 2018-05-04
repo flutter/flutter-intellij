@@ -35,10 +35,13 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
+import java.text.SimpleDateFormat;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
   private final SimpleToolWindowPanel toolWindowPanel;
+
+  private static final SimpleDateFormat TIMESTAMP_FORMAT =  new SimpleDateFormat("HH:mm:ss.SSS");
 
   // TODO(pq): migrate to defining columninfo objects and then add rendering to them.
   // see: ListTreeTableModelOnColumns use PropertiesPanel setup
@@ -48,7 +51,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       @Override
       Object getValue(Object node) {
         if (node instanceof FlutterEventNode) {
-          return ((FlutterEventNode)node).entry.getTimestamp();
+          return TIMESTAMP_FORMAT.format(((FlutterEventNode)node).entry.getTimestamp());
         }
         return super.getValue(node);
       }
