@@ -61,7 +61,7 @@ public class HeapMonitor {
   }
 
   public static class HeapSpace extends HeapObject {
-    HeapSpace(@NotNull JsonObject json) {
+    public HeapSpace(@NotNull JsonObject json) {
       super(json);
     }
 
@@ -75,6 +75,10 @@ public class HeapMonitor {
 
     public int getExternal() {
       return getAsInt("external");
+    }
+
+    public double getTime() {
+      return json.get("time").getAsDouble();
     }
   }
 
