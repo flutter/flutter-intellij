@@ -15,7 +15,6 @@ import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
@@ -92,8 +91,8 @@ public class FlutterLogEntryParser {
     return new FlutterLogEntry(timestamp(), LOG_CATEGORY, messageContents);
   }
 
-  private static String timestamp() {
-    return new SimpleDateFormat("HH:mm:ss.SSS").format(Calendar.getInstance().getTime());
+  private static long timestamp() {
+    return Calendar.getInstance().getTimeInMillis();
   }
 
 }
