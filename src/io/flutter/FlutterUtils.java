@@ -11,6 +11,7 @@ import com.intellij.execution.util.ExecUtil;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.util.PropertiesComponent;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.extensions.PluginId;
@@ -73,6 +74,15 @@ public class FlutterUtils {
 
   public static boolean isAndroidStudio() {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
+  }
+
+  public static boolean is2017_3() {
+    final ApplicationInfo appInfo = ApplicationInfo.getInstance();
+    if (appInfo == null) {
+      return false;
+    }
+
+    return appInfo.getBuild().getBaselineVersion() == 173;
   }
 
   public static void disableGradleProjectMigrationNotification(@NotNull Project project) {
