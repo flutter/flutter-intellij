@@ -111,7 +111,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
 
-    final FlutterLog flutterLog = app.getLog();
+    final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
 
     final DefaultActionGroup toolbarGroup = createToolbar();
@@ -178,7 +178,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void attachToProcess(ProcessHandler processHandler) {
-    app.getLog().listenToProcess(processHandler, this);
+    app.getFlutterLog().listenToProcess(processHandler, this);
   }
 
   @Override

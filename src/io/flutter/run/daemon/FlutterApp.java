@@ -97,6 +97,17 @@ public class FlutterApp {
   private @Nullable VmService myVmService;
   private PerfService myPerfService;
 
+  private static final Key<FlutterApp> APP_KEY = Key.create("FlutterApp");
+
+  public static void addToEnvironment(@NotNull ExecutionEnvironment env, @NotNull FlutterApp app) {
+    env.putUserData(APP_KEY, app);
+  }
+
+  @Nullable
+  public static FlutterApp fromEnv(@NotNull ExecutionEnvironment env) {
+    return env.getUserData(APP_KEY);
+  }
+
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
              @NotNull RunMode mode,
@@ -154,7 +165,7 @@ public class FlutterApp {
   }
 
   @NotNull
-  public FlutterLog getLog() {
+  public FlutterLog getFlutterLog() {
     return myFlutterLog;
   }
 

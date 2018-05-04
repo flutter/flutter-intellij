@@ -45,6 +45,6 @@ public class FlutterViewMessages {
     publisher.debugActive(new FlutterDebugEvent(app, vmService));
 
     // TODO(pq): consider pushing into perf service.
-    app.getLog().listenToVm(vmService);
+    app.getFlutterLog().listenToVm(vmService);
   }
 }

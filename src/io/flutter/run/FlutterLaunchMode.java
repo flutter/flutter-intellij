@@ -7,9 +7,7 @@ package io.flutter.run;
 
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.util.Key;
-import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The Flutter launch mode. This corresponds to the flutter run modes: --debug, --profile, and --release.
@@ -22,19 +20,9 @@ public enum FlutterLaunchMode {
   RELEASE("release");
 
   private static final Key<FlutterLaunchMode> LAUNCH_MODE_KEY = Key.create("FlutterLaunchMode");
-  private static final Key<FlutterApp> APP_KEY = Key.create("FlutterApp");
 
   public static void addToEnvironment(ExecutionEnvironment env, FlutterLaunchMode mode) {
     env.putUserData(FlutterLaunchMode.LAUNCH_MODE_KEY, mode);
-  }
-
-  public static void addToEnvironment(@NotNull ExecutionEnvironment env, @NotNull FlutterApp app) {
-    env.putUserData(FlutterLaunchMode.APP_KEY, app);
-  }
-
-  @Nullable
-  public static FlutterApp appFromEnv(@NotNull ExecutionEnvironment env) {
-    return env.getUserData(APP_KEY);
   }
 
   @NotNull

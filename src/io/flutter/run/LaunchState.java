@@ -88,7 +88,7 @@ public class LaunchState extends CommandLineState {
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     if (FlutterLog.LOGGING_ENABLED) {
-      final FlutterApp app = FlutterLaunchMode.appFromEnv(getEnvironment());
+      final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
       assert app != null;
       return new FlutterLogView(app);
     } else {
@@ -108,7 +108,7 @@ public class LaunchState extends CommandLineState {
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
     final FlutterApp app = callback.createApp(device);
     // Cache for use in console configuration.
-    FlutterLaunchMode.addToEnvironment(env, app);
+    FlutterApp.addToEnvironment(env, app);
 
     if (device == null) {
       Messages.showDialog(
