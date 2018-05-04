@@ -42,6 +42,7 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -384,6 +385,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       removeEmptyContent(toolWindow);
     }
 
+    toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
+
     listenForRenderTreeActivations(toolWindow);
 
     addInspector(app, inspectorService, toolWindow);
@@ -445,6 +448,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
+    toolWindow.setIcon(FlutterIcons.Flutter_13);
+
+    // TODO(devoncarew): Remove this when we no longer support 2017.3.
+    // https://github.com/flutter/flutter-intellij/issues/2029
+    if (FlutterUtils.is2017_3()) {
+      return;
+    }
+
     // Display a 'No running applications' message.
     final ContentManager contentManager = toolWindow.getContentManager();
     final JPanel panel = new JPanel(new BorderLayout());
@@ -453,8 +464,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     panel.add(label, BorderLayout.CENTER);
     emptyContent = contentManager.getFactory().createContent(panel, null, false);
     contentManager.addContent(emptyContent);
-
-    toolWindow.setIcon(FlutterIcons.Flutter_13);
   }
 
   private boolean isDisplayingEmptyContent() {
@@ -462,12 +471,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void removeEmptyContent(ToolWindow toolWindow) {
-    final ContentManager contentManager = toolWindow.getContentManager();
-    contentManager.removeContent(emptyContent, true);
-
-    toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
-
-    emptyContent = null;
+    if (emptyContent != null) {
+      final ContentManager contentManager = toolWindow.getContentManager();
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
   }
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
