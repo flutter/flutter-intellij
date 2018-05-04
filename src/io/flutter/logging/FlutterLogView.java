@@ -150,6 +150,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
                                                                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
+    model.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
   }
 
@@ -270,8 +271,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     @NotNull
     private final Alarm updateAlarm;
 
-    TreeTable treeTable;
-    private JTree tree;
+    private JScrollPane scrollPane;
+    private TreeTable treeTable;
 
     public FlutterLogTreeTableModel(@NotNull FlutterLog log, @NotNull Disposable parent) {
       super(new LogRootTreeNode());
@@ -281,6 +282,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         ((AbstractTableModel)treeTable.getModel()).fireTableDataChanged();
         reload((TreeNode)getRoot());
         treeTable.updateUI();
+
+        // Auto-scroll.
+        if (scrollPane != null) {
+          final JScrollBar vertical = scrollPane.getVerticalScrollBar();
+          vertical.setValue(vertical.getMaximum());
+        }
       };
 
       updateAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
@@ -326,9 +333,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public void setValueAt(Object aValue, Object node, int column) {
     }
 
+    public void setScrollPane(JScrollPane scrollPane) {
+      this.scrollPane = scrollPane;
+    }
+
     @Override
     public void setTree(JTree tree) {
-      this.tree = tree;
       treeTable = ((TreeTableTree)tree).getTreeTable();
     }
 
@@ -337,8 +347,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       final FlutterEventNode node = new FlutterEventNode(entry);
       ApplicationManager.getApplication().invokeLater(() -> {
         insertNodeInto(node, root, root.getChildCount());
-        // TODO(pq): setup Auto-scroll
-        //treeTable.getTree().setVisibleRow(root.getChildCount());
         update();
       });
     }
