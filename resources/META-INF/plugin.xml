@@ -27,6 +27,7 @@
 
   <change-notes>
     <![CDATA[
+<h2>24.1</h2><ul><li>update Flutter icons</li><li>fix an exception when the selection changes and the outline view isn't visible</li><li>fix for an issue with reload on save in profile runs</li><li>fix for a 2017.3 issue with a 'no running apps' messing in the inspector</li></ul>
 <h2>24.0</h2><ul><li>
 <p>inspector: significant UI refactoring to show the tree in a master / details format</p></li><li>
 <p>inspector: add a 'Performance' tab to the Inspector, to show application FPS and memory usage</p></li><li>
