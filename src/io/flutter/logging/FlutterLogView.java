@@ -10,6 +10,7 @@ import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -34,7 +35,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 import java.text.SimpleDateFormat;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
@@ -101,6 +101,25 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
+  private class ClearLogAction extends AnAction {
+    ClearLogAction() {
+      super("Clear All", "Clear the log", AllIcons.Actions.GC);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        model.getRoot().removeAllChildren();
+        model.update();
+      });
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      e.getPresentation().setEnabled(model.getRoot().getChildCount() > 0);
+    }
+  }
+
   @NotNull final FlutterApp app;
   final FlutterLogTreeTableModel model;
   private final FlutterLogTreeTable treeTable;
@@ -150,6 +169,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   private DefaultActionGroup createToolbar() {
+    //noinspection UnnecessaryLocalVariable
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     // TODO(pq): add toolbar items.
     return toolbarGroup;
@@ -228,8 +248,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull
   @Override
   public AnAction[] createConsoleActions() {
-    // TODO(pq): consider actions (show up in a vertical bar).
-    return new AnAction[0];
+    return new AnAction[]{
+      new ClearLogAction()
+    };
   }
 
   @Override
@@ -275,7 +296,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
       updateRunnable = () -> {
         ((AbstractTableModel)treeTable.getModel()).fireTableDataChanged();
-        reload((TreeNode)getRoot());
+        reload(getRoot());
         treeTable.updateUI();
 
         // Auto-scroll.
@@ -293,6 +314,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         updateAlarm.cancelAllRequests();
         updateAlarm.addRequest(updateRunnable, 0, ModalityState.stateForComponent(treeTable));
       }
+    }
+
+    @Override
+    public LogRootTreeNode getRoot() {
+      return (LogRootTreeNode)super.getRoot();
     }
 
     private LogTreeColumn getColumn(int index) {
@@ -338,7 +364,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     public void onEvent(FlutterLogEntry entry) {
-      final MutableTreeNode root = (MutableTreeNode)getRoot();
+      final MutableTreeNode root = getRoot();
       final FlutterEventNode node = new FlutterEventNode(entry);
       ApplicationManager.getApplication().invokeLater(() -> {
         insertNodeInto(node, root, root.getChildCount());
