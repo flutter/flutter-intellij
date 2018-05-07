@@ -103,7 +103,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   private class ClearLogAction extends AnAction {
     ClearLogAction() {
-      super("Clear All", "Clear the contents of the console", AllIcons.Actions.GC);
+      super("Clear All", "Clear the log", AllIcons.Actions.GC);
     }
 
     @Override
