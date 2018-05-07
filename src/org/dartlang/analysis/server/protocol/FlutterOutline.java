@@ -173,8 +173,8 @@ public class FlutterOutline {
     String kind = jsonObject.get("kind").getAsString();
     int offset = jsonObject.get("offset").getAsInt();
     int length = jsonObject.get("length").getAsInt();
-    int codeOffset = jsonObject.get("codeOffset").getAsInt();
-    int codeLength = jsonObject.get("codeLength").getAsInt();
+    int codeOffset = jsonObject.get("codeOffset") == null ? 0 : jsonObject.get("codeOffset").getAsInt();
+    int codeLength = jsonObject.get("codeLength") == null ? 0 : jsonObject.get("codeLength").getAsInt();
     String label = jsonObject.get("label") == null ? null : jsonObject.get("label").getAsString();
     Element dartElement = jsonObject.get("dartElement") == null ? null : Element.fromJson(jsonObject.get("dartElement").getAsJsonObject());
     List<FlutterOutlineAttribute> attributes = jsonObject.get("attributes") == null ? null : FlutterOutlineAttribute.fromJsonArray(jsonObject.get("attributes").getAsJsonArray());
