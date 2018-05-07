@@ -9,6 +9,7 @@ import com.google.common.base.Joiner;
 import com.google.gson.*;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
@@ -118,7 +119,14 @@ public class InspectorService implements Disposable {
         }
         final ArrayList<String> rootDirectories = new ArrayList<>();
         for (PubRoot root : app.getPubRoots()) {
-          rootDirectories.add(root.getRoot().getCanonicalPath());
+          String path = root.getRoot().getCanonicalPath();
+          if (SystemInfo.isWindows) {
+            // TODO(jacobr): remove after https://github.com/flutter/flutter-intellij/issues/2217.
+            // The problem is setPubRootDirectories is currently expecting
+            // valid URIs as opposed to windows paths.
+            path = "file:///" + path;
+          }
+          rootDirectories.add(path);
         }
         setPubRootDirectories(rootDirectories);
       });
