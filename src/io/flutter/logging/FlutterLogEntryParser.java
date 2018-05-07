@@ -20,7 +20,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.Calendar;
 
 import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
 
@@ -29,13 +28,14 @@ public class FlutterLogEntryParser {
   private static final NumberFormat df1 = new DecimalFormat();
 
   static {
+    df1.setMinimumFractionDigits(1);
     df1.setMaximumFractionDigits(1);
   }
 
   // Known entry categories.
   public static final String LOG_CATEGORY = "flutter.log";
-  public static final String DAEMON_CATEGORY = "flutter.daemon";
-  public static final String STDIO_STDOUT_CATEGORY = "stdio.stdout";
+  public static final String TOOLS_CATEGORY = "flutter.tools";
+  public static final String STDIO_STDOUT_CATEGORY = "stdout";
 
   @Nullable
   public static FlutterLogEntry parse(@Nullable String id, @Nullable Event event) {
@@ -44,34 +44,7 @@ public class FlutterLogEntryParser {
         case LOGGING_STREAM_ID:
           return parseLoggingEvent(event);
         case VmService.GC_STREAM_ID:
-          final IsolateRef isolateRef = event.getIsolate();
-          final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
-          final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
-
-          // TODO(devoncarew): Update the VM library - timestamp is a long.
-          final long timestamp;
-
-          if (event.getJson().has("timestamp")) {
-            timestamp = event.getJson().get("timestamp").getAsLong();
-          }
-          else {
-            timestamp = System.currentTimeMillis();
-          }
-
-          final double time = newHeapSpace.getTime() + oldHeapSpace.getTime();
-          final int used = newHeapSpace.getUsed() + newHeapSpace.getExternal()
-                           + oldHeapSpace.getUsed() + oldHeapSpace.getExternal();
-          final int maxHeap = newHeapSpace.getCapacity() + oldHeapSpace.getCapacity();
-
-          final long timeMs = Math.round(time * 1000);
-          final double usedMB = used / (1024.0 * 1024.0);
-          final double maxMB = maxHeap / (1024.0 * 1024.0);
-
-          return new FlutterLogEntry(
-            timestamp,
-            "runtime.gc", isolateRef.getId() + " • collection time " +
-                          nf.format(timeMs) + "ms • " +
-                          df1.format(usedMB) + "MB used of " + df1.format(maxMB) + "MB");
+          return parseGCEvent(event);
       }
     }
 
@@ -105,12 +78,12 @@ public class FlutterLogEntryParser {
       final JsonObject params = json.get("params").getAsJsonObject();
 
       if (params.has("message")) {
-        return new FlutterLogEntry(timestamp(), DAEMON_CATEGORY, params.get("message").getAsJsonPrimitive().getAsString());
+        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, params.get("message").getAsJsonPrimitive().getAsString());
       }
 
       if (json.has("event")) {
         final JsonElement eventElement = json.get("event");
-        return new FlutterLogEntry(timestamp(), DAEMON_CATEGORY, eventElement.getAsJsonPrimitive().getAsString());
+        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, eventElement.getAsJsonPrimitive().getAsString());
       }
     }
     catch (Throwable e) {
@@ -128,10 +101,43 @@ public class FlutterLogEntryParser {
     final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
     final JsonObject message = logRecord.getAsJsonObject().get("message").getAsJsonObject();
     final String messageContents = message.get("valueAsString").getAsJsonPrimitive().toString();
-    return new FlutterLogEntry(timestamp(), LOG_CATEGORY, messageContents);
+    return new FlutterLogEntry(timestamp(event), LOG_CATEGORY, messageContents);
+  }
+
+  @NotNull
+  private static FlutterLogEntry parseGCEvent(@NotNull Event event) {
+    final IsolateRef isolateRef = event.getIsolate();
+    final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
+    final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
+
+    final double time = newHeapSpace.getTime() + oldHeapSpace.getTime();
+    final int used = newHeapSpace.getUsed() + newHeapSpace.getExternal()
+                     + oldHeapSpace.getUsed() + oldHeapSpace.getExternal();
+    final int maxHeap = newHeapSpace.getCapacity() + oldHeapSpace.getCapacity();
+
+    final long timeMs = Math.round(time * 1000);
+    final double usedMB = used / (1024.0 * 1024.0);
+    final double maxMB = maxHeap / (1024.0 * 1024.0);
+
+    return new FlutterLogEntry(
+      timestamp(event),
+      "runtime.gc", "collection time " +
+                    nf.format(timeMs) + "ms • " +
+                    df1.format(usedMB) + "MB used of " + df1.format(maxMB) + "MB • " +
+                    isolateRef.getId());
   }
 
   private static long timestamp() {
-    return Calendar.getInstance().getTimeInMillis();
+    return System.currentTimeMillis();
+  }
+
+  private static long timestamp(Event event) {
+    // TODO(devoncarew): Update the VM library - timestamp is a long.
+    if (event.getJson().has("timestamp")) {
+      return event.getJson().get("timestamp").getAsLong();
+    }
+    else {
+      return timestamp();
+    }
   }
 }
