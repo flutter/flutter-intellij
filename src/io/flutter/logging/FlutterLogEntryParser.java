@@ -34,7 +34,7 @@ public class FlutterLogEntryParser {
 
   // Known entry categories.
   public static final String LOG_CATEGORY = "flutter.log";
-  public static final String DAEMON_CATEGORY = "flutter.tools";
+  public static final String TOOLS_CATEGORY = "flutter.tools";
   public static final String STDIO_STDOUT_CATEGORY = "stdout";
 
   @Nullable
@@ -78,12 +78,12 @@ public class FlutterLogEntryParser {
       final JsonObject params = json.get("params").getAsJsonObject();
 
       if (params.has("message")) {
-        return new FlutterLogEntry(timestamp(), DAEMON_CATEGORY, params.get("message").getAsJsonPrimitive().getAsString());
+        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, params.get("message").getAsJsonPrimitive().getAsString());
       }
 
       if (json.has("event")) {
         final JsonElement eventElement = json.get("event");
-        return new FlutterLogEntry(timestamp(), DAEMON_CATEGORY, eventElement.getAsJsonPrimitive().getAsString());
+        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, eventElement.getAsJsonPrimitive().getAsString());
       }
     }
     catch (Throwable e) {
