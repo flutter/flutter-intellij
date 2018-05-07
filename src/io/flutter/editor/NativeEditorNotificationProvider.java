@@ -50,9 +50,11 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     String actionName;
     if (root.getName().equals("android")) {
       actionName = "flutter.androidstudio.open";
-    } else if (root.getName().equals("ios")) {
+    }
+    else if (root.getName().equals("ios")) {
       actionName = "flutter.xcode.open";
-    } else {
+    }
+    else {
       return null;
     }
 
