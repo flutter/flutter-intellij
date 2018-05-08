@@ -32,10 +32,10 @@ public class InspectorSourceLocation {
     }
 
     // We have to strip the file:// or file:/// prefix depending on the
-    // operating to convert from paths stored as URIs to local file system
-    // paths.
+    // operating system to convert from paths stored as URIs to local operating
+    // system paths.
     // TODO(jacobr): remove this workaround after the code in package:flutter
-    // is fixed to return local file system paths instead of URIs.
+    // is fixed to return operating system paths instead of URIs.
     // https://github.com/flutter/flutter-intellij/issues/2217
     final String filePrefix = SystemInfo.isWindows ? "file:///" : "file://";
     if (fileName.startsWith(filePrefix)) {
