@@ -132,7 +132,7 @@
       <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
-              icon="FlutterIcons.FullRestart">
+              icon="FlutterIcons.HotRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
       </action>

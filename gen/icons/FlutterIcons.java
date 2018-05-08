@@ -29,7 +29,7 @@ public class FlutterIcons {
   public static final Icon OpenTimeline = load("/icons/timeline.png");
 
   public static final Icon HotReload = load("/icons/hot-reload.png");
-  public static final Icon FullRestart = AllIcons.Actions.Restart;
+  public static final Icon HotRestart = AllIcons.Actions.Restart;
 
   public static final Icon HotReloadRun = load("/icons/reload_run.png");
   public static final Icon HotReloadDebug = load("/icons/reload_debug.png");

@@ -366,7 +366,7 @@ public class LaunchState extends CommandLineState {
             }
             final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
             if (launchMode.supportsReload() && app.isStarted()) {
-              // Map a re-run action to a flutter full restart.
+              // Map a re-run action to a flutter hot restart.
               FileDocumentManager.getInstance().saveAllDocuments();
               app.performRestartApp();
             }
