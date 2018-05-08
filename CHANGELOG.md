@@ -1,3 +1,7 @@
+## 24.2
+- fix the --track-widget-creation flag implementastion on Windows
+- fix for an exception in the Outline view on older Flutter SDKs
+
 ## 24.1
 - update Flutter icons
 - fix an exception when the selection changes and the outline view isn't visible
