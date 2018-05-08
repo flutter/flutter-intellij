@@ -290,7 +290,7 @@ public class FlutterApp {
   }
 
   /**
-   * Perform a full restart of the the app.
+   * Perform a hot restart of the the app.
    */
   public CompletableFuture<DaemonApi.RestartResult> performRestartApp() {
     if (myAppId == null) {
@@ -304,7 +304,7 @@ public class FlutterApp {
     restartCount++;
     userReloadCount = 0;
 
-    LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter full restart");
+    LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter hot restart");
 
     final long reloadTimestamp = System.currentTimeMillis();
     changeState(State.RESTARTING);

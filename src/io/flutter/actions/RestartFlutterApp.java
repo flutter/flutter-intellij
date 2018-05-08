@@ -23,7 +23,7 @@ public class RestartFlutterApp extends FlutterAppAction {
   public static final String DESCRIPTION = FlutterBundle.message("app.restart.action.description");
 
   public RestartFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
-    super(app, TEXT, DESCRIPTION, FlutterIcons.FullRestart, isApplicable, ID);
+    super(app, TEXT, DESCRIPTION, FlutterIcons.HotRestart, isApplicable, ID);
     // Shortcut is associated with toolbar action.
     copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.RestartAction"));
   }
