@@ -7,6 +7,7 @@ package io.flutter.inspector;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
@@ -30,8 +31,13 @@ public class InspectorSourceLocation {
       return parent != null ? parent.getFile() : null;
     }
 
-    // We have to strip the file:// prefix from the Dart file path for compatibility.
-    final String filePrefix = "file://";
+    // We have to strip the file:// or file:/// prefix depending on the
+    // operating system to convert from paths stored as URIs to local operating
+    // system paths.
+    // TODO(jacobr): remove this workaround after the code in package:flutter
+    // is fixed to return operating system paths instead of URIs.
+    // https://github.com/flutter/flutter-intellij/issues/2217
+    final String filePrefix = SystemInfo.isWindows ? "file:///" : "file://";
     if (fileName.startsWith(filePrefix)) {
       fileName = fileName.substring(filePrefix.length());
     }
