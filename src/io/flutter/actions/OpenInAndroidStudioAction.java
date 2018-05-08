@@ -30,11 +30,14 @@ import java.io.File;
 
 public class OpenInAndroidStudioAction extends AnAction {
 
-  private static void openFileInStudio(@NotNull VirtualFile file, @NotNull String androidStudioPath) {
+  private static void openFileInStudio(@NotNull VirtualFile file, @NotNull String androidStudioPath, @Nullable String sourceFile) {
     try {
       final GeneralCommandLine cmd;
       if (SystemInfo.isMac) {
-        cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", androidStudioPath, file.getPath());
+        cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", androidStudioPath, "--args", file.getPath());
+        if (sourceFile != null) {
+          cmd.addParameter(sourceFile);
+        }
       }
       else {
         cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(file.getPath());
@@ -219,6 +222,8 @@ public class OpenInAndroidStudioAction extends AnAction {
       return;
     }
 
-    openFileInStudio(projectFile, androidStudioPath);
+    VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
+    String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
+    openFileInStudio(projectFile, androidStudioPath, sourceFile);
   }
 }
