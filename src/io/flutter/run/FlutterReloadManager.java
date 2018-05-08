@@ -252,7 +252,7 @@ public class FlutterReloadManager {
       FileDocumentManager.getInstance().saveAllDocuments();
       app.performRestartApp().thenAccept(result -> {
         if (!result.ok()) {
-          showRunNotification(app, "Full Restart", result.getMessage(), true);
+          showRunNotification(app, "Hot Restart", result.getMessage(), true);
         }
       });
 

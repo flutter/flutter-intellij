@@ -116,7 +116,7 @@ public class PerfService {
    * Returns a StreamSubscription providing the current Flutter isolate.
    * <p>
    * The current value of the subscription can be null occasionally during initial application startup and for a brief time when doing a
-   * full restart.
+   * hot restart.
    */
   public StreamSubscription<IsolateRef> getCurrentFlutterIsolate(Consumer<IsolateRef> onValue, boolean onUIThread) {
     return flutterIsolateRefStream.listen(onValue, onUIThread);

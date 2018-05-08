@@ -39,9 +39,9 @@ import java.text.SimpleDateFormat;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
-  private final SimpleToolWindowPanel toolWindowPanel;
-
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
+
+  private final SimpleToolWindowPanel toolWindowPanel;
 
   // TODO(pq): migrate to defining columninfo objects and then add rendering to them.
   // see: ListTreeTableModelOnColumns use PropertiesPanel setup
@@ -117,6 +117,25 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     @Override
     public void update(AnActionEvent e) {
       e.getPresentation().setEnabled(model.getRoot().getChildCount() > 0);
+    }
+  }
+
+  private class ScrollToEndAction extends ToggleAction {
+    ScrollToEndAction() {
+      super("Scroll to the end", "Scroll to the end", AllIcons.RunConfigurations.Scroll_down);
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return model.autoScrollToEnd;
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        model.autoScrollToEnd = state;
+        model.scrollToEnd();
+      });
     }
   }
 
@@ -249,6 +268,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public AnAction[] createConsoleActions() {
     return new AnAction[]{
+      new ScrollToEndAction(),
       new ClearLogAction()
     };
   }
@@ -289,24 +309,32 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     private JScrollPane scrollPane;
     private TreeTable treeTable;
+    private boolean autoScrollToEnd;
 
     public FlutterLogTreeTableModel(@NotNull FlutterLog log, @NotNull Disposable parent) {
       super(new LogRootTreeNode());
       this.log = log;
+      // Scroll to end by default.
+      autoScrollToEnd = true;
 
       updateRunnable = () -> {
         ((AbstractTableModel)treeTable.getModel()).fireTableDataChanged();
         reload(getRoot());
         treeTable.updateUI();
 
-        // Auto-scroll.
-        if (scrollPane != null) {
-          final JScrollBar vertical = scrollPane.getVerticalScrollBar();
-          vertical.setValue(vertical.getMaximum());
+        if (autoScrollToEnd) {
+          scrollToEnd();
         }
       };
 
       updateAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
+    }
+
+    private void scrollToEnd() {
+      if (scrollPane != null) {
+        final JScrollBar vertical = scrollPane.getVerticalScrollBar();
+        vertical.setValue(vertical.getMaximum());
+      }
     }
 
     private void update() {
