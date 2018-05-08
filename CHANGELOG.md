@@ -1,5 +1,5 @@
 ## 24.2
-- fix the --track-widget-creation flag implementastion on Windows
+- fix the --track-widget-creation flag implementation on Windows
 - fix for an exception in the Outline view on older Flutter SDKs
 
 ## 24.1
