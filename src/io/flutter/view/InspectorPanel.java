@@ -21,6 +21,7 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
+import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.FlutterBundle;
 import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.*;
@@ -1097,8 +1098,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     final DiagnosticsNode diagnostic = getSelectedDiagnostic();
     if (diagnostic != null) {
       if (isCreatedByLocalProject(diagnostic)) {
-        diagnostic.getCreationLocation().getXSourcePosition().createNavigatable(getFlutterApp().getProject())
-          .navigate(false);
+        XSourcePosition position = diagnostic.getCreationLocation().getXSourcePosition();
+        if (position != null) {
+          position.createNavigatable(getFlutterApp().getProject()).navigate(false);
+        }
       }
     }
     if (myPropertiesPanel != null) {
