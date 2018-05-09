@@ -61,8 +61,14 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     return target != null && GradleConstants.EXTENSION.equals(target.getExtension());
   }
 
+  @NotNull
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public String getAnalyticsId() {
+    return "openModuleInAndroidStudio";
+  }
+
+  @Override
+  public void performAction(AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile == null) {
       FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
