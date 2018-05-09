@@ -146,7 +146,7 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Use the Flutter Log View instead of the Console for run output"/>
+              <text value="Show Run console output using a Flutter logging view"/>
             </properties>
           </component>
         </children>
