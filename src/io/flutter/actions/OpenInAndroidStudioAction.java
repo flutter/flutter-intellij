@@ -30,21 +30,110 @@ import java.io.File;
 
 public class OpenInAndroidStudioAction extends AnAction {
 
-  private static void openFileInStudio(@NotNull VirtualFile file, @NotNull String androidStudioPath) {
+  @Override
+  public void update(AnActionEvent event) {
+    final boolean enabled = findProjectFile(event) != null;
+
+    final Presentation presentation = event.getPresentation();
+    presentation.setEnabled(enabled);
+    presentation.setVisible(enabled);
+  }
+
+  @Override
+  public void actionPerformed(AnActionEvent e) {
+    final String androidStudioPath = findAndroidStudio(e.getProject());
+    if (androidStudioPath == null) {
+      FlutterMessages.showError("Error Opening Android Studio", "Unable to locate Android Studio.");
+      return;
+    }
+
+    final VirtualFile projectFile = findProjectFile(e);
+    if (projectFile == null) {
+      FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
+      return;
+    }
+
+    final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
+    final String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
+    openFileInStudio(projectFile, androidStudioPath, sourceFile);
+  }
+
+  protected static boolean isProjectFileName(String name) {
+    // Note: If the project content is rearranged to have the android module file within the android directory, this will fail.
+    return name.endsWith("_android.iml");
+  }
+
+  // A plugin contains an example app, which needs to be opened when the native Android is to be edited.
+  // In the case of an app that contains a plugin the flutter_app/flutter_plugin/example/android should be opened when
+  // 'Open in Android Studio' is requested.
+  protected static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
+    if (e != null) {
+      final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
+      if (file != null && file.exists()) {
+        // We have a selection. Check if it is within a plugin.
+        final Project project = e.getProject();
+        assert (project != null);
+
+        // Return null if this is an ios folder.
+        if (FlutterExternalIdeActionGroup.isWithinIOsDirectory(file, project)) {
+          return null;
+        }
+
+        final VirtualFile projectDir = project.getBaseDir();
+        for (PubRoot root : PubRoots.forProject(project)) {
+          if (root.isFlutterPlugin()) {
+            VirtualFile rootFile = root.getRoot();
+            VirtualFile aFile = file;
+            while (aFile != null) {
+              if (aFile.equals(rootFile)) {
+                // We know a plugin resource is selected. Find the example app for it.
+                for (VirtualFile child : rootFile.getChildren()) {
+                  if (isExampleWithAndroidWithApp(child)) {
+                    return child.findChild("android");
+                  }
+                }
+              }
+              if (aFile.equals(projectDir)) {
+                aFile = null;
+              }
+              else {
+                aFile = aFile.getParent();
+              }
+            }
+          }
+        }
+        if (isProjectFileName(file.getName())) {
+          return getProjectForFile(file);
+        }
+      }
+
+      final Project project = e.getProject();
+      if (project != null) {
+        return getProjectForFile(findStudioProjectFile(project));
+      }
+    }
+    return null;
+  }
+
+  private static void openFileInStudio(@NotNull VirtualFile projectFile, @NotNull String androidStudioPath, @Nullable String sourceFile) {
     try {
       final GeneralCommandLine cmd;
       if (SystemInfo.isMac) {
-        cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", androidStudioPath, file.getPath());
+        cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", androidStudioPath, "--args", projectFile.getPath());
+        if (sourceFile != null) {
+          cmd.addParameter(sourceFile);
+        }
       }
       else {
-        cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(file.getPath());
+        // TODO Open editor on sourceFile for Linux, Windows
+        cmd = new GeneralCommandLine().withExePath(androidStudioPath).withParameters(projectFile.getPath());
       }
       final OSProcessHandler handler = new OSProcessHandler(cmd);
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
           if (event.getExitCode() != 0) {
-            FlutterMessages.showError("Error Opening", file.getPath());
+            FlutterMessages.showError("Error Opening", projectFile.getPath());
           }
         }
       });
@@ -55,10 +144,6 @@ public class OpenInAndroidStudioAction extends AnAction {
         "Error Opening",
         "Exception: " + ex.getMessage());
     }
-  }
-
-  protected static boolean isProjectFileName(String name) {
-    return name.endsWith("_android.iml");
   }
 
   @Nullable
@@ -142,83 +227,5 @@ public class OpenInAndroidStudioAction extends AnAction {
       }
     }
     return false;
-  }
-
-  // A plugin contains an example app, which needs to be opened when the native Android is to be edited.
-  // In the case of an app that contains a plugin the flutter_app/flutter_plugin/example/android should be opened when
-  // 'Open in Android Studio' is requested.
-  protected static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
-    if (e != null) {
-      final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
-      if (file != null && file.exists()) {
-        // We have a selection. Check if it is within a plugin.
-        final Project project = e.getProject();
-        assert (project != null);
-
-        // Return null if this is an ios folder.
-        if (FlutterExternalIdeActionGroup.isWithinIOsDirectory(file, project)) {
-          return null;
-        }
-
-        final VirtualFile projectDir = project.getBaseDir();
-        for (PubRoot root : PubRoots.forProject(project)) {
-          if (root.isFlutterPlugin()) {
-            VirtualFile rootFile = root.getRoot();
-            VirtualFile aFile = file;
-            while (aFile != null) {
-              if (aFile.equals(rootFile)) {
-                // We know a plugin resource is selected. Find the example app for it.
-                for (VirtualFile child : rootFile.getChildren()) {
-                  if (isExampleWithAndroidWithApp(child)) {
-                    return child.findChild("android");
-                  }
-                }
-              }
-              if (aFile.equals(projectDir)) {
-                aFile = null;
-              }
-              else {
-                aFile = aFile.getParent();
-              }
-            }
-          }
-        }
-        if (isProjectFileName(file.getName())) {
-          return getProjectForFile(file);
-        }
-      }
-
-      final Project project = e.getProject();
-      if (project != null) {
-        return getProjectForFile(findStudioProjectFile(project));
-      }
-    }
-    return null;
-  }
-
-  @Override
-  public void update(AnActionEvent event) {
-    final boolean enabled = findProjectFile(event) != null;
-
-    final Presentation presentation = event.getPresentation();
-    presentation.setEnabled(enabled);
-    presentation.setVisible(enabled);
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent e) {
-    final String androidStudioPath = findAndroidStudio(e.getProject());
-    if (androidStudioPath == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Unable to locate Android Studio.");
-      return;
-    }
-
-    final VirtualFile projectFile = findProjectFile(e);
-    if (projectFile == null) {
-      FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
-      return;
-    }
-
-    openFileInStudio(projectFile, androidStudioPath);
   }
 }
