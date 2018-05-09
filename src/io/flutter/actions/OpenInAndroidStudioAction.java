@@ -10,7 +10,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -28,7 +27,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
-public class OpenInAndroidStudioAction extends AnAction {
+public class OpenInAndroidStudioAction extends ActionWithAnalytics {
 
   @Override
   public void update(AnActionEvent event) {
@@ -39,8 +38,14 @@ public class OpenInAndroidStudioAction extends AnAction {
     presentation.setVisible(enabled);
   }
 
+  @NotNull
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public String getAnalyticsId() {
+    return "openInAndroidStudio";
+  }
+
+  @Override
+  public void performAction(AnActionEvent e) {
     final String androidStudioPath = findAndroidStudio(e.getProject());
     if (androidStudioPath == null) {
       FlutterMessages.showError("Error Opening Android Studio", "Unable to locate Android Studio.");
