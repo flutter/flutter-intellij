@@ -31,7 +31,7 @@ public class OpenSimulatorAction extends AnAction {
     // If it is, and we're here, that means there are no booted devices.
     if (XcodeUtils.isSimulatorRunning()) {
       FlutterMessages.showDialog(event.getProject(),
-                                 "It looks like you have the Simulator app open but no booted devices;\n"
+                                 "It looks like you have the Simulator app open but no running devices;\n"
                                  + "in the Simulator, start a device from the \"Hardware\" menu before running.",
                                  "No Running Simulator Devices", new String[]{"OK"}, 0);
     } else {
