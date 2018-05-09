@@ -24,6 +24,7 @@ public class FlutterSettings {
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String trackWidgetCreationKey = "io.flutter.trackWidgetCreation";
+  private static final String useFlutterLogView = "io.flutter.useLogView";
 
   public enum Dart2ModeSettings {
     useSdkDefault(0),
@@ -164,6 +165,16 @@ public class FlutterSettings {
 
   public void setShowPreviewArea(boolean value) {
     getPropertiesComponent().setValue(showPreviewAreaKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean useFlutterLogView() {
+    return getPropertiesComponent().getBoolean(useFlutterLogView, false);
+  }
+
+  public void setUseFlutterLogView(boolean value) {
+    getPropertiesComponent().setValue(useFlutterLogView, value, false);
 
     fireEvent();
   }

@@ -12,6 +12,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
@@ -23,11 +24,13 @@ import java.util.List;
 
 public class FlutterLog {
 
-  // (Temporary) flag to enable logging support.
-  public static final boolean LOGGING_ENABLED = false;
   public static final String LOGGING_STREAM_ID = "_Logging";
 
   private final List<Listener> listeners = new ArrayList<>();
+
+  public static boolean isLoggingEnabled() {
+    return FlutterSettings.getInstance().useFlutterLogView();
+  }
 
   public void addListener(@NotNull Listener listener, @Nullable Disposable parent) {
     listeners.add(listener);
@@ -60,7 +63,7 @@ public class FlutterLog {
 
   public void listenToVm(@NotNull VmService vmService) {
     // No-op if disabled.
-    if (!LOGGING_ENABLED) return;
+    if (!isLoggingEnabled()) return;
 
     // TODO(pq): consider moving into PerfService to consolidate vm service listeners.
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {

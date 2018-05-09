@@ -87,7 +87,7 @@ public class LaunchState extends CommandLineState {
 
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
-    if (FlutterLog.LOGGING_ENABLED) {
+    if (FlutterLog.isLoggingEnabled()) {
       final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
       assert app != null;
       return new FlutterLogView(app);
