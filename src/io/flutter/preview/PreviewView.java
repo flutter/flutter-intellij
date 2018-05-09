@@ -167,6 +167,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
   final RenderHelper.Listener renderListener = new RenderHelper.Listener() {
     @Override
+    public void onSchedule(@NotNull FlutterOutline widget) {
+      // If rendering is fast, showing message is not nice.
+      //ApplicationManager.getApplication().invokeLater(() -> {
+      //  previewArea.clear("Rendering...");
+      //});
+    }
+
+    @Override
     public void onResponse(@NotNull FlutterOutline widget, @NotNull JsonObject response) {
       ApplicationManager.getApplication().invokeLater(() -> {
         if (previewArea != null) {
@@ -194,7 +202,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
               assert widget != null;
               showNotRenderableInPreviewArea(widget);
               break;
-            case TIMEOUT:
+            case TIMEOUT_START:
+              previewArea.clear("Timeout during start");
+              break;
+            case TIMEOUT_RENDER:
               previewArea.clear("Timeout during rendering");
               break;
             case INVALID_JSON:
