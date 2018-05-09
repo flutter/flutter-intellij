@@ -27,15 +27,15 @@ public class OpenSimulatorAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-      // Check to see if the simulator is already running.
-      // If it is, and we're here, that means there are no booted devices.
-      if (XcodeUtils.isSimulatorRunning()) {
-        FlutterMessages.showDialog(event.getProject(),
-                                   "It looks like you have the Simulator app open but no booted devices;\n"
-                                   +"in the simulator, boot a device from the \"Hardware\" menu before running.", "No Booted Devices", new String[]{"OK"}, 0);
-        return;
-      }
-
+    // Check to see if the simulator is already running.
+    // If it is, and we're here, that means there are no booted devices.
+    if (XcodeUtils.isSimulatorRunning()) {
+      FlutterMessages.showDialog(event.getProject(),
+                                 "It looks like you have the Simulator app open but no booted devices;\n"
+                                 + "in the Simulator, start a device from the \"Hardware\" menu before running.",
+                                 "No Running Simulator Devices", new String[]{"OK"}, 0);
+    } else {
       XcodeUtils.startSimulator();
+    }
   }
 }
