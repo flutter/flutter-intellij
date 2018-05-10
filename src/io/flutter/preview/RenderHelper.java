@@ -352,6 +352,9 @@ class RenderThread extends Thread {
       if (myApp == null) {
         final FlutterCommand command = request.flutterSdk.flutterRunOnTester(request.pubRoot, renderServerPath);
         final GeneralCommandLine commandLine = command.createGeneralCommandLine(request.project);
+
+        // Windows is not a supported Flutter target platform.
+        // Set FLUTTER_TEST to force using Android (everywhere, not just on Windows)
         commandLine.getEnvironment().put("FLUTTER_TEST", "true");
 
         final FlutterApp app = FlutterApp.start(
