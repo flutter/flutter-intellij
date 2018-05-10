@@ -7,7 +7,6 @@ package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import io.flutter.FlutterMessages;
 import io.flutter.sdk.XcodeUtils;
 
 @SuppressWarnings("ComponentNotRegistered")
@@ -28,14 +27,15 @@ public class OpenSimulatorAction extends AnAction {
   @Override
   public void actionPerformed(AnActionEvent event) {
     // Check to see if the simulator is already running.
-    // If it is, and we're here, that means there are no booted devices.
+    // If it is, and we're here, that means there are no running devices and we want
+    // to issue an extra call to start (w/ `-n`) to load a new simulator.
     if (XcodeUtils.isSimulatorRunning()) {
-      FlutterMessages.showDialog(event.getProject(),
-                                 "It looks like you have the Simulator app open but no running devices;\n"
-                                 + "in the Simulator, start a device from the \"Hardware\" menu before running.",
-                                 "No Running Simulator Devices", new String[]{"OK"}, 0);
-    } else {
-      XcodeUtils.startSimulator();
+      if (XcodeUtils.openSimulator("-n") != 0) {
+        // No point in trying if we errored.
+        return;
+      }
     }
+
+    XcodeUtils.openSimulator();
   }
 }
