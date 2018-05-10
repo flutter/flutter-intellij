@@ -5,15 +5,9 @@
  */
 package io.flutter.actions;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import io.flutter.FlutterBundle;
-import io.flutter.FlutterMessages;
+import io.flutter.sdk.XcodeUtils;
 
 @SuppressWarnings("ComponentNotRegistered")
 public class OpenSimulatorAction extends AnAction {
@@ -32,24 +26,16 @@ public class OpenSimulatorAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent event) {
-    try {
-      final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters("-a", "Simulator.app");
-      final OSProcessHandler handler = new OSProcessHandler(cmd);
-      handler.addProcessListener(new ProcessAdapter() {
-        @Override
-        public void processTerminated(final ProcessEvent event) {
-          if (event.getExitCode() != 0) {
-            final String msg = event.getText() != null ? event.getText() : "Process error - exit code: (" + event.getExitCode() + ")";
-            FlutterMessages.showError("Error Opening Simulator", msg);
-          }
-        }
-      });
-      handler.startNotify();
+    // Check to see if the simulator is already running.
+    // If it is, and we're here, that means there are no running devices and we want
+    // to issue an extra call to start (w/ `-n`) to load a new simulator.
+    if (XcodeUtils.isSimulatorRunning()) {
+      if (XcodeUtils.openSimulator("-n") != 0) {
+        // No point in trying if we errored.
+        return;
+      }
     }
-    catch (ExecutionException e) {
-      FlutterMessages.showError(
-        "Error Opening Simulator",
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-    }
+
+    XcodeUtils.openSimulator();
   }
 }
