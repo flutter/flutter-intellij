@@ -17,9 +17,14 @@ public enum RenderProblemKind {
   NOT_RENDERABLE_WIDGET,
 
   /**
+   * There was a timeout during initial start.
+   */
+  TIMEOUT_START,
+
+  /**
    * There was a timeout during rendering the widget.
    */
-  TIMEOUT,
+  TIMEOUT_RENDER,
 
   /**
    * There was an exception during the JSON response parsing.
