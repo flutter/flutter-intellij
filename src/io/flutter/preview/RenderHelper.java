@@ -8,6 +8,7 @@ package io.flutter.preview;
 import com.google.common.io.Resources;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.gson.JsonObject;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -95,9 +96,11 @@ public class RenderHelper {
     final FlutterOutline previousWidgetOutline = myWidgetOutline;
     myWidgetOutline = getContainingWidgetOutline(offset);
     if (myWidgetOutline == null) {
+      myRenderThread.setRequest(null);
       myListener.onFailure(RenderProblemKind.NO_WIDGET, null);
     }
     else if (myWidgetOutline.getRenderConstructor() == null) {
+      myRenderThread.setRequest(null);
       myListener.onFailure(RenderProblemKind.NOT_RENDERABLE_WIDGET, myWidgetOutline);
       myWidgetOutline = null;
     }
@@ -167,9 +170,13 @@ public class RenderHelper {
                         myWidth, myHeight,
                         myListener);
     myRenderThread.setRequest(request);
+
+    myListener.onSchedule(myWidgetOutline);
   }
 
   public interface Listener {
+    void onSchedule(@NotNull FlutterOutline widget);
+
     void onResponse(@NotNull FlutterOutline widget, @NotNull JsonObject response);
 
     void onFailure(@NotNull RenderProblemKind kind, @Nullable FlutterOutline widget);
@@ -188,7 +195,12 @@ public class RenderHelper {
 class RenderRequest {
   static int nextId = 0;
 
-  final int id = nextId++;
+  final int id = ++nextId;
+
+  /**
+   * Whether this request is still active, or another one has been scheduled.
+   */
+  boolean isActive = true;
 
   @NotNull final FlutterSdk flutterSdk;
 
@@ -233,7 +245,8 @@ class RenderRequest {
 
 class RenderThread extends Thread {
   final Object myRequestLock = new Object();
-  RenderRequest myRequest;
+  RenderRequest myLastRequest;
+  RenderRequest myNextRequest;
 
   RenderRequest myProcessRequest;
   FlutterApp myApp;
@@ -242,9 +255,13 @@ class RenderThread extends Thread {
     setDaemon(true);
   }
 
-  void setRequest(RenderRequest request) {
+  void setRequest(@Nullable RenderRequest request) {
     synchronized (myRequestLock) {
-      myRequest = request;
+      if (myLastRequest != null) {
+        myLastRequest.isActive = false;
+        myLastRequest = null;
+      }
+      myNextRequest = request;
       myRequestLock.notifyAll();
     }
   }
@@ -256,11 +273,14 @@ class RenderThread extends Thread {
       final RenderRequest request;
       try {
         synchronized (myRequestLock) {
-          if (myRequest == null) {
+          if (myNextRequest == null) {
             myRequestLock.wait();
           }
-          request = myRequest;
-          myRequest = null;
+
+          myLastRequest = myNextRequest;
+
+          request = myNextRequest;
+          myNextRequest = null;
           if (request == null) {
             continue;
           }
@@ -331,13 +351,19 @@ class RenderThread extends Thread {
       // Wait for it to start.
       if (myApp == null) {
         final FlutterCommand command = request.flutterSdk.flutterRunOnTester(request.pubRoot, renderServerPath);
+        final GeneralCommandLine commandLine = command.createGeneralCommandLine(request.project);
+
+        // Windows is not a supported Flutter target platform.
+        // Set FLUTTER_TEST to force using Android (everywhere, not just on Windows)
+        commandLine.getEnvironment().put("FLUTTER_TEST", "true");
+
         final FlutterApp app = FlutterApp.start(
           new ExecutionEnvironment(),
           request.project,
           request.module,
           RunMode.DEBUG,
           FlutterDevice.getTester(),
-          command.createGeneralCommandLine(request.project),
+          commandLine,
           null,
           null);
 
@@ -358,7 +384,7 @@ class RenderThread extends Thread {
         final boolean started = Uninterruptibles.awaitUninterruptibly(startedLatch, 10000, TimeUnit.MILLISECONDS);
         if (!started) {
           terminateCurrentProcess("Initial start timeout.");
-          request.listener.onFailure(RenderProblemKind.TIMEOUT, request.widget);
+          invokeIfSameRequest(request, () -> request.listener.onFailure(RenderProblemKind.TIMEOUT_START, request.widget));
           return;
         }
 
@@ -378,22 +404,28 @@ class RenderThread extends Thread {
       final boolean responseReceived = Uninterruptibles.awaitUninterruptibly(responseReceivedLatch, 4000, TimeUnit.MILLISECONDS);
       if (!responseReceived) {
         terminateCurrentProcess("Render response timeout.");
-        request.listener.onFailure(RenderProblemKind.TIMEOUT, widget);
+        invokeIfSameRequest(request, () -> request.listener.onFailure(RenderProblemKind.TIMEOUT_RENDER, widget));
         return;
       }
       final JsonObject response = responseRef.get();
 
       if (response.has("exception")) {
-        request.listener.onRemoteException(widget, response);
+        invokeIfSameRequest(request, () -> request.listener.onRemoteException(widget, response));
         return;
       }
 
       // Send the respose to the client.
-      request.listener.onResponse(widget, response);
+      invokeIfSameRequest(request, () -> request.listener.onResponse(widget, response));
     }
     catch (Throwable e) {
       terminateCurrentProcess("Exception");
-      request.listener.onLocalException(widget, e);
+      invokeIfSameRequest(request, () -> request.listener.onLocalException(widget, e));
+    }
+  }
+
+  private void invokeIfSameRequest(RenderRequest request, Runnable runnable) {
+    if (request.isActive) {
+      runnable.run();
     }
   }
 
