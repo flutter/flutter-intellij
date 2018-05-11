@@ -60,6 +60,9 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
   }
 
   private static String getActionName(VirtualFile root) {
+    if (root == null) {
+      return null;
+    }
     if (root.getName().equals("android")) {
       return "flutter.androidstudio.open";
     }
