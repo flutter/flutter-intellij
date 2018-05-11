@@ -30,13 +30,14 @@ import java.io.File;
 
 public class OpenInAndroidStudioAction extends AnAction {
 
+  private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
+  private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");
+  private static final String LABEL_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.text");
+  private static final String DESCR_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.description");
+
   @Override
   public void update(AnActionEvent event) {
-    final boolean enabled = findProjectFile(event) != null;
-
-    final Presentation presentation = event.getPresentation();
-    presentation.setEnabled(enabled);
-    presentation.setVisible(enabled);
+    updatePresentation(event, event.getPresentation());
   }
 
   @Override
@@ -56,6 +57,29 @@ public class OpenInAndroidStudioAction extends AnAction {
     final VirtualFile file = e.getData(CommonDataKeys.VIRTUAL_FILE);
     final String sourceFile = file == null ? null : file.isDirectory() ? null : file.getPath();
     openFileInStudio(projectFile, androidStudioPath, sourceFile);
+  }
+
+  private static void updatePresentation(AnActionEvent event, Presentation state) {
+    if (findProjectFile(event) == null) {
+      state.setVisible(false);
+    }
+    else {
+      VirtualFile file = event.getData(CommonDataKeys.VIRTUAL_FILE);
+      String label, descr;
+      if (file != null && !file.isDirectory()) {
+        // The file will be opened in an editor in the new IDE window.
+        label = LABEL_FILE;
+        descr = DESCR_FILE;
+      }
+      else {
+        // The new IDE window will be opened on the Android module but there is no file selected for editing.
+        label = LABEL_MODULE;
+        descr = DESCR_MODULE;
+      }
+      state.setVisible(true);
+      state.setText(label);
+      state.setDescription(descr);
+    }
   }
 
   protected static boolean isProjectFileName(String name) {
