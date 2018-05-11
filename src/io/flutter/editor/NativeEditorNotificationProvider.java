@@ -15,7 +15,6 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
-import com.intellij.ui.HyperlinkLabel;
 import icons.FlutterIcons;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
@@ -42,29 +41,41 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     if (!file.isInLocalFileSystem()) {
       return null;
     }
-    final VirtualFile root = findRootDir(file);
+    return createPanelForFile(file, findRootDir(file, myProject.getBaseDir()));
+  }
+
+  private EditorNotificationPanel createPanelForFile(VirtualFile file, VirtualFile root) {
     if (root == null) {
       return null;
     }
+    return createPanelForAction(file, root, getActionName(root));
+  }
 
-    final String actionName;
-    if (root.getName().equals("android")) {
-      actionName = "flutter.androidstudio.open";
-    }
-    else if (root.getName().equals("ios")) {
-      actionName = "flutter.xcode.open";
-    }
-    else {
+  private EditorNotificationPanel createPanelForAction(VirtualFile file, VirtualFile root, String actionName) {
+    if (actionName == null) {
       return null;
     }
-
     NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, actionName);
     return panel.isValidForFile() ? panel : null;
   }
 
-  private VirtualFile findRootDir(@NotNull VirtualFile file) {
+  private static String getActionName(VirtualFile root) {
+    if (root == null) {
+      return null;
+    }
+    if (root.getName().equals("android")) {
+      return "flutter.androidstudio.open";
+    }
+    else if (root.getName().equals("ios")) {
+      return "flutter.xcode.open";
+    }
+    else {
+      return null;
+    }
+  }
+
+  private static VirtualFile findRootDir(@NotNull VirtualFile file, VirtualFile projectDir) {
     // Return the top-most parent of file that is a child of the project directory.
-    final VirtualFile projectDir = myProject.getBaseDir();
     VirtualFile parent = file.getParent();
     if (projectDir.equals(parent)) {
       return null;
@@ -84,6 +95,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     final VirtualFile myFile;
     final VirtualFile myRoot;
     final AnAction myAction;
+    final boolean isVisible;
 
     NativeEditorActionsPanel(VirtualFile file, VirtualFile root, String actionName) {
       super(EditorColors.GUTTER_BACKGROUND);
@@ -94,17 +106,15 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
       icon(FlutterIcons.Flutter);
       text("Flutter commands");
 
-      final Presentation present = myAction.getTemplatePresentation();
-      final HyperlinkLabel label = createActionLabel(present.getText(), this::performAction);
-      label.setToolTipText(present.getDescription());
+      // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
+      myAction.update(AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_TOOLBAR, myAction.getTemplatePresentation(), makeContext()));
+      isVisible = myAction.getTemplatePresentation().isVisible();
+      createActionLabel(myAction.getTemplatePresentation().getText(), this::performAction)
+        .setToolTipText(myAction.getTemplatePresentation().getDescription());
     }
 
     private boolean isValidForFile() {
-      final DataContext context = makeContext();
-      final AnActionEvent event = AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_TOOLBAR, null, context);
-      // Ensure this project is a Flutter project by updating the menu action. It will only be visible for Flutter projects.
-      myAction.update(event);
-      if (event.getPresentation().isVisible()) {
+      if (isVisible) {
         // The menu items are visible for certain elements outside the module directories.
         return FileUtil.isAncestor(myRoot.getPath(), myFile.getPath(), true);
       }
@@ -112,11 +122,9 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     }
 
     private void performAction() {
-      final Presentation present = myAction.getTemplatePresentation();
-      final DataContext context = makeContext();
-      final AnActionEvent event = AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_TOOLBAR, present, context);
       // Open Xcode or Android Studio. If already running AS then just open a new window.
-      myAction.actionPerformed(event);
+      myAction.actionPerformed(
+        AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_TOOLBAR, myAction.getTemplatePresentation(), makeContext()));
     }
 
     private DataContext makeContext() {
