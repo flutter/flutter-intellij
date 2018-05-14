@@ -22,16 +22,16 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="Dart-community" />
-    <orderEntry type="module" module-name="platform-api" />
-    <orderEntry type="module" module-name="lang-api" />
-    <orderEntry type="module" module-name="lang-impl" />
-    <orderEntry type="module" module-name="xdebugger-api" />
-    <orderEntry type="module" module-name="xdebugger-impl" />
-    <orderEntry type="module" module-name="testFramework" scope="TEST" />
+    <orderEntry type="module" module-name="intellij.platform.ide" />
+    <orderEntry type="module" module-name="intellij.platform.lang" />
+    <orderEntry type="module" module-name="intellij.platform.lang.impl" />
+    <orderEntry type="module" module-name="intellij.platform.debugger" />
+    <orderEntry type="module" module-name="intellij.platform.debugger.impl" />
+    <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
     <orderEntry type="library" name="Velocity" level="project" />
-    <orderEntry type="module" module-name="smRunner" />
-    <orderEntry type="module" module-name="xml" />
-    <orderEntry type="module" module-name="idea-ui" />
+    <orderEntry type="module" module-name="intellij.platform.smRunner" />
+    <orderEntry type="module" module-name="intellij.xml.impl" />
+    <orderEntry type="module" module-name="intellij.java.ui" />
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
@@ -42,7 +42,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="snakeyaml" level="project" />
-    <orderEntry type="library" name="Dart SDK" level="project" />
-    <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" exported="" name="Dart SDK" level="project" />
+    <orderEntry type="library" exported="" name="Dart Packages" level="project" />
   </component>
 </module>

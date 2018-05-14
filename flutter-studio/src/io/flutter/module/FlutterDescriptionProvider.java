@@ -5,11 +5,12 @@
  */
 package io.flutter.module;
 
+import com.android.tools.idea.npw.model.NewModuleModel;
 import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
-import com.android.tools.idea.npw.model.NewModuleModel;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
+import com.intellij.util.IconUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
@@ -17,7 +18,7 @@ import io.flutter.project.FlutterProjectStep;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -78,8 +79,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewModule;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
     }
 
     @NotNull
@@ -126,8 +127,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewPackage;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewPackage);
     }
 
     @NotNull
@@ -174,8 +175,8 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
     @Nullable
     @Override
-    public Icon getIcon() {
-      return FlutterIcons.AndroidStudioNewPlugin;
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewPlugin);
     }
 
     @NotNull

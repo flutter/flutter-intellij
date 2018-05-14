@@ -1,21 +1,12 @@
 {
   "list": [
     {
-      "name": "IntelliJ",
-      "version": "2017.3",
+      "name": "IntelliJ Experiment",
+      "version": "2018.1.2",
       "ideaProduct": "android-studio",
-      "ideaVersion": "173.4720617",
-      "dartPluginVersion": "173.4700",
-      "sinceBuild": "173.0",
-      "untilBuild": "173.*"
-    },
-    {
-      "name": "IntelliJ",
-      "version": "2018.1",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "181.4729833",
-      "dartPluginVersion": "181.4203.498",
-      "sinceBuild": "181.0",
+      "ideaVersion": "181.4763614",
+      "dartPluginVersion": "181.4668.60",
+      "sinceBuild": "181.4668",
       "untilBuild": "181.*"
     }
   ]
