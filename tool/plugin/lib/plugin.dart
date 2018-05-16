@@ -553,7 +553,7 @@ class BuildCommand extends ProductCommand {
         oldSource2 = processedFile2.readAsStringSync();
         newSource = oldSource2;
         newSource = newSource.replaceAll(
-            'IconUtil.toImage(image.getIcon())', 'image.getIcon()');
+          'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
         processedFile2.writeAsStringSync(newSource);
       }
 
