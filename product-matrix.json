@@ -10,7 +10,7 @@
       "untilBuild": "173.*"
     },
     {
-      "name": "IntelliJ Experiment",
+      "name": "IntelliJ",
       "version": "2018.1",
       "ideaProduct": "android-studio",
       "ideaVersion": "181.4763614",
