@@ -540,6 +540,10 @@ class BuildCommand extends ProductCommand {
           'import com.android.tools.idea.npw.model.NewModuleModel',
           'import com.android.tools.idea.npw.module.NewModuleModel',
         );
+        newSource = newSource.replaceAll(
+          'import java.awt.*',
+          'import java.swing.*',
+        );
         newSource = newSource.replaceAll('public Image', 'public Icon');
         newSource =
             newSource.replaceAll('IconUtil.toImage', ''); // Leaves parens
