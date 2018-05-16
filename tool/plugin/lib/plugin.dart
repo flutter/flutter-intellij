@@ -530,24 +530,36 @@ class BuildCommand extends ProductCommand {
       }
 
       // TODO(devoncarew): Remove this when we no longer support AS 3.1.
-      var processedFile = new File(
-          'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
-      var oldSource;
-      if (spec.version == '2017.3') {
-        oldSource = processedFile.readAsStringSync();
-        var newSource = oldSource.replaceAll(
+      var processedFile1, processedFile2, oldSource1, oldSource2, newSource;
+      if (spec.version == '2017.3' && spec.isReleaseMode) {
+        processedFile1 = new File(
+            'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
+        oldSource1 = processedFile1.readAsStringSync();
+        newSource = oldSource1.replaceAll(
           'import com.android.tools.idea.npw.model.NewModuleModel',
           'import com.android.tools.idea.npw.module.NewModuleModel',
         );
-        processedFile.writeAsStringSync(newSource);
+        newSource = oldSource1.replaceAll('public Image', 'public Icon');
+        newSource =
+            oldSource1.replaceAll('IconUtil.toImage', ''); // Leaves parens
+        processedFile1.writeAsStringSync(newSource);
+        processedFile2 = new File(
+            'flutter-studio/src/io/flutter/project/ChoseProjectTypeStep.java');
+        oldSource2 = processedFile2.readAsStringSync();
+        newSource = oldSource2.replaceAll(
+            'IconUtil.toImage(image.getIcon())', 'image.getIcon()');
+        processedFile2.writeAsStringSync(newSource);
       }
 
       try {
         result = await runner.javac2(spec);
       } finally {
         // Restore 3.2 sources.
-        if (oldSource != null) {
-          processedFile.writeAsStringSync(oldSource);
+        if (oldSource1 != null) {
+          processedFile1.writeAsStringSync(oldSource1);
+        }
+        if (oldSource2 != null) {
+          processedFile2.writeAsStringSync(oldSource2);
         }
 
         // Restore skipped files.
