@@ -141,7 +141,7 @@ void genTravisYml(List<BuildSpec> specs) {
   var file = new File(p.join(rootPath, '.travis.yml'));
   var env = '';
   for (var spec in specs) {
-    env += '  - IDEA_VERSION=${spec.version}\n';
+    env += '  - CI=true IDEA_VERSION=${spec.version}\n';
   }
 
   var templateFile = new File(p.join(rootPath, '.travis_template.yml'));
@@ -531,7 +531,9 @@ class BuildCommand extends ProductCommand {
 
       // TODO(devoncarew): Remove this when we no longer support AS 3.1.
       var processedFile1, processedFile2, oldSource1, oldSource2, newSource;
-      if (spec.version == '2017.3' && spec.isReleaseMode) {
+      if ((spec.version == '2017.3' &&
+              (spec.isReleaseMode || Platform.environment['CI'] == "true")) ||
+          Platform.environment['DART_BOT'] == 'true') {
         processedFile1 = new File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
         oldSource1 = processedFile1.readAsStringSync();
@@ -553,7 +555,7 @@ class BuildCommand extends ProductCommand {
         oldSource2 = processedFile2.readAsStringSync();
         newSource = oldSource2;
         newSource = newSource.replaceAll(
-          'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
+            'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
         processedFile2.writeAsStringSync(newSource);
       }
 
