@@ -10,7 +10,6 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -27,7 +26,7 @@ import io.flutter.utils.ProgressHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class OpenInXcodeAction extends AnAction {
+public class OpenInXcodeAction extends ActionWithAnalytics {
   private static VirtualFile findProjectFile(@Nullable AnActionEvent e) {
     if (e != null) {
       final VirtualFile file = CommonDataKeys.VIRTUAL_FILE.getData(e.getDataContext());
@@ -141,8 +140,14 @@ public class OpenInXcodeAction extends AnAction {
     }
   }
 
+  @NotNull
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public String getAnalyticsId() {
+    return "OpenInXcode";
+  }
+
+  @Override
+  public void performAction(AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile != null) {
       openFile(projectFile);

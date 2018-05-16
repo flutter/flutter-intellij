@@ -999,4 +999,3 @@ class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
     return group;
   }
 }
-
