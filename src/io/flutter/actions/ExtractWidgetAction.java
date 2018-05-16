@@ -19,6 +19,7 @@ import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.ui.JBUI;
 import com.jetbrains.lang.dart.ide.refactoring.ServerRefactoringDialog;
 import com.jetbrains.lang.dart.ide.refactoring.status.RefactoringStatus;
+import io.flutter.FlutterUtils;
 import io.flutter.refactoring.ExtractWidgetRefactoring;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,6 +54,24 @@ public class ExtractWidgetAction extends DumbAwareAction {
 
       new ExtractWidgetDialog(project, editor, refactoring).show();
     }
+  }
+
+  @Override
+  public void update(AnActionEvent e) {
+    e.getPresentation().setVisible(isVisibleFor(e));
+    super.update(e);
+  }
+
+  protected static boolean isVisibleFor(AnActionEvent e) {
+    final DataContext dataContext = e.getDataContext();
+    final Project project = dataContext.getData(PlatformDataKeys.PROJECT);
+    final VirtualFile file = dataContext.getData(PlatformDataKeys.VIRTUAL_FILE);
+    if (file == null || !FlutterUtils.isDartFile(file)) {
+      return false;
+    }
+
+    // TODO(pq): calculating flutteriness is too expensive to happen in a call to update; we should cache the result in the datacontext.
+    return true;
   }
 
   @Override
