@@ -535,18 +535,20 @@ class BuildCommand extends ProductCommand {
         processedFile1 = new File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
         oldSource1 = processedFile1.readAsStringSync();
-        newSource = oldSource1.replaceAll(
+        newSource = oldSource1;
+        newSource = newSource.replaceAll(
           'import com.android.tools.idea.npw.model.NewModuleModel',
           'import com.android.tools.idea.npw.module.NewModuleModel',
         );
-        newSource = oldSource1.replaceAll('public Image', 'public Icon');
+        newSource = newSource.replaceAll('public Image', 'public Icon');
         newSource =
-            oldSource1.replaceAll('IconUtil.toImage', ''); // Leaves parens
+            newSource.replaceAll('IconUtil.toImage', ''); // Leaves parens
         processedFile1.writeAsStringSync(newSource);
         processedFile2 = new File(
             'flutter-studio/src/io/flutter/project/ChoseProjectTypeStep.java');
         oldSource2 = processedFile2.readAsStringSync();
-        newSource = oldSource2.replaceAll(
+        newSource = oldSource2;
+        newSource = newSource.replaceAll(
             'IconUtil.toImage(image.getIcon())', 'image.getIcon()');
         processedFile2.writeAsStringSync(newSource);
       }
