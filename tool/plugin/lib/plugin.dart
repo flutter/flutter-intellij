@@ -542,7 +542,7 @@ class BuildCommand extends ProductCommand {
         );
         newSource = newSource.replaceAll(
           'import java.awt.*',
-          'import java.swing.*',
+          'import javax.swing.*',
         );
         newSource = newSource.replaceAll('public Image', 'public Icon');
         newSource =
