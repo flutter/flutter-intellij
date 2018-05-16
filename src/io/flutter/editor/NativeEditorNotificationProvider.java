@@ -16,12 +16,29 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
-import org.jetbrains.annotations.NonNls;
+import io.flutter.actions.ActionWithAnalytics;
+import io.flutter.actions.OpenInXcodeAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
+
+  private static final ActionWithAnalytics OPEN_IN_XCODE_ACTION = new OpenInXcodeAction() {
+    @NotNull
+    @Override
+    public String getAnalyticsId() {
+      return "OpenInXcode.banner";
+    }
+  };
+
+  private static final ActionWithAnalytics OPEN_IN_ANDROID_STUDIO_ACTION = new OpenInXcodeAction() {
+    @NotNull
+    @Override
+    public String getAnalyticsId() {
+      return "OpenInAndroidStudio.banner";
+    }
+  };
 
   private final Project myProject;
 
@@ -48,26 +65,26 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     if (root == null) {
       return null;
     }
-    return createPanelForAction(file, root, getActionName(root));
+    return createPanelForAction(file, root, getAction(root));
   }
 
-  private EditorNotificationPanel createPanelForAction(VirtualFile file, VirtualFile root, String actionName) {
-    if (actionName == null) {
+  private EditorNotificationPanel createPanelForAction(VirtualFile file, VirtualFile root, AnAction action) {
+    if (action == null) {
       return null;
     }
-    NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, actionName);
+    NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, action);
     return panel.isValidForFile() ? panel : null;
   }
 
-  private static String getActionName(VirtualFile root) {
+  private static AnAction getAction(VirtualFile root) {
     if (root == null) {
       return null;
     }
     if (root.getName().equals("android")) {
-      return "flutter.androidstudio.open";
+      return OPEN_IN_ANDROID_STUDIO_ACTION;
     }
     else if (root.getName().equals("ios")) {
-      return "flutter.xcode.open";
+      return OPEN_IN_XCODE_ACTION;
     }
     else {
       return null;
@@ -97,11 +114,11 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     final AnAction myAction;
     final boolean isVisible;
 
-    NativeEditorActionsPanel(VirtualFile file, VirtualFile root, String actionName) {
+    NativeEditorActionsPanel(VirtualFile file, VirtualFile root, AnAction openAction) {
       super(EditorColors.GUTTER_BACKGROUND);
       myFile = file;
       myRoot = root;
-      myAction = ActionManager.getInstance().getAction(actionName);
+      myAction = openAction;
 
       icon(FlutterIcons.Flutter);
       text("Flutter commands");
@@ -128,18 +145,14 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     }
 
     private DataContext makeContext() {
-      return new DataContext() {
-        @Override
-        @Nullable
-        public Object getData(@NonNls String dataId) {
-          if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
-            return myFile;
-          }
-          if (CommonDataKeys.PROJECT.is(dataId)) {
-            return myProject;
-          }
-          return null;
+      return dataId -> {
+        if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
+          return myFile;
         }
+        if (CommonDataKeys.PROJECT.is(dataId)) {
+          return myProject;
+        }
+        return null;
       };
     }
   }

@@ -42,7 +42,7 @@ public class OpenInAndroidStudioAction extends ActionWithAnalytics {
   @NotNull
   @Override
   public String getAnalyticsId() {
-    return "openInAndroidStudio";
+    return "OpenInAndroidStudio";
   }
 
   @Override

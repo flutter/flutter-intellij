@@ -143,7 +143,7 @@ public class OpenInXcodeAction extends ActionWithAnalytics {
   @NotNull
   @Override
   public String getAnalyticsId() {
-    return "openInXcode";
+    return "OpenInXcode";
   }
 
   @Override

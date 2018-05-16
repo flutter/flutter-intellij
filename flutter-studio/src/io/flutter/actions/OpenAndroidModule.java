@@ -55,7 +55,7 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
   @NotNull
   @Override
   public String getAnalyticsId() {
-    return "openModuleInAndroidStudio";
+    return "OpenModuleInAndroidStudio";
   }
 
   private static void openOrImportProject(@NotNull VirtualFile projectFile,
