@@ -21,7 +21,7 @@ import org.jetbrains.annotations.NotNull;
  * TODO(messick): Add tests to simulate clicking Next/Previous buttons and choosing different project types.
  */
 public class FlutterProjectModel extends WizardModel {
-  private static final String DEFAULT_DOMAIN = "yourcompany.com"; // Keep this in (reversed) sync with 'flutter create'.
+  private static final String DEFAULT_DOMAIN = "example.com"; // Keep this in (reversed) sync with 'flutter create'.
   private static final String PROPERTIES_DOMAIN_KEY = "FLUTTER_COMPANY_DOMAIN";
   private static final String PROPERTIES_KOTLIN_SUPPORT_KEY = "FLUTTER_PROJECT_KOTLIN_SUPPORT";
   private static final String PROPERTIES_SWIFT_SUPPORT_KEY = "FLUTTER_PROJECT_SWIFT_SUPPORT";
