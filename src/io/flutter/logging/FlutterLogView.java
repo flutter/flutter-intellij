@@ -187,6 +187,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     toolWindowPanel.setContent(pane);
   }
 
+  @NotNull
+  private FlutterLog getFlutterLog() {
+    return app.getFlutterLog();
+  }
+
   private DefaultActionGroup createToolbar() {
     //noinspection UnnecessaryLocalVariable
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
@@ -201,12 +206,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void print(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
-
+    getFlutterLog().addConsoleEntry(text, contentType);
   }
 
   @Override
   public void clear() {
-
+    // TODO(pq): called on restart; should (optionally) clear _or_ set a visible marker.
   }
 
   @Override
@@ -216,7 +221,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void attachToProcess(ProcessHandler processHandler) {
-    app.getFlutterLog().listenToProcess(processHandler, this);
+    getFlutterLog().listenToProcess(processHandler, this);
   }
 
   @Override

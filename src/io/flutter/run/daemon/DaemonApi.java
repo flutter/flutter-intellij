@@ -217,7 +217,7 @@ public class DaemonApi {
    * Parse the given string; if it is valid JSON - and a valid Daemon message - then return
    * the parsed JsonObject.
    */
-  static JsonObject parseAndValidateDaemonEvent(String message) {
+  public static JsonObject parseAndValidateDaemonEvent(String message) {
     if (!message.startsWith("[{")) {
       return null;
     }

@@ -8,6 +8,7 @@ package io.flutter.logging;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
@@ -30,6 +31,10 @@ public class FlutterLog {
 
   public static boolean isLoggingEnabled() {
     return FlutterSettings.getInstance().useFlutterLogView();
+  }
+
+  public void addConsoleEntry(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
+    onEntry(FlutterLogEntryParser.parseConsoleEvent(text, contentType));
   }
 
   public void addListener(@NotNull Listener listener, @Nullable Disposable parent) {

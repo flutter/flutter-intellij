@@ -6,12 +6,13 @@
 package io.flutter.logging;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.util.Key;
 import io.flutter.perf.HeapMonitor;
+import io.flutter.run.daemon.DaemonApi;
+import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.IsolateRef;
@@ -26,6 +27,9 @@ import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
 public class FlutterLogEntryParser {
   private static final NumberFormat nf = new DecimalFormat();
   private static final NumberFormat df1 = new DecimalFormat();
+
+  // TODO(pq): w/ state, we should now make the parser not static.
+  private static final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
   static {
     df1.setMinimumFractionDigits(1);
@@ -63,32 +67,16 @@ public class FlutterLogEntryParser {
   @VisibleForTesting
   @Nullable
   public static FlutterLogEntry parseDaemonEvent(@NotNull String eventText) {
-    // Make a working copy.
-    String text = eventText;
-
-    // TODO(pq): replace heuristic parsing for JSON w/ something more robust.
-    if (text.startsWith("[")) {
-      // Remove bracketing braces.
-      text = text.substring(1, text.length() - 2);
-    }
-
-    try {
-      // TODO(pq): there's lots to parse; for now, just extract a message value.
-      final JsonObject json = new JsonParser().parse(text).getAsJsonObject();
-      final JsonObject params = json.get("params").getAsJsonObject();
-
-      if (params.has("message")) {
-        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, params.get("message").getAsJsonPrimitive().getAsString());
+    // TODO(pq): restructure parsing to ensure DaemonEvent messages are only parsed once
+    // (with daemon JSON going into one stream and regular log messages going elsewhere)
+    stdoutParser.appendOutput(eventText);
+    for (String line : stdoutParser.getAvailableLines()) {
+      if (DaemonApi.parseAndValidateDaemonEvent(line.trim()) != null) {
+        // Skip.
       }
-
-      if (json.has("event")) {
-        final JsonElement eventElement = json.get("event");
-        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, eventElement.getAsJsonPrimitive().getAsString());
+      else {
+        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, line);
       }
-    }
-    catch (Throwable e) {
-      // TODO(pq): for now, text that does not parse to JSON is categorized simply as STDOUT; this will change.
-      return new FlutterLogEntry(timestamp(), STDIO_STDOUT_CATEGORY, eventText);
     }
 
     return null;
@@ -139,5 +127,13 @@ public class FlutterLogEntryParser {
     else {
       return timestamp();
     }
+  }
+
+  public static FlutterLogEntry parseConsoleEvent(String text, ConsoleViewContentType type) {
+    if (type == ConsoleViewContentType.NORMAL_OUTPUT) {
+      return parseDaemonEvent(text);
+    }
+    // TODO(pq): handle else (errors, etc).
+    return null;
   }
 }
