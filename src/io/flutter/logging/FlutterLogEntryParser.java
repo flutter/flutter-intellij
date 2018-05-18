@@ -67,6 +67,8 @@ public class FlutterLogEntryParser {
   @VisibleForTesting
   @Nullable
   public static FlutterLogEntry parseDaemonEvent(@NotNull String eventText) {
+    // TODO(pq): restructure parsing to ensure DaemonEvent messages are only parsed once
+    // (with daemon JSON going into one stream and regular log messages going elsewhere)
     stdoutParser.appendOutput(eventText);
     for (String line : stdoutParser.getAvailableLines()) {
       if (DaemonApi.parseAndValidateDaemonEvent(line.trim()) != null) {
