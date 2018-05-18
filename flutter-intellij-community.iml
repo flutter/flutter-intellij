@@ -44,23 +44,5 @@
     <orderEntry type="library" name="snakeyaml" level="project" />
     <orderEntry type="library" exported="" name="Dart SDK" level="project" />
     <orderEntry type="library" exported="" name="Dart Packages" level="project" />
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/miglayout-swing-5.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/miglayout-core-5.0.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
   </component>
 </module>
