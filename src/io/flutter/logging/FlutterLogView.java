@@ -24,10 +24,11 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.SimpleTreeBuilder;
+import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.ui.treeStructure.treetable.TreeTableModel;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.Alarm;
+import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -36,9 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -50,64 +49,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
 
   private final SimpleToolWindowPanel toolWindowPanel;
-
-  // TODO(pq): migrate to defining columninfo objects and then add rendering to them.
-  // see: ListTreeTableModelOnColumns use PropertiesPanel setup
-  // TODO(pq): render tooltip with complete event details.
-  private enum LogTreeColumn {
-    TIME(100, "time", String.class) {
-      @Override
-      Object getValue(Object node) {
-        if (node instanceof FlutterEventNode) {
-          return TIMESTAMP_FORMAT.format(((FlutterEventNode)node).entry.getTimestamp());
-        }
-        return super.getValue(node);
-      }
-    },
-    CATEGORY(110, "category", String.class) {
-      @Override
-      Object getValue(Object node) {
-        if (node instanceof FlutterEventNode) {
-          return ((FlutterEventNode)node).entry.getCategory();
-        }
-        return super.getValue(node);
-      }
-    },
-    MSG(100, "message", String.class) {
-      @Override
-      Object getValue(Object node) {
-        if (node instanceof FlutterEventNode) {
-          return ((FlutterEventNode)node).entry.getMessage();
-        }
-        return super.getValue(node);
-      }
-
-      @Override
-      void setBounds(TableColumn column) {
-        // Just min; can grow.
-        column.setMinWidth(width);
-      }
-    };
-
-    final int width;
-    final String name;
-    final Class cls;
-
-    LogTreeColumn(int width, String label, Class cls) {
-      this.width = width;
-      this.name = label;
-      this.cls = cls;
-    }
-
-    Object getValue(Object node) {
-      return null;
-    }
-
-    void setBounds(TableColumn column) {
-      column.setMinWidth(width);
-      column.setMaxWidth(width);
-    }
-  }
 
   private class ClearLogAction extends AnAction {
     ClearLogAction() {
@@ -202,9 +143,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     });
 
     // Set bounds.
-    for (LogTreeColumn logTreeColumn : LogTreeColumn.values()) {
-      logTreeColumn.setBounds(treeTable.getColumnModel().getColumn(logTreeColumn.ordinal()));
-    }
+    treeTable.getColumn("Time").setMinWidth(100);
+    treeTable.getColumn("Time").setMaxWidth(100);
+    treeTable.getColumn("Category").setMinWidth(110);
+    treeTable.getColumn("Category").setMaxWidth(110);
+    treeTable.getColumn("Message").setMinWidth(100);
 
     final JScrollPane pane = ScrollPaneFactory.createScrollPane(treeTable,
                                                                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -331,7 +274,61 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     return treeTable;
   }
 
-  static class FlutterLogTreeTableModel extends DefaultTreeModel implements TreeTableModel {
+  static class TimeColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+    public TimeColumnInfo() {
+      super("Time");
+    }
+
+    @Nullable
+    @Override
+    public String valueOf(DefaultMutableTreeNode node) {
+      if (node instanceof FlutterEventNode) {
+        return TIMESTAMP_FORMAT.format(((FlutterEventNode)node).entry.getTimestamp());
+      }
+      return null;
+    }
+  }
+
+  static class CategoryColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+    public CategoryColumnInfo() {
+      super("Category");
+    }
+
+    @Nullable
+    @Override
+    public String valueOf(DefaultMutableTreeNode node) {
+      if (node instanceof FlutterEventNode) {
+        return ((FlutterEventNode)node).entry.getCategory();
+      }
+      return null;
+    }
+  }
+
+  static class MessageColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+    private final LogMessageCellRenderer messageCellRenderer;
+
+    public MessageColumnInfo(FlutterApp app) {
+      super("Message");
+      messageCellRenderer = new LogMessageCellRenderer(app.getModule());
+    }
+
+    @Nullable
+    @Override
+    public String valueOf(DefaultMutableTreeNode node) {
+      if (node instanceof FlutterEventNode) {
+        return ((FlutterEventNode)node).entry.getMessage();
+      }
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
+      return messageCellRenderer;
+    }
+  }
+
+  static class FlutterLogTreeTableModel extends ListTreeTableModelOnColumns {
     @NotNull
     private final Runnable updateRunnable;
     @NotNull
@@ -343,13 +340,14 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     private TreeTable treeTable;
     private boolean autoScrollToEnd;
 
-    private final LogMessageCellRenderer messageCellRenderer;
-
     public FlutterLogTreeTableModel(@NotNull FlutterApp app, @NotNull Disposable parent) {
-      super(new LogRootTreeNode());
+      super(new LogRootTreeNode(), new ColumnInfo[]{
+        new TimeColumnInfo(),
+        new CategoryColumnInfo(),
+        new MessageColumnInfo(app)
+      });
       this.log = app.getFlutterLog();
 
-      messageCellRenderer = new LogMessageCellRenderer(app.getModule());
       // Scroll to end by default.
       autoScrollToEnd = true;
 
@@ -385,45 +383,13 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       return (LogRootTreeNode)super.getRoot();
     }
 
-    private LogTreeColumn getColumn(int index) {
-      return LogTreeColumn.values()[index];
-    }
-
-    @Override
-    public int getColumnCount() {
-      return LogTreeColumn.values().length;
-    }
-
-    @Override
-    public String getColumnName(int column) {
-      return getColumn(column).name;
-    }
-
-    @Override
-    public Class getColumnClass(int column) {
-      return getColumn(column).cls;
-    }
-
-    @Override
-    public Object getValueAt(Object node, int column) {
-      return getColumn(column).getValue(node);
-    }
-
-    @Override
-    public boolean isCellEditable(Object node, int column) {
-      return false;
-    }
-
-    @Override
-    public void setValueAt(Object aValue, Object node, int column) {
-    }
-
     public void setScrollPane(JScrollPane scrollPane) {
       this.scrollPane = scrollPane;
     }
 
     @Override
     public void setTree(JTree tree) {
+      super.setTree(tree);
       treeTable = ((TreeTableTree)tree).getTreeTable();
     }
 
@@ -450,21 +416,17 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   class FlutterLogTreeTable extends TreeTable {
-
     public FlutterLogTreeTable(@NotNull FlutterLogTreeTableModel model) {
       super(model);
       model.setTree(this.getTree());
     }
 
-    @SuppressWarnings("EmptyMethod")
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-      // TODO(pq): do this more robustly
-      if (column == 2) {
-        return model.messageCellRenderer;
-      }
-
-      return super.getCellRenderer(row, column);
+      // TODO(pq): figure out why this isn't happening on it's own
+      @SuppressWarnings("unchecked")
+      final TableCellRenderer renderer = model.getColumns()[column].getRenderer(null);
+      return renderer != null ? renderer : super.getCellRenderer(row, column);
     }
   }
 
