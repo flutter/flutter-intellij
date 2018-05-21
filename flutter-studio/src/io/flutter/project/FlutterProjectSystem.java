@@ -74,7 +74,6 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   }
 
   @Nullable
-  @Override
   public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
     return null;
   }
