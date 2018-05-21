@@ -490,7 +490,7 @@ class BuildCommand extends ProductCommand {
         separator('Release mode (--release) implies --unpack');
       }
       if (!await performReleaseChecks(this)) {
-        //return 1;
+        return 1;
       }
     }
 
