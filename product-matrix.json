@@ -13,8 +13,8 @@
       "name": "IntelliJ",
       "version": "2018.1",
       "ideaProduct": "android-studio",
-      "ideaVersion": "181.4729833",
-      "dartPluginVersion": "181.4203.498",
+      "ideaVersion": "181.4763614",
+      "dartPluginVersion": "181.4668.60",
       "sinceBuild": "181.0",
       "untilBuild": "181.*"
     }

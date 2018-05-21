@@ -113,7 +113,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private JComponent createGallery() {
     myProjectTypeGallery = new ASGallery<ModuleGalleryEntry>(
       JBList.createDefaultListModel(),
-      image -> image == null ? null : image.getIcon() == null ? null : IconUtil.toImage(image.getIcon()),
+      image -> image == null ? null : image.getIcon() == null ? null : image.getIcon(),
       label -> label == null ? message("android.wizard.gallery.item.none") : label.getName(), DEFAULT_GALLERY_THUMBNAIL_SIZE,
       null
     ) {

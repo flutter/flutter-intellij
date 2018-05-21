@@ -5,10 +5,12 @@
  */
 package io.flutter.project;
 
+import com.android.ide.common.repository.GradleCoordinate;
 import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
+import com.android.tools.idea.projectsystem.gradle.GradleProjectSystemProvider;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -21,7 +23,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @NotNull final private GradleProjectSystem gradleProjectSystem;
 
   public FlutterProjectSystem(Project project) {
-    gradleProjectSystem = new GradleProjectSystem(project);
+    gradleProjectSystem = new GradleProjectSystemProvider(project).getProjectSystem();
   }
 
   @Nullable
@@ -69,5 +71,10 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Override
   public ProjectSystemSyncManager getSyncManager() {
     return gradleProjectSystem.getSyncManager();
+  }
+
+  @Nullable
+  public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
+    return null;
   }
 }

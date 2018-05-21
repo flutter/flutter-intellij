@@ -515,8 +515,9 @@ class BuildCommand extends ProductCommand {
         if (isForIntelliJ && spec.isAndroidStudio) continue;
       }
 
-      result = await spec.artifacts
-          .provision(rebuildCache: isReleaseMode || argResults['unpack']);
+      result = await spec.artifacts.provision(
+          rebuildCache:
+              isReleaseMode || argResults['unpack'] || buildSpecs.length > 1);
       if (result != 0) {
         return new Future(() => result);
       }
@@ -530,24 +531,46 @@ class BuildCommand extends ProductCommand {
       }
 
       // TODO(devoncarew): Remove this when we no longer support AS 3.1.
-      var processedFile = new File(
-          'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
-      var oldSource;
+      var processedFile1, processedFile2, oldSource1, oldSource2, newSource;
       if (spec.version == '2017.3') {
-        oldSource = processedFile.readAsStringSync();
-        var newSource = oldSource.replaceAll(
+        processedFile1 = new File(
+            'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
+        log('Editing ${processedFile1.path}');
+        oldSource1 = processedFile1.readAsStringSync();
+        newSource = oldSource1;
+        newSource = newSource.replaceAll(
           'import com.android.tools.idea.npw.model.NewModuleModel',
           'import com.android.tools.idea.npw.module.NewModuleModel',
         );
-        processedFile.writeAsStringSync(newSource);
+        newSource = newSource.replaceAll(
+          'import java.awt.*',
+          'import javax.swing.*',
+        );
+        newSource = newSource.replaceAll('public Image', 'public Icon');
+        newSource =
+            newSource.replaceAll('IconUtil.toImage', ''); // Leaves parens
+        processedFile1.writeAsStringSync(newSource);
+        processedFile2 = new File(
+            'flutter-studio/src/io/flutter/project/ChoseProjectTypeStep.java');
+        log('Editing ${processedFile2.path}');
+        oldSource2 = processedFile2.readAsStringSync();
+        newSource = oldSource2;
+        newSource = newSource.replaceAll(
+            'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
+        processedFile2.writeAsStringSync(newSource);
       }
 
       try {
         result = await runner.javac2(spec);
       } finally {
         // Restore 3.2 sources.
-        if (oldSource != null) {
-          processedFile.writeAsStringSync(oldSource);
+        if (oldSource1 != null) {
+          log('Restoring ${processedFile1.path}');
+          processedFile1.writeAsStringSync(oldSource1);
+        }
+        if (oldSource2 != null) {
+          log('Reestoring ${processedFile2.path}');
+          processedFile2.writeAsStringSync(oldSource2);
         }
 
         // Restore skipped files.
