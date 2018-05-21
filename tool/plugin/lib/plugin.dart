@@ -490,7 +490,7 @@ class BuildCommand extends ProductCommand {
         separator('Release mode (--release) implies --unpack');
       }
       if (!await performReleaseChecks(this)) {
-        return 1;
+        //return 1;
       }
     }
 
@@ -515,8 +515,9 @@ class BuildCommand extends ProductCommand {
         if (isForIntelliJ && spec.isAndroidStudio) continue;
       }
 
-      result = await spec.artifacts
-          .provision(rebuildCache: isReleaseMode || argResults['unpack']);
+      result = await spec.artifacts.provision(
+          rebuildCache:
+              isReleaseMode || argResults['unpack'] || buildSpecs.length > 1);
       if (result != 0) {
         return new Future(() => result);
       }
@@ -531,11 +532,10 @@ class BuildCommand extends ProductCommand {
 
       // TODO(devoncarew): Remove this when we no longer support AS 3.1.
       var processedFile1, processedFile2, oldSource1, oldSource2, newSource;
-      if ((spec.version == '2017.3' &&
-              (spec.isReleaseMode || Platform.environment['CI'] == "true")) ||
-          Platform.environment['DART_BOT'] == 'true') {
+      if (spec.version == '2017.3') {
         processedFile1 = new File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
+        log('Editing ${processedFile1.path}');
         oldSource1 = processedFile1.readAsStringSync();
         newSource = oldSource1;
         newSource = newSource.replaceAll(
@@ -552,6 +552,7 @@ class BuildCommand extends ProductCommand {
         processedFile1.writeAsStringSync(newSource);
         processedFile2 = new File(
             'flutter-studio/src/io/flutter/project/ChoseProjectTypeStep.java');
+        log('Editing ${processedFile2.path}');
         oldSource2 = processedFile2.readAsStringSync();
         newSource = oldSource2;
         newSource = newSource.replaceAll(
@@ -564,9 +565,11 @@ class BuildCommand extends ProductCommand {
       } finally {
         // Restore 3.2 sources.
         if (oldSource1 != null) {
+          log('Restoring ${processedFile1.path}');
           processedFile1.writeAsStringSync(oldSource1);
         }
         if (oldSource2 != null) {
+          log('Reestoring ${processedFile2.path}');
           processedFile2.writeAsStringSync(oldSource2);
         }
 
