@@ -12,12 +12,15 @@ void main() {
     test('build', () {
       expect(new BuildCommand(new BuildCommandRunner()).name, "build");
     });
+
     test('test', () {
       expect(new TestCommand(new BuildCommandRunner()).name, "test");
     });
+
     test('deploy', () {
       expect(new DeployCommand(new BuildCommandRunner()).name, "deploy");
     });
+
     test('generate', () {
       expect(new GenerateCommand(new BuildCommandRunner()).name, "generate");
     });
@@ -30,25 +33,27 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio']));
+            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
       });
     });
+
     test('test', () async {
       var runner = makeTestRunner();
       await runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio']));
+            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
       });
     });
+
     test('deploy', () async {
       var runner = makeTestRunner();
       await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio']));
+            orderedEquals(['android-studio', 'android-studio', 'ideaIC']));
       });
     });
   });
@@ -62,6 +67,7 @@ void main() {
       });
       expect(cmd.isReleaseValid, true);
     });
+
     test('minor', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
@@ -70,6 +76,7 @@ void main() {
       });
       expect(cmd.isReleaseValid, true);
     });
+
     test('patch invalid', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
@@ -78,6 +85,7 @@ void main() {
       });
       expect(cmd.isReleaseValid, false);
     });
+
     test('non-numeric', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
@@ -102,6 +110,7 @@ void main() {
         expect(new Directory(dir).existsSync(), false);
       });
     });
+
     test('without --release', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
@@ -110,6 +119,7 @@ void main() {
       });
       expect(cmd.paths, orderedEquals([]));
     });
+
     test('release paths', () async {
       var runner = makeTestRunner();
       TestDeployCommand cmd;
@@ -121,6 +131,7 @@ void main() {
           orderedEquals([
             'releases/release_19/2017.3/flutter-intellij.zip',
             'releases/release_19/2018.1/flutter-intellij.zip',
+            'releases/release_19/2018.2/flutter-intellij.zip'
           ]));
     });
   });
@@ -142,6 +153,7 @@ void main() {
       var loc = content.indexOf('@');
       expect(loc, -1);
     });
+
     // Skipped as downloading the artifacts can take longer than the 30 second
     // test timeout.
     test('provision', () async {
@@ -155,6 +167,7 @@ void main() {
       var result = await spec.artifacts.provision(rebuildCache: false);
       expect(result, 0);
     }, skip: true);
+
     test('only-version', () async {
       ProductCommand command = makeTestRunner().commands['build'];
       var results = command.argParser.parse(['--only-version=2018.1']);
