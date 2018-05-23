@@ -28,8 +28,7 @@ public class FlutterLogEntryParser {
   private static final NumberFormat nf = new DecimalFormat();
   private static final NumberFormat df1 = new DecimalFormat();
 
-  // TODO(pq): w/ state, we should now make the parser not static.
-  private static final StdoutJsonParser stdoutParser = new StdoutJsonParser();
+  private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
   static {
     df1.setMinimumFractionDigits(1);
@@ -42,7 +41,7 @@ public class FlutterLogEntryParser {
   public static final String STDIO_STDOUT_CATEGORY = "stdout";
 
   @Nullable
-  public static FlutterLogEntry parse(@Nullable String id, @Nullable Event event) {
+  public FlutterLogEntry parse(@Nullable String id, @Nullable Event event) {
     if (id != null && event != null) {
       switch (id) {
         case LOGGING_STREAM_ID:
@@ -56,7 +55,7 @@ public class FlutterLogEntryParser {
   }
 
   @Nullable
-  static FlutterLogEntry parseDaemonEvent(@NotNull ProcessEvent event, @Nullable Key outputType) {
+  FlutterLogEntry parseDaemonEvent(@NotNull ProcessEvent event, @Nullable Key outputType) {
     // TODO(pq): process outputType
     final String text = event.getText();
     if (text.isEmpty()) return null;
@@ -66,11 +65,12 @@ public class FlutterLogEntryParser {
 
   @VisibleForTesting
   @Nullable
-  public static FlutterLogEntry parseDaemonEvent(@NotNull String eventText) {
+  public FlutterLogEntry parseDaemonEvent(@NotNull String eventText) {
     // TODO(pq): restructure parsing to ensure DaemonEvent messages are only parsed once
     // (with daemon JSON going into one stream and regular log messages going elsewhere)
     stdoutParser.appendOutput(eventText);
     for (String line : stdoutParser.getAvailableLines()) {
+      //noinspection StatementWithEmptyBody
       if (DaemonApi.parseAndValidateDaemonEvent(line.trim()) != null) {
         // Skip.
       }
@@ -129,7 +129,7 @@ public class FlutterLogEntryParser {
     }
   }
 
-  public static FlutterLogEntry parseConsoleEvent(String text, ConsoleViewContentType type) {
+  public FlutterLogEntry parseConsoleEvent(String text, ConsoleViewContentType type) {
     if (type == ConsoleViewContentType.NORMAL_OUTPUT) {
       return parseDaemonEvent(text);
     }

@@ -27,14 +27,15 @@ public class FlutterLog {
 
   public static final String LOGGING_STREAM_ID = "_Logging";
 
-  private final List<Listener> listeners = new ArrayList<>();
-
   public static boolean isLoggingEnabled() {
     return FlutterSettings.getInstance().useFlutterLogView();
   }
 
+  private final List<Listener> listeners = new ArrayList<>();
+  private final FlutterLogEntryParser logEntryParser = new FlutterLogEntryParser();
+
   public void addConsoleEntry(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
-    onEntry(FlutterLogEntryParser.parseConsoleEvent(text, contentType));
+    onEntry(logEntryParser.parseConsoleEvent(text, contentType));
   }
 
   public void addListener(@NotNull Listener listener, @Nullable Disposable parent) {
@@ -61,7 +62,7 @@ public class FlutterLog {
     processHandler.addProcessListener(new ProcessAdapter() {
       @Override
       public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
-        onEntry(FlutterLogEntryParser.parseDaemonEvent(event, outputType));
+        onEntry(logEntryParser.parseDaemonEvent(event, outputType));
       }
     }, parent);
   }
@@ -90,7 +91,7 @@ public class FlutterLog {
   }
 
   private void onVmServiceReceived(String id, Event event) {
-    onEntry(FlutterLogEntryParser.parse(id, event));
+    onEntry(logEntryParser.parse(id, event));
   }
 
   @SuppressWarnings("EmptyMethod")
