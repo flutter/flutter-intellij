@@ -17,6 +17,15 @@
       "dartPluginVersion": "181.4668.60",
       "sinceBuild": "181.0",
       "untilBuild": "181.*"
+    },
+    {
+      "name": "IntelliJ",
+      "version": "2018.2",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "182.2574.2",
+      "dartPluginVersion": "182.2371.1",
+      "sinceBuild": "182.0",
+      "untilBuild": "182.*"
     }
   ]
 }
