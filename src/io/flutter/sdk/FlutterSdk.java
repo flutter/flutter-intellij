@@ -14,7 +14,6 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VfsUtil;
@@ -191,15 +190,8 @@ public class FlutterSdk {
       args.add("--verbose");
     }
 
-    if (FlutterSettings.getInstance().isEnablePreviewDart2()) {
-      args.add("--preview-dart-2");
-    }
-    else if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
-      args.add("--no-preview-dart-2");
-    }
-
     if (flutterLaunchMode == FlutterLaunchMode.DEBUG) {
-      if (!FlutterSettings.getInstance().isDisablePreviewDart2() && FlutterSettings.getInstance().isTrackWidgetCreation()) {
+      if (FlutterSettings.getInstance().isTrackWidgetCreation()) {
         args.add("--track-widget-creation");
       }
     }
@@ -214,7 +206,8 @@ public class FlutterSdk {
 
     if (flutterLaunchMode == FlutterLaunchMode.PROFILE) {
       args.add("--profile");
-    } else if (flutterLaunchMode == FlutterLaunchMode.RELEASE) {
+    }
+    else if (flutterLaunchMode == FlutterLaunchMode.RELEASE) {
       args.add("--release");
     }
 
@@ -245,12 +238,6 @@ public class FlutterSdk {
     if (myVersion.flutterTestSupportsMachineMode()) {
       args.add("--machine");
       // Otherwise, just run it normally and show the output in a non-test console.
-    }
-    if (FlutterSettings.getInstance().isEnablePreviewDart2()) {
-      args.add("--preview-dart-2");
-    }
-    else if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
-      args.add("--no-preview-dart-2");
     }
     if (mode == RunMode.DEBUG) {
       if (!myVersion.flutterTestSupportsMachineMode()) {

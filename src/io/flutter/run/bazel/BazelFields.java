@@ -24,7 +24,6 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -279,13 +278,6 @@ public class BazelFields {
 
     // Tell the flutter command-line tools that we want a machine interface on stdio.
     commandLine.addParameter("--machine");
-
-    if (FlutterSettings.getInstance().isEnablePreviewDart2()) {
-      commandLine.addParameter("--preview-dart-2");
-    }
-    else if (FlutterSettings.getInstance().isDisablePreviewDart2()) {
-      commandLine.addParameter("--no-preview-dart-2");
-    }
 
     // Pause the app at startup in order to set breakpoints.
     if (!enableReleaseMode && mode == RunMode.DEBUG) {

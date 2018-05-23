@@ -146,12 +146,12 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Show Run console output using a Flutter logging view"/>
+              <text value="Replace the Run and Debug console output with an experimental Flutter Logging view"/>
             </properties>
           </component>
         </children>
       </grid>
-      <grid id="919ec" layout-manager="GridLayoutManager" row-count="4" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="919ec" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -179,33 +179,13 @@
               <toolTipText value="On save, hot reload changes into running Flutter apps."/>
             </properties>
           </component>
-          <component id="2c76c" class="javax.swing.JLabel">
-            <constraints>
-              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Run applications in Dart 2.0 mode:"/>
-            </properties>
-          </component>
-          <component id="f8034" class="javax.swing.JComboBox" binding="myPreviewDart2Combo">
-            <constraints>
-              <grid row="2" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <model>
-                <item value="Use SDK default"/>
-                <item value="Enable Dart 2"/>
-                <item value="Disable Dart 2"/>
-              </model>
-            </properties>
-          </component>
           <component id="6d6f0" class="javax.swing.JCheckBox" binding="myTrackWidgetCreationCheckBox">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Run applications with --track-widget-creation"/>
-              <toolTipText value="Allows the Flutter Inspector to track source locations where widgets are created. This experimental feature is required for advanced Flutter Inspector functionality."/>
+              <toolTipText value="Allows the Flutter Inspector to track source locations where widgets are created. This setting is required for advanced Flutter Inspector functionality."/>
             </properties>
           </component>
         </children>
