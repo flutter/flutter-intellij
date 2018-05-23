@@ -19,6 +19,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ColoredTableCellRenderer;
+import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.content.Content;
@@ -39,8 +40,8 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.SimpleDateFormat;
 
@@ -60,6 +61,33 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       ApplicationManager.getApplication().invokeLater(() -> {
         model.getRoot().removeAllChildren();
         model.update();
+      });
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      e.getPresentation().setEnabled(model.getRoot().getChildCount() > 0);
+    }
+  }
+
+  private class ClearEntryAction extends AnAction {
+    ClearEntryAction() {
+      super("Clear", "Clear the selected entries", AllIcons.Actions.Delete);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        final int[] rows = treeTable.getSelectedRows();
+        final LogRootTreeNode root = model.getRoot();
+        final TreePath[] paths = treeTable.getTree().getSelectionPaths();
+        if (paths != null) {
+          for (final TreePath path : paths) {
+            final DefaultMutableTreeNode node = (DefaultMutableTreeNode)(path.getLastPathComponent());
+            model.removeNodeFromParent(node);
+          }
+          model.update();
+        }
       });
     }
 
@@ -121,8 +149,16 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     treeTable.setExpandableItemsEnabled(true);
     treeTable.getTree().setScrollsOnExpand(true);
+    
+    treeTable.addMouseListener(new PopupHandler() {
+      @Override
+      public void invokePopup(Component comp, int x, int y) {
+        final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
+          ActionPlaces.UNKNOWN,
+          getTreePopupActions());
+        popupMenu.getComponent().show(comp, x, y);
+      }
 
-    treeTable.addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
         final JTable table = (JTable)e.getSource();
@@ -155,6 +191,20 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     model.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
+  }
+
+  private ActionGroup getTreePopupActions() {
+    return new ActionGroup() {
+      @NotNull
+      @Override
+      public AnAction[] getChildren(@Nullable AnActionEvent e) {
+        return new AnAction[]{
+          new ClearEntryAction(),
+          new Separator(),
+          new ClearLogAction()
+        };
+      }
+    };
   }
 
   @NotNull
