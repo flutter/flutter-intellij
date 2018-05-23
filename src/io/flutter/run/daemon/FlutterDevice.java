@@ -5,7 +5,7 @@
  */
 package io.flutter.run.daemon;
 
-import io.flutter.actions.OpenSimulatorAction;
+import io.flutter.sdk.XcodeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -93,7 +93,7 @@ public class FlutterDevice {
   public void bringToFront() {
     if (emulator() && isIOS()) {
       // Bring the iOS simulator to front.
-      new OpenSimulatorAction(true).actionPerformed(null);
+      XcodeUtils.openSimulator();
     }
   }
 
