@@ -12,43 +12,25 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.SimpleTreeBuilder;
-import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
-import com.intellij.ui.treeStructure.treetable.TreeTable;
-import com.intellij.ui.treeStructure.treetable.TreeTableTree;
-import com.intellij.util.Alarm;
-import com.intellij.util.ui.ColumnInfo;
-import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.text.SimpleDateFormat;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
-
-  private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
-
-  private final SimpleToolWindowPanel toolWindowPanel;
 
   private class ClearLogAction extends AnAction {
     ClearLogAction() {
@@ -58,14 +40,14 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     @Override
     public void actionPerformed(AnActionEvent e) {
       ApplicationManager.getApplication().invokeLater(() -> {
-        model.getRoot().removeAllChildren();
-        model.update();
+        logModel.getRoot().removeAllChildren();
+        logModel.update();
       });
     }
 
     @Override
     public void update(AnActionEvent e) {
-      e.getPresentation().setEnabled(model.getRoot().getChildCount() > 0);
+      e.getPresentation().setEnabled(logModel.getRoot().getChildCount() > 0);
     }
   }
 
@@ -76,21 +58,23 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return model.autoScrollToEnd;
+      return logModel.autoScrollToEnd;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
       ApplicationManager.getApplication().invokeLater(() -> {
-        model.autoScrollToEnd = state;
-        model.scrollToEnd();
+        logModel.autoScrollToEnd = state;
+        logModel.scrollToEnd();
       });
     }
   }
 
   @NotNull final FlutterApp app;
-  final FlutterLogTreeTableModel model;
-  private final FlutterLogTreeTable treeTable;
+  private final SimpleToolWindowPanel toolWindowPanel;
+  @NotNull
+  private final FlutterLogTree.LogTreeModel logModel;
+  private final FlutterLogTree logTree;
   private SimpleTreeBuilder builder;
 
   public FlutterLogView(@NotNull FlutterApp app) {
@@ -110,19 +94,19 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final ActionToolbar windowToolbar = ActionManager.getInstance().createActionToolbar("FlutterLogViewToolbar", toolbarGroup, true);
     toolWindowPanel.setToolbar(windowToolbar.getComponent());
 
-    model = new FlutterLogTreeTableModel(app, this);
-    treeTable = new FlutterLogTreeTable(model);
+    logTree = new FlutterLogTree(app, this);
+    logModel = logTree.getLogTreeModel();
 
     // TODO(pq): add speed search
-    //new TreeTableSpeedSearch(treeTable).setComparator(new SpeedSearchComparator(false));
+    //new TreeTableSpeedSearch(logTree).setComparator(new SpeedSearchComparator(false));
 
-    treeTable.setTableHeader(null);
-    treeTable.setRootVisible(false);
+    logTree.setTableHeader(null);
+    logTree.setRootVisible(false);
 
-    treeTable.setExpandableItemsEnabled(true);
-    treeTable.getTree().setScrollsOnExpand(true);
-    
-    treeTable.addMouseListener(new PopupHandler() {
+    logTree.setExpandableItemsEnabled(true);
+    logTree.getTree().setScrollsOnExpand(true);
+
+    logTree.addMouseListener(new PopupHandler() {
       @Override
       public void invokePopup(Component comp, int x, int y) {
         final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
@@ -151,17 +135,17 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     });
 
     // Set bounds.
-    treeTable.getColumn("Time").setMinWidth(100);
-    treeTable.getColumn("Time").setMaxWidth(100);
-    treeTable.getColumn("Category").setMinWidth(110);
-    treeTable.getColumn("Category").setMaxWidth(110);
-    treeTable.getColumn("Message").setMinWidth(100);
+    logTree.getColumn("Time").setMinWidth(100);
+    logTree.getColumn("Time").setMaxWidth(100);
+    logTree.getColumn("Category").setMinWidth(110);
+    logTree.getColumn("Category").setMaxWidth(110);
+    logTree.getColumn("Message").setMinWidth(100);
 
-    final JScrollPane pane = ScrollPaneFactory.createScrollPane(treeTable,
+    final JScrollPane pane = ScrollPaneFactory.createScrollPane(logTree,
                                                                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                                                                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-    model.setScrollPane(pane);
+    logModel.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
   }
 
@@ -191,7 +175,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    model.onEvent(entry);
+    logModel.onEvent(entry);
   }
 
   @Override
@@ -291,205 +275,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public JComponent getPreferredFocusableComponent() {
-    return treeTable;
+    return logTree;
   }
 
-  static class TimeColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
-    public TimeColumnInfo() {
-      super("Time");
-    }
-
-    @Nullable
-    @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return TIMESTAMP_FORMAT.format(((FlutterEventNode)node).entry.getTimestamp());
-      }
-      return null;
-    }
-  }
-
-  static class CategoryColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
-    public CategoryColumnInfo() {
-      super("Category");
-    }
-
-    @Nullable
-    @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return ((FlutterEventNode)node).entry.getCategory();
-      }
-      return null;
-    }
-  }
-
-  static class MessageColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
-    private final LogMessageCellRenderer messageCellRenderer;
-
-    public MessageColumnInfo(FlutterApp app) {
-      super("Message");
-      messageCellRenderer = new LogMessageCellRenderer(app.getModule());
-    }
-
-    @Nullable
-    @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return ((FlutterEventNode)node).entry.getMessage();
-      }
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
-      return messageCellRenderer;
-    }
-  }
-
-  static class FlutterLogTreeTableModel extends ListTreeTableModelOnColumns {
-    @NotNull
-    private final Runnable updateRunnable;
-    @NotNull
-    private final FlutterLog log;
-    @NotNull
-    private final Alarm updateAlarm;
-
-    private JScrollPane scrollPane;
-    private TreeTable treeTable;
-    private boolean autoScrollToEnd;
-
-    public FlutterLogTreeTableModel(@NotNull FlutterApp app, @NotNull Disposable parent) {
-      super(new LogRootTreeNode(), new ColumnInfo[]{
-        new TimeColumnInfo(),
-        new CategoryColumnInfo(),
-        new MessageColumnInfo(app)
-      });
-      this.log = app.getFlutterLog();
-
-      // Scroll to end by default.
-      autoScrollToEnd = true;
-
-      updateRunnable = () -> {
-        ((AbstractTableModel)treeTable.getModel()).fireTableDataChanged();
-        reload(getRoot());
-        treeTable.updateUI();
-
-        if (autoScrollToEnd) {
-          scrollToEnd();
-        }
-      };
-
-      updateAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
-    }
-
-    private void scrollToEnd() {
-      if (scrollPane != null) {
-        final JScrollBar vertical = scrollPane.getVerticalScrollBar();
-        vertical.setValue(vertical.getMaximum());
-      }
-    }
-
-    private void update() {
-      if (!updateAlarm.isDisposed()) {
-        updateAlarm.cancelAllRequests();
-        updateAlarm.addRequest(updateRunnable, 0, ModalityState.stateForComponent(treeTable));
-      }
-    }
-
-    @Override
-    public LogRootTreeNode getRoot() {
-      return (LogRootTreeNode)super.getRoot();
-    }
-
-    public void setScrollPane(JScrollPane scrollPane) {
-      this.scrollPane = scrollPane;
-    }
-
-    @Override
-    public void setTree(JTree tree) {
-      super.setTree(tree);
-      treeTable = ((TreeTableTree)tree).getTreeTable();
-    }
-
-    public void onEvent(FlutterLogEntry entry) {
-      final MutableTreeNode root = getRoot();
-      final FlutterEventNode node = new FlutterEventNode(entry);
-      ApplicationManager.getApplication().invokeLater(() -> {
-        insertNodeInto(node, root, root.getChildCount());
-        update();
-      });
-    }
-  }
-
-  static class LogRootTreeNode extends DefaultMutableTreeNode {
-
-  }
-
-  static class FlutterEventNode extends DefaultMutableTreeNode {
-    final FlutterLogEntry entry;
-
-    FlutterEventNode(FlutterLogEntry entry) {
-      this.entry = entry;
-    }
-  }
-
-  class FlutterLogTreeTable extends TreeTable {
-    public FlutterLogTreeTable(@NotNull FlutterLogTreeTableModel model) {
-      super(model);
-      model.setTree(this.getTree());
-    }
-
-    @Override
-    public TableCellRenderer getCellRenderer(int row, int column) {
-      // TODO(pq): figure out why this isn't happening on it's own
-      @SuppressWarnings("unchecked")
-      final TableCellRenderer renderer = model.getColumns()[column].getRenderer(null);
-      return renderer != null ? renderer : super.getCellRenderer(row, column);
-    }
-  }
-
-  static class LogMessageCellRenderer extends ColoredTableCellRenderer {
-    private final FlutterConsoleFilter consoleFilter;
-
-    public LogMessageCellRenderer(Module module) {
-      consoleFilter = new FlutterConsoleFilter(module);
-    }
-
-    @Override
-    protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
-      // TODO(pq): SpeedSearchUtil.applySpeedSearchHighlighting
-      // TODO(pq): setTooltipText
-
-      if (value instanceof String) {
-        final String text = (String)value;
-        int cursor = 0;
-
-        // TODO(pq): add support for dart uris, etc.
-        // TODO(pq): fix FlutterConsoleFilter to handle multiple links.
-        final Filter.Result result = consoleFilter.applyFilter(text, text.length());
-        if (result != null) {
-          for (Filter.ResultItem item : result.getResultItems()) {
-            final HyperlinkInfo hyperlinkInfo = item.getHyperlinkInfo();
-            if (hyperlinkInfo != null) {
-              final int start = item.getHighlightStartOffset();
-              final int end = item.getHighlightEndOffset();
-              // append leading text.
-              if (cursor < start) {
-                append(text.substring(cursor, start), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-              }
-              append(text.substring(start, end), SimpleTextAttributes.LINK_ATTRIBUTES, hyperlinkInfo);
-              cursor = end;
-            }
-          }
-        }
-
-        // append trailing text
-        if (cursor < text.length()) {
-          append(text.substring(cursor), SimpleTextAttributes.REGULAR_ATTRIBUTES);
-        }
-      }
-    }
-  }
 }
