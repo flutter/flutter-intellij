@@ -56,7 +56,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowPreviewAreaCheckBox;
   private JCheckBox myShowHeapDisplayCheckBox;
-  private JComboBox myPreviewDart2Combo;
   private JCheckBox myTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private final @NotNull Project myProject;
@@ -97,12 +96,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     //noinspection Convert2Lambda
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
-
-    myPreviewDart2Combo.addActionListener((e) -> {
-      final boolean disableDart2 =
-        myPreviewDart2Combo.getSelectedIndex() == FlutterSettings.Dart2ModeSettings.disablePreviewDart2.getOrdinal();
-      myTrackWidgetCreationCheckBox.setEnabled(!disableDart2);
-    });
   }
 
   private void createUIComponents() {
@@ -166,9 +159,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.getDart2ModeSetting().getOrdinal() != myPreviewDart2Combo.getSelectedIndex()) {
-      return true;
-    }
     if (settings.isTrackWidgetCreation() != myTrackWidgetCreationCheckBox.isSelected()) {
       return true;
     }
@@ -205,7 +195,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
-    settings.setDart2ModeSettingOrdinal(myPreviewDart2Combo.getSelectedIndex());
     settings.setTrackWidgetCreation(myTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
 
@@ -233,9 +222,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
-    myPreviewDart2Combo.setSelectedIndex(settings.getDart2ModeSetting().getOrdinal());
     myTrackWidgetCreationCheckBox.setSelected(settings.isTrackWidgetCreation());
-    myTrackWidgetCreationCheckBox.setEnabled(!settings.getDart2ModeSetting().equals(FlutterSettings.Dart2ModeSettings.disablePreviewDart2));
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());

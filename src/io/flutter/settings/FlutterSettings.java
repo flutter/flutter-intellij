@@ -18,29 +18,12 @@ public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
-  private static final String previewDart2Key = "io.flutter.previewDart2";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String trackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-
-  public enum Dart2ModeSettings {
-    useSdkDefault(0),
-    enablePreviewDart2(1),
-    disablePreviewDart2(2);
-
-    private final int ordinal;
-
-    Dart2ModeSettings(int ordinal) {
-      this.ordinal = ordinal;
-    }
-
-    public int getOrdinal() {
-      return ordinal;
-    }
-  }
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -56,18 +39,15 @@ public class FlutterSettings {
 
   private final List<Listener> listeners = new ArrayList<>();
 
+  public FlutterSettings() {
+    updateAnalysisServerArgs();
+  }
+
   public void sendSettingsToAnalytics(Analytics analytics) {
     final PropertiesComponent properties = getPropertiesComponent();
 
     // Send data on the number of experimental features enabled by users.
     analytics.sendEvent("settings", "ping");
-
-    if (isEnablePreviewDart2()) {
-      analytics.sendEvent("settings", "enableDart2");
-    }
-    else if (isDisablePreviewDart2()) {
-      analytics.sendEvent("settings", "disableDart2");
-    }
 
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
@@ -98,22 +78,12 @@ public class FlutterSettings {
     listeners.remove(listener);
   }
 
-  // We have both an enable and a disable flag as the could set one, the other, or rely on the SDK default.
-
-  public boolean isEnablePreviewDart2() {
-    return getDart2ModeSetting() == Dart2ModeSettings.enablePreviewDart2;
-  }
-
-  public boolean isDisablePreviewDart2() {
-    return getDart2ModeSetting() == Dart2ModeSettings.disablePreviewDart2;
-  }
-
   public boolean isReloadOnSave() {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
   public boolean isTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, false);
+    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, true);
   }
 
   public void setTrackWidgetCreation(boolean value) {
@@ -121,7 +91,6 @@ public class FlutterSettings {
 
     fireEvent();
   }
-
 
   public void setReloadOnSave(boolean value) {
     getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
@@ -189,41 +158,15 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public Dart2ModeSettings getDart2ModeSetting() {
-    final int ordinal = getPropertiesComponent().getInt(previewDart2Key, 0);
-
-    if (ordinal == Dart2ModeSettings.enablePreviewDart2.getOrdinal()) {
-      return Dart2ModeSettings.enablePreviewDart2;
-    }
-    else if (ordinal == Dart2ModeSettings.disablePreviewDart2.getOrdinal()) {
-      return Dart2ModeSettings.disablePreviewDart2;
-    }
-    else {
-      return Dart2ModeSettings.useSdkDefault;
-    }
-  }
-
-  public void setDart2ModeSettingOrdinal(int ordinal) {
-    getPropertiesComponent().setValue(previewDart2Key, ordinal, 0);
-
-    updateAnalysisServerArgs();
-  }
-
+  // TODO(devoncarew): Remove this after M26 ships.
   private void updateAnalysisServerArgs() {
     final String serverRegistryKey = "dart.server.additional.arguments";
     final String previewDart2FlagSuffix = "preview-dart-2";
 
     final List<String> params = new ArrayList<>(StringUtil.split(Registry.stringValue(serverRegistryKey), " "));
-    params.removeIf((s) -> s.endsWith(previewDart2FlagSuffix));
-
-    if (isEnablePreviewDart2()) {
-      params.add("--" + previewDart2FlagSuffix);
+    if (params.removeIf((s) -> s.endsWith(previewDart2FlagSuffix))) {
+      Registry.get(serverRegistryKey).setValue(StringUtil.join(params, " "));
     }
-    else if (isDisablePreviewDart2()) {
-      params.add("--no-" + previewDart2FlagSuffix);
-    }
-
-    Registry.get(serverRegistryKey).setValue(StringUtil.join(params, " "));
   }
 
   public boolean isVerboseLogging() {
