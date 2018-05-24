@@ -107,8 +107,6 @@ public class LaunchState extends CommandLineState {
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
     final FlutterApp app = callback.createApp(device);
-    // Cache for use in console configuration.
-    FlutterApp.addToEnvironment(env, app);
 
     if (device == null) {
       Messages.showDialog(
@@ -119,6 +117,9 @@ public class LaunchState extends CommandLineState {
 
       return null;
     }
+
+    // Cache for use in console configuration.
+    FlutterApp.addToEnvironment(env, app);
 
     // Remember the run configuration that started this process.
     app.getProcessHandler().putUserData(FLUTTER_RUN_CONFIG_KEY, runConfig);
