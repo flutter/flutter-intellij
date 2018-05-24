@@ -118,6 +118,18 @@ public class FlutterLogTree extends TreeTable {
     FlutterEventNode(FlutterLogEntry entry) {
       this.entry = entry;
     }
+
+    public void describeTo(@NotNull StringBuilder buffer) {
+      buffer
+        .append(TIMESTAMP_FORMAT.format(entry.getTimestamp()))
+        .append(" [")
+        .append(entry.getCategory())
+        .append("] ")
+        .append(entry.getMessage());
+      if (!entry.getMessage().endsWith("\n")) {
+        buffer.append("\n");
+      }
+    }
   }
 
   static class TimeColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
@@ -236,9 +248,7 @@ public class FlutterLogTree extends TreeTable {
   @Override
   public TableCellRenderer getCellRenderer(int row, int column) {
     // TODO(pq): figure out why this isn't happening on it's own
-    @SuppressWarnings("unchecked")
-    final TableCellRenderer renderer = model.getColumns()[column].getRenderer(null);
+    @SuppressWarnings("unchecked") final TableCellRenderer renderer = model.getColumns()[column].getRenderer(null);
     return renderer != null ? renderer : super.getCellRenderer(row, column);
   }
-
 }

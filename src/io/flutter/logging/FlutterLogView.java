@@ -27,7 +27,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
@@ -66,6 +69,34 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       ApplicationManager.getApplication().invokeLater(() -> {
         logModel.autoScrollToEnd = state;
         logModel.scrollToEnd();
+      });
+    }
+  }
+
+  private class CopyToClipboardAction extends AnAction {
+    CopyToClipboardAction() {
+      super("Copy as Text", "Copy selected entries to the clipboard", AllIcons.Actions.Copy);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        final int[] rows = logTree.getSelectedRows();
+        final FlutterLogTree.LogRootTreeNode root = logModel.getRoot();
+        final TreePath[] paths = logTree.getTree().getSelectionPaths();
+        if (paths != null) {
+          final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+          final StringBuilder sb = new StringBuilder();
+          for (final TreePath path : paths) {
+            final Object pathComponent = path.getLastPathComponent();
+            if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
+              ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
+            }
+          }
+
+          final StringSelection selection = new StringSelection(sb.toString());
+          clipboard.setContents(selection, selection);
+        }
       });
     }
   }
@@ -132,6 +163,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
           }
         }
       }
+
+      // TODO(pq): add keybindings
+
     });
 
     // Set bounds.
@@ -155,6 +189,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       @Override
       public AnAction[] getChildren(@Nullable AnActionEvent e) {
         return new AnAction[]{
+          new CopyToClipboardAction(),
+          new Separator(),
           new ClearLogAction()
         };
       }
