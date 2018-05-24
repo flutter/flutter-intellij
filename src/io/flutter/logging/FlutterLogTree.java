@@ -33,6 +33,7 @@ import java.text.SimpleDateFormat;
 public class FlutterLogTree extends TreeTable {
 
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
+  private static final DefaultEventCellRenderer DEFAULT_EVENT_CELL_RENDERER = new DefaultEventCellRenderer();
 
   static class LogTreeModel extends ListTreeTableModelOnColumns {
     @NotNull
@@ -145,6 +146,12 @@ public class FlutterLogTree extends TreeTable {
       }
       return null;
     }
+
+    @Nullable
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
+      return DEFAULT_EVENT_CELL_RENDERER;
+    }
   }
 
   static class CategoryColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
@@ -159,6 +166,12 @@ public class FlutterLogTree extends TreeTable {
         return ((FlutterEventNode)node).entry.getCategory();
       }
       return null;
+    }
+
+    @Nullable
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
+      return DEFAULT_EVENT_CELL_RENDERER;
     }
   }
 
@@ -186,7 +199,22 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
-  static class LogMessageCellRenderer extends ColoredTableCellRenderer {
+  static class DefaultEventCellRenderer extends ColoredTableCellRenderer {
+    @Override
+    public void acquireState(JTable table, boolean isSelected, boolean hasFocus, int row, int column) {
+      // Prevent cell borders on selected cells.
+      super.acquireState(table, isSelected, false, row, column);
+    }
+
+    @Override
+    protected void customizeCellRenderer(JTable table, @Nullable Object value, boolean selected, boolean hasFocus, int row, int column) {
+      if (value instanceof String) {
+        append((String)value);
+      }
+    }
+  }
+
+  static class LogMessageCellRenderer extends DefaultEventCellRenderer {
     private final FlutterConsoleFilter consoleFilter;
 
     public LogMessageCellRenderer(Module module) {
@@ -228,6 +256,7 @@ public class FlutterLogTree extends TreeTable {
       }
     }
   }
+
   private final LogTreeModel model;
 
   public FlutterLogTree(@NotNull FlutterApp app, @NotNull Disposable parent) {
