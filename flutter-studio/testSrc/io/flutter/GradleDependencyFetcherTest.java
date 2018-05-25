@@ -28,7 +28,7 @@ public class GradleDependencyFetcherTest {
   @Test
   public void parseDependencies() {
     GradleDependencyFetcher fetcher = new GradleDependencyFetcher(ourProject);
-    fetcher.parseDependencies(getDependencyReport());
+    fetcher.parseDependencies(createMockDependencyReport());
     Map<String, List<String>> deps = fetcher.getDependencies();
     assertEquals(14, deps.size());
     List<String> section = deps.get("debugAndroidTestCompileClasspath");
@@ -53,7 +53,7 @@ public class GradleDependencyFetcherTest {
   @Test
   public void parseFailure2() {
     GradleDependencyFetcher fetcher = new GradleDependencyFetcher(ourProject);
-    fetcher.parseDependencies(getDependencyReport().substring(0, 85));
+    fetcher.parseDependencies(createMockDependencyReport().substring(0, 85));
     assertEquals(0, fetcher.getDependencies().size());
   }
 
@@ -65,7 +65,7 @@ public class GradleDependencyFetcherTest {
     ourProject = new MockProject(ApplicationManager.getApplication().getPicoContainer(), disposable);
   }
 
-  private static String getDependencyReport() {
+  private static String createMockDependencyReport() {
     return
       ":app:androidDependencies\n" +
       "debug\n" +
