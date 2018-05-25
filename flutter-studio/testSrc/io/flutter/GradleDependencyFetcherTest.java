@@ -43,6 +43,20 @@ public class GradleDependencyFetcherTest {
     assertEquals(1, section.size());
   }
 
+  @Test
+  public void parseFailure1() {
+    GradleDependencyFetcher fetcher = new GradleDependencyFetcher(ourProject);
+    fetcher.parseDependencies("");
+    assertEquals(0, fetcher.getDependencies().size());
+  }
+
+  @Test
+  public void parseFailure2() {
+    GradleDependencyFetcher fetcher = new GradleDependencyFetcher(ourProject);
+    fetcher.parseDependencies(getDependencyReport().substring(0, 85));
+    assertEquals(0, fetcher.getDependencies().size());
+  }
+
   @BeforeClass
   public static void setUp() {
     Disposable disposable = Disposer.newDisposable();
