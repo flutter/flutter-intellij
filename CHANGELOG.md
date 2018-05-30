@@ -6,7 +6,7 @@
 - added a new (very experimental) logging view
 - update the extract widget refactoring visibility (#2251)
 - launch a simulator device if none is running (#2234)
-- improvments to the preview view on Windows (#2239)
+- improvements to the preview view on Windows (#2239)
 - open the selected file for editing when opening a new project (#2236)
 - open selected file when launching Android Studio (#2230)
 - add a command bar to editors that can open in a native-code editor (#2216)
