@@ -135,7 +135,11 @@ public class FlutterSaveActionsManager {
           // Committing a document here is required in order to guarantee that DartPostFormatProcessor.processText() is called afterwards.
           PsiDocumentManager.getInstance(myProject).commitDocument(document);
 
-          performFormat(document, file, true);
+          // Run this in an invoke later so that we don't exeucte the initial part of performFormat in a write action.
+          //noinspection CodeBlock2Expr
+          ApplicationManager.getApplication().invokeLater(() -> {
+            performFormat(document, file, true);
+          });
         }
       }.execute());
     }
@@ -174,8 +178,12 @@ public class FlutterSaveActionsManager {
           didFormat = true;
         }
 
+        // Don't perform the save in a write action - it could invoke EDT work.
         if (reSave || didFormat) {
-          FileDocumentManager.getInstance().saveDocument(document);
+          //noinspection CodeBlock2Expr
+          ApplicationManager.getApplication().invokeLater(() -> {
+            FileDocumentManager.getInstance().saveDocument(document);
+          });
         }
       }
     }.execute());
