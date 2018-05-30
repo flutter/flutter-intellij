@@ -87,7 +87,7 @@ public class FlutterSettings {
   }
 
   public void setTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(trackWidgetCreationKey, value);
+    getPropertiesComponent().setValue(trackWidgetCreationKey, value, true);
 
     fireEvent();
   }
