@@ -38,7 +38,9 @@ public class ExtractWidgetAction extends DumbAwareAction {
     final Caret caret = dataContext.getData(PlatformDataKeys.CARET);
 
     if (project != null && file != null && editor != null && caret != null) {
-      final ExtractWidgetRefactoring refactoring = new ExtractWidgetRefactoring(project, file, caret.getOffset(), 0);
+      final int offset = caret.getSelectionStart();
+      final int length = caret.getSelectionEnd() - offset;
+      final ExtractWidgetRefactoring refactoring = new ExtractWidgetRefactoring(project, file, offset, length);
 
       // Validate the initial status.
       final RefactoringStatus initialStatus = refactoring.checkInitialConditions();
