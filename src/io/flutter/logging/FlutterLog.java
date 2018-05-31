@@ -21,18 +21,26 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class FlutterLog {
 
   public static final String LOGGING_STREAM_ID = "_Logging";
 
-  public static boolean isLoggingEnabled() {
-    return FlutterSettings.getInstance().useFlutterLogView();
+  public interface Listener {
+    void onEvent(@NotNull FlutterLogEntry entry);
   }
 
   private final List<Listener> listeners = new ArrayList<>();
   private final FlutterLogEntryParser logEntryParser = new FlutterLogEntryParser();
+
+  // TODO(pq): consider limiting size.
+  private final List<FlutterLogEntry> entries = new ArrayList<>();
+
+  public static boolean isLoggingEnabled() {
+    return FlutterSettings.getInstance().useFlutterLogView();
+  }
 
   public void addConsoleEntry(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
     onEntry(logEntryParser.parseConsoleEvent(text, contentType));
@@ -45,12 +53,22 @@ public class FlutterLog {
     }
   }
 
+  public void clear() {
+    // TODO(pq): add locking.
+    entries.clear();
+  }
+  
+  public List<FlutterLogEntry> getEntries() {
+    return Collections.unmodifiableList(new ArrayList<>(entries));
+  }
+
   public void removeListener(@NotNull Listener listener) {
     listeners.remove(listener);
   }
 
   private void onEntry(@Nullable FlutterLogEntry entry) {
     if (entry != null) {
+      entries.add(entry);
       for (Listener listener : listeners) {
         listener.onEvent(entry);
       }
@@ -97,9 +115,5 @@ public class FlutterLog {
   @SuppressWarnings("EmptyMethod")
   private void onVmConnectionClosed() {
     // TODO(pq): handle VM connection closed.
-  }
-
-  public interface Listener {
-    void onEvent(@NotNull FlutterLogEntry entry);
   }
 }

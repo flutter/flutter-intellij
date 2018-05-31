@@ -43,7 +43,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     @Override
     public void actionPerformed(AnActionEvent e) {
       ApplicationManager.getApplication().invokeLater(() -> {
-        logModel.getRoot().removeAllChildren();
+        logModel.clearEntries();
         logModel.update();
       });
     }
