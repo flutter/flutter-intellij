@@ -17,6 +17,7 @@ import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
 import io.flutter.actions.ActionWithAnalytics;
+import io.flutter.actions.OpenInAndroidStudioAction;
 import io.flutter.actions.OpenInXcodeAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,21 +25,33 @@ import org.jetbrains.annotations.Nullable;
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
 
-  private static final ActionWithAnalytics OPEN_IN_XCODE_ACTION = new OpenInXcodeAction() {
+  private static class OpenInXcodeBannerAction extends OpenInXcodeAction {
+    OpenInXcodeBannerAction() {
+      getTemplatePresentation().setText("Open for Editing in Xcode");
+      getTemplatePresentation().setDescription("Open Xcode in a new window to edit this file");
+    }
+
     @NotNull
     @Override
     public String getAnalyticsId() {
       return "OpenInXcode.banner";
     }
-  };
+  }
 
-  private static final ActionWithAnalytics OPEN_IN_ANDROID_STUDIO_ACTION = new OpenInXcodeAction() {
+  private static class OpenInAndroidStudioBannerAction extends OpenInAndroidStudioAction {
+    OpenInAndroidStudioBannerAction() {
+      // Template presentation set up in super.update()
+      // TODO(pq): consider migrating OpenInXcodeBannerAction to do the same.
+    }
     @NotNull
     @Override
     public String getAnalyticsId() {
       return "OpenInAndroidStudio.banner";
     }
-  };
+  }
+
+  private static final ActionWithAnalytics OPEN_IN_XCODE_ACTION = new OpenInXcodeBannerAction();
+  private static final ActionWithAnalytics OPEN_IN_ANDROID_STUDIO_ACTION = new OpenInAndroidStudioBannerAction();
 
   private final Project myProject;
 
