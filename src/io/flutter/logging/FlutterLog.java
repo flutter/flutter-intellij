@@ -5,6 +5,7 @@
  */
 package io.flutter.logging;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
@@ -21,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class FlutterLog {
@@ -57,9 +57,9 @@ public class FlutterLog {
     // TODO(pq): add locking.
     entries.clear();
   }
-  
+
   public List<FlutterLogEntry> getEntries() {
-    return Collections.unmodifiableList(new ArrayList<>(entries));
+    return ImmutableList.copyOf(entries);
   }
 
   public void removeListener(@NotNull Listener listener) {
