@@ -57,9 +57,9 @@ public class FlutterLog {
     // TODO(pq): add locking.
     entries.clear();
   }
-
+  
   public List<FlutterLogEntry> getEntries() {
-    return Collections.unmodifiableList(entries);
+    return Collections.unmodifiableList(new ArrayList<>(entries));
   }
 
   public void removeListener(@NotNull Listener listener) {
