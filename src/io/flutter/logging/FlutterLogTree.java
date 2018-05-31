@@ -107,6 +107,12 @@ public class FlutterLogTree extends TreeTable {
         update();
       });
     }
+
+    public void clearEntries() {
+      log.clear();
+      getRoot().removeAllChildren();
+      update();
+    }
   }
 
   static class LogRootTreeNode extends DefaultMutableTreeNode {
