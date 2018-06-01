@@ -83,11 +83,11 @@ public class FlutterSettings {
   }
 
   public boolean isTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, true);
+    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, false);
   }
 
   public void setTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(trackWidgetCreationKey, value, true);
+    getPropertiesComponent().setValue(trackWidgetCreationKey, value, false);
 
     fireEvent();
   }
