@@ -19,7 +19,7 @@
         </constraints>
         <properties>
           <horizontalAlignment value="4"/>
-          <icon value="general/information.png"/>
+          <icon value="icons/general/information.png"/>
           <text value=""/>
           <toolTipText value="Offline mode auto-selected."/>
         </properties>
