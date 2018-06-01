@@ -8,7 +8,7 @@ environment:
 dependencies:
   args: ^1.0.0
   git: ^0.5.1
-  markdown: ^1.0.0
+  markdown: ^2.0.0
   path: ^1.4.2
 
 dev_dependencies:

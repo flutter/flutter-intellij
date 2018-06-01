@@ -758,7 +758,13 @@ class BuildSpec {
 
   String _parseChangelog() {
     var text = new File('CHANGELOG.md').readAsStringSync();
-    return markdownToHtml(text);
+    var html = markdownToHtml(text);
+    return html
+        .replaceAll('</h2><ul>', '</h2>\n<ul>')
+        .replaceAll('<ul><li>', '<ul>\n  <li>')
+        .replaceAll('</li><li>', '</li>\n  <li>')
+        .replaceAll('</li></ul>', '</li>\n</ul>')
+        .replaceAll('<li>\n<p>', '<li><p>');
   }
 
   String toString() {
