@@ -35,6 +35,26 @@ import java.awt.event.MouseEvent;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
+  //private class FilterTreeTestAction extends AnAction {
+  //  FilterTreeTestAction() {
+  //    super("Test Filtering", "Filter!", AllIcons.Actions.ForceRefresh);
+  //  }
+  //
+  //  boolean toggle;
+  //
+  //  @Override
+  //  public void actionPerformed(AnActionEvent e) {
+  //    // An arbitary-ish filter for testing.
+  //    final FlutterLogTree.EntryFilter filter =
+  //      (toggle = !toggle) ? entry -> !entry.getMessage().contains("reload") : null;
+  //
+  //    ApplicationManager.getApplication().invokeLater(() -> {
+  //      logTree.setFilter(filter);
+  //      logTree.reload();
+  //    });
+  //  }
+  //}
+
   private class ClearLogAction extends AnAction {
     ClearLogAction() {
       super("Clear All", "Clear the log", AllIcons.Actions.GC);
@@ -211,7 +231,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    logModel.onEvent(entry);
+    logTree.reload();
   }
 
   @Override
@@ -283,6 +303,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public AnAction[] createConsoleActions() {
     return new AnAction[]{
+      //new FilterTreeTestAction(),
       new ScrollToEndAction(),
       new ClearLogAction()
     };

@@ -29,6 +29,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.text.SimpleDateFormat;
+import java.util.List;
 
 public class FlutterLogTree extends TreeTable {
 
@@ -99,7 +100,7 @@ public class FlutterLogTree extends TreeTable {
       treeTable = ((TreeTableTree)tree).getTreeTable();
     }
 
-    public void onEvent(FlutterLogEntry entry) {
+    public void appendNode(FlutterLogEntry entry) {
       final MutableTreeNode root = getRoot();
       final FlutterEventNode node = new FlutterEventNode(entry);
       ApplicationManager.getApplication().invokeLater(() -> {
@@ -263,7 +264,12 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
+  public interface EntryFilter {
+    boolean accept(@NotNull FlutterLogEntry entry);
+  }
+
   private final LogTreeModel model;
+  private EntryFilter filter;
 
   public FlutterLogTree(@NotNull FlutterApp app, @NotNull Disposable parent) {
     this(new LogTreeModel(app, parent));
@@ -285,5 +291,36 @@ public class FlutterLogTree extends TreeTable {
     // TODO(pq): figure out why this isn't happening on it's own
     @SuppressWarnings("unchecked") final TableCellRenderer renderer = model.getColumns()[column].getRenderer(null);
     return renderer != null ? renderer : super.getCellRenderer(row, column);
+  }
+
+  public void setFilter(@Nullable EntryFilter filter) {
+    this.filter = filter;
+  }
+
+  void reload() {
+
+    // TODO(pq): tune update timer and calls to update().
+
+    ApplicationManager.getApplication().invokeLater(() -> {
+      model.getRoot().removeAllChildren();
+      model.update();
+    });
+
+    final List<FlutterLogEntry> entries = model.log.getEntries();
+    final int totalEntries = entries.size();
+    final int[] filteredEntries = new int[1];
+
+    entries.forEach(entry -> {
+      if (filter == null || filter.accept(entry)) {
+        model.appendNode(entry);
+      }
+      else {
+        ++filteredEntries[0];
+      }
+    });
+
+    //TODO(pq): add filter/total count to the status line or toolbar.
+    //System.out.println("filtered: " + filteredEntries[0]);
+    //System.out.println("total: " + totalEntries);
   }
 }
