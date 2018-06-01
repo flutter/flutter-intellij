@@ -1,5 +1,4 @@
 ## 25.0
-- have the Inspector's --track-widget-creation option default to on
 - remove the user preference to disable --preview-dart-2
 - don't use 'new' for the stless, stfull, stanim templates
 - add support for IntelliJ 2018.2 EAP (#2270)

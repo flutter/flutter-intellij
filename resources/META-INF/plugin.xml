@@ -29,7 +29,6 @@
     <![CDATA[
 <h2>25.0</h2>
 <ul>
-  <li>have the Inspector's --track-widget-creation option default to on</li>
   <li>remove the user preference to disable --preview-dart-2</li>
   <li>don't use 'new' for the stless, stfull, stanim templates</li>
   <li>add support for IntelliJ 2018.2 EAP (#2270)</li>
