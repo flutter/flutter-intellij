@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService.frame;
+package io.flutter.server.vmService.frame;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.ColoredTextContainer;

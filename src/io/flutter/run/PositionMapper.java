@@ -20,7 +20,7 @@ import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
+import io.flutter.server.vmService.DartVmServiceDebugProcessZ;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;

@@ -1,10 +1,10 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService.frame;
+package io.flutter.server.vmService.frame;
 
 import com.google.gson.JsonElement;
 import com.intellij.icons.AllIcons;
 import com.intellij.util.SmartList;
 import com.intellij.xdebugger.frame.*;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;

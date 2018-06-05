@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService;
+package io.flutter.server.vmService;
 
 import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionResult;
@@ -37,9 +37,9 @@ import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.actions.DartPopFrameAction;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceEvaluator;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceStackFrame;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSuspendContext;
+import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
+import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
+import io.flutter.server.vmService.frame.DartVmServiceSuspendContext;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;

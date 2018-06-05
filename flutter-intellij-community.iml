@@ -9,8 +9,8 @@
       <sourceFolder url="file://$MODULE_DIR$/testSrc/integration" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/gen" isTestSource="false" generated="true" />
-      <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/third_party/intellij-plugins-dart/testSrc" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/third_party/vmServiceDrivers" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />

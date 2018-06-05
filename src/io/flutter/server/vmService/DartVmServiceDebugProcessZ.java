@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService;
+package io.flutter.server.vmService;
 
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.filters.OpenFileHyperlinkInfo;
@@ -24,8 +24,9 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceStackFrame;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceSuspendContext;
+import io.flutter.server.vmService.VmOpenSourceLocationListener;
+import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
+import io.flutter.server.vmService.frame.DartVmServiceSuspendContext;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashSet;
 import io.flutter.FlutterBundle;

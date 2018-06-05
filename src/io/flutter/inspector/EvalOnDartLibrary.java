@@ -12,7 +12,7 @@ import com.intellij.util.Alarm;
 import com.intellij.util.Producer;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XSourcePosition;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import io.flutter.perf.PerfService;
 import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;

@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package com.jetbrains.lang.dart.ide.runner.server.vmService;
+package io.flutter.server.vmService;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -23,8 +23,6 @@ import java.net.URISyntaxException;
 import java.util.EventListener;
 
 /**
- * TODO(cbernaschina) remove when changes to Dart Plugin land
- *
  * This class manages the openSourceLocation VM service registration and exposes the request as an event to listeners.
  */
 public class VmOpenSourceLocationListener {

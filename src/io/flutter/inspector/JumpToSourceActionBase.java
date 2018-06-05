@@ -11,7 +11,7 @@ import com.intellij.ui.AppUIUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.frame.DartVmServiceValue;
+import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.FlutterInitializer;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;

@@ -586,8 +586,6 @@ class BuildCommand extends ProductCommand {
       copyResources(from: 'src', to: 'build/classes');
       copyResources(from: 'resources', to: 'build/classes');
       copyResources(from: 'gen', to: 'build/classes');
-      copyResources(
-          from: 'third_party/intellij-plugins-dart/src', to: 'build/classes');
       await genPluginFiles(spec, 'build/classes');
 
       // create the jars
