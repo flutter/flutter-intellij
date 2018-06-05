@@ -8,9 +8,7 @@ responseRequiredLabel: "waiting for customer response"
 
 # Comment to post when closing an Issue for lack of response. Set to `false` to disable
 closeComment: >-
-  Without additional information, we are unfortunately not sure how to
-  resolve this issue. We are therefore reluctantly going to close this
-  bug for now. Please don't hesitate to comment on the bug if you have
-  any more information for us; we will reopen it right away!
-
-  Thanks for your contribution.
+  Without additional information we're unfortunately not sure how to resolve
+  this issue. We're going to close this bug for now, but please don't hesitate
+  to comment on the bug if you have any more information for us; we're happy to
+  reopen. Thanks for your contribution!
