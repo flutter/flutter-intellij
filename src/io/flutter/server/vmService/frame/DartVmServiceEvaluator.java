@@ -1,6 +1,7 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService.frame;
+package io.flutter.server.vmService.frame;
 
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
@@ -15,7 +16,7 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.ExpressionInfo;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XValue;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import gnu.trove.THashSet;
@@ -74,11 +75,11 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
     else {
       // TODO(jacobr): we could use the most recently selected Dart file instead
       // of using the selected file.
-      final FileEditor editor = manager.getSelectedEditor();
+      final Editor editor = manager.getSelectedTextEditor();
       if (editor instanceof TextEditor) {
         final TextEditor textEditor = (TextEditor)editor;
         final FileEditorLocation fileEditorLocation = textEditor.getCurrentLocation();
-        final VirtualFile virtualFile = editor.getFile();
+        final VirtualFile virtualFile = textEditor.getFile();
         if (virtualFile != null) {
           psiFile = PsiManager.getInstance(project).findFile(virtualFile);
           if (psiFile != null && fileEditorLocation instanceof TextEditorLocation) {

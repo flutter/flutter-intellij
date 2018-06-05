@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService;
+package io.flutter.server.vmService;
 
 import gnu.trove.THashMap;
 import org.dartlang.vm.service.element.Isolate;

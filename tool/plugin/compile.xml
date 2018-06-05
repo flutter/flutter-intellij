@@ -69,9 +69,10 @@ Include -D arguments to define these properties: idea.product, idea.version.
         <include name="src"/>
         <include name="resources"/>
         <include name="gen"/>
-        <include name="third_party/intellij-plugins-dart/src"/>
+        <include name="third_party/vmServiceDrivers"/>
       </dirset>
     </path>
+
 
     <path id="studioSrc.sourcepath">
       <dirset dir="flutter-studio">

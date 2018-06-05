@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService;
+package io.flutter.server.vmService;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;

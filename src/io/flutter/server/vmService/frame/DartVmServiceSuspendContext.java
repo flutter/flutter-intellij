@@ -1,9 +1,9 @@
-package com.jetbrains.lang.dart.ide.runner.server.vmService.frame;
+package io.flutter.server.vmService.frame;
 
 import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XSuspendContext;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcess;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.IsolatesInfo;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.server.vmService.IsolatesInfo;
 import org.dartlang.vm.service.element.Frame;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.dartlang.vm.service.element.IsolateRef;

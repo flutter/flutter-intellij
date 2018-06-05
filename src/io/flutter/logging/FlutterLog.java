@@ -13,7 +13,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
+import io.flutter.server.vmService.VmServiceConsumers;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;

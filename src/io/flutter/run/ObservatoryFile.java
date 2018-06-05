@@ -11,7 +11,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.DartFileType;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.DartVmServiceDebugProcessZ;
+import io.flutter.server.vmService.DartVmServiceDebugProcessZ;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
 import org.dartlang.vm.service.element.Script;

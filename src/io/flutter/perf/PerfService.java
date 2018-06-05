@@ -7,7 +7,7 @@ package io.flutter.perf;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.text.StringUtil;
-import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
+import io.flutter.server.vmService.VmServiceConsumers;
 import gnu.trove.THashMap;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
