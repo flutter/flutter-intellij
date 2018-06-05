@@ -243,6 +243,9 @@ public class FlutterReloadManager {
         else if (result.isRestartRecommended()) {
           showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
         }
+      }).exceptionally(throwable -> {
+        showRunNotification(app, "Hot Reload", throwable.getMessage(), true);
+        return null;
       });
     }
   }
@@ -254,6 +257,9 @@ public class FlutterReloadManager {
         if (!result.ok()) {
           showRunNotification(app, "Hot Restart", result.getMessage(), true);
         }
+      }).exceptionally(throwable -> {
+        showRunNotification(app, "Hot Restart", throwable.getMessage(), true);
+        return null;
       });
 
       final FlutterDevice device = DeviceService.getInstance(myProject).getSelectedDevice();
