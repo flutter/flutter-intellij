@@ -13,27 +13,115 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.SearchTextField;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.SimpleTreeBuilder;
+import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
+
+  // based on com.intellij.openapi.vcs.ui.SearchFieldAction
+  private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
+    private final JPanel myComponent;
+    private final SearchTextField myField;
+
+    public FilterToolbarAction() {
+      myField = new SearchTextField(true) {
+        @Override
+        protected boolean preprocessEventForTextField(KeyEvent e) {
+          if ((KeyEvent.VK_ENTER == e.getKeyCode()) || ('\n' == e.getKeyChar())) {
+            e.consume();
+            addCurrentTextToHistory();
+            actionPerformed(null);
+          }
+          return super.preprocessEventForTextField(e);
+        }
+
+        @Override
+        protected void onFocusLost() {
+          myField.addCurrentTextToHistory();
+          actionPerformed(null);
+        }
+
+        @Override
+        protected void onFieldCleared() {
+          actionPerformed(null);
+        }
+      };
+      final Border border = myField.getBorder();
+      final Border emptyBorder = JBUI.Borders.empty(3, 0, 2, 0);
+      if (border instanceof CompoundBorder) {
+        if (!UIUtil.isUnderDarcula()) {
+          myField.setBorder(new CompoundBorder(emptyBorder, ((CompoundBorder)border).getInsideBorder()));
+        }
+      }
+      else {
+        myField.setBorder(emptyBorder);
+      }
+
+      myField.setSearchIcon(AllIcons.General.Filter);
+      myComponent = new JPanel();
+      final BoxLayout layout = new BoxLayout(myComponent, BoxLayout.X_AXIS);
+      myComponent.setLayout(layout);
+      //if (text.length() > 0) {
+      //  final JLabel label = new JLabel(text);
+      //  //label.setFont(label.getFont().deriveFont(Font.ITALIC));
+      //  label.setForeground(UIUtil.isUnderDarcula() ? UIUtil.getLabelForeground() : UIUtil.getInactiveTextColor());
+      //  label.setBorder(JBUI.Borders.emptyLeft(3));
+      //  myComponent.add(label);
+      //}
+      myComponent.add(myField);
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      // TODO(pq): support regexp matching (and add a mode toggle).
+      final String text = getText();
+      final FlutterLogTree.EntryFilter filter = StringUtils.isEmpty(text) ? null : (entry) ->
+        entry.getMessage().contains(text);
+
+      ApplicationManager.getApplication().invokeLater(() -> {
+        logTree.setFilter(filter);
+        logTree.reload();
+      });
+    }
+
+    public String getText() {
+      return myField.getText();
+    }
+
+    @Override
+    public JComponent createCustomComponent(Presentation presentation) {
+      return myComponent;
+    }
+
+    public void setTextFieldFg(boolean inactive) {
+      myField.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
+    }
+  }
 
   //private class FilterTreeTestAction extends AnAction {
   //  FilterTreeTestAction() {
@@ -185,7 +273,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
 
       // TODO(pq): add keybindings
-
     });
 
     // Set bounds.
@@ -222,10 +309,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     return app.getFlutterLog();
   }
 
+
   private DefaultActionGroup createToolbar() {
-    //noinspection UnnecessaryLocalVariable
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    // TODO(pq): add toolbar items.
+    toolbarGroup.add(new FilterToolbarAction());
     return toolbarGroup;
   }
 
@@ -334,5 +421,4 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public JComponent getPreferredFocusableComponent() {
     return logTree;
   }
-
 }
