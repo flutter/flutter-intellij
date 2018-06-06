@@ -11,8 +11,8 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
+import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.ide.runner.server.vmService.VmServiceConsumers;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -22,17 +22,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 
 public class FlutterLog {
 
   public static final String LOGGING_STREAM_ID = "_Logging";
 
-  public interface Listener {
+  public interface Listener extends EventListener {
     void onEvent(@NotNull FlutterLogEntry entry);
   }
 
-  private final List<Listener> listeners = new ArrayList<>();
+  private final EventDispatcher<Listener>
+    dispatcher = EventDispatcher.create(Listener.class);
+
   private final FlutterLogEntryParser logEntryParser = new FlutterLogEntryParser();
 
   // TODO(pq): consider limiting size.
@@ -46,11 +49,8 @@ public class FlutterLog {
     onEntry(logEntryParser.parseConsoleEvent(text, contentType));
   }
 
-  public void addListener(@NotNull Listener listener, @Nullable Disposable parent) {
-    listeners.add(listener);
-    if (parent != null) {
-      Disposer.register(parent, () -> listeners.remove(listener));
-    }
+  public void addListener(@NotNull Listener listener, @NotNull Disposable parent) {
+    dispatcher.addListener(listener, parent);
   }
 
   public void clear() {
@@ -63,15 +63,13 @@ public class FlutterLog {
   }
 
   public void removeListener(@NotNull Listener listener) {
-    listeners.remove(listener);
+    dispatcher.removeListener(listener);
   }
 
   private void onEntry(@Nullable FlutterLogEntry entry) {
     if (entry != null) {
       entries.add(entry);
-      for (Listener listener : listeners) {
-        listener.onEvent(entry);
-      }
+      dispatcher.getMulticaster().onEvent(entry);
     }
   }
 
