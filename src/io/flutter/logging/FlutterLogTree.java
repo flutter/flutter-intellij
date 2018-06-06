@@ -30,6 +30,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class FlutterLogTree extends TreeTable {
 
@@ -113,6 +115,14 @@ public class FlutterLogTree extends TreeTable {
       log.clear();
       getRoot().removeAllChildren();
       update();
+    }
+
+    public void appendNodes(List<FlutterLogEntry> entries) {
+      final MutableTreeNode root = getRoot();
+      ApplicationManager.getApplication().invokeLater(() -> {
+        entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
+        update();
+      });
     }
   }
 
@@ -264,6 +274,34 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
+
+  public static class ContainsTextFilter implements EntryFilter {
+    private final String text;
+
+    public ContainsTextFilter(String text) {
+      this.text = text;
+    }
+
+    public String getText() {
+      return text;
+    }
+
+    @Override
+    public boolean accept(@NotNull FlutterLogEntry entry) {
+      return text == null || entry.getMessage().contains(text);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return obj instanceof ContainsTextFilter && ((ContainsTextFilter)obj).text.equals(this.text);
+    }
+
+    @Override
+    public int hashCode() {
+      return 13 ^ Objects.hashCode(text);
+    }
+  }
+
   public interface EntryFilter {
     boolean accept(@NotNull FlutterLogEntry entry);
   }
@@ -294,33 +332,31 @@ public class FlutterLogTree extends TreeTable {
   }
 
   public void setFilter(@Nullable EntryFilter filter) {
-    this.filter = filter;
+    // Only set and reload if the filter has changed.
+    if (!Objects.equals(this.filter, filter)) {
+      this.filter = filter;
+      reload();
+    }
   }
 
   void reload() {
-
-    // TODO(pq): tune update timer and calls to update().
-
     ApplicationManager.getApplication().invokeLater(() -> {
       model.getRoot().removeAllChildren();
-      model.update();
+
+      final List<FlutterLogEntry> entries = model.log.getEntries();
+      final List<FlutterLogEntry> matched = entries.stream()
+        .filter(entry -> filter == null || filter.accept(entry)).collect(Collectors.toList());
+
+      //final int totalEntries = entries.size();
+      //final int filteredEntries = totalEntries - matched.size();
+
+      model.appendNodes(matched);
     });
 
-    final List<FlutterLogEntry> entries = model.log.getEntries();
-    final int totalEntries = entries.size();
-    final int[] filteredEntries = new int[1];
-
-    entries.forEach(entry -> {
-      if (filter == null || filter.accept(entry)) {
-        model.appendNode(entry);
-      }
-      else {
-        ++filteredEntries[0];
-      }
-    });
+    model.reload();
 
     //TODO(pq): add filter/total count to the status line or toolbar.
-    //System.out.println("filtered: " + filteredEntries[0]);
+    //System.out.println("filtered: " + filteredEntries);
     //System.out.println("total: " + totalEntries);
   }
 }
