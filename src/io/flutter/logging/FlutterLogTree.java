@@ -9,14 +9,12 @@ import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.module.Module;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
-import com.intellij.util.Alarm;
 import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
@@ -24,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -40,11 +37,7 @@ public class FlutterLogTree extends TreeTable {
 
   static class LogTreeModel extends ListTreeTableModelOnColumns {
     @NotNull
-    private final Runnable updateRunnable;
-    @NotNull
     private final FlutterLog log;
-    @NotNull
-    private final Alarm updateAlarm;
     boolean autoScrollToEnd;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
@@ -59,18 +52,6 @@ public class FlutterLogTree extends TreeTable {
 
       // Scroll to end by default.
       autoScrollToEnd = true;
-
-      updateRunnable = () -> {
-        ((AbstractTableModel)treeTable.getModel()).fireTableDataChanged();
-        reload(getRoot());
-        treeTable.updateUI();
-
-        if (autoScrollToEnd) {
-          scrollToEnd();
-        }
-      };
-
-      updateAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
 
     void scrollToEnd() {
@@ -81,9 +62,11 @@ public class FlutterLogTree extends TreeTable {
     }
 
     void update() {
-      if (!updateAlarm.isDisposed()) {
-        updateAlarm.cancelAllRequests();
-        updateAlarm.addRequest(updateRunnable, 0, ModalityState.stateForComponent(treeTable));
+      reload(getRoot());
+      treeTable.updateUI();
+
+      if (autoScrollToEnd) {
+        scrollToEnd();
       }
     }
 
@@ -347,13 +330,9 @@ public class FlutterLogTree extends TreeTable {
       final List<FlutterLogEntry> matched = entries.stream()
         .filter(entry -> filter == null || filter.accept(entry)).collect(Collectors.toList());
 
-      //final int totalEntries = entries.size();
-      //final int filteredEntries = totalEntries - matched.size();
-
       model.appendNodes(matched);
+      model.update();
     });
-
-    model.reload();
 
     //TODO(pq): add filter/total count to the status line or toolbar.
     //System.out.println("filtered: " + filteredEntries);
