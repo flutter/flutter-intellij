@@ -15,6 +15,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
+import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
@@ -26,6 +27,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.text.SimpleDateFormat;
+import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -289,6 +291,12 @@ public class FlutterLogTree extends TreeTable {
     boolean accept(@NotNull FlutterLogEntry entry);
   }
 
+  public interface EventCountListener extends EventListener {
+    void updated(int filtered, int total);
+  }
+
+  private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
+
   private final LogTreeModel model;
   private EntryFilter filter;
 
@@ -300,6 +308,14 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
+  }
+
+  public void addListener(@NotNull EventCountListener listener, @NotNull Disposable parent) {
+    countDispatcher.addListener(listener, parent);
+  }
+
+  public void removeListener(@NotNull EventCountListener listener) {
+    countDispatcher.removeListener(listener);
   }
 
   @NotNull
@@ -332,10 +348,8 @@ public class FlutterLogTree extends TreeTable {
 
       model.appendNodes(matched);
       model.update();
-    });
 
-    //TODO(pq): add filter/total count to the status line or toolbar.
-    //System.out.println("filtered: " + filteredEntries);
-    //System.out.println("total: " + totalEntries);
+      countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
+    });
   }
 }

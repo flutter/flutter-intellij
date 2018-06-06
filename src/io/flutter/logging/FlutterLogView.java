@@ -20,6 +20,7 @@ import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SearchTextField;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.SimpleTreeBuilder;
@@ -184,6 +185,59 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
+  private class FilterStatusLabel extends AnAction implements CustomComponentAction, RightAlignedToolbarAction,
+                                                              FlutterLogTree.EventCountListener {
+
+    JBLabel label;
+    JPanel panel;
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      // None.  Just an info display.
+    }
+
+    @Override
+    public JComponent createCustomComponent(Presentation presentation) {
+      panel = new JPanel();
+
+      label = new JBLabel();
+      label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+      label.setForeground(UIUtil.getInactiveTextColor());
+      label.setBorder(JBUI.Borders.emptyRight(10));
+      panel.add(label);
+
+      logTree.addListener(this, FlutterLogView.this);
+
+      return panel;
+    }
+
+    @Override
+    public void updated(int filtered, int total) {
+      if (label != null && label.isVisible()) {
+
+        final StringBuilder sb = new StringBuilder();
+        sb.append(total).append(" event");
+        if (total > 1) {
+          sb.append("s");
+        }
+        if (filtered > 0) {
+          sb.append(" (").append(filtered).append(" filtered)");
+        }
+
+        label.setText(sb.toString());
+        SwingUtilities.invokeLater(panel::repaint);
+      }
+    }
+
+
+    String countString(int count) {
+      if (count > 1000) {
+        return "1000+";
+      }
+      return Integer.toString(count);
+    }
+  }
+
   @NotNull final FlutterApp app;
   private final SimpleToolWindowPanel toolWindowPanel;
   @NotNull
@@ -284,10 +338,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     return app.getFlutterLog();
   }
 
-
   private DefaultActionGroup createToolbar() {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(new FilterToolbarAction());
+    toolbarGroup.add(new FilterStatusLabel());
     return toolbarGroup;
   }
 
