@@ -200,9 +200,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public JComponent createCustomComponent(Presentation presentation) {
       panel = new JPanel();
 
-      final BoxLayout layout = new BoxLayout(panel, BoxLayout.X_AXIS);
-      panel.setLayout(layout);
-
       label = new JBLabel();
       label.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
       label.setForeground(UIUtil.getInactiveTextColor());
