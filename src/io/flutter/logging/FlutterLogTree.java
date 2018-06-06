@@ -310,7 +310,7 @@ public class FlutterLogTree extends TreeTable {
     this.model = model;
   }
 
-  public void addListener(@NotNull EventCountListener listener, @Nullable Disposable parent) {
+  public void addListener(@NotNull EventCountListener listener, @NotNull Disposable parent) {
     countDispatcher.addListener(listener, parent);
   }
 
