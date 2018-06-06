@@ -100,13 +100,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public void actionPerformed(AnActionEvent e) {
       // TODO(pq): support regexp matching (and add a mode toggle).
       final String text = getText();
-      final FlutterLogTree.EntryFilter filter = StringUtils.isEmpty(text) ? null : (entry) ->
-        entry.getMessage().contains(text);
-
-      ApplicationManager.getApplication().invokeLater(() -> {
-        logTree.setFilter(filter);
-        logTree.reload();
-      });
+      final FlutterLogTree.EntryFilter filter = StringUtils.isEmpty(text) ? null : new FlutterLogTree.ContainsTextFilter(text);
+      ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
     }
 
     public String getText() {
@@ -122,26 +117,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       myField.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
     }
   }
-
-  //private class FilterTreeTestAction extends AnAction {
-  //  FilterTreeTestAction() {
-  //    super("Test Filtering", "Filter!", AllIcons.Actions.ForceRefresh);
-  //  }
-  //
-  //  boolean toggle;
-  //
-  //  @Override
-  //  public void actionPerformed(AnActionEvent e) {
-  //    // An arbitary-ish filter for testing.
-  //    final FlutterLogTree.EntryFilter filter =
-  //      (toggle = !toggle) ? entry -> !entry.getMessage().contains("reload") : null;
-  //
-  //    ApplicationManager.getApplication().invokeLater(() -> {
-  //      logTree.setFilter(filter);
-  //      logTree.reload();
-  //    });
-  //  }
-  //}
 
   private class ClearLogAction extends AnAction {
     ClearLogAction() {
@@ -390,7 +365,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public AnAction[] createConsoleActions() {
     return new AnAction[]{
-      //new FilterTreeTestAction(),
       new ScrollToEndAction(),
       new ClearLogAction()
     };
