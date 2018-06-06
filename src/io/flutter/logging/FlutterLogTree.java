@@ -10,12 +10,12 @@ import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
+import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
@@ -27,7 +27,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -291,11 +291,12 @@ public class FlutterLogTree extends TreeTable {
     boolean accept(@NotNull FlutterLogEntry entry);
   }
 
-  public interface EventCountListener {
+  public interface EventCountListener extends EventListener {
     void updated(int filtered, int total);
   }
 
-  private final List<EventCountListener> countListeners = new ArrayList<>();
+  private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
+
   private final LogTreeModel model;
   private EntryFilter filter;
 
@@ -310,14 +311,11 @@ public class FlutterLogTree extends TreeTable {
   }
 
   public void addListener(@NotNull EventCountListener listener, @Nullable Disposable parent) {
-    countListeners.add(listener);
-    if (parent != null) {
-      Disposer.register(parent, () -> countListeners.remove(listener));
-    }
+    countDispatcher.addListener(listener, parent);
   }
 
   public void removeListener(@NotNull EventCountListener listener) {
-    countListeners.remove(listener);
+    countDispatcher.removeListener(listener);
   }
 
   @NotNull
@@ -351,9 +349,7 @@ public class FlutterLogTree extends TreeTable {
       model.appendNodes(matched);
       model.update();
 
-      for (EventCountListener listener : countListeners) {
-        listener.updated(entries.size() - matched.size(), entries.size());
-      }
+      countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
     });
   }
 }
