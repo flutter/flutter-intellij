@@ -1,6 +1,7 @@
 {
   "list": [
     {
+      "comments": "AS 3.1 and IntelliJ 2017.3",
       "name": "IntelliJ",
       "version": "2017.3",
       "ideaProduct": "android-studio",
@@ -10,15 +11,17 @@
       "untilBuild": "173.*"
     },
     {
+      "comments": "AS 3.2 Canary and IntelliJ 2018.1",
       "name": "IntelliJ",
       "version": "2018.1",
       "ideaProduct": "android-studio",
-      "ideaVersion": "181.4763614",
+      "ideaVersion": "181.4802120",
       "dartPluginVersion": "181.4668.60",
       "sinceBuild": "181.0",
       "untilBuild": "181.*"
     },
     {
+      "comments": "IntelliJ 2018.2 EAP",
       "name": "IntelliJ",
       "version": "2018.2",
       "ideaProduct": "ideaIC",
