@@ -287,8 +287,6 @@ class ElasticOutCurve extends Curve {
     this(0.4);
   }
 
-  ;
-
   public ElasticOutCurve(double period) {
     this.period = period;
   }

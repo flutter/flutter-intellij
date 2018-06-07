@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class System {
@@ -33,7 +34,7 @@ public class System {
       final OSProcessHandler process = new OSProcessHandler(cmd);
       process.addProcessListener(new ProcessAdapter() {
         @Override
-        public void onTextAvailable(ProcessEvent event, Key outputType) {
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           if (outputType == ProcessOutputTypes.STDOUT) {
             stringBuilder.append(event.getText());
           }

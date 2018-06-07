@@ -46,7 +46,7 @@ public class FlutterConsoleFilter implements Filter {
         final OSProcessHandler handler = new OSProcessHandler(cmd);
         handler.addProcessListener(new ProcessAdapter() {
           @Override
-          public void processTerminated(final ProcessEvent event) {
+          public void processTerminated(@NotNull final ProcessEvent event) {
             if (event.getExitCode() != 0) {
               FlutterMessages.showError("Error Opening ", myPath);
             }

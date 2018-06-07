@@ -196,7 +196,7 @@ public class InstallSdkAction extends DumbAwareAction {
       @SuppressWarnings("DialogTitleCapitalization") final FileChooserDescriptor descriptor =
         new FileChooserDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
           @Override
-          public void validateSelectedFiles(VirtualFile[] files) throws Exception {
+          public void validateSelectedFiles(VirtualFile[] files) {
             for (VirtualFile file : files) {
               // Eliminate some false positives, which occurs when an existing directory is deleted.
               VfsUtil.markDirtyAndRefresh(false, true, true, file);
@@ -279,12 +279,12 @@ public class InstallSdkAction extends DumbAwareAction {
       final void registerTo(OSProcessHandler handler) {
         handler.addProcessListener(new ProcessAdapter() {
           @Override
-          public void startNotified(ProcessEvent event) {
+          public void startNotified(@NotNull ProcessEvent event) {
             setInProgress(true);
           }
 
           @Override
-          public void processTerminated(ProcessEvent event) {
+          public void processTerminated(@NotNull ProcessEvent event) {
             // Order matters here as onSuccess may produce more progress info.
             setInProgress(false);
 
@@ -297,7 +297,7 @@ public class InstallSdkAction extends DumbAwareAction {
           }
 
           @Override
-          public void onTextAvailable(ProcessEvent event, Key outputType) {
+          public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
             InstallCommand.this.onTextAvailable(event, outputType);
           }
         });

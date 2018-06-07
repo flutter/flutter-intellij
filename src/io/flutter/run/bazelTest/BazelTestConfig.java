@@ -70,13 +70,13 @@ public class BazelTestConfig extends LocatableConfigurationBase {
   }
 
   @Override
-  public void writeExternal(final Element element) throws WriteExternalException {
+  public void writeExternal(@NotNull final Element element) throws WriteExternalException {
     super.writeExternal(element);
     XmlSerializer.serializeInto(fields, element, new SkipDefaultValuesSerializationFilters());
   }
 
   @Override
-  public void readExternal(final Element element) throws InvalidDataException {
+  public void readExternal(@NotNull final Element element) throws InvalidDataException {
     super.readExternal(element);
     XmlSerializer.deserializeInto(fields, element);
   }
