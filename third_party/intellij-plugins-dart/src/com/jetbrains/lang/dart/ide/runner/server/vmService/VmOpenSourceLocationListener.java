@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.util.EventDispatcher;
 import de.roderick.weberknecht.WebSocket;
 import de.roderick.weberknecht.WebSocketEventHandler;
 import de.roderick.weberknecht.WebSocketException;
@@ -19,8 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.EventListener;
 
 /**
  * TODO(cbernaschina) remove when changes to Dart Plugin land
@@ -35,7 +35,7 @@ public class VmOpenSourceLocationListener {
     void close();
   }
 
-  public interface Listener {
+  public interface Listener extends EventListener {
     void onRequest(@NotNull String isolateId, @NotNull String scriptId, int tokenPos);
   }
 
@@ -128,18 +128,19 @@ public class VmOpenSourceLocationListener {
   }
 
   final MessageSender sender;
-  final List<Listener> listeners = new ArrayList<>();
+  EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
+
 
   private VmOpenSourceLocationListener(@NotNull final MessageSender sender) {
     this.sender = sender;
   }
 
   public void addListener(@NotNull Listener listener) {
-    listeners.add(listener);
+    dispatcher.addListener(listener);
   }
 
   public void removeListener(@NotNull Listener listener) {
-    listeners.remove(listener);
+    dispatcher.removeListener(listener);
   }
 
   public void disconnect() {
@@ -183,9 +184,7 @@ public class VmOpenSourceLocationListener {
 
       tokenPos = params.get("tokenPos").getAsInt();
 
-      for (Listener listener : listeners) {
-        listener.onRequest(isolateId, scriptId, tokenPos);
-      }
+      dispatcher.getMulticaster().onRequest(isolateId, scriptId, tokenPos);
 
     } catch (Exception e) {
       LOG.warn(e);
