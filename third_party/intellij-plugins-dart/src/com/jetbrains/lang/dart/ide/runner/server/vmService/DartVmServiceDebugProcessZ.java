@@ -325,7 +325,7 @@ public class DartVmServiceDebugProcessZ extends DartVmServiceDebugProcess {
     myVmServiceWrapper.getObject(isolateId, scriptId, new GetObjectConsumer() {
       @Override
       public void received(Obj response) {
-        if (response != null && response instanceof Script) {
+        if (response instanceof Script) {
           ApplicationManager.getApplication().executeOnPooledThread(() -> {
             final XSourcePosition source =
               getSourcePosition(isolateId, (Script)response, tokenPos);

@@ -114,7 +114,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     public Connector(ProcessHandler handler) {
       listener = new ProcessAdapter() {
         @Override
-        public void onTextAvailable(ProcessEvent event, Key outputType) {
+        public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
           if (!outputType.equals(ProcessOutputTypes.STDOUT)) {
             return;
           }
@@ -137,7 +137,7 @@ public class BazelTestRunner extends GenericProgramRunner {
         }
 
         @Override
-        public void processWillTerminate(ProcessEvent event, boolean willBeDestroyed) {
+        public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
           handler.removeProcessListener(listener);
         }
       };
