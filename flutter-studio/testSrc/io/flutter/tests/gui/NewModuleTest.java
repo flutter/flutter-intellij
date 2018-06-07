@@ -6,7 +6,7 @@
 package io.flutter.tests.gui;
 
 import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
-import com.android.tools.idea.tests.gui.framework.GuiTestRunner;
+import com.android.tools.idea.tests.gui.framework.GuiTestSuiteRunner;
 import com.android.tools.idea.tests.gui.framework.fixture.EditorFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
@@ -20,6 +20,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 
+import java.io.IOException;
+
 import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(NewModuleTest.CustomRunner.class)
@@ -30,10 +32,10 @@ public class NewModuleTest {
    * This needs to be done by the test runner because the test framework
    * initializes the path before the test class is loaded.
    */
-  public static class CustomRunner extends GuiTestRunner {
+  public static class CustomRunner extends GuiTestSuiteRunner {
 
-    public CustomRunner(Class<?> testClass) throws InitializationError {
-      super(testClass);
+    public CustomRunner(Class<?> testClass) throws InitializationError, IOException {
+      super(testClass, null); // TODO(mesick) Fix this quick hack.
       System.setProperty("gui.tests.root.dir.path", "somewhere");
     }
 

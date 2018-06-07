@@ -16,7 +16,7 @@
 package io.flutter.tests.gui;
 
 import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
-import com.android.tools.idea.tests.gui.framework.GuiTestRunner;
+import com.android.tools.idea.tests.gui.framework.GuiTestSuiteRunner;
 import com.android.tools.idea.tests.gui.framework.fixture.EditorFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.intellij.ide.ui.UISettings;
@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
  * cd community
  * ln -s ../platform .
  */
-@RunWith(GuiTestRunner.class)
+@RunWith(GuiTestSuiteRunner.class)
 public class ProjectWizardTest {
   @Rule public final FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
 

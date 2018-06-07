@@ -14,10 +14,12 @@ import com.android.tools.idea.projectsystem.gradle.GradleProjectSystemProvider;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiElementFinder;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.file.Path;
+import java.util.Collection;
 
 public class FlutterProjectSystem implements AndroidProjectSystem {
   @NotNull final private GradleProjectSystem gradleProjectSystem;
@@ -76,5 +78,14 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Nullable
   public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
     return null;
+  }
+
+  @NotNull
+  public Collection<PsiElementFinder> getPsiElementFinders() {
+    return null;//gradleProjectSystem.getPsiElementFinders();
+  }
+
+  public boolean getAugmentRClasses() {
+    return false;
   }
 }

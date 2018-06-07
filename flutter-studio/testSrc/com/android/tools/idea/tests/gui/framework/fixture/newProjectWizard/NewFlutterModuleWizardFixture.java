@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-import static com.android.tools.idea.tests.gui.framework.GuiTests.findAndClickButtonWhenEnabled;
+//import static com.android.tools.idea.tests.gui.framework.GuiTests.findAndClickButtonWhenEnabled;
 
 public class NewFlutterModuleWizardFixture extends AbstractWizardFixture<NewFlutterModuleWizardFixture> {
 
@@ -69,7 +69,7 @@ public class NewFlutterModuleWizardFixture extends AbstractWizardFixture<NewFlut
   public NewFlutterModuleWizardFixture clickFinish() {
     // Do not user superclass method. When the project/module wizard is run from the IDE (not the Welcome screen)
     // the dialog does not disappear within the time allotted by the superclass method.
-    findAndClickButtonWhenEnabled(this, "Finish");
+    //findAndClickButtonWhenEnabled(this, "Finish"); TODO(messick) Fix this quick hack.
     Wait.seconds(30).expecting("dialog to disappear").until(() -> !target().isShowing());
     return myself();
   }
