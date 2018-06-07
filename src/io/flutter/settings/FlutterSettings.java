@@ -9,9 +9,11 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
 
 import java.util.ArrayList;
+import java.util.EventListener;
 import java.util.List;
 
 public class FlutterSettings {
@@ -33,11 +35,11 @@ public class FlutterSettings {
     return PropertiesComponent.getInstance();
   }
 
-  public interface Listener {
+  public interface Listener extends EventListener {
     void settingsChanged();
   }
 
-  private final List<Listener> listeners = new ArrayList<>();
+  private final EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
 
   public FlutterSettings() {
     updateAnalysisServerArgs();
@@ -71,11 +73,11 @@ public class FlutterSettings {
   }
 
   public void addListener(Listener listener) {
-    listeners.add(listener);
+    dispatcher.addListener(listener);
   }
 
   public void removeListener(Listener listener) {
-    listeners.remove(listener);
+    dispatcher.removeListener(listener);
   }
 
   public boolean isReloadOnSave() {
@@ -180,9 +182,7 @@ public class FlutterSettings {
   }
 
   protected void fireEvent() {
-    for (Listener listener : listeners) {
-      listener.settingsChanged();
-    }
+    dispatcher.getMulticaster().settingsChanged();
   }
 
   private static String afterLastPeriod(String str) {
