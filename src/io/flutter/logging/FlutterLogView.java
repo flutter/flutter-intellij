@@ -16,10 +16,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.ColoredTableCellRenderer;
-import com.intellij.ui.PopupHandler;
-import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.SearchTextField;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -34,6 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
+import javax.swing.event.DocumentEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
@@ -56,7 +54,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
           if ((KeyEvent.VK_ENTER == e.getKeyCode()) || ('\n' == e.getKeyChar())) {
             e.consume();
             addCurrentTextToHistory();
-            actionPerformed(null);
           }
           return super.preprocessEventForTextField(e);
         }
@@ -64,14 +61,22 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         @Override
         protected void onFocusLost() {
           myField.addCurrentTextToHistory();
-          actionPerformed(null);
+          doFilter();
         }
 
         @Override
         protected void onFieldCleared() {
-          actionPerformed(null);
+          doFilter();
         }
       };
+
+      myField.addDocumentListener(new DocumentAdapter() {
+        @Override
+        protected void textChanged(DocumentEvent e) {
+          doFilter();
+        }
+      });
+
       final Border border = myField.getBorder();
       final Border emptyBorder = JBUI.Borders.empty(3, 0, 2, 0);
       if (border instanceof CompoundBorder) {
@@ -99,6 +104,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public void actionPerformed(AnActionEvent e) {
+      doFilter();
+    }
+
+    private void doFilter() {
       // TODO(pq): support regexp matching (and add a mode toggle).
       final String text = getText();
       final FlutterLogTree.EntryFilter filter = StringUtils.isEmpty(text) ? null : new FlutterLogTree.ContainsTextFilter(text);
