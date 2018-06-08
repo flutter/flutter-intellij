@@ -774,9 +774,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       currentFilePath = null;
     }
 
+    // If not a Dart file, ignore it.
+    if (newFile != null && !FlutterUtils.isDartFile(newFile)) {
+      newFile = null;
+    }
+
     // Show the toolbar if the new file is a Dart file, or hide otherwise.
     if (windowPanel != null) {
-      if (newFile != null && FlutterUtils.isDartFile(newFile)) {
+      if (newFile != null) {
         windowPanel.setToolbar(windowToolbar.getComponent());
       }
       else if (windowPanel.isToolbarVisible()) {
