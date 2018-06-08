@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 
 public class FlutterProjectSystem implements AndroidProjectSystem {
   private static final Logger LOG = Logger.getInstance(FlutterProjectSystem.class);
@@ -92,8 +93,8 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   public Collection<PsiElementFinder> getPsiElementFinders() {
     Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getPsiElementFinders");
     if (finders == null) {
-      // Not reached; method exists in c18 and not called in c<18.
-      throw new NullPointerException();
+      LOG.error("No method found: GradleProjectSystem.getPsiElementFinders()");
+      return Collections.emptyList();
     }
     try {
       //noinspection unchecked
