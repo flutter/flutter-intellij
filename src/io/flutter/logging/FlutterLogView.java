@@ -217,7 +217,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
         final StringBuilder sb = new StringBuilder();
         sb.append(total).append(" event");
-        if (total > 1) {
+        if (total != 1) {
           sb.append("s");
         }
         if (filtered > 0) {
