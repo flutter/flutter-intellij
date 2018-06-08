@@ -15,6 +15,7 @@ import io.flutter.run.daemon.DaemonApi;
 import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.Instance;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -83,13 +84,23 @@ public class FlutterLogEntryParser {
   }
 
   private static FlutterLogEntry parseLoggingEvent(@NotNull Event event) {
-    // TODO(pq): parse event timestamp?
-    // TODO(pq): parse more robustly; consider more properties.
+    // TODO(pq): parse more robustly; consider more properties (level, error, stackTrace)
     final JsonObject json = event.getJson();
     final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
-    final JsonObject message = logRecord.getAsJsonObject().get("message").getAsJsonObject();
-    final String messageContents = message.get("valueAsString").getAsJsonPrimitive().toString();
-    return new FlutterLogEntry(timestamp(event), LOG_CATEGORY, messageContents);
+    final Instance message = new Instance(logRecord.getAsJsonObject().get("message").getAsJsonObject());
+
+    String category = LOG_CATEGORY;
+    final JsonObject loggerName = logRecord.getAsJsonObject().get("loggerName").getAsJsonObject();
+    if (loggerName != null) {
+      final String str = new Instance(loggerName).getValueAsString();
+      if (str != null && !str.isEmpty()) {
+        category = str;
+      }
+    }
+
+    // TODO: If message.getValueAsStringIsTruncated() is true, we'll need to retrieve the full string
+    // value and update this entry after creation.
+    return new FlutterLogEntry(timestamp(event), category, message.getValueAsString());
   }
 
   @NotNull
