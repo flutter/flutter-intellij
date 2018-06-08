@@ -1,6 +1,6 @@
 This module customizes the Flutter plugin for Android Studio.
 
-To set up a development environment:
+To set up a development environment using sources for Android Studio:
 
 1. Initialize Android Studio sources.
 2. Checkout Flutter plugin sources, tip of tree.
@@ -10,16 +10,30 @@ To set up a development environment:
     - open studio-master-dev/tools/idea in IntelliJ
     - possibly skip running intellij-community/getPlugins.sh
 4. Checkout Dart plugin sources, branch 173.
-5. Using the Project Structure editor, import
+5. Build everything.
+    - Do a blaze build from a terminal window. Allow 15+ min for this.
+    - OR in IntelliJ: Build > Rebuild Project
+    - Some Android Studio classes need to be generated.
+    - The Dart plugin cannot be built during this step.
+    - Launch Android Studio in the debugger to ensure everything 
+    got built correctly.
+6. Using the Project Structure editor, import
     - intellij-plugins/Dart/Dart-community.iml
     - flutter-intellij/flutter-intellij-community.iml
     - flutter-intellij/flutter-studio/flutter-studio.iml
-6. Select the `community-main` module and add module
+7. Select the `community-main` module and add module
    dependencies to `Dart-community`, `flutter-intellij-community`,
    and `flutter-studio`.
+8. (temporary) Add a compile-exclusion for DartiumDebuggerEngine.kt.
+
+Alternatively (especially if you do not want to do a blaze build),
+set up your classpath the way it is done during travis runs.
+Configure IntelliJ as you would for Flutter plugin development,
+then import the flutter-studio plugin and add it as a dependent on
+the Flutter plugin.
 
 The GUI tests must be run in the same version of IntelliJ used by
-the Android Studio dev team. Currently that is 2017.3.5.
+the Android Studio dev team. Currently that is 2018.2.
 
 To run the tests create a Junit Run Configuration for class
 `io.flutter.tests.gui.NewProjectTest`. Set its working directory

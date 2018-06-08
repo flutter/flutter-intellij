@@ -6,7 +6,7 @@
 package io.flutter.tests.gui;
 
 import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
-import com.android.tools.idea.tests.gui.framework.GuiTestRunner;
+import com.android.tools.idea.tests.gui.framework.GuiTestSuiteRunner;
 import com.android.tools.idea.tests.gui.framework.fixture.EditorFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterSettingsStepFixture;
@@ -35,7 +35,7 @@ import static org.junit.Assert.assertEquals;
  * festSettings.delayBetweenEvents(50); // 30
  * festSettings.eventPostingDelay(150); // 100
  */
-@RunWith(GuiTestRunner.class)
+@RunWith(GuiTestSuiteRunner.class)
 public class NewProjectTest {
   @Rule public final FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
 
