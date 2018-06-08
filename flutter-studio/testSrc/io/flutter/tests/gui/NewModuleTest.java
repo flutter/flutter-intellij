@@ -19,6 +19,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.RunnerBuilder;
 
 import java.io.IOException;
 
@@ -34,8 +35,8 @@ public class NewModuleTest {
    */
   public static class CustomRunner extends GuiTestSuiteRunner {
 
-    public CustomRunner(Class<?> testClass) throws InitializationError, IOException {
-      super(testClass, null); // TODO(mesick) Fix this quick hack.
+    public CustomRunner(Class<?> suiteClass, RunnerBuilder builder) throws InitializationError, IOException {
+      super(suiteClass, builder);
       System.setProperty("gui.tests.root.dir.path", "somewhere");
     }
 

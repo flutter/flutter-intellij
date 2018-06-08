@@ -11,17 +11,22 @@ import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystemProvider;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElementFinder;
+import com.intellij.util.ReflectionUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collection;
 
 public class FlutterProjectSystem implements AndroidProjectSystem {
+  private static final Logger LOG = Logger.getInstance(FlutterProjectSystem.class);
   @NotNull final private GradleProjectSystem gradleProjectSystem;
 
   public FlutterProjectSystem(Project project) {
@@ -43,6 +48,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Override
   public void buildProject() {
     // flutter build ?
+    LOG.warn("FlutterProjectSystem.buildProject() called but not (properly) implemented.");
   }
 
   @Override
@@ -75,16 +81,31 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return gradleProjectSystem.getSyncManager();
   }
 
+  @SuppressWarnings("override")
   @Nullable
   public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
     return null;
   }
 
+  @SuppressWarnings("override")
   @NotNull
   public Collection<PsiElementFinder> getPsiElementFinders() {
-    return null;//gradleProjectSystem.getPsiElementFinders();
+    Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getPsiElementFinders");
+    if (finders == null) {
+      // Not reached; method exists in c18 and not called in c<18.
+      throw new NullPointerException();
+    }
+    try {
+      //noinspection unchecked
+      return (Collection<PsiElementFinder>) finders.invoke(gradleProjectSystem);
+    }
+    catch (IllegalAccessException | InvocationTargetException e) {
+      LOG.error(e);
+      throw new IllegalArgumentException(e);
+    }
   }
 
+  @SuppressWarnings("override")
   public boolean getAugmentRClasses() {
     return false;
   }
