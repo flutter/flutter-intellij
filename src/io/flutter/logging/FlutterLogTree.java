@@ -15,6 +15,8 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
+import com.intellij.util.Alarm;
+import com.intellij.util.AlarmFactory;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
@@ -41,6 +43,8 @@ public class FlutterLogTree extends TreeTable {
     @NotNull
     private final FlutterLog log;
     boolean autoScrollToEnd;
+    @NotNull
+    private final Disposable parent;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
 
@@ -51,9 +55,15 @@ public class FlutterLogTree extends TreeTable {
         new MessageColumnInfo(app)
       });
       this.log = app.getFlutterLog();
+      this.parent = parent;
 
       // Scroll to end by default.
       autoScrollToEnd = true;
+    }
+
+    @NotNull
+    public Disposable getParent() {
+      return parent;
     }
 
     void scrollToEnd() {
@@ -87,15 +97,6 @@ public class FlutterLogTree extends TreeTable {
       treeTable = ((TreeTableTree)tree).getTreeTable();
     }
 
-    public void appendNode(FlutterLogEntry entry) {
-      final MutableTreeNode root = getRoot();
-      final FlutterEventNode node = new FlutterEventNode(entry);
-      ApplicationManager.getApplication().invokeLater(() -> {
-        insertNodeInto(node, root, root.getChildCount());
-        update();
-      });
-    }
-
     public void clearEntries() {
       log.clear();
       getRoot().removeAllChildren();
@@ -103,11 +104,20 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public void appendNodes(List<FlutterLogEntry> entries) {
-      final MutableTreeNode root = getRoot();
       ApplicationManager.getApplication().invokeLater(() -> {
+        final MutableTreeNode root = getRoot();
         entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
         update();
       });
+
+      // Schedule an update to scroll after the model has had time to re-render.
+      AlarmFactory.getInstance().create(Alarm.ThreadToUse.SWING_THREAD, getParent()).addRequest(() -> {
+        if (autoScrollToEnd) {
+          scrollToEnd();
+        }
+        // A simple delay should suffice, given our mantra of eventual consistency.
+        // If not, we can investigate a proper condition.
+      }, 1000);
     }
   }
 
