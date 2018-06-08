@@ -15,6 +15,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
+import com.intellij.util.Alarm;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
@@ -40,6 +41,8 @@ public class FlutterLogTree extends TreeTable {
   static class LogTreeModel extends ListTreeTableModelOnColumns {
     @NotNull
     private final FlutterLog log;
+    @NotNull
+    private final Alarm uiThreadAlarm;
     boolean autoScrollToEnd;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
@@ -54,6 +57,8 @@ public class FlutterLogTree extends TreeTable {
 
       // Scroll to end by default.
       autoScrollToEnd = true;
+
+      uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
 
     void scrollToEnd() {
@@ -87,15 +92,6 @@ public class FlutterLogTree extends TreeTable {
       treeTable = ((TreeTableTree)tree).getTreeTable();
     }
 
-    public void appendNode(FlutterLogEntry entry) {
-      final MutableTreeNode root = getRoot();
-      final FlutterEventNode node = new FlutterEventNode(entry);
-      ApplicationManager.getApplication().invokeLater(() -> {
-        insertNodeInto(node, root, root.getChildCount());
-        update();
-      });
-    }
-
     public void clearEntries() {
       log.clear();
       getRoot().removeAllChildren();
@@ -103,11 +99,20 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public void appendNodes(List<FlutterLogEntry> entries) {
-      final MutableTreeNode root = getRoot();
       ApplicationManager.getApplication().invokeLater(() -> {
+        final MutableTreeNode root = getRoot();
         entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
         update();
       });
+
+      // Schedule an update to scroll after the model has had time to re-render.
+      uiThreadAlarm.addRequest(() -> {
+        if (autoScrollToEnd) {
+          scrollToEnd();
+        }
+        // A simple delay should suffice, given our mantra of eventual consistency.
+        // If not, we can investigate a proper condition.
+      }, 100);
     }
   }
 
