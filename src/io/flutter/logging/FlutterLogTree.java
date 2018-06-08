@@ -16,7 +16,6 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.Alarm;
-import com.intellij.util.AlarmFactory;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
 import io.flutter.console.FlutterConsoleFilter;
@@ -42,9 +41,9 @@ public class FlutterLogTree extends TreeTable {
   static class LogTreeModel extends ListTreeTableModelOnColumns {
     @NotNull
     private final FlutterLog log;
-    boolean autoScrollToEnd;
     @NotNull
-    private final Disposable parent;
+    private final Alarm uiThreadAlarm;
+    boolean autoScrollToEnd;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
 
@@ -55,15 +54,11 @@ public class FlutterLogTree extends TreeTable {
         new MessageColumnInfo(app)
       });
       this.log = app.getFlutterLog();
-      this.parent = parent;
 
       // Scroll to end by default.
       autoScrollToEnd = true;
-    }
 
-    @NotNull
-    public Disposable getParent() {
-      return parent;
+      uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
 
     void scrollToEnd() {
@@ -111,13 +106,13 @@ public class FlutterLogTree extends TreeTable {
       });
 
       // Schedule an update to scroll after the model has had time to re-render.
-      AlarmFactory.getInstance().create(Alarm.ThreadToUse.SWING_THREAD, getParent()).addRequest(() -> {
+      uiThreadAlarm.addRequest(() -> {
         if (autoScrollToEnd) {
           scrollToEnd();
         }
         // A simple delay should suffice, given our mantra of eventual consistency.
         // If not, we can investigate a proper condition.
-      }, 1000);
+      }, 100);
     }
   }
 
