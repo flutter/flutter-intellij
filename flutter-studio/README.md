@@ -11,6 +11,9 @@ To set up a development environment using sources for Android Studio:
     - possibly skip running intellij-community/getPlugins.sh
 4. Checkout Dart plugin sources, branch 173.
 5. Build everything.
+    - Do a blaze pre-build:
+        - tools/base/bazel/bazel build //tools/adt/idea/android:artifacts
+        - This generates some required classes that are not checked in.
     - Do a blaze build from a terminal window. Allow 15+ min for this.
     - OR in IntelliJ: Build > Rebuild Project
     - Some Android Studio classes need to be generated.

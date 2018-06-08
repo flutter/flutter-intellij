@@ -18,19 +18,12 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-//import static com.android.tools.idea.tests.gui.framework.GuiTests.findAndClickButtonWhenEnabled;
+import static com.android.tools.idea.tests.gui.framework.GuiTests.findAndClickButton;
 
 public class NewFlutterModuleWizardFixture extends AbstractWizardFixture<NewFlutterModuleWizardFixture> {
 
   private NewFlutterModuleWizardFixture(@NotNull Robot robot, @NotNull JDialog target) {
     super(NewFlutterModuleWizardFixture.class, robot, target);
-  }
-
-  @NotNull
-  public static NewFlutterModuleWizardFixture find(@NotNull IdeaFrameFixture fixture) {
-    Robot robot = fixture.robot();
-    JDialog dialog = GuiTests.waitUntilShowing(robot, Matchers.byTitle(JDialog.class, "Create New Module"));
-    return new NewFlutterModuleWizardFixture(robot, dialog);
   }
 
   public NewFlutterModuleWizardFixture chooseModuleType(@NotNull String activity) {
@@ -42,6 +35,7 @@ public class NewFlutterModuleWizardFixture extends AbstractWizardFixture<NewFlut
   @NotNull
   public FlutterProjectStepFixture<NewFlutterModuleWizardFixture> getFlutterProjectStep(@NotNull FlutterProjectType type) {
     String projectType;
+    //noinspection Duplicates
     switch (type) {
       case APP:
         projectType = "application";
@@ -65,12 +59,20 @@ public class NewFlutterModuleWizardFixture extends AbstractWizardFixture<NewFlut
     return new FlutterSettingsStepFixture<>(this, rootPane);
   }
 
+  @SuppressWarnings("UnusedReturnValue")
   @NotNull
   public NewFlutterModuleWizardFixture clickFinish() {
-    // Do not user superclass method. When the project/module wizard is run from the IDE (not the Welcome screen)
+    // Do not use superclass method. When the project/module wizard is run from the IDE (not the Welcome screen)
     // the dialog does not disappear within the time allotted by the superclass method.
-    //findAndClickButtonWhenEnabled(this, "Finish"); TODO(messick) Fix this quick hack.
+    findAndClickButton(this, "Finish");
     Wait.seconds(30).expecting("dialog to disappear").until(() -> !target().isShowing());
     return myself();
+  }
+
+  @NotNull
+  public static NewFlutterModuleWizardFixture find(@NotNull IdeaFrameFixture fixture) {
+    Robot robot = fixture.robot();
+    JDialog dialog = GuiTests.waitUntilShowing(robot, Matchers.byTitle(JDialog.class, "Create New Module"));
+    return new NewFlutterModuleWizardFixture(robot, dialog);
   }
 }
