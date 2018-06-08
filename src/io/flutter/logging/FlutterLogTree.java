@@ -278,7 +278,20 @@ public class FlutterLogTree extends TreeTable {
 
     @Override
     public boolean accept(@NotNull FlutterLogEntry entry) {
-      return text == null || entry.getMessage().contains(text);
+      if (text == null) {
+        return true;
+      }
+
+      if (entry.getMessage().contains(text)) {
+        return true;
+      }
+
+      //noinspection RedundantIfStatement
+      if (entry.getCategory().contains(text)) {
+        return true;
+      }
+
+      return false;
     }
 
     @Override
