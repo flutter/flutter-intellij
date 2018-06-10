@@ -266,12 +266,22 @@ public class FlutterLogTree extends TreeTable {
 
 
   public static class ContainsTextFilter implements EntryFilter {
+    @Nullable
     private final String text;
+    private final boolean isRegex;
+    private final boolean isMatchCase;
 
-    public ContainsTextFilter(String text) {
-      this.text = text;
+    public ContainsTextFilter(@Nullable String text) {
+      this(text, false, false);
     }
 
+    public ContainsTextFilter(@Nullable String text, boolean isMatchCase, boolean isRegex) {
+      this.text = text;
+      this.isMatchCase = isMatchCase;
+      this.isRegex = isRegex;
+    }
+
+    @Nullable
     public String getText() {
       return text;
     }
@@ -281,27 +291,36 @@ public class FlutterLogTree extends TreeTable {
       if (text == null) {
         return true;
       }
-
-      if (entry.getMessage().contains(text)) {
+      final String standartText = isMatchCase ? text : text.toLowerCase();
+      final String standartMessage = isMatchCase ? entry.getMessage() : entry.getMessage().toLowerCase();
+      final String standartCategory = isMatchCase ? entry.getCategory() : entry.getCategory().toLowerCase();
+      if (acceptByCheckingRegexOption(standartMessage, standartText)) {
         return true;
       }
+      return acceptByCheckingRegexOption(standartCategory, standartText);
+    }
 
-      //noinspection RedundantIfStatement
-      if (entry.getCategory().contains(text)) {
-        return true;
+    private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
+      final String standardString = message.replaceAll("\n", "");
+      if (isRegex) {
+        return standardString.matches(".*" + text + ".*");
       }
-
-      return false;
+      return standardString.contains(text);
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return obj instanceof ContainsTextFilter && ((ContainsTextFilter)obj).text.equals(this.text);
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      final ContainsTextFilter filter = (ContainsTextFilter)o;
+      return isRegex == filter.isRegex &&
+             isMatchCase == filter.isMatchCase &&
+             Objects.equals(text, filter.text);
     }
 
     @Override
     public int hashCode() {
-      return 13 ^ Objects.hashCode(text);
+      return Objects.hash(text, isRegex, isMatchCase);
     }
   }
 
