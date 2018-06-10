@@ -266,12 +266,20 @@ public class FlutterLogTree extends TreeTable {
 
 
   public static class ContainsTextFilter implements EntryFilter {
+    @Nullable
     private final String text;
+    private final boolean isEnableRegex;
 
-    public ContainsTextFilter(String text) {
-      this.text = text;
+    public ContainsTextFilter(@Nullable String text) {
+      this(text, false);
     }
 
+    public ContainsTextFilter(@Nullable String text, boolean isEnableRegex) {
+      this.text = text;
+      this.isEnableRegex = isEnableRegex;
+    }
+
+    @Nullable
     public String getText() {
       return text;
     }
@@ -281,27 +289,32 @@ public class FlutterLogTree extends TreeTable {
       if (text == null) {
         return true;
       }
-
-      if (entry.getMessage().contains(text)) {
+      if (acceptByCheckingRegexOption(entry.getMessage(), text)) {
         return true;
       }
+      return acceptByCheckingRegexOption(entry.getCategory(), text);
+    }
 
-      //noinspection RedundantIfStatement
-      if (entry.getCategory().contains(text)) {
-        return true;
+    private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
+      final String standardString = message.replaceAll("\n", "");
+      if (isEnableRegex) {
+        return standardString.matches(".*" + text + ".*");
       }
-
-      return false;
+      return standardString.contains(text);
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return obj instanceof ContainsTextFilter && ((ContainsTextFilter)obj).text.equals(this.text);
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      final ContainsTextFilter filter = (ContainsTextFilter)o;
+      return isEnableRegex == filter.isEnableRegex &&
+             Objects.equals(text, filter.text);
     }
 
     @Override
     public int hashCode() {
-      return 13 ^ Objects.hashCode(text);
+      return 13 ^ Objects.hashCode(text) ^ Objects.hashCode(isEnableRegex);
     }
   }
 

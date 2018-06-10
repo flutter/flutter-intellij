@@ -46,8 +46,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
     private final JPanel myComponent;
     private final SearchTextField myField;
+    private final JCheckBox chbEnableRegex;
 
     public FilterToolbarAction() {
+      chbEnableRegex = new JCheckBox("Regex");
+      chbEnableRegex.setHorizontalTextPosition(SwingConstants.LEFT);
+      chbEnableRegex.addItemListener(e -> doFilter());
       myField = new SearchTextField(true) {
         @Override
         protected boolean preprocessEventForTextField(KeyEvent e) {
@@ -100,6 +104,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       //  myComponent.add(label);
       //}
       myComponent.add(myField);
+      myComponent.add(chbEnableRegex);
     }
 
     @Override
@@ -108,9 +113,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     private void doFilter() {
-      // TODO(pq): support regexp matching (and add a mode toggle).
       final String text = getText();
-      final FlutterLogTree.EntryFilter filter = StringUtils.isEmpty(text) ? null : new FlutterLogTree.ContainsTextFilter(text);
+      final FlutterLogTree.EntryFilter filter =
+        StringUtils.isEmpty(text) ? null : new FlutterLogTree.ContainsTextFilter(text, chbEnableRegex.isSelected());
       ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
     }
 
