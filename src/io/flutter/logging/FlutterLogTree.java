@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class FlutterLogTree extends TreeTable {
@@ -300,8 +301,7 @@ public class FlutterLogTree extends TreeTable {
 
     private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
       if (isRegex) {
-        // Extra replace to support matching on strings w/ line breaks.
-        return message.replaceAll("\n", "").matches(".*" + text + ".*");
+        return message.matches("(?s).*" + text + ".*");
       }
       return message.contains(text);
     }
