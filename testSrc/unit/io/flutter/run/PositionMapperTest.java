@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import com.jetbrains.lang.dart.util.DartUrlResolverImpl;
-import io.flutter.server.vmService.DartVmServiceDebugProcessZ;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
@@ -113,7 +113,7 @@ public class PositionMapperTest {
     return new ScriptRef(elt);
   }
 
-  private static final class FakeScriptProvider implements DartVmServiceDebugProcessZ.ScriptProvider {
+  private static final class FakeScriptProvider implements DartVmServiceDebugProcess.ScriptProvider {
     final Map<String, Script> scripts = new HashMap<>();
 
     void addScript(String isolateId, String scriptId, String uri, List<Line> table) {

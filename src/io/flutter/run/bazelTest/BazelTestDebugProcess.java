@@ -10,7 +10,7 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
-import io.flutter.server.vmService.DartVmServiceDebugProcessZ;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.FlutterPopFrameAction;
 import io.flutter.run.OpenObservatoryAction;
@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The Bazel version of the {@link io.flutter.run.test.TestDebugProcess}.
  */
-public class BazelTestDebugProcess extends DartVmServiceDebugProcessZ {
+public class BazelTestDebugProcess extends DartVmServiceDebugProcess {
   @NotNull
   private final ObservatoryConnector connector;
 
