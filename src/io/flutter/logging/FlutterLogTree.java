@@ -25,13 +25,11 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.text.SimpleDateFormat;
-import java.util.EventListener;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Pattern;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class FlutterLogTree extends TreeTable {
@@ -45,6 +43,10 @@ public class FlutterLogTree extends TreeTable {
     @NotNull
     private final Alarm uiThreadAlarm;
     boolean autoScrollToEnd;
+    // Cached for hide and restore (because *sigh* Swing).
+    private List<TableColumn> tableColumns;
+    private boolean showTimestamps;
+    private boolean updateColumns;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
 
@@ -59,6 +61,9 @@ public class FlutterLogTree extends TreeTable {
       // Scroll to end by default.
       autoScrollToEnd = true;
 
+      // Show timestamps by default.
+      showTimestamps = true;
+
       uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
 
@@ -70,6 +75,15 @@ public class FlutterLogTree extends TreeTable {
     }
 
     void update() {
+      if (updateColumns) {
+        // Clear all.
+        Collections.list(treeTable.getColumnModel().getColumns()).forEach(c -> treeTable.removeColumn(c));
+
+        // Add back what's appropriate.
+        final List<TableColumn> columns = showTimestamps ? tableColumns : tableColumns.subList(1, tableColumns.size());
+        columns.forEach(c -> treeTable.addColumn(c));
+      }
+
       reload(getRoot());
       treeTable.updateUI();
 
@@ -91,6 +105,8 @@ public class FlutterLogTree extends TreeTable {
     public void setTree(JTree tree) {
       super.setTree(tree);
       treeTable = ((TreeTableTree)tree).getTreeTable();
+
+      tableColumns = Collections.list(treeTable.getColumnModel().getColumns());
     }
 
     public void clearEntries() {
@@ -114,6 +130,15 @@ public class FlutterLogTree extends TreeTable {
         // A simple delay should suffice, given our mantra of eventual consistency.
         // If not, we can investigate a proper condition.
       }, 100);
+    }
+
+    public boolean getShowTimestamps() {
+      return showTimestamps;
+    }
+
+    public void setShowTimestamps(boolean showTimestamps) {
+      this.showTimestamps = showTimestamps;
+      updateColumns = true;
     }
   }
 

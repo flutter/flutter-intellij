@@ -14,6 +14,7 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
+import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ColoredTableCellRenderer;
@@ -39,6 +40,76 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
+
+  class ConfigureAction extends AnAction implements RightAlignedToolbarAction {
+    private final DefaultActionGroup actionGroup;
+
+    public ConfigureAction() {
+      super("Configure", null, AllIcons.General.Gear);
+
+      actionGroup = createPopupActionGroup();
+    }
+
+    ActionButton getActionButton() {
+      final Presentation presentation = getTemplatePresentation().clone();
+      final ActionButton actionButton = new ActionButton(
+        this,
+        presentation,
+        ActionPlaces.UNKNOWN,
+        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+      );
+      presentation.putClientProperty("button", actionButton);
+      return actionButton;
+    }
+
+    @Override
+    public final void update(AnActionEvent e) {
+      e.getPresentation().setEnabled(app.isSessionActive());
+    }
+
+    @Override
+    @SuppressWarnings("Duplicates")
+    public void actionPerformed(AnActionEvent e) {
+      final Presentation presentation = e.getPresentation();
+      JComponent component = (JComponent)presentation.getClientProperty("button");
+      if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
+        component = (JComponent)e.getInputEvent().getSource();
+      }
+      if (component == null) {
+        return;
+      }
+      final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
+        ActionPlaces.UNKNOWN,
+        actionGroup);
+      popupMenu.getComponent().show(component, component.getWidth(), 0);
+    }
+
+    private DefaultActionGroup createPopupActionGroup() {
+      final DefaultActionGroup group = new DefaultActionGroup();
+      group.add(new ShowTimeStampsAction());
+      return group;
+    }
+  }
+
+  private class ShowTimeStampsAction extends ToggleAction {
+
+    ShowTimeStampsAction() {
+      super("Show timestamps");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return logModel.getShowTimestamps();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      logModel.setShowTimestamps(state);
+      logModel.update();
+    }
+  }
+
+
   // based on com.intellij.openapi.vcs.ui.SearchFieldAction
   private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
     @NotNull
@@ -297,6 +368,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(new FilterToolbarAction());
     toolbarGroup.add(new FilterStatusLabel());
+    toolbarGroup.add(new ConfigureAction());
     return toolbarGroup;
   }
 
