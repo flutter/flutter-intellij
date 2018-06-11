@@ -292,10 +292,10 @@ public class FlutterLogTree extends TreeTable {
       final String standardText = isMatchCase ? text : text.toLowerCase();
       final String standardMessage = isMatchCase ? entry.getMessage() : entry.getMessage().toLowerCase();
       final String standardCategory = isMatchCase ? entry.getCategory() : entry.getCategory().toLowerCase();
-      if (acceptByCheckingRegexOption(standardMessage, standardText)) {
+      if (acceptByCheckingRegexOption(standardCategory, standardText)) {
         return true;
       }
-      return acceptByCheckingRegexOption(standardCategory, standardText);
+      return acceptByCheckingRegexOption(standardMessage, standardText);
     }
 
     private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
