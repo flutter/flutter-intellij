@@ -16,7 +16,9 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.*;
+import com.intellij.ui.ColoredTableCellRenderer;
+import com.intellij.ui.PopupHandler;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -29,77 +31,20 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
-import javax.swing.event.DocumentEvent;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
-
   // based on com.intellij.openapi.vcs.ui.SearchFieldAction
   private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
-    private final JPanel myComponent;
-    private final SearchTextField myField;
+    @NotNull
+    private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
 
     public FilterToolbarAction() {
-      myField = new SearchTextField(true) {
-        @Override
-        protected boolean preprocessEventForTextField(KeyEvent e) {
-          if ((KeyEvent.VK_ENTER == e.getKeyCode()) || ('\n' == e.getKeyChar())) {
-            e.consume();
-            addCurrentTextToHistory();
-          }
-          return super.preprocessEventForTextField(e);
-        }
-
-        @Override
-        protected void onFocusLost() {
-          myField.addCurrentTextToHistory();
-          doFilter();
-        }
-
-        @Override
-        protected void onFieldCleared() {
-          doFilter();
-        }
-      };
-
-      myField.addDocumentListener(new DocumentAdapter() {
-        @Override
-        protected void textChanged(DocumentEvent e) {
-          doFilter();
-        }
-      });
-
-      final Border border = myField.getBorder();
-      final Border emptyBorder = JBUI.Borders.empty(3, 0, 2, 0);
-      if (border instanceof CompoundBorder) {
-        if (!UIUtil.isUnderDarcula()) {
-          myField.setBorder(new CompoundBorder(emptyBorder, ((CompoundBorder)border).getInsideBorder()));
-        }
-      }
-      else {
-        myField.setBorder(emptyBorder);
-      }
-
-      myField.setSearchIcon(AllIcons.General.Filter);
-      myComponent = new JPanel();
-      final BoxLayout layout = new BoxLayout(myComponent, BoxLayout.X_AXIS);
-      myComponent.setLayout(layout);
-      //if (text.length() > 0) {
-      //  final JLabel label = new JLabel(text);
-      //  //label.setFont(label.getFont().deriveFont(Font.ITALIC));
-      //  label.setForeground(UIUtil.isUnderDarcula() ? UIUtil.getLabelForeground() : UIUtil.getInactiveTextColor());
-      //  label.setBorder(JBUI.Borders.emptyLeft(3));
-      //  myComponent.add(label);
-      //}
-      myComponent.add(myField);
     }
 
     @Override
@@ -108,23 +53,24 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     private void doFilter() {
-      // TODO(pq): support regexp matching (and add a mode toggle).
+      final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
       final String text = getText();
-      final FlutterLogTree.EntryFilter filter = StringUtils.isEmpty(text) ? null : new FlutterLogTree.ContainsTextFilter(text);
+      final FlutterLogTree.EntryFilter filter =
+        StringUtils.isEmpty(text) ? null : new FlutterLogTree.EntryFilter(text, param.isMatchCase(), param.isRegex());
       ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
     }
 
     public String getText() {
-      return myField.getText();
+      return filterPanel.getExpression();
     }
 
     @Override
     public JComponent createCustomComponent(Presentation presentation) {
-      return myComponent;
+      return filterPanel.getRoot();
     }
 
     public void setTextFieldFg(boolean inactive) {
-      myField.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
+      filterPanel.setTextFieldFg(inactive);
     }
   }
 

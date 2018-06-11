@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.EventListener;
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class FlutterLogTree extends TreeTable {
@@ -264,49 +265,61 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
-
-  public static class ContainsTextFilter implements EntryFilter {
+  public static class EntryFilter {
+    @Nullable
     private final String text;
+    private final boolean isRegex;
+    private final boolean isMatchCase;
 
-    public ContainsTextFilter(String text) {
-      this.text = text;
+    public EntryFilter(@Nullable String text) {
+      this(text, false, false);
     }
 
+    public EntryFilter(@Nullable String text, boolean isMatchCase, boolean isRegex) {
+      this.text = text;
+      this.isMatchCase = isMatchCase;
+      this.isRegex = isRegex;
+    }
+
+    @Nullable
     public String getText() {
       return text;
     }
 
-    @Override
     public boolean accept(@NotNull FlutterLogEntry entry) {
       if (text == null) {
         return true;
       }
-
-      if (entry.getMessage().contains(text)) {
+      final String standardText = isMatchCase ? text : text.toLowerCase();
+      final String standardMessage = isMatchCase ? entry.getMessage() : entry.getMessage().toLowerCase();
+      final String standardCategory = isMatchCase ? entry.getCategory() : entry.getCategory().toLowerCase();
+      if (acceptByCheckingRegexOption(standardCategory, standardText)) {
         return true;
       }
+      return acceptByCheckingRegexOption(standardMessage, standardText);
+    }
 
-      //noinspection RedundantIfStatement
-      if (entry.getCategory().contains(text)) {
-        return true;
+    private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
+      if (isRegex) {
+        return message.matches("(?s).*" + text + ".*");
       }
-
-      return false;
+      return message.contains(text);
     }
 
     @Override
-    public boolean equals(Object obj) {
-      return obj instanceof ContainsTextFilter && ((ContainsTextFilter)obj).text.equals(this.text);
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      final EntryFilter filter = (EntryFilter)o;
+      return isRegex == filter.isRegex &&
+             isMatchCase == filter.isMatchCase &&
+             Objects.equals(text, filter.text);
     }
 
     @Override
     public int hashCode() {
-      return 13 ^ Objects.hashCode(text);
+      return Objects.hash(text, isRegex, isMatchCase);
     }
-  }
-
-  public interface EntryFilter {
-    boolean accept(@NotNull FlutterLogEntry entry);
   }
 
   public interface EventCountListener extends EventListener {
