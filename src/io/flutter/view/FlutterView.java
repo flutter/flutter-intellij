@@ -670,6 +670,7 @@ class TogglePlatformAction extends FlutterViewAction {
   }
 
   @Override
+  @SuppressWarnings("Duplicates")
   public void update(@NotNull AnActionEvent e) {
     if (!app.isSessionActive()) {
       if (subscription != null) {
@@ -918,6 +919,7 @@ class OverflowAction extends AnAction implements RightAlignedToolbarAction {
   }
 
   @Override
+  @SuppressWarnings("Duplicates")
   public void actionPerformed(AnActionEvent e) {
     final Presentation presentation = e.getPresentation();
     JComponent component = (JComponent)presentation.getClientProperty("button");
