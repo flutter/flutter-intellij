@@ -15,24 +15,24 @@ import javax.swing.*;
 
 public class FlutterLogFilterPanel {
   private JPanel root;
-  private JCheckBox chbMatchCase;
-  private JCheckBox chbRegex;
-  private JPanel pnlExpression;
-  private final LogFilterTextField txtExpression;
+  private JCheckBox matchCaseCheckBox;
+  private JCheckBox regexCheckBox;
+  private JPanel panelExpression;
+  private final LogFilterTextField textExpression;
 
   public FlutterLogFilterPanel(
     @NotNull OnFilterListener onFilterListener
   ) {
-    chbMatchCase.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
-    chbRegex.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
-    txtExpression = new LogFilterTextField();
-    txtExpression.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
-    pnlExpression.add(txtExpression, new GridConstraints());
+    matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    textExpression = new LogFilterTextField();
+    textExpression.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
+    panelExpression.add(textExpression, new GridConstraints());
   }
 
   @NotNull
   public FilterParam getCurrentFilterParam() {
-    return new FilterParam(txtExpression.getText(), chbMatchCase.isSelected(), chbRegex.isSelected());
+    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected());
   }
 
   @NotNull
@@ -42,19 +42,19 @@ public class FlutterLogFilterPanel {
 
   @Nullable
   public String getExpression() {
-    return txtExpression.getText();
+    return textExpression.getText();
   }
 
   public void setTextFieldFg(boolean inactive) {
-    txtExpression.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
+    textExpression.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
   }
 
   public boolean isRegex() {
-    return chbRegex.isSelected();
+    return regexCheckBox.isSelected();
   }
 
   public boolean isMatchCase() {
-    return chbRegex.isSelected();
+    return regexCheckBox.isSelected();
   }
 
   public interface OnFilterListener {

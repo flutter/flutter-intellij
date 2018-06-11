@@ -264,18 +264,17 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
-
-  public static class ContainsTextFilter implements EntryFilter {
+  public static class EntryFilter {
     @Nullable
     private final String text;
     private final boolean isRegex;
     private final boolean isMatchCase;
 
-    public ContainsTextFilter(@Nullable String text) {
+    public EntryFilter(@Nullable String text) {
       this(text, false, false);
     }
 
-    public ContainsTextFilter(@Nullable String text, boolean isMatchCase, boolean isRegex) {
+    public EntryFilter(@Nullable String text, boolean isMatchCase, boolean isRegex) {
       this.text = text;
       this.isMatchCase = isMatchCase;
       this.isRegex = isRegex;
@@ -286,7 +285,6 @@ public class FlutterLogTree extends TreeTable {
       return text;
     }
 
-    @Override
     public boolean accept(@NotNull FlutterLogEntry entry) {
       if (text == null) {
         return true;
@@ -312,7 +310,7 @@ public class FlutterLogTree extends TreeTable {
     public boolean equals(Object o) {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
-      final ContainsTextFilter filter = (ContainsTextFilter)o;
+      final EntryFilter filter = (EntryFilter)o;
       return isRegex == filter.isRegex &&
              isMatchCase == filter.isMatchCase &&
              Objects.equals(text, filter.text);
@@ -322,10 +320,6 @@ public class FlutterLogTree extends TreeTable {
     public int hashCode() {
       return Objects.hash(text, isRegex, isMatchCase);
     }
-  }
-
-  public interface EntryFilter {
-    boolean accept(@NotNull FlutterLogEntry entry);
   }
 
   public interface EventCountListener extends EventListener {

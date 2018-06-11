@@ -41,7 +41,8 @@ import java.awt.event.MouseEvent;
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
   // based on com.intellij.openapi.vcs.ui.SearchFieldAction
   private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
-    private final FlutterLogFilterPanel pnlFlutterLogFilter = new FlutterLogFilterPanel(param -> doFilter());
+    @NotNull
+    private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
 
     public FilterToolbarAction() {
     }
@@ -52,24 +53,24 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     private void doFilter() {
-      final FlutterLogFilterPanel.FilterParam param = pnlFlutterLogFilter.getCurrentFilterParam();
+      final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
       final String text = getText();
       final FlutterLogTree.EntryFilter filter =
-        StringUtils.isEmpty(text) ? null : new FlutterLogTree.ContainsTextFilter(text, param.isMatchCase(), param.isRegex());
+        StringUtils.isEmpty(text) ? null : new FlutterLogTree.EntryFilter(text, param.isMatchCase(), param.isRegex());
       ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
     }
 
     public String getText() {
-      return pnlFlutterLogFilter.getExpression();
+      return filterPanel.getExpression();
     }
 
     @Override
     public JComponent createCustomComponent(Presentation presentation) {
-      return pnlFlutterLogFilter.getRoot();
+      return filterPanel.getRoot();
     }
 
     public void setTextFieldFg(boolean inactive) {
-      pnlFlutterLogFilter.setTextFieldFg(inactive);
+      filterPanel.setTextFieldFg(inactive);
     }
   }
 
