@@ -299,11 +299,11 @@ public class FlutterLogTree extends TreeTable {
     }
 
     private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
-      final String standardString = message.replaceAll("\n", "");
       if (isRegex) {
-        return standardString.matches(".*" + text + ".*");
+        // Extra replace to support matching on strings w/ line breaks.
+        return message.replaceAll("\n", "").matches(".*" + text + ".*");
       }
-      return standardString.contains(text);
+      return message.contains(text);
     }
 
     @Override
