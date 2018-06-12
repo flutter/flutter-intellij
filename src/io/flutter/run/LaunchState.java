@@ -130,8 +130,8 @@ public class LaunchState extends CommandLineState {
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
-    // For Bazel run configurations;
-    // where the console is not null;
+    // For Bazel run configurations,
+    // where the console is not null,
     // and we find the expected process handler type,
     // print the command line command to the console.
     if (runConfig instanceof BazelRunConfig &&
