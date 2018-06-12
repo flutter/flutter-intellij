@@ -6,7 +6,6 @@
       <xy x="20" y="34" width="450" height="35"/>
     </constraints>
     <properties>
-      <background color="-1250068"/>
       <enabled value="true"/>
       <minimumSize width="450" height="35"/>
       <preferredSize width="450" height="35"/>
