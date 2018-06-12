@@ -69,6 +69,7 @@ public class FlutterLog {
   private void onEntry(@Nullable FlutterLogEntry entry) {
     if (entry != null) {
       entries.add(entry);
+      entry.setSequenceNumber(entries.size());
       dispatcher.getMulticaster().onEvent(entry);
     }
   }

@@ -87,6 +87,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     private DefaultActionGroup createPopupActionGroup() {
       final DefaultActionGroup group = new DefaultActionGroup();
       group.add(new ShowTimeStampsAction());
+      group.add(new ShowSequenceNumbersAction());
       return group;
     }
   }
@@ -109,6 +110,23 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
+  private class ShowSequenceNumbersAction extends ToggleAction {
+
+    ShowSequenceNumbersAction() {
+      super("Show sequence numbers");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return logModel.getShowSequenceNumbers();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      logModel.setShowSequenceNumbers(state);
+      logModel.update();
+    }
+  }
 
   // based on com.intellij.openapi.vcs.ui.SearchFieldAction
   private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
@@ -331,8 +349,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     });
 
     // Set bounds.
+    // TODO(pq): consider re-sizing dynamically, as needed.
     logTree.getColumn("Time").setMinWidth(100);
     logTree.getColumn("Time").setMaxWidth(100);
+    logTree.getColumn("Sequence").setMinWidth(50);
+    logTree.getColumn("Sequence").setMaxWidth(50);
     logTree.getColumn("Category").setMinWidth(110);
     logTree.getColumn("Category").setMaxWidth(110);
     logTree.getColumn("Message").setMinWidth(100);
