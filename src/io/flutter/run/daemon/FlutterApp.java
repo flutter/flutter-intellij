@@ -497,8 +497,9 @@ public class FlutterApp {
   }
 
   public boolean isSessionActive() {
-    return isStarted() && getFlutterDebugProcess().getVmConnected() &&
-           !getFlutterDebugProcess().getSession().isStopped();
+    final FlutterDebugProcess debugProcess = getFlutterDebugProcess();
+    return isStarted() && debugProcess != null && debugProcess.getVmConnected() &&
+           !debugProcess.getSession().isStopped();
   }
 
   public FlutterDevice device() {
