@@ -83,7 +83,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap =
     new THashMap<>();
 
-  private final boolean myRemoteDebug;
   private final int myTimeout;
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @Nullable protected String myRemoteProjectRootUri;
@@ -92,8 +91,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   private VmOpenSourceLocationListener myVmOpenSourceLocationListener;
 
   @NotNull private final ObservatoryConnector myConnector;
-
-  private boolean remoteDebug = false;
 
   @NotNull
   private final ExecutionEnvironment executionEnvironment;
@@ -116,7 +113,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     myObservatoryPort = 0;
     myExecutionResult = executionResult;
     myDartUrlResolver = dartUrlResolver;
-    myRemoteDebug = false;
     myTimeout = 0;
     myCurrentWorkingDirectory = null;
 
@@ -126,8 +122,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       new DartVmServiceBreakpointHandler(this),
       new DartExceptionBreakpointHandler(this)
     };
-
-    setLogger();
 
     session.addSessionListener(new XDebugSessionListener() {
       @Override
@@ -143,31 +137,20 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       }
     });
 
-    if (remoteDebug) {
-      throw new RuntimeException("Remote debugging is not supported");
-      // TODO won't work since Dart SDK 1.22 because auth token in URL is required
-    }
-    else {
-      getProcessHandler().addProcessListener(new ProcessAdapter() {
-        @Override
-        public void onTextAvailable(@NotNull final ProcessEvent event, @NotNull final Key outputType) {
-          final String prefix = DartConsoleFilter.OBSERVATORY_LISTENING_ON + "http://";
-          if (event.getText().startsWith(prefix)) {
-            getProcessHandler().removeProcessListener(this);
+    getProcessHandler().addProcessListener(new ProcessAdapter() {
+      @Override
+      public void onTextAvailable(@NotNull final ProcessEvent event, @NotNull final Key outputType) {
+        final String prefix = DartConsoleFilter.OBSERVATORY_LISTENING_ON + "http://";
+        if (event.getText().startsWith(prefix)) {
+          getProcessHandler().removeProcessListener(this);
 
-            final String urlBase = event.getText().substring(prefix.length());
-            myOpenObservatoryAction.setUrl("http://" + urlBase);
-          }
+          final String urlBase = event.getText().substring(prefix.length());
+          myOpenObservatoryAction.setUrl("http://" + urlBase);
         }
-      });
-    }
+      }
+    });
 
-    if (remoteDebug) {
-      LOG.assertTrue(myExecutionResult == null,  myExecutionResult);
-    }
-    else {
-      LOG.assertTrue(myExecutionResult != null, myExecutionResult);
-    }
+    LOG.assertTrue(myExecutionResult != null, myExecutionResult);
 
     this.executionEnvironment = executionEnvironment;
     this.mapper = mapper;
@@ -343,12 +326,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     return myBreakpointHandlers;
   }
 
-  public boolean isRemoteDebug() {
-    return myRemoteDebug;
-  }
-
-  public void guessRemoteProjectRoot(@NotNull final ElementList<LibraryRef> libraries) {
-    // After connecting (with remote debugging enabled), this is called once per isolate.
+   public void guessRemoteProjectRoot(@NotNull final ElementList<LibraryRef> libraries) {
     // TODO(skybrian) do we need to handle multiple isolates?
     mapper.onLibrariesDownloaded(libraries);
   }
@@ -567,10 +545,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
     mapper.onConnect(provider, myConnector.getRemoteBaseUrl());
 
-    // We disable the remote debug flag so that handleDebuggerConnected() does not echo the stdout and
-    // stderr streams (this would duplicate what we get over daemon logging).
-    remoteDebug = false;
-
     final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(executionEnvironment);
     if (launchMode.supportsDebugConnection()) {
       myVmServiceWrapper.handleDebuggerConnected();
@@ -610,10 +584,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
         }
       });
     }
-
-    // We re-enable the remote debug flag so that the service wrapper will call our guessRemoteProjectRoot()
-    // method with the list of loaded libraries for the isolate.
-    remoteDebug = true;
 
     vmService.addVmServiceListener(vmServiceListener);
     myVmOpenSourceLocationListener.addListener(

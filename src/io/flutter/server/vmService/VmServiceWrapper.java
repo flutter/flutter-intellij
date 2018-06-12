@@ -140,11 +140,6 @@ public class VmServiceWrapper implements Disposable {
         });
       }
     });
-
-    if (myDebugProcess.isRemoteDebug()) {
-      streamListen(VmService.STDOUT_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-      streamListen(VmService.STDERR_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    }
   }
 
   private void streamListen(@NotNull final String streamId, @NotNull final SuccessConsumer consumer) {
@@ -216,20 +211,15 @@ public class VmServiceWrapper implements Disposable {
   }
 
   private void setInitialBreakpointsAndResume(@NotNull final IsolateRef isolateRef) {
-    if (myDebugProcess.isRemoteDebug()) {
-      if (myDebugProcess.myRemoteProjectRootUri == null) {
-        // need to detect remote project root path before setting breakpoints
-        getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
-          @Override
-          public void received(final Isolate isolate) {
-            myDebugProcess.guessRemoteProjectRoot(isolate.getLibraries());
-            doSetInitialBreakpointsAndResume(isolateRef);
-          }
-        });
-      }
-      else {
-        doSetInitialBreakpointsAndResume(isolateRef);
-      }
+    if (myDebugProcess.myRemoteProjectRootUri == null) {
+      // need to detect remote project root path before setting breakpoints
+      getIsolate(isolateRef.getId(), new VmServiceConsumers.GetIsolateConsumerWrapper() {
+        @Override
+        public void received(final Isolate isolate) {
+          myDebugProcess.guessRemoteProjectRoot(isolate.getLibraries());
+          doSetInitialBreakpointsAndResume(isolateRef);
+        }
+      });
     }
     else {
       doSetInitialBreakpointsAndResume(isolateRef);
