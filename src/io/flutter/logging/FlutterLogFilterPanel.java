@@ -5,7 +5,7 @@
  */
 package io.flutter.logging;
 
-import com.intellij.uiDesigner.core.GridConstraints;
+import com.intellij.ui.SearchTextField;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,17 +17,16 @@ public class FlutterLogFilterPanel {
   private JPanel root;
   private JCheckBox matchCaseCheckBox;
   private JCheckBox regexCheckBox;
-  private JPanel panelExpression;
-  private final LogFilterTextField textExpression;
+  private SearchTextField textExpression;
+  @NotNull
+  private final OnFilterListener onFilterListener;
 
   public FlutterLogFilterPanel(
     @NotNull OnFilterListener onFilterListener
   ) {
+    this.onFilterListener = onFilterListener;
     matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
-    textExpression = new LogFilterTextField();
-    textExpression.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
-    panelExpression.add(textExpression, new GridConstraints());
   }
 
   @NotNull
@@ -55,6 +54,17 @@ public class FlutterLogFilterPanel {
 
   public boolean isMatchCase() {
     return regexCheckBox.isSelected();
+  }
+
+  private void createUIComponents() {
+    textExpression = createSearchTextField();
+  }
+
+  @NotNull
+  private SearchTextField createSearchTextField() {
+    final LogFilterTextField logFilterTextField = new LogFilterTextField();
+    logFilterTextField.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
+    return logFilterTextField;
   }
 
   public interface OnFilterListener {
