@@ -20,7 +20,7 @@ import com.intellij.psi.search.GlobalSearchScopesCore;
 import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import io.flutter.server.vmService.DartVmServiceDebugProcessZ;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
@@ -42,7 +42,7 @@ import java.util.Set;
  * <p>
  * Used when setting breakpoints, stepping through code, and so on while debugging.
  */
-public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper {
+public class PositionMapper implements DartVmServiceDebugProcess.PositionMapper {
   @NotNull
   private final Project project;
 
@@ -70,7 +70,7 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
    * Initialized when the debugger connects.
    */
   @Nullable
-  private DartVmServiceDebugProcessZ.ScriptProvider scriptProvider;
+  private DartVmServiceDebugProcess.ScriptProvider scriptProvider;
 
   /**
    * The "devfs" base uri reported by the flutter process on startup.
@@ -110,7 +110,7 @@ public class PositionMapper implements DartVmServiceDebugProcessZ.PositionMapper
     return project;
   }
 
-  public void onConnect(@NotNull DartVmServiceDebugProcessZ.ScriptProvider provider, @Nullable String remoteBaseUri) {
+  public void onConnect(@NotNull DartVmServiceDebugProcess.ScriptProvider provider, @Nullable String remoteBaseUri) {
     if (this.scriptProvider != null) {
       throw new IllegalStateException("already connected");
     }

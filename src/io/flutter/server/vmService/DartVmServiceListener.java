@@ -115,9 +115,7 @@ public class DartVmServiceListener implements VmServiceListener {
 
   @Override
   public void connectionClosed() {
-    if (myDebugProcess.isRemoteDebug()) {
-      myDebugProcess.getSession().stop();
-    }
+    myDebugProcess.getSession().stop();
   }
 
   void onIsolatePaused(@NotNull final IsolateRef isolateRef,

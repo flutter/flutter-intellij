@@ -20,7 +20,7 @@ import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
-import io.flutter.server.vmService.DartVmServiceDebugProcessZ;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import io.flutter.view.FlutterViewMessages;
 import io.flutter.view.OpenFlutterViewAction;
 import org.dartlang.vm.service.VmService;
@@ -38,7 +38,7 @@ import java.util.Objects;
  * It's used for both the 'Run' and 'Debug' modes. (We apparently need a debug process even
  * when not debugging in order to support hot reload.)
  */
-public class FlutterDebugProcess extends DartVmServiceDebugProcessZ {
+public class FlutterDebugProcess extends DartVmServiceDebugProcess {
   private static final Logger LOG = Logger.getInstance(FlutterDebugProcess.class);
 
   private final @NotNull FlutterApp app;
