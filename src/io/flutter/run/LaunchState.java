@@ -12,12 +12,14 @@ import com.intellij.execution.configurations.RunProfile;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.executors.DefaultDebugExecutor;
 import com.intellij.execution.executors.DefaultRunExecutor;
+import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.runners.ProgramRunner;
 import com.intellij.execution.runners.RunContentBuilder;
 import com.intellij.execution.ui.ConsoleView;
+import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -39,6 +41,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
 import io.flutter.logging.FlutterLogView;
+import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
@@ -91,7 +94,8 @@ public class LaunchState extends CommandLineState {
       final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
       assert app != null;
       return new FlutterLogView(app);
-    } else {
+    }
+    else {
       return super.createConsole(executor);
     }
   }
@@ -125,6 +129,19 @@ public class LaunchState extends CommandLineState {
     app.getProcessHandler().putUserData(FLUTTER_RUN_CONFIG_KEY, runConfig);
 
     final ExecutionResult result = setUpConsoleAndActions(app);
+
+    // For Bazel run configurations,
+    // where the console is not null,
+    // and we find the expected process handler type,
+    // print the command line command to the console.
+    if (runConfig instanceof BazelRunConfig &&
+        app.getConsole() != null &&
+        app.getProcessHandler() instanceof OSProcessHandler) {
+      final String commandLineString = ((OSProcessHandler)app.getProcessHandler()).getCommandLine().trim();
+      if (StringUtil.isNotEmpty(commandLineString)) {
+        app.getConsole().print(commandLineString + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
+      }
+    }
 
     device.bringToFront();
 
