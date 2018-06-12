@@ -46,6 +46,7 @@ public class FlutterLogTree extends TreeTable {
     // Cached for hide and restore (because *sigh* Swing).
     private List<TableColumn> tableColumns;
     private boolean showTimestamps;
+    private boolean showSequenceNumbers;
     private boolean updateColumns;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
@@ -53,6 +54,7 @@ public class FlutterLogTree extends TreeTable {
     public LogTreeModel(@NotNull FlutterApp app, @NotNull Disposable parent) {
       super(new LogRootTreeNode(), new ColumnInfo[]{
         new TimeColumnInfo(),
+        new SequenceColumnInfo(),
         new CategoryColumnInfo(),
         new MessageColumnInfo(app)
       });
@@ -63,6 +65,10 @@ public class FlutterLogTree extends TreeTable {
 
       // Show timestamps by default.
       showTimestamps = true;
+      showSequenceNumbers = false;
+
+      // Hide columns as needed.
+      updateColumns = true;
 
       uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
@@ -80,8 +86,14 @@ public class FlutterLogTree extends TreeTable {
         Collections.list(treeTable.getColumnModel().getColumns()).forEach(c -> treeTable.removeColumn(c));
 
         // Add back what's appropriate.
-        final List<TableColumn> columns = showTimestamps ? tableColumns : tableColumns.subList(1, tableColumns.size());
-        columns.forEach(c -> treeTable.addColumn(c));
+        if (showTimestamps) {
+          treeTable.addColumn(tableColumns.get(0));
+        }
+        if (showSequenceNumbers) {
+          treeTable.addColumn(tableColumns.get(1));
+        }
+
+        tableColumns.subList(2, tableColumns.size()).forEach(c -> treeTable.addColumn(c));
       }
 
       reload(getRoot());
@@ -140,6 +152,15 @@ public class FlutterLogTree extends TreeTable {
       this.showTimestamps = showTimestamps;
       updateColumns = true;
     }
+
+    public boolean getShowSequenceNumbers() {
+      return showSequenceNumbers;
+    }
+
+    public void setShowSequenceNumbers(boolean state) {
+      this.showSequenceNumbers = state;
+      updateColumns = true;
+    }
   }
 
   static class LogRootTreeNode extends DefaultMutableTreeNode {
@@ -176,6 +197,27 @@ public class FlutterLogTree extends TreeTable {
     public String valueOf(DefaultMutableTreeNode node) {
       if (node instanceof FlutterEventNode) {
         return TIMESTAMP_FORMAT.format(((FlutterEventNode)node).entry.getTimestamp());
+      }
+      return null;
+    }
+
+    @Nullable
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
+      return DEFAULT_EVENT_CELL_RENDERER;
+    }
+  }
+
+  static class SequenceColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+    public SequenceColumnInfo() {
+      super("Sequence");
+    }
+
+    @Nullable
+    @Override
+    public String valueOf(DefaultMutableTreeNode node) {
+      if (node instanceof FlutterEventNode) {
+        return Integer.toString(((FlutterEventNode)node).entry.getSequenceNumber());
       }
       return null;
     }
