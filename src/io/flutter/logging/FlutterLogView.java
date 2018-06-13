@@ -88,6 +88,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       final DefaultActionGroup group = new DefaultActionGroup();
       group.add(new ShowTimeStampsAction());
       group.add(new ShowSequenceNumbersAction());
+      group.add(new ShowLevelAction());
       return group;
     }
   }
@@ -124,6 +125,24 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
       logModel.setShowSequenceNumbers(state);
+      logModel.update();
+    }
+  }
+
+  private class ShowLevelAction extends ToggleAction {
+
+    ShowLevelAction() {
+      super("Show log levels");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return logModel.getShowLogLevels();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      logModel.setShowLogLevels(state);
       logModel.update();
     }
   }
@@ -354,6 +373,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     logTree.getColumn("Time").setMaxWidth(100);
     logTree.getColumn("Sequence").setMinWidth(50);
     logTree.getColumn("Sequence").setMaxWidth(50);
+    logTree.getColumn("Level").setMinWidth(60);
+    logTree.getColumn("Level").setMaxWidth(60);
     logTree.getColumn("Category").setMinWidth(110);
     logTree.getColumn("Category").setMaxWidth(110);
     logTree.getColumn("Message").setMinWidth(100);
