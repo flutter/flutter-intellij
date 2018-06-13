@@ -46,6 +46,7 @@ public class FlutterLogTree extends TreeTable {
     // Cached for hide and restore (because *sigh* Swing).
     private List<TableColumn> tableColumns;
     private boolean showTimestamps;
+    private boolean showLogLevels;
     private boolean showSequenceNumbers;
     private boolean updateColumns;
     private JScrollPane scrollPane;
@@ -55,6 +56,7 @@ public class FlutterLogTree extends TreeTable {
       super(new LogRootTreeNode(), new ColumnInfo[]{
         new TimeColumnInfo(),
         new SequenceColumnInfo(),
+        new LevelColumnInfo(),
         new CategoryColumnInfo(),
         new MessageColumnInfo(app)
       });
@@ -66,6 +68,7 @@ public class FlutterLogTree extends TreeTable {
       // Show timestamps by default.
       showTimestamps = true;
       showSequenceNumbers = false;
+      showLogLevels = true;
 
       // Hide columns as needed.
       updateColumns = true;
@@ -92,8 +95,11 @@ public class FlutterLogTree extends TreeTable {
         if (showSequenceNumbers) {
           treeTable.addColumn(tableColumns.get(1));
         }
+        if (showLogLevels) {
+          treeTable.addColumn(tableColumns.get(2));
+        }
 
-        tableColumns.subList(2, tableColumns.size()).forEach(c -> treeTable.addColumn(c));
+        tableColumns.subList(3, tableColumns.size()).forEach(c -> treeTable.addColumn(c));
       }
 
       reload(getRoot());
@@ -161,6 +167,14 @@ public class FlutterLogTree extends TreeTable {
       this.showSequenceNumbers = state;
       updateColumns = true;
     }
+
+    public boolean getShowLogLevels() {
+      return showLogLevels;
+    }
+
+    public void setShowLogLevels(boolean showLogLevels) {
+      this.showLogLevels = showLogLevels;
+    }
   }
 
   static class LogRootTreeNode extends DefaultMutableTreeNode {
@@ -187,70 +201,80 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
-  static class TimeColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+  private static abstract class AbstractColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+    AbstractColumnInfo(@NotNull String name) {
+      super(name);
+    }
+
+    @Nullable
+    @Override
+    public final String valueOf(DefaultMutableTreeNode node) {
+      if (node instanceof FlutterEventNode) {
+        return valueOf(((FlutterEventNode)node).entry);
+      }
+      return null;
+    }
+
+    @Nullable
+    public abstract String valueOf(FlutterLogEntry entry);
+
+    @Nullable
+    @Override
+    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
+      return DEFAULT_EVENT_CELL_RENDERER;
+    }
+  }
+
+  static class TimeColumnInfo extends AbstractColumnInfo {
     public TimeColumnInfo() {
       super("Time");
     }
 
     @Nullable
     @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return TIMESTAMP_FORMAT.format(((FlutterEventNode)node).entry.getTimestamp());
-      }
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
-      return DEFAULT_EVENT_CELL_RENDERER;
+    public String valueOf(FlutterLogEntry entry) {
+      return TIMESTAMP_FORMAT.format(entry.getTimestamp());
     }
   }
 
-  static class SequenceColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+  static class SequenceColumnInfo extends AbstractColumnInfo {
     public SequenceColumnInfo() {
       super("Sequence");
     }
 
     @Nullable
     @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return Integer.toString(((FlutterEventNode)node).entry.getSequenceNumber());
-      }
-      return null;
+    public String valueOf(FlutterLogEntry entry) {
+      return Integer.toString(entry.getSequenceNumber());
+    }
+  }
+
+  static class LevelColumnInfo extends AbstractColumnInfo {
+    public LevelColumnInfo() {
+      super("Level");
     }
 
     @Nullable
     @Override
-    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
-      return DEFAULT_EVENT_CELL_RENDERER;
+    public String valueOf(FlutterLogEntry entry) {
+      final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
+      return level != null ? level.name() : Integer.toString(entry.getLevel());
     }
   }
 
-  static class CategoryColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+  static class CategoryColumnInfo extends AbstractColumnInfo {
     public CategoryColumnInfo() {
       super("Category");
     }
 
     @Nullable
     @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return ((FlutterEventNode)node).entry.getCategory();
-      }
-      return null;
-    }
-
-    @Nullable
-    @Override
-    public TableCellRenderer getRenderer(DefaultMutableTreeNode node) {
-      return DEFAULT_EVENT_CELL_RENDERER;
+    public String valueOf(FlutterLogEntry entry) {
+      return entry.getCategory();
     }
   }
 
-  static class MessageColumnInfo extends ColumnInfo<DefaultMutableTreeNode, String> {
+  static class MessageColumnInfo extends AbstractColumnInfo {
     private final LogMessageCellRenderer messageCellRenderer;
 
     public MessageColumnInfo(FlutterApp app) {
@@ -260,11 +284,8 @@ public class FlutterLogTree extends TreeTable {
 
     @Nullable
     @Override
-    public String valueOf(DefaultMutableTreeNode node) {
-      if (node instanceof FlutterEventNode) {
-        return ((FlutterEventNode)node).entry.getMessage();
-      }
-      return null;
+    public String valueOf(FlutterLogEntry entry) {
+      return entry.getMessage();
     }
 
     @Nullable
