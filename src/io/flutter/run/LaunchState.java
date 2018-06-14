@@ -38,6 +38,8 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterInitializer;
+import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
 import io.flutter.logging.FlutterLogView;
@@ -368,7 +370,6 @@ public class LaunchState extends CommandLineState {
 
         if (app != null && StringUtil.equals(app.deviceId(), selectedDeviceId)) {
           if (executorId.equals(app.getMode().mode())) {
-
             if (!identicalCommands(app.getCommand(), launchState.runConfig.getCommand(env, app.device()))) {
               // To be safe, relaunch as the arguments to launch have changed.
               try {
@@ -382,10 +383,12 @@ public class LaunchState extends CommandLineState {
               }
               return launchState.launch(env);
             }
+
             final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
             if (launchMode.supportsReload() && app.isStarted()) {
               // Map a re-run action to a flutter hot restart.
               FileDocumentManager.getInstance().saveAllDocuments();
+              FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
               app.performRestartApp();
             }
           }

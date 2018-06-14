@@ -21,8 +21,10 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
@@ -167,7 +169,6 @@ public class FlutterConsoleFilter implements Filter {
   private static class RestartAppHyperlinkInfo implements HyperlinkInfo {
     @Override
     public void navigate(final Project project) {
-      // TODO(pq) analytics for clicking the link? (We do log the command.)
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
       if (sdk == null) {
         Messages.showErrorDialog(project, "Flutter SDK not found", "Error");
@@ -180,6 +181,7 @@ public class FlutterConsoleFilter implements Filter {
         return;
       }
 
+      FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
       FlutterReloadManager.getInstance(project).saveAllAndRestart(app);
     }
   }
