@@ -7,6 +7,7 @@ package io.flutter.utils;
 
 import com.google.common.util.concurrent.RateLimiter;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.util.Alarm;
@@ -50,8 +51,10 @@ public class AsyncRateLimiter implements Disposable {
       // Wait for the pending request to be done before scheduling the new
       // request. The existing request has already started so may return state
       // that is now out of date.
+      requestScheduledButNotStarted = true;
       whenCompleteUiThread(pendingRequest, (Object ignored, Throwable error) -> {
         pendingRequest = null;
+        requestScheduledButNotStarted = false;
         scheduleRequest();
       });
       return;
@@ -72,12 +75,13 @@ public class AsyncRateLimiter implements Disposable {
           requestScheduledButNotStarted = false;
           performRequest();
         };
-        if (ApplicationManager.getApplication() != null) {
-          ApplicationManager.getApplication().invokeLater(doRun);
-        }
-        else {
+        final Application app = ApplicationManager.getApplication();
+        if (app == null || app.isUnitTestMode()) {
           // This case existing to support unittesting.
           SwingUtilities.invokeLater(doRun);
+        }
+        else {
+          app.invokeLater(doRun);
         }
       }, 0);
     }

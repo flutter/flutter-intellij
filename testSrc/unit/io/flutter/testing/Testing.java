@@ -5,14 +5,20 @@
  */
 package io.flutter.testing;
 
+import com.intellij.idea.IdeaTestApplication;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.testFramework.builders.EmptyModuleFixtureBuilder;
-import com.intellij.testFramework.fixtures.*;
+import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
+import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
+import com.intellij.testFramework.fixtures.TestFixtureBuilder;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -20,7 +26,17 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class Testing {
 
-  private Testing() {}
+  static {
+    // Very early on in the process of running tests we need to trigger all
+    // the initialization that typically happens when an IntelliJ test is run.
+    // TODO(jacobr): calling this method appears to trigger that initialization
+    // but this is not a robust solution. It could be better long term to switch
+    // to the standard test fixtures used by IntelliJ.
+    IdeaTestApplication.getInstance();
+  }
+
+  private Testing() {
+  }
 
   /**
    * Returns a "light" test fixture containing an empty project.
@@ -71,7 +87,7 @@ public class Testing {
     runOnDispatchThread(() -> ApplicationManager.getApplication().runWriteAction(action));
   }
 
-  public static <T> T computeOnDispatchThread(ThrowableComputable<T,Exception> callback) throws Exception {
+  public static <T> T computeOnDispatchThread(ThrowableComputable<T, Exception> callback) throws Exception {
     final AtomicReference<T> result = new AtomicReference<>();
     runOnDispatchThread(() -> result.set(callback.compute()));
     return result.get();
@@ -80,7 +96,9 @@ public class Testing {
   public static void runOnDispatchThread(RunnableThatThrows callback) throws Exception {
     try {
       final AtomicReference<Exception> ex = new AtomicReference<>();
-      SwingUtilities.invokeAndWait(() -> {
+      assert (!SwingUtilities.isEventDispatchThread());
+
+      TransactionGuard.getInstance().submitTransactionAndWait(() -> {
         try {
           callback.run();
         }
@@ -91,9 +109,10 @@ public class Testing {
       if (ex.get() != null) {
         throw ex.get();
       }
-    } catch (InvocationTargetException e) {
+    }
+    catch (InvocationTargetException e) {
       if (e.getCause() instanceof AssertionError) {
-        throw (AssertionError) e.getCause();
+        throw (AssertionError)e.getCause();
       }
     }
   }

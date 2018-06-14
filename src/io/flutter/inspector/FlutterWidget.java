@@ -37,8 +37,8 @@ public class FlutterWidget {
     ANIMATION_AND_MOTION("Animation and Motion", FlutterIcons.Animation),
     ASSETS_IMAGES_AND_ICONS("Assets, Images, and Icons", FlutterIcons.Assets),
     ASYNC("Async", FlutterIcons.Async),
-    //BASICS("Basics", FlutterIcons.Basics),
-    //CUPERTINO("Cupertino (iOS-style widgets)", FlutterIcons.Cupertino),
+    BASICS("Basics", null), // TODO(jacobr): add an icon.
+    CUPERTINO("Cupertino (iOS-style widgets)", null), // TODO(jacobr): add an icon.
     INPUT("Input", FlutterIcons.Input),
     PAINTING_AND_EFFECTS("Painting and effects", FlutterIcons.Painting),
     SCROLLING("Scrolling", FlutterIcons.Scrollbar),
