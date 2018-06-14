@@ -25,7 +25,7 @@ public abstract class Curve {
   }
 
   public int interpolate(int start, int end, double t) {
-    return (int)interpolate((double)start, (double)end, t);
+    return (int)Math.round(interpolate((double)start, (double)end, t));
   }
 
   /// Returns a new curve that is the reversed inversion of this one.

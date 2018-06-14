@@ -83,7 +83,12 @@ public class AsyncRateLimiterTest {
 
     while (!callbacksDone.isDone()) {
       // Schedule requests at many times the rate limit.
-      scheduleRequest();
+      SwingUtilities.invokeLater(() -> {
+        if (!callbacksDone.isDone()) {
+          rateLimiter.scheduleRequest();
+        }
+      });
+
       try {
         Thread.sleep(1);
       }

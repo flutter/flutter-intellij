@@ -5,8 +5,10 @@
  */
 package io.flutter.utils;
 
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
 
+import javax.swing.*;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
@@ -30,7 +32,13 @@ public class AsyncUtils {
         if (throwable instanceof CancellationException) {
           return;
         }
-        ApplicationManager.getApplication().invokeLater(() -> action.accept(value, throwable));
+        final Application app = ApplicationManager.getApplication();
+        if (app == null || app.isUnitTestMode()) {
+          // This case existing to support unittesting.
+          SwingUtilities.invokeLater(() -> action.accept(value, throwable));
+        } else {
+          app.invokeLater(() -> action.accept(value, throwable));
+        }
       }
     );
   }
