@@ -93,7 +93,7 @@ public class LaunchState extends CommandLineState {
     if (FlutterLog.isLoggingEnabled()) {
       final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
       assert app != null;
-      return new FlutterLogView(getEnvironment());
+      return new FlutterLogView(getEnvironment(), app);
     }
     else {
       return super.createConsole(executor);
