@@ -71,7 +71,7 @@ public class FlutterLogFilterPanel {
     void onFilter(@NotNull FilterParam param);
   }
 
-  static class FilterParam {
+  public static class FilterParam {
     @Nullable
     private final String expression;
     private final boolean isMatchCase;

@@ -5,6 +5,7 @@
  */
 package io.flutter.logging;
 
+import io.flutter.logging.v2.EntryFilter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -14,8 +15,8 @@ public class FlutterLogTreeTest {
 
   @Test
   public void testMustAcceptIfFilterIsNull() {
-    final FlutterLogTree.EntryFilter filterNormal = new FlutterLogTree.EntryFilter(null);
-    final FlutterLogTree.EntryFilter filterRegex = new FlutterLogTree.EntryFilter(null, false, true);
+    final EntryFilter filterNormal = new EntryFilter(null);
+    final EntryFilter filterRegex = new EntryFilter(null, false, true);
     final FlutterLogEntry entry = new FlutterLogEntry(0, "", "");
     assertTrue(filterNormal.accept(entry));
     assertTrue(filterRegex.accept(entry));
@@ -23,7 +24,7 @@ public class FlutterLogTreeTest {
 
   @Test
   public void testAcceptInRegex() {
-    final FlutterLogTree.EntryFilter filterRegex = new FlutterLogTree.EntryFilter(".*hello.*", false, true);
+    final EntryFilter filterRegex = new EntryFilter(".*hello.*", false, true);
     final FlutterLogEntry entryMatchWithRegexByMessage = new FlutterLogEntry(0, "random", "log hello message");
     final FlutterLogEntry entryMatchWithRegexByMessageWithBreakLine = new FlutterLogEntry(0, "random", "log hello message\nnewline\n");
     final FlutterLogEntry entryMatchWithRegexByCategory = new FlutterLogEntry(0, "hello", "log random message");
@@ -36,7 +37,7 @@ public class FlutterLogTreeTest {
 
   @Test
   public void testAcceptInNormalMode() {
-    final FlutterLogTree.EntryFilter filterRegex = new FlutterLogTree.EntryFilter("hello", false, true);
+    final EntryFilter filterRegex = new EntryFilter("hello", false, true);
     final FlutterLogEntry entryMatchByMessage = new FlutterLogEntry(0, "random", "log hello message");
     final FlutterLogEntry entryMatchByCategory = new FlutterLogEntry(0, "hello", "log random message");
     final FlutterLogEntry entryNotMatch = new FlutterLogEntry(0, "random", "log random message");
@@ -49,10 +50,10 @@ public class FlutterLogTreeTest {
   @Test
   public void testMustAcceptInMatchCaseMode() {
     final FlutterLogEntry entry = new FlutterLogEntry(0, "random", "log hello message");
-    final FlutterLogTree.EntryFilter filterMatchCaseNormal = new FlutterLogTree.EntryFilter("hello", true, false);
-    final FlutterLogTree.EntryFilter filterMatchCaseRegex = new FlutterLogTree.EntryFilter("hello", true, true);
-    final FlutterLogTree.EntryFilter filterInvalidMatchCaseNormal = new FlutterLogTree.EntryFilter("Hello", true, false);
-    final FlutterLogTree.EntryFilter filterInvalidMatchCaseRegex = new FlutterLogTree.EntryFilter("Hello", true, true);
+    final EntryFilter filterMatchCaseNormal = new EntryFilter("hello", true, false);
+    final EntryFilter filterMatchCaseRegex = new EntryFilter("hello", true, true);
+    final EntryFilter filterInvalidMatchCaseNormal = new EntryFilter("Hello", true, false);
+    final EntryFilter filterInvalidMatchCaseRegex = new EntryFilter("Hello", true, true);
     assertTrue(filterMatchCaseNormal.accept(entry));
     assertTrue(filterMatchCaseRegex.accept(entry));
     assertFalse(filterInvalidMatchCaseNormal.accept(entry));

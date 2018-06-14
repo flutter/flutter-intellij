@@ -40,7 +40,7 @@ import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
-import io.flutter.logging.FlutterLogView;
+import io.flutter.logging.v2.FlutterLogView;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.daemon.*;
 import io.flutter.view.OpenFlutterViewAction;
@@ -93,7 +93,7 @@ public class LaunchState extends CommandLineState {
     if (FlutterLog.isLoggingEnabled()) {
       final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
       assert app != null;
-      return new FlutterLogView(app);
+      return new FlutterLogView(getEnvironment(), app);
     }
     else {
       return super.createConsole(executor);
