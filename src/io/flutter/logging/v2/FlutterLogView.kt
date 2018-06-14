@@ -19,6 +19,7 @@ import com.intellij.openapi.ui.SimpleToolWindowPanel
 import io.flutter.logging.FlutterLog
 import io.flutter.logging.FlutterLogFilterPanel
 import io.flutter.run.daemon.FlutterApp
+import org.apache.commons.lang.StringUtils
 import javax.swing.JComponent
 
 class FlutterLogView(
@@ -27,7 +28,7 @@ class FlutterLogView(
 ) : ConsoleView {
 
   private val myConsoleView: ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
-  private val filterPanel = FlutterLogFilterPanel { }
+  private val filterPanel = FlutterLogFilterPanel { doFilter(it) }
   private val simpleToolWindowPanel: SimpleToolWindowPanel = SimpleToolWindowPanel(true, true).apply {
     setToolbar(filterPanel.root)
     setContent(myConsoleView.component)
@@ -38,6 +39,17 @@ class FlutterLogView(
   }
   private val flutterLog: FlutterLog = flutterApp.flutterLog.apply {
     addListener(flutterLogListener, Disposable { })
+  }
+
+  private var lastEntryFilter: EntryFilter? = null
+  private fun doFilter(param: FlutterLogFilterPanel.FilterParam) {
+    val filter = if (param.expression.isNullOrBlank()) null else EntryFilter(param.expression, param.isMatchCase, param.isRegex)
+    if (lastEntryFilter == filter) {
+      return
+    }
+    myConsoleView.clear()
+    val filterdEntries = if (filter == null) flutterLog.entries else flutterLog.entries.filter { filter.accept(it) }
+    filterdEntries.forEach { myConsoleView.print(it.message, ConsoleViewContentType.NORMAL_OUTPUT) }
   }
 
   override fun setOutputPaused(value: Boolean) {

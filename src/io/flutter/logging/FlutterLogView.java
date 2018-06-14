@@ -26,6 +26,7 @@ import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.SimpleTreeBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.logging.v2.EntryFilter;
 import io.flutter.run.daemon.FlutterApp;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -163,8 +164,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     private void doFilter() {
       final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
       final String text = getText();
-      final FlutterLogTree.EntryFilter filter =
-        StringUtils.isEmpty(text) ? null : new FlutterLogTree.EntryFilter(text, param.isMatchCase(), param.isRegex());
+      final EntryFilter filter =
+        StringUtils.isEmpty(text) ? null : new EntryFilter(text, param.isMatchCase(), param.isRegex());
       ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
     }
 
