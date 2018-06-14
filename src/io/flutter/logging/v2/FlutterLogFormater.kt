@@ -10,20 +10,26 @@ import io.flutter.logging.FlutterLog
 import io.flutter.logging.FlutterLogEntry
 import java.text.SimpleDateFormat
 
-class FlutterLogFormater {
-
+class FlutterLogFormater(
+  var isShowTimestamp: Boolean = true,
+  var isShowLogLevel: Boolean = true
+) {
   fun format(flutterLogEntry: FlutterLogEntry): String = flutterLogEntry.run {
-    "%-${MAX_TIMESTAMP_CHARACTER}s %-${MAX_LOG_LEVEL_CHARACTER}s %-10s %s".format(
-        TIMESTAMP_FORMAT.format(timestamp).toString().subSequenceBound(MAX_TIMESTAMP_CHARACTER),
-        levelName.subSequenceBound(MAX_LOG_LEVEL_CHARACTER),
-        category.subSequenceBound(MAX_CATEGORY_CHARACTER),
-        message
+    val timestampTemplate = if (isShowTimestamp) "%-${MAX_TIMESTAMP_CHARACTER}s" else "%s"
+    val logLevelTemplate = if (isShowLogLevel) "%-${MAX_LOG_LEVEL_CHARACTER}s" else "%s"
+    val categoryTemplate = " %-10s "
+    val messageTemplate = "%s"
+    "$timestampTemplate$logLevelTemplate$categoryTemplate$messageTemplate".format(
+      if (isShowTimestamp) TIMESTAMP_FORMAT.format(timestamp).toString().subSequenceBound(MAX_TIMESTAMP_CHARACTER) else "",
+      if (isShowLogLevel) levelName.subSequenceBound(MAX_LOG_LEVEL_CHARACTER) else "",
+      category.subSequenceBound(MAX_CATEGORY_CHARACTER),
+      message
     )
   }
 
   companion object {
     private val TIMESTAMP_FORMAT = SimpleDateFormat("HH:mm:ss.SSS")
-    private const val MAX_TIMESTAMP_CHARACTER = 13
+    private const val MAX_TIMESTAMP_CHARACTER = 15
     private const val MAX_LOG_LEVEL_CHARACTER = 6
     private const val MAX_CATEGORY_CHARACTER = 15
 
