@@ -26,16 +26,16 @@ class FlutterLogView(
     environment: ExecutionEnvironment,
     flutterApp: FlutterApp
 ) : ConsoleView {
-
+  private val flutterLogFormater: FlutterLogFormater = FlutterLogFormater()
   private val myConsoleView: ConsoleView = TextConsoleBuilderFactory.getInstance().createBuilder(environment.project).console
   private val filterPanel = FlutterLogFilterPanel { doFilter(it) }
   private val simpleToolWindowPanel: SimpleToolWindowPanel = SimpleToolWindowPanel(true, true).apply {
     setToolbar(filterPanel.root)
     setContent(myConsoleView.component)
   }
-  private val flutterLogListener = FlutterLog.Listener { logEntry ->
+  private val flutterLogListener = FlutterLog.Listener {
     // TODO: corect log content type
-    myConsoleView.print(logEntry.message, ConsoleViewContentType.NORMAL_OUTPUT)
+    myConsoleView.print(flutterLogFormater.format(it), ConsoleViewContentType.NORMAL_OUTPUT)
   }
   private val flutterLog: FlutterLog = flutterApp.flutterLog.apply {
     addListener(flutterLogListener, Disposable { })
@@ -49,7 +49,7 @@ class FlutterLogView(
     }
     myConsoleView.clear()
     val filterdEntries = if (filter == null) flutterLog.entries else flutterLog.entries.filter { filter.accept(it) }
-    filterdEntries.forEach { myConsoleView.print(it.message, ConsoleViewContentType.NORMAL_OUTPUT) }
+    filterdEntries.forEach { myConsoleView.print(flutterLogFormater.format(it), ConsoleViewContentType.NORMAL_OUTPUT) }
   }
 
   override fun setOutputPaused(value: Boolean) {
