@@ -236,8 +236,12 @@ public class FlutterApp {
         FlutterInitializer.getAnalytics().sendEvent("workflow", workflowType);
 
         // Send the ratio of reloads to restarts.
-        final double reloadRestartRatio = app.reloadCount / (app.restartCount + 1);
-        FlutterInitializer.getAnalytics().sendEventMetric("workflow", "reloadRestartRatio", (int)Math.round(reloadRestartRatio));
+        int reloadfraction = 0;
+        if ((app.reloadCount + app.restartCount) > 0) {
+          final double fraction = (app.reloadCount * 100.0) / (app.reloadCount + app.restartCount);
+          reloadfraction = (int)Math.round(fraction);
+        }
+        FlutterInitializer.getAnalytics().sendEventMetric("workflow", "reloadFraction", reloadfraction);
       }
     });
 
