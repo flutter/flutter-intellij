@@ -234,6 +234,14 @@ public class FlutterApp {
         // Send analytics about whether this session used the reload workflow, the restart workflow, or neither.
         final String workflowType = app.reloadCount > 0 ? "reload" : (app.restartCount > 0 ? "restart" : "none");
         FlutterInitializer.getAnalytics().sendEvent("workflow", workflowType);
+
+        // Send the ratio of reloads to restarts.
+        int reloadfraction = 0;
+        if ((app.reloadCount + app.restartCount) > 0) {
+          final double fraction = (app.reloadCount * 100.0) / (app.reloadCount + app.restartCount);
+          reloadfraction = (int)Math.round(fraction);
+        }
+        FlutterInitializer.getAnalytics().sendEventMetric("workflow", "reloadFraction", reloadfraction);
       }
     });
 

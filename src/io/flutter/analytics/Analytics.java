@@ -83,6 +83,14 @@ public class Analytics {
     sendPayload("event", args);
   }
 
+  public void sendEventMetric(String category, String action, int value) {
+    final Map<String, String> args = new HashMap<>();
+    args.put("ec", category);
+    args.put("ea", action);
+    args.put("ev", Integer.toString(value));
+    sendPayload("event", args);
+  }
+
   public void sendTiming(String category, String variable, long timeMillis) {
     final Map<String, String> args = new HashMap<>();
     args.put("utc", category);
