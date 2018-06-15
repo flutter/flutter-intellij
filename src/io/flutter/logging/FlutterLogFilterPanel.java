@@ -5,12 +5,19 @@
  */
 package io.flutter.logging;
 
+import com.intellij.ui.CollectionComboBoxModel;
 import com.intellij.ui.SearchTextField;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class FlutterLogFilterPanel {
@@ -18,6 +25,7 @@ public class FlutterLogFilterPanel {
   private JCheckBox matchCaseCheckBox;
   private JCheckBox regexCheckBox;
   private SearchTextField textExpression;
+  private JComboBox logLevelComboBox;
   @NotNull
   private final OnFilterListener onFilterListener;
 
@@ -27,11 +35,17 @@ public class FlutterLogFilterPanel {
     this.onFilterListener = onFilterListener;
     matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    final List<String> logLevels = Arrays.stream(FlutterLog.Level.values())
+      .map(Enum::name)
+      .collect(Collectors.toList());
+    logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
+    logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
   }
 
   @NotNull
   public FilterParam getCurrentFilterParam() {
-    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected());
+    final FlutterLog.Level logLevel = FlutterLog.Level.valueOf(String.valueOf(logLevelComboBox.getSelectedItem()));
+    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected(), logLevel);
   }
 
   @NotNull
@@ -76,11 +90,14 @@ public class FlutterLogFilterPanel {
     private final String expression;
     private final boolean isMatchCase;
     private final boolean isRegex;
+    @NotNull
+    private final FlutterLog.Level logLevel;
 
-    public FilterParam(@Nullable String expression, boolean isMatchCase, boolean isRegex) {
+    public FilterParam(@Nullable String expression, boolean isMatchCase, boolean isRegex, @NotNull FlutterLog.Level logLevel) {
       this.expression = expression;
       this.isMatchCase = isMatchCase;
       this.isRegex = isRegex;
+      this.logLevel = logLevel;
     }
 
     @Nullable
@@ -94,6 +111,27 @@ public class FlutterLogFilterPanel {
 
     public boolean isRegex() {
       return isRegex;
+    }
+
+    @NotNull
+    public FlutterLog.Level getLogLevel() {
+      return logLevel;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      final FilterParam param = (FilterParam)o;
+      return isMatchCase == param.isMatchCase &&
+             isRegex == param.isRegex &&
+             Objects.equals(expression, param.expression) &&
+             logLevel == param.logLevel;
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(expression, isMatchCase, isRegex, logLevel);
     }
   }
 }
