@@ -304,7 +304,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull final FlutterApp app;
   private final SimpleToolWindowPanel toolWindowPanel;
   @NotNull
-  private final FlutterLogTree.LogTreeModel logModel;
+  private final FlutterLogTree.TreeModel logModel;
   private final FlutterLogTree logTree;
   private SimpleTreeBuilder builder;
 
