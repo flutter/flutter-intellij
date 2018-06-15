@@ -78,12 +78,12 @@ public class FlutterLogTree extends TreeTable {
       @Override
       public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeNode o, TableCellRenderer renderer) {
         if (renderer == null) {
-          renderer = getRenderer();
+          renderer = createRenderer();
         }
         return renderer;
       }
 
-      abstract TableCellRenderer getRenderer();
+      abstract TableCellRenderer createRenderer();
     }
 
     private final List<Column> columns = new ArrayList<>();
@@ -98,7 +98,7 @@ public class FlutterLogTree extends TreeTable {
       this.app = app;
       columns.add(new Column("Time") {
         @Override
-        TableCellRenderer getRenderer() {
+        TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
@@ -109,7 +109,7 @@ public class FlutterLogTree extends TreeTable {
       });
       columns.add(new Column("Sequence") {
         @Override
-        TableCellRenderer getRenderer() {
+        TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
@@ -120,7 +120,7 @@ public class FlutterLogTree extends TreeTable {
       });
       columns.add(new Column("Level") {
         @Override
-        TableCellRenderer getRenderer() {
+        TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
@@ -133,7 +133,7 @@ public class FlutterLogTree extends TreeTable {
       });
       columns.add(new Column("Category") {
         @Override
-        TableCellRenderer getRenderer() {
+        TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
@@ -144,7 +144,7 @@ public class FlutterLogTree extends TreeTable {
       });
       columns.add(new Column("Message") {
         @Override
-        TableCellRenderer getRenderer() {
+        TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
             // TODO(pq): handle possible null module.
             FlutterConsoleFilter consoleFilter = new FlutterConsoleFilter(app.getModule());
@@ -227,7 +227,7 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public TableCellRenderer getRenderer(int column) {
-      return visible.get(column).getRenderer();
+      return visible.get(column).createRenderer();
     }
 
     public boolean isShowing(String column) {
