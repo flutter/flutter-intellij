@@ -60,13 +60,19 @@ public class AndroidSdk {
 
   @Nullable
   public VirtualFile getEmulatorToolExecutable() {
+    // Look for $ANDROID_HOME/emulator/emulator.
+    final VirtualFile file = home.findFileByRelativePath("emulator/" + (SystemInfo.isWindows ? "emulator.exe" : "emulator"));
+    if (file != null) {
+      return file;
+    }
+
     // Look for $ANDROID_HOME/tools/emulator.
     return home.findFileByRelativePath("tools/" + (SystemInfo.isWindows ? "emulator.exe" : "emulator"));
   }
 
   @NotNull
   public List<AndroidEmulator> getEmulators() {
-    // Execute $ANDROID_HOME/tools/emulator -list-avds and parse the results.
+    // Execute $ANDROID_HOME/emulator/emulator -list-avds and parse the results.
     final VirtualFile emulator = getEmulatorToolExecutable();
     if (emulator == null) {
       return Collections.emptyList();
