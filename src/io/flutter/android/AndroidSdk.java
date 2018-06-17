@@ -60,8 +60,12 @@ public class AndroidSdk {
 
   @Nullable
   public VirtualFile getEmulatorToolExecutable() {
-    // Look for $ANDROID_HOME/tools/emulator.
-    return home.findFileByRelativePath("tools/" + (SystemInfo.isWindows ? "emulator.exe" : "emulator"));
+    final List<String> searchDirs = Arrays.asList("emulator", "tools");
+
+    for (String dir : searchDirs){
+      // Look for $ANDROID_HOME/{dir}/emulator.
+      return home.findFileByRelativePath(dir + "/" + (SystemInfo.isWindows ? "emulator.exe" : "emulator"));
+    }
   }
 
   @NotNull
