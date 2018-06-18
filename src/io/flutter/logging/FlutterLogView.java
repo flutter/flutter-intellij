@@ -187,41 +187,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
-  // based on com.intellij.openapi.vcs.ui.SearchFieldAction
-  private class FilterToolbarAction extends AnAction implements CustomComponentAction /*, RightAlignedToolbarAction */ {
-    @NotNull
-    private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
-
-    public FilterToolbarAction() {
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-      doFilter();
-    }
-
-    private void doFilter() {
-      final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
-      final String text = getText();
-      final FlutterLogTree.EntryFilter filter =
-        StringUtils.isEmpty(text) ? null : new FlutterLogTree.EntryFilter(text, param.isMatchCase(), param.isRegex());
-      ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
-    }
-
-    public String getText() {
-      return filterPanel.getExpression();
-    }
-
-    @Override
-    public JComponent createCustomComponent(Presentation presentation) {
-      return filterPanel.getRoot();
-    }
-
-    public void setTextFieldFg(boolean inactive) {
-      filterPanel.setTextFieldFg(inactive);
-    }
-  }
-
   private class ClearLogAction extends AnAction {
     ClearLogAction() {
       super("Clear All", "Clear the log", AllIcons.Actions.GC);
@@ -349,6 +314,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final SimpleToolWindowPanel toolWindowPanel;
   @NotNull
   private final FlutterLogTree.TreeModel logModel;
+  @NotNull
+  private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
   private final FlutterLogTree logTree;
   private SimpleTreeBuilder builder;
 
@@ -366,8 +333,13 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     toolWindowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(toolWindowPanel);
 
-    final ActionToolbar windowToolbar = ActionManager.getInstance().createActionToolbar("FlutterLogViewToolbar", toolbarGroup, true);
-    toolWindowPanel.setToolbar(windowToolbar.getComponent());
+    final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("FlutterLogViewToolbar", toolbarGroup, true);
+    actionToolbar.setMiniMode(false);
+    final JPanel toolbar = new JPanel();
+    toolbar.setLayout(new BorderLayout());
+    toolbar.add(filterPanel.getRoot(), BorderLayout.WEST);
+    toolbar.add(actionToolbar.getComponent(), BorderLayout.EAST);
+    toolWindowPanel.setToolbar(toolbar);
 
     logTree = new FlutterLogTree(app, entryModel, this);
     logModel = logTree.getLogTreeModel();
@@ -445,14 +417,22 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     };
   }
 
+  private void doFilter() {
+    final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
+    final String text = param.getExpression();
+    final FlutterLogTree.EntryFilter filter =
+      StringUtils.isEmpty(text) ? null : new FlutterLogTree.EntryFilter(text, param.isMatchCase(), param.isRegex());
+    ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
+  }
+
   @NotNull
   private FlutterLog getFlutterLog() {
     return app.getFlutterLog();
   }
 
+  @NotNull
   private DefaultActionGroup createToolbar() {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(new FilterToolbarAction());
     toolbarGroup.add(new FilterStatusLabel());
     toolbarGroup.add(new ConfigureAction());
     return toolbarGroup;
