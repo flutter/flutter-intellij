@@ -31,6 +31,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
+
 public class FlutterLogTree extends TreeTable {
 
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
@@ -50,13 +52,17 @@ public class FlutterLogTree extends TreeTable {
         }
       }
 
+      void appendStyled(FlutterLogEntry entry, String text) {
+        append(text, entryModel.style(entry, STYLE_PLAIN));
+      }
+
+
       abstract void render(FlutterLogEntry entry);
     }
 
     abstract class Column extends ColumnInfo<DefaultMutableTreeNode, FlutterLogEntry> {
-      private TableCellRenderer renderer;
-
       boolean show = true;
+      private TableCellRenderer renderer;
 
       Column(String name) {
         super(name);
@@ -89,20 +95,22 @@ public class FlutterLogTree extends TreeTable {
     private final List<Column> columns = new ArrayList<>();
 
     private final FlutterApp app;
+    @NotNull private final EntryModel entryModel;
     boolean updateVisibility;
     private List<Column> visible;
     private ArrayList<TableColumn> tableColumns;
     private TreeTable treeTable;
 
-    ColumnModel(@NotNull FlutterApp app) {
+    ColumnModel(@NotNull FlutterApp app, @NotNull EntryModel entryModel) {
       this.app = app;
+      this.entryModel = entryModel;
       columns.add(new Column("Time") {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
-              append(TIMESTAMP_FORMAT.format(entry.getTimestamp()));
+              appendStyled(entry, TIMESTAMP_FORMAT.format(entry.getTimestamp()));
             }
           };
         }
@@ -113,7 +121,7 @@ public class FlutterLogTree extends TreeTable {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
-              append(Integer.toString(entry.getSequenceNumber()));
+              appendStyled(entry, Integer.toString(entry.getSequenceNumber()));
             }
           };
         }
@@ -126,7 +134,7 @@ public class FlutterLogTree extends TreeTable {
             void render(FlutterLogEntry entry) {
               final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
               final String value = level != null ? level.name() : Integer.toString(entry.getLevel());
-              append(value);
+              appendStyled(entry, value);
             }
           };
         }
@@ -137,7 +145,7 @@ public class FlutterLogTree extends TreeTable {
           return new EntryCellRenderer() {
             @Override
             void render(FlutterLogEntry entry) {
-              append(entry.getCategory());
+              appendStyled(entry, entry.getCategory());
             }
           };
         }
@@ -167,8 +175,9 @@ public class FlutterLogTree extends TreeTable {
                     final int end = item.getHighlightEndOffset();
                     // append leading text.
                     if (cursor < start) {
-                      append(message.substring(cursor, start), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                      appendStyled(entry, message.substring(cursor, start));
                     }
+                    // TODO(pq): re-style hyperlinks?
                     append(message.substring(start, end), SimpleTextAttributes.LINK_ATTRIBUTES, hyperlinkInfo);
                     cursor = end;
                   }
@@ -177,7 +186,7 @@ public class FlutterLogTree extends TreeTable {
 
               // append trailing text
               if (cursor < message.length()) {
-                append(message.substring(cursor), SimpleTextAttributes.REGULAR_ATTRIBUTES);
+                appendStyled(entry, message.substring(cursor));
               }
             }
           };
@@ -246,7 +255,8 @@ public class FlutterLogTree extends TreeTable {
   }
 
   static class TreeModel extends ListTreeTableModelOnColumns {
-    @NotNull final ColumnModel columnModel;
+    @NotNull
+    private final ColumnModel columns;
     @NotNull
     private final FlutterLog log;
     @NotNull
@@ -256,16 +266,19 @@ public class FlutterLogTree extends TreeTable {
     private List<TableColumn> tableColumns;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
+    private boolean color;
 
-    public TreeModel(@NotNull FlutterApp app, @NotNull Disposable parent) {
-      this(new ColumnModel(app), parent);
+    public TreeModel(@NotNull FlutterApp app,
+                     @NotNull EntryModel entryModel,
+                     @NotNull Disposable parent) {
+      this(new ColumnModel(app, entryModel), parent);
     }
 
-    private TreeModel(@NotNull ColumnModel columnModel, @NotNull Disposable parent) {
-      super(new LogRootTreeNode(), columnModel.getInfos());
+    private TreeModel(@NotNull ColumnModel columns, @NotNull Disposable parent) {
+      super(new LogRootTreeNode(), columns.getInfos());
 
-      this.log = columnModel.app.getFlutterLog();
-      this.columnModel = columnModel;
+      this.log = columns.app.getFlutterLog();
+      this.columns = columns;
 
       // Scroll to end by default.
       autoScrollToEnd = true;
@@ -284,7 +297,7 @@ public class FlutterLogTree extends TreeTable {
     }
 
     void update() {
-      columnModel.update();
+      columns.update();
 
       reload(getRoot());
       treeTable.updateUI();
@@ -307,7 +320,7 @@ public class FlutterLogTree extends TreeTable {
     public void setTree(JTree tree) {
       super.setTree(tree);
       treeTable = ((TreeTableTree)tree).getTreeTable();
-      columnModel.init(treeTable);
+      columns.init(treeTable);
     }
 
     public void clearEntries() {
@@ -334,27 +347,27 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public boolean getShowTimestamps() {
-      return columnModel.isShowing("Time");
+      return columns.isShowing("Time");
     }
 
     public void setShowTimestamps(boolean show) {
-      columnModel.show("Time", show);
+      columns.show("Time", show);
     }
 
     public boolean getShowSequenceNumbers() {
-      return columnModel.isShowing("Sequence");
+      return columns.isShowing("Sequence");
     }
 
     public void setShowSequenceNumbers(boolean show) {
-      columnModel.show("Sequence", show);
+      columns.show("Sequence", show);
     }
 
     public boolean getShowLogLevels() {
-      return columnModel.isShowing("Level");
+      return columns.isShowing("Level");
     }
 
     public void setShowLogLevels(boolean show) {
-      columnModel.show("Level", show);
+      columns.show("Level", show);
     }
   }
 
@@ -438,6 +451,10 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
+  public interface EntryModel {
+    SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes);
+  }
+
   public interface EventCountListener extends EventListener {
     void updated(int filtered, int total);
   }
@@ -446,8 +463,10 @@ public class FlutterLogTree extends TreeTable {
   private final TreeModel model;
   private EntryFilter filter;
 
-  public FlutterLogTree(@NotNull FlutterApp app, @NotNull Disposable parent) {
-    this(new TreeModel(app, parent));
+  public FlutterLogTree(@NotNull FlutterApp app,
+                        @NotNull EntryModel entryModel,
+                        @NotNull Disposable parent) {
+    this(new TreeModel(app, entryModel, parent));
   }
 
   FlutterLogTree(@NotNull TreeModel model) {
@@ -471,7 +490,7 @@ public class FlutterLogTree extends TreeTable {
 
   @Override
   public TableCellRenderer getCellRenderer(int row, int column) {
-    return model.columnModel.getRenderer(column);
+    return model.columns.getRenderer(column);
   }
 
   public void setFilter(@Nullable EntryFilter filter) {

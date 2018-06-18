@@ -17,9 +17,7 @@ import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.ColoredTableCellRenderer;
-import com.intellij.ui.PopupHandler;
-import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.*;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -40,6 +38,28 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
+
+  private class EntryModel implements FlutterLogTree.EntryModel {
+    boolean showColors;
+
+    @Override
+    public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
+      if (showColors && entry != null) {
+        final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
+        if (level != null) {
+          switch (level) {
+            case FINER:
+              return SimpleTextAttributes.GRAY_ATTRIBUTES;
+            case WARNING:
+              return ORANGE_ATTRIBUTES;
+            case SEVERE:
+              return SimpleTextAttributes.ERROR_ATTRIBUTES;
+          }
+        }
+      }
+      return SimpleTextAttributes.REGULAR_ATTRIBUTES;
+    }
+  }
 
   class ConfigureAction extends AnAction implements RightAlignedToolbarAction {
     private final DefaultActionGroup actionGroup;
@@ -89,6 +109,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       group.add(new ShowTimeStampsAction());
       group.add(new ShowSequenceNumbersAction());
       group.add(new ShowLevelAction());
+      group.add(new Separator());
+      group.add(new ShowColorsAction());
       return group;
     }
   }
@@ -143,6 +165,24 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
       logModel.setShowLogLevels(state);
+      logModel.update();
+    }
+  }
+
+  private class ShowColorsAction extends ToggleAction {
+
+    ShowColorsAction() {
+      super("Color entries");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return entryModel.showColors;
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      entryModel.showColors = state;
       logModel.update();
     }
   }
@@ -234,7 +274,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         if (paths != null) {
           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           final StringBuilder sb = new StringBuilder();
-          for (final TreePath path : paths) {
+          for (final TreePath path: paths) {
             final Object pathComponent = path.getLastPathComponent();
             if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
               ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
@@ -302,6 +342,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   @NotNull final FlutterApp app;
+  @NotNull
+  private final SimpleTextAttributes ORANGE_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.orange);
+  // TODO(pq): make user configurable.
+  private final EntryModel entryModel = new EntryModel();
   private final SimpleToolWindowPanel toolWindowPanel;
   @NotNull
   private final FlutterLogTree.TreeModel logModel;
@@ -325,7 +369,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final ActionToolbar windowToolbar = ActionManager.getInstance().createActionToolbar("FlutterLogViewToolbar", toolbarGroup, true);
     toolWindowPanel.setToolbar(windowToolbar.getComponent());
 
-    logTree = new FlutterLogTree(app, this);
+    logTree = new FlutterLogTree(app, entryModel, this);
     logModel = logTree.getLogTreeModel();
 
     // TODO(pq): add speed search
@@ -373,8 +417,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     logTree.getColumn("Time").setMaxWidth(100);
     logTree.getColumn("Sequence").setMinWidth(50);
     logTree.getColumn("Sequence").setMaxWidth(50);
-    logTree.getColumn("Level").setMinWidth(60);
-    logTree.getColumn("Level").setMaxWidth(60);
+    logTree.getColumn("Level").setMinWidth(70);
+    logTree.getColumn("Level").setMaxWidth(70);
     logTree.getColumn("Category").setMinWidth(110);
     logTree.getColumn("Category").setMaxWidth(110);
     logTree.getColumn("Message").setMinWidth(100);
