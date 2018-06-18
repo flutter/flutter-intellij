@@ -395,30 +395,22 @@ public class FlutterLogTree extends TreeTable {
   }
 
   public static class EntryFilter {
-    @Nullable
-    private final String text;
-    private final boolean isRegex;
-    private final boolean isMatchCase;
+    @NotNull
+    private final FlutterLogFilterPanel.FilterParam filterParam;
 
-    public EntryFilter(@Nullable String text) {
-      this(text, false, false);
-    }
-
-    public EntryFilter(@Nullable String text, boolean isMatchCase, boolean isRegex) {
-      this.text = text;
-      this.isMatchCase = isMatchCase;
-      this.isRegex = isRegex;
-    }
-
-    @Nullable
-    public String getText() {
-      return text;
+    public EntryFilter(@NotNull FlutterLogFilterPanel.FilterParam filterParam) {
+      this.filterParam = filterParam;
     }
 
     public boolean accept(@NotNull FlutterLogEntry entry) {
+      if (entry.getLevel() < filterParam.getLogLevel().value) {
+        return false;
+      }
+      final String text = filterParam.getExpression();
       if (text == null) {
         return true;
       }
+      final boolean isMatchCase = filterParam.isMatchCase();
       final String standardText = isMatchCase ? text : text.toLowerCase();
       final String standardMessage = isMatchCase ? entry.getMessage() : entry.getMessage().toLowerCase();
       final String standardCategory = isMatchCase ? entry.getCategory() : entry.getCategory().toLowerCase();
@@ -429,7 +421,7 @@ public class FlutterLogTree extends TreeTable {
     }
 
     private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
-      if (isRegex) {
+      if (filterParam.isRegex()) {
         return message.matches("(?s).*" + text + ".*");
       }
       return message.contains(text);
@@ -440,14 +432,12 @@ public class FlutterLogTree extends TreeTable {
       if (this == o) return true;
       if (o == null || getClass() != o.getClass()) return false;
       final EntryFilter filter = (EntryFilter)o;
-      return isRegex == filter.isRegex &&
-             isMatchCase == filter.isMatchCase &&
-             Objects.equals(text, filter.text);
+      return Objects.equals(filterParam, filter.filterParam);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hash(text, isRegex, isMatchCase);
+      return Objects.hash(filterParam);
     }
   }
 

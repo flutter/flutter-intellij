@@ -420,8 +420,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private void doFilter() {
     final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
     final String text = param.getExpression();
-    final FlutterLogTree.EntryFilter filter =
-      StringUtils.isEmpty(text) ? null : new FlutterLogTree.EntryFilter(text, param.isMatchCase(), param.isRegex());
+    final FlutterLogTree.EntryFilter filter = new FlutterLogTree.EntryFilter(param);
     ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
   }
 
