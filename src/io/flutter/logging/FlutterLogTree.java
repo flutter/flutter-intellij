@@ -52,6 +52,12 @@ public class FlutterLogTree extends TreeTable {
         }
       }
 
+      @Override
+      public void acquireState(JTable table, boolean isSelected, boolean hasFocus, int row, int column) {
+        // Prevent cell borders on selected cells.
+        super.acquireState(table, isSelected, false, row, column);
+      }
+
       void appendStyled(FlutterLogEntry entry, String text) {
         append(text, entryModel.style(entry, STYLE_PLAIN));
       }
