@@ -37,16 +37,14 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 
-import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
-
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
   private class EntryModel implements FlutterLogTree.EntryModel {
-    boolean color;
+    boolean showColors;
 
     @Override
     public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
-      if (color && entry != null) {
+      if (showColors && entry != null) {
         final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
         if (level != null) {
           switch (level) {
@@ -179,12 +177,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return entryModel.color;
+      return entryModel.showColors;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      entryModel.color = state;
+      entryModel.showColors = state;
       logModel.update();
     }
   }
@@ -342,8 +340,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       return Integer.toString(count);
     }
   }
+
   @NotNull final FlutterApp app;
-  private final SimpleTextAttributes ORANGE_ATTRIBUTES = new SimpleTextAttributes(STYLE_PLAIN, JBColor.orange);
+  @NotNull
+  private final SimpleTextAttributes ORANGE_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.orange);
   // TODO(pq): make user configurable.
   private final EntryModel entryModel = new EntryModel();
   private final SimpleToolWindowPanel toolWindowPanel;
