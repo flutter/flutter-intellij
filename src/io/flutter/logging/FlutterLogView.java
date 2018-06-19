@@ -25,7 +25,6 @@ import com.intellij.ui.treeStructure.SimpleTreeBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
-import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -314,9 +313,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final SimpleToolWindowPanel toolWindowPanel;
   @NotNull
   private final FlutterLogTree.TreeModel logModel;
+  private final FlutterLogTree logTree;
   @NotNull
   private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
-  private final FlutterLogTree logTree;
   private SimpleTreeBuilder builder;
 
   public FlutterLogView(@NotNull FlutterApp app) {
@@ -325,20 +324,13 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
 
-    final DefaultActionGroup toolbarGroup = createToolbar();
-
     final Content content = ContentFactory.SERVICE.getInstance().createContent(null, null, false);
     content.setCloseable(false);
 
     toolWindowPanel = new SimpleToolWindowPanel(true, true);
     content.setComponent(toolWindowPanel);
 
-    final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("FlutterLogViewToolbar", toolbarGroup, true);
-    actionToolbar.setMiniMode(false);
-    final JPanel toolbar = new JPanel();
-    toolbar.setLayout(new BorderLayout());
-    toolbar.add(filterPanel.getRoot(), BorderLayout.WEST);
-    toolbar.add(actionToolbar.getComponent(), BorderLayout.EAST);
+    final JPanel toolbar = createToolbar();
     toolWindowPanel.setToolbar(toolbar);
 
     logTree = new FlutterLogTree(app, entryModel, this);
@@ -430,11 +422,18 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   @NotNull
-  private DefaultActionGroup createToolbar() {
+  private JPanel createToolbar() {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(new FilterStatusLabel());
     toolbarGroup.add(new ConfigureAction());
-    return toolbarGroup;
+
+    final ActionToolbar actionToolbar = ActionManager.getInstance().createActionToolbar("FlutterLogViewToolbar", toolbarGroup, true);
+    actionToolbar.setMiniMode(false);
+    final JPanel toolbar = new JPanel();
+    toolbar.setLayout(new BorderLayout());
+    toolbar.add(filterPanel.getRoot(), BorderLayout.WEST);
+    toolbar.add(actionToolbar.getComponent(), BorderLayout.EAST);
+    return toolbar;
   }
 
   @Override
