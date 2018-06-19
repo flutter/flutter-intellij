@@ -23,7 +23,7 @@ public class FlutterLogFilterPanel {
   private JCheckBox matchCaseCheckBox;
   private JCheckBox regexCheckBox;
   private SearchTextField textExpression;
-  private JComboBox logLevelComboBox;
+  private JComboBox<String> logLevelComboBox;
   @NotNull
   private final OnFilterListener onFilterListener;
 
