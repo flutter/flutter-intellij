@@ -5,9 +5,7 @@
  */
 package io.flutter.logging;
 
-import com.intellij.ui.CollectionComboBoxModel;
-import com.intellij.ui.ColoredListCellRenderer;
-import com.intellij.ui.SearchTextField;
+import com.intellij.ui.*;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,80 +18,6 @@ import java.util.stream.Collectors;
 
 
 public class FlutterLogFilterPanel {
-  private JPanel root;
-  private JCheckBox matchCaseCheckBox;
-  private JCheckBox regexCheckBox;
-  private SearchTextField textExpression;
-  private JComboBox<String> logLevelComboBox;
-  @NotNull
-  private final OnFilterListener onFilterListener;
-
-  public FlutterLogFilterPanel(
-    @NotNull OnFilterListener onFilterListener
-  ) {
-    this.onFilterListener = onFilterListener;
-    matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
-    regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
-    final List<String> logLevels = Arrays.stream(FlutterLog.Level.values())
-      .map(Enum::name)
-      .collect(Collectors.toList());
-    logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
-    logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
-    logLevelComboBox.setRenderer(new ColoredListCellRenderer<String>() {
-      @Override
-      protected void customizeCellRenderer(@NotNull JList<? extends String> list,
-                                           String value,
-                                           int index,
-                                           boolean selected,
-                                           boolean hasFocus) {
-        append(value);
-      }
-    });
-  }
-
-  @NotNull
-  public FilterParam getCurrentFilterParam() {
-    final FlutterLog.Level logLevel = FlutterLog.Level.valueOf(String.valueOf(logLevelComboBox.getSelectedItem()));
-    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected(), logLevel);
-  }
-
-  @NotNull
-  public JPanel getRoot() {
-    return root;
-  }
-
-  @Nullable
-  public String getExpression() {
-    return textExpression.getText();
-  }
-
-  public void setTextFieldFg(boolean inactive) {
-    textExpression.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
-  }
-
-  public boolean isRegex() {
-    return regexCheckBox.isSelected();
-  }
-
-  public boolean isMatchCase() {
-    return regexCheckBox.isSelected();
-  }
-
-  private void createUIComponents() {
-    textExpression = createSearchTextField();
-  }
-
-  @NotNull
-  private SearchTextField createSearchTextField() {
-    final LogFilterTextField logFilterTextField = new LogFilterTextField();
-    logFilterTextField.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
-    return logFilterTextField;
-  }
-
-  public interface OnFilterListener {
-    void onFilter(@NotNull FilterParam param);
-  }
-
   static class FilterParam {
     @Nullable
     private final String expression;
@@ -142,5 +66,80 @@ public class FlutterLogFilterPanel {
     public int hashCode() {
       return Objects.hash(expression, isMatchCase, isRegex, logLevel);
     }
+  }
+
+  public interface OnFilterListener {
+    void onFilter(@NotNull FilterParam param);
+  }
+
+  @NotNull
+  private final OnFilterListener onFilterListener;
+  private JPanel root;
+  private JCheckBox matchCaseCheckBox;
+  private JCheckBox regexCheckBox;
+  private SearchTextField textExpression;
+  private JComboBox<FlutterLog.Level> logLevelComboBox;
+
+  public FlutterLogFilterPanel(
+    @NotNull OnFilterListener onFilterListener
+  ) {
+    this.onFilterListener = onFilterListener;
+    matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
+      .collect(Collectors.toList());
+    logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
+    logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
+    logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
+      @Override
+      protected void customizeCellRenderer(@NotNull JList<? extends FlutterLog.Level> list,
+                                           FlutterLog.Level value,
+                                           int index,
+                                           boolean selected,
+                                           boolean hasFocus) {
+        final String label = index == -1 && value == FlutterLog.Level.NONE ? "" : value.name().toLowerCase();
+        append(label);
+      }
+    });
+  }
+
+  @NotNull
+  public FilterParam getCurrentFilterParam() {
+    final Object selected = logLevelComboBox.getSelectedItem();
+    final FlutterLog.Level logLevel = selected == null ? FlutterLog.Level.NONE : (FlutterLog.Level)selected;
+    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected(), logLevel);
+  }
+
+  @NotNull
+  public JPanel getRoot() {
+    return root;
+  }
+
+  @Nullable
+  public String getExpression() {
+    return textExpression.getText();
+  }
+
+  public void setTextFieldFg(boolean inactive) {
+    textExpression.getTextEditor().setForeground(inactive ? UIUtil.getInactiveTextColor() : UIUtil.getActiveTextColor());
+  }
+
+  public boolean isRegex() {
+    return regexCheckBox.isSelected();
+  }
+
+  public boolean isMatchCase() {
+    return regexCheckBox.isSelected();
+  }
+
+  private void createUIComponents() {
+    textExpression = createSearchTextField();
+  }
+
+  @NotNull
+  private SearchTextField createSearchTextField() {
+    final LogFilterTextField logFilterTextField = new LogFilterTextField();
+    logFilterTextField.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
+    return logFilterTextField;
   }
 }
