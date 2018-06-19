@@ -34,7 +34,7 @@ public class FlutterLogFilterPanel {
     matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     final List<String> logLevels = Arrays.stream(FlutterLog.Level.values())
-      .map(level -> " " + level.name())
+      .map(Enum::name)
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
     logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
