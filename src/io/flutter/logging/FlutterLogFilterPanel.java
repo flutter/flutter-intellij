@@ -23,7 +23,7 @@ public class FlutterLogFilterPanel {
   private JCheckBox matchCaseCheckBox;
   private JCheckBox regexCheckBox;
   private SearchTextField textExpression;
-  private JComboBox logLevelComboBox;
+  private JComboBox<String> logLevelComboBox;
   @NotNull
   private final OnFilterListener onFilterListener;
 
@@ -34,7 +34,7 @@ public class FlutterLogFilterPanel {
     matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     final List<String> logLevels = Arrays.stream(FlutterLog.Level.values())
-      .map(Enum::name)
+      .map(level -> " " + level.name())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
     logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
