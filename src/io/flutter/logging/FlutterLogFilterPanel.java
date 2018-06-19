@@ -6,6 +6,7 @@
 package io.flutter.logging;
 
 import com.intellij.ui.CollectionComboBoxModel;
+import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SearchTextField;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +39,16 @@ public class FlutterLogFilterPanel {
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
     logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
+    logLevelComboBox.setRenderer(new ColoredListCellRenderer<String>() {
+      @Override
+      protected void customizeCellRenderer(@NotNull JList<? extends String> list,
+                                           String value,
+                                           int index,
+                                           boolean selected,
+                                           boolean hasFocus) {
+        append(value);
+      }
+    });
   }
 
   @NotNull
