@@ -151,11 +151,11 @@ public class FlutterSettings {
   }
 
   public boolean isOpenInspectorOnAppLaunch() {
-    return getPropertiesComponent().getBoolean(openInspectorOnAppLaunchKey, true);
+    return getPropertiesComponent().getBoolean(openInspectorOnAppLaunchKey, false);
   }
 
   public void setOpenInspectorOnAppLaunch(boolean value) {
-    getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, true);
+    getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, false);
 
     fireEvent();
   }
