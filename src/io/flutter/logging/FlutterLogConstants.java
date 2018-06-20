@@ -36,13 +36,13 @@ public final class FlutterLogConstants {
     TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_INFO_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey WARNING_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_WARNING_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_WARNING_OUTPUT", ConsoleViewContentType.SYSTEM_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey SEVERE_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_SEVERE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_SEVERE_OUTPUT", ConsoleViewContentType.ERROR_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey SHOUT_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_SHOUT_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_SHOUT_OUTPUT", ConsoleViewContentType.ERROR_OUTPUT_KEY);
 
   @NotNull
   public static final Key NONE = new Key("none.level.title");
