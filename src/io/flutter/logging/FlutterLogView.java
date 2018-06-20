@@ -45,6 +45,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
       if (showColors && entry != null) {
         final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
+        // TODO(quangson91): use color from FlutterLogColorPage
         if (level != null) {
           switch (level) {
             case FINER:
