@@ -20,6 +20,8 @@ import javax.swing.*;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO(quangson91): Figure out why color setting page display as alphabet
+// Ref: https://github.com/flutter/flutter-intellij/pull/2394#discussion_r196756990
 public final class FlutterLogColorPage implements ColorSettingsPage {
   @NotNull
   private static final Map<String, TextAttributesKey> ADDITIONAL_HIGHLIGHT_DESCRIPTORS = new HashMap<>();
