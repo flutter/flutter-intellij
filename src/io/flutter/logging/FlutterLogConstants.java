@@ -16,6 +16,14 @@ public final class FlutterLogConstants {
   private FlutterLogConstants() {
   }
 
+  public static class LogColumns {
+    public static final String TIME = "Time";
+    public static final String SEQUENCE = "Sequence";
+    public static final String LEVEL = "Level";
+    public static final String CATEGORY = "Category";
+    public static final String MESSAGE = "Message";
+  }
+
   @NotNull
   public static final TextAttributesKey NONE_OUTPUT_KEY =
     TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_NONE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
