@@ -1,0 +1,63 @@
+<?xml version='1.0'?>
+<!--
+  ~ Copyright 2018 The Chromium Authors. All rights reserved.
+  ~ Use of this source code is governed by a BSD-style license that can be
+  ~ found in the LICENSE file.
+  -->
+
+<list>
+  <!--<option name="TEMPLATE_CONFIG_NAME">-->
+  <!--<value>-->
+  <!--<option name="FOREGROUND" value="008000"/>-->
+  <!--<option name="BACKGROUND" value="e3fcff"/>-->
+  <!--<option name="FONT_TYPE" value="1"/>-->
+  <!--</value>-->
+  <!--</option>-->
+
+  <option name="FLUTTER_LOG_NONE_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#000000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_FINEST_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#000000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_FINER_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#000000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_FINE_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#000000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_CONFIG_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#000000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_INFO_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#000000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_WARNING_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#00007F"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_SEVERE_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#7F0000"/>
+    </value>
+  </option>
+  <option name="FLUTTER_LOG_SHOUT_OUTPUT">
+    <value>
+      <option name="FOREGROUND" value="#7F0000"/>
+    </value>
+  </option>
+
+</list>
