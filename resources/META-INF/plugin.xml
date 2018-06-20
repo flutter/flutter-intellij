@@ -670,6 +670,7 @@
     <library.type implementation="io.flutter.sdk.FlutterPluginLibraryType"/>
 
     <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
+    <colorSettingsPage implementation="io.flutter.logging.FlutterLogColorPage"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->
