@@ -671,6 +671,7 @@
 
     <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
     <colorSettingsPage implementation="io.flutter.logging.FlutterLogColorPage"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->
