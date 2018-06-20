@@ -18,32 +18,31 @@ public final class FlutterLogConstants {
 
   @NotNull
   public static final TextAttributesKey NONE_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_NONE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_NONE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey FINEST_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_FINEST_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_FINEST_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey FINER_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_FINER_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_FINER_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey FINE_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_FINE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_FINE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey CONFIG_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_CONFIG_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_CONFIG_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey INFO_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_INFO_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_INFO_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey WARNING_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_WARNING_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_WARNING_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey SEVERE_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_SEVERE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_SEVERE_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
   @NotNull
   public static final TextAttributesKey SHOUT_OUTPUT_KEY =
-    TextAttributesKey.createTextAttributesKey("LOGCAT_SHOUT_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
-
+    TextAttributesKey.createTextAttributesKey("FLUTTER_LOG_SHOUT_OUTPUT", ConsoleViewContentType.NORMAL_OUTPUT_KEY);
 
   @NotNull
   public static final Key NONE = new Key("none.level.title");

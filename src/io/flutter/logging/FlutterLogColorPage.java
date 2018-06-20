@@ -14,6 +14,7 @@ import com.intellij.openapi.options.colors.ColorDescriptor;
 import com.intellij.openapi.options.colors.ColorSettingsPage;
 import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.util.HashMap;
@@ -66,8 +67,9 @@ public final class FlutterLogColorPage implements ColorSettingsPage {
   }
 
   @Override
+  @Nullable
   public Icon getIcon() {
-    return AllIcons.Debugger.Console_log;
+    return null;
   }
 
   @Override
