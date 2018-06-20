@@ -5,7 +5,6 @@
  */
 package io.flutter.logging;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.fileTypes.PlainSyntaxHighlighter;
 import com.intellij.openapi.fileTypes.SyntaxHighlighter;
