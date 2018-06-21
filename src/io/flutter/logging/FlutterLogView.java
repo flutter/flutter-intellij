@@ -16,14 +16,21 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.editor.colors.EditorColorsManager;
+import com.intellij.openapi.editor.colors.EditorColorsScheme;
+import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.ui.*;
+import com.intellij.ui.ColoredTableCellRenderer;
+import com.intellij.ui.PopupHandler;
+import com.intellij.ui.ScrollPaneFactory;
+import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.treeStructure.SimpleTreeBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.logging.FlutterLog.Level;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -35,8 +42,28 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
+  @NotNull
+  private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
+
+  static {
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP = new HashMap<>();
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.NONE, FlutterLogConstants.NONE_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.FINEST, FlutterLogConstants.FINEST_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.FINER, FlutterLogConstants.FINER_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.FINE, FlutterLogConstants.FINE_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.CONFIG, FlutterLogConstants.CONFIG_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.INFO, FlutterLogConstants.INFO_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.WARNING, FlutterLogConstants.WARNING_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.SEVERE, FlutterLogConstants.SEVERE_OUTPUT_KEY);
+    LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.SHOUT, FlutterLogConstants.SHOUT_OUTPUT_KEY);
+  }
+
+  @NotNull
+  private final EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
 
   private class EntryModel implements FlutterLogTree.EntryModel {
     boolean showColors;
@@ -45,19 +72,25 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
       if (showColors && entry != null) {
         final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
-        // TODO(quangson91): use color from FlutterLogColorPage
         if (level != null) {
-          switch (level) {
-            case FINER:
-              return SimpleTextAttributes.GRAY_ATTRIBUTES;
-            case WARNING:
-              return ORANGE_ATTRIBUTES;
-            case SEVERE:
-              return SimpleTextAttributes.ERROR_ATTRIBUTES;
-          }
+          return getTextAttributesByLogLevel(level);
         }
       }
       return SimpleTextAttributes.REGULAR_ATTRIBUTES;
+    }
+
+    @NotNull
+    private SimpleTextAttributes getTextAttributesByLogLevel(@NotNull Level level) {
+      try {
+        final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
+        final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
+        return new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, color);
+      }
+      catch (Exception e) {
+        // Should never go here.
+        e.printStackTrace();
+      }
+      return SimpleTextAttributes.GRAY_ATTRIBUTES;
     }
   }
 
@@ -239,7 +272,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         if (paths != null) {
           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           final StringBuilder sb = new StringBuilder();
-          for (final TreePath path: paths) {
+          for (final TreePath path : paths) {
             final Object pathComponent = path.getLastPathComponent();
             if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
               ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
@@ -307,8 +340,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   @NotNull final FlutterApp app;
-  @NotNull
-  private final SimpleTextAttributes ORANGE_ATTRIBUTES = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, JBColor.orange);
   // TODO(pq): make user configurable.
   private final EntryModel entryModel = new EntryModel();
   private final SimpleToolWindowPanel toolWindowPanel;
