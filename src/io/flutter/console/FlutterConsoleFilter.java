@@ -109,8 +109,8 @@ public class FlutterConsoleFilter implements Filter {
     // Check for, e.g.,
     //   * "Launching lib/main.dart"
     //   * "open ios/Runner.xcworkspace"
-    if (line.startsWith("Launching ") || (line.startsWith("open "))) {
-      final String[] parts = line.split(" ");
+    if (pathPart.startsWith("Launching ") || pathPart.startsWith("open ")) {
+      final String[] parts = pathPart.split(" ");
       if (parts.length > 1) {
         pathPart = parts[1];
       }
