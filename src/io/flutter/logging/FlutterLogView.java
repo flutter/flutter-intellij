@@ -126,7 +126,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowTimestamps();
+      return logModel.shouldShowTimestamps();
     }
 
     @Override
@@ -144,7 +144,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowSequenceNumbers();
+      return logModel.shouldShowSequenceNumbers();
     }
 
     @Override
@@ -162,7 +162,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowCategories();
+      return logModel.shouldShowCategories();
     }
 
     @Override
@@ -180,7 +180,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowLogLevels();
+      return logModel.shouldShowLogLevels();
     }
 
     @Override

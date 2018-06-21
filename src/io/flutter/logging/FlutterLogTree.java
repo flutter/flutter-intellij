@@ -356,7 +356,7 @@ public class FlutterLogTree extends TreeTable {
       }, 100);
     }
 
-    public boolean getShowTimestamps() {
+    public boolean shouldShowTimestamps() {
       return columns.isShowing(TIME);
     }
 
@@ -364,7 +364,7 @@ public class FlutterLogTree extends TreeTable {
       columns.show(TIME, show);
     }
 
-    public boolean getShowSequenceNumbers() {
+    public boolean shouldShowSequenceNumbers() {
       return columns.isShowing(SEQUENCE);
     }
 
@@ -372,7 +372,7 @@ public class FlutterLogTree extends TreeTable {
       columns.show(SEQUENCE, show);
     }
 
-    public boolean getShowLogLevels() {
+    public boolean shouldShowLogLevels() {
       return columns.isShowing(LEVEL);
     }
 
@@ -384,7 +384,7 @@ public class FlutterLogTree extends TreeTable {
       columns.show(CATEGORY, show);
     }
 
-    public boolean getShowCategories() {
+    public boolean shouldShowCategories() {
       return columns.isShowing(CATEGORY);
     }
   }
