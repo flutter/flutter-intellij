@@ -36,6 +36,8 @@ import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 
+import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
+
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
   private class EntryModel implements FlutterLogTree.EntryModel {
@@ -109,6 +111,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       group.add(new ShowTimeStampsAction());
       group.add(new ShowSequenceNumbersAction());
       group.add(new ShowLevelAction());
+      group.add(new ShowCategoryAction());
       group.add(new Separator());
       group.add(new ShowColorsAction());
       return group;
@@ -123,7 +126,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowTimestamps();
+      return logModel.shouldShowTimestamps();
     }
 
     @Override
@@ -141,12 +144,30 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowSequenceNumbers();
+      return logModel.shouldShowSequenceNumbers();
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
       logModel.setShowSequenceNumbers(state);
+      logModel.update();
+    }
+  }
+
+  private class ShowCategoryAction extends ToggleAction {
+
+    ShowCategoryAction() {
+      super("Show categories");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return logModel.shouldShowCategories();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      logModel.setShowCategories(state);
       logModel.update();
     }
   }
@@ -159,7 +180,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.getShowLogLevels();
+      return logModel.shouldShowLogLevels();
     }
 
     @Override
@@ -378,15 +399,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     // Set bounds.
     // TODO(pq): consider re-sizing dynamically, as needed.
-    logTree.getColumn("Time").setMinWidth(100);
-    logTree.getColumn("Time").setMaxWidth(100);
-    logTree.getColumn("Sequence").setMinWidth(50);
-    logTree.getColumn("Sequence").setMaxWidth(50);
-    logTree.getColumn("Level").setMinWidth(70);
-    logTree.getColumn("Level").setMaxWidth(70);
-    logTree.getColumn("Category").setMinWidth(110);
-    logTree.getColumn("Category").setMaxWidth(110);
-    logTree.getColumn("Message").setMinWidth(100);
+    logTree.getColumn(TIME).setMinWidth(100);
+    logTree.getColumn(TIME).setMaxWidth(100);
+    logTree.getColumn(SEQUENCE).setMinWidth(50);
+    logTree.getColumn(SEQUENCE).setMaxWidth(50);
+    logTree.getColumn(LEVEL).setMinWidth(70);
+    logTree.getColumn(LEVEL).setMaxWidth(70);
+    logTree.getColumn(CATEGORY).setMinWidth(110);
+    logTree.getColumn(CATEGORY).setMaxWidth(110);
+    logTree.getColumn(MESSAGE).setMinWidth(100);
 
     final JScrollPane pane = ScrollPaneFactory.createScrollPane(logTree,
                                                                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,

@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
+import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
 
 public class FlutterLogTree extends TreeTable {
 
@@ -221,17 +222,20 @@ public class FlutterLogTree extends TreeTable {
         Collections.list(treeTable.getColumnModel().getColumns()).forEach(c -> treeTable.removeColumn(c));
 
         // Add back what's appropriate.
-        if (isShowing("Time")) {
+        if (isShowing(TIME)) {
           treeTable.addColumn(tableColumns.get(0));
         }
-        if (isShowing("Sequence")) {
+        if (isShowing(SEQUENCE)) {
           treeTable.addColumn(tableColumns.get(1));
         }
-        if (isShowing("Level")) {
+        if (isShowing(LEVEL)) {
           treeTable.addColumn(tableColumns.get(2));
         }
+        if (isShowing(CATEGORY)) {
+          treeTable.addColumn(tableColumns.get(3));
+        }
 
-        tableColumns.subList(3, tableColumns.size()).forEach(c -> treeTable.addColumn(c));
+        tableColumns.subList(4, tableColumns.size()).forEach(c -> treeTable.addColumn(c));
       }
 
       updateVisibility = false;
@@ -352,28 +356,36 @@ public class FlutterLogTree extends TreeTable {
       }, 100);
     }
 
-    public boolean getShowTimestamps() {
-      return columns.isShowing("Time");
+    public boolean shouldShowTimestamps() {
+      return columns.isShowing(TIME);
     }
 
     public void setShowTimestamps(boolean show) {
-      columns.show("Time", show);
+      columns.show(TIME, show);
     }
 
-    public boolean getShowSequenceNumbers() {
-      return columns.isShowing("Sequence");
+    public boolean shouldShowSequenceNumbers() {
+      return columns.isShowing(SEQUENCE);
     }
 
     public void setShowSequenceNumbers(boolean show) {
-      columns.show("Sequence", show);
+      columns.show(SEQUENCE, show);
     }
 
-    public boolean getShowLogLevels() {
-      return columns.isShowing("Level");
+    public boolean shouldShowLogLevels() {
+      return columns.isShowing(LEVEL);
     }
 
     public void setShowLogLevels(boolean show) {
-      columns.show("Level", show);
+      columns.show(LEVEL, show);
+    }
+
+    public void setShowCategories(boolean show) {
+      columns.show(CATEGORY, show);
+    }
+
+    public boolean shouldShowCategories() {
+      return columns.isShowing(CATEGORY);
     }
   }
 
@@ -392,6 +404,7 @@ public class FlutterLogTree extends TreeTable {
       buffer
         .append(TIMESTAMP_FORMAT.format(entry.getTimestamp()))
         .append(" ").append(entry.getSequenceNumber())
+        .append(" ").append(entry.getLevel())
         .append(" ").append(entry.getCategory())
         .append(" ").append(entry.getMessage());
       if (!entry.getMessage().endsWith("\n")) {
