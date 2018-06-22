@@ -524,4 +524,9 @@ public class FlutterLogTree extends TreeTable {
       countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
     });
   }
+
+  public void clearEntries() {
+    model.clearEntries();
+    reload();
+  }
 }
