@@ -69,8 +69,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.SHOUT, FlutterLogConstants.SHOUT_OUTPUT_KEY);
   }
 
-  @NotNull
-  private volatile EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
+
   @NotNull
   private final Map<Level, SimpleTextAttributes> textAttributesByLogLevelCache = new ConcurrentHashMap<>();
 
@@ -92,18 +91,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     private SimpleTextAttributes getTextAttributesByLogLevel(@NotNull Level level) {
       if (textAttributesByLogLevelCache.containsKey(level)) {
         return textAttributesByLogLevelCache.get(level);
-      }
-      try {
-        final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
-        final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
-
-        final SimpleTextAttributes result = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, color);
-        textAttributesByLogLevelCache.put(level, result);
-        return result;
-      }
-      catch (Exception e) {
-        // Should never go here.
-        LOG.warn("Error when get text attributes by log level", e);
       }
       return REGULAR_ATTRIBUTES;
     }
@@ -367,9 +354,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
+    computeTextAttributesByLogLevelCache();
     ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(EditorColorsManager.TOPIC, scheme -> {
-      textAttributesByLogLevelCache.clear();
-      globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
+      computeTextAttributesByLogLevelCache();
     });
     final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
@@ -443,6 +430,24 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     logModel.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
+  }
+
+  private void computeTextAttributesByLogLevelCache() {
+    final EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
+    textAttributesByLogLevelCache.clear();
+    for (Level level : FlutterLog.Level.values()) {
+      try {
+        final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
+        final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
+
+        final SimpleTextAttributes textAttributes = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, color);
+        textAttributesByLogLevelCache.put(level, textAttributes);
+      }
+      catch (Exception e) {
+        // Should never go here.
+        LOG.warn("Error when get text attributes by log level", e);
+      }
+    }
   }
 
   private ActionGroup getTreePopupActions() {
