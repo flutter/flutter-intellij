@@ -45,7 +45,6 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
@@ -73,7 +72,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull
   private volatile EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
   @NotNull
-  private final Map<Level, SimpleTextAttributes> textAttributesByLogLevelCached = new ConcurrentHashMap<>();
+  private final Map<Level, SimpleTextAttributes> textAttributesByLogLevelCache = new ConcurrentHashMap<>();
 
   private class EntryModel implements FlutterLogTree.EntryModel {
     boolean showColors;
@@ -91,15 +90,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @NotNull
     private SimpleTextAttributes getTextAttributesByLogLevel(@NotNull Level level) {
-      if (textAttributesByLogLevelCached.containsKey(level)) {
-        return textAttributesByLogLevelCached.get(level);
+      if (textAttributesByLogLevelCache.containsKey(level)) {
+        return textAttributesByLogLevelCache.get(level);
       }
       try {
         final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
         final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
 
         final SimpleTextAttributes result = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, color);
-        textAttributesByLogLevelCached.put(level, result);
+        textAttributesByLogLevelCache.put(level, result);
         return result;
       }
       catch (Exception e) {
@@ -369,7 +368,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
     ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(EditorColorsManager.TOPIC, scheme -> {
-      textAttributesByLogLevelCached.clear();
+      textAttributesByLogLevelCache.clear();
       globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
     });
     final FlutterLog flutterLog = app.getFlutterLog();
