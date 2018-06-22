@@ -16,6 +16,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
@@ -47,7 +48,12 @@ import java.util.Map;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
   @NotNull
+  private static final Logger LOG = Logger.getInstance(FlutterLogView.class);
+
+  @NotNull
   private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
+  @NotNull
+  private static final SimpleTextAttributes REGULAR_ATTRIBUTES = SimpleTextAttributes.GRAY_ATTRIBUTES;
 
   static {
     LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP = new HashMap<>();
@@ -63,7 +69,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   @NotNull
-  private final EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
+  private volatile EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
 
   private class EntryModel implements FlutterLogTree.EntryModel {
     boolean showColors;
@@ -88,9 +94,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
       catch (Exception e) {
         // Should never go here.
-        e.printStackTrace();
+        LOG.warn("Error when get text attributes by log level", e);
       }
-      return SimpleTextAttributes.GRAY_ATTRIBUTES;
+      return REGULAR_ATTRIBUTES;
     }
   }
 
@@ -352,7 +358,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
-
+    ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(EditorColorsManager.TOPIC, scheme -> {
+      globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
+    });
     final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
 
