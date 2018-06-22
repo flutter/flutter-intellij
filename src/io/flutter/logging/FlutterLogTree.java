@@ -340,20 +340,24 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public void appendNodes(List<FlutterLogEntry> entries) {
-      ApplicationManager.getApplication().invokeLater(() -> {
+      if (treeTable == null || uiThreadAlarm.isDisposed()) {
+        return;
+      }
+
+      uiThreadAlarm.cancelAllRequests();
+      uiThreadAlarm.addRequest(() -> {
         final MutableTreeNode root = getRoot();
         entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
         update();
-      });
 
-      // Schedule an update to scroll after the model has had time to re-render.
-      uiThreadAlarm.addRequest(() -> {
-        if (autoScrollToEnd) {
-          scrollToEnd();
-        }
-        // A simple delay should suffice, given our mantra of eventual consistency.
-        // If not, we can investigate a proper condition.
-      }, 100);
+        // Schedule an update to scroll after the model has had time to re-render.
+        uiThreadAlarm.addRequest(() -> {
+          if (autoScrollToEnd) {
+            scrollToEnd();
+          }
+          // A simple delay should suffice, given our mantra of eventual consistency.
+        }, 100);
+      }, 10);
     }
 
     public boolean shouldShowTimestamps() {
@@ -519,7 +523,6 @@ public class FlutterLogTree extends TreeTable {
         .filter(entry -> filter == null || filter.accept(entry)).collect(Collectors.toList());
 
       model.appendNodes(matched);
-      model.update();
 
       countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
     });
