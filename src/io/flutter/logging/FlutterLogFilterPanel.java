@@ -5,7 +5,9 @@
  */
 package io.flutter.logging;
 
-import com.intellij.ui.*;
+import com.intellij.ui.CollectionComboBoxModel;
+import com.intellij.ui.ColoredListCellRenderer;
+import com.intellij.ui.SearchTextField;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -81,14 +83,18 @@ public class FlutterLogFilterPanel {
   private JComboBox<FlutterLog.Level> logLevelComboBox;
 
   public FlutterLogFilterPanel(
+    @NotNull FlutterLogPreferences flutterLogPreferences,
     @NotNull OnFilterListener onFilterListener
   ) {
+    regexCheckBox.setSelected(flutterLogPreferences.TOOL_WINDOW_REGEX);
+    matchCaseCheckBox.setSelected(flutterLogPreferences.TOOL_WINDOW_MATCH_CASE);
     this.onFilterListener = onFilterListener;
     matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
+    logLevelComboBox.setSelectedItem(FlutterLog.Level.forValue(flutterLogPreferences.TOOL_WINDOW_LOG_LEVEL));
     logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
     logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
       @Override

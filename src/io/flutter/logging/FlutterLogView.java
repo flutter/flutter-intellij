@@ -41,7 +41,7 @@ import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
   private class EntryModel implements FlutterLogTree.EntryModel {
-    boolean showColors;
+    private boolean showColors;
 
     @Override
     public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
@@ -60,6 +60,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         }
       }
       return SimpleTextAttributes.REGULAR_ATTRIBUTES;
+    }
+
+    public void setShowColors(boolean showColors) {
+      this.showColors = showColors;
+      flutterLogPreferences.SHOW_COLOR = showColors;
     }
   }
 
@@ -203,7 +208,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      entryModel.showColors = state;
+      entryModel.setShowColors(state);
       logModel.update();
     }
   }
@@ -259,7 +264,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         if (paths != null) {
           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           final StringBuilder sb = new StringBuilder();
-          for (final TreePath path: paths) {
+          for (final TreePath path : paths) {
             final Object pathComponent = path.getLastPathComponent();
             if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
               ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
@@ -336,11 +341,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final FlutterLogTree.TreeModel logModel;
   private final FlutterLogTree logTree;
   @NotNull
-  private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
+  private final FlutterLogFilterPanel filterPanel;
   private SimpleTreeBuilder builder;
+  @NotNull
+  private final FlutterLogPreferences flutterLogPreferences;
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
+    flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
+    filterPanel = new FlutterLogFilterPanel(flutterLogPreferences, param -> doFilter());
 
     final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
@@ -354,6 +363,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final JPanel toolbar = createToolbar();
     toolWindowPanel.setToolbar(toolbar);
 
+    entryModel.showColors = flutterLogPreferences.SHOW_COLOR;
     logTree = new FlutterLogTree(app, entryModel, this);
     logModel = logTree.getLogTreeModel();
 
@@ -434,6 +444,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
     final String text = param.getExpression();
     final FlutterLogTree.EntryFilter filter = new FlutterLogTree.EntryFilter(param);
+    flutterLogPreferences.TOOL_WINDOW_REGEX = param.isRegex();
+    flutterLogPreferences.TOOL_WINDOW_MATCH_CASE = param.isMatchCase();
+    flutterLogPreferences.TOOL_WINDOW_LOG_LEVEL = param.getLogLevel().value;
     ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
   }
 
