@@ -129,7 +129,7 @@ public class FlutterLogTree extends TreeTable {
 
     @NotNull
     private Column createMessageColumn() {
-      return new Column("Message") {
+      return new Column(FlutterLogConstants.LogColumns.MESSAGE) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -175,7 +175,7 @@ public class FlutterLogTree extends TreeTable {
 
     @NotNull
     private Column createCategoryColumn() {
-      return new Column("Category") {
+      return new Column(FlutterLogConstants.LogColumns.CATEGORY) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -190,7 +190,7 @@ public class FlutterLogTree extends TreeTable {
 
     @NotNull
     private Column createLevelColumn() {
-      return new Column("Level") {
+      return new Column(FlutterLogConstants.LogColumns.LEVEL) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -207,7 +207,7 @@ public class FlutterLogTree extends TreeTable {
 
     @NotNull
     private Column createSequenceColumn() {
-      return new Column("Sequence") {
+      return new Column(FlutterLogConstants.LogColumns.SEQUENCE) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -222,7 +222,7 @@ public class FlutterLogTree extends TreeTable {
 
     @NotNull
     private Column createTimestampColumn() {
-      return new Column("Time") {
+      return new Column(FlutterLogConstants.LogColumns.TIME) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
