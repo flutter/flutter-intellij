@@ -68,11 +68,16 @@ public class FlutterLogTree extends TreeTable {
     }
 
     abstract class Column extends ColumnInfo<DefaultMutableTreeNode, FlutterLogEntry> {
-      boolean show = true;
+      boolean show;
       private TableCellRenderer renderer;
 
       Column(String name) {
+        this(name, true);
+      }
+
+      Column(String name, boolean show) {
         super(name);
+        this.show = show;
       }
 
       boolean isVisible() {
