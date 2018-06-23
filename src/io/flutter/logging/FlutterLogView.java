@@ -41,7 +41,7 @@ import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
 
   private class EntryModel implements FlutterLogTree.EntryModel {
-    boolean showColors;
+    private boolean showColors;
 
     @Override
     public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
@@ -60,6 +60,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         }
       }
       return SimpleTextAttributes.REGULAR_ATTRIBUTES;
+    }
+
+    public void setShowColors(boolean showColors) {
+      this.showColors = showColors;
+      flutterLogPreferences.SHOW_COLOR = showColors;
     }
   }
 
@@ -203,7 +208,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      entryModel.showColors = state;
+      entryModel.setShowColors(state);
       logModel.update();
     }
   }
@@ -338,9 +343,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull
   private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
   private SimpleTreeBuilder builder;
+  @NotNull
+  private final FlutterLogPreferences flutterLogPreferences;
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
+    flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
 
     final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
@@ -354,6 +362,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final JPanel toolbar = createToolbar();
     toolWindowPanel.setToolbar(toolbar);
 
+    entryModel.showColors = flutterLogPreferences.SHOW_COLOR;
     logTree = new FlutterLogTree(app, entryModel, this);
     logModel = logTree.getLogTreeModel();
 

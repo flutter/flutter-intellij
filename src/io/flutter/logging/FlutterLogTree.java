@@ -68,7 +68,7 @@ public class FlutterLogTree extends TreeTable {
     }
 
     abstract class Column extends ColumnInfo<DefaultMutableTreeNode, FlutterLogEntry> {
-      boolean show;
+      private boolean show;
       private TableCellRenderer renderer;
 
       Column(String name) {
@@ -77,6 +77,10 @@ public class FlutterLogTree extends TreeTable {
 
       Column(String name, boolean show) {
         super(name);
+        this.show = show;
+      }
+
+      public void setShow(boolean show) {
         this.show = show;
       }
 
@@ -114,9 +118,12 @@ public class FlutterLogTree extends TreeTable {
     private List<Column> visible;
     private ArrayList<TableColumn> tableColumns;
     private TreeTable treeTable;
+    @NotNull
+    private final FlutterLogPreferences flutterLogPreferences;
 
     ColumnModel(@NotNull FlutterApp app, @NotNull EntryModel entryModel) {
       this.app = app;
+      flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
       this.entryModel = entryModel;
       columns.add(createTimestampColumn());
       columns.add(createSequenceColumn());
@@ -175,7 +182,7 @@ public class FlutterLogTree extends TreeTable {
 
     @NotNull
     private Column createCategoryColumn() {
-      return new Column(FlutterLogConstants.LogColumns.CATEGORY) {
+      return new Column(FlutterLogConstants.LogColumns.CATEGORY, flutterLogPreferences.SHOW_LOG_CATEGORY) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -185,12 +192,18 @@ public class FlutterLogTree extends TreeTable {
             }
           };
         }
+
+        @Override
+        public void setShow(boolean show) {
+          flutterLogPreferences.SHOW_LOG_CATEGORY = show;
+          super.setShow(show);
+        }
       };
     }
 
     @NotNull
     private Column createLevelColumn() {
-      return new Column(FlutterLogConstants.LogColumns.LEVEL) {
+      return new Column(FlutterLogConstants.LogColumns.LEVEL, flutterLogPreferences.SHOW_LOG_LEVEL) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -202,12 +215,18 @@ public class FlutterLogTree extends TreeTable {
             }
           };
         }
+
+        @Override
+        public void setShow(boolean show) {
+          flutterLogPreferences.SHOW_LOG_LEVEL = show;
+          super.setShow(show);
+        }
       };
     }
 
     @NotNull
     private Column createSequenceColumn() {
-      return new Column(FlutterLogConstants.LogColumns.SEQUENCE) {
+      return new Column(FlutterLogConstants.LogColumns.SEQUENCE, flutterLogPreferences.SHOW_SEQUENCE_NUMBERS) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -217,12 +236,18 @@ public class FlutterLogTree extends TreeTable {
             }
           };
         }
+
+        @Override
+        public void setShow(boolean show) {
+          flutterLogPreferences.SHOW_SEQUENCE_NUMBERS = show;
+          super.setShow(show);
+        }
       };
     }
 
     @NotNull
     private Column createTimestampColumn() {
-      return new Column(FlutterLogConstants.LogColumns.TIME) {
+      return new Column(FlutterLogConstants.LogColumns.TIME, flutterLogPreferences.SHOW_TIMESTAMP) {
         @Override
         TableCellRenderer createRenderer() {
           return new EntryCellRenderer() {
@@ -232,16 +257,19 @@ public class FlutterLogTree extends TreeTable {
             }
           };
         }
+
+        @Override
+        public void setShow(boolean show) {
+          flutterLogPreferences.SHOW_TIMESTAMP = show;
+          super.setShow(show);
+        }
       };
     }
 
     void show(String column, boolean show) {
-      columns.forEach(c -> {
-        if (Objects.equals(column, c.getName())) {
-          c.show = show;
-        }
-      });
-
+      columns.stream()
+        .filter(c -> Objects.equals(column, c.getName()))
+        .forEach(c -> c.setShow(show));
       updateVisibility = true;
 
       // Cache for quick access.
