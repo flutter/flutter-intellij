@@ -83,7 +83,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider 
   }
 
   private void doFilter() {
-
+    logTree.filter(filterPanel.getExpression());
   }
 
   @Override

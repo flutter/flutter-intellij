@@ -13,8 +13,11 @@ import io.flutter.logging.FlutterLogEntry;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.table.DefaultTableModel;
+import java.text.SimpleDateFormat;
 
 public class FlutterTableModel extends DefaultTableModel implements Disposable, FlutterLog.Listener {
+  @NotNull
+  private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
 
   @NotNull
   private final FlutterLog flutterLog;
@@ -35,21 +38,23 @@ public class FlutterTableModel extends DefaultTableModel implements Disposable, 
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    // TODO(quangson91): optimize only fire new row insersted ???
-    uiThreadAlarm.addRequest(() -> {
-      addRow(createLog(entry));
-    }, 10);
+    uiThreadAlarm.addRequest(() -> addRow(createLog(entry)), 1);
   }
-
 
   @NotNull
   private Object[] createLog(@NotNull FlutterLogEntry entry) {
     return new String[]{
-      "00:00:00",
-      "num",
-      "level",
-      "category",
+      TIMESTAMP_FORMAT.format(entry.getTimestamp()),
+      Integer.toString(entry.getSequenceNumber()),
+      toLogLevel(entry),
+      entry.getCategory(),
       entry.getMessage()
     };
+  }
+
+  @NotNull
+  private String toLogLevel(@NotNull FlutterLogEntry entry) {
+    final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
+    return level != null ? level.name() : Integer.toString(entry.getLevel());
   }
 }
