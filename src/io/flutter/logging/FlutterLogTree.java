@@ -343,7 +343,7 @@ public class FlutterLogTree extends TreeTable {
       treeTable.updateUI();
 
       if (autoScrollToEnd) {
-        scrollToEnd();
+        uiThreadAlarm.addRequest(this::scrollToEnd, 100);
       }
     }
 
@@ -374,19 +374,10 @@ public class FlutterLogTree extends TreeTable {
         return;
       }
 
-      uiThreadAlarm.cancelAllRequests();
       uiThreadAlarm.addRequest(() -> {
         final MutableTreeNode root = getRoot();
         entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
         update();
-
-        // Schedule an update to scroll after the model has had time to re-render.
-        uiThreadAlarm.addRequest(() -> {
-          if (autoScrollToEnd) {
-            scrollToEnd();
-          }
-          // A simple delay should suffice, given our mantra of eventual consistency.
-        }, 100);
       }, 10);
     }
 
@@ -606,30 +597,24 @@ public class FlutterLogTree extends TreeTable {
   }
 
   public void setFilter(@Nullable EntryFilter filter) {
-    // Only set and reload if the filter has changed.
+    // Only set if the filter has changed.
     if (!Objects.equals(this.filter, filter)) {
       this.filter = filter;
-      reload();
+      // TODO(quangson91): update filter
     }
   }
 
-  void reload() {
+  void append(@NotNull FlutterLogEntry entry) {
     ApplicationManager.getApplication().invokeLater(() -> {
-      model.getRoot().removeAllChildren();
+      model.appendNodes(Collections.singletonList(entry));
 
-      final List<FlutterLogEntry> entries = model.log.getEntries();
-      final List<FlutterLogEntry> matched = entries.stream()
-        .filter(entry -> filter == null || filter.accept(entry)).collect(Collectors.toList());
-
-      model.appendNodes(matched);
-
-      countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
+      // TODO(quangson91): correct counter for filtered items.
+      //countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
     });
   }
 
   public void clearEntries() {
     model.clearEntries();
-    reload();
   }
 
   private static class SimpleMouseListener implements MouseListener {

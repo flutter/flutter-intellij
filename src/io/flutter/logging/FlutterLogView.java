@@ -537,7 +537,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    logTree.reload();
+    logTree.append(entry);
   }
 
   @Override
