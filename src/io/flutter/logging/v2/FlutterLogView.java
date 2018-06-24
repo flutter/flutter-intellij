@@ -12,10 +12,10 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import io.flutter.logging.FlutterLog;
-import io.flutter.logging.FlutterLogEntry;
 import io.flutter.logging.FlutterLogFilterPanel;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
@@ -24,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 
-public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
+public class FlutterLogView extends JPanel implements ConsoleView, DataProvider {
   @NotNull
   private final FlutterApp app;
   @NotNull
@@ -39,10 +39,14 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
     flutterLog = app.getFlutterLog();
-    flutterLog.addListener(this, this);
 
     logTree = createFlutterLogTree();
-    toolWindowPanel = createFlutterToolWindowPanel();
+    final JScrollPane scrollPane = ScrollPaneFactory.createScrollPane(
+      logTree,
+      ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    );
+    toolWindowPanel = createFlutterToolWindowPanel(scrollPane);
 
     final Content content = ContentFactory.SERVICE.getInstance().createContent(null, null, false);
     content.setCloseable(false);
@@ -50,15 +54,16 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   @NotNull
-  private SimpleToolWindowPanel createFlutterToolWindowPanel() {
+  private SimpleToolWindowPanel createFlutterToolWindowPanel(@NotNull JComponent content) {
     final SimpleToolWindowPanel window = new SimpleToolWindowPanel(true, true);
     window.setToolbar(createToolbar());
+    window.setContent(content);
     return window;
   }
 
   @NotNull
   private FlutterLogTree createFlutterLogTree() {
-    final FlutterLogTree tree = new FlutterLogTree();
+    final FlutterLogTree tree = new FlutterLogTree(flutterLog);
     tree.setTableHeader(null);
     tree.setExpandableItemsEnabled(true);
     return tree;
@@ -175,11 +180,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void dispose() {
-
-  }
-
-  @Override
-  public void onEvent(@NotNull FlutterLogEntry entry) {
 
   }
 }
