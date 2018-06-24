@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 
 public class FlutterLogFilterPanel {
-  static class FilterParam {
+  public static class FilterParam {
     @Nullable
     private final String expression;
     private final boolean isMatchCase;
