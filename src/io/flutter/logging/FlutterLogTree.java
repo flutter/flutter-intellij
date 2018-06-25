@@ -44,6 +44,7 @@ import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -629,9 +630,11 @@ public class FlutterLogTree extends TreeTable {
   }
 
   private void updateRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
-    final String nonNullRegex = (filter.getExpression() == null) ? "" : filter.getExpression();
+    final String nonNullExpression = filter.getExpression() == null ? "" : filter.getExpression();
+    final String quoteRegex = filter.isRegex() ? nonNullExpression : Pattern.quote(nonNullExpression);
+
     final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
-    final String standardRegex = matchCaseRegex + "(?s).*" + nonNullRegex + ".*";
+    final String standardRegex = matchCaseRegex + "(?s).*" + quoteRegex + ".*";
     final RowFilter<TableModel, Object> logMessageFilter;
     final RowFilter<TableModel, Object> logLevelFilter;
     try {
