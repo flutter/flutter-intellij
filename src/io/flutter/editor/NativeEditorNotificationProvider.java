@@ -22,6 +22,8 @@ import io.flutter.actions.OpenInXcodeAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO(devoncarew): Are we showing the 'Open in Xcode' editor action on non-mac platforms?
+
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
 
@@ -43,6 +45,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
       // Template presentation set up in super.update()
       // TODO(pq): consider migrating OpenInXcodeBannerAction to do the same.
     }
+
     @NotNull
     @Override
     public String getAnalyticsId() {
@@ -93,6 +96,8 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     if (root == null) {
       return null;
     }
+
+    //noinspection IfCanBeSwitch
     if (root.getName().equals("android")) {
       return OPEN_IN_ANDROID_STUDIO_ACTION;
     }
