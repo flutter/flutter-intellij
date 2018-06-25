@@ -22,6 +22,14 @@ public final class FlutterLogConstants {
     public static final String LEVEL = "Level";
     public static final String CATEGORY = "Category";
     public static final String MESSAGE = "Message";
+
+    public static final String[] ALL_COLUMNS = {
+      TIME,
+      SEQUENCE,
+      LEVEL,
+      CATEGORY,
+      MESSAGE
+    };
   }
 
   @NotNull
