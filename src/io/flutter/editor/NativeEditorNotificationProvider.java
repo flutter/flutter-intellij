@@ -16,42 +16,12 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
-import io.flutter.actions.ActionWithAnalytics;
-import io.flutter.actions.OpenInAndroidStudioAction;
-import io.flutter.actions.OpenInXcodeAction;
+import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
-
-  private static class OpenInXcodeBannerAction extends OpenInXcodeAction {
-    OpenInXcodeBannerAction() {
-      getTemplatePresentation().setText("Open for Editing in Xcode");
-      getTemplatePresentation().setDescription("Open Xcode in a new window to edit this file");
-    }
-
-    @NotNull
-    @Override
-    public String getAnalyticsId() {
-      return "OpenInXcode.banner";
-    }
-  }
-
-  private static class OpenInAndroidStudioBannerAction extends OpenInAndroidStudioAction {
-    OpenInAndroidStudioBannerAction() {
-      // Template presentation set up in super.update()
-      // TODO(pq): consider migrating OpenInXcodeBannerAction to do the same.
-    }
-    @NotNull
-    @Override
-    public String getAnalyticsId() {
-      return "OpenInAndroidStudio.banner";
-    }
-  }
-
-  private static final ActionWithAnalytics OPEN_IN_XCODE_ACTION = new OpenInXcodeBannerAction();
-  private static final ActionWithAnalytics OPEN_IN_ANDROID_STUDIO_ACTION = new OpenInAndroidStudioBannerAction();
 
   private final Project myProject;
 
@@ -78,26 +48,26 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     if (root == null) {
       return null;
     }
-    return createPanelForAction(file, root, getAction(root));
+    return createPanelForAction(file, root, getActionName(root));
   }
 
-  private EditorNotificationPanel createPanelForAction(VirtualFile file, VirtualFile root, AnAction action) {
-    if (action == null) {
+  private EditorNotificationPanel createPanelForAction(VirtualFile file, VirtualFile root, String actionName) {
+    if (actionName == null) {
       return null;
     }
-    NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, action);
+    NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, actionName);
     return panel.isValidForFile() ? panel : null;
   }
 
-  private static AnAction getAction(VirtualFile root) {
+  private static String getActionName(VirtualFile root) {
     if (root == null) {
       return null;
     }
     if (root.getName().equals("android")) {
-      return OPEN_IN_ANDROID_STUDIO_ACTION;
+      return "flutter.androidstudio.open";
     }
     else if (root.getName().equals("ios")) {
-      return OPEN_IN_XCODE_ACTION;
+      return "flutter.xcode.open";
     }
     else {
       return null;
@@ -127,11 +97,11 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     final AnAction myAction;
     final boolean isVisible;
 
-    NativeEditorActionsPanel(VirtualFile file, VirtualFile root, AnAction openAction) {
+    NativeEditorActionsPanel(VirtualFile file, VirtualFile root, String actionName) {
       super(EditorColors.GUTTER_BACKGROUND);
       myFile = file;
       myRoot = root;
-      myAction = openAction;
+      myAction = ActionManager.getInstance().getAction(actionName);
 
       icon(FlutterIcons.Flutter);
       text("Flutter commands");
@@ -158,14 +128,18 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     }
 
     private DataContext makeContext() {
-      return dataId -> {
-        if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
-          return myFile;
+      return new DataContext() {
+        @Override
+        @Nullable
+        public Object getData(@NonNls String dataId) {
+          if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
+            return myFile;
+          }
+          if (CommonDataKeys.PROJECT.is(dataId)) {
+            return myProject;
+          }
+          return null;
         }
-        if (CommonDataKeys.PROJECT.is(dataId)) {
-          return myProject;
-        }
-        return null;
       };
     }
   }
