@@ -11,7 +11,7 @@
       "untilBuild": "173.*"
     },
     {
-      "comments": "AS 3.2 Canary and IntelliJ 2018.1",
+      "comments": "AS 3.2 Beta and IntelliJ 2018.1",
       "name": "IntelliJ",
       "version": "2018.1",
       "ideaProduct": "android-studio",
