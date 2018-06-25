@@ -172,6 +172,8 @@
                     serviceImplementation="io.flutter.dart.FlutterDartAnalysisServer"/>
     <projectService serviceInterface="io.flutter.bazel.WorkspaceCache"
                     serviceImplementation="io.flutter.bazel.WorkspaceCache"/>
+    <projectService serviceInterface="io.flutter.logging.FlutterLogPreferences"
+                    serviceImplementation="io.flutter.logging.FlutterLogPreferences"/>
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
