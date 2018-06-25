@@ -510,9 +510,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     flutterLogPreferences.setToolWindowRegex(param.isRegex());
     flutterLogPreferences.setToolWindowMatchCase(param.isMatchCase());
     flutterLogPreferences.setToolWindowLogLevel(param.getLogLevel().value);
-    final String text = param.getExpression();
-    final FlutterLogTree.EntryFilter filter = new FlutterLogTree.EntryFilter(param);
-    ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
+    ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(param));
   }
 
   @NotNull

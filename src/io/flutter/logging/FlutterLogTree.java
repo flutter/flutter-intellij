@@ -520,7 +520,7 @@ public class FlutterLogTree extends TreeTable {
 
   private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
   private final TreeModel model;
-  private EntryFilter filter;
+  private FlutterLogFilterPanel.FilterParam filter;
   @NotNull
   private final TableRowSorter<TableModel> rowSorter;
   @NotNull
@@ -619,7 +619,7 @@ public class FlutterLogTree extends TreeTable {
     return model.columns.getRenderer(column);
   }
 
-  public void setFilter(@Nullable EntryFilter filter) {
+  public void setFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
     if (Objects.equals(this.filter, filter)) {
       return;
     }
@@ -628,9 +628,10 @@ public class FlutterLogTree extends TreeTable {
     updateCounter();
   }
 
-  private void updateRowFilter(@Nullable EntryFilter filter) {
-    final String nonNullRegex = (filter == null || filter.filterParam.getExpression() == null) ? "" : filter.filterParam.getExpression();
-    final String standardRegex = "(?s).*" + nonNullRegex + ".*";
+  private void updateRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
+    final String nonNullRegex = (filter.getExpression() == null) ? "" : filter.getExpression();
+    final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
+    final String standardRegex = matchCaseRegex + "(?s).*" + nonNullRegex + ".*";
     final RowFilter<TableModel, Object> logMessageFilter;
     final RowFilter<TableModel, Object> logLevelFilter;
     try {
@@ -638,8 +639,7 @@ public class FlutterLogTree extends TreeTable {
         standardRegex,
         FlutterTreeTableModel.ColumnIndex.MESSAGE.index, FlutterTreeTableModel.ColumnIndex.CATEGORY.index
       );
-      final FlutterLog.Level level = filter == null ? FlutterLog.Level.NONE : filter.filterParam.getLogLevel();
-      logLevelFilter = RowFilter.regexFilter(LOG_LEVEL_FILTER.get(level), FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index);
+      logLevelFilter = RowFilter.regexFilter(LOG_LEVEL_FILTER.get(filter.getLogLevel()), FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index);
     }
     catch (PatternSyntaxException e) {
       return;
