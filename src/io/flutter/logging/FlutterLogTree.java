@@ -9,6 +9,7 @@ import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
@@ -65,6 +66,48 @@ public class FlutterLogTree extends TreeTable {
 
 
       abstract void render(FlutterLogEntry entry);
+    }
+
+    private class MessageCellRenderer extends EntryCellRenderer {
+      @Nullable
+      private final FlutterConsoleFilter consoleFilter;
+
+      MessageCellRenderer(@Nullable Module module) {
+        consoleFilter = module != null ? new FlutterConsoleFilter(module) : null;
+      }
+
+      @Override
+      void render(FlutterLogEntry entry) {
+        // TODO(pq): SpeedSearchUtil.applySpeedSearchHighlighting
+        // TODO(pq): setTooltipText
+        final String message = entry.getMessage();
+        int cursor = 0;
+
+        // TODO(pq): add support for dart uris, etc.
+        // TODO(pq): fix FlutterConsoleFilter to handle multiple links.
+        final Filter.Result result = consoleFilter != null ? consoleFilter.applyFilter(message, message.length()) : null;
+        if (result != null) {
+          for (Filter.ResultItem item: result.getResultItems()) {
+            final HyperlinkInfo hyperlinkInfo = item.getHyperlinkInfo();
+            if (hyperlinkInfo != null) {
+              final int start = item.getHighlightStartOffset();
+              final int end = item.getHighlightEndOffset();
+              // append leading text.
+              if (cursor < start) {
+                appendStyled(entry, message.substring(cursor, start));
+              }
+              // TODO(pq): re-style hyperlinks?
+              append(message.substring(start, end), SimpleTextAttributes.LINK_ATTRIBUTES, hyperlinkInfo);
+              cursor = end;
+            }
+          }
+        }
+
+        // append trailing text
+        if (cursor < message.length()) {
+          appendStyled(entry, message.substring(cursor));
+        }
+      }
     }
 
     abstract class Column extends ColumnInfo<DefaultMutableTreeNode, FlutterLogEntry> {
@@ -160,43 +203,7 @@ public class FlutterLogTree extends TreeTable {
       columns.add(new Column("Message") {
         @Override
         TableCellRenderer createRenderer() {
-          return new EntryCellRenderer() {
-            // TODO(pq): handle possible null module.
-            FlutterConsoleFilter consoleFilter = new FlutterConsoleFilter(app.getModule());
-
-            @Override
-            void render(FlutterLogEntry entry) {
-              // TODO(pq): SpeedSearchUtil.applySpeedSearchHighlighting
-              // TODO(pq): setTooltipText
-              final String message = entry.getMessage();
-              int cursor = 0;
-
-              // TODO(pq): add support for dart uris, etc.
-              // TODO(pq): fix FlutterConsoleFilter to handle multiple links.
-              final Filter.Result result = consoleFilter.applyFilter(message, message.length());
-              if (result != null) {
-                for (Filter.ResultItem item: result.getResultItems()) {
-                  final HyperlinkInfo hyperlinkInfo = item.getHyperlinkInfo();
-                  if (hyperlinkInfo != null) {
-                    final int start = item.getHighlightStartOffset();
-                    final int end = item.getHighlightEndOffset();
-                    // append leading text.
-                    if (cursor < start) {
-                      appendStyled(entry, message.substring(cursor, start));
-                    }
-                    // TODO(pq): re-style hyperlinks?
-                    append(message.substring(start, end), SimpleTextAttributes.LINK_ATTRIBUTES, hyperlinkInfo);
-                    cursor = end;
-                  }
-                }
-              }
-
-              // append trailing text
-              if (cursor < message.length()) {
-                appendStyled(entry, message.substring(cursor));
-              }
-            }
-          };
+          return new MessageCellRenderer(app.getModule());
         }
       });
       // Cache for quick access.
