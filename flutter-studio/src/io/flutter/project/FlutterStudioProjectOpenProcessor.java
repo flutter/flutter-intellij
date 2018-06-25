@@ -8,9 +8,11 @@ package io.flutter.project;
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.components.impl.stores.StoreUtil;
 import com.intellij.openapi.externalSystem.model.DataNode;
 import com.intellij.openapi.externalSystem.model.Key;
 import com.intellij.openapi.externalSystem.model.project.ProjectData;
@@ -20,6 +22,9 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.libraries.LibraryEx;
+import com.intellij.openapi.roots.impl.libraries.LibraryTableBase;
+import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
@@ -47,6 +52,8 @@ import static com.android.tools.idea.gradle.util.GradleUtil.getGradleExecutionSe
 import static com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType.RESOLVE_PROJECT;
 
 public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcessor {
+  private static String ANDROID_LIBRARY_NAME = "Android Libraries";
+
   @Override
   public String getName() {
     return "Flutter Studio";
@@ -84,14 +91,15 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     Project androidProject = doGradleSync(project, projectPath, settings);
     //DataNode<ProjectData> projectDataNode = myProjectResolver.resolveProjectInfo(id, projectPath, false, settings, NULL_OBJECT);
     //Project androidProject = doImportData(projectDataNode, project);
-    LibraryTable libraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
-    Library[] libraries = libraryTable.getLibraries();
+    LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
+    Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
+    assert (androidProjectLibraries.length > 0);
     new WriteAction<Void>() {
       @Override
       protected void run(@NotNull final Result<Void> result) {
-        for (Library library : libraries) {
-          addSyntheticLibrary(project, library);
-        }
+        updateAndroidLibraryRoots(project, androidProjectLibraries);
+        //addSyntheticLibrary(project, library);
+        StoreUtil.saveProject(project, true);
         // See ProjectManagerImpl.closeProject(); need to be in write-safe context.
         androidProject.dispose();
       }
@@ -144,6 +152,7 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     GradleSyncInvoker.Request request = GradleSyncInvoker.Request.projectLoaded();
     request.generateSourcesOnSuccess = false;
     request.useCachedGradleModels = false;
+    request.runInBackground = false;
     GradleSyncInvoker gradleSyncInvoker = ServiceManager.getService(GradleSyncInvoker.class);
     gradleSyncInvoker.requestProjectSync(androidProject, request, listener);
     return androidProject;
@@ -245,6 +254,41 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     return result;
   }
 
+  private static void updateAndroidLibraryRoots(Project flutterProject, Library[] libraries) {
+    Library library = getAndroidLibrary(flutterProject, ProjectLibraryTable.getInstance(flutterProject));
+    String[] existingUrls = library.getUrls(OrderRootType.CLASSES);
+    ApplicationManager.getApplication().runWriteAction(() -> {
+      final LibraryEx.ModifiableModelEx model = (LibraryEx.ModifiableModelEx)library.getModifiableModel();
+      for (String url : existingUrls) {
+        model.removeRoot(url, OrderRootType.CLASSES);
+      }
+
+      for (Library refLibrary : libraries) {
+        for (OrderRootType rootType : new OrderRootType[]{OrderRootType.CLASSES, OrderRootType.SOURCES}) {
+          for (String url : refLibrary.getRootProvider().getUrls(rootType)) {
+            model.addRoot(url, rootType);
+          }
+        }
+      }
+
+      model.commit();
+    });
+  }
+
+  private static Library getAndroidLibrary(Project flutterProject, LibraryTable projectLibraryTable) {
+    Library existingLibrary = projectLibraryTable.getLibraryByName(ANDROID_LIBRARY_NAME);
+    if (existingLibrary != null) {
+      return existingLibrary;
+    }
+    return WriteAction.compute(() -> {
+      LibraryTableBase.ModifiableModel libTableModel =
+        ProjectLibraryTable.getInstance(flutterProject).getModifiableModel();
+      Library lib = libTableModel.createLibrary(ANDROID_LIBRARY_NAME);
+      libTableModel.commit();
+      return lib;
+    });
+  }
+
   private static void addSyntheticLibrary(Project flutterProject, Library gradleLibrary) {
     String name = gradleLibrary.getName();
     if (name == null) {
@@ -254,6 +298,7 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     LibraryTable.ModifiableModel libraryTableModel = libraryTable.getModifiableModel();
     Library library = libraryTableModel.getLibraryByName(name);
     if (library != null) {
+      libraryTableModel.dispose();
       return;
     }
     library = libraryTableModel.createLibrary(name);
@@ -266,7 +311,9 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
       }
     }
     model.commit();
+    model.dispose();
     libraryTableModel.commit();
+    libraryTableModel.dispose();
   }
 
   @SuppressWarnings("Duplicates")
