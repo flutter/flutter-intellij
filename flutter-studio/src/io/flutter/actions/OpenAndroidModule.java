@@ -33,7 +33,7 @@ import static com.intellij.openapi.fileChooser.impl.FileChooserUtil.setLastOpene
  */
 public class OpenAndroidModule extends OpenInAndroidStudioAction implements DumbAware {
   @Override
-  public void performAction(AnActionEvent e) {
+  public void actionPerformed(AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile == null) {
       FlutterMessages.showError("Error Opening Android Studio", "Project not found.");
@@ -50,12 +50,6 @@ public class OpenAndroidModule extends OpenInAndroidStudioAction implements Dumb
     //ProjectUtil.openOrImport(projectFile.getPath(), e.getProject(), forceOpenInNewFrame);
     // presents the user with a really imposing Gradle project import dialog.
     openOrImportProject(projectFile, e.getProject(), sourceFile, forceOpenInNewFrame);
-  }
-
-  @NotNull
-  @Override
-  public String getAnalyticsId() {
-    return "OpenModuleInAndroidStudio";
   }
 
   private static void openOrImportProject(@NotNull VirtualFile projectFile,
