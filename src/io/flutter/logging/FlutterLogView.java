@@ -118,7 +118,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       presentation.putClientProperty("button", actionButton);
       return actionButton;
     }
-    
+
     @Override
     @SuppressWarnings("Duplicates")
     public void actionPerformed(AnActionEvent e) {
@@ -245,9 +245,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public void actionPerformed(AnActionEvent e) {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        logTree.clearEntries();
-      });
+      ApplicationManager.getApplication().invokeLater(logTree::clearEntries);
     }
 
     @Override
@@ -289,7 +287,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         if (paths != null) {
           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           final StringBuilder sb = new StringBuilder();
-          for (final TreePath path : paths) {
+          for (final TreePath path: paths) {
             final Object pathComponent = path.getLastPathComponent();
             if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
               ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
@@ -314,8 +312,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       // None.  Just an info display.
     }
 
+    @NotNull
     @Override
-    public JComponent createCustomComponent(Presentation presentation) {
+    public JComponent createCustomComponent(@NotNull Presentation presentation) {
       panel = new JPanel();
 
       label = new JBLabel();
@@ -370,9 +369,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
     computeTextAttributesByLogLevelCache();
-    ApplicationManager.getApplication().getMessageBus().connect(this).subscribe(EditorColorsManager.TOPIC, scheme -> {
-      computeTextAttributesByLogLevelCache();
-    });
+    ApplicationManager.getApplication().getMessageBus().connect(this)
+      .subscribe(EditorColorsManager.TOPIC, scheme -> computeTextAttributesByLogLevelCache());
     final FlutterLog flutterLog = app.getFlutterLog();
     flutterLog.addListener(this, this);
 
@@ -397,7 +395,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     logTree.setExpandableItemsEnabled(true);
     logTree.getTree().setScrollsOnExpand(true);
 
-    logTree.addMouseListener(new PopupHandler() {
+    final PopupHandler popupHandler = new PopupHandler() {
       @Override
       public void invokePopup(Component comp, int x, int y) {
         final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
@@ -407,25 +405,38 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
 
       @Override
+      public void mouseMoved(MouseEvent e) {
+        final Cursor cursor = getTagForPosition(e) instanceof OpenFileHyperlinkInfo
+                              ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                              : Cursor.getDefaultCursor();
+        logTree.setCursor(cursor);
+      }
+
+      @Override
       public void mouseClicked(MouseEvent e) {
+        final Object tag = getTagForPosition(e);
+        // TODO(pq): consider generalizing to a runnable and wrapping the hyperlinkinfo
+        if (tag instanceof OpenFileHyperlinkInfo) {
+          ((OpenFileHyperlinkInfo)tag).navigate(app.getProject());
+        }
+      }
+
+      private Object getTagForPosition(MouseEvent e) {
         final JTable table = (JTable)e.getSource();
         final int row = table.rowAtPoint(e.getPoint());
         final int column = table.columnAtPoint(e.getPoint());
-        if (row == -1 || column == -1) return;
+        if (row == -1 || column == -1) return null;
         final TableCellRenderer cellRenderer = table.getCellRenderer(row, column);
         if (cellRenderer instanceof ColoredTableCellRenderer) {
           final ColoredTableCellRenderer renderer = (ColoredTableCellRenderer)cellRenderer;
           final Rectangle rc = table.getCellRect(row, column, false);
-          final Object tag = renderer.getFragmentTagAt(e.getX() - rc.x);
-          // TODO(pq): consider generalizing to a runnable and wrapping the hyperlinkinfo
-          if (tag instanceof OpenFileHyperlinkInfo) {
-            ((OpenFileHyperlinkInfo)tag).navigate(app.getProject());
-          }
+          return renderer.getFragmentTagAt(e.getX() - rc.x);
         }
+        return null;
       }
-
-      // TODO(pq): add keybindings
-    });
+    };
+    logTree.addMouseListener(popupHandler);
+    logTree.addMouseMotionListener(popupHandler);
 
     // Set bounds.
     // TODO(pq): consider re-sizing dynamically, as needed.
@@ -450,7 +461,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private void computeTextAttributesByLogLevelCache() {
     final EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
     textAttributesByLogLevelCache.clear();
-    for (Level level : FlutterLog.Level.values()) {
+    for (Level level: FlutterLog.Level.values()) {
       try {
         final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
         final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
