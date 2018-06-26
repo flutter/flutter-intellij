@@ -1,5 +1,23 @@
 ## 26.0
-- todo:
+- updates to support Android Studio 3.2 Beta
+- removes the Inspector's empty content message
+- support setting log color from flutter log settings page
+- support hiding/showing log categories (#2398)
+- add flutter log color settings page (#2394)
+- change the default for the open inspector setting
+- look for the emulator tool in the 'emulator/' directory first (#2383)
+- support filtering by log level (#2380)
+- fix the flutter log view while resizing (#2379)
+- log entry coloring (#2382)
+- log tree rendering refactor (#2381)
+- for BazelRunConfig launches, print the command-line to the console (#2368)
+- refactor the Flutter debugging client code (#2359)
+- support match case/regex filter in log view (#2350)
+- fix auto-scroll to catch up to fully rendered log tree (#2342)
+- use the log category name from the dart:developer event (#2339)
+- fix-up missing create project mnemonics (#2326)
+- handle reload errors (#2321)
+- fixes for the native editor banner
 
 ## 25.0
 - remove the user preference to disable --preview-dart-2
