@@ -118,12 +118,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       presentation.putClientProperty("button", actionButton);
       return actionButton;
     }
-
-    @Override
-    public final void update(AnActionEvent e) {
-      e.getPresentation().setEnabled(app.isSessionActive());
-    }
-
+    
     @Override
     @SuppressWarnings("Duplicates")
     public void actionPerformed(AnActionEvent e) {
