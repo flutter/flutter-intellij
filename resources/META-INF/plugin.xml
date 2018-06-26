@@ -27,6 +27,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>26.0</h2>
+<ul>
+  <li>todo:</li>
+</ul>
 <h2>25.0</h2>
 <ul>
   <li>remove the user preference to disable --preview-dart-2</li>

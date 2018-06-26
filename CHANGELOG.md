@@ -1,3 +1,6 @@
+## 26.0
+- todo:
+
 ## 25.0
 - remove the user preference to disable --preview-dart-2
 - don't use 'new' for the stless, stfull, stanim templates
