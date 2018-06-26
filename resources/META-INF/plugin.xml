@@ -31,12 +31,12 @@
 <ul>
   <li>updates to support Android Studio 3.2 Beta</li>
   <li>removes the Inspector's empty content message</li>
-  <li>setting log color from flutter log setting page</li>
+  <li>support setting log color from flutter log settings page</li>
   <li>support hiding/showing log categories (#2398)</li>
   <li>add flutter log color settings page (#2394)</li>
   <li>change the default for the open inspector setting</li>
   <li>look for the emulator tool in the 'emulator/' directory first (#2383)</li>
-  <li>add feature filter by log level (#2380)</li>
+  <li>support filtering by log level (#2380)</li>
   <li>fix the flutter log view while resizing (#2379)</li>
   <li>log entry coloring (#2382)</li>
   <li>log tree rendering refactor (#2381)</li>
