@@ -93,7 +93,7 @@ public class FlutterLogTree extends TreeTable {
 
       @Override
       public TableCellRenderer getCustomizedRenderer(DefaultMutableTreeNode o, TableCellRenderer renderer) {
-        return renderer;
+        return this.renderer;
       }
     }
 
