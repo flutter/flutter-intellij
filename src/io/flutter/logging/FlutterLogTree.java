@@ -115,7 +115,7 @@ public class FlutterLogTree extends TreeTable {
       @Override
       void render(FlutterLogEntry entry) {
         final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
-        final String value = level != null ? level.name() : Integer.toString(entry.getLevel());
+        final String value = level.toDisplayString();
         appendStyled(entry, value);
       }
     }
