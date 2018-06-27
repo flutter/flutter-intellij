@@ -5,7 +5,9 @@
  */
 package io.flutter.logging;
 
-import com.intellij.ui.*;
+import com.intellij.ui.CollectionComboBoxModel;
+import com.intellij.ui.ColoredListCellRenderer;
+import com.intellij.ui.SearchTextField;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,15 +82,15 @@ public class FlutterLogFilterPanel {
   private SearchTextField textExpression;
   private JComboBox<FlutterLog.Level> logLevelComboBox;
 
-  public FlutterLogFilterPanel(
-    @NotNull OnFilterListener onFilterListener
-  ) {
+  public FlutterLogFilterPanel(@NotNull OnFilterListener onFilterListener) {
     this.onFilterListener = onFilterListener;
+
     matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
+    logLevelComboBox.setSelectedItem(FlutterLog.Level.CONFIG);
     logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
     logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
       @Override
@@ -97,8 +99,7 @@ public class FlutterLogFilterPanel {
                                            int index,
                                            boolean selected,
                                            boolean hasFocus) {
-        final String label = index == -1 && value == FlutterLog.Level.NONE ? "" : value.name().toLowerCase();
-        append(label);
+        append(value.toDisplayString());
       }
     });
   }

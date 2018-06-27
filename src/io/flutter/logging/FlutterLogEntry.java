@@ -21,7 +21,6 @@ public class FlutterLogEntry {
   private final String message;
   private int sequenceNumber = -1;
 
-
   public FlutterLogEntry(long timestamp, @NotNull String category, int level, @Nullable String message) {
     this.timestamp = timestamp;
     this.category = category;

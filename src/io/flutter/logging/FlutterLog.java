@@ -50,16 +50,24 @@ public class FlutterLog {
       this.value = value;
     }
 
+    @NotNull
     public static Level forValue(int value) {
       final Level[] levels = Level.values();
-      for (int i = 0; i < levels.length; ++i) {
-        if (value >= levels[i].value && ((i >= levels.length - 1) || value < levels[i + 1].value)) {
+
+      for (int i = levels.length - 1; i >= 0; i--) {
+        if (value >= levels[i].value) {
           return levels[i];
         }
       }
-      return null;
+
+      return NONE;
+    }
+
+    public String toDisplayString() {
+      return name().toLowerCase();
     }
   }
+
   private final EventDispatcher<Listener>
     dispatcher = EventDispatcher.create(Listener.class);
 
