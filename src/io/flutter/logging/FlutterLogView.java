@@ -156,12 +156,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return flutterLogPreferences.SHOW_TIMESTAMP;
+      return flutterLogPreferences.isShowTimestamp();
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      flutterLogPreferences.SHOW_TIMESTAMP = state;
+      flutterLogPreferences.setShowTimestamp(state);
       logModel.setShowTimestamps(state);
       logModel.update();
     }
@@ -175,12 +175,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return flutterLogPreferences.SHOW_SEQUENCE_NUMBERS;
+      return flutterLogPreferences.isShowSequenceNumbers();
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      flutterLogPreferences.SHOW_SEQUENCE_NUMBERS = state;
+      flutterLogPreferences.setShowSequenceNumbers(state);
       logModel.setShowSequenceNumbers(state);
       logModel.update();
     }
@@ -194,12 +194,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return flutterLogPreferences.SHOW_LOG_CATEGORY;
+      return flutterLogPreferences.isShowLogCategory();
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      flutterLogPreferences.SHOW_LOG_CATEGORY = state;
+      flutterLogPreferences.setShowLogCategory(state);
       logModel.setShowCategories(state);
       logModel.update();
     }
@@ -213,12 +213,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return flutterLogPreferences.SHOW_LOG_LEVEL;
+      return flutterLogPreferences.isShowLogLevel();
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      flutterLogPreferences.SHOW_LOG_LEVEL = state;
+      flutterLogPreferences.setShowLogLevel(state);
       logModel.setShowLogLevels(state);
       logModel.update();
     }
@@ -232,12 +232,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return flutterLogPreferences.SHOW_COLOR;
+      return flutterLogPreferences.isShowColor();
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
-      flutterLogPreferences.SHOW_COLOR = state;
+      flutterLogPreferences.setShowColor(state);
       entryModel.showColors = state;
       logModel.update();
     }
@@ -396,7 +396,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     logTree = new FlutterLogTree(app, entryModel, this);
     logModel = logTree.getLogTreeModel();
     logModel.updateFromPreferences(flutterLogPreferences);
-    entryModel.showColors = flutterLogPreferences.SHOW_COLOR;
+    entryModel.showColors = flutterLogPreferences.isShowColor();
 
     // TODO(pq): add speed search
     //new TreeTableSpeedSearch(logTree).setComparator(new SpeedSearchComparator(false));
@@ -512,9 +512,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   private void doFilter() {
     final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
-    flutterLogPreferences.TOOL_WINDOW_REGEX = param.isRegex();
-    flutterLogPreferences.TOOL_WINDOW_MATCH_CASE = param.isMatchCase();
-    flutterLogPreferences.TOOL_WINDOW_LOG_LEVEL = param.getLogLevel().value;
+    flutterLogPreferences.setToolWindowRegex(param.isRegex());
+    flutterLogPreferences.setToolWindowMatchCase(param.isMatchCase());
+    flutterLogPreferences.setToolWindowLogLevel(param.getLogLevel().value);
     final String text = param.getExpression();
     final FlutterLogTree.EntryFilter filter = new FlutterLogTree.EntryFilter(param);
     ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));

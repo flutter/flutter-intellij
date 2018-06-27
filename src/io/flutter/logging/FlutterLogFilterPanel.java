@@ -98,12 +98,12 @@ public class FlutterLogFilterPanel {
   private JComboBox<FlutterLog.Level> logLevelComboBox;
 
   public FlutterLogFilterPanel() {
-    matchCaseCheckBox.addItemListener(e -> filterListener().onFilter(getCurrentFilterParam()));
-    regexCheckBox.addItemListener(e -> filterListener().onFilter(getCurrentFilterParam()));
+    matchCaseCheckBox.addItemListener(e -> getFilterListener().onFilter(getCurrentFilterParam()));
+    regexCheckBox.addItemListener(e -> getFilterListener().onFilter(getCurrentFilterParam()));
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
-    logLevelComboBox.addActionListener(event -> filterListener().onFilter(getCurrentFilterParam()));
+    logLevelComboBox.addActionListener(event -> getFilterListener().onFilter(getCurrentFilterParam()));
     logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
       @Override
       protected void customizeCellRenderer(@NotNull JList<? extends FlutterLog.Level> list,
@@ -130,9 +130,9 @@ public class FlutterLogFilterPanel {
   }
 
   public void updateFromPreferences(@NotNull FlutterLogPreferences flutterLogPreferences) {
-    regexCheckBox.setSelected(flutterLogPreferences.TOOL_WINDOW_REGEX);
-    matchCaseCheckBox.setSelected(flutterLogPreferences.TOOL_WINDOW_MATCH_CASE);
-    logLevelComboBox.setSelectedItem(FlutterLog.Level.forValue(flutterLogPreferences.TOOL_WINDOW_LOG_LEVEL));
+    regexCheckBox.setSelected(flutterLogPreferences.isToolWindowRegex());
+    matchCaseCheckBox.setSelected(flutterLogPreferences.isToolWindowMatchCase());
+    logLevelComboBox.setSelectedItem(FlutterLog.Level.forValue(flutterLogPreferences.getToolWindowLogLevel()));
   }
 
   public void setOnFilterListener(@Nullable OnFilterListener onFilterListener) {
@@ -163,12 +163,12 @@ public class FlutterLogFilterPanel {
   @NotNull
   private SearchTextField createSearchTextField() {
     final LogFilterTextField logFilterTextField = new LogFilterTextField();
-    logFilterTextField.setOnFilterListener(() -> filterListener().onFilter(getCurrentFilterParam()));
+    logFilterTextField.setOnFilterListener(() -> getFilterListener().onFilter(getCurrentFilterParam()));
     return logFilterTextField;
   }
 
   @NotNull
-  private OnFilterListener filterListener() {
+  private OnFilterListener getFilterListener() {
     final OnFilterListener listener = onFilterListener;
     return listener == null ? DEFAULT_ON_FILTER_LISTENER : listener;
   }

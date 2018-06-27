@@ -382,10 +382,10 @@ public class FlutterLogTree extends TreeTable {
     }
 
     void updateFromPreferences(@NotNull FlutterLogPreferences flutterLogPreferences) {
-      setShowTimestamps(flutterLogPreferences.SHOW_TIMESTAMP);
-      setShowSequenceNumbers(flutterLogPreferences.SHOW_SEQUENCE_NUMBERS);
-      setShowLogLevels(flutterLogPreferences.SHOW_LOG_LEVEL);
-      setShowCategories(flutterLogPreferences.SHOW_LOG_CATEGORY);
+      setShowTimestamps(flutterLogPreferences.isShowTimestamp());
+      setShowSequenceNumbers(flutterLogPreferences.isShowSequenceNumbers());
+      setShowLogLevels(flutterLogPreferences.isShowLogLevel());
+      setShowCategories(flutterLogPreferences.isShowLogCategory());
     }
   }
 
