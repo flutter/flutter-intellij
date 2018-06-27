@@ -156,11 +156,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.shouldShowTimestamps();
+      return flutterLogPreferences.SHOW_TIMESTAMP;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.SHOW_TIMESTAMP = state;
       logModel.setShowTimestamps(state);
       logModel.update();
     }
@@ -174,11 +175,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.shouldShowSequenceNumbers();
+      return flutterLogPreferences.SHOW_SEQUENCE_NUMBERS;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.SHOW_SEQUENCE_NUMBERS = state;
       logModel.setShowSequenceNumbers(state);
       logModel.update();
     }
@@ -192,11 +194,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.shouldShowCategories();
+      return flutterLogPreferences.SHOW_LOG_CATEGORY;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.SHOW_LOG_CATEGORY = state;
       logModel.setShowCategories(state);
       logModel.update();
     }
@@ -210,11 +213,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return logModel.shouldShowLogLevels();
+      return flutterLogPreferences.SHOW_LOG_LEVEL;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.SHOW_LOG_LEVEL = state;
       logModel.setShowLogLevels(state);
       logModel.update();
     }
@@ -228,11 +232,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public boolean isSelected(AnActionEvent e) {
-      return entryModel.showColors;
+      return flutterLogPreferences.SHOW_COLOR;
     }
 
     @Override
     public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.SHOW_COLOR = state;
       entryModel.showColors = state;
       logModel.update();
     }
@@ -365,9 +370,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull
   private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
   private SimpleTreeBuilder builder;
+  @NotNull
+  private final FlutterLogPreferences flutterLogPreferences;
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
+    flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
     computeTextAttributesByLogLevelCache();
     ApplicationManager.getApplication().getMessageBus().connect(this)
       .subscribe(EditorColorsManager.TOPIC, scheme -> computeTextAttributesByLogLevelCache());
@@ -385,6 +393,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     logTree = new FlutterLogTree(app, entryModel, this);
     logModel = logTree.getLogTreeModel();
+    logModel.updateFromPreferences(flutterLogPreferences);
+    entryModel.showColors = flutterLogPreferences.SHOW_COLOR;
 
     // TODO(pq): add speed search
     //new TreeTableSpeedSearch(logTree).setComparator(new SpeedSearchComparator(false));
