@@ -292,7 +292,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         if (paths != null) {
           final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
           final StringBuilder sb = new StringBuilder();
-          for (final TreePath path: paths) {
+          for (final TreePath path : paths) {
             final Object pathComponent = path.getLastPathComponent();
             if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
               ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
@@ -368,7 +368,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final FlutterLogTree.TreeModel logModel;
   private final FlutterLogTree logTree;
   @NotNull
-  private final FlutterLogFilterPanel filterPanel = new FlutterLogFilterPanel(param -> doFilter());
+  private final FlutterLogFilterPanel filterPanel;
   private SimpleTreeBuilder builder;
   @NotNull
   private final FlutterLogPreferences flutterLogPreferences;
@@ -376,6 +376,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
     flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
+    filterPanel = createFilterPanel();
+
     computeTextAttributesByLogLevelCache();
     ApplicationManager.getApplication().getMessageBus().connect(this)
       .subscribe(EditorColorsManager.TOPIC, scheme -> computeTextAttributesByLogLevelCache());
@@ -468,10 +470,18 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     toolWindowPanel.setContent(pane);
   }
 
+  @NotNull
+  private FlutterLogFilterPanel createFilterPanel() {
+    final FlutterLogFilterPanel panel = new FlutterLogFilterPanel();
+    panel.updateFromPreferences(flutterLogPreferences);
+    panel.setOnFilterListener(param -> doFilter());
+    return panel;
+  }
+
   private void computeTextAttributesByLogLevelCache() {
     final EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
     textAttributesByLogLevelCache.clear();
-    for (Level level: FlutterLog.Level.values()) {
+    for (Level level : FlutterLog.Level.values()) {
       try {
         final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
         final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
@@ -502,6 +512,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   private void doFilter() {
     final FlutterLogFilterPanel.FilterParam param = filterPanel.getCurrentFilterParam();
+    flutterLogPreferences.TOOL_WINDOW_REGEX = param.isRegex();
+    flutterLogPreferences.TOOL_WINDOW_MATCH_CASE = param.isMatchCase();
+    flutterLogPreferences.TOOL_WINDOW_LOG_LEVEL = param.getLogLevel().value;
     final String text = param.getExpression();
     final FlutterLogTree.EntryFilter filter = new FlutterLogTree.EntryFilter(param);
     ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
