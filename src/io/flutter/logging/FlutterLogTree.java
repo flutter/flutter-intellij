@@ -380,6 +380,13 @@ public class FlutterLogTree extends TreeTable {
     public boolean shouldShowCategories() {
       return columns.isShowing(CATEGORY);
     }
+
+    void updateFromPreferences(@NotNull FlutterLogPreferences flutterLogPreferences) {
+      setShowTimestamps(flutterLogPreferences.isShowTimestamp());
+      setShowSequenceNumbers(flutterLogPreferences.isShowSequenceNumbers());
+      setShowLogLevels(flutterLogPreferences.isShowLogLevel());
+      setShowCategories(flutterLogPreferences.isShowLogCategory());
+    }
   }
 
   static class LogRootTreeNode extends DefaultMutableTreeNode {
