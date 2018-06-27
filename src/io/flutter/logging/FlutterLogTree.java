@@ -182,11 +182,11 @@ public class FlutterLogTree extends TreeTable {
       this.app = app;
       this.entryModel = entryModel;
       columns.addAll(Arrays.asList(
-        new Column("Time", new TimeCellRenderer()),
-        new Column("Sequence", new SequenceCellRenderer()),
-        new Column("Level", new LevelCellRenderer()),
-        new Column("Category", new CategoryCellRenderer()),
-        new Column("Message", new MessageCellRenderer(app.getModule()))
+        new Column(TIME, new TimeCellRenderer()),
+        new Column(SEQUENCE, new SequenceCellRenderer()),
+        new Column(LEVEL, new LevelCellRenderer()),
+        new Column(CATEGORY, new CategoryCellRenderer()),
+        new Column(MESSAGE, new MessageCellRenderer(app.getModule()))
       ));
       // Cache for quick access.
       visible = columns.stream().filter(c -> c.show).collect(Collectors.toList());
