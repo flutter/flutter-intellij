@@ -61,7 +61,11 @@ public class FlutterLogTree extends TreeTable {
       }
 
       void appendStyled(FlutterLogEntry entry, String text) {
-        append(text, entryModel.style(entry, STYLE_PLAIN));
+        final SimpleTextAttributes style = entryModel.style(entry, STYLE_PLAIN);
+        if (style.getBgColor() != null) {
+          setBackground(style.getBgColor());
+        }
+        append(text, style);
       }
 
 
