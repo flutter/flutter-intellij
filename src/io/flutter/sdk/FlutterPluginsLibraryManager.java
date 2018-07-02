@@ -8,53 +8,46 @@ package io.flutter.sdk;
 import com.intellij.ProjectTopics;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
-import com.intellij.openapi.application.WriteAction;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.*;
-import com.intellij.openapi.roots.impl.libraries.LibraryEx;
-import com.intellij.openapi.roots.impl.libraries.LibraryTableBase;
-import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
-import com.intellij.openapi.roots.libraries.Library;
-import com.intellij.openapi.roots.libraries.LibraryTable;
-import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
-import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.roots.ModuleRootEvent;
+import com.intellij.openapi.roots.ModuleRootListener;
+import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.vfs.*;
 import com.jetbrains.lang.dart.util.DotPackagesFileUtil;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
 
-public class FlutterPluginsLibraryManager {
-  private final Project project;
+public class FlutterPluginsLibraryManager extends FlutterLibraryManager<FlutterPluginLibraryProperties> {
 
   private final AtomicBoolean isUpdating = new AtomicBoolean(false);
 
   public FlutterPluginsLibraryManager(@NotNull Project project) {
-    this.project = project;
+    super(project);
   }
 
   public void startWatching() {
     VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
       @Override
       protected void onFileChange(@NotNull VirtualFile file) {
-        fileChanged(project, file);
+        fileChanged(getProject(), file);
       }
 
       @Override
       protected void onBeforeFileChange(@NotNull VirtualFile file) {
       }
-    }, project);
+    }, getProject());
 
-    project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+    getProject().getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
       @Override
       public void rootsChanged(ModuleRootEvent event) {
         scheduleUpdate();
@@ -64,7 +57,19 @@ public class FlutterPluginsLibraryManager {
     scheduleUpdate();
   }
 
-  private void fileChanged(@NotNull final Project project, @NotNull final VirtualFile file) {
+  @Override
+  @NotNull
+  protected String getLibraryName() {
+    return FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME;
+  }
+
+  @Override
+  @NotNull
+  protected PersistentLibraryKind<FlutterPluginLibraryProperties> getLibraryKind() {
+    return FlutterPluginLibraryType.LIBRARY_KIND;
+  }
+
+  private void fileChanged(@SuppressWarnings("unused") @NotNull final Project project, @NotNull final VirtualFile file) {
     if (!DotPackagesFileUtil.DOT_PACKAGES.equals(file.getName())) return;
     if (LocalFileSystem.getInstance() != file.getFileSystem() && !ApplicationManager.getApplication().isUnitTestMode()) return;
 
@@ -82,7 +87,7 @@ public class FlutterPluginsLibraryManager {
     }
 
     final Runnable runnable = this::updateFlutterPlugins;
-    DumbService.getInstance(project).smartInvokeLater(runnable, ModalityState.NON_MODAL);
+    DumbService.getInstance(getProject()).smartInvokeLater(runnable, ModalityState.NON_MODAL);
   }
 
   private void updateFlutterPlugins() {
@@ -99,79 +104,15 @@ public class FlutterPluginsLibraryManager {
   }
 
   private void updateFlutterPluginsImpl() {
-    final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(project);
-
-    final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
-    final Library existingLibrary = projectLibraryTable.getLibraryByName(FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME);
-
-    if (!declaresFlutter) {
-      // If we have a Flutter library, remove it.
-      if (existingLibrary != null) {
-        WriteAction.compute(() -> {
-          final LibraryTableBase.ModifiableModel libraryTableModel =
-            ProjectLibraryTable.getInstance(project).getModifiableModel();
-          libraryTableModel.removeLibrary(existingLibrary);
-          libraryTableModel.commit();
-          return null;
-        });
-      }
-
-      return;
-    }
-
-    final Library library = existingLibrary != null
-                            ? existingLibrary
-                            : WriteAction.compute(() -> {
-                              final LibraryTableBase.ModifiableModel libraryTableModel =
-                                ProjectLibraryTable.getInstance(project).getModifiableModel();
-                              final Library lib = libraryTableModel.createLibrary(
-                                FlutterPluginLibraryType.FLUTTER_PLUGINS_LIBRARY_NAME,
-                                FlutterPluginLibraryType.LIBRARY_KIND);
-                              libraryTableModel.commit();
-                              return lib;
-                            });
-
-    final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoots.forProject(project));
+    final Set<String> flutterPluginPaths = getFlutterPluginPaths(PubRoots.forProject(getProject()));
     final Set<String> flutterPluginUrls = new HashSet<>();
     for (String path : flutterPluginPaths) {
       flutterPluginUrls.add(VfsUtilCore.pathToUrl(path));
     }
-    final Set<String> existingUrls = new HashSet<>(Arrays.asList(library.getUrls(OrderRootType.CLASSES)));
-
-    if (flutterPluginUrls.containsAll(existingUrls) && existingUrls.containsAll(flutterPluginUrls)) {
-      // No changes needed.
-      return;
-    }
-
-    ApplicationManager.getApplication().runWriteAction(() -> {
-      final LibraryEx.ModifiableModelEx model = (LibraryEx.ModifiableModelEx)library.getModifiableModel();
-
-      final Set<String> existingCopy = new HashSet<>(existingUrls);
-      existingUrls.removeAll(flutterPluginUrls);
-      flutterPluginUrls.removeAll(existingCopy);
-
-      for (String url : existingUrls) {
-        model.removeRoot(url, OrderRootType.CLASSES);
-      }
-
-      for (String url : flutterPluginUrls) {
-        model.addRoot(url, OrderRootType.CLASSES);
-      }
-
-      model.commit();
-    });
-
-    for (final Module module : ModuleManager.getInstance(project).getModules()) {
-      if (FlutterModuleUtils.declaresFlutter(module)) {
-        addFlutterLibraryDependency(module, library);
-      }
-      else {
-        removeFlutterLibraryDependency(module, library);
-      }
-    }
+    updateLibraryContent(flutterPluginUrls);
   }
 
-  private Set<String> getFlutterPluginPaths(List<PubRoot> roots) {
+  private static Set<String> getFlutterPluginPaths(List<PubRoot> roots) {
     final Set<String> paths = new HashSet<>();
 
     for (PubRoot pubRoot : roots) {
@@ -201,54 +142,5 @@ public class FlutterPluginsLibraryManager {
     }
 
     return paths;
-  }
-
-  private static void addFlutterLibraryDependency(@NotNull final Module module, @NotNull final Library library) {
-    final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
-
-    try {
-      for (final OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-        if (orderEntry instanceof LibraryOrderEntry &&
-            LibraryTablesRegistrar.PROJECT_LEVEL.equals(((LibraryOrderEntry)orderEntry).getLibraryLevel()) &&
-            StringUtil.equals(library.getName(), ((LibraryOrderEntry)orderEntry).getLibraryName())) {
-          return; // dependency already exists
-        }
-      }
-
-      modifiableModel.addLibraryEntry(library);
-
-      ApplicationManager.getApplication().runWriteAction(modifiableModel::commit);
-    }
-    finally {
-      if (!modifiableModel.isDisposed()) {
-        modifiableModel.dispose();
-      }
-    }
-  }
-
-  private void removeFlutterLibraryDependency(Module module, Library library) {
-    final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
-
-    try {
-      boolean wasFound = false;
-
-      for (final OrderEntry orderEntry : modifiableModel.getOrderEntries()) {
-        if (orderEntry instanceof LibraryOrderEntry &&
-            LibraryTablesRegistrar.PROJECT_LEVEL.equals(((LibraryOrderEntry)orderEntry).getLibraryLevel()) &&
-            StringUtil.equals(library.getName(), ((LibraryOrderEntry)orderEntry).getLibraryName())) {
-          wasFound = true;
-          modifiableModel.removeOrderEntry(orderEntry);
-        }
-      }
-
-      if (wasFound) {
-        ApplicationManager.getApplication().runWriteAction(modifiableModel::commit);
-      }
-    }
-    finally {
-      if (!modifiableModel.isDisposed()) {
-        modifiableModel.dispose();
-      }
-    }
   }
 }
