@@ -35,6 +35,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.MultiMap;
 import io.flutter.FlutterUtils;
+import io.flutter.android.GradleDependencyMerger;
 import io.flutter.pub.PubRoot;
 import org.gradle.internal.impldep.org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -76,6 +77,7 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     if (project != null) {
       FlutterProjectCreator.disableUserConfig(project);
       addModuleRoots(project);
+      //GradleDependencyMerger.process(project);
       return project;
     }
     return null;
