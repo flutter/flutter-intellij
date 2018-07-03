@@ -23,12 +23,19 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-public abstract class FlutterLibraryManager<K extends LibraryProperties> {
+/**
+ * The shared code for managing a library. To use it, define a subclass that implements the required methods,
+ * and calls #updateLibraryContent() with the library URLs.
+ * It will need a LibraryType and LibraryProperties, which are registered in plugin.xml.
+ *
+ * @see io.flutter.sdk.FlutterPluginsLibraryManager
+ */
+public abstract class AbstractLibraryManager<K extends LibraryProperties> {
 
   @NotNull
   private final Project project;
 
-  public FlutterLibraryManager(@NotNull Project project) {
+  public AbstractLibraryManager(@NotNull Project project) {
     this.project = project;
   }
 
