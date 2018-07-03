@@ -18,7 +18,7 @@ public class FlutterLogPreferences implements PersistentStateComponent<FlutterLo
   private boolean showLogCategory = true;
   private boolean showColor = false;
 
-  private int toolWindowLogLevel = FlutterLog.Level.NONE.value;
+  private int toolWindowLogLevel = FlutterLog.Level.CONFIG.value;
   private boolean toolWindowMatchCase = false;
   private boolean toolWindowRegex = false;
 
