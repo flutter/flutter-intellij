@@ -21,6 +21,7 @@ import com.intellij.util.ui.ColumnInfo;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -151,12 +152,18 @@ public class FlutterLogTree extends TreeTable {
         // TODO(pq): SpeedSearchUtil.applySpeedSearchHighlighting
         // TODO(pq): setTooltipText
         final String message = entry.getMessage();
-        final List<Filter.ResultItem> resultItems = linkFilters.stream()
-          .map(filter -> filter.applyFilter(message, message.length()))
-          .filter(Objects::nonNull)
-          .flatMap(result -> result.getResultItems().stream())
-          .sorted(Comparator.comparingInt(Filter.ResultItem::getHighlightStartOffset))
-          .collect(Collectors.toList());
+        if (StringUtils.isEmpty(message)) {
+          return;
+        }
+        final List<Filter.ResultItem> resultItems = new ArrayList<>();
+        for (Filter filter : linkFilters) {
+          final Filter.Result result = filter.applyFilter(message, message.length());
+          if (result == null) {
+            continue;
+          }
+          resultItems.addAll(result.getResultItems());
+        }
+        resultItems.sort(Comparator.comparingInt(Filter.ResultItem::getHighlightStartOffset));
 
         int cursor = 0;
         for (Filter.ResultItem item : resultItems) {
