@@ -133,18 +133,24 @@ public class FlutterLogTree extends TreeTable {
       @NotNull
       private final FlutterApp app;
       @NotNull
-      private final List<Filter> linkFilters;
+      private final Filter[] filters;
 
       MessageCellRenderer(@NotNull FlutterApp app) {
         this.app = app;
-        linkFilters = new ArrayList<>();
+        filters = createMessageFilters().toArray(new Filter[0]);
+      }
+
+      @NotNull
+      private List<Filter> createMessageFilters() {
+        final List<Filter> filters = new ArrayList<>();
         if (app.getModule() != null) {
-          linkFilters.add(new FlutterConsoleFilter(app.getModule()));
+          filters.add(new FlutterConsoleFilter(app.getModule()));
         }
-        linkFilters.addAll(Arrays.asList(
+        filters.addAll(Arrays.asList(
           new DartConsoleFilter(app.getProject(), app.getProject().getBaseDir()),
           new UrlFilter()
         ));
+        return filters;
       }
 
       @Override
@@ -156,7 +162,7 @@ public class FlutterLogTree extends TreeTable {
           return;
         }
         final List<Filter.ResultItem> resultItems = new ArrayList<>();
-        for (Filter filter : linkFilters) {
+        for (Filter filter : filters) {
           final Filter.Result result = filter.applyFilter(message, message.length());
           if (result == null) {
             continue;
