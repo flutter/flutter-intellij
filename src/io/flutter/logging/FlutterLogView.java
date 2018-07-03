@@ -20,6 +20,8 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
 import com.intellij.openapi.editor.colors.TextAttributesKey;
+import com.intellij.openapi.editor.markup.EffectType;
+import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.PopupHandler;
@@ -47,6 +49,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.intellij.openapi.editor.markup.EffectType.*;
 import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
@@ -55,6 +58,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @NotNull
   private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
+  @NotNull
+  private static final Map<EffectType, Integer> EFFECT_TYPE_TEXT_STYLE_MAP;
   @NotNull
   private static final SimpleTextAttributes REGULAR_ATTRIBUTES = SimpleTextAttributes.GRAY_ATTRIBUTES;
 
@@ -69,8 +74,19 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.WARNING, FlutterLogConstants.WARNING_OUTPUT_KEY);
     LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.SEVERE, FlutterLogConstants.SEVERE_OUTPUT_KEY);
     LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.put(Level.SHOUT, FlutterLogConstants.SHOUT_OUTPUT_KEY);
-  }
 
+    EFFECT_TYPE_TEXT_STYLE_MAP = new HashMap<>();
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(LINE_UNDERSCORE, SimpleTextAttributes.STYLE_UNDERLINE);
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(WAVE_UNDERSCORE, SimpleTextAttributes.STYLE_UNDERLINE | SimpleTextAttributes.STYLE_WAVED);
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(BOLD_LINE_UNDERSCORE, SimpleTextAttributes.STYLE_UNDERLINE | SimpleTextAttributes.STYLE_BOLD);
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(STRIKEOUT, SimpleTextAttributes.STYLE_STRIKEOUT);
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(BOLD_DOTTED_LINE, SimpleTextAttributes.STYLE_BOLD_DOTTED_LINE);
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(SEARCH_MATCH, SimpleTextAttributes.STYLE_SEARCH_MATCH);
+
+    // TODO(quangson91): Figure out how to map style for these settings.
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(BOXED, null);
+    EFFECT_TYPE_TEXT_STYLE_MAP.put(ROUNDED_BOX, null);
+  }
 
   @NotNull
   private final Map<Level, SimpleTextAttributes> textAttributesByLogLevelCache = new ConcurrentHashMap<>();
@@ -82,9 +98,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes) {
       if (showColors && entry != null) {
         final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
-        if (level != null) {
-          return getTextAttributesByLogLevel(level);
-        }
+        return getTextAttributesByLogLevel(level);
       }
       return SimpleTextAttributes.REGULAR_ATTRIBUTES;
     }
@@ -484,9 +498,24 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     for (Level level : FlutterLog.Level.values()) {
       try {
         final TextAttributesKey key = LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP.get(level);
-        final Color color = globalEditorColorsScheme.getAttributes(key).getForegroundColor();
+        final TextAttributes attributes = globalEditorColorsScheme.getAttributes(key);
+        int fontType = attributes.getFontType();
+        final Color effectColor = attributes.getEffectColor();
+        final Integer textStyle = EFFECT_TYPE_TEXT_STYLE_MAP.get(attributes.getEffectType());
+        // TextStyle can exist even when unchecked in settings page.
+        // only effectColor is null when setting effect is unchecked in setting page.
+        // So, we have to check that both effectColor & textStyle are not null.
+        if (effectColor != null && textStyle != null) {
+          fontType = fontType | textStyle;
+        }
 
-        final SimpleTextAttributes textAttributes = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, color);
+        final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
+          attributes.getBackgroundColor(),
+          attributes.getForegroundColor(),
+          effectColor,
+          fontType
+        );
+
         textAttributesByLogLevelCache.put(level, textAttributes);
       }
       catch (Exception e) {
