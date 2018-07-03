@@ -7,7 +7,6 @@ package io.flutter.logging;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
-import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -432,7 +431,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
       @Override
       public void mouseMoved(MouseEvent e) {
-        final Cursor cursor = getTagForPosition(e) instanceof OpenFileHyperlinkInfo
+        final Cursor cursor = getTagForPosition(e) instanceof HyperlinkInfo
                               ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                               : Cursor.getDefaultCursor();
         logTree.setCursor(cursor);
@@ -441,9 +440,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       @Override
       public void mouseClicked(MouseEvent e) {
         final Object tag = getTagForPosition(e);
-        // TODO(pq): consider generalizing to a runnable and wrapping the hyperlinkinfo
-        if (tag instanceof OpenFileHyperlinkInfo) {
-          ((OpenFileHyperlinkInfo)tag).navigate(app.getProject());
+        if (tag instanceof HyperlinkInfo) {
+          ((HyperlinkInfo)tag).navigate(app.getProject());
         }
       }
 
