@@ -7,9 +7,9 @@ package io.flutter.logging;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.execution.filters.UrlFilter;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.module.Module;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
@@ -18,8 +18,10 @@ import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.Alarm;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
+import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,11 +134,27 @@ public class FlutterLogTree extends TreeTable {
     }
 
     private class MessageCellRenderer extends EntryCellRenderer {
-      @Nullable
-      private final FlutterConsoleFilter consoleFilter;
+      @NotNull
+      private final FlutterApp app;
+      @NotNull
+      private final Filter[] filters;
 
-      MessageCellRenderer(@Nullable Module module) {
-        consoleFilter = module != null ? new FlutterConsoleFilter(module) : null;
+      MessageCellRenderer(@NotNull FlutterApp app) {
+        this.app = app;
+        filters = createMessageFilters().toArray(new Filter[0]);
+      }
+
+      @NotNull
+      private List<Filter> createMessageFilters() {
+        final List<Filter> filters = new ArrayList<>();
+        if (app.getModule() != null) {
+          filters.add(new FlutterConsoleFilter(app.getModule()));
+        }
+        filters.addAll(Arrays.asList(
+          new DartConsoleFilter(app.getProject(), app.getProject().getBaseDir()),
+          new UrlFilter()
+        ));
+        return filters;
       }
 
       @Override
@@ -144,25 +162,32 @@ public class FlutterLogTree extends TreeTable {
         // TODO(pq): SpeedSearchUtil.applySpeedSearchHighlighting
         // TODO(pq): setTooltipText
         final String message = entry.getMessage();
-        int cursor = 0;
+        if (StringUtils.isEmpty(message)) {
+          return;
+        }
+        final List<Filter.ResultItem> resultItems = new ArrayList<>();
+        for (Filter filter : filters) {
+          final Filter.Result result = filter.applyFilter(message, message.length());
+          if (result == null) {
+            continue;
+          }
+          resultItems.addAll(result.getResultItems());
+        }
+        resultItems.sort(Comparator.comparingInt(Filter.ResultItem::getHighlightStartOffset));
 
-        // TODO(pq): add support for dart uris, etc.
-        // TODO(pq): fix FlutterConsoleFilter to handle multiple links.
-        final Filter.Result result = consoleFilter != null ? consoleFilter.applyFilter(message, message.length()) : null;
-        if (result != null) {
-          for (Filter.ResultItem item: result.getResultItems()) {
-            final HyperlinkInfo hyperlinkInfo = item.getHyperlinkInfo();
-            if (hyperlinkInfo != null) {
-              final int start = item.getHighlightStartOffset();
-              final int end = item.getHighlightEndOffset();
-              // append leading text.
-              if (cursor < start) {
-                appendStyled(entry, message.substring(cursor, start));
-              }
-              // TODO(pq): re-style hyperlinks?
-              append(message.substring(start, end), SimpleTextAttributes.LINK_ATTRIBUTES, hyperlinkInfo);
-              cursor = end;
+        int cursor = 0;
+        for (Filter.ResultItem item : resultItems) {
+          final HyperlinkInfo hyperlinkInfo = item.getHyperlinkInfo();
+          if (hyperlinkInfo != null) {
+            final int start = item.getHighlightStartOffset();
+            final int end = item.getHighlightEndOffset();
+            // append leading text.
+            if (cursor < start) {
+              appendStyled(entry, message.substring(cursor, start));
             }
+            // TODO(pq): re-style hyperlinks?
+            append(message.substring(start, end), SimpleTextAttributes.LINK_ATTRIBUTES, hyperlinkInfo);
+            cursor = end;
           }
         }
 
@@ -190,7 +215,7 @@ public class FlutterLogTree extends TreeTable {
         new Column(SEQUENCE, new SequenceCellRenderer()),
         new Column(LEVEL, new LevelCellRenderer()),
         new Column(CATEGORY, new CategoryCellRenderer()),
-        new Column(MESSAGE, new MessageCellRenderer(app.getModule()))
+        new Column(MESSAGE, new MessageCellRenderer(app))
       ));
       // Cache for quick access.
       visible = columns.stream().filter(c -> c.show).collect(Collectors.toList());
@@ -243,7 +268,7 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public boolean isShowing(String column) {
-      for (Column c: columns) {
+      for (Column c : columns) {
         if (Objects.equals(column, c.getName())) {
           return c.show;
         }
