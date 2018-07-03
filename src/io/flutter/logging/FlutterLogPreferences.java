@@ -12,13 +12,13 @@ import org.jetbrains.annotations.NotNull;
 
 @State(name = "FlutterLogPreferences", storages = @Storage(StoragePathMacros.WORKSPACE_FILE))
 public class FlutterLogPreferences implements PersistentStateComponent<FlutterLogPreferences> {
-  private boolean showTimestamp = true;
+  private boolean showTimestamp = false;
   private boolean showSequenceNumbers = false;
   private boolean showLogLevel = true;
   private boolean showLogCategory = true;
-  private boolean showColor = true;
+  private boolean showColor = false;
 
-  private int toolWindowLogLevel = FlutterLog.Level.NONE.value;
+  private int toolWindowLogLevel = FlutterLog.Level.CONFIG.value;
   private boolean toolWindowMatchCase = false;
   private boolean toolWindowRegex = false;
 
