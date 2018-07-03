@@ -441,9 +441,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       @Override
       public void mouseClicked(MouseEvent e) {
         final Object tag = getTagForPosition(e);
-        // TODO(pq): consider generalizing to a runnable and wrapping the hyperlinkinfo
-        if (tag instanceof OpenFileHyperlinkInfo) {
-          ((OpenFileHyperlinkInfo)tag).navigate(app.getProject());
+        if (tag instanceof HyperlinkInfo) {
+          ((HyperlinkInfo)tag).navigate(app.getProject());
         }
       }
 
