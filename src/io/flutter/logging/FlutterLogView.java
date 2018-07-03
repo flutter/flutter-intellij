@@ -83,7 +83,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     EFFECT_TYPE_TEXT_STYLE_MAP.put(BOLD_DOTTED_LINE, SimpleTextAttributes.STYLE_BOLD_DOTTED_LINE);
     EFFECT_TYPE_TEXT_STYLE_MAP.put(SEARCH_MATCH, SimpleTextAttributes.STYLE_SEARCH_MATCH);
 
-    // TODO(quangson91): Figureout how to mapping style for those setting.
+    // TODO(quangson91): Figure out how to map style for these settings.
     EFFECT_TYPE_TEXT_STYLE_MAP.put(BOXED, null);
     EFFECT_TYPE_TEXT_STYLE_MAP.put(ROUNDED_BOX, null);
   }
@@ -502,9 +502,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         int fontType = attributes.getFontType();
         final Color effectColor = attributes.getEffectColor();
         final Integer textStyle = EFFECT_TYPE_TEXT_STYLE_MAP.get(attributes.getEffectType());
-        // TextStyle can be exist even we unchecked in setting page.
-        // only effectColor null when we uncheck setting effect in setting page.
-        // So, we have to check both effectColor & textStyle not null.
+        // TextStyle can exist even when unchecked in settings page.
+        // only effectColor is null when setting effect is unchecked in setting page.
+        // So, we have to check that both effectColor & textStyle are not null.
         if (effectColor != null && textStyle != null) {
           fontType = fontType | textStyle;
         }
