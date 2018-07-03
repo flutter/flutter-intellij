@@ -27,7 +27,14 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
 
-public class FlutterPluginsLibraryManager extends FlutterLibraryManager<FlutterPluginLibraryProperties> {
+/**
+ * Manages the Flutter Plugins library, which hooks the packages used by plugins referenced in a project
+ * into the project, so full editing support is available.
+ *
+ * @see io.flutter.sdk.FlutterPluginLibraryType
+ * @see io.flutter.sdk.FlutterPluginLibraryProperties
+ */
+public class FlutterPluginsLibraryManager extends AbstractLibraryManager<FlutterPluginLibraryProperties> {
 
   private final AtomicBoolean isUpdating = new AtomicBoolean(false);
 
