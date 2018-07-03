@@ -41,6 +41,11 @@ public class FlutterLogEntry {
   }
 
   @NotNull
+  public String getLevelName() {
+    return FlutterLog.Level.forValue(level).toDisplayString();
+  }
+
+  @NotNull
   public String getCategory() {
     return category;
   }

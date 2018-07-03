@@ -445,7 +445,7 @@ public class FlutterLogTree extends TreeTable {
       buffer
         .append(TIMESTAMP_FORMAT.format(entry.getTimestamp()))
         .append(" ").append(entry.getSequenceNumber())
-        .append(" ").append(FlutterLog.Level.forValue(entry.getLevel()).toDisplayString())
+        .append(" ").append(entry.getLevelName())
         .append(" ").append(entry.getCategory())
         .append(" ").append(entry.getMessage());
       if (!entry.getMessage().endsWith("\n")) {
