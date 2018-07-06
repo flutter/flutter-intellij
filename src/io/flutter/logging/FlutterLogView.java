@@ -13,7 +13,6 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
-import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.colors.EditorColorsManager;
@@ -29,7 +28,6 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
-import com.intellij.ui.treeStructure.SimpleTreeBuilder;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.logging.FlutterLog.Level;
@@ -39,6 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -46,6 +45,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.intellij.openapi.editor.markup.EffectType.*;
@@ -112,6 +112,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   class ConfigureAction extends AnAction implements RightAlignedToolbarAction {
+    @NotNull
     private final DefaultActionGroup actionGroup;
 
     public ConfigureAction() {
@@ -120,44 +121,34 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       actionGroup = createPopupActionGroup();
     }
 
-    ActionButton getActionButton() {
-      final Presentation presentation = getTemplatePresentation().clone();
-      final ActionButton actionButton = new ActionButton(
-        this,
-        presentation,
-        ActionPlaces.UNKNOWN,
-        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-      );
-      presentation.putClientProperty("button", actionButton);
-      return actionButton;
+    @Override
+    public void actionPerformed(@NotNull AnActionEvent e) {
+      getComponentOfActionEvent(e).ifPresent(component -> {
+        final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(ActionPlaces.UNKNOWN, actionGroup);
+        popupMenu.getComponent().show(component, component.getWidth(), 0);
+      });
     }
 
-    @Override
-    @SuppressWarnings("Duplicates")
-    public void actionPerformed(AnActionEvent e) {
+    @NotNull
+    private Optional<JComponent> getComponentOfActionEvent(@NotNull AnActionEvent e) {
       final Presentation presentation = e.getPresentation();
       JComponent component = (JComponent)presentation.getClientProperty("button");
       if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
         component = (JComponent)e.getInputEvent().getSource();
       }
-      if (component == null) {
-        return;
-      }
-      final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
-        ActionPlaces.UNKNOWN,
-        actionGroup);
-      popupMenu.getComponent().show(component, component.getWidth(), 0);
+      return Optional.ofNullable(component);
     }
 
+    @NotNull
     private DefaultActionGroup createPopupActionGroup() {
-      final DefaultActionGroup group = new DefaultActionGroup();
-      group.add(new ShowTimeStampsAction());
-      group.add(new ShowSequenceNumbersAction());
-      group.add(new ShowLevelAction());
-      group.add(new ShowCategoryAction());
-      group.add(new Separator());
-      group.add(new ShowColorsAction());
-      return group;
+      return new DefaultActionGroup(
+        new ShowTimeStampsAction(),
+        new ShowSequenceNumbersAction(),
+        new ShowLevelAction(),
+        new ShowCategoryAction(),
+        new Separator(),
+        new ShowColorsAction()
+      );
     }
   }
 
@@ -319,8 +310,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
-  private class FilterStatusLabel extends AnAction implements CustomComponentAction, RightAlignedToolbarAction,
-                                                              FlutterLogTree.EventCountListener {
+  private class FilterStatusLabel extends AnAction
+    implements CustomComponentAction, RightAlignedToolbarAction, FlutterLogTree.EventCountListener {
 
     JBLabel label;
     JPanel panel;
@@ -364,8 +355,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
     }
 
-
-    String countString(int count) {
+    @NotNull
+    private String countString(int count) {
       if (count > 1000) {
         return "1000+";
       }
@@ -373,16 +364,18 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
-  @NotNull final FlutterApp app;
+  @NotNull
+  private final FlutterApp app;
   // TODO(pq): make user configurable.
   private final EntryModel entryModel = new EntryModel();
+  @NotNull
   private final SimpleToolWindowPanel toolWindowPanel;
   @NotNull
   private final FlutterLogTree.TreeModel logModel;
+  @NotNull
   private final FlutterLogTree logTree;
   @NotNull
   private final FlutterLogFilterPanel filterPanel;
-  private SimpleTreeBuilder builder;
   @NotNull
   private final FlutterLogPreferences flutterLogPreferences;
 
@@ -423,9 +416,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final PopupHandler popupHandler = new PopupHandler() {
       @Override
       public void invokePopup(Component comp, int x, int y) {
-        final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
-          ActionPlaces.UNKNOWN,
-          getTreePopupActions());
+        final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(ActionPlaces.UNKNOWN, getTreePopupActions());
         popupMenu.getComponent().show(comp, x, y);
       }
 
@@ -464,19 +455,16 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     // Set bounds.
     // TODO(pq): consider re-sizing dynamically, as needed.
-    logTree.getColumn(TIME).setMinWidth(100);
-    logTree.getColumn(TIME).setMaxWidth(100);
-    logTree.getColumn(SEQUENCE).setMinWidth(50);
-    logTree.getColumn(SEQUENCE).setMaxWidth(50);
-    logTree.getColumn(LEVEL).setMinWidth(70);
-    logTree.getColumn(LEVEL).setMaxWidth(70);
-    logTree.getColumn(CATEGORY).setMinWidth(110);
-    logTree.getColumn(CATEGORY).setMaxWidth(110);
+    fixColumnWidth(logTree.getColumn(TIME), 100);
+    fixColumnWidth(logTree.getColumn(SEQUENCE), 50);
+    fixColumnWidth(logTree.getColumn(LEVEL), 70);
+    fixColumnWidth(logTree.getColumn(CATEGORY), 110);
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
-    final JScrollPane pane = ScrollPaneFactory.createScrollPane(logTree,
-                                                                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-                                                                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    final JScrollPane pane = ScrollPaneFactory.createScrollPane(
+      logTree,
+      ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     logModel.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
@@ -670,5 +658,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public JComponent getPreferredFocusableComponent() {
     return logTree;
+  }
+
+  private static void fixColumnWidth(@NotNull TableColumn column, int width) {
+    column.setMinWidth(width);
+    column.setMaxWidth(width);
+    column.setPreferredWidth(width);
   }
 }
