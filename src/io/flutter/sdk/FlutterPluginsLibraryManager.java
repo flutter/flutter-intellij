@@ -31,8 +31,8 @@ import static com.jetbrains.lang.dart.util.PubspecYamlUtil.PUBSPEC_YAML;
  * Manages the Flutter Plugins library, which hooks the packages used by plugins referenced in a project
  * into the project, so full editing support is available.
  *
- * @see io.flutter.sdk.FlutterPluginLibraryType
- * @see io.flutter.sdk.FlutterPluginLibraryProperties
+ * @see FlutterPluginLibraryType
+ * @see FlutterPluginLibraryProperties
  */
 public class FlutterPluginsLibraryManager extends AbstractLibraryManager<FlutterPluginLibraryProperties> {
 
