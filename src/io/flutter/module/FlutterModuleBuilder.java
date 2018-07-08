@@ -36,6 +36,7 @@ import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -133,6 +134,10 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     final String description = settings.getDescription();
     if (description != null && description.contains(": ")) {
       return "Invalid package description: '" + description + "' - cannot contain the sequence ': '.";
+    }
+    final String org = settings.getOrg();
+    if (StringUtils.endsWith(org, ".")) {
+      return "Invalid organization name: '" + org + "' - cannot end in '.'.";
     }
     return null;
   }
