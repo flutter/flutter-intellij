@@ -506,6 +506,8 @@ public class FlutterLogTree extends TreeTable {
   private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
   private final TreeModel model;
   private EntryFilter filter;
+  @NotNull
+  private final FlutterLogPopup flutterLogPopup;
 
   public FlutterLogTree(@NotNull FlutterApp app,
                         @NotNull EntryModel entryModel,
@@ -517,13 +519,14 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
+    flutterLogPopup = new FlutterLogPopup();
     addMouseListener(new SimpleMouseListener() {
       @Override
       public void mouseDoublePressed(MouseEvent e) {
         super.mouseDoublePressed(e);
         final String selectedLog = getSelectedLog();
         if (StringUtils.isNotEmpty(selectedLog)) {
-          new FlutterLogPopup().showLogDialog(selectedLog);
+          flutterLogPopup.showLogDialog(selectedLog);
         }
       }
     });
