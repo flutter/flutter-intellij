@@ -109,6 +109,15 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     androidProject.init();
 
     GradleSyncListener listener = new GradleSyncListener() {
+      @SuppressWarnings("override")
+      public void syncTaskCreated(@NotNull Project project, @NotNull GradleSyncInvoker.Request request) {}
+
+      @Override
+      public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
+
+      @Override
+      public void setupStarted(@NotNull Project project) {}
+
       @Override
       public void syncSucceeded(@NotNull Project project) {
         callback.apply(androidProject);
