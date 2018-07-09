@@ -12,7 +12,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskId;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -31,14 +30,11 @@ import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.plugins.gradle.settings.GradleExecutionSettings;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
-import static com.android.tools.idea.gradle.util.GradleUtil.GRADLE_SYSTEM_ID;
-import static com.android.tools.idea.gradle.util.GradleUtil.getGradleExecutionSettings;
-import static com.intellij.openapi.externalSystem.model.task.ExternalSystemTaskType.RESOLVE_PROJECT;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
@@ -59,24 +55,28 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   public void update() {
-    Project androidProject = doGradleSync(getProject());
+    doGradleSync(getProject(), (Project x) -> updateAndroidLibraryContent(x));
+  }
+
+  private Void updateAndroidLibraryContent(Project androidProject) {
     LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
     Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
     if (androidProjectLibraries.length == 0) {
       LOG.error("Gradle sync was incomplete -- no Android libraries found");
-      return;
+      return null;
     }
     HashSet<String> urls = new HashSet<>();
     for (Library refLibrary : androidProjectLibraries) {
       urls.addAll(Arrays.asList(refLibrary.getRootProvider().getUrls(OrderRootType.CLASSES)));
     }
     updateLibraryContent(urls);
+    return null;
   }
 
   @NotNull
   @Override
   protected String getLibraryName() {
-    return LIBRARY_NAME;
+    return LIBRARY_NAME + " for " + getProject().getName();
   }
 
   @NotNull
@@ -98,13 +98,43 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (!isUpdating.compareAndSet(false, true)) {
       return;
     }
+    update();
+  }
 
-    try {
-      update();
-    }
-    finally {
-      isUpdating.set(false);
-    }
+  private void doGradleSync(Project flutterProject, Function<Project, Void> callback) {
+    // TODO(messick): Collect URLs for all Android modules, including those within plugins.
+    VirtualFile dir = flutterProject.getBaseDir().findChild("android");
+    assert (dir != null);
+    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()), null);
+    androidProject.init();
+
+    GradleSyncListener listener = new GradleSyncListener() {
+      @Override
+      public void syncSucceeded(@NotNull Project project) {
+        callback.apply(androidProject);
+        isUpdating.set(false);
+      }
+
+      @Override
+      public void syncFailed(@NotNull Project project, @NotNull String errorMessage) {
+        isUpdating.set(false);
+      }
+
+      @Override
+      public void syncSkipped(@NotNull Project project) {
+        isUpdating.set(false);
+      }
+    };
+
+    GradleSyncInvoker.Request request = GradleSyncInvoker.Request.projectLoaded();
+    request.runInBackground = true;
+    GradleSyncInvoker gradleSyncInvoker = ServiceManager.getService(GradleSyncInvoker.class);
+    gradleSyncInvoker.requestProjectSync(androidProject, request, listener);
+  }
+
+  @NotNull
+  public static AndroidModuleLibraryManager getInstance(@NotNull final Project project) {
+    return ServiceManager.getService(project, AndroidModuleLibraryManager.class);
   }
 
   public static void startWatching() {
@@ -115,6 +145,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         continue;
       }
       if (FlutterSdkUtil.hasFlutterModules(project)) {
+        AndroidModuleLibraryManager manager = getInstance(project);
         VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
           @Override
           protected void onFileChange(@NotNull VirtualFile file) {
@@ -129,10 +160,10 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
           @Override
           public void rootsChanged(ModuleRootEvent event) {
-            new AndroidModuleLibraryManager(project).scheduleUpdate();
+            manager.scheduleUpdate();
           }
         });
-        new AndroidModuleLibraryManager(project).scheduleUpdate();
+        manager.scheduleUpdate();
       }
     }
   }
@@ -147,22 +178,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (!VfsUtilCore.isAncestor(project.getBaseDir(), file, true)) {
       return;
     }
-    new AndroidModuleLibraryManager(project).scheduleUpdate();
-  }
-
-  private static Project doGradleSync(Project flutterProject) {
-    // TODO(messick): Collect URLs for all Android modules, including within plugins.
-    VirtualFile dir = flutterProject.getBaseDir().findChild("android");
-    assert (dir != null);
-    EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()), null);
-    androidProject.init();
-
-    GradleSyncListener listener = null;
-    GradleSyncInvoker.Request request = GradleSyncInvoker.Request.userRequest();
-    request.runInBackground = false;
-    GradleSyncInvoker gradleSyncInvoker = ServiceManager.getService(GradleSyncInvoker.class);
-    gradleSyncInvoker.requestProjectSync(androidProject, request, listener);
-    return androidProject;
+    getInstance(project).scheduleUpdate();
   }
 
   private static class EmbeddedAndroidProject extends ProjectImpl {
