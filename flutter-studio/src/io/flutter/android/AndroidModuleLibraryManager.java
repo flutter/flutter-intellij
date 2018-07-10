@@ -58,11 +58,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     doGradleSync(getProject(), (Project x) -> updateAndroidLibraryContent(x));
   }
 
-  private Void updateAndroidLibraryContent(Project androidProject) {
+  private Void updateAndroidLibraryContent(@NotNull Project androidProject) {
     LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
     Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
     if (androidProjectLibraries.length == 0) {
-      LOG.error("Gradle sync was incomplete -- no Android libraries found");
+      LOG.warn("Gradle sync was incomplete -- no Android libraries found");
       return null;
     }
     HashSet<String> urls = new HashSet<>();
