@@ -47,7 +47,7 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     // Monitor Android dependencies.
     if (System.getProperty("flutter.android.library.sync", null) != null) {
       // TODO(messick): Remove the flag once this sync mechanism is stable.
-∞      AndroidModuleLibraryManager.startWatching();
+      AndroidModuleLibraryManager.startWatching();
     }
   }
 }
