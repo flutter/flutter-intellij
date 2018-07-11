@@ -76,7 +76,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   @NotNull
   @Override
   protected String getLibraryName() {
-    return LIBRARY_NAME + " for " + getProject().getName();
+    return LIBRARY_NAME;
   }
 
   @NotNull
