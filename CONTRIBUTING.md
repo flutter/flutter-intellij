@@ -12,16 +12,11 @@ file.
 
 * Download and install the latest stable version of IntelliJ
   - https://www.jetbrains.com/idea/download/
-  - either the community edition (free) or Ultimate will work. We are currently using 2017.3.
+  - either the community edition (free) or Ultimate will work. We are currently using 2018.1.
 * Start IntelliJ
 * In the project structure dialog, configure an IntelliJ platform SDK
   - point it to the `Contents` directory in your just downloaded copy of IntelliJ Community Edition (e.g, `IntelliJ IDEA CE.app/Contents`)
   - name it `IntelliJ IDEA Community Edition`
-  - In order to have the platform sources handy, clone the IntelliJ IDEA Community Edition repo
-(`git clone https://github.com/JetBrains/intellij-community`)
-  - Sync it to the same version of IDEA that you are using (`git checkout idea/171.3780.107`). It will be in 'detached HEAD' mode.
-  - In the `IntelliJ IDEA Community Edition` sdk, go to the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
-  - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as in lib/dart-plugin. (`git checkout webstorm/171.4006`)
 * Open flutter-intellij project in IntelliJ. Build it using `Build` > `Make Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
 * If the Flutter Plugin doesn't load, check to see if the Dart Plugin is installed in your runtime workbench; if it's not, install it (`Preferences > Plugins`) and re-launch.
@@ -55,6 +50,14 @@ In order to be able to run a single test class or test method you need to do the
 * In the same dialog (Run/Debug Configurations) expand Defaults node, find JUnit under it and paste
   VM Options to the corresponding field
 * Repeat the same with Working directory field - it must point to intellij-community/bin
+
+## Adding platform sources
+
+  - In order to have the platform sources handy, clone the IntelliJ IDEA Community Edition repo
+(`git clone https://github.com/JetBrains/intellij-community`)
+  - Sync it to the same version of IDEA that you are using (`git checkout idea/171.3780.107`). It will be in 'detached HEAD' mode.
+  - In the `IntelliJ IDEA Community Edition` sdk, go to the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
+  - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as in lib/dart-plugin. (`git checkout webstorm/171.4006`)
 
 ## Working with Android Studio
 

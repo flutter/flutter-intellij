@@ -9,11 +9,15 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
+import com.intellij.openapi.util.registry.Registry;
 import io.flutter.actions.FlutterShowStructureSettingsAction;
 import io.flutter.actions.OpenAndroidModule;
+import io.flutter.android.AndroidModuleLibraryManager;
 import io.flutter.project.FlutterProjectCreator;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.MissingResourceException;
 
 public class FlutterStudioStartupActivity implements StartupActivity {
   public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
@@ -40,5 +44,10 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     // Unset this flag for all projects, mainly to ease the upgrade from 3.0.1 to 3.1.
     // TODO(messick) Delete once 3.0.x has 0 7DA's.
     FlutterProjectCreator.disableUserConfig(project);
+    // Monitor Android dependencies.
+    if (System.getProperty("flutter.android.library.sync", null) != null) {
+      // TODO(messick): Remove the flag once this sync mechanism is stable.
+      AndroidModuleLibraryManager.startWatching(project);
+    }
   }
 }

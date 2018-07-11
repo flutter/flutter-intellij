@@ -39,17 +39,20 @@ class EditorCoverageDecorations implements Disposable {
 
   private void addBlankMarker() {
     ApplicationManager.getApplication().invokeLater(() -> {
-      final MarkupModel markupModel = ((TextEditor)fileEditor).getEditor().getMarkupModel();
+      final Editor editor = ((TextEditor)fileEditor).getEditor();
+      final MarkupModel markupModel = editor.getMarkupModel();
 
       if (hasDecorations) {
         removeHighlightersFromEditor(markupModel);
       }
 
-      final RangeHighlighter rangeHighlighter =
-        markupModel.addLineHighlighter(0, HIGHLIGHTER_LAYER, new TextAttributes());
-      rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
+      if (editor.getDocument().getTextLength() > 0) {
+        final RangeHighlighter rangeHighlighter =
+          markupModel.addLineHighlighter(0, HIGHLIGHTER_LAYER, new TextAttributes());
+        rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
 
-      hasDecorations = true;
+        hasDecorations = true;
+      }
     });
   }
 

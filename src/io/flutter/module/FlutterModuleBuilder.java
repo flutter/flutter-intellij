@@ -35,7 +35,9 @@ import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -134,7 +136,15 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     if (description != null && description.contains(": ")) {
       return "Invalid package description: '" + description + "' - cannot contain the sequence ': '.";
     }
-    return null;
+    final String org = settings.getOrg();
+    if (org == null) {
+      return null;
+    }
+    if (StringUtils.endsWith(org, ".")) {
+      return "Invalid organization name: '" + org + "' - cannot end in '.'.";
+    }
+    // Invalid package names will cause issues down the line.
+    return AndroidUtils.validateAndroidPackageName(org);
   }
 
   private static void addAndroidModule(@NotNull Project project,

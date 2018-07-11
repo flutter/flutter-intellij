@@ -32,9 +32,11 @@ public class FlutterLogEntryParser {
   public static final String LOG_CATEGORY = "flutter.log";
   public static final String TOOLS_CATEGORY = "flutter.tools";
   public static final String STDIO_STDOUT_CATEGORY = "stdout";
+
+  public static int GC_EVENT_LEVEL = FlutterLog.Level.FINER.value;
+
   private static final NumberFormat nf = new DecimalFormat();
   private static final NumberFormat df1 = new DecimalFormat();
-  public static int GC_EVENT_LEVEL = FlutterLog.Level.FINER.value;
 
   static {
     df1.setMinimumFractionDigits(1);

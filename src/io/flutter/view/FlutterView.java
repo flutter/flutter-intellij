@@ -42,7 +42,6 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterUtils;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -99,8 +98,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
 
-  private Content emptyContent;
-
   public FlutterView(@NotNull Project project) {
     myProject = project;
 
@@ -147,7 +144,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       ((ToolWindowEx)window).setTitleActions(sendFeedbackAction);
     }
 
-    displayEmptyContent(window);
+    updateForEmptyContent(window);
   }
 
   private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow,
@@ -381,10 +378,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
-    if (isDisplayingEmptyContent()) {
-      removeEmptyContent(toolWindow);
-    }
-
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     listenForRenderTreeActivations(toolWindow);
@@ -418,7 +411,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           }
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
-            displayEmptyContent(toolWindow);
+            updateForEmptyContent(toolWindow);
           }
         });
       }
@@ -442,40 +435,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
   }
 
-  private void displayEmptyContent(ToolWindow toolWindow) {
+  private void updateForEmptyContent(ToolWindow toolWindow) {
     // There's a possible race here where the tool window gets disposed while we're displaying contents.
     if (toolWindow.isDisposed()) {
       return;
     }
 
     toolWindow.setIcon(FlutterIcons.Flutter_13);
-
-    // TODO(devoncarew): Remove this when we no longer support 2017.3.
-    // https://github.com/flutter/flutter-intellij/issues/2029
-    if (FlutterUtils.is2017_3()) {
-      return;
-    }
-
-    // Display a 'No running applications' message.
-    final ContentManager contentManager = toolWindow.getContentManager();
-    final JPanel panel = new JPanel(new BorderLayout());
-    final JLabel label = new JLabel("No running applications", SwingConstants.CENTER);
-    label.setForeground(UIUtil.getLabelDisabledForeground());
-    panel.add(label, BorderLayout.CENTER);
-    emptyContent = contentManager.getFactory().createContent(panel, null, false);
-    contentManager.addContent(emptyContent);
-  }
-
-  private boolean isDisplayingEmptyContent() {
-    return emptyContent != null;
-  }
-
-  private void removeEmptyContent(ToolWindow toolWindow) {
-    if (emptyContent != null) {
-      final ContentManager contentManager = toolWindow.getContentManager();
-      contentManager.removeContent(emptyContent, true);
-      emptyContent = null;
-    }
   }
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {

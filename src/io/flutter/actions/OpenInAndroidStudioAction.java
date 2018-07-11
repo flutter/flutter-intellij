@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
@@ -27,7 +28,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 
-public class OpenInAndroidStudioAction extends ActionWithAnalytics {
+public class OpenInAndroidStudioAction extends AnAction {
   private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
   private static final String DESCR_FILE = FlutterBundle.message("flutter.androidstudio.open.file.description");
   private static final String LABEL_MODULE = FlutterBundle.message("flutter.androidstudio.open.module.text");
@@ -38,14 +39,8 @@ public class OpenInAndroidStudioAction extends ActionWithAnalytics {
     updatePresentation(event, event.getPresentation());
   }
 
-  @NotNull
   @Override
-  public String getAnalyticsId() {
-    return "OpenInAndroidStudio";
-  }
-
-  @Override
-  public void performAction(AnActionEvent event) {
+  public void actionPerformed(AnActionEvent event) {
     final String androidStudioPath = findAndroidStudio(event.getProject());
     if (androidStudioPath == null) {
       FlutterMessages.showError("Unable to locate Android Studio",
@@ -216,11 +211,9 @@ public class OpenInAndroidStudioAction extends ActionWithAnalytics {
         if (SystemInfo.isMac && androidSdkLocation.endsWith(contents)) {
           return androidSdkLocation.substring(0, androidSdkLocation.length() - contents.length());
         }
-
         return androidSdkLocation;
       }
     }
-
     return null;
   }
 

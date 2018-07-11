@@ -85,7 +85,21 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @SuppressWarnings("override")
   @Nullable
   public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
-    return null;
+    //return gradleProjectSystem.getAvailableDependency(coordinate, includePreview);
+    // TODO(messick): Delete the remainder of this method and use the previous line once AS 3.1 is no longer supported.
+    Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getAvailableDependency");
+    if (finders == null) {
+      LOG.error("No method found: GradleProjectSystem.getAvailableDependency()");
+      return null;
+    }
+    try {
+      //noinspection unchecked
+      return (GradleCoordinate) finders.invoke(gradleProjectSystem, coordinate, includePreview);
+    }
+    catch (IllegalAccessException | InvocationTargetException e) {
+      LOG.error(e);
+      throw new IllegalArgumentException(e);
+    }
   }
 
   @SuppressWarnings("override")

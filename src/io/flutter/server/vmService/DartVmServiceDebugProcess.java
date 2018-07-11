@@ -499,7 +499,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     if (frame != null) {
       return frame.getEvaluator();
     }
-    return new DartVmServiceEvaluator(this);
+    return null;
   }
 
   @NotNull
