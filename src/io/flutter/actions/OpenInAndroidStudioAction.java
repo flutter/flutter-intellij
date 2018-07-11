@@ -190,8 +190,6 @@ public class OpenInAndroidStudioAction extends AnAction {
       return null;
     }
 
-    // TODO: If we're running in Android Studio (FlutterUtils.isAndroidStudio()), we should return ourself as the location.
-
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null) {
       String androidSdkLocation = flutterSdk.queryFlutterConfig("android-studio-dir", false);
