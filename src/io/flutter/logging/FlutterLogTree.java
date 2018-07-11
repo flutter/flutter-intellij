@@ -30,8 +30,14 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreePath;
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
@@ -500,6 +506,8 @@ public class FlutterLogTree extends TreeTable {
   private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
   private final TreeModel model;
   private EntryFilter filter;
+  @NotNull
+  private final FlutterLogPopup flutterLogPopup;
 
   public FlutterLogTree(@NotNull FlutterApp app,
                         @NotNull EntryModel entryModel,
@@ -511,6 +519,35 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
+    flutterLogPopup = new FlutterLogPopup();
+    addMouseListener(new SimpleMouseListener() {
+      @Override
+      public void mouseDoublePressed(MouseEvent e) {
+        super.mouseDoublePressed(e);
+        final String selectedLog = getSelectedLog();
+        if (StringUtils.isNotEmpty(selectedLog)) {
+          flutterLogPopup.showLogDialog(selectedLog);
+        }
+      }
+    });
+  }
+
+  @Nullable
+  private String getSelectedLog() {
+    final int[] rows = getSelectedRows();
+    final TreePath[] paths = getTree().getSelectionPaths();
+    if (paths == null) {
+      return null;
+    }
+    final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    final StringBuilder sb = new StringBuilder();
+    for (final TreePath path : paths) {
+      final Object pathComponent = path.getLastPathComponent();
+      if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
+        ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
+      }
+    }
+    return sb.toString();
   }
 
   public void addListener(@NotNull EventCountListener listener, @NotNull Disposable parent) {
@@ -556,5 +593,33 @@ public class FlutterLogTree extends TreeTable {
   public void clearEntries() {
     model.clearEntries();
     reload();
+  }
+
+  private static class SimpleMouseListener implements MouseListener {
+    @Override
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+      if (e.getClickCount() == 2) {
+        mouseDoublePressed(e);
+      }
+    }
+
+    public void mouseDoublePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
   }
 }
