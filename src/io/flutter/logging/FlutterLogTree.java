@@ -507,7 +507,7 @@ public class FlutterLogTree extends TreeTable {
   private final TreeModel model;
   private EntryFilter filter;
   @NotNull
-  private final FlutterLogPopup flutterLogPopup;
+  private final FlutterLogEntryPopup flutterLogPopup;
 
   public FlutterLogTree(@NotNull FlutterApp app,
                         @NotNull EntryModel entryModel,
@@ -519,7 +519,7 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
-    flutterLogPopup = new FlutterLogPopup();
+    flutterLogPopup = new FlutterLogEntryPopup();
     addMouseListener(new SimpleMouseListener() {
       @Override
       public void mouseDoublePressed(MouseEvent e) {
