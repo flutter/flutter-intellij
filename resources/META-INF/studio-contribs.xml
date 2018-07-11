@@ -16,6 +16,9 @@
     <androidStudioInitializer implementation="io.flutter.FlutterStudioInitializer"/>
     <postStartupActivity implementation="io.flutter.FlutterStudioStartupActivity"/>
     <projectOpenProcessor implementation="io.flutter.project.FlutterStudioProjectOpenProcessor" order="after flutter"/>
+    <library.type implementation="io.flutter.android.AndroidModuleLibraryType"/>
+    <projectService serviceInterface="io.flutter.android.AndroidModuleLibraryManager"
+                    serviceImplementation="io.flutter.android.AndroidModuleLibraryManager"/>
   </extensions>
 
   <actions>
