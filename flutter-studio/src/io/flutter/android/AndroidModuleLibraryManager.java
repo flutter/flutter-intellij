@@ -14,7 +14,6 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
@@ -146,34 +145,32 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     return ServiceManager.getService(project, AndroidModuleLibraryManager.class);
   }
 
-  public static void startWatching() {
+  public static void startWatching(@NotNull Project project) {
     // Start a process to monitor changes to Android dependencies and update the library content.
     // This loop is for debugging, not production.
-    for (Project project : ProjectManager.getInstance().getOpenProjects()) {
-      if (project.isDefault()) {
-        continue;
-      }
-      if (FlutterSdkUtil.hasFlutterModules(project)) {
-        AndroidModuleLibraryManager manager = getInstance(project);
-        VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
-          @Override
-          protected void onFileChange(@NotNull VirtualFile file) {
-            fileChanged(project, file);
-          }
+    if (project.isDefault()) {
+      return;
+    }
+    if (FlutterSdkUtil.hasFlutterModules(project)) {
+      AndroidModuleLibraryManager manager = getInstance(project);
+      VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
+        @Override
+        protected void onFileChange(@NotNull VirtualFile file) {
+          fileChanged(project, file);
+        }
 
-          @Override
-          protected void onBeforeFileChange(@NotNull VirtualFile file) {
-          }
-        }, project);
+        @Override
+        protected void onBeforeFileChange(@NotNull VirtualFile file) {
+        }
+      }, project);
 
-        project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
-          @Override
-          public void rootsChanged(ModuleRootEvent event) {
-            manager.scheduleUpdate();
-          }
-        });
-        manager.scheduleUpdate();
-      }
+      project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
+        @Override
+        public void rootsChanged(ModuleRootEvent event) {
+          manager.scheduleUpdate();
+        }
+      });
+      manager.scheduleUpdate();
     }
   }
 
