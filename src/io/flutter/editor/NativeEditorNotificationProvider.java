@@ -20,6 +20,8 @@ import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO(devoncarew): Are we showing the 'Open in Xcode' editor action on non-mac platforms?
+
 public class NativeEditorNotificationProvider extends EditorNotifications.Provider<EditorNotificationPanel> implements DumbAware {
   private static final Key<EditorNotificationPanel> KEY = Key.create("flutter.native.editor.notification");
 
@@ -63,6 +65,8 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     if (root == null) {
       return null;
     }
+
+    //noinspection IfCanBeSwitch
     if (root.getName().equals("android")) {
       return "flutter.androidstudio.open";
     }
