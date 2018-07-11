@@ -18,15 +18,15 @@ import javax.swing.text.DefaultEditorKit;
 import java.awt.event.ActionEvent;
 import java.util.Optional;
 
-class FlutterLogPopup {
+class FlutterLogEntryPopup {
   private static final String GOOGLE_SEARCH_QUERY = "https://www.google.com/search?q=%s";
-  private static final String POPUP_TITLE = "Selected log";
+  private static final String POPUP_TITLE = "Log Entry";
   @NotNull
   private final JTextArea logTextArea;
   @NotNull
   private final JBScrollPane logScrollPane;
 
-  public FlutterLogPopup() {
+  public FlutterLogEntryPopup() {
     logTextArea = createLogView();
     logScrollPane = new JBScrollPane(logTextArea);
   }
