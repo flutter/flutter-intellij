@@ -260,7 +260,7 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     final ApplicationInfo info = ApplicationInfo.getInstance();
-    if (info.getFullVersion().contains("Canary")) {
+    if (info.getFullVersion().contains("Canary") && !info.getBuild().isSnapshot()) {
       FlutterMessages.showWarning(
         "Unsupported Android Studio version",
         "Canary versions of Android Studio are not supported by the Flutter plugin.");
