@@ -53,63 +53,6 @@ public class FlutterInitializer implements StartupActivity {
 
   private static Analytics analytics;
 
-  @NotNull
-  public static Analytics getAnalytics() {
-    if (analytics == null) {
-      final PropertiesComponent properties = PropertiesComponent.getInstance();
-
-      String clientId = properties.getValue(analyticsClientIdKey);
-      if (clientId == null) {
-        clientId = UUID.randomUUID().toString();
-        properties.setValue(analyticsClientIdKey, clientId);
-      }
-
-      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(FlutterUtils.getPluginId());
-      assert descriptor != null;
-      final ApplicationInfo info = ApplicationInfo.getInstance();
-      analytics = new Analytics(clientId, descriptor.getVersion(), info.getVersionName(), info.getFullVersion());
-
-      // Set up reporting prefs.
-      analytics.setCanSend(getCanReportAnalytics());
-
-      // Send initial loading hit.
-      analytics.sendScreenView("main");
-
-      FlutterSettings.getInstance().sendSettingsToAnalytics(analytics);
-    }
-
-    return analytics;
-  }
-
-  public static void setCanReportAnalytics(boolean canReportAnalytics) {
-    if (getCanReportAnalytics() != canReportAnalytics) {
-      final boolean wasReporting = getCanReportAnalytics();
-
-      final PropertiesComponent properties = PropertiesComponent.getInstance();
-      properties.setValue(analyticsOptOutKey, !canReportAnalytics);
-      if (analytics != null) {
-        analytics.setCanSend(getCanReportAnalytics());
-      }
-
-      if (!wasReporting && canReportAnalytics) {
-        getAnalytics().sendScreenView("main");
-      }
-    }
-  }
-
-  public static boolean getCanReportAnalytics() {
-    final PropertiesComponent properties = PropertiesComponent.getInstance();
-    return !properties.getBoolean(analyticsOptOutKey, false);
-  }
-
-  public static void sendAnalyticsAction(@NotNull AnAction action) {
-    sendAnalyticsAction(action.getClass().getSimpleName());
-  }
-
-  public static void sendAnalyticsAction(@NotNull String name) {
-    getAnalytics().sendEvent("intellij", name);
-  }
-
   @Override
   public void runActivity(@NotNull Project project) {
     // Convert all modules of deprecated type FlutterModuleType.
@@ -254,13 +197,70 @@ public class FlutterInitializer implements StartupActivity {
     ApplicationManager.getApplication().runWriteAction(() -> wanted.setCurrent(project));
   }
 
+  @NotNull
+  public static Analytics getAnalytics() {
+    if (analytics == null) {
+      final PropertiesComponent properties = PropertiesComponent.getInstance();
+
+      String clientId = properties.getValue(analyticsClientIdKey);
+      if (clientId == null) {
+        clientId = UUID.randomUUID().toString();
+        properties.setValue(analyticsClientIdKey, clientId);
+      }
+
+      final IdeaPluginDescriptor descriptor = PluginManager.getPlugin(FlutterUtils.getPluginId());
+      assert descriptor != null;
+      final ApplicationInfo info = ApplicationInfo.getInstance();
+      analytics = new Analytics(clientId, descriptor.getVersion(), info.getVersionName(), info.getFullVersion());
+
+      // Set up reporting prefs.
+      analytics.setCanSend(getCanReportAnalytics());
+
+      // Send initial loading hit.
+      analytics.sendScreenView("main");
+
+      FlutterSettings.getInstance().sendSettingsToAnalytics(analytics);
+    }
+
+    return analytics;
+  }
+
+  public static boolean getCanReportAnalytics() {
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    return !properties.getBoolean(analyticsOptOutKey, false);
+  }
+
+  public static void setCanReportAnalytics(boolean canReportAnalytics) {
+    if (getCanReportAnalytics() != canReportAnalytics) {
+      final boolean wasReporting = getCanReportAnalytics();
+
+      final PropertiesComponent properties = PropertiesComponent.getInstance();
+      properties.setValue(analyticsOptOutKey, !canReportAnalytics);
+      if (analytics != null) {
+        analytics.setCanSend(getCanReportAnalytics());
+      }
+
+      if (!wasReporting && canReportAnalytics) {
+        getAnalytics().sendScreenView("main");
+      }
+    }
+  }
+
+  public static void sendAnalyticsAction(@NotNull AnAction action) {
+    sendAnalyticsAction(action.getClass().getSimpleName());
+  }
+
+  public static void sendAnalyticsAction(@NotNull String name) {
+    getAnalytics().sendEvent("intellij", name);
+  }
+
   private static void performAndroidStudioCanaryCheck() {
     if (!FlutterUtils.isAndroidStudio()) {
       return;
     }
 
     final ApplicationInfo info = ApplicationInfo.getInstance();
-    if (info.getFullVersion().contains("Canary")) {
+    if (info.getFullVersion().contains("Canary") && !info.getBuild().isSnapshot()) {
       FlutterMessages.showWarning(
         "Unsupported Android Studio version",
         "Canary versions of Android Studio are not supported by the Flutter plugin.");
