@@ -525,7 +525,7 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
-    registerShortcut();
+    registerCopyHandler();
     flutterLogPopup = new FlutterLogEntryPopup();
     addMouseListener(new SimpleMouseListener() {
       @Override
@@ -567,7 +567,7 @@ public class FlutterLogTree extends TreeTable {
     });
   }
 
-  private void registerShortcut() {
+  private void registerCopyHandler() {
     final AnAction actionCopy = ActionManager.getInstance().getAction(IdeActions.ACTION_COPY);
     final ShortcutSet copyShortcutSet = actionCopy.getShortcutSet();
     final String copyCommand = "flutter.log.copyCommand";
