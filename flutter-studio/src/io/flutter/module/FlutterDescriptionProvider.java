@@ -31,6 +31,9 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     res.add(new FlutterApplicationGalleryEntry(sharedModel));
     res.add(new FlutterPluginGalleryEntry(sharedModel));
     res.add(new FlutterPackageGalleryEntry(sharedModel));
+    if (System.getProperty("flutter.experimental.modules", null) != null) {
+      res.add(new FlutterModuleGalleryEntry(sharedModel));
+    }
     return res;
   }
 
@@ -212,6 +215,54 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       return new FlutterProjectStep(
         model, FlutterBundle.message("module.wizard.plugin_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PLUGIN);
+    }
+  }
+
+  private static class FlutterModuleGalleryEntry extends FlutterGalleryEntry {
+
+    private FlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
+
+    @Nullable
+    @Override
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+      return FlutterBundle.message("module.wizard.module_title");
+    }
+
+    @Nullable
+    @Override // Not used by Flutter.
+    public String getDescription() {
+      return FlutterBundle.message("module.wizard.module_description");
+    }
+
+    @Nullable
+    @Override
+    public String getHelpText() {
+      return FlutterBundle.message("flutter.module.create.settings.help.project_type.description.module");
+    }
+
+    @NotNull
+    @Override
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      return new FlutterModuleStep(
+        model(model, FlutterProjectType.MODULE),
+        FlutterBundle.message("module.wizard.module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
+    }
+
+    @NotNull
+    @Override
+    public FlutterProjectStep createFlutterStep(@NotNull FlutterProjectModel model) {
+      return new FlutterProjectStep(
+        model, FlutterBundle.message("module.wizard.module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }
   }
 }

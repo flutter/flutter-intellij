@@ -331,6 +331,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
       case PLUGIN:
         heading = FlutterBundle.message("module.wizard.plugin_step_body");
         break;
+      case MODULE:
+        heading = FlutterBundle.message("module.wizard.module_step_body");
+        break;
     }
     myHeading.setText(heading);
     myDownloadErrorMessage.set("");
@@ -352,6 +355,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
         name = FlutterBundle.message("module.wizard.plugin_name");
         descrText = FlutterBundle.message("module.wizard.plugin_text");
         break;
+      case MODULE:
+        name = FlutterBundle.message("module.wizard.module_name");
+        descrText = FlutterBundle.message("module.wizard.module_text");
     }
     myDescription.setText(descrText);
     myProjectName.setText(name);
