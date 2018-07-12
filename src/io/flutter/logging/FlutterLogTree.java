@@ -9,7 +9,9 @@ import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
@@ -33,12 +35,15 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
 import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
@@ -46,6 +51,7 @@ import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
 public class FlutterLogTree extends TreeTable {
 
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
+  private static final Logger LOG = Logger.getInstance(FlutterLogTree.class);
 
   private static class ColumnModel {
 
@@ -439,7 +445,7 @@ public class FlutterLogTree extends TreeTable {
       buffer
         .append(TIMESTAMP_FORMAT.format(entry.getTimestamp()))
         .append(" ").append(entry.getSequenceNumber())
-        .append(" ").append(entry.getLevel())
+        .append(" ").append(entry.getLevelName())
         .append(" ").append(entry.getCategory())
         .append(" ").append(entry.getMessage());
       if (!entry.getMessage().endsWith("\n")) {
@@ -519,6 +525,7 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
+    registerCopyHandler();
     flutterLogPopup = new FlutterLogEntryPopup();
     addMouseListener(new SimpleMouseListener() {
       @Override
@@ -539,7 +546,6 @@ public class FlutterLogTree extends TreeTable {
     if (paths == null) {
       return null;
     }
-    final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
     final StringBuilder sb = new StringBuilder();
     for (final TreePath path : paths) {
       final Object pathComponent = path.getLastPathComponent();
@@ -548,6 +554,37 @@ public class FlutterLogTree extends TreeTable {
       }
     }
     return sb.toString();
+  }
+
+  public void sendSelectedLogsToClipboard() {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      final String log = getSelectedLog();
+      if (log != null) {
+        final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        final StringSelection selection = new StringSelection(log);
+        clipboard.setContents(selection, selection);
+      }
+    });
+  }
+
+  private void registerCopyHandler() {
+    final AnAction actionCopy = ActionManager.getInstance().getAction(IdeActions.ACTION_COPY);
+    final ShortcutSet copyShortcutSet = actionCopy.getShortcutSet();
+    final String copyCommand = "flutter.log.copyCommand";
+
+    Arrays.stream(copyShortcutSet.getShortcuts())
+      .filter(shortcut -> shortcut instanceof KeyboardShortcut)
+      .map(shortcut -> (KeyboardShortcut)shortcut)
+      .flatMap(shortcut -> Stream.of(shortcut.getFirstKeyStroke(), shortcut.getSecondKeyStroke()))
+      .filter(Objects::nonNull)
+      .forEach(stroke -> getInputMap().put(stroke, copyCommand));
+
+    getActionMap().put(copyCommand, new AbstractAction() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        sendSelectedLogsToClipboard();
+      }
+    });
   }
 
   public void addListener(@NotNull EventCountListener listener, @NotNull Disposable parent) {
