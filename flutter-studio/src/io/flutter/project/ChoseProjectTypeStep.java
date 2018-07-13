@@ -19,7 +19,6 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
 import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
-import io.flutter.module.FlutterModuleModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
