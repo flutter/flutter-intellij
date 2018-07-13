@@ -17,9 +17,11 @@ import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.IconUtil;
+import com.intellij.util.ThreeState;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
 import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
+import io.flutter.module.FlutterModuleModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -46,7 +48,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private Map<ModuleGalleryEntry, FlutterProjectStep> myModuleDescriptionToStepMap;
 
   public ChoseProjectTypeStep(@NotNull FlutterProjectModel model) {
-    this(model, FlutterDescriptionProvider.getGalleryList());
+    this(model, FlutterDescriptionProvider.getGalleryList(true));
   }
 
   private ChoseProjectTypeStep(@NotNull FlutterProjectModel model, @NotNull List<FlutterGalleryEntry> moduleGalleryEntries) {

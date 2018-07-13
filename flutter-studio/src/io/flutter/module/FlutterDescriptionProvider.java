@@ -10,11 +10,17 @@ import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFocusManager;
+import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.util.IconUtil;
+import com.intellij.util.ThreeState;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,21 +31,37 @@ import java.util.List;
 
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
-  public static List<FlutterGalleryEntry> getGalleryList() {
+  @Override
+  public Collection<? extends ModuleGalleryEntry> getDescriptions() {
+    return getGalleryList(false);
+  }
+
+  public static List<FlutterGalleryEntry> getGalleryList(boolean isNewProject) {
+    boolean projectHasFlutter = isNewProject;
     OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
     ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
-    res.add(new FlutterApplicationGalleryEntry(sharedModel));
-    res.add(new FlutterPluginGalleryEntry(sharedModel));
-    res.add(new FlutterPackageGalleryEntry(sharedModel));
+    if (!isNewProject) {
+      IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
+      Project project = frame == null ? null : frame.getProject();
+      if (project == null) return res;
+      for (Module module : FlutterModuleUtils.getModules(project)) {
+        if (FlutterModuleUtils.isFlutterModule(module)) {
+          projectHasFlutter = true;
+          break;
+        }
+      }
+    }
+    if (projectHasFlutter) {
+      // Makes no sense to add Flutter templates to Android projects...
+      res.add(new FlutterApplicationGalleryEntry(sharedModel));
+      res.add(new FlutterPluginGalleryEntry(sharedModel));
+      res.add(new FlutterPackageGalleryEntry(sharedModel));
+    }
     if (System.getProperty("flutter.experimental.modules", null) != null) {
+      // ...unless it was designed to work within an Android project.
       res.add(new FlutterModuleGalleryEntry(sharedModel));
     }
     return res;
-  }
-
-  @Override
-  public Collection<? extends ModuleGalleryEntry> getDescriptions() {
-    return getGalleryList();
   }
 
   /**
