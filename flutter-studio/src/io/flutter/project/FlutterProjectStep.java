@@ -102,8 +102,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myBindings.bind(model.description(), new TextProperty(myDescription));
 
     myFlutterSdkPath.getComboBox().setEditable(true);
-    myFlutterSdkPath.getButton()
-      .addActionListener((e) -> myFlutterSdkPath.getComboBox().setSelectedItem(myFlutterSdkPath.getComboBox().getEditor().getItem()));
+    myFlutterSdkPath.getButton().addActionListener(
+      (e) -> myFlutterSdkPath.getComboBox().setSelectedItem(myFlutterSdkPath.getComboBox().getEditor().getItem()));
     myBindings.bind(
       model.flutterSdk(),
       new TransformOptionalExpression<String, String>("", new SelectedItemProperty<>(myFlutterSdkPath.getComboBox())) {
@@ -169,49 +169,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
 
     myRootPanel = new StudioWizardStepPanel(myValidatorPanel);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
-  }
-
-  @NotNull
-  private static Validator.Result validateFlutterSdk(String sdkPath) {
-    if (!sdkPath.isEmpty()) {
-      final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath);
-      if (message != null) {
-        return Validator.Result.fromNullableMessage(message);
-      }
-      return Validator.Result.OK;
-    }
-    else {
-      return Validator.Result.fromNullableMessage("Flutter SDK path not given.");
-    }
-  }
-
-  @NotNull
-  private static String findProjectLocation(@NotNull String appName) {
-    return WizardUtils.getProjectLocationParent().getPath();
-  }
-
-  private static Validator.Result errorResult(String message) {
-    return new Validator.Result(Validator.Severity.ERROR, message);
-  }
-
-  public static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
-    // TODO(messick): Replace the original in the Dart plugin with this implementation.
-    final Object currentItem = comboBox.getEditor().getItem();
-
-    boolean contains = false;
-    for (int i = 0; i < comboBox.getModel().getSize(); i++) {
-      if (currentItem.equals(comboBox.getModel().getElementAt(i))) {
-        contains = true;
-        break;
-      }
-    }
-
-    if (!contains) {
-      //noinspection unchecked
-      ((DefaultComboBoxModel)comboBox.getModel()).insertElementAt(currentItem, 0);
-    }
-    comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
-    comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
 
   private void updateSdkField(JTextComponent sdkEditor) {
@@ -429,5 +386,48 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @Override
   public JLabel getCancelProgressButton() {
     return myCancelProgressButton;
+  }
+
+  @NotNull
+  private static Validator.Result validateFlutterSdk(String sdkPath) {
+    if (!sdkPath.isEmpty()) {
+      final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath);
+      if (message != null) {
+        return Validator.Result.fromNullableMessage(message);
+      }
+      return Validator.Result.OK;
+    }
+    else {
+      return Validator.Result.fromNullableMessage("Flutter SDK path not given.");
+    }
+  }
+
+  @NotNull
+  private static String findProjectLocation(@NotNull String appName) {
+    return WizardUtils.getProjectLocationParent().getPath();
+  }
+
+  private static Validator.Result errorResult(String message) {
+    return new Validator.Result(Validator.Severity.ERROR, message);
+  }
+
+  public static void ensureComboModelContainsCurrentItem(@NotNull final JComboBox comboBox) {
+    // TODO(messick): Replace the original in the Dart plugin with this implementation.
+    final Object currentItem = comboBox.getEditor().getItem();
+
+    boolean contains = false;
+    for (int i = 0; i < comboBox.getModel().getSize(); i++) {
+      if (currentItem.equals(comboBox.getModel().getElementAt(i))) {
+        contains = true;
+        break;
+      }
+    }
+
+    if (!contains) {
+      //noinspection unchecked
+      ((DefaultComboBoxModel)comboBox.getModel()).insertElementAt(currentItem, 0);
+    }
+    comboBox.setSelectedItem(currentItem); // to set focus on current item in combo popup
+    comboBox.getEditor().setItem(currentItem); // to set current item in combo itself
   }
 }

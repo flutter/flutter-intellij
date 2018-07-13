@@ -16,12 +16,9 @@ import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.util.IconUtil;
-import com.intellij.util.ThreeState;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
 import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
-import io.flutter.module.FlutterModuleModel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -80,11 +77,6 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
 
     myRootPanel.add(section);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
-  }
-
-  @NotNull
-  private static List<ModuleGalleryEntry> getGalleryList() {
-    return new ArrayList<>();
   }
 
   private void toggleLabel(int index) {
@@ -166,5 +158,10 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   @Override
   protected JComponent getPreferredFocusComponent() {
     return myProjectTypeGallery;
+  }
+
+  @NotNull
+  private static List<ModuleGalleryEntry> getGalleryList() {
+    return new ArrayList<>();
   }
 }

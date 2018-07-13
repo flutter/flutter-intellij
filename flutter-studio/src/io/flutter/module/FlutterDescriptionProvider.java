@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.util.IconUtil;
-import com.intellij.util.ThreeState;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
