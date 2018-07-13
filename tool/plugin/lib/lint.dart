@@ -39,7 +39,7 @@ class LintCommand extends Command {
     final String imports = result.stdout.trim();
 
     // path:import
-    final usages = {};
+    final usages = <String, List<String>>{};
 
     imports.split('\n').forEach((String line) {
       if (line.trim().isEmpty) {
@@ -56,7 +56,7 @@ class LintCommand extends Command {
     });
 
     // print report
-    final List<String> keys = usages.keys.toList();
+    final keys = usages.keys.toList();
     keys.sort();
 
     print('${keys.length} separate Dart plugin APIs used:');
@@ -64,7 +64,7 @@ class LintCommand extends Command {
 
     for (var import in keys) {
       print('$import:');
-      List<String> places = usages[import];
+      var places = usages[import];
       places.forEach((String place) => print('  $place'));
       print('');
     }
