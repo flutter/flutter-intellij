@@ -125,8 +125,8 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
       await new File(p.join(rootPath, destDir, path)).create(recursive: true);
   log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
-  dest.writeln("<!-- Do not edit; instead, modify ${p.basename(
-      templatePath)}, and run './bin/plugin generate'. -->");
+  dest.writeln("<!-- Do not edit; instead, modify ${p
+      .basename(templatePath)}, and run './bin/plugin generate'. -->");
   dest.writeln();
   await new File(p.join(rootPath, 'resources', templatePath))
       .openRead()
@@ -146,8 +146,8 @@ void genTravisYml(List<BuildSpec> specs) {
 
   var templateFile = new File(p.join(rootPath, '.travis_template.yml'));
   var templateContents = templateFile.readAsStringSync();
-  var header = "# Do not edit; instead, modify ${p.basename(
-      templateFile.path)},"
+  var header =
+      "# Do not edit; instead, modify ${p.basename(templateFile.path)},"
       " and run './bin/plugin generate'.\n\n";
   var contents = header + templateContents + env;
   log('writing ${p.relative(file.path)}');
@@ -555,6 +555,9 @@ class BuildCommand extends ProductCommand {
         log('Editing ${processedFile2.path}');
         oldSource2 = processedFile2.readAsStringSync();
         newSource = oldSource2;
+        newSource = newSource.replaceAll(
+            "import com.intellij.ui.components.JBScrollPane;",
+            "import com.intellij.ui.components.JBScrollPane;\nimport com.intellij.util.IconUtil;");
         newSource = newSource.replaceAll(
             'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
         processedFile2.writeAsStringSync(newSource);
