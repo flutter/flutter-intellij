@@ -36,6 +36,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -344,6 +346,31 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
+  private static class LogVerticalScrollChangeListener implements ChangeListener {
+    private volatile int oldScrollValue = 0;
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+      final BoundedRangeModel model = (BoundedRangeModel)e.getSource();
+      final int newScrollValue = model.getValue();
+      final boolean isScrollUp = newScrollValue < oldScrollValue;
+      final boolean isScrollToEnd = newScrollValue + model.getExtent() == model.getMaximum();
+      if (isScrollUp) {
+        onScrollUp();
+      }
+      else if (isScrollToEnd) {
+        onScrollToEnd();
+      }
+      oldScrollValue = newScrollValue;
+    }
+
+    protected void onScrollUp() {
+    }
+
+    protected void onScrollToEnd() {
+    }
+  }
+
   @NotNull
   private final FlutterApp app;
   // TODO(pq): make user configurable.
@@ -441,11 +468,30 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     fixColumnWidth(logTree.getColumn(CATEGORY), 110);
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
+    setupLogTreeScrollPane();
+  }
+
+  private void setupLogTreeScrollPane() {
     final JScrollPane pane = ScrollPaneFactory.createScrollPane(
       logTree,
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    pane.getVerticalScrollBar().getModel().addChangeListener(new LogVerticalScrollChangeListener() {
+      @Override
+      protected void onScrollUp() {
+        super.onScrollUp();
+        logModel.autoScrollToEnd = false;
+      }
 
+      @Override
+      protected void onScrollToEnd() {
+        super.onScrollToEnd();
+        if (!logModel.autoScrollToEnd) {
+          logModel.autoScrollToEnd = true;
+          logModel.scrollToEnd();
+        }
+      }
+    });
     logModel.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
   }
