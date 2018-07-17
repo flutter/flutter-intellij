@@ -10,7 +10,8 @@ import io.flutter.FlutterBundle;
 public enum FlutterProjectType {
   APP(FlutterBundle.message("flutter.module.create.settings.type.application"), "app"),
   PLUGIN(FlutterBundle.message("flutter.module.create.settings.type.plugin"), "plugin"),
-  PACKAGE(FlutterBundle.message("flutter.module.create.settings.type.package"), "package");
+  PACKAGE(FlutterBundle.message("flutter.module.create.settings.type.package"), "package"),
+  MODULE(FlutterBundle.message("flutter.module.create.settings.type.module"), "module");
 
   final public String title;
   final public String arg;

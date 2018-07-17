@@ -16,7 +16,6 @@ import com.intellij.openapi.ui.VerticalFlowLayout;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBList;
 import com.intellij.ui.components.JBScrollPane;
-import com.intellij.util.IconUtil;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
 import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
@@ -46,7 +45,7 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private Map<ModuleGalleryEntry, FlutterProjectStep> myModuleDescriptionToStepMap;
 
   public ChoseProjectTypeStep(@NotNull FlutterProjectModel model) {
-    this(model, FlutterDescriptionProvider.getGalleryList());
+    this(model, FlutterDescriptionProvider.getGalleryList(true));
   }
 
   private ChoseProjectTypeStep(@NotNull FlutterProjectModel model, @NotNull List<FlutterGalleryEntry> moduleGalleryEntries) {
@@ -78,11 +77,6 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
 
     myRootPanel.add(section);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
-  }
-
-  @NotNull
-  private static List<ModuleGalleryEntry> getGalleryList() {
-    return new ArrayList<>();
   }
 
   private void toggleLabel(int index) {
@@ -164,5 +158,10 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   @Override
   protected JComponent getPreferredFocusComponent() {
     return myProjectTypeGallery;
+  }
+
+  @NotNull
+  private static List<ModuleGalleryEntry> getGalleryList() {
+    return new ArrayList<>();
   }
 }

@@ -10,11 +10,16 @@ import com.android.tools.idea.npw.module.ModuleDescriptionProvider;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
 import com.android.tools.idea.observable.core.OptionalValueProperty;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.wm.IdeFocusManager;
+import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.util.IconUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.project.FlutterProjectModel;
 import io.flutter.project.FlutterProjectStep;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,18 +30,37 @@ import java.util.List;
 
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
-  public static List<FlutterGalleryEntry> getGalleryList() {
-    OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
-    ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
-    res.add(new FlutterApplicationGalleryEntry(sharedModel));
-    res.add(new FlutterPluginGalleryEntry(sharedModel));
-    res.add(new FlutterPackageGalleryEntry(sharedModel));
-    return res;
-  }
-
   @Override
   public Collection<? extends ModuleGalleryEntry> getDescriptions() {
-    return getGalleryList();
+    return getGalleryList(false);
+  }
+
+  public static List<FlutterGalleryEntry> getGalleryList(boolean isNewProject) {
+    boolean projectHasFlutter = isNewProject;
+    OptionalValueProperty<FlutterProjectModel> sharedModel = new OptionalValueProperty<>();
+    ArrayList<FlutterGalleryEntry> res = new ArrayList<>();
+    if (!isNewProject) {
+      IdeFrame frame = IdeFocusManager.getGlobalInstance().getLastFocusedFrame();
+      Project project = frame == null ? null : frame.getProject();
+      if (project == null) return res;
+      for (Module module : FlutterModuleUtils.getModules(project)) {
+        if (FlutterModuleUtils.isFlutterModule(module)) {
+          projectHasFlutter = true;
+          break;
+        }
+      }
+    }
+    if (projectHasFlutter) {
+      // Makes no sense to add Flutter templates to Android projects...
+      res.add(new FlutterApplicationGalleryEntry(sharedModel));
+      res.add(new FlutterPluginGalleryEntry(sharedModel));
+      res.add(new FlutterPackageGalleryEntry(sharedModel));
+    }
+    if (System.getProperty("flutter.experimental.modules", null) != null) {
+      // ...unless it was designed to work within an Android project.
+      res.add(new FlutterModuleGalleryEntry(sharedModel));
+    }
+    return res;
   }
 
   /**
@@ -212,6 +236,54 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       return new FlutterProjectStep(
         model, FlutterBundle.message("module.wizard.plugin_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.PLUGIN);
+    }
+  }
+
+  private static class FlutterModuleGalleryEntry extends FlutterGalleryEntry {
+
+    private FlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
+
+    @Nullable
+    @Override
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+      return FlutterBundle.message("module.wizard.module_title");
+    }
+
+    @Nullable
+    @Override // Not used by Flutter.
+    public String getDescription() {
+      return FlutterBundle.message("module.wizard.module_description");
+    }
+
+    @Nullable
+    @Override
+    public String getHelpText() {
+      return FlutterBundle.message("flutter.module.create.settings.help.project_type.description.module");
+    }
+
+    @NotNull
+    @Override
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      return new FlutterModuleStep(
+        model(model, FlutterProjectType.MODULE),
+        FlutterBundle.message("module.wizard.module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
+    }
+
+    @NotNull
+    @Override
+    public FlutterProjectStep createFlutterStep(@NotNull FlutterProjectModel model) {
+      return new FlutterProjectStep(
+        model, FlutterBundle.message("module.wizard.module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
     }
   }
 }
