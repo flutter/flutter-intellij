@@ -36,6 +36,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -261,6 +263,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   private class ScrollToEndAction extends ToggleAction {
+    @NotNull
+    private final AnActionEvent EMPTY_ACTION_EVENT =
+      AnActionEvent.createFromDataContext("empty_action_event", null, DataContext.EMPTY_CONTEXT);
+
     ScrollToEndAction() {
       super("Scroll to the end", "Scroll to the end", AllIcons.RunConfigurations.Scroll_down);
     }
@@ -274,8 +280,22 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     public void setSelected(AnActionEvent e, boolean state) {
       ApplicationManager.getApplication().invokeLater(() -> {
         logModel.autoScrollToEnd = state;
-        logModel.scrollToEnd();
+        if (state) {
+          logModel.scrollToEnd();
+        }
       });
+    }
+
+    public void enableIfNeeded() {
+      if (!isSelected(EMPTY_ACTION_EVENT)) {
+        setSelected(EMPTY_ACTION_EVENT, true);
+      }
+    }
+
+    public void disableIfNeeded() {
+      if (isSelected(EMPTY_ACTION_EVENT)) {
+        setSelected(EMPTY_ACTION_EVENT, false);
+      }
     }
   }
 
@@ -344,6 +364,31 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
+  private static abstract class LogVerticalScrollChangeListener implements ChangeListener {
+    private volatile int oldScrollValue = 0;
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+      if (e.getSource() instanceof BoundedRangeModel) {
+        final BoundedRangeModel model = (BoundedRangeModel)e.getSource();
+        final int newScrollValue = model.getValue();
+        final boolean isScrollUp = newScrollValue < oldScrollValue;
+        final boolean isScrollToEnd = newScrollValue + model.getExtent() == model.getMaximum();
+        if (isScrollUp) {
+          onScrollUp();
+        }
+        else if (isScrollToEnd) {
+          onScrollToEnd();
+        }
+        oldScrollValue = newScrollValue;
+      }
+    }
+
+    protected abstract void onScrollUp();
+
+    protected abstract void onScrollToEnd();
+  }
+
   @NotNull
   private final FlutterApp app;
   // TODO(pq): make user configurable.
@@ -358,6 +403,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final FlutterLogFilterPanel filterPanel;
   @NotNull
   private final FlutterLogPreferences flutterLogPreferences;
+  @NotNull
+  private final ScrollToEndAction scrollToEndAction = new ScrollToEndAction();
+  @NotNull
+  private final ClearLogAction clearLogAction = new ClearLogAction();
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
@@ -441,11 +490,25 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     fixColumnWidth(logTree.getColumn(CATEGORY), 110);
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
+    setupLogTreeScrollPane();
+  }
+
+  private void setupLogTreeScrollPane() {
     final JScrollPane pane = ScrollPaneFactory.createScrollPane(
       logTree,
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    pane.getVerticalScrollBar().getModel().addChangeListener(new LogVerticalScrollChangeListener() {
+      @Override
+      protected void onScrollUp() {
+        scrollToEndAction.disableIfNeeded();
+      }
 
+      @Override
+      protected void onScrollToEnd() {
+        scrollToEndAction.enableIfNeeded();
+      }
+    });
     logModel.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
   }
@@ -609,8 +672,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public AnAction[] createConsoleActions() {
     return new AnAction[]{
-      new ScrollToEndAction(),
-      new ClearLogAction()
+      scrollToEndAction,
+      clearLogAction
     };
   }
 
