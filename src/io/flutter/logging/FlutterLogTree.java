@@ -301,7 +301,7 @@ public class FlutterLogTree extends TreeTable {
     private final FlutterLog log;
     @NotNull
     private final Alarm uiThreadAlarm;
-    volatile boolean autoScrollToEnd;
+    boolean autoScrollToEnd;
     // Cached for hide and restore (because *sigh* Swing).
     private List<TableColumn> tableColumns;
     private JScrollPane scrollPane;
