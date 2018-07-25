@@ -8,6 +8,7 @@
 set -e
 
 # Get git.
+apt-get update
 apt-get install git-core
 
 # Get Flutter.
