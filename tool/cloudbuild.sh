@@ -7,6 +7,10 @@
 # Fast fail the script on failures.
 set -e
 
+# Get git.
+apt-get -y update
+apt-get -y install git-core curl unzip
+
 # Get Flutter.
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
 export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin

@@ -1,10 +1,3 @@
 steps:
-
-- name: 'ubuntu'
-  args: ['apt-get', '-y', 'update']
-
-- name: 'ubuntu'
-  args: ['apt-get', '-y', 'install', 'git-core', 'curl', 'unzip']
-
 - name: 'ubuntu'
   args: ['bash', './tool/cloudbuild.sh']
