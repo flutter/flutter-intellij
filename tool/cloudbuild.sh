@@ -8,8 +8,8 @@
 set -e
 
 # Get git.
-apt-get update
-apt-get install git-core
+apt-get -y update
+apt-get -y install git-core
 
 # Get Flutter.
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
