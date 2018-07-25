@@ -74,11 +74,12 @@ public class FlutterProjectOpenProcessor extends ProjectOpenProcessor {
     // Convert any modules that use Flutter but don't have IntelliJ Flutter metadata.
     convertToFlutterProject(project);
 
+    // Project gets reloaded; should this be: FlutterUtils.findProject(file.getPath());
     return project;
   }
 
   @Nullable
-  private ProjectOpenProcessor getDelegateImportProvider(@Nullable VirtualFile file) {
+  protected ProjectOpenProcessor getDelegateImportProvider(@Nullable VirtualFile file) {
     return Arrays.stream(Extensions.getExtensions(EXTENSION_POINT_NAME)).filter(
       processor -> processor.canOpenProject(file) && !Objects.equals(processor.getName(), getName())
     ).findFirst().orElse(null);
