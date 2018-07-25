@@ -8,7 +8,7 @@
 set -e
 
 # Get git.
-sudo apt-get install git-core
+apt-get install git-core
 
 # Get Flutter.
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
