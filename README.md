@@ -28,7 +28,7 @@ A brief summary of the [getting started guide](https://flutter.io/intellij-ide/)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported [IntelliJ development environment](https://www.jetbrains.com/idea/download), either:
   - IntelliJ 2017.3 or 2018.1, Community or Ultimate Edition, or
-  - Android Studio 3.1 (note: Android Studio 3.2 Canary is currently _not_ supported)
+  - Android Studio 3.1 (note: Android Studio Canary versions are generally _not_ supported)
 - open the plugin preferences
   - `Preferences > Plugins` on macOS, `File > Settings > Plugins` on Linux, select "Browse repositories…"
 - search for and install the 'Flutter' plugin
@@ -36,20 +36,6 @@ A brief summary of the [getting started guide](https://flutter.io/intellij-ide/)
 - configure the Flutter SDK setting
   - `Preferences` on macOS, `File>Settings` on Linux, select `Languages & Frameworks > Flutter`, and set
     the path to the root of your flutter repo
-
-## Preview Dart 2
-
-The latest version of the IntelliJ and Android Studio plugin allows you to configure whether your
-app is analyzed and run with the preview version of Dart 2.0. This will control things like
-the way your code is statically analyzed, and the behavior of the runtime type system (and the type
-errors you'll see).
-
-By default, we pick up the base setting from the Flutter SDK. This can be overridden in the
-Preferences dialog, in `Languages & Settings` > `Flutter`. You can change the 'Run applications in
-Dart 2.0 mode' preference from:
-- using the Flutter SDK default
-- enabling preview Dart 2.0, or
-- disabling preview Dart 2.0
 
 ## Filing issues
 
