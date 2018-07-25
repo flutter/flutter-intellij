@@ -9,7 +9,7 @@ set -e
 
 # Get git.
 apt-get -y update
-apt-get -y install git-core curl
+apt-get -y install git-core curl unzip
 
 # Get Flutter.
 git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
