@@ -5,7 +5,6 @@
  */
 package io.flutter.project;
 
-import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -26,7 +25,6 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
   @Override
   public boolean canOpenProject(@Nullable VirtualFile file) {
     if (file == null) return false;
-    ApplicationInfo info = ApplicationInfo.getInstance();
     final PubRoot root = PubRoot.forDirectory(file);
     return root != null && root.declaresFlutter();
   }
@@ -34,7 +32,6 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
   @Nullable
   @Override
   public Project doOpenProject(@NotNull VirtualFile virtualFile, @Nullable Project projectToClose, boolean forceOpenInNewFrame) {
-    //if (super.doOpenProject(virtualFile, projectToClose, forceOpenInNewFrame) == null) return null;
     final ProjectOpenProcessor importProvider = getDelegateImportProvider(virtualFile);
     if (importProvider == null) return null;
 
@@ -46,7 +43,6 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     }
     for (Module module : FlutterModuleUtils.getModules(project)) {
       if (FlutterModuleUtils.declaresFlutter(module) && !FlutterModuleUtils.isFlutterModule(module)) {
-        //FlutterModuleUtils.setFlutterModuleAndReload(module, project);
         FlutterModuleUtils.setFlutterModuleType(module);
         FlutterModuleUtils.enableDartSDK(module);
       }
@@ -54,10 +50,7 @@ public class FlutterStudioProjectOpenProcessor extends FlutterProjectOpenProcess
     project.save();
     EditorNotifications.getInstance(project).updateAllNotifications();
 
-    if (project != null) {
-      FlutterProjectCreator.disableUserConfig(project);
-      return project;
-    }
-    return null;
+    FlutterProjectCreator.disableUserConfig(project);
+    return project;
   }
 }
