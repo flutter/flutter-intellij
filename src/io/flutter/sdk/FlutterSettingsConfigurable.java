@@ -25,6 +25,7 @@ import com.intellij.ui.components.JBLabel;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -58,6 +59,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowHeapDisplayCheckBox;
   private JCheckBox myTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
+  private JCheckBox mySyncAndroidLibrariesCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -74,6 +76,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
+      @Override
       protected void textChanged(final DocumentEvent e) {
         updateVersionText();
       }
@@ -84,6 +87,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
                                        TextComponentAccessor.STRING_COMBOBOX_WHOLE_TEXT);
 
     myPrivacyPolicy.addMouseListener(new MouseAdapter() {
+      @Override
       public void mouseClicked(MouseEvent e) {
         try {
           BrowserLauncher.getInstance().browse(new URI(FlutterBundle.message("flutter.analytics.privacyUrl")));
@@ -96,6 +100,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     //noinspection Convert2Lambda
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+    mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
   }
 
   private void createUIComponents() {
@@ -167,6 +172,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
+    if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
+      return true;
+    }
 
     return false;
   }
@@ -197,6 +205,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setTrackWidgetCreation(myTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
+    settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -224,6 +233,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myTrackWidgetCreationCheckBox.setSelected(settings.isTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
+    mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
