@@ -25,6 +25,7 @@ import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupManager;
@@ -49,8 +50,10 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static com.intellij.openapi.util.io.FileUtilRt.toSystemIndependentName;
+import static io.flutter.FlutterUtils.disableGradleProjectMigrationNotification;
 
 /**
  * Create a Flutter project.
@@ -161,8 +164,15 @@ public class FlutterProjectCreator {
     }
     final OutputListener listener = new OutputListener();
     // TODO(messick,pq): Refactor createFiles() to accept a logging interface instead of module, and display it in the wizard.
-    // Currently there is no UI feedback during Flutter project creation, and that is not acceptable.
-    final PubRoot root = sdk.createFiles(baseDir, null, listener, makeAdditionalSettings());
+    ProgressManager progress = ProgressManager.getInstance();
+    AtomicReference<PubRoot> result = new AtomicReference<>(null);
+    progress.runProcessWithProgressSynchronously(() -> {
+      progress.getProgressIndicator().setIndeterminate(true);
+      sdk.createFiles(baseDir, null, listener, makeAdditionalSettings());
+      VfsUtil.markDirtyAndRefresh(false, true, true, baseDir);
+      result.set(PubRoot.forDirectory(baseDir));
+    }, "Creating Flutter Project", false, null);
+    PubRoot root = result.get();
     if (root == null) {
       String stderr = listener.getOutput().getStderr();
       FlutterMessages.showError("Error creating project", stderr.isEmpty() ? "Flutter create command was unsuccessful" : stderr);
@@ -174,10 +184,11 @@ public class FlutterProjectCreator {
     Project project = PlatformProjectOpenProcessor.doOpenProject(baseDir, projectToClose, -1, null, options);
 
     if (project != null) {
+      disableGradleProjectMigrationNotification(project);
+      disableUserConfig(project);
       StartupManager.getInstance(project).registerPostStartupActivity(
         () -> ApplicationManager.getApplication().invokeLater(
           () -> {
-            disableUserConfig(project);
             // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
             DumbService.getInstance(project).runWhenSmart(() -> ProjectView.getInstance(project).changeView(ProjectViewPane.ID));
           }, ModalityState.defaultModalityState()));
