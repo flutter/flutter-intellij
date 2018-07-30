@@ -14,6 +14,7 @@ import io.flutter.actions.FlutterShowStructureSettingsAction;
 import io.flutter.actions.OpenAndroidModule;
 import io.flutter.android.AndroidModuleLibraryManager;
 import io.flutter.project.FlutterProjectCreator;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,7 +46,8 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     // TODO(messick) Delete once 3.0.x has 0 7DA's.
     FlutterProjectCreator.disableUserConfig(project);
     // Monitor Android dependencies.
-    if (System.getProperty("flutter.android.library.sync", null) != null) {
+    if (FlutterSettings.getInstance().isSyncingAndroidLibraries() ||
+        System.getProperty("flutter.android.library.sync", null) != null) {
       // TODO(messick): Remove the flag once this sync mechanism is stable.
       AndroidModuleLibraryManager.startWatching(project);
     }

@@ -24,6 +24,7 @@ public class FlutterSettings {
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
+  private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String trackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
 
@@ -136,6 +137,16 @@ public class FlutterSettings {
 
   public void setShowPreviewArea(boolean value) {
     getPropertiesComponent().setValue(showPreviewAreaKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isSyncingAndroidLibraries() {
+    return getPropertiesComponent().getBoolean(syncAndroidLibrariesKey, false);
+  }
+
+  public void setSyncingAndroidLibraries(boolean value) {
+    getPropertiesComponent().setValue(syncAndroidLibrariesKey, value, false);
 
     fireEvent();
   }
