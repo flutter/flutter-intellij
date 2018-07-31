@@ -52,6 +52,10 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
     final List<VirtualFile> libraryFiles = new ArrayList<>();
     // Turn off pausing on exceptions as it is confusing to mouse over an expression
     // and to have that trigger pausing at an exception.
+    if (myDebugProcess == null || myDebugProcess.getVmServiceWrapper() == null) {
+      callback.errorOccurred("Device disconnected");
+      return;
+    }
     myDebugProcess.getVmServiceWrapper().setExceptionPauseMode(ExceptionPauseMode.None);
     final XEvaluationCallback wrappedCallback = new XEvaluationCallback() {
       @Override
