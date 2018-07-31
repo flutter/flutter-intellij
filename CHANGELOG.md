@@ -1,3 +1,19 @@
+## 27.0
+- add a setting to control syncing Android libraries
+- fixes related to evaluating expressions when not on a call frame
+- auto-disable scroll to end when the user manually scrolls the log up
+- add the "module" template to new-module and project wizards in Android Studio
+- improve copy / paste in the Logging View
+- some tweaks to the open in Android Studio functionality
+- validate android package names
+- add Android module libraries to Flutter projects
+- validate org in the project wizard
+- default log coloring to on and update logger defaults
+- fix log entry browser links
+- support hyperlinks in flutter console log
+- add InheritedWidget and Stateful Widget with Animation live templates
+- lower case the log level names
+
 ## 26.0
 - updates to support Android Studio 3.2 Beta
 - removes the Inspector's empty content message

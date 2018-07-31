@@ -27,6 +27,23 @@
 
   <change-notes>
     <![CDATA[
+<h2>27.0</h2>
+<ul>
+  <li>add a setting to control syncing Android libraries</li>
+  <li>fixes related to evaluating expressions when not on a call frame</li>
+  <li>auto-disable scroll to end when the user manually scrolls the log up</li>
+  <li>add the "module" template to new-module and project wizards in Android Studio</li>
+  <li>improve copy / paste in the Logging View</li>
+  <li>some tweaks to the open in Android Studio functionality</li>
+  <li>validate android package names</li>
+  <li>add Android module libraries to Flutter projects</li>
+  <li>validate org in the project wizard</li>
+  <li>default log coloring to on and update logger defaults</li>
+  <li>fix log entry browser links</li>
+  <li>support hyperlinks in flutter console log</li>
+  <li>add InheritedWidget and Stateful Widget with Animation live templates</li>
+  <li>lower case the log level names</li>
+</ul>
 <h2>26.0</h2>
 <ul>
   <li>updates to support Android Studio 3.2 Beta</li>
