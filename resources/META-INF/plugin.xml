@@ -32,7 +32,7 @@
   <li>add a setting to control syncing Android libraries</li>
   <li>fixes related to evaluating expressions when not on a call frame</li>
   <li>auto-disable scroll to end when the user manually scrolls the log up</li>
-  <li>add the "module" template to new-module and *-project wizards in Android Studio</li>
+  <li>add the "module" template to new-module and project wizards in Android Studio</li>
   <li>improve copy / paste in the Logging View</li>
   <li>some tweaks to the open in Android Studio functionality</li>
   <li>validate android package names</li>
