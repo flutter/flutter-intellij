@@ -55,11 +55,14 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       res.add(new FlutterApplicationGalleryEntry(sharedModel));
       res.add(new FlutterPluginGalleryEntry(sharedModel));
       res.add(new FlutterPackageGalleryEntry(sharedModel));
+      if (System.getProperty("flutter.experimental.modules", null) != null) {
+        res.add(new FlutterModuleGalleryEntry(sharedModel));
+      }
     }
-    if (System.getProperty("flutter.experimental.modules", null) != null) {
-      // ...unless it was designed to work within an Android project.
-      res.add(new FlutterModuleGalleryEntry(sharedModel));
-    }
+    // TODO(messick): Create a new module type that will import an existing Flutter module into an Android app.
+    // It needs to edit /settings.gradle and /app/build.gradle as described in the add2app doc.
+    // The Project Structure editor will need to be extended to 'include' Flutter plugins for Flutter modules;
+    // without that users will have to edit /settings.gradle to import a Flutter plugin (which is true today).
     return res;
   }
 
