@@ -86,7 +86,8 @@ public class FlutterConsoleFilter implements Filter {
         final String path = baseDirPath + "/" + pathPart;
         VirtualFile file = findFile(path);
         if (file == null) {
-          // check example dir too (remove when `example` is a content root: https://github.com/flutter/flutter-intellij/issues/2519)
+          // check example dir too
+          // TODO(pq): remove when `example` is a content root: https://github.com/flutter/flutter-intellij/issues/2519
           final String exampleDirRelativePath = baseDirPath + "/example/" + pathPart;
           file = findFile(exampleDirRelativePath);
         }
@@ -98,7 +99,7 @@ public class FlutterConsoleFilter implements Filter {
 
     return null;
   }
-  
+
   private static VirtualFile findFile(final String path) {
     final VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
     return file != null && file.exists() ? file : null;
