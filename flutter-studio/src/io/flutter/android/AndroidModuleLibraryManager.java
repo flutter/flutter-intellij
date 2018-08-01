@@ -103,6 +103,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   private void doGradleSync(Project flutterProject, Function<Project, Void> callback) {
     // TODO(messick): Collect URLs for all Android modules, including those within plugins.
     VirtualFile dir = flutterProject.getBaseDir().findChild("android");
+    if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     assert (dir != null);
     EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()), null);
     androidProject.init();
