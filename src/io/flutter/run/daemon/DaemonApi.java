@@ -178,7 +178,7 @@ public class DaemonApi {
 
       final JsonElement error = obj.get("error");
       if (error != null) {
-        cmd.completeExceptionally(new IOException("unexpected response: " + obj));
+        cmd.completeExceptionally(new IOException("error from " + cmd.method + ": " + error));
       }
       else {
         cmd.complete(obj.get("result"));
