@@ -51,6 +51,11 @@ for Flutter IntelliJ issues.
 
 Please note the following known issues:
 
+- When using IntelliJ 2018.2 with Android support, you'll likely hit an issue with
+  constant re-indexing. This is an issue with the IntelliJ 2018.2 platform - you can
+  work around it by using 2018.1, or by using the EAP version of 2018.2. The fix for this
+  is in the EAP version, and should be available in the stable version shortly.
+  More details are available at [#2511](https://github.com/flutter/flutter-intellij/issues/2511).
 - If you are building Flutter plugins using Swift, be sure you have at least`cocoapods 1.5.0` 
   installed; an issue tracking a corresponding update to `flutter doctor` is:
   [flutter/#16930](https://github.com/flutter/flutter/issues/16930).
