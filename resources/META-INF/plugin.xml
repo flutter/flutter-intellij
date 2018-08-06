@@ -27,6 +27,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>27.1</h2>
+<ul>
+  <li>change the preference for --track-widget-creation to default to off</li>
+</ul>
 <h2>27.0</h2>
 <ul>
   <li>add a setting to control syncing Android libraries</li>
