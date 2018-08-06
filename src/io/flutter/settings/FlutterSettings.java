@@ -85,18 +85,18 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
-  public void setReloadOnSave(boolean value) {
-    getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
+  public boolean isTrackWidgetCreation() {
+    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, false);
+  }
+
+  public void setTrackWidgetCreation(boolean value) {
+    getPropertiesComponent().setValue(trackWidgetCreationKey, value, false);
 
     fireEvent();
   }
 
-  public boolean isTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, true);
-  }
-
-  public void setTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(trackWidgetCreationKey, value, true);
+  public void setReloadOnSave(boolean value) {
+    getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
 
     fireEvent();
   }
