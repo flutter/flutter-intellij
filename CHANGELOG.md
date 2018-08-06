@@ -1,3 +1,6 @@
+## 27.1
+- change the preference for --track-widget-creation to default to off
+
 ## 27.0
 - add a setting to control syncing Android libraries
 - fixes related to evaluating expressions when not on a call frame
