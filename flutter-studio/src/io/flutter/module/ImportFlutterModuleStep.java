@@ -1,17 +1,7 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 package io.flutter.module;
 
@@ -40,9 +30,6 @@ import javax.swing.*;
 import java.io.File;
 
 // Import an existing Flutter module into an Android app.
-// TODO: It needs to edit /settings.gradle and /app/build.gradle as described in the add2app doc.
-// The Project Structure editor will need to be extended to 'include' Flutter plugins for Flutter modules;
-// without that users will have to edit /settings.gradle to import a Flutter plugin (which is true today).
 public class ImportFlutterModuleStep extends SkippableWizardStep<FlutterProjectModel> {
   private static String DIRECTORY_NOUN = SystemInfo.isMac ? "folder" : "directory";
   private final ValidatorPanel myValidatorPanel;
