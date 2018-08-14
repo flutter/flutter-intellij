@@ -17,8 +17,15 @@ public class FlutterModuleModel extends FlutterProjectModel {
   @Override
   protected void handleFinished() {
     // Do not call the superclass method.
-    assert (!projectName().get().isEmpty());
-    assert (!flutterSdk().get().isEmpty());
-    new FlutterProjectCreator(this).createModule();
+    if (projectType().get().isPresent() && projectType().get().get() == FlutterProjectType.IMPORT) {
+      String location = projectLocation().get();
+      assert (!location.isEmpty());
+      new FlutterModuleImporter(this).importModule();
+    }
+    else {
+      assert (!projectName().get().isEmpty());
+      assert (!flutterSdk().get().isEmpty());
+      new FlutterProjectCreator(this).createModule();
+    }
   }
 }

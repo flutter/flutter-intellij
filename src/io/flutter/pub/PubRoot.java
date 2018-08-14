@@ -248,6 +248,13 @@ public class PubRoot {
     return FlutterUtils.isFlutterPlugin(pubspec);
   }
 
+  /**
+   * Returns true if the directory content looks like a Flutter module.
+   */
+  public boolean isFlutterModule() {
+    return root.findChild(".android") != null;
+  }
+
   @Nullable
   public VirtualFile getPackagesFile() {
     return packagesFile;

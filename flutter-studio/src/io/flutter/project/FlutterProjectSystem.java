@@ -8,6 +8,7 @@ package io.flutter.project;
 import com.android.ide.common.repository.GradleCoordinate;
 import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
+import com.android.tools.idea.projectsystem.LightResourceClassService;
 import com.android.tools.idea.projectsystem.ProjectSystemSyncManager;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystem;
 import com.android.tools.idea.projectsystem.gradle.GradleProjectSystemProvider;
@@ -94,7 +95,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     }
     try {
       //noinspection unchecked
-      return (GradleCoordinate) finders.invoke(gradleProjectSystem, coordinate, includePreview);
+      return (GradleCoordinate)finders.invoke(gradleProjectSystem, coordinate, includePreview);
     }
     catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e);
@@ -112,7 +113,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     }
     try {
       //noinspection unchecked
-      return (Collection<PsiElementFinder>) finders.invoke(gradleProjectSystem);
+      return (Collection<PsiElementFinder>)finders.invoke(gradleProjectSystem);
     }
     catch (IllegalAccessException | InvocationTargetException e) {
       LOG.error(e);
@@ -123,5 +124,11 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @SuppressWarnings("override")
   public boolean getAugmentRClasses() {
     return false;
+  }
+
+  @Nullable
+  @SuppressWarnings("override")
+  public LightResourceClassService getLightResourceClassService() {
+    return null;
   }
 }

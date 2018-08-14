@@ -492,15 +492,15 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     return ActionButtonFixture.findByText(text, robot(), target());
   }
 
-  @NotNull
-  public AndroidToolWindowFixture getAndroidToolWindow() {
-    return new AndroidToolWindowFixture(getProject(), robot());
-  }
-
-  @NotNull
-  public CapturesToolWindowFixture getCapturesToolWindow() {
-    return new CapturesToolWindowFixture(getProject(), robot());
-  }
+  //@NotNull
+  //public AndroidToolWindowFixture getAndroidToolWindow() {
+  //  return new AndroidToolWindowFixture(getProject(), robot());
+  //}
+  //
+  //@NotNull
+  //public CapturesToolWindowFixture getCapturesToolWindow() {
+  //  return new CapturesToolWindowFixture(getProject(), robot());
+  //}
 
   @NotNull
   public BuildVariantsToolWindowFixture getBuildVariantsWindow() {

@@ -45,5 +45,6 @@
     <orderEntry type="library" name="snakeyaml" level="project" />
     <orderEntry type="library" exported="" name="Dart SDK" level="project" />
     <orderEntry type="library" exported="" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="miglayout-swing" level="project" />
   </component>
 </module>
