@@ -6,10 +6,15 @@
 package io.flutter.module;
 
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +29,10 @@ import java.util.function.Supplier;
  * In an Android project, edit the settings.gradle and the app/build.gradle files as described in the add2app spec.
  */
 public class FlutterModuleImporter {
+  @SuppressWarnings("FieldCanBeLocal")
+  private static String EDIT_INSTR_LINK =
+    "https://github.com/flutter/flutter/wiki/Add-Flutter-to-existing-apps#make-the-host-app-depend-on-the-flutter-module";
+
   private final FlutterModuleModel myModel;
   private boolean hasFinishedEditing = false;
   private StringWriter writer;
@@ -82,7 +91,6 @@ public class FlutterModuleImporter {
       try {
         settingsFile.setBinaryContent(settingsWriter.toString().getBytes(Charset.defaultCharset()));
         buildFile.setBinaryContent(buildWriter.toString().getBytes(Charset.defaultCharset()));
-        // Then queue Gradle sync to update everything. Do it here to ensure proper sequencing.
       }
       catch (IOException e) {
         // Should not happen
@@ -92,7 +100,6 @@ public class FlutterModuleImporter {
 
   private StringWriter editFileContent(VirtualFile file, Consumer<String> editFunction) throws IOException {
     writer = new StringWriter();
-    StringWriter buildWriter = writer;
     try (BufferedReader r = Files.newBufferedReader(Paths.get(file.getPath()), Charset.defaultCharset())) {
       hasFinishedEditing = false;
       r.lines().forEach(editFunction);
@@ -144,6 +151,36 @@ public class FlutterModuleImporter {
   }
 
   private static void showHowToEditDialog() {
+    ApplicationManager.getApplication().invokeLater(() -> new HowToEditDialog().show(), ModalityState.NON_MODAL);
+  }
 
+  private static class HowToEditDialog extends DialogWrapper {
+    private JPanel myPanel;
+    private JTextPane myTextPane;
+
+    HowToEditDialog() {
+      super(null, false, false);
+      setTitle("Automatic Import Failed");
+      myPanel = new JPanel();
+      myTextPane = new JTextPane();
+      Messages.installHyperlinkSupport(myTextPane);
+      String howToEdit = "<html><body><p>The Gradle files could not be updated automatically." +
+                         "<p>To use your Flutter module in this Android app you'll need to<br>" +
+                         "edit the files as described in the <a href=\"" +
+                         EDIT_INSTR_LINK +
+                         "\">add2app documentation.</a></body></html>";
+      Messages.installHyperlinkSupport(myTextPane);
+      myTextPane.setText(howToEdit);
+      myPanel.add(myTextPane);
+      init();
+      //noinspection ConstantConditions
+      getButton(getCancelAction()).setVisible(false);
+    }
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+      return myPanel;
+    }
   }
 }
