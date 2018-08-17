@@ -125,8 +125,8 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
       await new File(p.join(rootPath, destDir, path)).create(recursive: true);
   log('writing ${p.relative(file.path)}');
   var dest = file.openWrite();
-  dest.writeln("<!-- Do not edit; instead, modify ${p
-      .basename(templatePath)}, and run './bin/plugin generate'. -->");
+  dest.writeln(
+      "<!-- Do not edit; instead, modify ${p.basename(templatePath)}, and run './bin/plugin generate'. -->");
   dest.writeln();
   await new File(p.join(rootPath, 'resources', templatePath))
       .openRead()
@@ -218,8 +218,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       return new Future(() => true);
     }
     if (!cmd.isReleaseValid) {
-      log('the release identifier ("${cmd
-          .release}") must be of the form xx.x (major.minor)');
+      log('the release identifier ("${cmd.release}") must be of the form xx.x (major.minor)');
       return new Future(() => false);
     }
     var gitDir = await GitDir.fromExisting(rootPath);
@@ -235,8 +234,7 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
           log('the .travis.yml file needs updating: plugin generate');
         }
       } else {
-        log('the current git branch must be named "release_${cmd
-            .releaseMajor}"');
+        log('the current git branch must be named "release_${cmd.releaseMajor}"');
       }
     } else {
       log('the current git branch has uncommitted changes');
@@ -531,7 +529,8 @@ class BuildCommand extends ProductCommand {
       }
 
       // TODO(devoncarew): Remove this when we no longer support AS 3.1.
-      var processedFile1, processedFile2, oldSource1, oldSource2, newSource;
+      File processedFile1, processedFile2, processedFile3;
+      String oldSource1, oldSource2, oldSource3, newSource;
       if (spec.version == '2017.3') {
         processedFile1 = new File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
@@ -561,6 +560,23 @@ class BuildCommand extends ProductCommand {
         newSource = newSource.replaceAll(
             'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
         processedFile2.writeAsStringSync(newSource);
+        processedFile3 = new File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
+        oldSource3 = processedFile3.readAsStringSync();
+        newSource = oldSource3;
+        newSource = newSource.replaceAll('.LightResourceClassService', '.*');
+        newSource =
+            newSource.replaceAll(' LightResourceClassService', ' Object');
+        processedFile3.writeAsStringSync(newSource);
+      } else if (spec.version == '2018.1') {
+        processedFile3 = new File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
+        oldSource3 = processedFile3.readAsStringSync();
+        newSource = oldSource3;
+        newSource = newSource.replaceAll('.LightResourceClassService', '.*');
+        newSource =
+            newSource.replaceAll(' LightResourceClassService', ' Object');
+        processedFile3.writeAsStringSync(newSource);
       }
 
       try {
@@ -574,6 +590,10 @@ class BuildCommand extends ProductCommand {
         if (oldSource2 != null) {
           log('Reestoring ${processedFile2.path}');
           processedFile2.writeAsStringSync(oldSource2);
+        }
+        if (oldSource3 != null) {
+          log('Reestoring ${processedFile3.path}');
+          processedFile3.writeAsStringSync(oldSource3);
         }
 
         // Restore skipped files.

@@ -11,8 +11,12 @@ import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,5 +62,50 @@ public class System {
     catch (ExecutionException | RuntimeException e) {
       return null;
     }
+  }
+
+  /**
+   * Copied from VfsUtilCore because we need to build for 2017.3 (see below, @since).
+   * TODO(anyone): Delete this method after 2017.3 is no longer supported (i.e. when AS 3.2 is stable).
+   *
+   * Returns the relative path from one virtual file to another.
+   * If {@code src} is a file, the path is calculated from its parent directory.
+   *
+   * @param src           the file or directory, from which the path is built
+   * @param dst           the file or directory, to which the path is built
+   * @param separatorChar the separator for the path components
+   * @return the relative path, or {@code null} if the files have no common ancestor
+   * @since 2018.1
+   */
+  @Nullable
+  public static String findRelativePath(@NotNull VirtualFile src, @NotNull VirtualFile dst, char separatorChar) {
+    if (!src.getFileSystem().equals(dst.getFileSystem())) {
+      return null;
+    }
+
+    if (!src.isDirectory()) {
+      src = src.getParent();
+      if (src == null) return null;
+    }
+
+    VirtualFile commonAncestor = VfsUtilCore.getCommonAncestor(src, dst);
+    if (commonAncestor == null) return null;
+
+    StringBuilder buffer = new StringBuilder();
+
+    if (!Comparing.equal(src, commonAncestor)) {
+      while (!Comparing.equal(src, commonAncestor)) {
+        buffer.append("..").append(separatorChar);
+        src = src.getParent();
+      }
+    }
+
+    buffer.append(VfsUtilCore.getRelativePath(dst, commonAncestor, separatorChar));
+
+    if (StringUtil.endsWithChar(buffer, separatorChar)) {
+      buffer.setLength(buffer.length() - 1);
+    }
+
+    return buffer.toString();
   }
 }

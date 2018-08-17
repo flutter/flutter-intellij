@@ -493,16 +493,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   }
 
   @NotNull
-  public AndroidToolWindowFixture getAndroidToolWindow() {
-    return new AndroidToolWindowFixture(getProject(), robot());
-  }
-
-  @NotNull
-  public CapturesToolWindowFixture getCapturesToolWindow() {
-    return new CapturesToolWindowFixture(getProject(), robot());
-  }
-
-  @NotNull
   public BuildVariantsToolWindowFixture getBuildVariantsWindow() {
     return new BuildVariantsToolWindowFixture(myIdeFrameFixture);
   }

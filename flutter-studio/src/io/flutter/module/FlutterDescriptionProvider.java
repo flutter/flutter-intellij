@@ -52,17 +52,19 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     }
     if (projectHasFlutter) {
       // Makes no sense to add Flutter templates to Android projects...
-      res.add(new FlutterApplicationGalleryEntry(sharedModel));
+      if (isNewProject) {
+        res.add(new FlutterApplicationGalleryEntry(sharedModel));
+      }
       res.add(new FlutterPluginGalleryEntry(sharedModel));
       res.add(new FlutterPackageGalleryEntry(sharedModel));
-      if (System.getProperty("flutter.experimental.modules", null) != null) {
+      if (isNewProject) {
         res.add(new FlutterModuleGalleryEntry(sharedModel));
       }
     }
-    // TODO(messick): Create a new module type that will import an existing Flutter module into an Android app.
-    // It needs to edit /settings.gradle and /app/build.gradle as described in the add2app doc.
-    // The Project Structure editor will need to be extended to 'include' Flutter plugins for Flutter modules;
-    // without that users will have to edit /settings.gradle to import a Flutter plugin (which is true today).
+    else {
+      // isNewProject == false
+      res.add(new ImportFlutterModuleGalleryEntry(sharedModel));
+    }
     return res;
   }
 
@@ -287,6 +289,54 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
       return new FlutterProjectStep(
         model, FlutterBundle.message("module.wizard.module_step_title"),
         FlutterIcons.Flutter_64, FlutterProjectType.MODULE);
+    }
+  }
+
+  private static class ImportFlutterModuleGalleryEntry extends FlutterGalleryEntry {
+
+    private ImportFlutterModuleGalleryEntry(OptionalValueProperty<FlutterProjectModel> sharedModel) {
+      super(sharedModel);
+    }
+
+    @Nullable
+    @Override
+    public Image getIcon() {
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+      return FlutterBundle.message("module.wizard.import_module_title");
+    }
+
+    @Nullable
+    @Override // Not used by Flutter.
+    public String getDescription() {
+      return FlutterBundle.message("module.wizard.import_module_description");
+    }
+
+    @Nullable
+    @Override
+    public String getHelpText() {
+      return FlutterBundle.message("flutter.module.import.settings.help.description");
+    }
+
+    @NotNull
+    @Override
+    public SkippableWizardStep createStep(@NotNull NewModuleModel model) {
+      return new ImportFlutterModuleStep(
+        model(model, FlutterProjectType.IMPORT),
+        FlutterBundle.message("module.wizard.import_module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.IMPORT);
+    }
+
+    @NotNull
+    @Override  // not used
+    public FlutterProjectStep createFlutterStep(@NotNull FlutterProjectModel model) {
+      return new FlutterProjectStep(
+        model, FlutterBundle.message("module.wizard.import_module_step_title"),
+        FlutterIcons.Flutter_64, FlutterProjectType.IMPORT);
     }
   }
 }
