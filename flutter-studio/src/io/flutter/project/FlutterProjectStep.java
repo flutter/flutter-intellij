@@ -193,12 +193,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     if (moduleName.isEmpty()) {
       return errorResult("Please enter a name for the " + getContainerName() + ".");
     }
-    //noinspection ConstantConditions
-    if (getModel().projectType().get().get() == FlutterProjectType.APP) {
-      File loc = new File(FileUtil.toSystemDependentName(getModel().projectLocation().get()), getModel().projectName().get());
-      if (loc.exists()) {
-        return errorResult("Project location already exists: " + loc.getPath());
-      }
+    File loc = new File(FileUtil.toSystemDependentName(getModel().projectLocation().get()), getModel().projectName().get());
+    if (loc.exists()) {
+      return errorResult("Project location already exists: " + loc.getPath());
     }
     if (!FlutterUtils.isValidPackageName(moduleName)) {
       return errorResult(
