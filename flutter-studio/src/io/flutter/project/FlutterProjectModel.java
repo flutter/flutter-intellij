@@ -14,10 +14,10 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * Note that a single instance of this class is shared among all the steps in the wizard.
- *
+ * <p>
  * There is some inconsistency in which values are saved and which reset when switching from
  * one project type to another. The AS New Module wizard has similar inconsistencies (as of beta 5).
- *
+ * <p>
  * TODO(messick): Add tests to simulate clicking Next/Previous buttons and choosing different project types.
  */
 public class FlutterProjectModel extends WizardModel {
@@ -55,28 +55,6 @@ public class FlutterProjectModel extends WizardModel {
 
     mySwift.set(getInitialSwiftSupport());
     mySwift.addListener(sender -> setInitialSwiftSupport(mySwift.get()));
-  }
-
-  @NotNull
-  private static String getInitialDomain() {
-    String domain = PropertiesComponent.getInstance().getValue(PROPERTIES_DOMAIN_KEY);
-    return domain == null ? DEFAULT_DOMAIN : domain;
-  }
-
-  private static boolean getInitialKotlinSupport() {
-    return PropertiesComponent.getInstance().isTrueValue(PROPERTIES_KOTLIN_SUPPORT_KEY);
-  }
-
-  private static void setInitialKotlinSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_KOTLIN_SUPPORT_KEY, isSupported);
-  }
-
-  private static boolean getInitialSwiftSupport() {
-    return PropertiesComponent.getInstance().isTrueValue(PROPERTIES_SWIFT_SUPPORT_KEY);
-  }
-
-  private static void setInitialSwiftSupport(boolean isSupported) {
-    PropertiesComponent.getInstance().setValue(PROPERTIES_SWIFT_SUPPORT_KEY, isSupported);
   }
 
   @NotNull
@@ -134,6 +112,10 @@ public class FlutterProjectModel extends WizardModel {
     super.dispose();
   }
 
+  public boolean isModule() {
+    return projectType().getValue() == FlutterProjectType.MODULE;
+  }
+
   @Override
   protected void handleFinished() {
     String location = myProjectLocation.get();
@@ -149,5 +131,27 @@ public class FlutterProjectModel extends WizardModel {
       return;
     }
     new FlutterProjectCreator(this).createProject();
+  }
+
+  @NotNull
+  private static String getInitialDomain() {
+    String domain = PropertiesComponent.getInstance().getValue(PROPERTIES_DOMAIN_KEY);
+    return domain == null ? DEFAULT_DOMAIN : domain;
+  }
+
+  private static boolean getInitialKotlinSupport() {
+    return PropertiesComponent.getInstance().isTrueValue(PROPERTIES_KOTLIN_SUPPORT_KEY);
+  }
+
+  private static void setInitialKotlinSupport(boolean isSupported) {
+    PropertiesComponent.getInstance().setValue(PROPERTIES_KOTLIN_SUPPORT_KEY, isSupported);
+  }
+
+  private static boolean getInitialSwiftSupport() {
+    return PropertiesComponent.getInstance().isTrueValue(PROPERTIES_SWIFT_SUPPORT_KEY);
+  }
+
+  private static void setInitialSwiftSupport(boolean isSupported) {
+    PropertiesComponent.getInstance().setValue(PROPERTIES_SWIFT_SUPPORT_KEY, isSupported);
   }
 }

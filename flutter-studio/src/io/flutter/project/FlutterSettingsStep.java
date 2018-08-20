@@ -42,6 +42,8 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
   private LabelWithEditButton myPackageName;
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
+  private JLabel myLanguageLabel;
+  private boolean hasEntered = false;
 
   public FlutterSettingsStep(FlutterProjectModel model, String title, Icon icon) {
     super(model, title, icon);
@@ -50,15 +52,18 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
 
     TextProperty packageNameText = new TextProperty(myPackageName);
 
-    Expression<String> computedPackageName = new DomainToPackageExpression(model.companyDomain(), model.projectName());
+    Expression<String> computedPackageName = new DomainToPackageExpression(model.companyDomain(), model.projectName()) {
+      @Override
+      public String get() {
+        return super.get().replaceAll("_", "");
+      }
+    };
     BoolProperty isPackageSynced = new BoolValueProperty(true);
     myBindings.bind(packageNameText, computedPackageName, isPackageSynced);
     myBindings.bind(model.packageName(), packageNameText);
     myListeners.receive(packageNameText, value -> isPackageSynced.set(value.equals(computedPackageName.get())));
 
     myBindings.bindTwoWay(new TextProperty(myCompanyDomain), model.companyDomain());
-    myBindings.bindTwoWay(new SelectedProperty(myKotlinCheckBox), model.useKotlin());
-    myBindings.bindTwoWay(new SelectedProperty(mySwiftCheckBox), model.useSwift());
 
     myValidatorPanel = new ValidatorPanel(this, myPanel);
 
@@ -91,5 +96,27 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
   @Override
   protected ObservableBool canGoForward() {
     return myValidatorPanel.hasErrors().not();
+  }
+
+  @Override
+  protected void onEntering() {
+    if (hasEntered) {
+      return;
+    }
+    // The language options are not used for modules. Since their values are persistent we cannot
+    // establish bindings before knowing the project type.
+    if (getModel().isModule()) {
+      myLanguageLabel.setVisible(false);
+      myKotlinCheckBox.setVisible(false);
+      mySwiftCheckBox.setVisible(false);
+    }
+    else {
+      myLanguageLabel.setVisible(true);
+      myKotlinCheckBox.setVisible(true);
+      mySwiftCheckBox.setVisible(true);
+      myBindings.bindTwoWay(new SelectedProperty(myKotlinCheckBox), getModel().useKotlin());
+      myBindings.bindTwoWay(new SelectedProperty(mySwiftCheckBox), getModel().useSwift());
+    }
+    hasEntered = true;
   }
 }
