@@ -14,10 +14,9 @@ import org.jetbrains.annotations.NotNull;
  */
 public enum FlutterLaunchMode {
   DEBUG("debug"),
-
   PROFILE("profile"),
-
-  RELEASE("release");
+  RELEASE("release"),
+  ATTACH("attach");
 
   private static final Key<FlutterLaunchMode> LAUNCH_MODE_KEY = Key.create("FlutterLaunchMode");
 
@@ -45,7 +44,7 @@ public enum FlutterLaunchMode {
    * This mode supports a debug connection (but, doesn't necessarily support breakpoints and debugging).
    */
   public boolean supportsDebugConnection() {
-    return this == DEBUG || this == PROFILE;
+    return this == DEBUG || this == PROFILE || this == ATTACH;
   }
 
   public boolean supportsReload() {

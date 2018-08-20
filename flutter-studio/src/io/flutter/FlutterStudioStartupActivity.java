@@ -10,6 +10,7 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.util.registry.Registry;
+import io.flutter.actions.ConnectAndroidDebuggerAction;
 import io.flutter.actions.FlutterShowStructureSettingsAction;
 import io.flutter.actions.OpenAndroidModule;
 import io.flutter.android.AndroidModuleLibraryManager;

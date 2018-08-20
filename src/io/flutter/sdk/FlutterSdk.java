@@ -223,6 +223,31 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
+  public FlutterCommand flutterAttach(@NotNull PubRoot root,
+                                      @NotNull RunMode mode,
+                                      @NotNull FlutterLaunchMode flutterLaunchMode,
+                                      String... additionalArgs) {
+    final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
+      args.add("--verbose");
+    }
+
+    if (flutterLaunchMode == FlutterLaunchMode.DEBUG) {
+      if (FlutterSettings.getInstance().isTrackWidgetCreation()) {
+        args.add("--track-widget-creation");
+      }
+    }
+
+    if (mode == RunMode.DEBUG) {
+      args.add("--start-paused");
+    }
+
+    args.addAll(asList(additionalArgs));
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{}));
+  }
+
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
