@@ -36,12 +36,13 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
 
     RunnerAndConfigurationSettings settings = RunFlutterAction.getRunConfigSettings(e);
     if (settings == null) {
+      showSelectConfigDialog();
       return;
     }
 
     RunConfiguration configuration = settings.getConfiguration();
     if (!(configuration instanceof SdkRunConfig)) {
-      // Action is disabled; shouldn't happen.
+      showSelectConfigDialog();
       return;
     }
 
@@ -87,5 +88,8 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
     }
     super.update(e);
   }
-}
 
+  private void showSelectConfigDialog() {
+    // TODO(messick): Show a dialog with instructions on selecting a proper run config.
+  }
+}

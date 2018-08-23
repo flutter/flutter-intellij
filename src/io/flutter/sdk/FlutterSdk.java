@@ -223,7 +223,7 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @NotNull RunMode mode,
+  public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main,
                                       @NotNull FlutterLaunchMode flutterLaunchMode, String... additionalArgs) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
@@ -231,6 +231,7 @@ public class FlutterSdk {
       args.add("--verbose");
     }
 
+    // TODO(messick): Check that 'flutter attach' supports these arguments.
     if (flutterLaunchMode == FlutterLaunchMode.PROFILE) {
       args.add("--profile");
     }

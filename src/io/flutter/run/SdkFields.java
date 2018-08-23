@@ -135,9 +135,7 @@ public class SdkFields {
   /**
    * Create a command to run 'flutter attach --machine'.
    */
-  public GeneralCommandLine createFlutterSdkAttachCommand(@NotNull Project project,
-                                                       @NotNull RunMode runMode,
-                                                       @NotNull FlutterLaunchMode flutterLaunchMode
+  public GeneralCommandLine createFlutterSdkAttachCommand(@NotNull Project project, @NotNull FlutterLaunchMode flutterLaunchMode
   ) throws ExecutionException {
     final MainFile main = MainFile.verify(filePath, project).get();
 
@@ -155,7 +153,7 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), runMode, flutterLaunchMode, args);
+    final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
 

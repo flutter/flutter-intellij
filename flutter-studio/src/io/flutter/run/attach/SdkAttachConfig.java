@@ -8,12 +8,10 @@ package io.flutter.run.attach;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.configurations.RefactoringListenerProvider;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.options.SettingsEditor;
@@ -37,10 +35,7 @@ import io.flutter.sdk.FlutterSdkManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// Similar to SdkRunConfig
-public class SdkAttachConfig
-  extends SdkRunConfig //LocatableConfigurationBase
-  implements LaunchState.RunConfig, RefactoringListenerProvider, RunConfigurationWithSuppressedDefaultRunAction {
+public class SdkAttachConfig extends SdkRunConfig {
 
   public SdkAttachConfig(SdkRunConfig config) {
     //noinspection ConstantConditions
@@ -113,9 +108,7 @@ public class SdkAttachConfig
   @NotNull
   @Override
   public GeneralCommandLine getCommand(@NotNull ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
-    Project project = env.getProject();
-    RunMode mode = RunMode.DEBUG; //RunMode.fromEnv(env);
-    return getFields().createFlutterSdkAttachCommand(project, mode, FlutterLaunchMode.fromEnv(env));
+    return getFields().createFlutterSdkAttachCommand(env.getProject(), FlutterLaunchMode.fromEnv(env));
   }
 
   private void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {

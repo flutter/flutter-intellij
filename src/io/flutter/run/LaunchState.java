@@ -90,6 +90,7 @@ public class LaunchState extends CommandLineState {
     DaemonConsoleView.install(this, env, workDir);
   }
 
+  @NotNull
   protected Callback getCallback() {
     return callback;
   }

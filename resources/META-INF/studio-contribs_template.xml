@@ -45,7 +45,6 @@
             text="Attach Debugger to Android Process"
             description="Attach Debugger to Android Process"
             icon="AllIcons.Debugger.AttachToProcess">
-      <!-- add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/ -->
     </action>
 
   </actions>
