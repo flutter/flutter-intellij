@@ -19,6 +19,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
+import io.flutter.run.attach.SdkAttachConfig;
 import org.jetbrains.android.actions.AndroidConnectDebuggerAction;
 
 import java.util.ArrayList;
@@ -44,7 +45,7 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
       return;
     }
 
-    SdkRunConfig sdkRunConfig = (SdkRunConfig)configuration.clone();
+    SdkAttachConfig sdkRunConfig = new SdkAttachConfig((SdkRunConfig)configuration);
     SdkFields fields = sdkRunConfig.getFields();
     String additionalArgs = fields.getAdditionalArgs();
 
@@ -72,7 +73,7 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
     ExecutionEnvironmentBuilder builder = ExecutionEnvironmentBuilder.create(executor, sdkRunConfig);
 
     ExecutionEnvironment env = builder.activeTarget().dataContext(e.getDataContext()).build();
-    FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.ATTACH);
+    FlutterLaunchMode.addToEnvironment(env, FlutterLaunchMode.DEBUG);
 
     ProgramRunnerUtil.executeConfiguration(env, false, true);
   }

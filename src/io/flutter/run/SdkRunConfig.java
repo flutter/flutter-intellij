@@ -60,7 +60,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
 
   private @NotNull SdkFields fields = new SdkFields();
 
-  SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
+  public SdkRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, final @NotNull String name) {
     super(project, factory, name);
   }
 

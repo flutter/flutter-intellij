@@ -155,7 +155,7 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterAttach(root, runMode, flutterLaunchMode, args);
+    final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), runMode, flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
 

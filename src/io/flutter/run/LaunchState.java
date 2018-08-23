@@ -90,6 +90,10 @@ public class LaunchState extends CommandLineState {
     DaemonConsoleView.install(this, env, workDir);
   }
 
+  protected Callback getCallback() {
+    return callback;
+  }
+
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     if (FlutterLog.isLoggingEnabled()) {
@@ -102,7 +106,7 @@ public class LaunchState extends CommandLineState {
     }
   }
 
-  private RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
+  protected RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
     FileDocumentManager.getInstance().saveAllDocuments();
 
     // Set our FlutterLaunchMode up in the ExecutionEnvironment.
@@ -180,7 +184,7 @@ public class LaunchState extends CommandLineState {
   }
 
   @NotNull
-  private XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
+  protected XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
                                            @NotNull final FlutterApp app,
                                            @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
@@ -225,7 +229,7 @@ public class LaunchState extends CommandLineState {
   }
 
   @NotNull
-  private ExecutionResult setUpConsoleAndActions(@NotNull FlutterApp app) throws ExecutionException {
+  protected ExecutionResult setUpConsoleAndActions(@NotNull FlutterApp app) throws ExecutionException {
     final ConsoleView console = createConsole(getEnvironment().getExecutor());
     if (console != null) {
       app.setConsole(console);
@@ -296,7 +300,7 @@ public class LaunchState extends CommandLineState {
 
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
-    public final boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
+    public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
       if (!DefaultRunExecutor.EXECUTOR_ID.equals(executorId) &&
           !DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) &&
           !ANDROID_PROFILER_EXECUTOR_ID.equals(executorId)) {
@@ -349,7 +353,7 @@ public class LaunchState extends CommandLineState {
     }
 
     @Override
-    protected final RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
+    protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
       throws ExecutionException {
       if (!(state instanceof LaunchState)) {
         LOG.error("unexpected RunProfileState: " + state.getClass());
