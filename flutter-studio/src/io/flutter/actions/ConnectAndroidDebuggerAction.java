@@ -13,6 +13,10 @@ import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.ui.DialogWrapper;
+import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindowId;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
@@ -21,11 +25,16 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.run.attach.SdkAttachConfig;
 import org.jetbrains.android.actions.AndroidConnectDebuggerAction;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
+  @SuppressWarnings("FieldCanBeLocal")
+  private static String RUN_DEBUG_LINK = "https://flutter.io/using-ide/#running-and-debugging";
+
   @Override
   public void actionPerformed(AnActionEvent e) {
     if (!FlutterUtils.isAndroidStudio()) {
@@ -89,7 +98,37 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
     super.update(e);
   }
 
-  private void showSelectConfigDialog() {
-    // TODO(messick): Show a dialog with instructions on selecting a proper run config.
+  private static void showSelectConfigDialog() {
+    ApplicationManager.getApplication().invokeLater(() -> new SelectConfigDialog().show(), ModalityState.NON_MODAL);
+  }
+
+  private static class SelectConfigDialog extends DialogWrapper {
+    private JPanel myPanel;
+    private JTextPane myTextPane;
+
+    SelectConfigDialog() {
+      super(null, false, false);
+      setTitle("Run Configuration");
+      myPanel = new JPanel();
+      myTextPane = new JTextPane();
+      Messages.installHyperlinkSupport(myTextPane);
+      String selectConfig = "<html><body>" +
+                            "<p>The run configuration for the Flutter module must be selected." +
+                            "<p>Please change the run configuration to the one created when the<br>" +
+                            "module was created. See <a href=\"" +
+                            RUN_DEBUG_LINK +
+                            "\">the Flutter documentation</a> for more information.</body></html>";
+      myTextPane.setText(selectConfig);
+      myPanel.add(myTextPane);
+      init();
+      //noinspection ConstantConditions
+      getButton(getCancelAction()).setVisible(false);
+    }
+
+    @Nullable
+    @Override
+    protected JComponent createCenterPanel() {
+      return myPanel;
+    }
   }
 }
