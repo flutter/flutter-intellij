@@ -21,13 +21,23 @@
       "untilBuild": "181.*"
     },
     {
-      "comments": "IntelliJ 2018.2 EAP",
+      "comments": "AS 3.3 Canary and IntelliJ 2018.2",
       "name": "IntelliJ",
-      "version": "2018.2",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "182.2574.2",
-      "dartPluginVersion": "182.2371.1",
+      "version": "2018.2.1",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "182.4968538",
+      "dartPluginVersion": "182.3911.37",
       "sinceBuild": "182.0",
+      "untilBuild": "182.3912"
+    },
+    {
+      "comments": "IntelliJ 2018.2.2",
+      "name": "IntelliJ",
+      "version": "2018.2.2",
+      "ideaProduct": "ideaIU",
+      "ideaVersion": "2018.2.2",
+      "dartPluginVersion": "182.4129.13",
+      "sinceBuild": "182.4129",
       "untilBuild": "182.*"
     }
   ]
