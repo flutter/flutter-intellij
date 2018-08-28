@@ -32,7 +32,7 @@
   <li>build for Android Studio 3.3 Canary and 3.2 Beta</li>
   <li>add UI support for importing Flutter modules into Android apps</li>
   <li>add more details to logging output</li>
-  <li>a few bug fixes</li>
+  <li>bug fixes</li>
 </ul>
 <h2>27.1</h2>
 <ul>
