@@ -1,3 +1,9 @@
+## 28.0
+- build for Android Studio 3.3 Canary and 3.2 Beta
+- add UI support for importing Flutter modules into Android apps
+- add more details to logging output
+- a few bug fixes
+
 ## 27.1
 - change the preference for --track-widget-creation to default to off
 
