@@ -27,6 +27,7 @@ public class ProjectType {
       // Remove MODULE type until add-to-app is complete.
       if (System.getProperty("flutter.experimental.modules", null) == null) {
         myList.remove(FlutterProjectType.MODULE);
+        myList.remove(FlutterProjectType.IMPORT);
       }
       mySelected = myList.get(0);
     }
