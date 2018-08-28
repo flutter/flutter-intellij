@@ -30,8 +30,13 @@ import java.util.List;
 
 public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
 
-  @Override
+  @SuppressWarnings("override") // Used in 3.0-3.2
   public Collection<? extends ModuleGalleryEntry> getDescriptions() {
+    return getGalleryList(false);
+  }
+
+  @SuppressWarnings("override") // For 3.3
+  public Collection<? extends ModuleGalleryEntry> getDescriptions(Project project) {
     return getGalleryList(false);
   }
 
