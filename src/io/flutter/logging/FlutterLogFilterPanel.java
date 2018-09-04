@@ -89,22 +89,23 @@ public class FlutterLogFilterPanel {
 
   private static final OnFilterListener DEFAULT_ON_FILTER_LISTENER = param -> LOG.info("Requests filter: " + param);
 
-  @Nullable
-  private volatile OnFilterListener onFilterListener;
+  @NotNull
+  private final OnFilterListener onFilterListener;
   private JPanel root;
   private JCheckBox matchCaseCheckBox;
   private JCheckBox regexCheckBox;
   private SearchTextField textExpression;
   private JComboBox<FlutterLog.Level> logLevelComboBox;
 
-  public FlutterLogFilterPanel() {
-    matchCaseCheckBox.addItemListener(e -> getFilterListener().onFilter(getCurrentFilterParam()));
-    regexCheckBox.addItemListener(e -> getFilterListener().onFilter(getCurrentFilterParam()));
+  public FlutterLogFilterPanel(@NotNull OnFilterListener onFilterListener) {
+    this.onFilterListener = onFilterListener;
+    matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
     logLevelComboBox.setSelectedItem(FlutterLog.Level.CONFIG);
-    logLevelComboBox.addActionListener(event -> getFilterListener().onFilter(getCurrentFilterParam()));
+    logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
     logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
       @Override
       protected void customizeCellRenderer(@NotNull JList<? extends FlutterLog.Level> list,
@@ -129,14 +130,10 @@ public class FlutterLogFilterPanel {
     return root;
   }
 
-  public void updateFromPreferences(@NotNull FlutterLogPreferences flutterLogPreferences) {
+  public void initFromPreferences(@NotNull FlutterLogPreferences flutterLogPreferences) {
     regexCheckBox.setSelected(flutterLogPreferences.isToolWindowRegex());
     matchCaseCheckBox.setSelected(flutterLogPreferences.isToolWindowMatchCase());
     logLevelComboBox.setSelectedItem(FlutterLog.Level.forValue(flutterLogPreferences.getToolWindowLogLevel()));
-  }
-
-  public void setOnFilterListener(@Nullable OnFilterListener onFilterListener) {
-    this.onFilterListener = onFilterListener;
   }
 
   @Nullable
@@ -163,13 +160,7 @@ public class FlutterLogFilterPanel {
   @NotNull
   private SearchTextField createSearchTextField() {
     final LogFilterTextField logFilterTextField = new LogFilterTextField();
-    logFilterTextField.setOnFilterListener(() -> getFilterListener().onFilter(getCurrentFilterParam()));
+    logFilterTextField.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
     return logFilterTextField;
-  }
-
-  @NotNull
-  private OnFilterListener getFilterListener() {
-    final OnFilterListener listener = onFilterListener;
-    return listener == null ? DEFAULT_ON_FILTER_LISTENER : listener;
   }
 }
