@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.perf;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.Ref;
@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+/// XXX probably not needed.
 class ScriptManager {
   private static final long RESPONSE_WAIT_TIMEOUT = 3000;
 

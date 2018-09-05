@@ -243,8 +243,8 @@
     <projectService serviceInterface="io.flutter.run.FlutterAppManager"
                     serviceImplementation="io.flutter.run.FlutterAppManager"
                     overrides="false"/>
-    <projectService serviceInterface="io.flutter.coverage.FlutterLiveCoverageManager"
-                    serviceImplementation="io.flutter.coverage.FlutterLiveCoverageManager"
+    <projectService serviceInterface="io.flutter.perf.FlutterWidgetPerfManager"
+                    serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager"
                     overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>

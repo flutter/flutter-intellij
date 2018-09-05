@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.perf;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
@@ -22,36 +22,36 @@ import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// TODO(devoncarew): Have an opt-out for this feature.
-
-// TODO(devoncarew): Handle the case where we're reloading coverage for a file that has been editing
-//       by the user since the last reload (where the source that we're editing has different line
-//       positions than what's running on the VM).
+// TODO(jacobr): Have an opt-out for this feature.
 
 /**
  * A singleton for the current Project. This class watches for changes to the current
- * Flutter app, and orchestrates displaying live code coverage for the current file.
+ * Flutter app, and orchestrates displaying rebuild counts and other performance
+ * results broken down at the widget level for the current file.
+ *
+ * Rebuilt counts provide an easy way to understand the coarse grained
+ * performance of an application and avoid common pitfalls.
  */
-public class FlutterLiveCoverageManager implements Disposable {
-  public static final boolean ENABLE_LIVE_COVERAGE = false;
+public class FlutterWidgetPerfManager implements Disposable {
+  public static final boolean ENABLE_REBUILD_COUNTS = true;
 
   /**
-   * Initialize the live coverage manager for the given project.
+   * Initialize the rebuild count manager for the given project.
    */
   public static void init(@NotNull Project project) {
-    // Call getInstance() will init FlutterLiveCoverageManager for the given project.
+    // Call getInstance() will init FlutterWidgetPerfManager for the given project.
     getInstance(project);
   }
 
-  public static FlutterLiveCoverageManager getInstance(@NotNull Project project) {
-    return ServiceManager.getService(project, FlutterLiveCoverageManager.class);
+  public static FlutterWidgetPerfManager getInstance(@NotNull Project project) {
+    return ServiceManager.getService(project, FlutterWidgetPerfManager.class);
   }
 
-  private FlutterAppLiveCoverage currentCoverage;
+  private FlutterWidgetPerf currentStats;
   private VirtualFile lastFile;
   private FileEditor lastEditor;
 
-  private FlutterLiveCoverageManager(@NotNull Project project) {
+  private FlutterWidgetPerfManager(@NotNull Project project) {
     Disposer.register(project, this);
 
     FlutterAppManager.getInstance(project).getActiveAppAsStream().listen(
@@ -63,7 +63,7 @@ public class FlutterLiveCoverageManager implements Disposable {
     if (editor instanceof EditorEx) {
       lastFile = ((EditorEx)editor).getVirtualFile();
 
-      if (couldContainCoverage(lastFile)) {
+      if (couldContainWidgets(lastFile)) {
         lastEditor = FileEditorManager.getInstance(project).getSelectedEditor(lastFile);
 
         if (lastEditor == null) {
@@ -74,7 +74,7 @@ public class FlutterLiveCoverageManager implements Disposable {
 
     connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
       public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        if (couldContainCoverage(event.getNewFile())) {
+        if (couldContainWidgets(event.getNewFile())) {
           lastFile = event.getNewFile();
           lastEditor = editorFor(event);
         }
@@ -83,12 +83,12 @@ public class FlutterLiveCoverageManager implements Disposable {
           lastEditor = null;
         }
 
-        notifyCoverage();
+        notifyPerf();
       }
     });
   }
 
-  private boolean couldContainCoverage(@Nullable VirtualFile file) {
+  private boolean couldContainWidgets(@Nullable VirtualFile file) {
     return file != null && FlutterUtils.isDartFile(file);
   }
 
@@ -101,52 +101,52 @@ public class FlutterLiveCoverageManager implements Disposable {
 
   private void updateCurrentAppChanged(@Nullable FlutterApp app) {
     if (app == null) {
-      if (currentCoverage != null) {
-        currentCoverage.dispose();
-        currentCoverage = null;
+      if (currentStats != null) {
+        currentStats.dispose();
+        currentStats = null;
       }
     }
-    else if (currentCoverage == null) {
-      if (ENABLE_LIVE_COVERAGE && app.getLaunchMode().supportsDebugConnection()) {
-        currentCoverage = new FlutterAppLiveCoverage(app);
-        notifyCoverage();
+    else if (currentStats == null) {
+      if (ENABLE_REBUILD_COUNTS && app.getLaunchMode().supportsDebugConnection()) {
+        currentStats = new FlutterWidgetPerf(app);
+        notifyPerf();
       }
     }
-    else if (currentCoverage.getApp() != app) {
-      currentCoverage.dispose();
+    else if (currentStats.getApp() != app) {
+      currentStats.dispose();
 
-      if (ENABLE_LIVE_COVERAGE && app.getLaunchMode().supportsDebugConnection()) {
-        currentCoverage = new FlutterAppLiveCoverage(app);
-        notifyCoverage();
+      if (ENABLE_REBUILD_COUNTS && app.getLaunchMode().supportsDebugConnection()) {
+        currentStats = new FlutterWidgetPerf(app);
+        notifyPerf();
       }
     }
   }
 
-  private void notifyCoverage() {
-    if (currentCoverage == null) {
+  private void notifyPerf() {
+    if (currentStats == null) {
       return;
     }
 
     if (lastFile == null) {
-      currentCoverage.showFor(null, null);
+      currentStats.showFor(null, null);
     }
     else {
-      final Module module = currentCoverage.getApp().getModule();
+      final Module module = currentStats.getApp().getModule();
 
       if (module != null && ModuleUtilCore.moduleContainsFile(module, lastFile, false)) {
-        currentCoverage.showFor(lastFile, lastEditor);
+        currentStats.showFor(lastFile, lastEditor);
       }
       else {
-        currentCoverage.showFor(null, null);
+        currentStats.showFor(null, null);
       }
     }
   }
 
   @Override
   public void dispose() {
-    if (currentCoverage != null) {
-      currentCoverage.dispose();
-      currentCoverage = null;
+    if (currentStats != null) {
+      currentStats.dispose();
+      currentStats = null;
     }
   }
 }

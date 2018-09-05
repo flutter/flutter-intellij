@@ -3,19 +3,19 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.perf;
 
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VirtualFile;
 import gnu.trove.TIntHashSet;
 
-class FileCoverageInfo {
+class FilePerfInfo {
   private final VirtualFile file;
 
   private final TIntHashSet coveredLines = new TIntHashSet();
   private final TIntHashSet uncoveredLines = new TIntHashSet();
 
-  public FileCoverageInfo(VirtualFile file) {
+  public FilePerfInfo(VirtualFile file) {
     this.file = file;
   }
 
@@ -23,6 +23,7 @@ class FileCoverageInfo {
     return file;
   }
 
+  // XXX THESE ARE THE WRONG STATS.
   public void addCovered(Pair<Integer, Integer> pos) {
     if (pos == null) {
       return;

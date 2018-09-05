@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.perf;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -27,7 +27,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-class FlutterAppLiveCoverage implements Disposable {
+class FlutterWidgetPerf implements Disposable {
   @NotNull final FlutterApp app;
   @NotNull final FlutterApp.FlutterAppListener appListener;
   private StreamSubscription<IsolateRef> isolateRefStreamSubscription;
@@ -41,12 +41,12 @@ class FlutterAppLiveCoverage implements Disposable {
   @SuppressWarnings("FieldCanBeLocal")
   private VmServiceListener vmServiceListener;
 
-  private final Map<FileEditor, EditorCoverageDecorations> editorDecorations = new HashMap<>();
+  private final Map<FileEditor, EditorPerfDecorations> editorDecorations = new HashMap<>();
 
   @Nullable VirtualFile currentFile;
   @Nullable FileEditor currentEditor;
 
-  FlutterAppLiveCoverage(@NotNull FlutterApp app) {
+  FlutterWidgetPerf(@NotNull FlutterApp app) {
     this.app = app;
 
     isStarted = app.isStarted();
@@ -206,7 +206,7 @@ class FlutterAppLiveCoverage implements Disposable {
       public void received(JsonObject object) {
         JobScheduler.getScheduler().schedule(() -> {
           final SourceReport report = new SourceReport(object);
-          final EditorCoverageDecorations editorDecoration = editorDecorations.get(fileEditor);
+          final EditorPerfDecorations editorDecoration = editorDecorations.get(fileEditor);
 
           editorDecoration.updateFromSourceReport(scriptManager, file, report);
 
@@ -237,9 +237,9 @@ class FlutterAppLiveCoverage implements Disposable {
     harvestInvalidEditors();
 
     if (fileEditor != null) {
-      // Create a new EditorCoverageDecorations if necessary.
+      // Create a new EditorPerfDecorations if necessary.
       if (!editorDecorations.containsKey(fileEditor)) {
-        editorDecorations.put(fileEditor, new EditorCoverageDecorations(fileEditor));
+        editorDecorations.put(fileEditor, new EditorPerfDecorations(fileEditor));
       }
 
       requestRepaint(When.now);
@@ -252,9 +252,9 @@ class FlutterAppLiveCoverage implements Disposable {
     while (editors.hasNext()) {
       final FileEditor editor = editors.next();
       if (!editor.isValid()) {
-        final EditorCoverageDecorations editorCoverageDecorations = editorDecorations.get(editor);
+        final EditorPerfDecorations editorPerfDecorations = editorDecorations.get(editor);
         editors.remove();
-        editorCoverageDecorations.dispose();
+        editorPerfDecorations.dispose();
       }
     }
   }
@@ -276,7 +276,7 @@ class FlutterAppLiveCoverage implements Disposable {
     //  app.getVmService().removeEventListener(vmServiceListener);
     //}
 
-    for (EditorCoverageDecorations decorations : editorDecorations.values()) {
+    for (EditorPerfDecorations decorations : editorDecorations.values()) {
       decorations.dispose();
     }
 

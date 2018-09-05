@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.coverage;
+package io.flutter.perf;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -14,14 +14,18 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.ui.JBColor;
+import com.intellij.util.ui.GraphicsUtil;
+import com.intellij.util.ui.UIUtil;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
-class EditorCoverageDecorations implements Disposable {
+class EditorPerfDecorations implements Disposable {
   private static final VirtualFileManager virtualFileManager = VirtualFileManager.getInstance();
 
   private static final int HIGHLIGHTER_LAYER = HighlighterLayer.SELECTION - 1;
@@ -31,7 +35,7 @@ class EditorCoverageDecorations implements Disposable {
 
   private boolean hasDecorations = false;
 
-  EditorCoverageDecorations(@NotNull FileEditor fileEditor) {
+  EditorPerfDecorations(@NotNull FileEditor fileEditor) {
     this.fileEditor = fileEditor;
 
     addBlankMarker();
@@ -68,7 +72,7 @@ class EditorCoverageDecorations implements Disposable {
       scripts.add(scriptRef);
     }
 
-    final FileCoverageInfo coverageInfo = new FileCoverageInfo(reloadFile);
+    final FilePerfInfo perfInfo = new FilePerfInfo(reloadFile);
 
     for (SourceReportRange reportRange : report.getRanges()) {
       final SourceReportCoverage coverage = reportRange.getCoverage();
@@ -93,15 +97,15 @@ class EditorCoverageDecorations implements Disposable {
           }
 
           for (List<Integer> encoded : script.getTokenPosTable()) {
-            coverageInfo.addUncovered(encoded.get(0) - 1);
+            perfInfo.addUncovered(encoded.get(0) - 1);
           }
 
           for (int tokenPos : coverage.getHits()) {
-            coverageInfo.addCovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
+            perfInfo.addCovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
           }
 
           for (int tokenPos : coverage.getMisses()) {
-            coverageInfo.addUncovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
+            perfInfo.addUncovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
           }
         }
       }
@@ -121,11 +125,11 @@ class EditorCoverageDecorations implements Disposable {
 
       int markerCount = 0;
 
-      for (int line : coverageInfo.getCoveredLines()) {
+      for (int line : perfInfo.getCoveredLines()) {
         final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HIGHLIGHTER_LAYER, coveredAttributes);
 
         final CoveredLineMarkerRenderer renderer =
-          new CoveredLineMarkerRenderer(!coverageInfo.isCovered(line - 1), !coverageInfo.isCovered(line + 1));
+          new CoveredLineMarkerRenderer(!perfInfo.isCovered(line - 1), !perfInfo.isCovered(line + 1));
         rangeHighlighter.setErrorStripeMarkColor(CoveredLineMarkerRenderer.coveredColor);
         rangeHighlighter.setThinErrorStripeMark(true);
         rangeHighlighter.setLineMarkerRenderer(renderer);
@@ -133,7 +137,7 @@ class EditorCoverageDecorations implements Disposable {
         markerCount++;
       }
 
-      for (int line : coverageInfo.getUncoveredLines()) {
+      for (int line : perfInfo.getUncoveredLines()) {
         final RangeHighlighter rangeHighlighter =
           markupModel.addLineHighlighter(line, HIGHLIGHTER_LAYER, uncoveredAttributes);
         rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
@@ -205,12 +209,27 @@ class CoveredLineMarkerRenderer extends FlutterLineMarkerRenderer {
     this.isEnd = isEnd;
   }
 
+  static int hue = 0;
   @Override
   public void paint(Editor editor, Graphics g, Rectangle r) {
-    final int width = r.width - 4;
     final int height = r.height;
 
-    g.setColor(coveredColor);
+    GraphicsUtil.setupAAPainting(g);
+    //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+
+    final Font font = UIUtil.getFont(UIUtil.FontSize.MINI, UIUtil.getButtonFont());
+    g.setFont(font);
+
+    String text = Integer.toString(new Random().nextInt(100));
+
+    final Rectangle2D bounds = g.getFontMetrics().getStringBounds(text, g);
+
+    final int width = Math.max(r.width, (int)bounds.getWidth() + 4);
+
+    hue += 10;
+    hue = hue % 360;
+    Color backgroundColor = Color.getHSBColor((float)hue / 360.0f, 1.0f, 1.0f);
+    g.setColor(backgroundColor);
 
     if (!isStart && !isEnd) {
       g.fillRect(r.x + 2, r.y, width, height);
@@ -228,6 +247,8 @@ class CoveredLineMarkerRenderer extends FlutterLineMarkerRenderer {
         g.fillRect(r.x + 2, r.y + diff, width, height - diff);
       }
     }
+    g.setColor(JBColor.white);
+    g.drawString(text, r.x + 4, r.y + r.height - 4);
   }
 }
 
