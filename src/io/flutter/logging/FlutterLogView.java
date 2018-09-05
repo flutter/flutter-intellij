@@ -411,7 +411,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
     flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
-    filterPanel = createFilterPanel();
+    filterPanel = new FlutterLogFilterPanel(param -> doFilter());
+    filterPanel.initFromPreferences(flutterLogPreferences);
 
     computeTextAttributesByLogLevelCache();
     ApplicationManager.getApplication().getMessageBus().connect(this)
@@ -511,14 +512,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     });
     logModel.setScrollPane(pane);
     toolWindowPanel.setContent(pane);
-  }
-
-  @NotNull
-  private FlutterLogFilterPanel createFilterPanel() {
-    final FlutterLogFilterPanel panel = new FlutterLogFilterPanel();
-    panel.updateFromPreferences(flutterLogPreferences);
-    panel.setOnFilterListener(param -> doFilter());
-    return panel;
   }
 
   private void computeTextAttributesByLogLevelCache() {
