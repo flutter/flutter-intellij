@@ -95,6 +95,7 @@ public class LaunchState extends CommandLineState {
     return callback;
   }
 
+  @Override
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     if (FlutterLog.isLoggingEnabled()) {
@@ -117,17 +118,12 @@ public class LaunchState extends CommandLineState {
 
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
-    final FlutterApp app = callback.createApp(device);
 
     if (device == null) {
-      Messages.showDialog(
-        project,
-        "No connected devices found; please connect a device, or see flutter.io/setup for getting started instructions.",
-        "No Connected Devices Found",
-        new String[]{Messages.OK_BUTTON}, 0, AllIcons.General.InformationDialog);
-
+      showNoDeviceConnectedMessage(project);
       return null;
     }
+    final FlutterApp app = callback.createApp(device);
 
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);
@@ -182,6 +178,14 @@ public class LaunchState extends CommandLineState {
     catch (ClassNotFoundException e) {
       return null;
     }
+  }
+
+  protected void showNoDeviceConnectedMessage(Project project) {
+    Messages.showDialog(
+      project,
+      "No connected devices found; please connect a device, or see flutter.io/setup for getting started instructions.",
+      "No Connected Devices Found",
+      new String[]{Messages.OK_BUTTON}, 0, AllIcons.General.InformationDialog);
   }
 
   @NotNull
@@ -282,6 +286,7 @@ public class LaunchState extends CommandLineState {
   public interface RunConfig extends RunProfile {
     Project getProject();
 
+    @Override
     @NotNull
     LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
 

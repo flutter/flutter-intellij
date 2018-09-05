@@ -31,7 +31,13 @@ public class AttachState extends LaunchState {
   protected RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
     Project project = getEnvironment().getProject();
     FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
+    if (device == null) {
+      showNoDeviceConnectedMessage(project);
+      return null;
+    }
     FlutterApp app = getCallback().createApp(device);
+    // Cache for use in console configuration.
+    FlutterApp.addToEnvironment(env, app);
     ExecutionResult result = setUpConsoleAndActions(app);
     return createDebugSession(env, app, result).getRunContentDescriptor();
   }
