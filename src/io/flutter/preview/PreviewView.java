@@ -100,6 +100,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   final QuickAssistAction actionPadding;
   final QuickAssistAction actionColumn;
   final QuickAssistAction actionRow;
+  final QuickAssistAction actionContainer;
   final QuickAssistAction actionMoveUp;
   final QuickAssistAction actionMoveDown;
   final QuickAssistAction actionRemove;
@@ -277,6 +278,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     actionPadding = new QuickAssistAction("dart.assist.flutter.wrap.padding", FlutterIcons.Padding, "Add padding");
     actionColumn = new QuickAssistAction("dart.assist.flutter.wrap.column", FlutterIcons.Column, "Wrap with Column");
     actionRow = new QuickAssistAction("dart.assist.flutter.wrap.row", FlutterIcons.Row, "Wrap with Row");
+    actionContainer = new QuickAssistAction("dart.assist.flutter.wrap.container", FlutterIcons.Container, "Wrap with Container");
     actionMoveUp = new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up");
     actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
     actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget");
@@ -307,6 +309,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     toolbarGroup.add(actionPadding);
     toolbarGroup.add(actionColumn);
     toolbarGroup.add(actionRow);
+    toolbarGroup.add(actionContainer);
     toolbarGroup.addSeparator();
     toolbarGroup.add(actionExtractMethod);
     toolbarGroup.addSeparator();
@@ -475,6 +478,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         if (actionRow.isEnabled()) {
           hasAction = true;
           group.add(new TextOnlyActionWrapper(actionRow));
+        }
+        if (actionContainer.isEnabled()) {
+          hasAction = true;
+          group.add(new TextOnlyActionWrapper(actionContainer));
         }
         group.addSeparator();
         if (actionExtractMethod.isEnabled()) {
