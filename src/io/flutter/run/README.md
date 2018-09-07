@@ -23,7 +23,7 @@
 ## `io.flutter.run.daemon`
 
 * `FlutterApp` - represents a running Flutter app.
-* `FlutterAppListener` - createAppCallback for daemon lifecycle events.
+* `FlutterAppListener` - callback for daemon lifecycle events.
 * `DaemonApi` - defines protocol for sending JSON messages to running Flutter app's process.
 * `DaemonEvent` - event received from running Flutter app's process.
 * `DaemonEvent.Listener` - base class for receiving events from Flutter app's process.

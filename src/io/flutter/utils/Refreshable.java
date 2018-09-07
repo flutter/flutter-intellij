@@ -220,7 +220,7 @@ public class Refreshable<T> implements Closeable {
           // This is normal.
         } catch (Exception e) {
           if (!Objects.equal(e.getMessage(), "expected failure in test")) {
-            LOG.warn("CreateAppCallback threw an exception while updating a Refreshable", e);
+            LOG.warn("Callback threw an exception while updating a Refreshable", e);
           }
         } finally {
           schedule.done(request);

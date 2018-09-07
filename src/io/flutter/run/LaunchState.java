@@ -274,7 +274,7 @@ public class LaunchState extends CommandLineState {
   /**
    * Starts the process and wraps it in a FlutterApp.
    * <p>
-   * The myCreateAppCallback knows the appropriate command line arguments (bazel versus non-bazel).
+   * The callback knows the appropriate command line arguments (bazel versus non-bazel).
    */
   public interface CreateAppCallback {
     FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;

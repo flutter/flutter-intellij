@@ -693,7 +693,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   /**
-   * CreateAppCallback for subclass.
+   * Callback for subclass.
    */
   protected void onVmConnected(@NotNull VmService vmService) {
   }
