@@ -65,12 +65,12 @@ public class SdkAttachConfig extends SdkRunConfig {
       throw new ExecutionException(e);
     }
 
-    SdkFields launchFields = getFields(); // TODO Check that this does not change from the constructor setting.
+    SdkFields launchFields = getFields();
     MainFile mainFile = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
     Project project = env.getProject();
     RunMode mode = RunMode.fromEnv(env);
     Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
-    LaunchState.Callback callback = (device) -> {
+    LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
 
       GeneralCommandLine command = getCommand(env, device);
@@ -92,7 +92,7 @@ public class SdkAttachConfig extends SdkRunConfig {
       return app;
     };
 
-    LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, callback);
+    LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
 
     // Set up additional console filters.
     TextConsoleBuilder builder = launcher.getConsoleBuilder();

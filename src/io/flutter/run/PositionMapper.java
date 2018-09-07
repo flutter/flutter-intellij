@@ -65,7 +65,7 @@ public class PositionMapper implements DartVmServiceDebugProcess.PositionMapper 
   private final Analyzer analyzer;
 
   /**
-   * Callback to download a Dart file from Observatory.
+   * CreateAppCallback to download a Dart file from Observatory.
    * <p>
    * Initialized when the debugger connects.
    */

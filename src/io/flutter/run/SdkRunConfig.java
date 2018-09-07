@@ -139,7 +139,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtil.findModuleForFile(mainFile.getFile(), env.getProject());
-    final LaunchState.Callback callback = (device) -> {
+    final LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
 
       final GeneralCommandLine command = getCommand(env, device);
@@ -209,7 +209,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
       return app;
     };
 
-    final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, callback);
+    final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
 
     // Set up additional console filters.
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();

@@ -23,8 +23,8 @@ public class AttachState extends LaunchState {
                      @NotNull VirtualFile workDir,
                      @NotNull VirtualFile sourceLocation,
                      @NotNull RunConfig runConfig,
-                     @NotNull Callback callback) {
-    super(env, workDir, sourceLocation, runConfig, callback);
+                     @NotNull CreateAppCallback createAppCallback) {
+    super(env, workDir, sourceLocation, runConfig, createAppCallback);
   }
 
   @Override
@@ -35,7 +35,7 @@ public class AttachState extends LaunchState {
       showNoDeviceConnectedMessage(project);
       return null;
     }
-    FlutterApp app = getCallback().createApp(device);
+    FlutterApp app = getCreateAppCallback().createApp(device);
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);
     ExecutionResult result = setUpConsoleAndActions(app);

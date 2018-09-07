@@ -37,6 +37,7 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    // NOTE: When making changes here, consider making similar changes to RunFlutterAction.
     if (!FlutterUtils.isAndroidStudio()) {
       super.actionPerformed(e);
       return;

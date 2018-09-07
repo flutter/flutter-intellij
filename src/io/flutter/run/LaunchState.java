@@ -75,24 +75,24 @@ public class LaunchState extends CommandLineState {
   private final @NotNull VirtualFile sourceLocation;
 
   private final @NotNull RunConfig runConfig;
-  private final @NotNull Callback callback;
+  private final @NotNull CreateAppCallback myCreateAppCallback;
 
   public LaunchState(@NotNull ExecutionEnvironment env,
                      @NotNull VirtualFile workDir,
                      @NotNull VirtualFile sourceLocation,
                      @NotNull RunConfig runConfig,
-                     @NotNull Callback callback) {
+                     @NotNull CreateAppCallback createAppCallback) {
     super(env);
     this.workDir = workDir;
     this.sourceLocation = sourceLocation;
     this.runConfig = runConfig;
-    this.callback = callback;
+    this.myCreateAppCallback = createAppCallback;
     DaemonConsoleView.install(this, env, workDir);
   }
 
   @NotNull
-  protected Callback getCallback() {
-    return callback;
+  protected CreateAppCallback getCreateAppCallback() {
+    return myCreateAppCallback;
   }
 
   @Override
@@ -123,7 +123,7 @@ public class LaunchState extends CommandLineState {
       showNoDeviceConnectedMessage(project);
       return null;
     }
-    final FlutterApp app = callback.createApp(device);
+    final FlutterApp app = myCreateAppCallback.createApp(device);
 
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);
@@ -274,9 +274,9 @@ public class LaunchState extends CommandLineState {
   /**
    * Starts the process and wraps it in a FlutterApp.
    * <p>
-   * The callback knows the appropriate command line arguments (bazel versus non-bazel).
+   * The myCreateAppCallback knows the appropriate command line arguments (bazel versus non-bazel).
    */
-  public interface Callback {
+  public interface CreateAppCallback {
     FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;
   }
 
