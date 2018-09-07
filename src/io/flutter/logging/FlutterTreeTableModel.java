@@ -74,7 +74,7 @@ class FlutterTreeTableModel implements TableModel {
     INVALID(-1) {
       @Override
       public String toLogString(@NotNull FlutterLogEntry entry) {
-        throw new IllegalStateException("Can't get log streen for `INVALID`");
+        throw new IllegalStateException("Can't get log string for `INVALID`");
       }
     },
     MESSAGE(0) {
@@ -92,11 +92,7 @@ class FlutterTreeTableModel implements TableModel {
     LOG_LEVEL(2) {
       @Override
       public String toLogString(@NotNull FlutterLogEntry entry) {
-        FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
-        if (level == null) {
-          level = FlutterLog.Level.NONE;
-        }
-        return level.name();
+        return FlutterLog.Level.forValue(entry.getLevel()).name();
       }
     };
 
