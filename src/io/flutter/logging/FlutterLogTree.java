@@ -30,6 +30,8 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
@@ -42,6 +44,8 @@ import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +56,21 @@ public class FlutterLogTree extends TreeTable {
 
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
   private static final Logger LOG = Logger.getInstance(FlutterLogTree.class);
+  @NotNull
+  private static final Map<FlutterLog.Level, String> LOG_LEVEL_FILTER;
+
+  static {
+    LOG_LEVEL_FILTER = new HashMap<>();
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.NONE, "NONE|FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINEST, "FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINER, "FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINE, "FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.CONFIG, "CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.INFO, "INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.WARNING, "WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.SEVERE, "SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.SHOUT, "SHOUT");
+  }
 
   private static class ColumnModel {
 
@@ -343,7 +362,7 @@ public class FlutterLogTree extends TreeTable {
       treeTable.updateUI();
 
       if (autoScrollToEnd) {
-        scrollToEnd();
+        uiThreadAlarm.addRequest(this::scrollToEnd, 100);
       }
     }
 
@@ -374,19 +393,10 @@ public class FlutterLogTree extends TreeTable {
         return;
       }
 
-      uiThreadAlarm.cancelAllRequests();
       uiThreadAlarm.addRequest(() -> {
         final MutableTreeNode root = getRoot();
         entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
         update();
-
-        // Schedule an update to scroll after the model has had time to re-render.
-        uiThreadAlarm.addRequest(() -> {
-          if (autoScrollToEnd) {
-            scrollToEnd();
-          }
-          // A simple delay should suffice, given our mantra of eventual consistency.
-        }, 100);
       }, 10);
     }
 
@@ -511,7 +521,9 @@ public class FlutterLogTree extends TreeTable {
 
   private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
   private final TreeModel model;
-  private EntryFilter filter;
+  private FlutterLogFilterPanel.FilterParam filter;
+  @NotNull
+  private final TableRowSorter<TableModel> rowSorter;
   @NotNull
   private final FlutterLogEntryPopup flutterLogPopup;
 
@@ -525,6 +537,9 @@ public class FlutterLogTree extends TreeTable {
     super(model);
     model.setTree(this.getTree());
     this.model = model;
+    final TableModel tableModel = getModel();
+    rowSorter = new TableRowSorter<>(new FlutterTreeTableModel(this));
+    setRowSorter(rowSorter);
     registerCopyHandler();
     flutterLogPopup = new FlutterLogEntryPopup();
     addMouseListener(new SimpleMouseListener() {
@@ -605,31 +620,49 @@ public class FlutterLogTree extends TreeTable {
     return model.columns.getRenderer(column);
   }
 
-  public void setFilter(@Nullable EntryFilter filter) {
-    // Only set and reload if the filter has changed.
-    if (!Objects.equals(this.filter, filter)) {
-      this.filter = filter;
-      reload();
+  public void setFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
+    if (Objects.equals(this.filter, filter)) {
+      return;
     }
+    this.filter = filter;
+    updateRowFilter(filter);
+    updateCounter();
   }
 
-  void reload() {
-    ApplicationManager.getApplication().invokeLater(() -> {
-      model.getRoot().removeAllChildren();
+  private void updateRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
+    final String nonNullExpression = filter.getExpression() == null ? "" : filter.getExpression();
+    final String quoteRegex = filter.isRegex() ? nonNullExpression : Pattern.quote(nonNullExpression);
 
-      final List<FlutterLogEntry> entries = model.log.getEntries();
-      final List<FlutterLogEntry> matched = entries.stream()
-        .filter(entry -> filter == null || filter.accept(entry)).collect(Collectors.toList());
+    final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
+    final String standardRegex = matchCaseRegex + "(?s).*" + quoteRegex + ".*";
+    final RowFilter<TableModel, Object> logMessageFilter;
+    final RowFilter<TableModel, Object> logLevelFilter;
+    try {
+      logMessageFilter = RowFilter.regexFilter(
+        standardRegex,
+        FlutterTreeTableModel.ColumnIndex.MESSAGE.index, FlutterTreeTableModel.ColumnIndex.CATEGORY.index
+      );
+      logLevelFilter = RowFilter.regexFilter(LOG_LEVEL_FILTER.get(filter.getLogLevel()), FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index);
+    }
+    catch (PatternSyntaxException e) {
+      return;
+    }
+    rowSorter.setRowFilter(RowFilter.andFilter(Arrays.asList(logMessageFilter, logLevelFilter)));
+  }
 
-      model.appendNodes(matched);
+  void append(@NotNull FlutterLogEntry entry) {
+    model.appendNodes(Collections.singletonList(entry));
+    updateCounter();
+  }
 
-      countDispatcher.getMulticaster().updated(entries.size() - matched.size(), entries.size());
-    });
+  private void updateCounter() {
+    final int total = rowSorter.getModelRowCount();
+    final int filtered = total - rowSorter.getViewRowCount();
+    countDispatcher.getMulticaster().updated(filtered, total);
   }
 
   public void clearEntries() {
     model.clearEntries();
-    reload();
   }
 
   private static class SimpleMouseListener implements MouseListener {
