@@ -5,17 +5,16 @@
  */
 package io.flutter.perf;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.VmServiceConsumers;
 import gnu.trove.THashMap;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
-import java.util.List;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
@@ -276,6 +275,25 @@ public class PerfService {
       }
     }
     return stream.listen(onData, true);
+  }
+
+  /**
+   * Returns whether a service extension matching the specified name has
+   * already been registered.
+   *
+   * If the service extension may be registered at some point in the future it
+   * is bests use hasServiceExtension as well to listen for changes in whether
+   * the extension is present.
+   */
+  public boolean hasServiceExtensionNow(String name) {
+    synchronized (serviceExtensions) {
+      final EventStream<Boolean> stream = serviceExtensions.get(name);
+      return stream != null && stream.getValue() == Boolean.TRUE;
+    }
+  }
+
+  public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
+    Disposer.register(parentDisposable, hasServiceExtension(name, onData));
   }
 
   public void addPollingClient() {

@@ -7,33 +7,105 @@ package io.flutter.perf;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.StreamSubscription;
+import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-// TODO(jacobr): Have an opt-out for this feature.
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
- * A singleton for the current Project. This class watches for changes to the current
- * Flutter app, and orchestrates displaying rebuild counts and other performance
- * results broken down at the widget level for the current file.
+ * A singleton for the current Project. This class watches for changes to the
+ * current Flutter app, and orchestrates displaying rebuild counts and other
+ * widget performance stats for widgets created in the active source files.
  *
- * Rebuilt counts provide an easy way to understand the coarse grained
+ * Rebuild counts provide an easy way to understand the coarse grained
  * performance of an application and avoid common pitfalls.
  */
-public class FlutterWidgetPerfManager implements Disposable {
-  public static final boolean ENABLE_REBUILD_COUNTS = true;
+public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterAppListener {
+
+  // Service extensions used by the perf manager.
+  public static final String TRACK_REBUILD_WIDGETS = "ext.flutter.inspector.trackRebuildDirtyWidgets";
+  public static final String TRACK_REPAINT_WIDGETS = "ext.flutter.inspector.trackRepaintWidgets";
+
+  // Whether each of the performance metrics tracked should be tracked by
+  // default when starting a new application.
+  public static boolean trackRebuildWidgetsDefault = false;
+  public static boolean trackRepaintWidgetsDefault = false;
+
+  private FlutterWidgetPerf currentStats;
+  private FlutterApp app;
+  private final Project project;
+  private boolean trackRebuildWidgets = trackRebuildWidgetsDefault;
+  private boolean trackRepaintWidgets = trackRepaintWidgetsDefault;
+  private boolean debugIsActive = false;
+
+  /**
+   * File editors visible to the user that might contain widgets.
+   */
+  private Set<TextEditor> lastSelectedEditors = new HashSet<>();
+
+  private final List<StreamSubscription<Boolean>> streamSubscriptions = new ArrayList<>();
+
+  private FlutterWidgetPerfManager(@NotNull Project project) {
+    this.project = project;
+
+    Disposer.register(project, this);
+
+    FlutterAppManager.getInstance(project).getActiveAppAsStream().listen(
+      this::updateCurrentAppChanged, true);
+
+    project.getMessageBus().connect().subscribe(
+      FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> debugActive(project, event)
+    );
+
+    final MessageBusConnection connection = project.getMessageBus().connect(project);
+
+    updateSelectedEditors();
+    connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+      public void selectionChanged(@NotNull FileEditorManagerEvent event) {
+        if (updateSelectedEditors()) {
+          notifyPerf();
+        }
+      }
+    });
+  }
+
+  /**
+   * @return whether the set of selected editors actually changed.
+   */
+  private boolean updateSelectedEditors() {
+    final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
+    final Set<TextEditor> newEditors = new HashSet<>();
+    for  (FileEditor editor : editors) {
+      if (editor instanceof TextEditor) {
+        final VirtualFile file = editor.getFile();
+        if (couldContainWidgets(file)) {
+          newEditors.add((TextEditor) editor);
+        }
+      }
+    }
+    if (newEditors.equals(lastSelectedEditors)) {
+      return false;
+    }
+    lastSelectedEditors = newEditors;
+    return true;
+  }
 
   /**
    * Initialize the rebuild count manager for the given project.
@@ -47,99 +119,167 @@ public class FlutterWidgetPerfManager implements Disposable {
     return ServiceManager.getService(project, FlutterWidgetPerfManager.class);
   }
 
-  private FlutterWidgetPerf currentStats;
-  private VirtualFile lastFile;
-  private FileEditor lastEditor;
+  public boolean isTrackRebuildWidgets() {
+    return trackRebuildWidgets;
+  }
 
-  private FlutterWidgetPerfManager(@NotNull Project project) {
-    Disposer.register(project, this);
-
-    FlutterAppManager.getInstance(project).getActiveAppAsStream().listen(
-      this::updateCurrentAppChanged, true);
-
-    final MessageBusConnection connection = project.getMessageBus().connect(project);
-
-    final Editor editor = FileEditorManager.getInstance(project).getSelectedTextEditor();
-    if (editor instanceof EditorEx) {
-      lastFile = ((EditorEx)editor).getVirtualFile();
-
-      if (couldContainWidgets(lastFile)) {
-        lastEditor = FileEditorManager.getInstance(project).getSelectedEditor(lastFile);
-
-        if (lastEditor == null) {
-          lastFile = null;
-        }
-      }
+  public void setTrackRebuildWidgets(boolean value) {
+    if (value == trackRebuildWidgets) {
+      return;
     }
+    trackRebuildWidgets = value;
+    onProfilingFlagsChanged();
+    if (debugIsActive && app != null && app.isSessionActive()) {
+      updateTrackWidgetRebuilds();
+    }
+  }
 
-    connection.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
-      public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        if (couldContainWidgets(event.getNewFile())) {
-          lastFile = event.getNewFile();
-          lastEditor = editorFor(event);
-        }
-        else {
-          lastFile = null;
-          lastEditor = null;
-        }
+  public boolean isTrackRepaintWidgets() {
+    return trackRepaintWidgets;
+  }
 
+  public void setTrackRepaintWidgets(boolean value) {
+    if (value == trackRepaintWidgets) {
+      return;
+    }
+    trackRepaintWidgets = value;
+    onProfilingFlagsChanged();
+    if (debugIsActive && app != null && app.isSessionActive()) {
+      updateTrackWidgetRepaints();
+    }
+  }
+
+  private void onProfilingFlagsChanged() {
+    if (currentStats != null) {
+      currentStats.setProfilingEnabled(isProfilingEnabled());
+    }
+  }
+
+  private boolean isProfilingEnabled() {
+    return trackRebuildWidgets || trackRepaintWidgets;
+  }
+
+  private void debugActive(Project project, FlutterViewMessages.FlutterDebugEvent event) {
+    debugIsActive = true;
+
+    assert(app != null);
+    app.addStateListener(this);
+    syncBooleanServiceExtension(TRACK_REBUILD_WIDGETS, () -> trackRebuildWidgets);
+    syncBooleanServiceExtension(TRACK_REPAINT_WIDGETS, () -> trackRepaintWidgets);
+
+    currentStats = new FlutterWidgetPerf(
+      isProfilingEnabled(),
+      new VmServiceWidgetPerfProvider(app),
+      (TextEditor textEditor) -> new EditorPerfDecorations(textEditor, app),
+      (TextEditor textEditor) -> new TextEditorFileLocationMapper(textEditor, app.getProject())
+    );
+  }
+
+  public void stateChanged(FlutterApp.State newState) {
+    switch (newState) {
+      case RELOADING:
+      case RESTARTING:
+        currentStats.clear();
+      break;
+      case STARTED:
         notifyPerf();
-      }
+        break;
+    }
+  }
+
+  public void notifyAppRestarted() {
+    currentStats.clear();
+  }
+
+  public void notifyAppReloaded() {
+    currentStats.clear();
+  }
+
+  private void updateTrackWidgetRebuilds() {
+    app.maybeCallBooleanExtension(TRACK_REBUILD_WIDGETS, trackRebuildWidgets).whenCompleteAsync((v, e) -> {
+      notifyPerf();
     });
   }
 
+  private void updateTrackWidgetRepaints() {
+    app.maybeCallBooleanExtension(TRACK_REPAINT_WIDGETS, trackRepaintWidgets).whenCompleteAsync((v, e) -> {
+      notifyPerf();
+    });
+  }
+
+  private void syncBooleanServiceExtension(String serviceExtension, Computable<Boolean> valueProvider) {
+    streamSubscriptions.add(app.hasServiceExtension(serviceExtension, (supported) -> {
+      if (supported) {
+        app.callBooleanExtension(serviceExtension, valueProvider.compute());
+      }
+    }));
+  }
+
   private boolean couldContainWidgets(@Nullable VirtualFile file) {
+    // TODO(jacobr): we might also want to filter for files not under the
+    // current project root.
     return file != null && FlutterUtils.isDartFile(file);
   }
 
-  private FileEditor editorFor(FileEditorManagerEvent event) {
-    if (!(event.getNewEditor() instanceof TextEditor)) {
-      return null;
-    }
-    return event.getNewEditor();
-  }
-
   private void updateCurrentAppChanged(@Nullable FlutterApp app) {
-    if (app == null) {
-      if (currentStats != null) {
-        currentStats.dispose();
-        currentStats = null;
-      }
-    }
-    else if (currentStats == null) {
-      if (ENABLE_REBUILD_COUNTS && app.getLaunchMode().supportsDebugConnection()) {
-        currentStats = new FlutterWidgetPerf(app);
-        notifyPerf();
-      }
-    }
-    else if (currentStats.getApp() != app) {
-      currentStats.dispose();
+    // TODO(jacobr): we currently only support showing stats for the last app
+    // that was run. After the initial CL lands we should fix this to track
+    // multiple running apps if needed. The most important use case is if the
+    // user has one profile app and one debug app running at the same time.
+    // Potentially we want to have one FlutterWidgetPerfManager per app or we
+    // want to have this class track a Set of running apps.
 
-      if (ENABLE_REBUILD_COUNTS && app.getLaunchMode().supportsDebugConnection()) {
-        currentStats = new FlutterWidgetPerf(app);
-        notifyPerf();
-      }
+    if (app == this.app) {
+      return;
+    }
+    debugIsActive = false;
+
+    if (this.app != null) {
+      this.app.removeStateListener(this);
+    }
+
+    this.app = app;
+
+    for (StreamSubscription<Boolean> subscription : streamSubscriptions) {
+      subscription.dispose();
+    }
+    streamSubscriptions.clear();
+
+    if (currentStats != null) {
+      currentStats.dispose();
+      currentStats = null;
     }
   }
 
   private void notifyPerf() {
+    if (!FlutterSettings.getInstance().isTrackWidgetPerf()) {
+      return;
+    }
+
     if (currentStats == null) {
       return;
     }
 
-    if (lastFile == null) {
-      currentStats.showFor(null, null);
+    if (lastSelectedEditors.isEmpty()) {
+      currentStats.showFor(lastSelectedEditors);
+      return;
     }
-    else {
-      final Module module = currentStats.getApp().getModule();
-
-      if (module != null && ModuleUtilCore.moduleContainsFile(module, lastFile, false)) {
-        currentStats.showFor(lastFile, lastEditor);
-      }
-      else {
-        currentStats.showFor(null, null);
+    final Module module = app.getModule();
+    final Set<TextEditor> editors = new HashSet<>();
+    if (module != null) {
+      for (TextEditor editor : lastSelectedEditors) {
+        final VirtualFile file = editor.getFile();
+        if (file != null &&
+            ModuleUtilCore.moduleContainsFile(module, file, false) &&
+            !app.isReloading() || !app.isLatestVersionRunning(file)) {
+          // We skip querying files that have been modified locally as we
+          // cannot safely display the profile information so there is no
+          // point in tracking it.
+          editors.add(editor);
+        }
       }
     }
+    currentStats.showFor(editors);
   }
 
   @Override

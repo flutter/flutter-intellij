@@ -117,7 +117,7 @@ public class FlutterInitializer implements StartupActivity {
 
     FlutterRunNotifications.init(project);
 
-    // Start the live coverage manager.
+    // Start the widget perf manager.
     FlutterWidgetPerfManager.init(project);
 
     // Watch save actions for reload on save.

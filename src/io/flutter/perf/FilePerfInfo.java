@@ -5,61 +5,110 @@
  */
 package io.flutter.perf;
 
-import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
-import gnu.trove.TIntHashSet;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
+import com.intellij.openapi.util.TextRange;
+
+import java.util.Collection;
+
+class SlidingWindowStats {
+  private final PerfReportKind kind;
+  private final int total;
+  private final String description;
+  private int pastSecond = 0;
+
+  SlidingWindowStats(PerfReportKind kind, int total, int pastSecond, String description) {
+    this.kind = kind;
+    this.total = total;
+    this.pastSecond = pastSecond;
+    this.description = description;
+  }
+
+  PerfReportKind getKind() {
+    return kind;
+  }
+
+  int getTotal() {
+    return total;
+  }
+
+  int getPastSecond() {
+    return pastSecond;
+  }
+
+  public void markAppIdle() {
+    pastSecond = 0;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+}
 
 class FilePerfInfo {
-  private final VirtualFile file;
+  private final Multimap<TextRange, SlidingWindowStats> stats = LinkedListMultimap.create();
+  long maxTimestamp = -1;
+  private int totalPastSecond = 0;
 
-  private final TIntHashSet coveredLines = new TIntHashSet();
-  private final TIntHashSet uncoveredLines = new TIntHashSet();
-
-  public FilePerfInfo(VirtualFile file) {
-    this.file = file;
+  public void clear() {
+    stats.clear();
+    maxTimestamp = -1;
+    totalPastSecond = 0;
   }
 
-  public VirtualFile getFile() {
-    return file;
+  public Iterable<TextRange> getLocations() {
+    return stats.keySet();
   }
 
-  // XXX THESE ARE THE WRONG STATS.
-  public void addCovered(Pair<Integer, Integer> pos) {
-    if (pos == null) {
-      return;
+  public boolean hasLocation(TextRange range) {
+    return stats.containsKey(range);
+  }
+
+  public int getCountPastSecond() {
+    return totalPastSecond;
+  }
+
+  public int getCountPastSecond(TextRange range) {
+    final Collection<SlidingWindowStats> entries = stats.get(range);
+    if (entries == null) {
+      return 0;
     }
-
-    final int line = pos.first;
-    coveredLines.add(line);
-    uncoveredLines.remove(line);
-  }
-
-  public void addUncovered(int line) {
-    if (!coveredLines.contains(line)) {
-      uncoveredLines.add(line);
+    int count = 0;
+    for (SlidingWindowStats entry : entries) {
+      count += entry.getPastSecond();
     }
+    return count;
   }
 
-  public void addUncovered(Pair<Integer, Integer> pos) {
-    if (pos == null) {
-      return;
+  public int getTotalCount(TextRange range) {
+    final Collection<SlidingWindowStats> entries = stats.get(range);
+    if (entries == null) {
+      return 0;
     }
-    final int line = pos.first;
-    if (!coveredLines.contains(line)) {
-      uncoveredLines.add(line);
+    int count = 0;
+    for (SlidingWindowStats entry : entries) {
+      count += entry.getTotal();
     }
+    return count;
   }
 
-  public int[] getCoveredLines() {
-    return coveredLines.toArray();
+  Iterable<SlidingWindowStats> getRangeStats(TextRange range) {
+    return stats.get(range);
   }
 
-  public int[] getUncoveredLines() {
-    return uncoveredLines.toArray();
+  public long getMaxTimestamp() {
+    return maxTimestamp;
   }
 
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  public boolean isCovered(int line) {
-    return coveredLines.contains(line);
+  public void add(TextRange range, SlidingWindowStats entry) {
+    stats.put(range, entry);
+    totalPastSecond += entry.getPastSecond();
+  }
+
+  public void markAppIdle() {
+    totalPastSecond = 0;
+    for (SlidingWindowStats stats : stats.values()) {
+      stats.markAppIdle();
+    }
   }
 }

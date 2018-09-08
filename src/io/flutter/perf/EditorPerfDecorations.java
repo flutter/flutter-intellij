@@ -5,274 +5,498 @@
  */
 package io.flutter.perf;
 
-import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.AnAction;
+import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.event.EditorMouseEvent;
+import com.intellij.openapi.editor.event.EditorMouseEventArea;
+import com.intellij.openapi.editor.event.EditorMouseListener;
+import com.intellij.openapi.editor.ex.MarkupModelEx;
+import com.intellij.openapi.editor.ex.RangeHighlighterEx;
 import com.intellij.openapi.editor.markup.*;
-import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
-import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.VirtualFileManager;
+import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
-import com.intellij.util.ui.GraphicsUtil;
-import com.intellij.util.ui.UIUtil;
-import org.dartlang.vm.service.element.*;
+import icons.FlutterIcons;
+import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.AnimatedIcon;
+import io.flutter.view.FlutterView;
+import io.flutter.view.InspectorPerfTab;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.awt.*;
-import java.awt.geom.Rectangle2D;
-import java.util.ArrayList;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 
-class EditorPerfDecorations implements Disposable {
-  private static final VirtualFileManager virtualFileManager = VirtualFileManager.getInstance();
-
+class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private static final int HIGHLIGHTER_LAYER = HighlighterLayer.SELECTION - 1;
 
   @NotNull
-  private final FileEditor fileEditor;
+  private final TextEditor textEditor;
+  @NotNull
+  private final FlutterApp app;
+  @NotNull
+  private FilePerfInfo stats;
 
   private boolean hasDecorations = false;
+  private boolean hoveredOverLineMarkerArea = false;
 
-  EditorPerfDecorations(@NotNull FileEditor fileEditor) {
-    this.fileEditor = fileEditor;
+  private Map<TextRange, PerfGutterIconRenderer> perfMarkers = new HashMap<>();
 
-    addBlankMarker();
+  EditorPerfDecorations(@NotNull TextEditor textEditor, FlutterApp app) {
+    this.textEditor = textEditor;
+    this.app = app;
+    stats = new FilePerfInfo();
+    textEditor.getEditor().addEditorMouseListener(this);
   }
 
-  private void addBlankMarker() {
-    ApplicationManager.getApplication().invokeLater(() -> {
-      final Editor editor = ((TextEditor)fileEditor).getEditor();
-      final MarkupModel markupModel = editor.getMarkupModel();
-
-      if (hasDecorations) {
-        removeHighlightersFromEditor(markupModel);
-      }
-
-      if (editor.getDocument().getTextLength() > 0) {
-        final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(0, HIGHLIGHTER_LAYER, new TextAttributes());
-        rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
-
-        hasDecorations = true;
-      }
-    });
+  @Override
+  public boolean isHoveredOverLineMarkerArea() {
+    return hoveredOverLineMarkerArea;
   }
 
-  public void updateFromSourceReport(
-    ScriptManager scriptManager,
-    @NotNull VirtualFile reloadFile,
-    @NotNull SourceReport report
-  ) {
-    scriptManager.reset();
+  @NotNull
+  @Override
+  public FilePerfInfo getStats() {
+    return stats;
+  }
 
-    final java.util.List<ScriptRef> scripts = new ArrayList<>();
-    for (ScriptRef scriptRef : report.getScripts()) {
-      scripts.add(scriptRef);
+  @NotNull
+  @Override
+  public TextEditor getTextEditor() {
+    return textEditor;
+  }
+
+  @NotNull
+  @Override
+  public FlutterApp getApp() {
+    return app;
+  }
+
+  void setHasDecorations(boolean value) {
+    if (value != hasDecorations) {
+      hasDecorations = value;
     }
+  }
 
-    final FilePerfInfo perfInfo = new FilePerfInfo(reloadFile);
+  @Override
+  public void setPerfInfo(FilePerfInfo stats) {
+    this.stats = stats;
+    final Editor editor = textEditor.getEditor();
+    final MarkupModel markupModel = editor.getMarkupModel();
 
-    for (SourceReportRange reportRange : report.getRanges()) {
-      final SourceReportCoverage coverage = reportRange.getCoverage();
-      if (coverage == null) {
-        continue;
-      }
-
-      if (coverage.getHits().isEmpty()) {
-        continue;
-      }
-
-      final ScriptRef scriptRef = scripts.get(reportRange.getScriptIndex());
-      final String uri = scriptRef.getUri();
-      if (uri.startsWith("file:")) {
-        final VirtualFile file = virtualFileManager.findFileByUrl(uri);
-        if (file != null && file.equals(reloadFile)) {
-          scriptManager.populateFor(scriptRef);
-
-          final Script script = scriptManager.getScriptFor(scriptRef);
-          if (script == null) {
-            continue;
-          }
-
-          for (List<Integer> encoded : script.getTokenPosTable()) {
-            perfInfo.addUncovered(encoded.get(0) - 1);
-          }
-
-          for (int tokenPos : coverage.getHits()) {
-            perfInfo.addCovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
-          }
-
-          for (int tokenPos : coverage.getMisses()) {
-            perfInfo.addUncovered(scriptManager.getLineColumnPosForTokenPos(scriptRef, tokenPos));
-          }
-        }
+    // Remove markers that aren't in the new perf report.
+    final List<TextRange> rangesToRemove = new ArrayList<>();
+    for (TextRange range : perfMarkers.keySet()) {
+      if (!stats.hasLocation(range)) {
+        rangesToRemove.add(range);
       }
     }
+    for (TextRange range : rangesToRemove) {
+      removeMarker(range);
+    }
 
-    // Calculate coverage info for file, display in the UI.
-    ApplicationManager.getApplication().invokeLater(() -> {
-      final LineMarkerRenderer uncoveredRenderer = new UncoveredLineMarkerRenderer();
-      final TextAttributes coveredAttributes = new TextAttributes();
-      final TextAttributes uncoveredAttributes = new TextAttributes();
-
-      assert fileEditor instanceof TextEditor;
-      final Editor editor = ((TextEditor)fileEditor).getEditor();
-      final MarkupModel markupModel = editor.getMarkupModel();
-
-      removeHighlightersFromEditor(markupModel);
-
-      int markerCount = 0;
-
-      for (int line : perfInfo.getCoveredLines()) {
-        final RangeHighlighter rangeHighlighter = markupModel.addLineHighlighter(line, HIGHLIGHTER_LAYER, coveredAttributes);
-
-        final CoveredLineMarkerRenderer renderer =
-          new CoveredLineMarkerRenderer(!perfInfo.isCovered(line - 1), !perfInfo.isCovered(line + 1));
-        rangeHighlighter.setErrorStripeMarkColor(CoveredLineMarkerRenderer.coveredColor);
-        rangeHighlighter.setThinErrorStripeMark(true);
-        rangeHighlighter.setLineMarkerRenderer(renderer);
-
-        markerCount++;
+    for (TextRange range : stats.getLocations()) {
+      final PerfGutterIconRenderer existing = perfMarkers.get(range);
+      if (existing == null) {
+        addRangeHighlighter(range, markupModel);
       }
-
-      for (int line : perfInfo.getUncoveredLines()) {
-        final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(line, HIGHLIGHTER_LAYER, uncoveredAttributes);
-        rangeHighlighter.setLineMarkerRenderer(uncoveredRenderer);
-
-        markerCount++;
+      else {
+        existing.updateUI(true);
       }
-
-      if (markerCount == 0) {
-        final RangeHighlighter rangeHighlighter =
-          markupModel.addLineHighlighter(0, HIGHLIGHTER_LAYER, new TextAttributes());
-        rangeHighlighter.setLineMarkerRenderer(new BlankLineMarkerRenderer());
-      }
-
-      hasDecorations = true;
-    });
+    }
+    setHasDecorations(true);
   }
 
-  private void removeHighlightersFromEditor(MarkupModel markupModel) {
+  private void removeMarker(TextRange range) {
+    final PerfGutterIconRenderer marker = perfMarkers.remove(range);
+    if (marker != null) {
+      final Editor editor = textEditor.getEditor();
+      final MarkupModel markupModel = editor.getMarkupModel();
+      markupModel.removeHighlighter(marker.getHighlighter());
+    }
+  }
+
+  @Override
+  public void markAppIdle() {
+    stats.markAppIdle();
+    updateIconUIAnimations();
+  }
+
+  private void addRangeHighlighter(TextRange textRange, MarkupModel markupModel) {
+    final RangeHighlighter rangeHighlighter = markupModel.addRangeHighlighter(
+      textRange.getStartOffset(), textRange.getEndOffset(), HIGHLIGHTER_LAYER, new TextAttributes(), HighlighterTargetArea.EXACT_RANGE);
+
+    final PerfGutterIconRenderer renderer = new PerfGutterIconRenderer(
+      textRange,
+      this,
+      rangeHighlighter
+    );
+    rangeHighlighter.setGutterIconRenderer(renderer);
+    rangeHighlighter.setThinErrorStripeMark(true);
+    assert !perfMarkers.containsKey(textRange);
+    perfMarkers.put(textRange, renderer);
+  }
+
+  @Override
+  public boolean isAnimationActive() {
+    return getStats().getCountPastSecond() > 0;
+  }
+
+  @Override
+  public void onFrame() {
+    if (app.isReloading() || !hasDecorations || !isAnimationActive()) {
+      return;
+    }
+    updateIconUIAnimations();
+  }
+
+  private void updateIconUIAnimations() {
+    if (!textEditor.getComponent().isVisible()) {
+      return;
+    }
+    for (PerfGutterIconRenderer marker : perfMarkers.values()) {
+      marker.updateUI(true);
+    }
+  }
+
+  private void removeHighlightersFromEditor() {
     final List<RangeHighlighter> highlighters = new ArrayList<>();
+    final MarkupModel markupModel = textEditor.getEditor().getMarkupModel();
 
-    for (RangeHighlighter highlighter : markupModel.getAllHighlighters()) {
-      if (highlighter.getLineMarkerRenderer() instanceof FlutterLineMarkerRenderer) {
-        highlighters.add(highlighter);
-      }
+    for (PerfGutterIconRenderer marker : perfMarkers.values()) {
+      markupModel.removeHighlighter(marker.getHighlighter());
     }
-
-    for (RangeHighlighter highlighter : highlighters) {
-      markupModel.removeHighlighter(highlighter);
-    }
-
-    hasDecorations = false;
+    perfMarkers.clear();
+    setHasDecorations(false);
   }
 
   public void flushDecorations() {
-    if (hasDecorations && fileEditor.isValid()) {
-      hasDecorations = false;
-
-      ApplicationManager.getApplication().invokeLater(() -> {
-        final MarkupModel markupModel = ((TextEditor)fileEditor).getEditor().getMarkupModel();
-        removeHighlightersFromEditor(markupModel);
-      });
+    if (hasDecorations && textEditor.isValid()) {
+      setHasDecorations(false);
+      ApplicationManager.getApplication().invokeLater(this::removeHighlightersFromEditor);
     }
   }
 
   @Override
   public void dispose() {
+    textEditor.getEditor().removeEditorMouseListener(this);
     flushDecorations();
+  }
+
+  @Override
+  public void mousePressed(EditorMouseEvent e) {
+  }
+
+  @Override
+  public void mouseClicked(EditorMouseEvent e) {
+  }
+
+  @Override
+  public void mouseReleased(EditorMouseEvent e) {
+  }
+
+  @Override
+  public void mouseEntered(EditorMouseEvent e) {
+    final EditorMouseEventArea area = e.getArea();
+    if (!hoveredOverLineMarkerArea &&
+        area == EditorMouseEventArea.LINE_MARKERS_AREA ||
+        area == EditorMouseEventArea.FOLDING_OUTLINE_AREA ||
+        area == EditorMouseEventArea.LINE_NUMBERS_AREA) {
+      // Hover is over the gutter area.
+      setHoverState(true);
+    }
+  }
+
+  @Override
+  public void mouseExited(EditorMouseEvent e) {
+    final EditorMouseEventArea area = e.getArea();
+    setHoverState(false);
+    // TODO(jacobr): hovers over a tooltip triggered by a gutter icon should
+    // be considered a hover of the gutter but this logic does not handle that
+    // case correctly.
+  }
+
+  private void setHoverState(boolean value) {
+    if (value != hoveredOverLineMarkerArea) {
+      hoveredOverLineMarkerArea = value;
+      updateIconUIAnimations();
+    }
+  }
+
+  @Override
+  public void clear() {
+    stats.clear();
+    removeHighlightersFromEditor();
   }
 }
 
-abstract class FlutterLineMarkerRenderer implements LineMarkerRenderer, LineMarkerRendererEx {
-  static final int curvature = 2;
+class PerfGutterIconRenderer extends GutterIconRenderer {
+  static final AnimatedIcon RED_PROGRESS = new RedProgress();
+  static final AnimatedIcon NORMAL_PROGRESS = new AnimatedIcon.Grey();
+
+  private static final Icon EMPTY_ICON = new EmptyIcon(FlutterIcons.CustomInfo);
+
+  // Threshold for statistics to use red icons.
+  private static final int HIGH_LOAD_THRESHOLD = 100;
+
+  // Speed of the animation in radians per second.
+  private static final double ANIMATION_SPEED = 4.0;
+
+  private final RangeHighlighter highlighter;
+  private final TextRange range;
+  private final EditorPerfModel perfModelForFile;
+
+  // Tracked so we know when to notify that our icon has changed.
+  private Icon lastIcon;
+
+  PerfGutterIconRenderer(TextRange range,
+                         EditorPerfModel perfModelForFile,
+                         RangeHighlighter highlighter) {
+    this.highlighter = highlighter;
+    this.range = range;
+    this.perfModelForFile = perfModelForFile;
+    final TextAttributes textAttributes = highlighter.getTextAttributes();
+    assert textAttributes != null;
+    textAttributes.setEffectType(EffectType.ROUNDED_BOX);
+
+    updateUI(false);
+  }
+
+  public boolean isNavigateAction() {
+    return isActive();
+  }
+
+  private FlutterApp getApp() {
+    return perfModelForFile.getApp();
+  }
+
+  private int getCountPastSecond() {
+    return perfModelForFile.getStats().getCountPastSecond(range);
+  }
+
+  private boolean isActive() {
+    return perfModelForFile.isHoveredOverLineMarkerArea() || getCountPastSecond() > 0;
+  }
+
+  RangeHighlighter getHighlighter() {
+    return highlighter;
+  }
+
+  /**
+   * Returns the action executed when the icon is left-clicked.
+   *
+   * @return the action instance, or null if no action is required.
+   */
+  @Nullable
+  public AnAction getClickAction() {
+    return new AnAction() {
+      @Override
+      public void actionPerformed(AnActionEvent e) {
+        if (isActive()) {
+
+          final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());
+          final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+          if (flutterToolWindow.isVisible()) {
+            showPerfViewMessage();
+            return;
+          }
+          flutterToolWindow.show(() -> showPerfViewMessage());
+        }
+      }
+    };
+  }
+
+  private void showPerfViewMessage() {
+    final FlutterView flutterView = ServiceManager.getService(getApp().getProject(), FlutterView.class);
+    final InspectorPerfTab inspectorPerfTab = flutterView.showPerfTab(getApp());
+    final StringBuilder sb = new StringBuilder("<html><body>");
+    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+    sb.append("<h2>Widget performance stats for ");
+    sb.append(Objects.requireNonNull(perfModelForFile.getTextEditor().getFile()).getName());
+    sb.append(" at ");
+    sb.append(formatter.format(LocalDateTime.now()));
+    sb.append("</h2>");
+    for (String line : getTooltipLines()) {
+      sb.append("<h3>");
+      sb.append(line);
+      sb.append("</h3>");
+    }
+
+    sb.append("<p>");
+    sb.append("Rebuilding widgets is generally very cheap. You should only worry " +
+              "about optimizing code to reduce the the number of widget rebuilds " +
+              "if you notice that the frame rate is bellow 60fps or if widgets " +
+              "that you did not expect to be rebuilt are rebuilt a very large " +
+              "number of times.");
+    sb.append("</p>");
+    sb.append("</body></html>");
+    inspectorPerfTab.getWidgetPerfPanel().setPerfMessage(perfModelForFile.getTextEditor(), range, sb.toString());
+  }
 
   @NotNull
   @Override
-  public LineMarkerRendererEx.Position getPosition() {
-    return LineMarkerRendererEx.Position.LEFT;
-  }
-}
-
-class CoveredLineMarkerRenderer extends FlutterLineMarkerRenderer {
-  static final Color coveredColor = new JBColor(new Color(0x0091ea), new Color(0x0091ea));
-
-  private final boolean isStart;
-  private final boolean isEnd;
-
-  CoveredLineMarkerRenderer(boolean isStart, boolean isEnd) {
-    this.isStart = isStart;
-    this.isEnd = isEnd;
+  public Alignment getAlignment() {
+    return Alignment.LEFT;
   }
 
-  static int hue = 0;
+  @NotNull
   @Override
-  public void paint(Editor editor, Graphics g, Rectangle r) {
-    final int height = r.height;
+  public Icon getIcon() {
+    lastIcon = getIconInternal();
+    return lastIcon;
+  }
 
-    GraphicsUtil.setupAAPainting(g);
-    //g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+  public Icon getIconInternal() {
+    final int count = getCountPastSecond();
+    if (count == 0) {
+      return perfModelForFile.isHoveredOverLineMarkerArea() ? FlutterIcons.CustomInfo : EMPTY_ICON;
+    }
+    if (count > HIGH_LOAD_THRESHOLD) {
+      return RED_PROGRESS;
+    }
+    return NORMAL_PROGRESS;
+  }
 
-    final Font font = UIUtil.getFont(UIUtil.FontSize.MINI, UIUtil.getButtonFont());
-    g.setFont(font);
+  Color getErrorStripeMarkColor() {
+    // TODO(jacobr): tween from green or blue to red depending on the count.
+    final int count = getCountPastSecond();
+    if (count == 0) {
+      return null;
+    }
+    if (count > HIGH_LOAD_THRESHOLD) {
+      return JBColor.RED;
+    }
+    return JBColor.YELLOW; // TODO(jacobr): should we use green here instead?
+  }
 
-    String text = Integer.toString(new Random().nextInt(100));
-
-    final Rectangle2D bounds = g.getFontMetrics().getStringBounds(text, g);
-
-    final int width = Math.max(r.width, (int)bounds.getWidth() + 4);
-
-    hue += 10;
-    hue = hue % 360;
-    Color backgroundColor = Color.getHSBColor((float)hue / 360.0f, 1.0f, 1.0f);
-    g.setColor(backgroundColor);
-
-    if (!isStart && !isEnd) {
-      g.fillRect(r.x + 2, r.y, width, height);
+  public void updateUI(boolean repaint) {
+    final int count = getCountPastSecond();
+    final TextAttributes textAttributes = highlighter.getTextAttributes();
+    assert textAttributes != null;
+    boolean changed = false;
+    if (count > 0) {
+      final Color targetColor = getErrorStripeMarkColor();
+      final double animateTime = (double)(System.currentTimeMillis()) * 0.001;
+      // TODO(jacobr): consider tracking a start time for the individual
+      // animation instead of having all animations running in sync.
+      // 1.0 - Math.cos is used so that balance is 0.0 at the start of the animation
+      // and the value will vary from 0 to 1.0
+      final double balance = (1.0 - Math.cos(animateTime * ANIMATION_SPEED)) * 0.5;
+      final Color effectColor = ColorUtil.mix(JBColor.WHITE, targetColor, balance);
+      if (!effectColor.equals(textAttributes.getEffectColor())) {
+        textAttributes.setEffectColor(effectColor);
+        changed = true;
+      }
     }
     else {
-      g.fillRoundRect(r.x + 2, r.y, width, height, curvature, curvature);
+      textAttributes.setEffectColor(null);
+    }
+    final Color errorStripeColor = getErrorStripeMarkColor();
+    highlighter.setErrorStripeMarkColor(errorStripeColor);
+    if (repaint && lastIcon != getIconInternal()) {
+      changed = true;
+    }
+    if (changed && repaint) {
+      final MarkupModel markupModel = perfModelForFile.getTextEditor().getEditor().getMarkupModel();
+      ((MarkupModelEx)markupModel).fireAttributesChanged((RangeHighlighterEx)highlighter, true, false);
+    }
+  }
 
-      final int diff = height / 2;
-
-      if (!isStart) {
-        g.fillRect(r.x + 2, r.y, width, diff);
+  List<String> getTooltipLines() {
+    final List<String> lines = new ArrayList<>();
+    for (SlidingWindowStats stats : perfModelForFile.getStats().getRangeStats(range)) {
+      if (stats.getKind() == PerfReportKind.rebuild) {
+        lines.add(
+          stats.getDescription() +
+          " was rebuilt " +
+          stats.getPastSecond() +
+          " times in the past second and " +
+          stats.getTotal() +
+          " times overall."
+        );
       }
-
-      if (!isEnd) {
-        g.fillRect(r.x + 2, r.y + diff, width, height - diff);
+      else if (stats.getKind() == PerfReportKind.repaint) {
+        lines.add(
+          "RenderObjects created by " +
+          stats.getDescription() +
+          " were repainted " +
+          stats.getPastSecond() +
+          " times in the past second and " +
+          stats.getTotal() +
+          " times overall."
+        );
       }
     }
-    g.setColor(JBColor.white);
-    g.drawString(text, r.x + 4, r.y + r.height - 4);
-  }
-}
-
-class UncoveredLineMarkerRenderer extends FlutterLineMarkerRenderer {
-  private static final Color uncoveredColor = JBColor.LIGHT_GRAY;
-
-  UncoveredLineMarkerRenderer() {
+    if (lines.isEmpty()) {
+      lines.add("No widget rebuilds or repaints detected for line.");
+    }
+    return lines;
   }
 
   @Override
-  public void paint(Editor editor, Graphics g, Rectangle r) {
-    final int width = r.width - 4;
-    final int height = r.height / 2;
-
-    g.setColor(uncoveredColor);
-    g.fillRoundRect(r.x + 2, r.y + (r.height - height) / 2, width, height, curvature, curvature);
-  }
-}
-
-class BlankLineMarkerRenderer extends FlutterLineMarkerRenderer {
-  BlankLineMarkerRenderer() {
+  public String getTooltipText() {
+    return "<html><body><b>" + StringUtil.join(getTooltipLines(), "<br>") + " </b></body></html>";
   }
 
   @Override
-  public void paint(Editor editor, Graphics g, Rectangle r) {
+  public boolean equals(Object obj) {
+    if (!(obj instanceof PerfGutterIconRenderer)) {
+      return false;
+    }
+    final PerfGutterIconRenderer other = (PerfGutterIconRenderer)obj;
+    return other.getCountPastSecond() == getCountPastSecond();
+  }
+
+  @Override
+  public int hashCode() {
+    return getCountPastSecond();
+  }
+
+  private static class EmptyIcon implements Icon {
+    final Icon iconForSize;
+
+    EmptyIcon(Icon iconForSize) {
+      this.iconForSize = iconForSize;
+    }
+
+    @Override
+    public void paintIcon(Component c, Graphics g, int x, int y) {
+    }
+
+    @Override
+    public int getIconWidth() {
+      return iconForSize.getIconWidth();
+    }
+
+    @Override
+    public int getIconHeight() {
+      return iconForSize.getIconHeight();
+    }
+  }
+
+  // Spinning red progress icon
+  static final class RedProgress extends AnimatedIcon {
+    public RedProgress() {
+      super(150,
+            FlutterIcons.State.RedProgr_1,
+            FlutterIcons.State.RedProgr_2,
+            FlutterIcons.State.RedProgr_3,
+            FlutterIcons.State.RedProgr_4,
+            FlutterIcons.State.RedProgr_5,
+            FlutterIcons.State.RedProgr_6,
+            FlutterIcons.State.RedProgr_7,
+            FlutterIcons.State.RedProgr_8);
+    }
   }
 }

@@ -5,254 +5,242 @@
  */
 package io.flutter.perf;
 
-import com.google.gson.JsonArray;
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditor;
+import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.StreamSubscription;
-import io.flutter.utils.VmServiceListenerAdapter;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.VmServiceListener;
-import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
-import org.dartlang.vm.service.element.*;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import groovy.util.MapEntry;
+import io.flutter.utils.AsyncUtils;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import javax.swing.Timer;
+import java.awt.event.ActionEvent;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-class FlutterWidgetPerf implements Disposable {
-  @NotNull final FlutterApp app;
-  @NotNull final FlutterApp.FlutterAppListener appListener;
-  private StreamSubscription<IsolateRef> isolateRefStreamSubscription;
+import static io.flutter.inspector.InspectorService.toSourceLocationUri;
 
-  private boolean isStarted;
+public class FlutterWidgetPerf implements Disposable, Repaintable {
+
+  // Retry requests if we do not receive a response within this interval.
+  private static final long REQUEST_TIMEOUT_INTERVAL = 2000;
+
+  // Intentionally use a low FPS as the animations in EditorPerfDecorations
+  // are quite CPU intensive due to animating content in TextEditor windows.
+  private static final int UI_FPS = 8;
   private boolean isDirty = true;
-  private boolean isDisposed = false;
   private boolean requestInProgress = false;
+  private long lastRequestTime;
+  private final Map<TextEditor, EditorPerfModel> editorDecorations = new HashMap<>();
+  final Set<TextEditor> currentEditors = new HashSet<>();
+  private boolean profilingEnabled = false;
+  final Timer uiAnimationTimer;
+  private final WidgetPerfProvider perfProvider;
+  private boolean isDisposed = false;
+  private final FilePerfModelFactory perfModelFactory;
+  private final FileLocationMapperFactory fileLocationMapperFactory;
 
-  private ScriptManager scriptManager;
-  @SuppressWarnings("FieldCanBeLocal")
-  private VmServiceListener vmServiceListener;
+  FlutterWidgetPerf(boolean profilingEnabled, WidgetPerfProvider perfProvider,
+                    FilePerfModelFactory perfModelFactory,
+                    FileLocationMapperFactory fileLocationMapperFactory) {
+    this.profilingEnabled = profilingEnabled;
+    this.perfProvider = perfProvider;
+    this.perfModelFactory = perfModelFactory;
+    this.fileLocationMapperFactory = fileLocationMapperFactory;
 
-  private final Map<FileEditor, EditorPerfDecorations> editorDecorations = new HashMap<>();
-
-  @Nullable VirtualFile currentFile;
-  @Nullable FileEditor currentEditor;
-
-  FlutterWidgetPerf(@NotNull FlutterApp app) {
-    this.app = app;
-
-    isStarted = app.isStarted();
-
-    // start listening for frames, reload and restart events
-    appListener = new FlutterApp.FlutterAppListener() {
-      @Override
-      public void stateChanged(FlutterApp.State newState) {
-        if (!isStarted && app.isStarted()) {
-          isStarted = true;
-          requestRepaint(When.now);
-        }
-      }
-
-      @Override
-      public void notifyAppReloaded() {
-        requestRepaint(When.now);
-      }
-
-      @Override
-      public void notifyAppRestarted() {
-        requestRepaint(When.now);
-      }
-
-      @Override
-      public void notifyFrameRendered() {
-        requestRepaint(When.soon);
-      }
-
-      public void notifyVmServiceAvailable(VmService vmService) {
-        setupConnection(vmService);
-      }
-    };
-
-    app.addStateListener(appListener);
-
-    if (app.getVmService() != null) {
-      setupConnection(app.getVmService());
-    }
+    perfProvider.setTarget(this);
+    uiAnimationTimer = new Timer(1000 / UI_FPS, this::onFrame);
   }
 
-  @NotNull
-  public FlutterApp getApp() {
-    return app;
+  private void onFrame(ActionEvent event) {
+    for (EditorPerfModel decorations : editorDecorations.values()) {
+      decorations.onFrame();
+    }
   }
 
   private boolean isConnected() {
-    return scriptManager != null;
-  }
-
-  private IsolateRef getCurrentIsolateRef() {
-    assert app.getPerfService() != null;
-    return app.getPerfService().getCurrentFlutterIsolateRaw();
-  }
-
-  private void setupConnection(@NotNull VmService vmService) {
-    if (isDisposed) {
-      return;
-    }
-
-    if (scriptManager != null) {
-      return;
-    }
-
-    scriptManager = new ScriptManager(vmService);
-
-    assert app.getPerfService() != null;
-    isolateRefStreamSubscription = app.getPerfService().getCurrentFlutterIsolate(
-      (isolateRef) -> requestRepaint(When.soon), false);
-
-    vmServiceListener = new VmServiceListenerAdapter() {
-      @Override
-      public void received(String streamId, Event event) {
-        if (isDisposed) {
-          return;
-        }
-
-        final EventKind kind = event.getKind();
-
-        if (kind == EventKind.PauseBreakpoint || kind == EventKind.PauseException ||
-            kind == EventKind.PauseInterrupted) {
-          requestRepaint(When.soon);
-        }
-      }
-    };
-    vmService.addVmServiceListener(vmServiceListener);
-
-    requestRepaint(When.soon);
+    return perfProvider.isConnected();
   }
 
   /**
-   * Schedule a repaint of the coverage information.
+   * Schedule a repaint of the widget perf information.
    * <p>
    * When.now schedules a repaint immediately.
    * <p>
    * When.soon will schedule a repaint shortly; that can get delayed by another request, with a maximum delay.
    */
-  private void requestRepaint(When when) {
+  @Override
+  public void requestRepaint(When when) {
+    if (!profilingEnabled) {
+      isDirty = false;
+      return;
+    }
     isDirty = true;
 
-    if (requestInProgress) {
+    if (!isConnected() || this.currentEditors.isEmpty()) {
       return;
     }
 
-    if (!isConnected() || this.currentFile == null || this.currentEditor == null) {
+    final long currentTime = System.currentTimeMillis();
+    if (requestInProgress && (currentTime - lastRequestTime) < REQUEST_TIMEOUT_INTERVAL) {
       return;
     }
-
     requestInProgress = true;
+    lastRequestTime = currentTime;
 
-    final FileEditor editor = this.currentEditor;
-    final VirtualFile file = this.currentFile;
+    final TextEditor[] editors = this.currentEditors.toArray(new TextEditor[0]);
 
-    JobScheduler.getScheduler().schedule(() -> performRequest(editor, file), 0, TimeUnit.SECONDS);
+    JobScheduler.getScheduler().schedule(() -> performRequest(editors), 0, TimeUnit.SECONDS);
   }
 
-  private void performRequest(FileEditor fileEditor, VirtualFile file) {
+  void setProfilingEnabled(boolean enabled) {
+    profilingEnabled = enabled;
+  }
+
+  private void performRequest(TextEditor[] fileEditors) {
     assert !EdtInvocationManager.getInstance().isEventDispatchThread();
 
-    assert app.getPerfService() != null;
-    final IsolateRef isolateRef = app.getPerfService().getCurrentFlutterIsolateRaw();
-
-    final VmService vmService = app.getVmService();
-    assert vmService != null;
-
-    if (isolateRef == null) {
+    if (!profilingEnabled) {
       requestInProgress = false;
       return;
     }
 
-    this.isDirty = false;
-
-    scriptManager.setCurrentIsolate(isolateRef);
-
-    @Nullable final ScriptRef scriptRef = scriptManager.getScriptRefFor(file);
-    if (scriptRef == null) {
-      performRequestFinish();
+    final Multimap<String, TextEditor> editorForPath = LinkedListMultimap.create();
+    final List<String> paths = new ArrayList<>();
+    for (TextEditor editor : fileEditors) {
+      final VirtualFile file = editor.getFile();
+      if (file == null) {
+        continue;
+      }
+      final String path = toSourceLocationUri(file.getPath());
+      editorForPath.put(path, editor);
+      paths.add(path);
+    }
+    if (paths.isEmpty()) {
       return;
     }
 
-    final JsonObject params = new JsonObject();
-    final JsonArray arr = new JsonArray();
-    arr.add("Coverage");
+    isDirty = false;
 
-    params.add("reports", arr);
-
-    // Pass in just the current scriptId.
-    params.addProperty("scriptId", scriptRef.getId());
-
-    // Make sure we get good 'not covered' info.
-    // TODO(devoncarew): Does this work under the CFE?
-    params.addProperty("forceCompile", true);
-
-    // TODO(devoncarew): When the latest verison of the library is available, use the getSourceReport() call directly.
-    vmService.callServiceExtension(isolateRef.getId(), "getSourceReport", params, new ServiceExtensionConsumer() {
-      @Override
-      public void received(JsonObject object) {
-        JobScheduler.getScheduler().schedule(() -> {
-          final SourceReport report = new SourceReport(object);
-          final EditorPerfDecorations editorDecoration = editorDecorations.get(fileEditor);
-
-          editorDecoration.updateFromSourceReport(scriptManager, file, report);
-
-          performRequestFinish();
-        }, 0, TimeUnit.MILLISECONDS);
+    AsyncUtils.whenCompleteUiThread(perfProvider.getPerfSourceReports(paths), (JsonObject object, Throwable e) -> {
+      if (e != null) {
+        performRequestFinish(fileEditors);
+        return;
       }
+      // True if any of the EditorPerfDecorations want to animate.
+      boolean animate = false;
+      for (String path : editorForPath.keySet()) {
+        final JsonObject result = object.getAsJsonObject("result");
+        final List<PerfSourceReport> reports = new ArrayList<>();
+        if (result.has(path)) {
+          final JsonObject jsonForFile = result.getAsJsonObject(path);
+          for (PerfReportKind kind : PerfReportKind.values()) {
+            if (jsonForFile.has(kind.name)) {
+              reports.add(new PerfSourceReport(jsonForFile.getAsJsonArray(kind.name), kind));
+            }
+          }
+        }
+        for (TextEditor fileEditor : editorForPath.get(path)) {
+          // Ensure the fileEditor is still dealing with this file.
+          // TODO(jacobr): can file editors really change their associated file?
+          if (fileEditor.getFile() != null && toSourceLocationUri(fileEditor.getFile().getPath()).equals(path)) {
+            final EditorPerfModel editorDecoration = editorDecorations.get(fileEditor);
+            if (editorDecoration != null) {
 
-      @Override
-      public void onError(RPCError error) {
-        performRequestFinish();
+              if (!perfProvider.shouldDisplayPerfStats(fileEditor)) {
+                editorDecoration.clear();
+                return;
+              }
+              final FileLocationMapper fileLocationMapper = fileLocationMapperFactory.create(fileEditor);
+              final FilePerfInfo stats = new FilePerfInfo();
+              for (PerfSourceReport report : reports) {
+                for (PerfSourceReport.Entry entry : report.getEntries()) {
+                  final TextRange range = fileLocationMapper.getIdentifierRange(entry.line, entry.column);
+                  if (range == null) {
+                    continue;
+                  }
+                  stats.add(
+                    range,
+                    new SlidingWindowStats(
+                      report.getKind(),
+                      entry.total,
+                      entry.pastSecond,
+                      fileLocationMapper.getText(range)
+                    )
+                  );
+                }
+              }
+
+              editorDecoration.setPerfInfo(stats);
+              if (editorDecoration.isAnimationActive()) {
+                animate = true;
+              }
+            }
+          }
+        }
       }
+      if (animate != uiAnimationTimer.isRunning()) {
+        if (animate) {
+          uiAnimationTimer.start();
+        }
+        else {
+          uiAnimationTimer.stop();
+        }
+      }
+      performRequestFinish(fileEditors);
     });
   }
 
-  private void performRequestFinish() {
+  private void performRequestFinish(FileEditor[] editors) {
     requestInProgress = false;
-
+    JobScheduler.getScheduler().schedule(() -> maybeNotifyIdle(), 1, TimeUnit.SECONDS);
     if (isDirty) {
       requestRepaint(When.soon);
     }
   }
 
-  public void showFor(@Nullable VirtualFile file, @Nullable FileEditor fileEditor) {
-    this.currentFile = file;
-    this.currentEditor = fileEditor;
+  private void maybeNotifyIdle() {
+    if (System.currentTimeMillis() >= lastRequestTime + 1000) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        for (EditorPerfModel decoration : editorDecorations.values()) {
+          decoration.markAppIdle();
+        }
+        uiAnimationTimer.stop();
+      });
+    }
+  }
+
+  public void showFor(Set<TextEditor> editors) {
+    currentEditors.clear();
+    currentEditors.addAll(editors);
 
     // Harvest old editors.
-    harvestInvalidEditors();
+    harvestInvalidEditors(editors);
 
-    if (fileEditor != null) {
-      // Create a new EditorPerfDecorations if necessary.
+    for (TextEditor fileEditor : currentEditors) {
+      // Create a new EditorPerfModel if necessary.
       if (!editorDecorations.containsKey(fileEditor)) {
-        editorDecorations.put(fileEditor, new EditorPerfDecorations(fileEditor));
+        editorDecorations.put(fileEditor, perfModelFactory.create((TextEditor)fileEditor));
       }
 
       requestRepaint(When.now);
     }
   }
 
-  private void harvestInvalidEditors() {
-    final Iterator<FileEditor> editors = editorDecorations.keySet().iterator();
+  private void harvestInvalidEditors(Set<TextEditor> newEditors) {
+    final Iterator<TextEditor> editors = editorDecorations.keySet().iterator();
 
     while (editors.hasNext()) {
-      final FileEditor editor = editors.next();
-      if (!editor.isValid()) {
-        final EditorPerfDecorations editorPerfDecorations = editorDecorations.get(editor);
+      final TextEditor editor = editors.next();
+      if (!editor.isValid() || (newEditors != null && !newEditors.contains(editor))) {
+        final EditorPerfModel editorPerfDecorations = editorDecorations.get(editor);
         editors.remove();
         editorPerfDecorations.dispose();
       }
@@ -267,26 +255,19 @@ class FlutterWidgetPerf implements Disposable {
 
     this.isDisposed = true;
 
-    app.removeStateListener(appListener);
+    perfProvider.dispose();
 
-    scriptManager = null;
-
-    // TODO(devoncarew): This method will be available in a future version of the service protocol library.
-    //if (vmServiceListener != null) {
-    //  app.getVmService().removeEventListener(vmServiceListener);
-    //}
-
-    for (EditorPerfDecorations decorations : editorDecorations.values()) {
-      decorations.dispose();
-    }
-
-    if (isolateRefStreamSubscription != null) {
-      isolateRefStreamSubscription.dispose();
-    }
+    clearDecorations();
   }
 
-  private enum When {
-    now,
-    soon
+  void clearDecorations() {
+    for (EditorPerfModel decorations : editorDecorations.values()) {
+      decorations.dispose();
+    }
+    editorDecorations.clear();
+  }
+
+  public void clear() {
+    ApplicationManager.getApplication().invokeLater(this::clearDecorations);
   }
 }

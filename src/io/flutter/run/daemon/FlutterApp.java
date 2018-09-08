@@ -6,7 +6,6 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionManager;
@@ -20,13 +19,15 @@ import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.history.LocalHistory;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
@@ -83,6 +84,8 @@ public class FlutterApp {
   private int userReloadCount;
   private int restartCount;
 
+  private long maxFileTimestamp;
+
   /**
    * Non-null when the debugger is paused.
    */
@@ -125,6 +128,7 @@ public class FlutterApp {
     myExecutionEnvironment = executionEnvironment;
     myDaemonApi = daemonApi;
     myCommand = command;
+    maxFileTimestamp = System.currentTimeMillis();
     myConnector = new ObservatoryConnector() {
       @Override
       public @Nullable
@@ -317,6 +321,7 @@ public class FlutterApp {
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter hot restart");
 
     final long reloadTimestamp = System.currentTimeMillis();
+    maxFileTimestamp = reloadTimestamp;
     changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -339,6 +344,13 @@ public class FlutterApp {
   }
 
   /**
+   ** @return whether the latest of the version of the file is running.
+   */
+  public boolean isLatestVersionRunning(VirtualFile file) {
+    return file != null && file.getTimeStamp() <= maxFileTimestamp;
+  }
+
+  /**
    * Perform a hot reload of the app.
    */
   public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart) {
@@ -356,6 +368,7 @@ public class FlutterApp {
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
     final long reloadTimestamp = System.currentTimeMillis();
+    maxFileTimestamp = reloadTimestamp;
     changeState(State.RELOADING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -414,9 +427,29 @@ public class FlutterApp {
     });
   }
 
+  /**
+   * Call a boolean service extension only if it is already present, skipping
+   * otherwise.
+   *
+   * Only use this method if you are confident there will not be a race
+   * condition where the service extension is registered shortly after
+   * this method is called.
+   */
+  @SuppressWarnings("UnusedReturnValue")
+  public CompletableFuture<Boolean> maybeCallBooleanExtension(String methodName, boolean enabled) {
+    if (getPerfService().hasServiceExtensionNow(methodName)) {
+      return callBooleanExtension(methodName, enabled);
+    }
+    return CompletableFuture.completedFuture(false);
+  }
+
   @NotNull
   public StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
     return getPerfService().hasServiceExtension(name, onData);
+  }
+
+  public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
+    getPerfService().hasServiceExtension(name, onData, parentDisposable);
   }
 
   public void setConsole(@Nullable ConsoleView console) {
