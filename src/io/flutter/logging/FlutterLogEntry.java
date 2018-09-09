@@ -9,9 +9,16 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 public class FlutterLogEntry {
 
   public static final FlutterLog.Level UNDEFINED_LEVEL = FlutterLog.Level.INFO;
+  /**
+   * Pattern for stacktrace log.
+   * Example: I/flutter (14706): #0      _MyHomePageState._incrementCounter (file:///Users/sondq/IdeaProjects/test_flutter/lib/main.dart:52:7)
+   */
+  private static final Pattern STACKTRACE_PATTERN = Pattern.compile("(?s).*\\s+#\\d+\\s+.*");
 
   private final long timestamp;
   @NotNull
@@ -53,6 +60,11 @@ public class FlutterLogEntry {
   @NotNull
   public String getMessage() {
     return message;
+  }
+
+  public boolean isStacktrace() {
+    // TODO: Improve this, since it is a temporary trick.
+    return STACKTRACE_PATTERN.matcher(message).matches();
   }
 
   /**

@@ -388,14 +388,31 @@ public class FlutterLogTree extends TreeTable {
       update();
     }
 
+    @Nullable
+    private MutableTreeNode parentStackTraceNode = null;
+
     public void appendNodes(List<FlutterLogEntry> entries) {
       if (treeTable == null || uiThreadAlarm.isDisposed()) {
         return;
       }
-
       uiThreadAlarm.addRequest(() -> {
         final MutableTreeNode root = getRoot();
-        entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
+
+        entries.forEach(entry -> {
+          final FlutterEventNode newNode = new FlutterEventNode(entry);
+          // TODO: How do we enable collapse ????
+          if (entry.isStacktrace()) {
+            if (parentStackTraceNode == null) {
+              parentStackTraceNode = newNode;
+              insertNodeInto(newNode, root, root.getChildCount());
+            } else {
+              parentStackTraceNode.insert(newNode, parentStackTraceNode.getChildCount());
+            }
+          } else {
+            parentStackTraceNode = null;
+            insertNodeInto(newNode, root, root.getChildCount());
+          }
+        });
         update();
       }, 10);
     }
