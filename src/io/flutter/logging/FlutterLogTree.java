@@ -554,27 +554,25 @@ public class FlutterLogTree extends TreeTable {
     });
   }
 
-  @Nullable
+  @NotNull
   private String getSelectedLog() {
     final int[] rows = getSelectedRows();
-    final TreePath[] paths = getTree().getSelectionPaths();
-    if (paths == null) {
-      return null;
-    }
-    final StringBuilder sb = new StringBuilder();
-    for (final TreePath path : paths) {
+    final StringBuilder logBuilder = new StringBuilder();
+    for (int row : rows) {
+      final int realRow = convertRowIndexToModel(row);
+      final TreePath path = getTree().getPathForRow(realRow);
       final Object pathComponent = path.getLastPathComponent();
       if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
-        ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(sb);
+        ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(logBuilder);
       }
     }
-    return sb.toString();
+    return logBuilder.toString();
   }
 
   public void sendSelectedLogsToClipboard() {
     ApplicationManager.getApplication().invokeLater(() -> {
       final String log = getSelectedLog();
-      if (log != null) {
+      if (StringUtils.isNotEmpty(log)) {
         final Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         final StringSelection selection = new StringSelection(log);
         clipboard.setContents(selection, selection);
