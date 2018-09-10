@@ -70,7 +70,7 @@ public class BazelRunConfig extends RunConfigurationBase
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
 
-    final LaunchState.Callback callback = (device) -> {
+    final LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
 
       final GeneralCommandLine command = getCommand(env, device);
@@ -78,7 +78,7 @@ public class BazelRunConfig extends RunConfigurationBase
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
-    return new LaunchState(env, main.getAppDir(), main.getFile(), this, callback);
+    return new LaunchState(env, main.getAppDir(), main.getFile(), this, createAppCallback);
   }
 
   @NotNull

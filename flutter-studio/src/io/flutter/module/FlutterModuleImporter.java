@@ -169,7 +169,6 @@ public class FlutterModuleImporter {
                          "edit the files as described in the <a href=\"" +
                          EDIT_INSTR_LINK +
                          "\">add2app documentation.</a></body></html>";
-      Messages.installHyperlinkSupport(myTextPane);
       myTextPane.setText(howToEdit);
       myPanel.add(myTextPane);
       init();

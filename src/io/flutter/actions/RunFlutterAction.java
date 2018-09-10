@@ -49,6 +49,7 @@ public abstract class RunFlutterAction extends AnAction {
 
   @Override
   public void actionPerformed(AnActionEvent e) {
+    // NOTE: When making changes here, consider making similar changes to ConnectAndroidDebuggerAction.
     FlutterInitializer.sendAnalyticsAction(this);
 
     final RunnerAndConfigurationSettings settings = getRunConfigSettings(e);
@@ -127,7 +128,7 @@ public abstract class RunFlutterAction extends AnAction {
   }
 
   @Nullable
-  private static RunnerAndConfigurationSettings getRunConfigSettings(@Nullable AnActionEvent event) {
+  public static RunnerAndConfigurationSettings getRunConfigSettings(@Nullable AnActionEvent event) {
     if (event == null) {
       return null;
     }
@@ -141,7 +142,7 @@ public abstract class RunFlutterAction extends AnAction {
   }
 
   @Nullable
-  private static Executor getExecutor(@NotNull String executorId) {
+  public static Executor getExecutor(@NotNull String executorId) {
     for (Executor executor : Executor.EXECUTOR_EXTENSION_NAME.getExtensions()) {
       if (executorId.equals(executor.getId())) {
         return executor;

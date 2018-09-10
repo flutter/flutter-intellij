@@ -276,6 +276,7 @@ public class FlutterCommand {
   }
 
   enum Type {
+    ATTACH("Flutter attach", "attach"),
     BUILD("Flutter build", "build"),
     CLEAN("Flutter clean", "clean"),
     CONFIG("Flutter config", "config"),
@@ -283,9 +284,9 @@ public class FlutterCommand {
     DOCTOR("Flutter doctor", "doctor"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
-    RUN("Flutter run", "run"),
     TEST("Flutter test", "test");
 
     final public String title;
