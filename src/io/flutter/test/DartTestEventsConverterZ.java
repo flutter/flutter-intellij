@@ -234,7 +234,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   /**
-   *  Hook to preprocess tests before adding location info and generating a service message.
+   * Hook to preprocess tests before adding location info and generating a service message.
    */
   protected void preprocessTestStart(@NotNull Test test) {
   }
@@ -730,6 +730,13 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   protected static class Test extends Item {
+
+    private static class LocationInfo {
+      String url;
+      int line;
+      int column;
+    }
+
     private boolean myTestStartReported = false;
     private boolean myTestErrorReported = false;
 
@@ -740,10 +747,26 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
         parent = groups.get(groupIds[groupIds.length - 1]);
       }
       Suite suite = lookupSuite(obj, suites);
-      final int line = extractInt(obj, JSON_LINE);
-      final int column = extractInt(obj, JSON_COLUMN);
+
+      final LocationInfo loc = extractLocation(obj);
       return new Test(extractInt(obj, JSON_ID), extractString(obj, JSON_NAME, NO_NAME), parent, suite, extractMetadata(obj),
-                      line < 0 ? -1 : line - 1, column < 0 ? -1 : column - 1, extractString(obj, JSON_URL, null));
+                      loc.line < 0 ? -1 : loc.line - 1, loc.column < 0 ? -1 : loc.column - 1, loc.url);
+    }
+
+    private static LocationInfo extractLocation(JsonObject obj) {
+      final LocationInfo info = new LocationInfo();
+      // Check for root_* data first as it's more precise (when present).
+      info.url = extractString(obj, "root_url", null);
+      if (info.url != null) {
+        info.line = extractInt(obj, "root_line");
+        info.column = extractInt(obj, "root_column");
+      }
+      else {
+        info.url = extractString(obj, JSON_URL, null);
+        info.line = extractInt(obj, JSON_LINE);
+        info.column = extractInt(obj, JSON_COLUMN);
+      }
+      return info;
     }
 
     Test(int id, String name, Group parent, Suite suite, Metadata metadata, int line, int column, String url) {
