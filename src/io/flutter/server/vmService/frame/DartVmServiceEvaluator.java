@@ -110,6 +110,10 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
         wrappedCallback.errorOccurred(error.getMessage());
         return;
       }
+      if (isolate == null) {
+        wrappedCallback.errorOccurred("No running isolate.");
+        return;
+      }
       LibraryRef libraryRef = findMatchingLibrary(isolate, libraryFiles);
       if (dartClassName != null) {
         myDebugProcess.getVmServiceWrapper().getObject(isolateId, libraryRef.getId(), new GetObjectConsumer() {

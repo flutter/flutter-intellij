@@ -100,7 +100,7 @@ public class IsolatesInfo {
   public synchronized CompletableFuture<Isolate> getCachedIsolate(String isolateId, Supplier<CompletableFuture<Isolate>> isolateSupplier) {
     IsolateInfo info = myIsolateIdToInfoMap.get(isolateId);
     if (info == null) {
-      return null;
+      return CompletableFuture.completedFuture(null);
     }
     CompletableFuture<Isolate> cachedIsolate = info.getCachedIsolate();
     if (cachedIsolate != null) {
