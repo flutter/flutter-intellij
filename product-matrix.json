@@ -39,6 +39,16 @@
       "dartPluginVersion": "182.4129.13",
       "sinceBuild": "182.4129",
       "untilBuild": "182.*"
+    },
+    {
+      "comments": "IntelliJ 2018.3",
+      "name": "IntelliJ",
+      "version": "2018.3",
+      "ideaProduct": "ideaIU",
+      "ideaVersion": "183.2407.10",
+      "dartPluginVersion": "183.2153.10",
+      "sinceBuild": "183.0",
+      "untilBuild": "183.*"
     }
   ]
 }
