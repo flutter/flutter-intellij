@@ -314,6 +314,10 @@ public class FlutterLogTree extends TreeTable {
   }
 
   static class TreeModel extends ListTreeTableModelOnColumns {
+    interface UpdateCallback {
+      void updated();
+    }
+
     @NotNull
     private final ColumnModel columns;
     @NotNull
@@ -326,6 +330,7 @@ public class FlutterLogTree extends TreeTable {
     private JScrollPane scrollPane;
     private TreeTable treeTable;
     private boolean color;
+    private UpdateCallback updateCallback;
 
     @NotNull
     private final FlutterLogPreferences logPreferences;
@@ -351,6 +356,10 @@ public class FlutterLogTree extends TreeTable {
       uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
 
+    public void setUpdateCallback(UpdateCallback updateCallback) {
+      this.updateCallback = updateCallback;
+    }
+
     @NotNull
     public FlutterLogPreferences getLogPreferences() {
       return logPreferences;
@@ -368,6 +377,9 @@ public class FlutterLogTree extends TreeTable {
 
       reload(getRoot());
       treeTable.updateUI();
+      if (updateCallback != null) {
+        updateCallback.updated();
+      }
 
       if (autoScrollToEnd) {
         uiThreadAlarm.addRequest(this::scrollToEnd, 100);
@@ -560,6 +572,7 @@ public class FlutterLogTree extends TreeTable {
         }
       }
     });
+    model.setUpdateCallback(this::updateCounter);
   }
 
   @NotNull
@@ -663,7 +676,6 @@ public class FlutterLogTree extends TreeTable {
       model.clearEntries();
     }
     model.appendNodes(Collections.singletonList(entry));
-    updateCounter();
   }
 
   private void updateCounter() {
