@@ -13,7 +13,7 @@ import static io.flutter.logging.FlutterLogEntryParser.TOOLS_CATEGORY;
 
 public class FlutterLogEntry {
 
-  enum Kind {
+  public enum Kind {
     RELOAD,
     RESTART,
     UNSPECIFIED
