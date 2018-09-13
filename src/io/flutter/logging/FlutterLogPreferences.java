@@ -12,7 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 @State(name = "FlutterLogPreferences", storages = @Storage(StoragePathMacros.WORKSPACE_FILE))
 public class FlutterLogPreferences implements PersistentStateComponent<FlutterLogPreferences> {
-  private boolean clearOnReload = false;
+  private boolean clearOnReload = true;
   private boolean clearOnRestart = true;
   private boolean showTimestamp = false;
   private boolean showSequenceNumbers = false;
