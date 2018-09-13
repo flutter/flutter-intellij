@@ -13,6 +13,7 @@ import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.ColoredTableCellRenderer;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
@@ -28,6 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -75,6 +78,13 @@ public class FlutterLogTree extends TreeTable {
   private static class ColumnModel {
 
     private abstract class EntryCellRenderer extends ColoredTableCellRenderer {
+
+      private final Border RELOAD_LINE =
+        new CompoundBorder(BorderFactory.createEmptyBorder(0, -1, -1, -1), BorderFactory.createDashedBorder(
+          JBColor.ORANGE, 5, 5));
+      private final Border RESTART_LINE =
+        new CompoundBorder(BorderFactory.createEmptyBorder(0, -1, -1, -1), BorderFactory.createDashedBorder(JBColor.GREEN, 5, 5));
+
       @Override
       protected final void customizeCellRenderer(JTable table,
                                                  @Nullable Object value,
@@ -83,7 +93,16 @@ public class FlutterLogTree extends TreeTable {
                                                  int row,
                                                  int column) {
         if (value instanceof FlutterLogEntry) {
-          render((FlutterLogEntry)value);
+          final FlutterLogEntry entry = (FlutterLogEntry)value;
+          render(entry);
+          if (row > 0) {
+            if (entry.getKind() == FlutterLogEntry.Kind.RELOAD) {
+              setBorder(RELOAD_LINE);
+            }
+            else if (entry.getKind() == FlutterLogEntry.Kind.RESTART) {
+              setBorder(RESTART_LINE);
+            }
+          }
         }
       }
 
