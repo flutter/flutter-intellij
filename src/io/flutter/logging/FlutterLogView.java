@@ -146,6 +146,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         new ShowLevelAction(),
         new ShowCategoryAction(),
         new Separator(),
+        new ClearOnRestartAction(),
+        new ClearOnReloadAction(),
+        new Separator(),
         new ShowColorsAction()
       );
     }
@@ -224,6 +227,40 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       flutterLogPreferences.setShowLogLevel(state);
       logModel.setShowLogLevels(state);
       logModel.update();
+    }
+  }
+
+  private class ClearOnReloadAction extends ToggleAction {
+
+    ClearOnReloadAction() {
+      super("Clear on reload");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return flutterLogPreferences.isClearOnReload();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.setClearOnReload(state);
+    }
+  }
+
+  private class ClearOnRestartAction extends ToggleAction {
+
+    ClearOnRestartAction() {
+      super("Clear on restart");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return flutterLogPreferences.isClearOnRestart();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.setClearOnRestart(state);
     }
   }
 

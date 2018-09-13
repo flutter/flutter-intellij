@@ -9,7 +9,15 @@ import com.intellij.openapi.util.text.StringUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static io.flutter.logging.FlutterLogEntryParser.TOOLS_CATEGORY;
+
 public class FlutterLogEntry {
+
+  public enum Kind {
+    RELOAD,
+    RESTART,
+    UNSPECIFIED
+  }
 
   public static final FlutterLog.Level UNDEFINED_LEVEL = FlutterLog.Level.INFO;
 
@@ -21,15 +29,36 @@ public class FlutterLogEntry {
   private final String message;
   private int sequenceNumber = -1;
 
+  @NotNull
+  private final Kind kind;
+
   public FlutterLogEntry(long timestamp, @NotNull String category, int level, @Nullable String message) {
     this.timestamp = timestamp;
     this.category = category;
     this.level = level;
     this.message = StringUtil.notNullize(message);
+    this.kind = parseKind(category, this.message);
+  }
+
+  private static Kind parseKind(@NotNull String category, @NotNull String message) {
+    if (category.equals(TOOLS_CATEGORY)) {
+      if (message.trim().equals("Performing hot reload...")) {
+        return Kind.RELOAD;
+      }
+      if (message.trim().equals("Performing hot restart...")) {
+        return Kind.RESTART;
+      }
+    }
+    return Kind.UNSPECIFIED;
   }
 
   public FlutterLogEntry(long timestamp, @NotNull String category, @Nullable String message) {
     this(timestamp, category, UNDEFINED_LEVEL.value, message);
+  }
+
+  @NotNull
+  public Kind getKind() {
+    return kind;
   }
 
   public long getTimestamp() {

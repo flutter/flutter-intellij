@@ -42,8 +42,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -327,14 +327,18 @@ public class FlutterLogTree extends TreeTable {
     private TreeTable treeTable;
     private boolean color;
 
+    @NotNull
+    private final FlutterLogPreferences logPreferences;
+
     public TreeModel(@NotNull FlutterApp app,
                      @NotNull EntryModel entryModel,
                      @NotNull Disposable parent) {
-      this(new ColumnModel(app, entryModel), parent);
+      this(new ColumnModel(app, entryModel), parent, FlutterLogPreferences.getInstance(app.getProject()));
     }
 
-    private TreeModel(@NotNull ColumnModel columns, @NotNull Disposable parent) {
+    private TreeModel(@NotNull ColumnModel columns, @NotNull Disposable parent, @NotNull FlutterLogPreferences logPreferences) {
       super(new LogRootTreeNode(), columns.getInfos());
+      this.logPreferences = logPreferences;
 
       this.log = columns.app.getFlutterLog();
       this.columns = columns;
@@ -347,6 +351,10 @@ public class FlutterLogTree extends TreeTable {
       uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
     }
 
+    @NotNull
+    public FlutterLogPreferences getLogPreferences() {
+      return logPreferences;
+    }
 
     void scrollToEnd() {
       if (scrollPane != null) {
@@ -649,6 +657,11 @@ public class FlutterLogTree extends TreeTable {
   }
 
   void append(@NotNull FlutterLogEntry entry) {
+    if (entry.getKind() == FlutterLogEntry.Kind.RELOAD && model.getLogPreferences().isClearOnReload() ||
+        entry.getKind() == FlutterLogEntry.Kind.RESTART && model.getLogPreferences().isClearOnRestart()
+    ) {
+      model.clearEntries();
+    }
     model.appendNodes(Collections.singletonList(entry));
     updateCounter();
   }
