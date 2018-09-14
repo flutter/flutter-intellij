@@ -50,6 +50,8 @@ public class InspectorPerfTab extends JPanel implements InspectorTabPanel {
 
   @Override
   public void setVisibleToUser(boolean visible) {
+app.getPerfService().resumePolling();
+/*
     assert app.getPerfService() != null;
 
     if (visible) {
@@ -58,5 +60,6 @@ public class InspectorPerfTab extends JPanel implements InspectorTabPanel {
     else {
       app.getPerfService().pausePolling();
     }
+*/
   }
 }

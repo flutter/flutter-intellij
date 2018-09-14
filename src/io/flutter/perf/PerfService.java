@@ -277,12 +277,14 @@ public class PerfService {
   }
 
   public void pausePolling() {
+System.out.println(">>>>> pausePolling");
     if (isRunning) {
       heapMonitor.pausePolling();
     }
   }
 
   public void resumePolling() {
+System.out.println(">>>>> resumePolling");
     if (isRunning) {
       heapMonitor.resumePolling();
     }
