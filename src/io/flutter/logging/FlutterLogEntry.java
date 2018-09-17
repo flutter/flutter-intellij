@@ -42,10 +42,11 @@ public class FlutterLogEntry {
 
   private static Kind parseKind(@NotNull String category, @NotNull String message) {
     if (category.equals(TOOLS_CATEGORY)) {
-      if (message.trim().equals("Performing hot reload...")) {
+      message = message.trim();
+      if (message.equals("Performing hot reload...") || message.equals("Initializing hot reload...")) {
         return Kind.RELOAD;
       }
-      if (message.trim().equals("Performing hot restart...")) {
+      if (message.equals("Performing hot restart...") || message.equals("Initializing hot restart...")) {
         return Kind.RESTART;
       }
     }
