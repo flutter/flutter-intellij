@@ -138,6 +138,8 @@ public class DaemonApi {
           for (String line : stdoutParser.getAvailableLines()) {
             final JsonObject obj = parseAndValidateDaemonEvent(line);
             if (obj != null) {
+              line = line.trim();
+              System.out.println(line.substring(0, Math.min(173, line.length())));
               dispatch(obj, listener);
             }
           }
@@ -205,6 +207,7 @@ public class DaemonApi {
       final int id = nextId.getAndIncrement();
       final Command<T> command = new Command<>(method, params, id);
       final String json = command.toString();
+      System.out.println(json.substring(0, Math.min(173, json.length())));
       synchronized (pending) {
         pending.put(id, command);
       }

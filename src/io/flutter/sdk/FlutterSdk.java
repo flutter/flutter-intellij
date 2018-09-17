@@ -230,7 +230,6 @@ public class FlutterSdk {
     if (FlutterSettings.getInstance().isVerboseLogging()) {
       args.add("--verbose");
     }
-
     // TODO(messick): Check that 'flutter attach' supports these arguments.
     if (flutterLaunchMode == FlutterLaunchMode.PROFILE) {
       args.add("--profile");
