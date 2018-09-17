@@ -344,7 +344,7 @@ abstract class VmServiceBase implements VmServiceConst {
     synchronized (consumerMapLock) {
       consumerMap.put(id, consumer);
     }
-System.out.println(request.toString().substring(0, Math.min(173, request.toString().length())));
+
     // Send the request
     requestSink.add(request);
   }
@@ -409,7 +409,7 @@ System.out.println(request.toString().substring(0, Math.min(173, request.toStrin
       Logging.getLogger().logError("Parse message failed: " + jsonText, e);
       return;
     }
-    System.out.println(jsonText.substring(0, Math.min(173, jsonText.length())));
+
     if (json.has("method")) {
       if (!json.has(PARAMS)) {
         final String message = "Missing " + PARAMS;
