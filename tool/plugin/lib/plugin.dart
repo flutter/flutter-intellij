@@ -525,7 +525,10 @@ class BuildCommand extends ProductCommand {
 
       // Handle skipped files.
       for (var file in spec.filesToSkip) {
-        await new File(file).rename('$file~');
+        var entity = FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
+        if (entity.existsSync()) {
+          await entity.rename('$file~');
+        }
       }
 
       // TODO(devoncarew): Remove this when we no longer support AS 3.1.
@@ -598,7 +601,11 @@ class BuildCommand extends ProductCommand {
 
         // Restore skipped files.
         for (var file in spec.filesToSkip) {
-          await new File('$file~').rename(file);
+          var name = '$file~';
+          var entity = FileSystemEntity.isFileSync(name) ? File(name) : Directory(name);
+          if (entity.existsSync()) {
+            await entity.rename(file);
+          }
         }
       }
       if (result != 0) {
@@ -728,7 +735,7 @@ class BuildSpec {
   final String untilBuild;
   final String pluginId = 'io.flutter';
   final String release;
-  final List<String> filesToSkip;
+  final List<dynamic> filesToSkip;
   String _changeLog;
 
   ArtifactManager artifacts = new ArtifactManager();
