@@ -76,7 +76,7 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
       fields.setAdditionalArgs(Joiner.on(" ").join(args));
     }
 
-    Executor executor = RunFlutterAction.getExecutor(ToolWindowId.RUN);
+    Executor executor = RunFlutterAction.getExecutor(ToolWindowId.DEBUG);
     if (executor == null) {
       return;
     }

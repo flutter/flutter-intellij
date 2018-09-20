@@ -114,8 +114,12 @@ public class VmServiceWrapper implements Disposable {
                         return;
                       }
 
-                      // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
-                      handleIsolate(isolateRef, eventKind == EventKind.PauseStart);
+                      if (eventKind == EventKind.Resume) {
+                        attachIsolate(isolateRef);
+                      } else {
+                        // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
+                        handleIsolate(isolateRef, eventKind == EventKind.PauseStart);
+                      }
 
                       // Handle the case of isolates paused when we connect (this can come up in remote debugging).
                       if (eventKind == EventKind.PauseBreakpoint ||
@@ -204,6 +208,25 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
+  public void attachIsolate(@NotNull IsolateRef isolateRef) {
+    //myDebugProcess.getSession().initBreakpoints(); // TODO(messick) Remove if not needed.
+    boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
+    // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
+    if (newIsolate) {
+      addRequest(() -> myVmService.setExceptionPauseMode(isolateRef.getId(),
+                                                         myDebugProcess.getBreakOnExceptionMode(),
+                                                         new VmServiceConsumers.SuccessConsumerWrapper() {
+                                                           @Override
+                                                           public void received(Success response) {
+                                                             setInitialBreakpoints(isolateRef);
+                                                           }
+                                                         }));
+    }
+    else {
+      setInitialBreakpoints(isolateRef);
+    }
+  }
+
   private void checkInitialResume(IsolateRef isolateRef) {
     if (myIsolatesInfo.getShouldInitialResume(isolateRef)) {
       resumeIsolate(isolateRef.getId(), null);
@@ -224,6 +247,12 @@ public class VmServiceWrapper implements Disposable {
     else {
       doSetInitialBreakpointsAndResume(isolateRef);
     }
+  }
+
+  private void setInitialBreakpoints(@NotNull IsolateRef isolateRef) {
+    doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
+      myIsolatesInfo.setBreakpointsSet(isolateRef);
+    });
   }
 
   private void doSetInitialBreakpointsAndResume(@NotNull final IsolateRef isolateRef) {
