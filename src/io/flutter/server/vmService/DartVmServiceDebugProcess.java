@@ -34,6 +34,7 @@ import com.intellij.xdebugger.evaluation.XDebuggerEditorsProvider;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
+import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.actions.DartPopFrameAction;
@@ -552,8 +553,9 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
                 else if (eventKind == EventKind.Resume) {
                   // Currently true if we got here via 'flutter attach'
                   ApplicationManager.getApplication().invokeLater(() -> {
+                    ((XDebugSessionImpl)getSession()).reset();
                     getSession().initBreakpoints();
-                    myVmServiceWrapper.attachIsolate(isolateRef);
+                    myVmServiceWrapper.attachIsolate(isolateRef); // TODO(messick) onVmConnected(vmService) here, to connect inspector?
                   });
                 }
               }
