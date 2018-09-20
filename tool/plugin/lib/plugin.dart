@@ -524,7 +524,7 @@ class BuildCommand extends ProductCommand {
       await removeAll('build');
 
       // Handle skipped files.
-      for (var file in spec.filesToSkip) {
+      for (String file in spec.filesToSkip) {
         var entity =
             FileSystemEntity.isFileSync(file) ? File(file) : Directory(file);
         if (entity.existsSync()) {
