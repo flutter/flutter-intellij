@@ -555,7 +555,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
                   ApplicationManager.getApplication().invokeLater(() -> {
                     ((XDebugSessionImpl)getSession()).reset();
                     getSession().initBreakpoints();
-                    myVmServiceWrapper.attachIsolate(isolateRef); // TODO(messick) onVmConnected(vmService) here, to connect inspector?
+                    myVmServiceWrapper.attachIsolate(isolateRef, isolate); // TODO(messick) onVmConnected(vmService) here, to connect inspector?
                   });
                 }
               }

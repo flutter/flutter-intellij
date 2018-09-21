@@ -1,6 +1,7 @@
 package io.flutter.server.vmService;
 
 import com.google.common.collect.Lists;
+import com.google.gson.JsonObject;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -142,7 +143,7 @@ public class VmServiceWrapper implements Disposable {
 
                       // This is the entry point for attaching a debugger to a running app.
                       if (eventKind == EventKind.Resume) {
-                        attachIsolate(isolateRef);
+                        attachIsolate(isolateRef, isolate);
                         return;
                       }
                       // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
@@ -235,7 +236,7 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  public void attachIsolate(@NotNull IsolateRef isolateRef) {
+  public void attachIsolate(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
     //myDebugProcess.getSession().initBreakpoints(); // TODO(messick) Remove if not needed.
     boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
@@ -245,12 +246,12 @@ public class VmServiceWrapper implements Disposable {
                                                          new VmServiceConsumers.SuccessConsumerWrapper() {
                                                            @Override
                                                            public void received(Success response) {
-                                                             setInitialBreakpoints(isolateRef);
+                                                             setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
                                                            }
                                                          }));
     }
     else {
-      setInitialBreakpoints(isolateRef);
+      setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
     }
   }
 
@@ -276,11 +277,15 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  private void setInitialBreakpoints(@NotNull IsolateRef isolateRef) {
+  private void setInitialBreakpointsAndCheckExtensions(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
     //defineIsolateListener(); // TODO(messick) This gets run just after defineIsolateLister() runs in another thread
     doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
       myIsolatesInfo.setBreakpointsSet(isolateRef);
     });
+      for (String rpc : isolate.getExtensionRPCs()) {
+        Event event = new ServiceExtensionEvent(isolateRef, rpc);
+        vmService.
+      }
   }
 
   private void doSetInitialBreakpointsAndResume(@NotNull final IsolateRef isolateRef) {
@@ -592,5 +597,35 @@ public class VmServiceWrapper implements Disposable {
         callback.errorOccurred(error.getMessage());
       }
     });
+  }
+
+  private static class ServiceExtensionEvent extends Event {
+    IsolateRef isolateRef;
+    String extension;
+
+    ServiceExtensionEvent(JsonObject obj) {
+      super(obj);
+    }
+
+    ServiceExtensionEvent(IsolateRef isolateRef, String extension) {
+      this(null);
+      this.isolateRef = isolateRef;
+      this.extension = extension;
+    }
+
+    @Override
+    public IsolateRef getIsolate() {
+      return isolateRef;
+    }
+
+    @Override
+    public EventKind getKind() {
+      return EventKind.valueOf("ServiceExtensionAdded");
+    }
+
+    @Override
+    public String getExtensionRPC() {
+      return extension;
+    }
   }
 }
