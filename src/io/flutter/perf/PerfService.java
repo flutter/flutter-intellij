@@ -7,6 +7,7 @@ package io.flutter.perf;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.text.StringUtil;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.VmServiceConsumers;
 import gnu.trove.THashMap;
 import io.flutter.perf.HeapMonitor.HeapListener;
@@ -14,6 +15,7 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
+import java.util.List;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
@@ -34,6 +36,16 @@ public class PerfService {
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
   private boolean isRunning;
+
+  public static void updateRegisteredExtensions(Isolate isolate) {
+    List<FlutterApp> apps = FlutterApp.collectAllApps();
+    for (FlutterApp app : apps) {
+      PerfService service = app.getPerfService();
+      if (service != null) {
+        service.addRegisteredExtensionRPCs(isolate);
+      }
+    }
+  }
 
   public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
     this.heapMonitor = new HeapMonitor(vmService, debugProcess);
@@ -80,12 +92,7 @@ public class PerfService {
                   }
                 }
               }
-
-              ApplicationManager.getApplication().invokeLater(() -> {
-                for (String extension : isolate.getExtensionRPCs()) {
-                  addServiceExtension(extension);
-                }
-              });
+              addRegisteredExtensionRPCs(isolate);
             }
 
             @Override
@@ -101,6 +108,13 @@ public class PerfService {
     });
   }
 
+  public void addRegisteredExtensionRPCs(Isolate isolate) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      for (String extension : isolate.getExtensionRPCs()) {
+        addServiceExtension(extension);
+      }
+    });
+  }
   /**
    * Start the Perf service.
    */

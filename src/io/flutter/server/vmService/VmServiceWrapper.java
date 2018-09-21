@@ -16,6 +16,7 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.jetbrains.lang.dart.DartFileType;
+import io.flutter.perf.PerfService;
 import io.flutter.server.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
@@ -282,10 +283,7 @@ public class VmServiceWrapper implements Disposable {
     doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
       myIsolatesInfo.setBreakpointsSet(isolateRef);
     });
-      for (String rpc : isolate.getExtensionRPCs()) {
-        Event event = new ServiceExtensionEvent(isolateRef, rpc);
-        vmService.
-      }
+    PerfService.updateRegisteredExtensions(isolate);
   }
 
   private void doSetInitialBreakpointsAndResume(@NotNull final IsolateRef isolateRef) {

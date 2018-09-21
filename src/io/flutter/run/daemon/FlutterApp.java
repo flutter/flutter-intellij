@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionManager;
@@ -22,6 +23,7 @@ import com.intellij.history.LocalHistory;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.text.StringUtil;
@@ -192,6 +194,19 @@ public class FlutterApp {
     }
 
     return null;
+  }
+
+  @NotNull
+  public static List<FlutterApp> collectAllApps() {
+    List<FlutterApp> apps = Lists.newArrayList();
+    Project[] projects = ProjectManager.getInstance().getOpenProjects();
+    for (Project project : projects) {
+      FlutterApp app = fromProjectProcess(project);
+      if (app != null) {
+        apps.add(app);
+      }
+    }
+    return apps;
   }
 
   /**
