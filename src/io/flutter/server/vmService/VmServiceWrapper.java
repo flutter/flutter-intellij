@@ -596,34 +596,4 @@ public class VmServiceWrapper implements Disposable {
       }
     });
   }
-
-  private static class ServiceExtensionEvent extends Event {
-    IsolateRef isolateRef;
-    String extension;
-
-    ServiceExtensionEvent(JsonObject obj) {
-      super(obj);
-    }
-
-    ServiceExtensionEvent(IsolateRef isolateRef, String extension) {
-      this(null);
-      this.isolateRef = isolateRef;
-      this.extension = extension;
-    }
-
-    @Override
-    public IsolateRef getIsolate() {
-      return isolateRef;
-    }
-
-    @Override
-    public EventKind getKind() {
-      return EventKind.valueOf("ServiceExtensionAdded");
-    }
-
-    @Override
-    public String getExtensionRPC() {
-      return extension;
-    }
-  }
 }
