@@ -36,9 +36,9 @@
     <orderEntry type="module" module-name="android.sdktools.testutils" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
-    <orderEntry type="module" module-name="project-system" />
-    <orderEntry type="module" module-name="project-system-gradle" />
     <orderEntry type="module" module-name="android-ndk" />
     <orderEntry type="module" module-name="intellij.android.common" />
+    <orderEntry type="module" module-name="intellij.android.projectSystem" />
+    <orderEntry type="module" module-name="intellij.android.projectSystem.gradle" />
   </component>
 </module>

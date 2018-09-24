@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 
 @State(name = "FlutterLogPreferences", storages = @Storage(StoragePathMacros.WORKSPACE_FILE))
 public class FlutterLogPreferences implements PersistentStateComponent<FlutterLogPreferences> {
+  private boolean clearOnReload = true;
+  private boolean clearOnRestart = true;
   private boolean showTimestamp = false;
   private boolean showSequenceNumbers = false;
   private boolean showLogLevel = true;
@@ -34,6 +36,22 @@ public class FlutterLogPreferences implements PersistentStateComponent<FlutterLo
   @Override
   public void loadState(@NotNull FlutterLogPreferences object) {
     XmlSerializerUtil.copyBean(object, this);
+  }
+
+  public void setClearOnReload(boolean clearOnReload) {
+    this.clearOnReload = clearOnReload;
+  }
+
+  public boolean isClearOnReload() {
+    return clearOnReload;
+  }
+
+  public void setClearOnRestart(boolean clearOnRestart) {
+    this.clearOnRestart = clearOnRestart;
+  }
+
+  public boolean isClearOnRestart() {
+    return clearOnRestart;
   }
 
   public boolean isShowTimestamp() {

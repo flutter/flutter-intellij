@@ -39,6 +39,16 @@
       <add-to-group group-id="WelcomeScreen.QuickStart.IDEA" anchor="after" relative-to-action="WelcomeScreen.CreateNewProject"/>
     </action>
 
+    <!-- Re-purpose the named toolbar button to work for Flutter modules. (It doesn't make much sense otherwise.) -->
+    <!-- This works changes both the toolbar and menu items, thanks to the overrides attribute. -->
+    <action id="AndroidConnectDebuggerAction"
+            overrides="true"
+            class="io.flutter.actions.ConnectAndroidDebuggerAction"
+            text="Attach Debugger to Android Process"
+            description="Attach Debugger to Android Process"
+            icon="AllIcons.Debugger.AttachToProcess">
+    </action>
+
   </actions>
 
 </idea-plugin>

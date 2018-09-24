@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.startup.StartupActivity;
-import com.intellij.openapi.util.registry.Registry;
 import io.flutter.actions.FlutterShowStructureSettingsAction;
 import io.flutter.actions.OpenAndroidModule;
 import io.flutter.android.AndroidModuleLibraryManager;
@@ -18,21 +17,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.MissingResourceException;
-
 public class FlutterStudioStartupActivity implements StartupActivity {
-  public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
-    ActionManager actionManager = ActionManager.getInstance();
-    AnAction oldAction = actionManager.getAction(actionId);
-    if (oldAction != null) {
-      newAction.getTemplatePresentation().setIcon(oldAction.getTemplatePresentation().getIcon());
-      newAction.getTemplatePresentation().setText(oldAction.getTemplatePresentation().getTextWithMnemonic(), true);
-      newAction.getTemplatePresentation().setDescription(oldAction.getTemplatePresentation().getDescription());
-      actionManager.unregisterAction(actionId);
-    }
-    actionManager.registerAction(actionId, newAction);
-  }
-
   @Override
   public void runActivity(@NotNull Project project) {
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
@@ -51,5 +36,17 @@ public class FlutterStudioStartupActivity implements StartupActivity {
       // TODO(messick): Remove the flag once this sync mechanism is stable.
       AndroidModuleLibraryManager.startWatching(project);
     }
+  }
+
+  public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
+    ActionManager actionManager = ActionManager.getInstance();
+    AnAction oldAction = actionManager.getAction(actionId);
+    if (oldAction != null) {
+      newAction.getTemplatePresentation().setIcon(oldAction.getTemplatePresentation().getIcon());
+      newAction.getTemplatePresentation().setText(oldAction.getTemplatePresentation().getTextWithMnemonic(), true);
+      newAction.getTemplatePresentation().setDescription(oldAction.getTemplatePresentation().getDescription());
+      actionManager.unregisterAction(actionId);
+    }
+    actionManager.registerAction(actionId, newAction);
   }
 }

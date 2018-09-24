@@ -223,6 +223,35 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
+  public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main,
+                                      @NotNull FlutterLaunchMode flutterLaunchMode, String... additionalArgs) {
+    final List<String> args = new ArrayList<>();
+    args.add("--machine");
+    if (FlutterSettings.getInstance().isVerboseLogging()) {
+      args.add("--verbose");
+    }
+
+    // TODO(messick): Check that 'flutter attach' supports these arguments.
+    if (flutterLaunchMode == FlutterLaunchMode.PROFILE) {
+      args.add("--profile");
+    }
+    else if (flutterLaunchMode == FlutterLaunchMode.RELEASE) {
+      args.add("--release");
+    }
+
+    // TODO(messick): Add others (target, debug-port).
+    args.addAll(asList(additionalArgs));
+
+    // Make the path to main relative (to make the command line prettier).
+    final String mainPath = root.getRelativePath(main);
+    if (mainPath == null) {
+      throw new IllegalArgumentException("main isn't within the pub root: " + main.getPath());
+    }
+    args.add(FileUtil.toSystemDependentName(mainPath));
+
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{}));
+  }
+
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");

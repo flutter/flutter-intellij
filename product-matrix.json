@@ -8,7 +8,10 @@
       "ideaVersion": "173.4720617",
       "dartPluginVersion": "173.4700",
       "sinceBuild": "173.0",
-      "untilBuild": "173.*"
+      "untilBuild": "173.*",
+      "filesToSkip": [
+        "flutter-studio/src/io/flutter/profiler"
+      ]
     },
     {
       "comments": "AS 3.2 Beta and IntelliJ 2018.1",
@@ -39,6 +42,16 @@
       "dartPluginVersion": "182.4129.13",
       "sinceBuild": "182.4129",
       "untilBuild": "182.*"
+    },
+    {
+      "comments": "IntelliJ 2018.3",
+      "name": "IntelliJ",
+      "version": "2018.3",
+      "ideaProduct": "ideaIU",
+      "ideaVersion": "183.2407.10",
+      "dartPluginVersion": "183.2153.10",
+      "sinceBuild": "183.0",
+      "untilBuild": "183.*"
     }
   ]
 }

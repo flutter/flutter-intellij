@@ -75,21 +75,27 @@ public class LaunchState extends CommandLineState {
   private final @NotNull VirtualFile sourceLocation;
 
   private final @NotNull RunConfig runConfig;
-  private final @NotNull Callback callback;
+  private final @NotNull CreateAppCallback myCreateAppCallback;
 
   public LaunchState(@NotNull ExecutionEnvironment env,
                      @NotNull VirtualFile workDir,
                      @NotNull VirtualFile sourceLocation,
                      @NotNull RunConfig runConfig,
-                     @NotNull Callback callback) {
+                     @NotNull CreateAppCallback createAppCallback) {
     super(env);
     this.workDir = workDir;
     this.sourceLocation = sourceLocation;
     this.runConfig = runConfig;
-    this.callback = callback;
+    this.myCreateAppCallback = createAppCallback;
     DaemonConsoleView.install(this, env, workDir);
   }
 
+  @NotNull
+  protected CreateAppCallback getCreateAppCallback() {
+    return myCreateAppCallback;
+  }
+
+  @Override
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
     if (FlutterLog.isLoggingEnabled()) {
@@ -102,7 +108,7 @@ public class LaunchState extends CommandLineState {
     }
   }
 
-  private RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
+  protected RunContentDescriptor launch(@NotNull ExecutionEnvironment env) throws ExecutionException {
     FileDocumentManager.getInstance().saveAllDocuments();
 
     // Set our FlutterLaunchMode up in the ExecutionEnvironment.
@@ -112,17 +118,12 @@ public class LaunchState extends CommandLineState {
 
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
-    final FlutterApp app = callback.createApp(device);
 
     if (device == null) {
-      Messages.showDialog(
-        project,
-        "No connected devices found; please connect a device, or see flutter.io/setup for getting started instructions.",
-        "No Connected Devices Found",
-        new String[]{Messages.OK_BUTTON}, 0, AllIcons.General.InformationDialog);
-
+      showNoDeviceConnectedMessage(project);
       return null;
     }
+    final FlutterApp app = myCreateAppCallback.createApp(device);
 
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);
@@ -179,8 +180,16 @@ public class LaunchState extends CommandLineState {
     }
   }
 
+  protected void showNoDeviceConnectedMessage(Project project) {
+    Messages.showDialog(
+      project,
+      "No connected devices found; please connect a device, or see flutter.io/setup for getting started instructions.",
+      "No Connected Devices Found",
+      new String[]{Messages.OK_BUTTON}, 0, AllIcons.General.InformationDialog);
+  }
+
   @NotNull
-  private XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
+  protected XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
                                            @NotNull final FlutterApp app,
                                            @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
@@ -225,7 +234,7 @@ public class LaunchState extends CommandLineState {
   }
 
   @NotNull
-  private ExecutionResult setUpConsoleAndActions(@NotNull FlutterApp app) throws ExecutionException {
+  protected ExecutionResult setUpConsoleAndActions(@NotNull FlutterApp app) throws ExecutionException {
     final ConsoleView console = createConsole(getEnvironment().getExecutor());
     if (console != null) {
       app.setConsole(console);
@@ -267,7 +276,7 @@ public class LaunchState extends CommandLineState {
    * <p>
    * The callback knows the appropriate command line arguments (bazel versus non-bazel).
    */
-  public interface Callback {
+  public interface CreateAppCallback {
     FlutterApp createApp(@Nullable FlutterDevice device) throws ExecutionException;
   }
 
@@ -277,6 +286,7 @@ public class LaunchState extends CommandLineState {
   public interface RunConfig extends RunProfile {
     Project getProject();
 
+    @Override
     @NotNull
     LaunchState getState(@NotNull Executor executor, @NotNull ExecutionEnvironment environment) throws ExecutionException;
 
@@ -296,7 +306,7 @@ public class LaunchState extends CommandLineState {
 
     @SuppressWarnings("SimplifiableIfStatement")
     @Override
-    public final boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
+    public boolean canRun(final @NotNull String executorId, final @NotNull RunProfile profile) {
       if (!DefaultRunExecutor.EXECUTOR_ID.equals(executorId) &&
           !DefaultDebugExecutor.EXECUTOR_ID.equals(executorId) &&
           !ANDROID_PROFILER_EXECUTOR_ID.equals(executorId)) {
@@ -349,7 +359,7 @@ public class LaunchState extends CommandLineState {
     }
 
     @Override
-    protected final RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
+    protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env)
       throws ExecutionException {
       if (!(state instanceof LaunchState)) {
         LOG.error("unexpected RunProfileState: " + state.getClass());

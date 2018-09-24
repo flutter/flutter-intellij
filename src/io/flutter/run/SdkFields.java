@@ -132,6 +132,31 @@ public class SdkFields {
     return command.createGeneralCommandLine(project);
   }
 
+  /**
+   * Create a command to run 'flutter attach --machine'.
+   */
+  public GeneralCommandLine createFlutterSdkAttachCommand(@NotNull Project project, @NotNull FlutterLaunchMode flutterLaunchMode
+  ) throws ExecutionException {
+    final MainFile main = MainFile.verify(filePath, project).get();
+
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+    if (flutterSdk == null) {
+      throw new ExecutionException(FlutterBundle.message("flutter.sdk.is.not.configured"));
+    }
+
+    final PubRoot root = PubRoot.forDirectory(main.getAppDir());
+    if (root == null) {
+      throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
+    }
+
+    String[] args = additionalArgs == null ? new String[]{} : additionalArgs.split(" ");
+    if (buildFlavor != null) {
+      args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
+    }
+    final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), flutterLaunchMode, args);
+    return command.createGeneralCommandLine(project);
+  }
+
   SdkFields copy() {
     final SdkFields copy = new SdkFields();
     copy.setFilePath(filePath);

@@ -32,8 +32,15 @@ void main() {
       await runner.run(["-r=19", "-d../..", "build"]).whenComplete(() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
-        expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio', 'android-studio', 'ideaIU']));
+        expect(
+            specs.map((spec) => spec.ideaProduct),
+            orderedEquals([
+              'android-studio',
+              'android-studio',
+              'android-studio',
+              'ideaIU',
+              'ideaIU'
+            ]));
       });
     });
 
@@ -42,8 +49,15 @@ void main() {
       await runner.run(["-r=19", "-d../..", "test"]).whenComplete(() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
-        expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio', 'android-studio', 'ideaIU']));
+        expect(
+            specs.map((spec) => spec.ideaProduct),
+            orderedEquals([
+              'android-studio',
+              'android-studio',
+              'android-studio',
+              'ideaIU',
+              'ideaIU'
+            ]));
       });
     });
 
@@ -52,8 +66,15 @@ void main() {
       await runner.run(["-r19", "-d../..", "deploy"]).whenComplete(() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
-        expect(specs.map((spec) => spec.ideaProduct),
-            orderedEquals(['android-studio', 'android-studio', 'android-studio', 'ideaIU']));
+        expect(
+            specs.map((spec) => spec.ideaProduct),
+            orderedEquals([
+              'android-studio',
+              'android-studio',
+              'android-studio',
+              'ideaIU',
+              'ideaIU'
+            ]));
       });
     });
   });
@@ -132,7 +153,8 @@ void main() {
             'releases/release_19/2017.3/flutter-intellij.zip',
             'releases/release_19/2018.1/flutter-intellij.zip',
             'releases/release_19/2018.2.1/flutter-intellij.zip',
-            'releases/release_19/2018.2.2/flutter-intellij.zip'
+            'releases/release_19/2018.2.2/flutter-intellij.zip',
+            'releases/release_19/2018.3/flutter-intellij.zip'
           ]));
     });
   });

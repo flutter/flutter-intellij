@@ -146,6 +146,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         new ShowLevelAction(),
         new ShowCategoryAction(),
         new Separator(),
+        new ClearOnRestartAction(),
+        new ClearOnReloadAction(),
+        new Separator(),
         new ShowColorsAction()
       );
     }
@@ -224,6 +227,40 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       flutterLogPreferences.setShowLogLevel(state);
       logModel.setShowLogLevels(state);
       logModel.update();
+    }
+  }
+
+  private class ClearOnReloadAction extends ToggleAction {
+
+    ClearOnReloadAction() {
+      super("Clear on reload");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return flutterLogPreferences.isClearOnReload();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.setClearOnReload(state);
+    }
+  }
+
+  private class ClearOnRestartAction extends ToggleAction {
+
+    ClearOnRestartAction() {
+      super("Clear on restart");
+    }
+
+    @Override
+    public boolean isSelected(AnActionEvent e) {
+      return flutterLogPreferences.isClearOnRestart();
+    }
+
+    @Override
+    public void setSelected(AnActionEvent e, boolean state) {
+      flutterLogPreferences.setClearOnRestart(state);
     }
   }
 
@@ -411,7 +448,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
     flutterLogPreferences = FlutterLogPreferences.getInstance(app.getProject());
-    filterPanel = createFilterPanel();
+    filterPanel = new FlutterLogFilterPanel(param -> doFilter());
+    filterPanel.initFromPreferences(flutterLogPreferences);
 
     computeTextAttributesByLogLevelCache();
     ApplicationManager.getApplication().getMessageBus().connect(this)
@@ -513,14 +551,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     toolWindowPanel.setContent(pane);
   }
 
-  @NotNull
-  private FlutterLogFilterPanel createFilterPanel() {
-    final FlutterLogFilterPanel panel = new FlutterLogFilterPanel();
-    panel.updateFromPreferences(flutterLogPreferences);
-    panel.setOnFilterListener(param -> doFilter());
-    return panel;
-  }
-
   private void computeTextAttributesByLogLevelCache() {
     final EditorColorsScheme globalEditorColorsScheme = EditorColorsManager.getInstance().getGlobalScheme();
     textAttributesByLogLevelCache.clear();
@@ -573,9 +603,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     flutterLogPreferences.setToolWindowRegex(param.isRegex());
     flutterLogPreferences.setToolWindowMatchCase(param.isMatchCase());
     flutterLogPreferences.setToolWindowLogLevel(param.getLogLevel().value);
-    final String text = param.getExpression();
-    final FlutterLogTree.EntryFilter filter = new FlutterLogTree.EntryFilter(param);
-    ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(filter));
+    ApplicationManager.getApplication().invokeLater(() -> logTree.setFilter(param));
   }
 
   @NotNull
@@ -600,7 +628,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    logTree.reload();
+    logTree.append(entry);
   }
 
   @Override

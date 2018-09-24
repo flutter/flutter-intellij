@@ -10,8 +10,8 @@
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
-  <version>28.0.1</version>
-  <idea-version since-build="173.0" until-build="182.*"/>
+  
+  <idea-version since-build="173.0" until-build="183.*"/>
 
   <depends>Dart</depends>
 
