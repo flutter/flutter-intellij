@@ -1,7 +1,6 @@
 package io.flutter.server.vmService;
 
 import com.google.common.collect.Lists;
-import com.google.gson.JsonObject;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
@@ -15,6 +14,7 @@ import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
+import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.perf.PerfService;
 import io.flutter.server.vmService.frame.DartAsyncMarkerFrame;
@@ -238,7 +238,6 @@ public class VmServiceWrapper implements Disposable {
   }
 
   public void attachIsolate(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
-    //myDebugProcess.getSession().initBreakpoints(); // TODO(messick) Remove if not needed.
     boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
@@ -247,13 +246,16 @@ public class VmServiceWrapper implements Disposable {
                                                          new VmServiceConsumers.SuccessConsumerWrapper() {
                                                            @Override
                                                            public void received(Success response) {
+                                                             XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
+                                                             session.reset();
+                                                             session.initBreakpoints();
                                                              setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
                                                            }
                                                          }));
     }
-    else {
-      setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
-    }
+    //else {
+    //  setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
+    //}
   }
 
   private void checkInitialResume(IsolateRef isolateRef) {
@@ -279,7 +281,6 @@ public class VmServiceWrapper implements Disposable {
   }
 
   private void setInitialBreakpointsAndCheckExtensions(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
-    //defineIsolateListener(); // TODO(messick) This gets run just after defineIsolateLister() runs in another thread
     doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
       myIsolatesInfo.setBreakpointsSet(isolateRef);
     });

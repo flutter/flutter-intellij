@@ -553,9 +553,8 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
                 else if (eventKind == EventKind.Resume) {
                   // Currently true if we got here via 'flutter attach'
                   ApplicationManager.getApplication().invokeLater(() -> {
-                    ((XDebugSessionImpl)getSession()).reset();
-                    getSession().initBreakpoints();
-                    myVmServiceWrapper.attachIsolate(isolateRef, isolate); // TODO(messick) onVmConnected(vmService) here, to connect inspector?
+                    myVmServiceWrapper.attachIsolate(isolateRef, isolate);
+                    // TODO(messick) onVmConnected(vmService) here, to connect inspector? Seems to work without, not sure why.
                   });
                 }
               }
