@@ -50,16 +50,19 @@ public class InspectorPerfTab extends JPanel implements InspectorTabPanel {
 
   @Override
   public void setVisibleToUser(boolean visible) {
-app.getPerfService().resumePolling();
-/*
     assert app.getPerfService() != null;
 
     if (visible) {
       app.getPerfService().resumePolling();
     }
     else {
-      app.getPerfService().pausePolling();
+      // TODO(terry): Currently, don't pause polling so all profiler views
+      //              appear live e.g., memory profiler needs to continue
+      //              profiling on its timeline even if we're switched to
+      //              the performance tab. Probably need a Profiling On/Off
+      //              button to handle whether or not profiling is active
+      //              for all profiler views.
+      // app.getPerfService().pausePolling();
     }
-*/
   }
 }
