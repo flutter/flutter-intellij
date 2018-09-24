@@ -68,16 +68,20 @@ public class HeapDisplay extends JPanel {
     final HeapListener listener = new HeapListener() {
       @Override
       public void handleIsolatesInfo(VM vm, List<IsolateObject> isolates) {
-        heapState.handleIsolatesInfo(vm, isolates);
-        graph.updateFrom(heapState);
-        SwingUtilities.invokeLater(panel::repaint);
+        SwingUtilities.invokeLater(() -> {
+          heapState.handleIsolatesInfo(vm, isolates);
+          graph.updateFrom(heapState);
+          panel.repaint();
+        });
       }
 
       @Override
       public void handleGCEvent(IsolateRef iIsolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
-        heapState.handleGCEvent(iIsolateRef, newHeapSpace, oldHeapSpace);
-        graph.updateFrom(heapState);
-        SwingUtilities.invokeLater(panel::repaint);
+        SwingUtilities.invokeLater(() -> {
+          heapState.handleGCEvent(iIsolateRef, newHeapSpace, oldHeapSpace);
+          graph.updateFrom(heapState);
+          panel.repaint();
+        });
       }
     };
 
