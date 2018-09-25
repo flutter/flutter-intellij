@@ -344,6 +344,7 @@ abstract class VmServiceBase implements VmServiceConst {
     synchronized (consumerMapLock) {
       consumerMap.put(id, consumer);
     }
+
     // Send the request
     requestSink.add(request);
   }
@@ -408,6 +409,7 @@ abstract class VmServiceBase implements VmServiceConst {
       Logging.getLogger().logError("Parse message failed: " + jsonText, e);
       return;
     }
+
     if (json.has("method")) {
       if (!json.has(PARAMS)) {
         final String message = "Missing " + PARAMS;
