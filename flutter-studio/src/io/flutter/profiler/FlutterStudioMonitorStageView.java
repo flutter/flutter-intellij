@@ -26,7 +26,7 @@ import static com.android.tools.profilers.ProfilerLayout.Y_AXIS_TOP_MARGIN;
 
 /**
  * Bird eye view displaying high-level information across all profilers.
- * Refactored from Android 3.3 adt-ui code.
+ * Refactored from Android 3.2 adt-ui code.
  */
 public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudioMonitorStage> {
   private static final int AXIS_SIZE = 100;

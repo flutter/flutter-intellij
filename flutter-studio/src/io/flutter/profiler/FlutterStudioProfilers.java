@@ -34,7 +34,7 @@ import java.util.concurrent.TimeUnit;
  * The suite of profilers inside Android Studio. This object is responsible for
  * maintaining the information global across all the profilers, device
  * management, process management, current state of the tool etc.
- * Refactored from Android 3.3 adt-ui code.
+ * Refactored from Android 3.2 adt-ui code.
  */
 public class FlutterStudioProfilers
   extends AspectModel<ProfilerAspect> implements Updatable {

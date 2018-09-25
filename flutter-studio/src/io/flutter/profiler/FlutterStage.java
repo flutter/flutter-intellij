@@ -17,14 +17,14 @@ import java.util.concurrent.TimeUnit;
 /**
  * This name matches the Android Profiling tool Stage mechanism.  They use the
  * notion of a Stage for basic inheritance (we might be able to eliminate
- * if they componentize for now we need some basic overrides and return some
+ * if they componentize) for now we need some basic overrides and return some
  * basic interfaces.  For now we use their structure and I've maintained their
- * naming mechanism.
+ * naming conventions (postfix).
  * <p>
  * TODO(terry): adt-ui folks looking at componentizing their notion of a stage.
  * <p>
  * One of the stages the profiler tool goes through. It models a "state" in
- * the Android 3.3 adt-ui code.
+ * the Android 3.2 adt-ui code.
  */
 public abstract class FlutterStage extends AspectObserver {
 
