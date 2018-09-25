@@ -84,6 +84,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String WIDGET_TAB_LABEL = "Widgets";
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
+  public static final String MEMORY_TAB_LABEL = "Memory";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -232,6 +233,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
 
       addPerformanceTab(runnerTabs, app, !hasInspectorService);
+
+      // Only show the Memory tab if the "Memory Profiler" experiment is enabled.
+      if (FlutterSettings.getInstance().isMemoryProfilerEnabled()) {
+        addMemoryTab(runnerTabs, app, !hasInspectorService);
+      }
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -332,10 +338,17 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (selectedTab) {
       runnerTabs.select(tabInfo, false);
     }
+  }
 
-    if (!selectedTab) {
-      assert app.getPerfService() != null;
-      app.getPerfService().pausePolling();
+  private void addMemoryTab(JBRunnerTabs runnerTabs,
+                                 FlutterApp app,
+                                 boolean selectedTab) {
+    final InspectorMemoryTab perfTab = new InspectorMemoryTab(runnerTabs, app);
+    final TabInfo tabInfo = new TabInfo(perfTab)
+      .append(MEMORY_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    runnerTabs.addTab(tabInfo);
+    if (selectedTab) {
+      runnerTabs.select(tabInfo, false);
     }
   }
 

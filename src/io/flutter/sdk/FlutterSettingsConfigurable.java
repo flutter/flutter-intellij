@@ -60,6 +60,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
+  private JCheckBox myEnableMemoryProfilerCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -172,7 +173,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
+
     if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
+      return true;
+    }
+
+    if (settings.isMemoryProfilerEnabled() != myEnableMemoryProfilerCheckBox.isSelected()) {
       return true;
     }
 
@@ -206,6 +212,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setTrackWidgetCreation(myTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
+    settings.setMemoryProfilerEnabled(myEnableMemoryProfilerCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -234,6 +241,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myTrackWidgetCreationCheckBox.setSelected(settings.isTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
+    myEnableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerEnabled());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }

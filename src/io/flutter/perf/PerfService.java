@@ -36,10 +36,12 @@ public class PerfService {
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
   private boolean isRunning;
+  private int polledCount;
 
   public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
     this.heapMonitor = new HeapMonitor(vmService, debugProcess);
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
+    this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
@@ -276,14 +278,28 @@ public class PerfService {
     return stream.listen(onData, true);
   }
 
-  public void pausePolling() {
-    if (isRunning) {
+  public void addPollingClient() {
+    polledCount++;
+    resumePolling();
+  }
+
+  public void removePollingClient() {
+    if (polledCount > 0) polledCount--;
+    pausePolling();
+  }
+
+  private boolean anyPollingClients() {
+    return polledCount > 0;
+  }
+
+  private void pausePolling() {
+    if (isRunning && !anyPollingClients()) {
       heapMonitor.pausePolling();
     }
   }
 
-  public void resumePolling() {
-    if (isRunning) {
+  private void resumePolling() {
+    if (isRunning && anyPollingClients()) {
       heapMonitor.resumePolling();
     }
   }

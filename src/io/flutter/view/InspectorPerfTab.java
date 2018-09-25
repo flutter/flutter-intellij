@@ -53,10 +53,10 @@ public class InspectorPerfTab extends JPanel implements InspectorTabPanel {
     assert app.getPerfService() != null;
 
     if (visible) {
-      app.getPerfService().resumePolling();
+      app.getPerfService().addPollingClient();
     }
     else {
-      app.getPerfService().pausePolling();
+      app.getPerfService().removePollingClient();
     }
   }
 }
