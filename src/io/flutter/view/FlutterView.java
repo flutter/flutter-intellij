@@ -338,11 +338,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (selectedTab) {
       runnerTabs.select(tabInfo, false);
     }
-
-//    if (!selectedTab) {
-//      assert app.getPerfService() != null;
-//      app.getPerfService().pausePolling();
-//    }
   }
 
   private void addMemoryTab(JBRunnerTabs runnerTabs,
@@ -355,11 +350,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (selectedTab) {
       runnerTabs.select(tabInfo, false);
     }
-
-//    if (!selectedTab) {
-//      assert app.getPerfService() != null;
-//      app.getPerfService().pausePolling();
-//    }
   }
 
   /**

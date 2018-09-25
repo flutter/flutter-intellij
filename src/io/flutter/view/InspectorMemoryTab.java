@@ -1,17 +1,7 @@
 /*
- * Copyright (C) 2018 The Android Open Source Project
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 package io.flutter.view;
 
@@ -104,6 +94,10 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
         (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[]) noArguments);
 
       add(component, BorderLayout.CENTER);
+
+      // Start collecting immediately if memory profiling is enabled.
+      assert app.getPerfService() != null;
+      app.getPerfService().addPollingClient();
     }
     catch (ClassNotFoundException | NoSuchMethodException |
       InstantiationException | IllegalAccessException |
@@ -125,22 +119,14 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       add(labelBox);
     }
   }
+  @Override
+  public void finalize() {
+    // Done collecting for the memory profiler - if this instance is GC'd.
+    assert app.getPerfService() != null;
+    app.getPerfService().removePollingClient();
+  }
 
   @Override
-  public void setVisibleToUser(boolean visible) {
-    assert app.getPerfService() != null;
+  public void setVisibleToUser(boolean visible) { }
 
-    if (visible) {
-      app.getPerfService().resumePolling();
-    }
-    else {
-      // TODO(terry): Currently, don't pause polling so all profiler views
-      //              appear live e.g., memory profiler needs to continue
-      //              profiling on its timeline even if we're switched to
-      //              the performance tab. Probably need a Profiling On/Off
-      //              button to handle whether or not profiling is active
-      //              for all profiler views.
-      // app.getPerfService().pausePolling();
-    }
-  }
 }
