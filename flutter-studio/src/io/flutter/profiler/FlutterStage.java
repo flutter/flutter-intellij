@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * TODO(terry): adt-ui folks looking at componentizing their notion of a stage.
  * <p>
  * One of the stages the profiler tool goes through. It models a "state" in
- * the Android 3.2 adt-ui code.
+ * the Android Studio 3.2 adt-ui code.
  */
 public abstract class FlutterStage extends AspectObserver {
 

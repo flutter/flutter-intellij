@@ -38,7 +38,7 @@ import static com.android.tools.profilers.ProfilerLayout.TOOLBAR_HEIGHT;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
-// Refactored from Android 3.2 adt-ui code.
+// Refactored from Android 3.2 Studio adt-ui code.
 public class FlutterStudioProfilersView
   extends AspectObserver implements Disposable {
 

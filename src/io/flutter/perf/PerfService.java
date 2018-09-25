@@ -288,7 +288,7 @@ public class PerfService {
     pausePolling();
   }
 
-  public boolean anyPollingClients() {
+  private boolean anyPollingClients() {
     return polledCount > 0;
   }
 

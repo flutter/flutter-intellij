@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.android.tools.profilers.ProfilerFonts.STANDARD_FONT;
 
-// Refactored from Android 3.2 adt-ui code.
+// Refactored from Android Studio 3.2 adt-ui code.
 public abstract class FlutterStageView<T extends FlutterStage> extends AspectObserver {
   private final T stage;
   private final JPanel component;

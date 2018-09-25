@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.LinkedList;
 import java.util.List;
 
-// Refactored from Android 3.2 adt-ui code.
+// Refactored from Android Studio 3.2 adt-ui code.
 public class FlutterStudioMonitorStage extends FlutterStage {
 
   @NotNull

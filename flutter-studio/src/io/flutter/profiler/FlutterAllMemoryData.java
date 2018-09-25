@@ -24,7 +24,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
-// Refactored from Android 3.2 adt-ui code.
+// Refactored from Android Studio 3.2 adt-ui code.
 public class FlutterAllMemoryData {
   public class ThreadSafeData implements DataSeries<Long> {
     List<SeriesData<Long>> mData = new CopyOnWriteArrayList<SeriesData<Long>>();
