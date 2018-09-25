@@ -36,7 +36,7 @@ public class AttachState extends LaunchState {
       return null;
     }
     FlutterApp app = getCreateAppCallback().createApp(device);
-    // Cache for use in console configuration.
+    // Cache for use in console configuration, and for updating registered extensionRPCs.
     FlutterApp.addToEnvironment(env, app);
     ExecutionResult result = setUpConsoleAndActions(app);
     return createDebugSession(env, app, result).getRunContentDescriptor();

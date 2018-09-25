@@ -14,21 +14,50 @@ import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
+import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
-import io.flutter.server.vmService.frame.*;
-import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.*;
-import org.dartlang.vm.service.logging.Logging;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
+import io.flutter.perf.PerfService;
+import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.frame.DartAsyncMarkerFrame;
+import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
+import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
+import io.flutter.server.vmService.frame.DartVmServiceValue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.consumer.EvaluateConsumer;
+import org.dartlang.vm.service.consumer.EvaluateInFrameConsumer;
+import org.dartlang.vm.service.consumer.GetIsolateConsumer;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.consumer.StackConsumer;
+import org.dartlang.vm.service.consumer.SuccessConsumer;
+import org.dartlang.vm.service.consumer.VMConsumer;
+import org.dartlang.vm.service.element.Breakpoint;
+import org.dartlang.vm.service.element.ElementList;
+import org.dartlang.vm.service.element.ErrorRef;
+import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.EventKind;
+import org.dartlang.vm.service.element.ExceptionPauseMode;
+import org.dartlang.vm.service.element.Frame;
+import org.dartlang.vm.service.element.FrameKind;
+import org.dartlang.vm.service.element.InstanceRef;
+import org.dartlang.vm.service.element.Isolate;
+import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.element.Obj;
+import org.dartlang.vm.service.element.RPCError;
+import org.dartlang.vm.service.element.Script;
+import org.dartlang.vm.service.element.Sentinel;
+import org.dartlang.vm.service.element.Stack;
+import org.dartlang.vm.service.element.StepOption;
+import org.dartlang.vm.service.element.Success;
+import org.dartlang.vm.service.element.VM;
+import org.dartlang.vm.service.logging.Logging;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class VmServiceWrapper implements Disposable {
 
@@ -97,7 +126,7 @@ public class VmServiceWrapper implements Disposable {
             getVm(new VmServiceConsumers.VmConsumerWrapper() {
               @Override
               public void received(final VM vm) {
-                if (vm.getIsolates().size() == 0) {
+                if (vm.getIsolates().isEmpty()) {
                   Logging.getLogger().logError("No isolates found after VM start: " + vm.getIsolates().size());
                 }
 
@@ -114,12 +143,13 @@ public class VmServiceWrapper implements Disposable {
                         return;
                       }
 
+                      // This is the entry point for attaching a debugger to a running app.
                       if (eventKind == EventKind.Resume) {
-                        attachIsolate(isolateRef);
-                      } else {
-                        // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
-                        handleIsolate(isolateRef, eventKind == EventKind.PauseStart);
+                        attachIsolate(isolateRef, isolate);
+                        return;
                       }
+                      // if event is not PauseStart it means that PauseStart event will follow later and will be handled by listener
+                      handleIsolate(isolateRef, eventKind == EventKind.PauseStart);
 
                       // Handle the case of isolates paused when we connect (this can come up in remote debugging).
                       if (eventKind == EventKind.PauseBreakpoint ||
@@ -208,22 +238,21 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  public void attachIsolate(@NotNull IsolateRef isolateRef) {
-    //myDebugProcess.getSession().initBreakpoints(); // TODO(messick) Remove if not needed.
+  public void attachIsolate(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
     boolean newIsolate = myIsolatesInfo.addIsolate(isolateRef);
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
+      XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
+      session.reset();
+      session.initBreakpoints();
       addRequest(() -> myVmService.setExceptionPauseMode(isolateRef.getId(),
                                                          myDebugProcess.getBreakOnExceptionMode(),
                                                          new VmServiceConsumers.SuccessConsumerWrapper() {
                                                            @Override
                                                            public void received(Success response) {
-                                                             setInitialBreakpoints(isolateRef);
+                                                             setInitialBreakpointsAndCheckExtensions(isolateRef, isolate);
                                                            }
                                                          }));
-    }
-    else {
-      setInitialBreakpoints(isolateRef);
     }
   }
 
@@ -249,10 +278,17 @@ public class VmServiceWrapper implements Disposable {
     }
   }
 
-  private void setInitialBreakpoints(@NotNull IsolateRef isolateRef) {
+  private void setInitialBreakpointsAndCheckExtensions(@NotNull IsolateRef isolateRef, @NotNull Isolate isolate) {
     doSetBreakpointsForIsolate(myBreakpointHandler.getXBreakpoints(), isolateRef.getId(), () -> {
       myIsolatesInfo.setBreakpointsSet(isolateRef);
     });
+    FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
+    if (app != null) {
+      PerfService service = app.getPerfService();
+      if (service != null) {
+        service.addRegisteredExtensionRPCs(isolate);
+      }
+    }
   }
 
   private void doSetInitialBreakpointsAndResume(@NotNull final IsolateRef isolateRef) {
