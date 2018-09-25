@@ -283,6 +283,7 @@ public class VmServiceWrapper implements Disposable {
       myIsolatesInfo.setBreakpointsSet(isolateRef);
     });
     FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
+    // TODO(messick) Consider replacing this test with an assert; could interfere with setExceptionPauseMode().
     if (app != null) {
       PerfService service = app.getPerfService();
       if (service != null) {
