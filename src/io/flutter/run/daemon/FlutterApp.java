@@ -196,19 +196,6 @@ public class FlutterApp {
     return null;
   }
 
-  @NotNull
-  public static List<FlutterApp> collectAllApps() {
-    List<FlutterApp> apps = Lists.newArrayList();
-    Project[] projects = ProjectManager.getInstance().getOpenProjects();
-    for (Project project : projects) {
-      FlutterApp app = fromProjectProcess(project);
-      if (app != null) {
-        apps.add(app);
-      }
-    }
-    return apps;
-  }
-
   /**
    * Creates a process that will launch the flutter app.
    * <p>

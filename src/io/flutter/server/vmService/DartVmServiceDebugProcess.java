@@ -480,6 +480,11 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     return getIsolateInfos().isEmpty() ? null : getIsolateInfos().iterator().next().getIsolateId();
   }
 
+  @NotNull
+  public ExecutionEnvironment getExecutionEnvironment() {
+    return executionEnvironment;
+  }
+
   @Nullable
   public XDebuggerEvaluator getEvaluator() {
     XStackFrame frame = getSession().getCurrentStackFrame();
@@ -554,7 +559,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
                   // Currently true if we got here via 'flutter attach'
                   ApplicationManager.getApplication().invokeLater(() -> {
                     myVmServiceWrapper.attachIsolate(isolateRef, isolate);
-                    // TODO(messick) onVmConnected(vmService) here, to connect inspector? Seems to work without, not sure why.
                   });
                 }
               }
