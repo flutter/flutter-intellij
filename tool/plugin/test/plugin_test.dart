@@ -153,7 +153,7 @@ void main() {
             'releases/release_19/2017.3/flutter-intellij.zip',
             'releases/release_19/2018.1/flutter-intellij.zip',
             'releases/release_19/2018.2.1/flutter-intellij.zip',
-            'releases/release_19/2018.2.2/flutter-intellij.zip',
+            'releases/release_19/2018.2.4/flutter-intellij.zip',
             'releases/release_19/2018.3/flutter-intellij.zip'
           ]));
     });
