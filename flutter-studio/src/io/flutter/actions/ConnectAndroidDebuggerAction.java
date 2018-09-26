@@ -15,6 +15,7 @@ import com.intellij.execution.runners.ExecutionEnvironmentBuilder;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindowId;
@@ -24,6 +25,7 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.run.attach.SdkAttachConfig;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.android.actions.AndroidConnectDebuggerAction;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +54,15 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
 
     RunConfiguration configuration = settings.getConfiguration();
     if (!(configuration instanceof SdkRunConfig)) {
+      Project project = e.getProject();
+      if (project == null || project.isDefault()) {
+        super.actionPerformed(e);
+        return;
+      }
+      if (!FlutterSdkUtil.hasFlutterModules(project)) {
+        super.actionPerformed(e);
+        return;
+      }
       showSelectConfigDialog();
       return;
     }
@@ -91,12 +102,28 @@ public class ConnectAndroidDebuggerAction extends AndroidConnectDebuggerAction {
 
   @Override
   public void update(AnActionEvent e) {
-    // TODO(messick): Remove this method if there is no special update requirement.
     if (!FlutterUtils.isAndroidStudio()) {
       super.update(e);
       return;
     }
-    super.update(e);
+    Project project = e.getProject();
+    if (project == null || project.isDefault()) {
+      super.update(e);
+      return;
+    }
+    if (!FlutterSdkUtil.hasFlutterModules(project)) {
+      super.update(e);
+      return;
+    }
+    boolean enabled;
+    RunnerAndConfigurationSettings settings = RunFlutterAction.getRunConfigSettings(e);
+    if (settings == null) {
+      enabled = false;
+    } else {
+      RunConfiguration configuration = settings.getConfiguration();
+      enabled = configuration instanceof SdkRunConfig;
+    }
+    e.getPresentation().setEnabled(enabled);
   }
 
   private static void showSelectConfigDialog() {
