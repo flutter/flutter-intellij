@@ -1,3 +1,11 @@
+## 29.0
+- add 'Wrap with Container' to preview
+- fix test navigation
+- clear log on restart
+- experimental memory profiler; enable in preferences
+- build for 2018.3 EAP
+- bug fixes
+
 ## 28.0
 - build for Android Studio 3.3 Canary and 3.2 Beta
 - add UI support for importing Flutter modules into Android apps

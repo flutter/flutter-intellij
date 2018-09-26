@@ -27,6 +27,15 @@
 
   <change-notes>
     <![CDATA[
+<h2>29.0</h2>
+<ul>
+  <li>add 'Wrap with Container' to preview</li>
+  <li>fix test navigation</li>
+  <li>clear log on restart</li>
+  <li>experimental memory profiler; enable in preferences</li>
+  <li>build for 2018.3 EAP</li>
+  <li>bug fixes</li>
+</ul>
 <h2>28.0</h2>
 <ul>
   <li>build for Android Studio 3.3 Canary and 3.2 Beta</li>
