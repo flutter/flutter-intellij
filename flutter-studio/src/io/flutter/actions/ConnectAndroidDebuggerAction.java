@@ -24,7 +24,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
-import io.flutter.run.attach.SdkAttachConfig;
+import io.flutter.run.SdkAttachConfig;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.android.actions.AndroidConnectDebuggerAction;
 import org.jetbrains.annotations.Nullable;
