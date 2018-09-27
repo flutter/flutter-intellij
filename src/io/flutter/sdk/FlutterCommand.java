@@ -203,7 +203,6 @@ public class FlutterCommand {
       return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING);
     }
 
-    FileDocumentManager.getInstance().saveAllDocuments();
     if (isPubRelatedCommand()) {
       DartPlugin.setPubActionInProgress(true);
     }
