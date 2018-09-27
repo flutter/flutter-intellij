@@ -11,6 +11,7 @@ import com.intellij.conversion.ConversionService;
 import com.intellij.execution.OutputListener;
 import com.intellij.ide.RecentProjectsManager;
 import com.intellij.ide.highlighter.ModuleFileType;
+import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.ide.projectView.ProjectView;
 import com.intellij.ide.projectView.impl.ProjectViewPane;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
@@ -190,7 +191,12 @@ public class FlutterProjectCreator {
         () -> ApplicationManager.getApplication().invokeLater(
           () -> {
             // We want to show the Project view, not the Android view since it doesn't make the Dart code visible.
-            DumbService.getInstance(project).runWhenSmart(() -> ProjectView.getInstance(project).changeView(ProjectViewPane.ID));
+            DumbService.getInstance(project).runWhenSmart(
+              () -> {
+                ProjectView.getInstance(project).changeView(ProjectViewPane.ID);
+                // If the window still does not pop to top, see DartVmServiceDebugProcess.focusProject().
+                ProjectUtil.focusProjectWindow(project, true);
+              });
           }, ModalityState.defaultModalityState()));
     }
   }
