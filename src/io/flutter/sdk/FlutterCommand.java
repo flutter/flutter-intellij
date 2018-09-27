@@ -10,6 +10,7 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -202,6 +203,7 @@ public class FlutterCommand {
       return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING);
     }
 
+    FileDocumentManager.getInstance().saveAllDocuments();
     if (isPubRelatedCommand()) {
       DartPlugin.setPubActionInProgress(true);
     }
