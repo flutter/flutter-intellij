@@ -21,10 +21,13 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.PopupHandler;
 import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.awt.RelativePoint;
+import com.intellij.ui.components.JBCheckBox;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
@@ -41,16 +44,21 @@ import javax.swing.event.ChangeListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.intellij.openapi.editor.markup.EffectType.*;
 import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
 
 public class FlutterLogView extends JPanel implements ConsoleView, DataProvider, FlutterLog.Listener {
+
+  // Toggle to enable experimental logging channel UI.
+  public static final boolean ENABLE_LOGGING_CHANNELS = false;
+
   @NotNull
   private static final Logger LOG = Logger.getInstance(FlutterLogView.class);
 
@@ -140,7 +148,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @NotNull
     private DefaultActionGroup createPopupActionGroup() {
-      return new DefaultActionGroup(
+      final DefaultActionGroup actionGroup = new DefaultActionGroup(
         new ShowTimeStampsAction(),
         new ShowSequenceNumbersAction(),
         new ShowLevelAction(),
@@ -151,6 +159,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         new Separator(),
         new ShowColorsAction()
       );
+      if (ENABLE_LOGGING_CHANNELS) {
+        actionGroup.addAll(Arrays.asList(new Separator(), new ConfigureChannelsAction()));
+      }
+      return actionGroup;
     }
   }
 
@@ -280,6 +292,57 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       flutterLogPreferences.setShowColor(state);
       entryModel.showColors = state;
       logModel.update();
+    }
+  }
+
+  private class ChannelPanel extends JPanel {
+    class LoggerCheckBox extends JBCheckBox implements ActionListener {
+      @NotNull
+      private final LoggingChannel channel;
+
+      LoggerCheckBox(@NotNull LoggingChannel channel) {
+        super(channel.name);
+        this.channel = channel;
+        setToolTipText(channel.description);
+        setSelected(channel.enabled);
+        addActionListener(this);
+      }
+
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        app.getFlutterLog().enable(channel, isSelected());
+      }
+    }
+
+    ChannelPanel(List<LoggingChannel> channels) {
+      setLayout(new GridLayout(0, 1));
+      channels.forEach(c -> add(new LoggerCheckBox(c)));
+    }
+  }
+
+  private class ConfigureChannelsAction extends AnAction {
+    ConfigureChannelsAction() {
+      super("Configure channels...");
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      app.getFlutterLog().getLoggingChannels().thenAccept(channels -> ApplicationManager.getApplication().invokeAndWait(() -> {
+        final ChannelPanel panel = new ChannelPanel(channels);
+        final Rectangle visibleRect = logTree.getVisibleRect();
+        // TODO(pq): make width dynamic based on channel name length
+        final Point topRight = new Point(logTree.getLocationOnScreen().x + visibleRect.width - 150,
+                                         logTree.getLocationOnScreen().y + visibleRect.y);
+        JBPopupFactory.getInstance()
+          .createComponentPopupBuilder(panel, panel)
+          .setTitle("Logging channels")
+          .setMovable(true)
+          .setRequestFocus(true)
+          .createPopup().show(RelativePoint.fromScreen(topRight));
+      })).exceptionally(throwable -> {
+        throwable.printStackTrace();
+        return null;
+      });
     }
   }
 
