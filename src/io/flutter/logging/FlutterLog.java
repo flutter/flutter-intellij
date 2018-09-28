@@ -6,13 +6,16 @@
 package io.flutter.logging;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonObject;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
+import io.flutter.run.FlutterDebugProcess;
 import io.flutter.server.vmService.VmServiceConsumers;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -21,11 +24,13 @@ import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.EventListener;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class FlutterLog {
+
+  private static final Logger LOG = Logger.getInstance(FlutterLog.class);
+
   public static final String LOGGING_STREAM_ID = "_Logging";
 
   public interface Listener extends EventListener {
@@ -93,6 +98,38 @@ public class FlutterLog {
     entries.clear();
   }
 
+  private FlutterDebugProcess getDebugProcess() {
+    return logEntryParser.getDebugProcess();
+  }
+
+  public CompletableFuture<List<LoggingChannel>> getLoggingChannels() {
+    final FlutterDebugProcess debugProcess = getDebugProcess();
+    if (debugProcess != null) {
+      return debugProcess.getApp().callServiceExtension("ext.flutter.logs.loggingChannels").thenApply((response) -> {
+        final JsonObject value = response.getAsJsonObject("value");
+        final List<LoggingChannel> channels = new ArrayList<>();
+        for (String channel : value.keySet()) {
+          channels.add(LoggingChannel.fromJson(channel, value.getAsJsonObject(channel)));
+        }
+        return channels;
+      }).exceptionally(e -> {
+        LOG.warn(e);
+        return Collections.emptyList();
+      });
+    }
+    return CompletableFuture.completedFuture(Collections.emptyList());
+  }
+
+  public void enable(@NotNull LoggingChannel channel, boolean subscribe) {
+    final FlutterDebugProcess debugProcess = getDebugProcess();
+    if (debugProcess != null) {
+      final Map<String, Object> params = new HashMap<>();
+      params.put("channel", channel.name);
+      params.put("enable", subscribe);
+      debugProcess.getApp().callServiceExtension("ext.flutter.logs.enable", params);
+    }
+  }
+
   public List<FlutterLogEntry> getEntries() {
     return ImmutableList.copyOf(entries);
   }
@@ -136,9 +173,7 @@ public class FlutterLog {
       }
     });
 
-    // Listen for logging events (note: no way to unregister).
     vmService.streamListen(LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-
     // TODO(pq): listen for GC and frame events (Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame, etc).
   }
 
@@ -149,5 +184,9 @@ public class FlutterLog {
   @SuppressWarnings("EmptyMethod")
   private void onVmConnectionClosed() {
     // TODO(pq): handle VM connection closed.
+  }
+
+  public void setFlutterDebugProcess(FlutterDebugProcess process) {
+    logEntryParser.setDebugProcess(process);
   }
 }

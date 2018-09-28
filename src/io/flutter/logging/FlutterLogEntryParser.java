@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.util.Key;
 import io.flutter.perf.HeapMonitor;
+import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
@@ -41,6 +42,16 @@ public class FlutterLogEntryParser {
   static {
     df1.setMinimumFractionDigits(1);
     df1.setMaximumFractionDigits(1);
+  }
+
+  private FlutterDebugProcess debugProcess;
+
+  public void setDebugProcess(FlutterDebugProcess debugProcess) {
+    this.debugProcess = debugProcess;
+  }
+
+  public FlutterDebugProcess getDebugProcess() {
+    return debugProcess;
   }
 
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
