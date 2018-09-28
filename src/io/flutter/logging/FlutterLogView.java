@@ -330,7 +330,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       app.getFlutterLog().getLoggingChannels().thenAccept(channels -> ApplicationManager.getApplication().invokeAndWait(() -> {
         final ChannelPanel panel = new ChannelPanel(channels);
         final Rectangle visibleRect = logTree.getVisibleRect();
-        final Point topRight = new Point(logTree.getLocationOnScreen().x + visibleRect.width - 150 /* TODO: make dynamic */,
+        // TODO(pq): make width dynamic based on channel name length
+        final Point topRight = new Point(logTree.getLocationOnScreen().x + visibleRect.width - 150,
                                          logTree.getLocationOnScreen().y + visibleRect.y);
         JBPopupFactory.getInstance()
           .createComponentPopupBuilder(panel, panel)
