@@ -8,6 +8,7 @@ package io.flutter.actions;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -23,9 +24,13 @@ public class FlutterDoctorAction extends FlutterSdkAction {
 
   private static final Logger LOG = Logger.getInstance(FlutterDoctorAction.class);
 
-  @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root) {
     sdk.flutterDoctor().startInConsole(project);
+  }
+
+  @Override
+  public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root, @NotNull DataContext context) {
+    startCommand(project, sdk, root);
   }
 
   @Override
