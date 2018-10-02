@@ -102,6 +102,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
       return;
     }
     if (!FlutterSdkUtil.hasFlutterModules(project)) {
+      // Hide this button in Android projects.
       e.getPresentation().setVisible(false);
       return;
     }

@@ -606,9 +606,10 @@
     </action>
     <action id="AttachDebuggerAction"
             class="io.flutter.actions.AttachDebuggerAction"
-            text="Attach Debugger to Android Process"
-            description="Attach Debugger to Android Process"
+            text="Attach debugger to embedded Flutter process"
+            description="Attach debugger to a Flutter process embedded in an Android app"
             icon="AllIcons.Debugger.AttachToProcess">
+      <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
     </action>
 
     <!-- run menu actions -->
