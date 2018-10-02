@@ -56,8 +56,8 @@ class MockWidgetPerfProvider implements WidgetPerfProvider {
   }
 
   @Override
-  public CompletableFuture<JsonObject> getPerfSourceReports(List<String> paths) {
-    requests.add(paths);
+  public CompletableFuture<JsonObject> getPerfSourceReports(List<String> uris) {
+    requests.add(uris);
     final String response = responses.remove();
     final JsonParser parser = new JsonParser();
     return CompletableFuture.completedFuture((JsonObject)parser.parse(response));
@@ -322,7 +322,7 @@ public class FlutterWidgetPerfTest {
     assertEquals(1296, stats.getCountPastSecond());
     List<TextRange> locations = Lists.newArrayList(stats.getLocations());
     assertEquals(7, locations.size());
-    List<SlidingWindowStats> rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
+    List<SummaryStats> rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());

@@ -12,6 +12,12 @@ import com.intellij.openapi.fileEditor.FileEditor;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+/**
+ * Interface defining what information about widget performance can be fetched
+ * from the running device.
+ *
+ * See VMServiceWidgetPerfProvider for the non-test implementation of this class.
+ */
 public interface WidgetPerfProvider extends Disposable {
   void setTarget(Repaintable repaintable);
 
@@ -19,7 +25,7 @@ public interface WidgetPerfProvider extends Disposable {
 
   boolean isConnected();
 
-  CompletableFuture<JsonObject> getPerfSourceReports(List<String> paths);
+  CompletableFuture<JsonObject> getPerfSourceReports(List<String> uris);
 
   boolean shouldDisplayPerfStats(FileEditor editor);
 }

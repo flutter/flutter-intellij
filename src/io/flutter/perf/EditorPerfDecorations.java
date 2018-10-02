@@ -38,6 +38,12 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
+/**
+ * This class is a view model managing display of performance statistics for
+ * a specific TextEditor using RangeHighlighters to show the performance
+ * statistics as animated icons in the gutter of the text editor and by
+ * highlighting the ranges of text corresponding to the performance statistcs.
+ */
 class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private static final int HIGHLIGHTER_LAYER = HighlighterLayer.SELECTION - 1;
 
@@ -241,6 +247,17 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 }
 
+/**
+ * This class renders the animated gutter icons used to visualize how much
+ * widget repaint or rebuild work is happening.
+ *
+ * This is a somewhat strange GutterIconRender in that we use it to orchestrate
+ * animating the color of the associated RangeHighlighter and changing the icon
+ * of the GutterIconRenderer when performance changes without requiring the
+ * GutterIconRenderer to be discarded. markupModel.fireAttributesChanged is
+ * used to notify the MarkupModel when state has changed and a rerender is
+ * required.
+ */
 class PerfGutterIconRenderer extends GutterIconRenderer {
   static final AnimatedIcon RED_PROGRESS = new RedProgress();
   static final AnimatedIcon NORMAL_PROGRESS = new AnimatedIcon.Grey();
@@ -322,11 +339,11 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     final InspectorPerfTab inspectorPerfTab = flutterView.showPerfTab(getApp());
     final StringBuilder sb = new StringBuilder("<html><body>");
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    sb.append("<h2>Widget performance stats for ");
+    sb.append("<strong>Widget performance stats for ");
     sb.append(Objects.requireNonNull(perfModelForFile.getTextEditor().getFile()).getName());
     sb.append(" at ");
     sb.append(formatter.format(LocalDateTime.now()));
-    sb.append("</h2>");
+    sb.append("</strong>");
     for (String line : getTooltipLines()) {
       sb.append("<h3>");
       sb.append(line);
@@ -415,7 +432,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   List<String> getTooltipLines() {
     final List<String> lines = new ArrayList<>();
-    for (SlidingWindowStats stats : perfModelForFile.getStats().getRangeStats(range)) {
+    for (SummaryStats stats : perfModelForFile.getStats().getRangeStats(range)) {
       if (stats.getKind() == PerfReportKind.rebuild) {
         lines.add(
           stats.getDescription() +
@@ -486,6 +503,10 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   // Spinning red progress icon
+  //
+  // TODO(jacobr): it would be nice to tint the icons programatically so that
+  // we could have a wider range of icon colors representing various repaint
+  // rates.
   static final class RedProgress extends AnimatedIcon {
     public RedProgress() {
       super(150,

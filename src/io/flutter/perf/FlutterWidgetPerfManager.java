@@ -33,9 +33,15 @@ import java.util.Set;
  * A singleton for the current Project. This class watches for changes to the
  * current Flutter app, and orchestrates displaying rebuild counts and other
  * widget performance stats for widgets created in the active source files.
+ * Performance stats are displayed directly in the TextEditor windows so that
+ * users can see them as they look at the source code.
  *
  * Rebuild counts provide an easy way to understand the coarse grained
  * performance of an application and avoid common pitfalls.
+ *
+ * FlutterWidgetPerfManager tracks which source files are visible and
+ * passes that information to FlutterWidgetPerf which performs the work to
+ * actually fetch performance information and display them.
  */
 public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterAppListener {
 
@@ -226,9 +232,11 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     // that was run. After the initial CL lands we should fix this to track
     // multiple running apps if needed. The most important use case is if the
     // user has one profile app and one debug app running at the same time.
-    // Potentially we want to have one FlutterWidgetPerfManager per app or we
-    // want to have this class track a Set of running apps.
-
+    // We should track stats for all running apps and display the aggregated
+    // stats. A well behaved flutter app should not be painting frames very
+    // frequently when a user is not interacting with it so showing aggregated
+    // stats for all apps should match user expectations without forcing users
+    // to manage which app they have selected.
     if (app == this.app) {
       return;
     }
@@ -252,10 +260,6 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   }
 
   private void notifyPerf() {
-    if (!FlutterSettings.getInstance().isTrackWidgetPerf()) {
-      return;
-    }
-
     if (currentStats == null) {
       return;
     }

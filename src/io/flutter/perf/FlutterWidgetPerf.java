@@ -7,7 +7,6 @@ package io.flutter.perf;
 
 import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
-import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.Disposable;
@@ -17,7 +16,6 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
-import groovy.util.MapEntry;
 import io.flutter.utils.AsyncUtils;
 
 import javax.swing.Timer;
@@ -27,6 +25,19 @@ import java.util.concurrent.TimeUnit;
 
 import static io.flutter.inspector.InspectorService.toSourceLocationUri;
 
+/**
+ * This class provides the glue code between code fetching performance
+ * statistics json from a running flutter application and the ui rendering the
+ * performance statistics directly within the text editors.
+ *
+ * This class is written to be amenable to unittesting unlike
+ * FlutterWidgetPerfManager so try to put all complex logic in this class
+ * so that issues can be caught by unittests.
+ *
+ * See EditorPerfDecorations which performs all of the concrete ui rendering
+ * and VmServiceWidgetPerfProvider which performs fetching of json from a
+ * production application.
+ */
 public class FlutterWidgetPerf implements Disposable, Repaintable {
 
   // Retry requests if we do not receive a response within this interval.
@@ -38,6 +49,7 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
   private boolean isDirty = true;
   private boolean requestInProgress = false;
   private long lastRequestTime;
+
   private final Map<TextEditor, EditorPerfModel> editorDecorations = new HashMap<>();
   final Set<TextEditor> currentEditors = new HashSet<>();
   private boolean profilingEnabled = false;
@@ -113,23 +125,23 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
     }
 
     final Multimap<String, TextEditor> editorForPath = LinkedListMultimap.create();
-    final List<String> paths = new ArrayList<>();
+    final List<String> uris = new ArrayList<>();
     for (TextEditor editor : fileEditors) {
       final VirtualFile file = editor.getFile();
       if (file == null) {
         continue;
       }
-      final String path = toSourceLocationUri(file.getPath());
-      editorForPath.put(path, editor);
-      paths.add(path);
+      final String uri = toSourceLocationUri(file.getPath());
+      editorForPath.put(uri, editor);
+      uris.add(uri);
     }
-    if (paths.isEmpty()) {
+    if (uris.isEmpty()) {
       return;
     }
 
     isDirty = false;
 
-    AsyncUtils.whenCompleteUiThread(perfProvider.getPerfSourceReports(paths), (JsonObject object, Throwable e) -> {
+    AsyncUtils.whenCompleteUiThread(perfProvider.getPerfSourceReports(uris), (JsonObject object, Throwable e) -> {
       if (e != null) {
         performRequestFinish(fileEditors);
         return;
@@ -168,7 +180,7 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
                   }
                   stats.add(
                     range,
-                    new SlidingWindowStats(
+                    new SummaryStats(
                       report.getKind(),
                       entry.total,
                       entry.pastSecond,

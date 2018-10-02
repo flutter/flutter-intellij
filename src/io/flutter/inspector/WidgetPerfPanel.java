@@ -44,7 +44,7 @@ public class WidgetPerfPanel extends JPanel {
    */
   private TextRange currentRange = null;
 
-  public WidgetPerfPanel(Disposable parentDisposable, FlutterApp app) {
+  public WidgetPerfPanel(Disposable parentDisposable, @NotNull FlutterApp app) {
     super(new BorderLayout());
     setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
     setPreferredSize(new Dimension(-1, PANEL_HEIGHT));

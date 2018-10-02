@@ -142,10 +142,10 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
   }
 
   @Override
-  public CompletableFuture<JsonObject> getPerfSourceReports(List<String> paths) {
+  public CompletableFuture<JsonObject> getPerfSourceReports(List<String> uris) {
     final JsonObject params = new JsonObject();
-    for (int i = 0; i < paths.size(); ++i) {
-      params.addProperty("arg" + i, paths.get(i));
+    for (int i = 0; i < uris.size(); ++i) {
+      params.addProperty("arg" + i, uris.get(i));
     }
 
     final VmService vmService = app.getVmService();
