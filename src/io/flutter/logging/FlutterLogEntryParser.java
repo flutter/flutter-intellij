@@ -57,7 +57,7 @@ public class FlutterLogEntryParser {
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
   private static FlutterLogEntry parseLoggingEvent(@NotNull Event event) {
-    // TODO(pq): parse more robustly; consider more properties (level, error, stackTrace)
+    // TODO(pq): parse more robustly; consider more properties (error, stackTrace)
     final JsonObject json = event.getJson();
     final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
     final Instance message = new Instance(logRecord.getAsJsonObject().get("message").getAsJsonObject());
@@ -83,7 +83,11 @@ public class FlutterLogEntryParser {
 
     // TODO: If message.getValueAsStringIsTruncated() is true, we'll need to retrieve the full string
     // value and update this entry after creation.
-    return new FlutterLogEntry(timestamp(event), category, level, message.getValueAsString());
+    String messageStr = message.getValueAsString();
+    if (message.getValueAsStringIsTruncated()) {
+      messageStr += "...";
+    }
+    return new FlutterLogEntry(timestamp(event), category, level, messageStr);
   }
 
   @NotNull

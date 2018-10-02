@@ -174,7 +174,8 @@ public class FlutterLog {
     });
 
     vmService.streamListen(LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    // TODO(pq): listen for GC and frame events (Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame, etc).
+    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    // TODO(pq): listen for frame events (Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame, etc).
   }
 
   private void onVmServiceReceived(String id, Event event) {
