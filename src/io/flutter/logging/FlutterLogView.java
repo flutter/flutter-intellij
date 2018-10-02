@@ -438,12 +438,13 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public void updated(int filtered, int total) {
+    public void updated(int total, int filtered) {
       if (label != null && label.isVisible()) {
+        final int visibleCount = total - filtered;
 
         final StringBuilder sb = new StringBuilder();
-        sb.append(total).append(" event");
-        if (total != 1) {
+        sb.append(visibleCount).append(" event");
+        if (visibleCount != 1) {
           sb.append("s");
         }
         if (filtered > 0) {
@@ -453,14 +454,6 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         label.setText(sb.toString());
         SwingUtilities.invokeLater(panel::repaint);
       }
-    }
-
-    @NotNull
-    private String countString(int count) {
-      if (count > 1000) {
-        return "1000+";
-      }
-      return Integer.toString(count);
     }
   }
 

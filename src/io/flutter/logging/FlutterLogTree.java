@@ -45,8 +45,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -555,7 +555,7 @@ public class FlutterLogTree extends TreeTable {
   }
 
   public interface EventCountListener extends EventListener {
-    void updated(int filtered, int total);
+    void updated(int total, int filtered);
   }
 
   private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
@@ -591,7 +591,7 @@ public class FlutterLogTree extends TreeTable {
         }
       }
     });
-    model.setUpdateCallback(this::updateCounter);
+    rowSorter.addRowSorterListener(e -> updateCounter());
   }
 
   @NotNull
@@ -700,7 +700,7 @@ public class FlutterLogTree extends TreeTable {
   private void updateCounter() {
     final int total = rowSorter.getModelRowCount();
     final int filtered = total - rowSorter.getViewRowCount();
-    countDispatcher.getMulticaster().updated(filtered, total);
+    countDispatcher.getMulticaster().updated(total, filtered);
   }
 
   public void clearEntries() {
