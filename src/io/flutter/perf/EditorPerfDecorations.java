@@ -339,24 +339,24 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     final InspectorPerfTab inspectorPerfTab = flutterView.showPerfTab(getApp());
     final StringBuilder sb = new StringBuilder("<html><body>");
     final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    sb.append("<strong>Widget performance stats for ");
+    sb.append("<p style='padding-bottom: 10px'><strong>Widget performance stats for ");
     sb.append(Objects.requireNonNull(perfModelForFile.getTextEditor().getFile()).getName());
     sb.append(" at ");
     sb.append(formatter.format(LocalDateTime.now()));
-    sb.append("</strong>");
+    sb.append("</p>");
     for (String line : getTooltipLines()) {
-      sb.append("<h3>");
       sb.append(line);
-      sb.append("</h3>");
+      sb.append("<br>");
     }
+    sb.append("</strong>");
 
-    sb.append("<p>");
+    sb.append("<p style='padding-top: 10px'><small>");
     sb.append("Rebuilding widgets is generally very cheap. You should only worry " +
               "about optimizing code to reduce the the number of widget rebuilds " +
               "if you notice that the frame rate is bellow 60fps or if widgets " +
               "that you did not expect to be rebuilt are rebuilt a very large " +
               "number of times.");
-    sb.append("</p>");
+    sb.append("</small></p>");
     sb.append("</body></html>");
     inspectorPerfTab.getWidgetPerfPanel().setPerfMessage(perfModelForFile.getTextEditor(), range, sb.toString());
   }

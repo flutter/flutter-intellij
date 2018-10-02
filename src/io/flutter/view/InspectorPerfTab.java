@@ -52,7 +52,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
       setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected());
     });
     setLayout(new BorderLayout());
-    add(mainPanel);
+    add(mainPanel, BorderLayout.CENTER);
   }
 
   private void createUIComponents() {

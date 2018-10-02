@@ -24,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 
 
 public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
-
+  private static final String GET_PERF_SOURCE_REPORTS_EXTENSION = "ext.flutter.inspector.getPerfSourceReports";
   @NotNull final FlutterApp.FlutterAppListener appListener;
   @NotNull final FlutterApp app;
   private VmServiceListener vmServiceListener;
@@ -154,8 +154,11 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
     final IsolateRef isolateRef = app.getPerfService().getCurrentFlutterIsolateRaw();
 
     final CompletableFuture<JsonObject> future = new CompletableFuture<>();
+    if (!app.getPerfService().hasServiceExtensionNow(GET_PERF_SOURCE_REPORTS_EXTENSION)) {
+      return CompletableFuture.completedFuture(null);
+    }
     vmService
-      .callServiceExtension(isolateRef.getId(), "ext.flutter.inspector.getPerfSourceReports", params, new ServiceExtensionConsumer() {
+      .callServiceExtension(isolateRef.getId(), GET_PERF_SOURCE_REPORTS_EXTENSION, params, new ServiceExtensionConsumer() {
         @Override
         public void received(JsonObject object) {
           future.complete(object);

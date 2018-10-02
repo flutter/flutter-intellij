@@ -71,6 +71,13 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
     uiAnimationTimer = new Timer(1000 / UI_FPS, this::onFrame);
   }
 
+  // The logic for when requests are in progress is fragile. This helper
+  // method exists to we have a single place to instrument to track when
+  // request status changes to help debug issues,.
+  private void setRequestInProgress(boolean value) {
+    requestInProgress = value;
+  }
+
   private void onFrame(ActionEvent event) {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.onFrame();
@@ -104,7 +111,7 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
     if (requestInProgress && (currentTime - lastRequestTime) < REQUEST_TIMEOUT_INTERVAL) {
       return;
     }
-    requestInProgress = true;
+    setRequestInProgress(true);
     lastRequestTime = currentTime;
 
     final TextEditor[] editors = this.currentEditors.toArray(new TextEditor[0]);
@@ -120,7 +127,7 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
     assert !EdtInvocationManager.getInstance().isEventDispatchThread();
 
     if (!profilingEnabled) {
-      requestInProgress = false;
+      setRequestInProgress(false);
       return;
     }
 
@@ -136,13 +143,14 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
       uris.add(uri);
     }
     if (uris.isEmpty()) {
+      setRequestInProgress(false);
       return;
     }
 
     isDirty = false;
 
     AsyncUtils.whenCompleteUiThread(perfProvider.getPerfSourceReports(uris), (JsonObject object, Throwable e) -> {
-      if (e != null) {
+      if (e != null || object == null) {
         performRequestFinish(fileEditors);
         return;
       }
@@ -150,6 +158,10 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
       boolean animate = false;
       for (String path : editorForPath.keySet()) {
         final JsonObject result = object.getAsJsonObject("result");
+        if (result == null) {
+          performRequestFinish(fileEditors);
+          return;
+        }
         final List<PerfSourceReport> reports = new ArrayList<>();
         if (result.has(path)) {
           final JsonObject jsonForFile = result.getAsJsonObject(path);
@@ -168,7 +180,7 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
 
               if (!perfProvider.shouldDisplayPerfStats(fileEditor)) {
                 editorDecoration.clear();
-                return;
+                continue;
               }
               final FileLocationMapper fileLocationMapper = fileLocationMapperFactory.create(fileEditor);
               final FilePerfInfo stats = new FilePerfInfo();
@@ -211,7 +223,7 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
   }
 
   private void performRequestFinish(FileEditor[] editors) {
-    requestInProgress = false;
+    setRequestInProgress(false);
     JobScheduler.getScheduler().schedule(() -> maybeNotifyIdle(), 1, TimeUnit.SECONDS);
     if (isDirty) {
       requestRepaint(When.soon);
@@ -241,9 +253,8 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
       if (!editorDecorations.containsKey(fileEditor)) {
         editorDecorations.put(fileEditor, perfModelFactory.create((TextEditor)fileEditor));
       }
-
-      requestRepaint(When.now);
     }
+    requestRepaint(When.now);
   }
 
   private void harvestInvalidEditors(Set<TextEditor> newEditors) {
@@ -270,13 +281,16 @@ public class FlutterWidgetPerf implements Disposable, Repaintable {
     perfProvider.dispose();
 
     clearDecorations();
-  }
-
-  void clearDecorations() {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.dispose();
     }
     editorDecorations.clear();
+  }
+
+  void clearDecorations() {
+    for (EditorPerfModel decorations : editorDecorations.values()) {
+      decorations.clear();
+    }
   }
 
   public void clear() {

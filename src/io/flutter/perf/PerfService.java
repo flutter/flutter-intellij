@@ -12,6 +12,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
 import io.flutter.perf.HeapMonitor.HeapListener;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -27,7 +28,7 @@ import java.util.function.Consumer;
 
 // TODO(pq/devoncarew): Find a better name for this class; VMServiceWrapper? VMServiceManager?
 
-public class PerfService {
+public class PerfService implements FlutterApp.FlutterAppListener {
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
@@ -37,8 +38,9 @@ public class PerfService {
   private boolean isRunning;
   private int polledCount;
 
-  public PerfService(@NotNull FlutterDebugProcess debugProcess, @NotNull VmService vmService) {
-    this.heapMonitor = new HeapMonitor(vmService, debugProcess);
+  public PerfService(@NotNull FlutterApp app, @NotNull VmService vmService) {
+    app.addStateListener(this);
+    this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
@@ -165,6 +167,16 @@ public class PerfService {
     }
   }
 
+  private void resetAvailableExtensions() {
+    final Iterable<EventStream<Boolean>> existingExtensions;
+    synchronized (serviceExtensions) {
+      existingExtensions = new ArrayList<>(serviceExtensions.values());
+    }
+    for (EventStream<Boolean> serviceExtension : existingExtensions) {
+      serviceExtension.setValue(false);
+    }
+  }
+
   @SuppressWarnings("EmptyMethod")
   private void onVmServiceReceived(String streamId, Event event) {
     // Check for the current Flutter isolate exiting.
@@ -172,16 +184,7 @@ public class PerfService {
     if (flutterIsolateRef != null) {
       if (event.getKind() == EventKind.IsolateExit && StringUtil.equals(event.getIsolate().getId(), flutterIsolateRef.getId())) {
         setFlutterIsolate(null);
-
-        final Iterable<EventStream<Boolean>> existingExtensions;
-        synchronized (serviceExtensions) {
-          existingExtensions = new ArrayList<>(serviceExtensions.values());
-        }
-        for (EventStream<Boolean> serviceExtension : existingExtensions) {
-          // The next Flutter isolate to load might not support this service
-          // extension.
-          serviceExtension.setValue(false);
-        }
+        resetAvailableExtensions();
       }
     }
 
@@ -319,6 +322,18 @@ public class PerfService {
   private void resumePolling() {
     if (isRunning && anyPollingClients()) {
       heapMonitor.resumePolling();
+    }
+  }
+
+  @Override
+  public void stateChanged(FlutterApp.State newState) {
+    if (newState == FlutterApp.State.RESTARTING) {
+      // The set of service extensions available may be different once the app
+      // restarts and no service extensions will be availabe until the app is
+      // suitably far along in the restart process. It turns out the
+      // IsolateExit event cannot be relied on to track when a restart is
+      // occurring for unclear reasons.
+      resetAvailableExtensions();
     }
   }
 }

@@ -35,10 +35,10 @@ import java.util.Set;
  * widget performance stats for widgets created in the active source files.
  * Performance stats are displayed directly in the TextEditor windows so that
  * users can see them as they look at the source code.
- *
+ * <p>
  * Rebuild counts provide an easy way to understand the coarse grained
  * performance of an application and avoid common pitfalls.
- *
+ * <p>
  * FlutterWidgetPerfManager tracks which source files are visible and
  * passes that information to FlutterWidgetPerf which performs the work to
  * actually fetch performance information and display them.
@@ -98,11 +98,11 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private boolean updateSelectedEditors() {
     final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
     final Set<TextEditor> newEditors = new HashSet<>();
-    for  (FileEditor editor : editors) {
+    for (FileEditor editor : editors) {
       if (editor instanceof TextEditor) {
         final VirtualFile file = editor.getFile();
         if (couldContainWidgets(file)) {
-          newEditors.add((TextEditor) editor);
+          newEditors.add((TextEditor)editor);
         }
       }
     }
@@ -168,7 +168,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private void debugActive(Project project, FlutterViewMessages.FlutterDebugEvent event) {
     debugIsActive = true;
 
-    assert(app != null);
+    assert (app != null);
     app.addStateListener(this);
     syncBooleanServiceExtension(TRACK_REBUILD_WIDGETS, () -> trackRebuildWidgets);
     syncBooleanServiceExtension(TRACK_REPAINT_WIDGETS, () -> trackRepaintWidgets);
@@ -186,7 +186,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
       case RELOADING:
       case RESTARTING:
         currentStats.clear();
-      break;
+        break;
       case STARTED:
         notifyPerf();
         break;

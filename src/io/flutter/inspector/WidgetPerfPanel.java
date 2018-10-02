@@ -31,7 +31,7 @@ import java.awt.*;
  * file.
  */
 public class WidgetPerfPanel extends JPanel {
-  static final int PANEL_HEIGHT = 400;
+  static final int PANEL_HEIGHT = 120;
   private final JBLabel perfMessage;
 
   /**
@@ -48,7 +48,7 @@ public class WidgetPerfPanel extends JPanel {
     super(new BorderLayout());
     setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
     setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
-    setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
+    setMaximumSize(new Dimension(Short.MAX_VALUE, PANEL_HEIGHT));
     perfMessage = new JBLabel();
     final Box labelBox = Box.createHorizontalBox();
     labelBox.add(perfMessage);
