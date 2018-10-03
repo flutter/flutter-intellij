@@ -7,17 +7,15 @@ package io.flutter.inspector;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.IdeBorderFactory;
-import com.intellij.ui.SideBorder;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.HeapMonitor;
 import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.server.vmService.HeapMonitor.HeapSample;
 import io.flutter.server.vmService.HeapMonitor.HeapSpace;
 import io.flutter.server.vmService.HeapMonitor.IsolateObject;
-import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
-import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
 
 public class HeapDisplay extends JPanel {
@@ -33,7 +31,6 @@ public class HeapDisplay extends JPanel {
 
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
     panel.setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
     panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 

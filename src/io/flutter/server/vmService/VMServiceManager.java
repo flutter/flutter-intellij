@@ -10,8 +10,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
-import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -101,6 +101,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
     });
   }
+
   /**
    * Start the Perf service.
    */
@@ -280,7 +281,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   /**
    * Returns whether a service extension matching the specified name has
    * already been registered.
-   *
+   * <p>
    * If the service extension may be registered at some point in the future it
    * is bests use hasServiceExtension as well to listen for changes in whether
    * the extension is present.

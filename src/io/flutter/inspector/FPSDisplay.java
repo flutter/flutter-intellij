@@ -8,6 +8,7 @@ package io.flutter.inspector;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
@@ -32,7 +33,6 @@ public class FPSDisplay {
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
     panel.setDoubleBuffered(true);
-    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
     panel.setPreferredSize(new Dimension(-1, HeapDisplay.PANEL_HEIGHT));
     panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 
@@ -172,7 +172,7 @@ class FPSPanel extends JPanel {
         else {
           widget = new JLabel();
           widget.setOpaque(true);
-          widget.setBackground(frame.isSlowFrame() ? UIUtil.getLabelForeground() : UIUtil.getLabelDisabledForeground());
+          widget.setBackground(frame.isSlowFrame() ? JBColor.RED : UIUtil.getLabelForeground());
           widget.setToolTipText(FPSDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms");
           frameWidgets.put(frame, widget);
           add(widget);

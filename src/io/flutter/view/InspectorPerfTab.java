@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.openapi.Disposable;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.JBUI;
 import io.flutter.inspector.FPSDisplay;
 import io.flutter.inspector.HeapDisplay;
 import io.flutter.inspector.WidgetPerfPanel;
@@ -22,21 +23,18 @@ import java.awt.*;
 public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   private final Disposable parentDisposable;
   private final @NotNull FlutterApp app;
-  private JPanel mainPanel;
-  private JPanel fpsDisplay;
-  private JPanel memory;
-  private WidgetPerfPanel widgetPerfPanel;
+
   private JCheckBox trackRebuildsCheckbox;
   private JCheckBox trackRepaintsCheckbox;
-  private JLabel modeLabel;
-  private JLabel warningLabel;
+  private WidgetPerfPanel widgetPerfPanel;
 
   InspectorPerfTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
     this.parentDisposable = parentDisposable;
 
-    final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
+    buildUI();
 
+    final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
     trackRebuildsCheckbox.setSelected(widgetPerfManager.isTrackRebuildWidgets());
     trackRepaintsCheckbox.setSelected(widgetPerfManager.isTrackRepaintWidgets());
 
@@ -50,23 +48,58 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     trackRepaintsCheckbox.addChangeListener((l) -> {
       setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected());
     });
-    setLayout(new BorderLayout());
-    add(mainPanel, BorderLayout.CENTER);
   }
 
-  private void createUIComponents() {
-    fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
-    memory = HeapDisplay.createJPanelView(parentDisposable, app);
-    widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
+  private void buildUI() {
+    setLayout(new GridBagLayout());
+    setBorder(JBUI.Borders.empty(5));
 
-    modeLabel = new JBLabel("Running in " + app.getLaunchMode() + " mode");
+    final GridBagConstraints constraints = new GridBagConstraints();
+    constraints.gridx = 0;
+    constraints.gridy = 0;
+    constraints.weightx = 1.0;
+    constraints.fill = GridBagConstraints.BOTH;
 
+    // header
+    final JPanel headerPanel = new JPanel(new BorderLayout(0, 3));
+    headerPanel.add(new JBLabel("Running in " + app.getLaunchMode() + " mode"), BorderLayout.NORTH);
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      warningLabel = new JBLabel("<html><body><p style='color:red'>WARNING: for best results, re-run in profile mode</p></body></html>");
+      headerPanel.add(
+        new JBLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"),
+        BorderLayout.SOUTH
+      );
     }
-    else {
-      warningLabel = new JBLabel("");
-    }
+    headerPanel.setBorder(JBUI.Borders.empty(5));
+    add(headerPanel, constraints);
+
+    // FPS
+    final JPanel fpsPanel = new JPanel(new BorderLayout());
+    final JPanel fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
+    fpsPanel.add(fpsDisplay, BorderLayout.CENTER);
+    fpsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "FPS"));
+    constraints.gridy = 1;
+    add(fpsPanel, constraints);
+
+    // Memory
+    final JPanel memoryPanel = new JPanel(new BorderLayout());
+    final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
+    memoryPanel.add(heapDisplay, BorderLayout.CENTER);
+    memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory"));
+    constraints.gridy = 2;
+    add(memoryPanel, constraints);
+
+    // Widgets stats (experimental)
+    final Box widgetsPanel = Box.createVerticalBox();
+    trackRebuildsCheckbox = new JCheckBox("Track widget rebuilds");
+    widgetsPanel.add(trackRebuildsCheckbox);
+    trackRepaintsCheckbox = new JCheckBox("Track widget repaints");
+    widgetsPanel.add(trackRepaintsCheckbox);
+    widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
+    widgetsPanel.add(widgetPerfPanel);
+    widgetsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Widgets stats (experimental)"));
+    constraints.gridy = 3;
+    constraints.weighty = 1.0;
+    add(widgetsPanel, constraints);
   }
 
   private void setTrackRebuildWidgets(boolean selected) {

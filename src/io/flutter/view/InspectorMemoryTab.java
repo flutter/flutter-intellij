@@ -7,25 +7,21 @@ package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
+import org.jetbrains.annotations.NotNull;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Font;
+import javax.swing.*;
+import java.awt.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.jetbrains.annotations.NotNull;
 
 public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   private static final Logger LOG = Logger.getInstance(FlutterView.class);
-  private @NotNull FlutterApp app;
+  private @NotNull final FlutterApp app;
 
   InspectorMemoryTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
@@ -43,7 +39,7 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
 
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
       labelBox = Box.createHorizontalBox();
-      labelBox.add(new JLabel("Note: for best results, re-run in profile mode"));
+      labelBox.add(new JBLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"));
       labelBox.add(Box.createHorizontalGlue());
       labelBox.setBorder(JBUI.Borders.empty(3, 10));
       add(labelBox);
@@ -54,10 +50,8 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
     // Dynamically load, instantiate the Flutter Profiler classes (only
     // available in Android Studio) then add the component to the the inspector
     // Memory tab.
-    String CLASS_FlutterStudioProfilers =
-      "io.flutter.profiler.FlutterStudioProfilers";
-    String CLASS_FlutterStudioProfilersView =
-      "io.flutter.profiler.FlutterStudioProfilersView";
+    String CLASS_FlutterStudioProfilers = "io.flutter.profiler.FlutterStudioProfilers";
+    String CLASS_FlutterStudioProfilersView = "io.flutter.profiler.FlutterStudioProfilersView";
 
     try {
       // The below dynamic code mimics:
@@ -83,12 +77,12 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       Object flutterStudioProfilersView_instance =
         flutterStudioProfilersView_constructor.newInstance(flutterStudioProfilers_instance);
 
-      Class noArguments[] = new Class[] {};
+      Class noArguments[] = new Class[]{};
       Method getComponentMethod =
         flutterStudioProfilersView_class.getMethod("getComponent", noArguments);
       // call getComponent()
       Component component =
-        (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[]) noArguments);
+        (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[])noArguments);
 
       add(component, BorderLayout.CENTER);
 
@@ -102,8 +96,7 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       LOG.warn("Problem loading Flutter Memory Profiler - " + e.getMessage());
 
       labelBox = Box.createHorizontalBox();
-      JLabel warningLabel = new JLabel(
-          "WARNING: Flutter Memory Profiler only available in AndroidStudio.");
+      JLabel warningLabel = new JLabel("Memory profiling is only available in Android Studio.");
 
       // Bold the message.
       Font font = warningLabel.getFont();
@@ -116,6 +109,7 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       add(labelBox);
     }
   }
+
   @Override
   public void finalize() {
     // Done collecting for the memory profiler - if this instance is GC'd.
@@ -124,6 +118,6 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   }
 
   @Override
-  public void setVisibleToUser(boolean visible) { }
-
+  public void setVisibleToUser(boolean visible) {
+  }
 }

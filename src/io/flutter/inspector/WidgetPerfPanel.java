@@ -42,11 +42,11 @@ public class WidgetPerfPanel extends JPanel {
   /**
    * Range within the current active file editor to show stats for.
    */
-  private TextRange currentRange = null;
+  private TextRange currentRange;
 
   public WidgetPerfPanel(Disposable parentDisposable, @NotNull FlutterApp app) {
     super(new BorderLayout());
-    setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
+
     setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
     setMaximumSize(new Dimension(Short.MAX_VALUE, PANEL_HEIGHT));
     perfMessage = new JBLabel();

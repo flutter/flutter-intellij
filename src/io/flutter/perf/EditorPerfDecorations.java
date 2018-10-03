@@ -57,9 +57,9 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private boolean hasDecorations = false;
   private boolean hoveredOverLineMarkerArea = false;
 
-  private Map<TextRange, PerfGutterIconRenderer> perfMarkers = new HashMap<>();
+  private final Map<TextRange, PerfGutterIconRenderer> perfMarkers = new HashMap<>();
 
-  EditorPerfDecorations(@NotNull TextEditor textEditor, FlutterApp app) {
+  EditorPerfDecorations(@NotNull TextEditor textEditor, @NotNull FlutterApp app) {
     this.textEditor = textEditor;
     this.app = app;
     stats = new FilePerfInfo();
@@ -350,13 +350,13 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     }
     sb.append("</strong>");
 
-    sb.append("<p style='padding-top: 10px'><small>");
-    sb.append("Rebuilding widgets is generally very cheap. You should only worry " +
+    sb.append("<p style='padding-top: 10px'>");
+    sb.append("<small>Rebuilding widgets is generally very cheap. You should only worry " +
               "about optimizing code to reduce the the number of widget rebuilds " +
               "if you notice that the frame rate is bellow 60fps or if widgets " +
               "that you did not expect to be rebuilt are rebuilt a very large " +
-              "number of times.");
-    sb.append("</small></p>");
+              "number of times.</small>");
+    sb.append("</p>");
     sb.append("</body></html>");
     inspectorPerfTab.getWidgetPerfPanel().setPerfMessage(perfModelForFile.getTextEditor(), range, sb.toString());
   }
