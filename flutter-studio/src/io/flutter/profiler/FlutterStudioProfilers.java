@@ -17,7 +17,7 @@ import com.android.tools.profilers.*;
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
-import io.flutter.perf.HeapMonitor;
+import io.flutter.server.vmService.HeapMonitor;
 import io.flutter.inspector.HeapState;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.element.IsolateRef;
@@ -130,10 +130,10 @@ public class FlutterStudioProfilers
         }
       }
     };
-    assert app.getPerfService() != null;
-    app.getPerfService().addHeapListener(listener);
+    assert app.getVMServiceManager() != null;
+    app.getVMServiceManager().addHeapListener(listener);
     Disposer.register(parentDisposable,
-                      () -> app.getPerfService().removeHeapListener(listener));
+                      () -> app.getVMServiceManager().removeHeapListener(listener));
   }
 
   public boolean isStopped() {
