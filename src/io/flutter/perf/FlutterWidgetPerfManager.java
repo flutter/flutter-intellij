@@ -18,7 +18,6 @@ import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;

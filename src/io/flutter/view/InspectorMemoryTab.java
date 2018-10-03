@@ -7,24 +7,17 @@ package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Font;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import javax.swing.Box;
-import javax.swing.BoxLayout;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   private static final Logger LOG = Logger.getInstance(FlutterView.class);
@@ -46,7 +39,7 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
 
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
       labelBox = Box.createHorizontalBox();
-      labelBox.add(new JLabel("Note: for best results, re-run in profile mode"));
+      labelBox.add(new JBLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"));
       labelBox.add(Box.createHorizontalGlue());
       labelBox.setBorder(JBUI.Borders.empty(3, 10));
       add(labelBox);
@@ -57,10 +50,8 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
     // Dynamically load, instantiate the Flutter Profiler classes (only
     // available in Android Studio) then add the component to the the inspector
     // Memory tab.
-    String CLASS_FlutterStudioProfilers =
-      "io.flutter.profiler.FlutterStudioProfilers";
-    String CLASS_FlutterStudioProfilersView =
-      "io.flutter.profiler.FlutterStudioProfilersView";
+    String CLASS_FlutterStudioProfilers = "io.flutter.profiler.FlutterStudioProfilers";
+    String CLASS_FlutterStudioProfilersView = "io.flutter.profiler.FlutterStudioProfilersView";
 
     try {
       // The below dynamic code mimics:
@@ -105,8 +96,7 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       LOG.warn("Problem loading Flutter Memory Profiler - " + e.getMessage());
 
       labelBox = Box.createHorizontalBox();
-      JLabel warningLabel = new JLabel(
-          "WARNING: Flutter Memory Profiler only available in AndroidStudio.");
+      JLabel warningLabel = new JLabel("Memory profiling is only available in Android Studio.");
 
       // Bold the message.
       Font font = warningLabel.getFont();

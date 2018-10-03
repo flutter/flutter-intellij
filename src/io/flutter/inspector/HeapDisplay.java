@@ -25,8 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
-import java.text.DecimalFormat;
-import java.util.*;
+import java.util.LinkedList;
 import java.util.List;
 
 public class HeapDisplay extends JPanel {
@@ -34,7 +33,6 @@ public class HeapDisplay extends JPanel {
 
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new BorderLayout());
-    panel.setBorder(IdeBorderFactory.createBorder(SideBorder.TOP | SideBorder.BOTTOM));
     panel.setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
     panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 
