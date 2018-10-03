@@ -160,7 +160,7 @@ public class FlutterLog {
     // No-op if disabled.
     if (!isLoggingEnabled()) return;
 
-    // TODO(pq): consider moving into PerfService to consolidate vm service listeners.
+    // TODO(pq): consider moving into VMServiceManager to consolidate vm service listeners.
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {

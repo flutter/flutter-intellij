@@ -12,8 +12,8 @@ import com.intellij.util.Alarm;
 import com.intellij.util.Producer;
 import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XSourcePosition;
+import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.server.vmService.DartVmServiceDebugProcess;
-import io.flutter.perf.PerfService;
 import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.Consumer;
@@ -35,7 +35,7 @@ public class EvalOnDartLibrary implements Disposable {
   private final StreamSubscription<IsolateRef> subscription;
   private String isolateId;
   private final VmService vmService;
-  @SuppressWarnings("FieldCanBeLocal") private final PerfService perfService;
+  @SuppressWarnings("FieldCanBeLocal") private final VMServiceManager vmServiceManager;
   private final String libraryName;
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
@@ -106,14 +106,14 @@ public class EvalOnDartLibrary implements Disposable {
     return response;
   }
 
-  public EvalOnDartLibrary(String libraryName, VmService vmService, PerfService perfService) {
+  public EvalOnDartLibrary(String libraryName, VmService vmService, VMServiceManager vmServiceManager) {
     this.libraryName = libraryName;
     this.vmService = vmService;
-    this.perfService = perfService;
+    this.vmServiceManager = vmServiceManager;
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
     libraryRef = new CompletableFuture<>();
 
-    subscription = perfService.getCurrentFlutterIsolate((isolate) -> {
+    subscription = vmServiceManager.getCurrentFlutterIsolate((isolate) -> {
       if (libraryRef.isDone()) {
         libraryRef = new CompletableFuture<>();
       }
