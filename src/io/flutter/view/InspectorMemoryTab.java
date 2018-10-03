@@ -10,7 +10,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.ui.JBUI;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Font;
@@ -22,9 +22,6 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import java.awt.*;
 
 public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   private static final Logger LOG = Logger.getInstance(FlutterView.class);
@@ -96,8 +93,8 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       add(component, BorderLayout.CENTER);
 
       // Start collecting immediately if memory profiling is enabled.
-      assert app.getPerfService() != null;
-      app.getPerfService().addPollingClient();
+      assert app.getVMServiceManager() != null;
+      app.getVMServiceManager().addPollingClient();
     }
     catch (ClassNotFoundException | NoSuchMethodException |
       InstantiationException | IllegalAccessException |
@@ -122,8 +119,8 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   @Override
   public void finalize() {
     // Done collecting for the memory profiler - if this instance is GC'd.
-    assert app.getPerfService() != null;
-    app.getPerfService().removePollingClient();
+    assert app.getVMServiceManager() != null;
+    app.getVMServiceManager().removePollingClient();
   }
 
   @Override

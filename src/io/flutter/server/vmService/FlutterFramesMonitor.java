@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.perf;
+package io.flutter.server.vmService;
 
 import com.google.gson.JsonObject;
 import com.intellij.openapi.util.text.StringUtil;
@@ -68,7 +68,7 @@ public class FlutterFramesMonitor {
 
   public List<FlutterFrameEvent> frames = new LinkedList<>();
 
-  FlutterFramesMonitor(@NotNull VmService vmService) {
+  public FlutterFramesMonitor(@NotNull VmService vmService) {
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
