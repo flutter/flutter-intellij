@@ -883,6 +883,13 @@ public class InspectorService implements Disposable {
     }
   }
 
+  // TODO(jacobr): remove this method as soon as the
+  // track-widget-creation kernel transformer is fixed to return paths instead
+  // of URIs.
+  public static String toSourceLocationUri(String path) {
+    return "file://" + path;
+  }
+
   public enum FlutterTreeType {
     widget("Widget"),
     renderObject("Render");

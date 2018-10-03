@@ -6,46 +6,86 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.util.ui.JBUI;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBPanel;
 import io.flutter.inspector.FPSDisplay;
 import io.flutter.inspector.HeapDisplay;
+import io.flutter.inspector.WidgetPerfPanel;
+import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class InspectorPerfTab extends JPanel implements InspectorTabPanel {
-  private @NotNull FlutterApp app;
+public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
+  private final Disposable parentDisposable;
+  private final @NotNull FlutterApp app;
+  private JPanel mainPanel;
+  private JPanel fpsDisplay;
+  private JPanel memory;
+  private WidgetPerfPanel widgetPerfPanel;
+  private JCheckBox trackRebuildsCheckbox;
+  private JCheckBox trackRepaintsCheckbox;
+  private JLabel modeLabel;
+  private JLabel warningLabel;
 
   InspectorPerfTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
+    this.parentDisposable = parentDisposable;
 
-    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+    final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
 
-    add(Box.createVerticalStrut(6));
+    trackRebuildsCheckbox.setSelected(widgetPerfManager.isTrackRebuildWidgets());
+    trackRepaintsCheckbox.setSelected(widgetPerfManager.isTrackRepaintWidgets());
 
-    Box labelBox = Box.createHorizontalBox();
-    labelBox.add(new JLabel("Running in " + app.getLaunchMode() + " mode"));
-    labelBox.add(Box.createHorizontalGlue());
-    labelBox.setBorder(JBUI.Borders.empty(3, 10));
-    add(labelBox);
+    app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REBUILD_WIDGETS, trackRebuildsCheckbox::setEnabled, parentDisposable);
+    app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REPAINT_WIDGETS, trackRepaintsCheckbox::setEnabled, parentDisposable);
+
+    trackRebuildsCheckbox.addChangeListener((l) -> {
+      setTrackRebuildWidgets(trackRebuildsCheckbox.isSelected());
+    });
+
+    trackRepaintsCheckbox.addChangeListener((l) -> {
+      setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected());
+    });
+    setLayout(new BorderLayout());
+    add(mainPanel, BorderLayout.CENTER);
+  }
+
+  private void createUIComponents() {
+    fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
+    memory = HeapDisplay.createJPanelView(parentDisposable, app);
+    widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
+
+    modeLabel = new JBLabel("Running in " + app.getLaunchMode() + " mode");
 
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      labelBox = Box.createHorizontalBox();
-      labelBox.add(new JLabel("Note: for best results, re-run in profile mode"));
-      labelBox.add(Box.createHorizontalGlue());
-      labelBox.setBorder(JBUI.Borders.empty(3, 10));
-      add(labelBox);
+      warningLabel = new JBLabel("<html><body><p style='color:red'>WARNING: for best results, re-run in profile mode</p></body></html>");
     }
+    else {
+      warningLabel = new JBLabel("");
+    }
+  }
 
-    add(Box.createVerticalStrut(6));
+  private void setTrackRebuildWidgets(boolean selected) {
+    final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
+    widgetPerfManager.setTrackRebuildWidgets(selected);
+    // Update default so next app launched will match the existing setting.
+    FlutterWidgetPerfManager.trackRebuildWidgetsDefault = selected;
+  }
 
-    add(FPSDisplay.createJPanelView(parentDisposable, app), BorderLayout.NORTH);
-    add(Box.createVerticalStrut(16));
-    add(HeapDisplay.createJPanelView(parentDisposable, app), BorderLayout.SOUTH);
-    add(Box.createVerticalGlue());
+  private void setTrackRepaintWidgets(boolean selected) {
+    final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
+    widgetPerfManager.setTrackRepaintWidgets(selected);
+    // Update default so next app launched will match the existing setting.
+    FlutterWidgetPerfManager.trackRepaintWidgetsDefault = selected;
+  }
+
+  public WidgetPerfPanel getWidgetPerfPanel() {
+    return widgetPerfPanel;
   }
 
   @Override

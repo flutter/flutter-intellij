@@ -376,6 +376,22 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
+  public InspectorPerfTab showPerfTab(@NotNull FlutterApp app) {
+    PerAppState appState = perAppViewState.get(app);
+    if (appState != null) {
+      final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
+
+      toolWindow.getContentManager().setSelectedContent(appState.content);
+      for(TabInfo tabInfo : appState.tabs.getTabs()) {
+        if (tabInfo.getComponent() instanceof InspectorPerfTab) {
+          appState.tabs.select(tabInfo, true);
+          return (InspectorPerfTab)tabInfo.getComponent();
+        }
+      }
+    }
+    return null;
+  }
+
   private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       autoActivateToolWindow();
