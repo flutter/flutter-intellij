@@ -14,7 +14,6 @@ import io.flutter.inspector.WidgetPerfPanel;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -90,13 +89,13 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
   @Override
   public void setVisibleToUser(boolean visible) {
-    assert app.getPerfService() != null;
+    assert app.getVMServiceManager() != null;
 
     if (visible) {
-      app.getPerfService().addPollingClient();
+      app.getVMServiceManager().addPollingClient();
     }
     else {
-      app.getPerfService().removePollingClient();
+      app.getVMServiceManager().removePollingClient();
     }
   }
 }

@@ -11,7 +11,7 @@ import com.android.tools.profilers.memory.MemoryDataSeries;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.inspector.HeapState;
-import io.flutter.perf.HeapMonitor;
+import io.flutter.server.vmService.HeapMonitor;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
@@ -86,9 +86,9 @@ public class FlutterAllMemoryData {
         }
       }
     };
-    assert app.getPerfService() != null;
-    app.getPerfService().addHeapListener(listener);
-    Disposer.register(parentDisposable, () -> app.getPerfService().removeHeapListener(listener));
+    assert app.getVMServiceManager() != null;
+    app.getVMServiceManager().addHeapListener(listener);
+    Disposer.register(parentDisposable, () -> app.getVMServiceManager().removeHeapListener(listener));
   }
 
   protected RangedContinuousSeries createRangedSeries(StudioProfilers profilers,
