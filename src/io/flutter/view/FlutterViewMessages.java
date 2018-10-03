@@ -8,7 +8,7 @@ package io.flutter.view;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
-import io.flutter.server.vmService.VMServiceManager;
+import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
@@ -40,7 +40,7 @@ public class FlutterViewMessages {
     final MessageBus bus = project.getMessageBus();
     final FlutterDebugNotifier publisher = bus.syncPublisher(FLUTTER_DEBUG_TOPIC);
     assert(app.getFlutterDebugProcess() != null);
-    app.setVmServices(vmService, new VMServiceManager(app, vmService));
+    app.setVmServices(vmService, new PerfService(app, vmService));
 
     publisher.debugActive(new FlutterDebugEvent(app, vmService));
 

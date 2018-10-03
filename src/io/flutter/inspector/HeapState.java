@@ -15,7 +15,7 @@
  */
 package io.flutter.inspector;
 
-import io.flutter.server.vmService.HeapMonitor;
+import io.flutter.perf.HeapMonitor;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
