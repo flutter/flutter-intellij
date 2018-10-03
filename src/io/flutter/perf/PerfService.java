@@ -3,14 +3,15 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.server.vmService;
+package io.flutter.perf;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
-import io.flutter.server.vmService.HeapMonitor.HeapListener;
+import io.flutter.perf.HeapMonitor.HeapListener;
+import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
@@ -25,7 +26,9 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class VMServiceManager implements FlutterApp.FlutterAppListener {
+// TODO(pq/devoncarew): Find a better name for this class; VMServiceWrapper? VMServiceManager?
+
+public class PerfService implements FlutterApp.FlutterAppListener {
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
@@ -35,7 +38,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   private boolean isRunning;
   private int polledCount;
 
-  public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
+  public PerfService(@NotNull FlutterApp app, @NotNull VmService vmService) {
     app.addStateListener(this);
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);

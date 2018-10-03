@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.server.vmService;
+package io.flutter.perf;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -147,7 +147,7 @@ public class HeapMonitor {
     return !heapListeners.isEmpty();
   }
 
-  public void start() {
+  void start() {
     isPolling = true;
     pollingScheduler = executor.scheduleAtFixedRate(this::poll, 0, POLL_PERIOD_IN_MS, TimeUnit.MILLISECONDS);
   }
@@ -210,7 +210,7 @@ public class HeapMonitor {
     }
   }
 
-  public void handleGCEvent(IsolateRef isolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
+  void handleGCEvent(IsolateRef isolateRef, HeapSpace newHeapSpace, HeapSpace oldHeapSpace) {
     heapListeners.forEach(listener -> listener.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace));
   }
 
@@ -218,7 +218,7 @@ public class HeapMonitor {
     heapListeners.forEach(listener -> listener.handleIsolatesInfo(vm, isolates));
   }
 
-  public void stop() {
+  void stop() {
     if (pollingScheduler != null) {
       pollingScheduler.cancel(false);
       pollingScheduler = null;

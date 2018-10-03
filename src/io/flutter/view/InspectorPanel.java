@@ -285,7 +285,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     determineSplitterOrientation();
 
-    flutterIsolateSubscription = inspectorService.getApp().getVMServiceManager().getCurrentFlutterIsolate((IsolateRef flutterIsolate) -> {
+    flutterIsolateSubscription = inspectorService.getApp().getPerfService().getCurrentFlutterIsolate((IsolateRef flutterIsolate) -> {
       if (flutterIsolate == null) {
         onIsolateStopped();
       }

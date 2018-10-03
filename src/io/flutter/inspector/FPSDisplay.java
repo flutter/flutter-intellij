@@ -12,7 +12,7 @@ import com.intellij.ui.SideBorder;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import io.flutter.server.vmService.FlutterFramesMonitor;
+import io.flutter.perf.FlutterFramesMonitor;
 import io.flutter.run.daemon.FlutterApp;
 
 import javax.swing.*;
@@ -36,8 +36,8 @@ public class FPSDisplay {
     panel.setPreferredSize(new Dimension(-1, HeapDisplay.PANEL_HEIGHT));
     panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 
-    assert app.getVMServiceManager() != null;
-    final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();
+    assert app.getPerfService() != null;
+    final FlutterFramesMonitor flutterFramesMonitor = app.getPerfService().getFlutterFramesMonitor();
 
     final FPSPanel fpsPanel = new FPSPanel(flutterFramesMonitor);
 

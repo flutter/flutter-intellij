@@ -52,11 +52,11 @@ public class InspectorService implements Disposable {
   public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
                                                            @NotNull FlutterDebugProcess debugProcess,
                                                            @NotNull VmService vmService) {
-    assert app.getVMServiceManager() != null;
+    assert app.getPerfService() != null;
     final EvalOnDartLibrary inspectorLibrary = new EvalOnDartLibrary(
       "package:flutter/src/widgets/widget_inspector.dart",
       vmService,
-      app.getVMServiceManager()
+      app.getPerfService()
     );
     final CompletableFuture<Library> libraryFuture =
       inspectorLibrary.libraryRef.thenComposeAsync((library) -> inspectorLibrary.getLibrary(library, null));
@@ -111,9 +111,9 @@ public class InspectorService implements Disposable {
 
     vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
-    assert (app.getVMServiceManager() != null);
+    assert (app.getPerfService() != null);
     setPubRootDirectoriesSubscription =
-      app.getVMServiceManager().hasServiceExtension("ext.flutter.inspector.setPubRootDirectories", (Boolean available) -> {
+      app.getPerfService().hasServiceExtension("ext.flutter.inspector.setPubRootDirectories", (Boolean available) -> {
         if (!available) {
           return;
         }

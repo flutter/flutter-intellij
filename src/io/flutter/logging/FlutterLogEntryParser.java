@@ -12,7 +12,7 @@ import com.google.gson.JsonPrimitive;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.util.Key;
-import io.flutter.server.vmService.HeapMonitor;
+import io.flutter.perf.HeapMonitor;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.utils.StdoutJsonParser;

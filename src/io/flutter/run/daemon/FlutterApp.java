@@ -21,6 +21,7 @@ import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.history.LocalHistory;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -32,7 +33,7 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
 import io.flutter.logging.FlutterLog;
-import io.flutter.server.vmService.VMServiceManager;
+import io.flutter.perf.PerfService;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
@@ -97,7 +98,7 @@ public class FlutterApp {
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
-  private VMServiceManager myVMServiceManager;
+  private PerfService myPerfService;
 
   private static final Key<FlutterApp> APP_KEY = Key.create("FlutterApp");
 
@@ -436,7 +437,7 @@ public class FlutterApp {
    */
   @SuppressWarnings("UnusedReturnValue")
   public CompletableFuture<Boolean> maybeCallBooleanExtension(String methodName, boolean enabled) {
-    if (getVMServiceManager().hasServiceExtensionNow(methodName)) {
+    if (getPerfService().hasServiceExtensionNow(methodName)) {
       return callBooleanExtension(methodName, enabled);
     }
     return CompletableFuture.completedFuture(false);
@@ -444,11 +445,11 @@ public class FlutterApp {
 
   @NotNull
   public StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
-    return getVMServiceManager().hasServiceExtension(name, onData);
+    return getPerfService().hasServiceExtension(name, onData);
   }
 
   public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
-    getVMServiceManager().hasServiceExtension(name, onData, parentDisposable);
+    getPerfService().hasServiceExtension(name, onData, parentDisposable);
   }
 
   public void setConsole(@Nullable ConsoleView console) {
@@ -561,9 +562,9 @@ public class FlutterApp {
     return myFlutterDebugProcess;
   }
 
-  public void setVmServices(@NotNull VmService vmService, VMServiceManager vmServiceManager) {
+  public void setVmServices(@NotNull VmService vmService, PerfService perfService) {
     myVmService = vmService;
-    myVMServiceManager = vmServiceManager;
+    myPerfService = perfService;
 
     myVmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -585,8 +586,8 @@ public class FlutterApp {
   }
 
   @Nullable
-  public VMServiceManager getVMServiceManager() {
-    return myVMServiceManager;
+  public PerfService getPerfService() {
+    return myPerfService;
   }
 
   @NotNull
