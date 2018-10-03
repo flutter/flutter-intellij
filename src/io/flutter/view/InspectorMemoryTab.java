@@ -21,7 +21,7 @@ import java.lang.reflect.Method;
 
 public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   private static final Logger LOG = Logger.getInstance(FlutterView.class);
-  private @NotNull FlutterApp app;
+  private @NotNull final FlutterApp app;
 
   InspectorMemoryTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
@@ -77,18 +77,18 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       Object flutterStudioProfilersView_instance =
         flutterStudioProfilersView_constructor.newInstance(flutterStudioProfilers_instance);
 
-      Class noArguments[] = new Class[] {};
+      Class noArguments[] = new Class[]{};
       Method getComponentMethod =
         flutterStudioProfilersView_class.getMethod("getComponent", noArguments);
       // call getComponent()
       Component component =
-        (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[]) noArguments);
+        (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[])noArguments);
 
       add(component, BorderLayout.CENTER);
 
       // Start collecting immediately if memory profiling is enabled.
-      assert app.getPerfService() != null;
-      app.getPerfService().addPollingClient();
+      assert app.getVMServiceManager() != null;
+      app.getVMServiceManager().addPollingClient();
     }
     catch (ClassNotFoundException | NoSuchMethodException |
       InstantiationException | IllegalAccessException |
@@ -109,14 +109,15 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       add(labelBox);
     }
   }
+
   @Override
   public void finalize() {
     // Done collecting for the memory profiler - if this instance is GC'd.
-    assert app.getPerfService() != null;
-    app.getPerfService().removePollingClient();
+    assert app.getVMServiceManager() != null;
+    app.getVMServiceManager().removePollingClient();
   }
 
   @Override
-  public void setVisibleToUser(boolean visible) { }
-
+  public void setVisibleToUser(boolean visible) {
+  }
 }

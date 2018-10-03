@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
@@ -110,12 +111,12 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
       return;
     }
 
-    final PerfService perfService = app.getPerfService();
-    assert perfService != null;
+    final VMServiceManager vmServiceManager = app.getVMServiceManager();
+    assert vmServiceManager != null;
 
     connected = true;
 
-    isolateRefStreamSubscription = perfService.getCurrentFlutterIsolate(
+    isolateRefStreamSubscription = vmServiceManager.getCurrentFlutterIsolate(
       (isolateRef) -> requestRepaint(When.soon), false);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
@@ -133,8 +134,8 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
   }
 
   private IsolateRef getCurrentIsolateRef() {
-    assert app.getPerfService() != null;
-    return app.getPerfService().getCurrentFlutterIsolateRaw();
+    assert app.getVMServiceManager() != null;
+    return app.getVMServiceManager().getCurrentFlutterIsolateRaw();
   }
 
   public boolean isConnected() {
@@ -150,11 +151,11 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
 
     final VmService vmService = app.getVmService();
     assert vmService != null;
-    assert app.getPerfService() != null;
-    final IsolateRef isolateRef = app.getPerfService().getCurrentFlutterIsolateRaw();
+    assert app.getVMServiceManager() != null;
+    final IsolateRef isolateRef = app.getVMServiceManager().getCurrentFlutterIsolateRaw();
 
     final CompletableFuture<JsonObject> future = new CompletableFuture<>();
-    if (!app.getPerfService().hasServiceExtensionNow(GET_PERF_SOURCE_REPORTS_EXTENSION)) {
+    if (!app.getVMServiceManager().hasServiceExtensionNow(GET_PERF_SOURCE_REPORTS_EXTENSION)) {
       return CompletableFuture.completedFuture(null);
     }
     vmService
@@ -179,7 +180,7 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
 
   private void onVmServiceReceived(String streamId, Event event) {
     // TODO(jacobr): centrailize checks for Flutter.Frame
-    // They are now in PerfService, InspectorService, and here.
+    // They are now in VMServiceManager, InspectorService, and here.
     if (StringUtil.equals(streamId, VmService.EXTENSION_STREAM_ID)) {
       if (StringUtil.equals("Flutter.Frame", event.getExtensionKind())) {
         final JsonObject extensionData = event.getExtensionData().getJson();

@@ -16,7 +16,6 @@ import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
-import io.flutter.perf.PerfService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.frame.DartAsyncMarkerFrame;
 import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
@@ -285,7 +284,7 @@ public class VmServiceWrapper implements Disposable {
     FlutterApp app = FlutterApp.fromEnv(myDebugProcess.getExecutionEnvironment());
     // TODO(messick) Consider replacing this test with an assert; could interfere with setExceptionPauseMode().
     if (app != null) {
-      PerfService service = app.getPerfService();
+      VMServiceManager service = app.getVMServiceManager();
       if (service != null) {
         service.addRegisteredExtensionRPCs(isolate);
       }

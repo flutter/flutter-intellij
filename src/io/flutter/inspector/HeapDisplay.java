@@ -7,17 +7,15 @@ package io.flutter.inspector;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.IdeBorderFactory;
-import com.intellij.ui.SideBorder;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import io.flutter.perf.HeapMonitor;
-import io.flutter.perf.HeapMonitor.HeapListener;
-import io.flutter.perf.HeapMonitor.HeapSample;
-import io.flutter.perf.HeapMonitor.HeapSpace;
-import io.flutter.perf.HeapMonitor.IsolateObject;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.HeapMonitor;
+import io.flutter.server.vmService.HeapMonitor.HeapListener;
+import io.flutter.server.vmService.HeapMonitor.HeapSample;
+import io.flutter.server.vmService.HeapMonitor.HeapSpace;
+import io.flutter.server.vmService.HeapMonitor.IsolateObject;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
 import org.jetbrains.annotations.Nullable;
@@ -83,9 +81,9 @@ public class HeapDisplay extends JPanel {
       }
     };
 
-    assert app.getPerfService() != null;
-    app.getPerfService().addHeapListener(listener);
-    Disposer.register(parentDisposable, () -> app.getPerfService().removeHeapListener(listener));
+    assert app.getVMServiceManager() != null;
+    app.getVMServiceManager().addHeapListener(listener);
+    Disposer.register(parentDisposable, () -> app.getVMServiceManager().removeHeapListener(listener));
 
     return panel;
   }

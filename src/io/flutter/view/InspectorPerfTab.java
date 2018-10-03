@@ -122,13 +122,13 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
   @Override
   public void setVisibleToUser(boolean visible) {
-    assert app.getPerfService() != null;
+    assert app.getVMServiceManager() != null;
 
     if (visible) {
-      app.getPerfService().addPollingClient();
+      app.getVMServiceManager().addPollingClient();
     }
     else {
-      app.getPerfService().removePollingClient();
+      app.getVMServiceManager().removePollingClient();
     }
   }
 }
