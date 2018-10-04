@@ -5,6 +5,7 @@
  */
 package io.flutter.perf;
 
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.codeHighlighting.BackgroundEditorHighlighter;
@@ -19,7 +20,6 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
 import io.flutter.run.daemon.FlutterApp;
-import org.fest.util.Lists;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Test;
