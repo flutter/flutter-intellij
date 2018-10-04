@@ -68,9 +68,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     selectionModel.addListener(new SelectionListener() {
       @Override
       public void selectionCreated() {
-        // TODO(terry): Bring up the memory object list view.
-        System.out.print("selection");
-        System.out.println("Range: " + getTimeline().getSelectionRange().getMin() );
+        // TODO(terry): Bring up the memory object list view using getTimeline().getSelectionRange().getMin() .. getMax().
       }
 
       @Override
@@ -88,8 +86,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     JPanel panel = new JBPanel(layout);
     panel.setBackground(ProfilerColors.DEFAULT_BACKGROUND);
 
-    // The scrollbar can modify the view range - so it should be registered to the Choreographer before all other Animatables
-    // that attempts to read the same range instance.
     ProfilerScrollbar sb = new ProfilerScrollbar(timeline, panel);
     panel.add(sb, new TabularLayout.Constraint(3, 0));
 
@@ -129,8 +125,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     FlutterAllMemoryData.ThreadSafeData memoryUsedDataSeries = stage.getMemoryUsedDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryMaxDataSeries = stage.getMemoryMaxDataSeries();
-
-    Range mTimeViewRangeUs = new Range(0, TimeUnit.SECONDS.toMicros(15));
 
     RangedContinuousSeries usedMemoryRange =
       new RangedContinuousSeries("Memory", getTimeline().getViewRange(),
