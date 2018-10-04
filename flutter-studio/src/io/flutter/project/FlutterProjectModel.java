@@ -5,12 +5,15 @@
  */
 package io.flutter.project;
 
-import com.android.tools.idea.observable.core.*;
+import com.android.tools.idea.observable.core.BoolValueProperty;
+import com.android.tools.idea.observable.core.OptionalProperty;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.core.StringProperty;
+import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import io.flutter.module.FlutterProjectType;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 /**
