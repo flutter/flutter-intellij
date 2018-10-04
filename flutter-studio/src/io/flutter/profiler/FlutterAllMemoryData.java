@@ -37,6 +37,7 @@ public class FlutterAllMemoryData {
 
       // TODO(terry): Consider binary search for mData.x >= xRange.getMin() add till max
       final Iterator<SeriesData<Long>> it = mData.iterator();
+      SeriesData<Long> lastData = null;
       while (it.hasNext()) {
         SeriesData<Long> data = it.next();
 
@@ -44,8 +45,13 @@ public class FlutterAllMemoryData {
           break;
         }
         if (data.x >= xRange.getMin()) {
+          // TODO(terry): Hack for now to get last item so we don't flicker. Consider using a for/loop instead of iterator.
+          if (lastData != null && outData.isEmpty()) {
+            outData.add(lastData);
+          }
           outData.add(data);
         }
+        lastData = data;
       }
 
       return outData;
