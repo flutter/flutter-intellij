@@ -604,6 +604,13 @@
       <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
       <keyboard-shortcut keymap="$default" first-keystroke="ctrl BACK_SLASH"/>
     </action>
+    <action id="AttachDebuggerAction"
+            class="io.flutter.actions.AttachDebuggerAction"
+            text="Attach debugger to embedded Flutter process"
+            description="Attach debugger to a Flutter process embedded in an Android app"
+            icon="AllIcons.Debugger.AttachToProcess">
+      <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
+    </action>
 
     <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">

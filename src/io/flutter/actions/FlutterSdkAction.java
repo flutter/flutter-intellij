@@ -6,6 +6,7 @@
 package io.flutter.actions;
 
 import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DataContext;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -51,10 +52,13 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
 
     FlutterInitializer.sendAnalyticsAction(this);
     FileDocumentManager.getInstance().saveAllDocuments();
-    startCommand(project, sdk, PubRoot.forEventWithRefresh(event));
+    startCommand(project, sdk, PubRoot.forEventWithRefresh(event), event.getDataContext());
   }
 
-  public abstract void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root);
+  public abstract void startCommand(@NotNull Project project,
+                                    @NotNull FlutterSdk sdk,
+                                    @Nullable PubRoot root,
+                                    @NotNull DataContext context);
 
   /**
    * Implemented by actions which are used in the Bazel context ({@link #enableActionInBazelContext()} returns true), by default this method
