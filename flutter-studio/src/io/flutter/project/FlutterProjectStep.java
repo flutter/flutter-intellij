@@ -16,6 +16,7 @@ import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.observable.expressions.Expression;
 import com.android.tools.idea.observable.expressions.value.TransformOptionalExpression;
 import com.android.tools.idea.observable.ui.SelectedItemProperty;
+import com.android.tools.idea.observable.ui.SelectedProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.validation.validators.PathValidator;
 import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
@@ -43,20 +44,30 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterUtils;
 import io.flutter.actions.InstallSdkAction;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.module.settings.FlutterCreateParams;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.text.JTextComponent;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Configure Flutter project parameters that are common to all types.
@@ -84,6 +95,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   private JProgressBar myProgressBar;
   private JLabel myCancelProgressButton;
   private JTextPane myProgressText;
+  private FlutterCreateParams myCreateParams;
   private Color sdkBackgroundColor;
 
   public FlutterProjectStep(FlutterProjectModel model, String title, Icon icon, FlutterProjectType type) {
@@ -113,6 +125,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
           return value;
         }
       });
+    myBindings.bindTwoWay(model.isOfflineSelected(), new SelectedProperty(myCreateParams.getOfflineCheckbox()));
+    myCreateParams.setInitialValues();
+
     FlutterSdkUtil.addKnownSDKPathsToCombo(myFlutterSdkPath.getComboBox());
     myFlutterSdkPath.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,
                                              FileChooserDescriptorFactory.createSingleFolderDescriptor(),
@@ -137,6 +152,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
           updateSdkField(sdkEditor);
         }
       });
+    }
+    else {
+      myCreateParams.getOfflineCheckbox().setText("Create module offline");
     }
 
     // Initialization of the SDK install UI was copied from FlutterGeneratorPeer.

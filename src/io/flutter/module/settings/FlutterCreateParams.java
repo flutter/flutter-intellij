@@ -33,6 +33,10 @@ public class FlutterCreateParams {
     return createProjectOfflineCheckBox.isSelected();
   }
 
+  public JCheckBox getOfflineCheckbox() {
+    return createProjectOfflineCheckBox;
+  }
+
   private static boolean isPubAvailable() {
     // Check to see if the pub site is accessible to indicate whether we're online
     // and if we should expect pub commands to succeed.

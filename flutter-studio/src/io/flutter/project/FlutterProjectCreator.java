@@ -208,6 +208,7 @@ public class FlutterProjectCreator {
       .setOrg(myModel.packageName().get().isEmpty() ? null : reversedOrgFromPackage(myModel.packageName().get()))
       .setKotlin(isNotModule() && myModel.useKotlin().get() ? true : null)
       .setSwift(isNotModule() && myModel.useSwift().get() ? true : null)
+      .setOffline(myModel.isOfflineSelected().get())
       .build();
   }
 
