@@ -73,10 +73,12 @@ public class PerfService {
             public void received(Isolate isolate) {
               // Populate flutter isolate info.
               if (flutterIsolateRefStream.getValue() == null) {
-                for (String extensionName : isolate.getExtensionRPCs()) {
-                  if (extensionName.startsWith("ext.flutter.")) {
-                    setFlutterIsolate(isolateRef);
-                    break;
+                if (isolate.getExtensionRPCs() != null) {
+                  for (String extensionName : isolate.getExtensionRPCs()) {
+                    if (extensionName.startsWith("ext.flutter.")) {
+                      setFlutterIsolate(isolateRef);
+                      break;
+                    }
                   }
                 }
               }
@@ -98,8 +100,10 @@ public class PerfService {
 
   public void addRegisteredExtensionRPCs(Isolate isolate) {
     ApplicationManager.getApplication().invokeLater(() -> {
-      for (String extension : isolate.getExtensionRPCs()) {
-        addServiceExtension(extension);
+      if (isolate.getExtensionRPCs() != null) {
+        for (String extension : isolate.getExtensionRPCs()) {
+          addServiceExtension(extension);
+        }
       }
     });
   }

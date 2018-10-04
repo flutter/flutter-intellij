@@ -11,9 +11,9 @@ import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.DartFileType;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -102,11 +102,16 @@ class ObservatoryFile {
     return result;
   }
 
+  @Nullable
   private static LightVirtualFile createSnapshot(@NotNull Script script) {
     // LightVirtualFiles have no parent directory, so just use the filename.
-    // TODO(skybrian) maybe add more of the path anyway, for display?
     final String filename = PathUtil.getFileName(script.getUri());
-    final LightVirtualFile snapshot = new LightVirtualFile(filename, DartFileType.INSTANCE, script.getSource());
+    final String scriptSource = script.getSource();
+    if (scriptSource == null) {
+      return null;
+    }
+
+    final LightVirtualFile snapshot = new LightVirtualFile(filename, DartFileType.INSTANCE, scriptSource);
     snapshot.setWritable(false);
     return snapshot;
   }
@@ -151,6 +156,10 @@ class ObservatoryFile {
 
       final ObservatoryFile downloaded = new ObservatoryFile(script, wantSnapshot);
       this.versions.put(scriptId, downloaded);
+
+      if (wantSnapshot && !downloaded.hasSnapshot()) {
+        return null;
+      }
       return downloaded;
     }
   }
