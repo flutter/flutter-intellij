@@ -49,6 +49,8 @@ public class FlutterIcons {
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
   public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
 
+  public static final Icon AttachDebugger = load("/icons/attachDebugger.png");
+
   // Flutter Inspector Widget Icons.
   public static final Icon Accessibility = load("/icons/inspector/balloonInformation.png");
   public static final Icon Animation = load("/icons/inspector/resume.png");
