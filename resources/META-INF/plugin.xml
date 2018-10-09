@@ -27,6 +27,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>29.1</h2>
+<ul>
+  <li>address an issue with an NPE when debugging</li>
+</ul>
 <h2>29.0</h2>
 <ul>
   <li>add 'Wrap with Container' to preview</li>
