@@ -1,3 +1,6 @@
+## 29.1
+- address an issue with an NPE when debugging
+
 ## 29.0
 - add 'Wrap with Container' to preview
 - fix test navigation
