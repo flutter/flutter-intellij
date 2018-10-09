@@ -1,20 +1,7 @@
 {
   "list": [
     {
-      "comments": "AS 3.1 and IntelliJ 2017.3",
-      "name": "IntelliJ",
-      "version": "2017.3",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "173.4720617",
-      "dartPluginVersion": "173.4700",
-      "sinceBuild": "173.0",
-      "untilBuild": "173.*",
-      "filesToSkip": [
-        "flutter-studio/src/io/flutter/profiler"
-      ]
-    },
-    {
-      "comments": "AS 3.2 Beta and IntelliJ 2018.1",
+      "comments": "AS 3.2 and IntelliJ 2018.1",
       "name": "IntelliJ",
       "version": "2018.1",
       "ideaProduct": "android-studio",

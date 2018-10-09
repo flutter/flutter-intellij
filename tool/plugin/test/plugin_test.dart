@@ -33,9 +33,8 @@ void main() {
         var specs = (runner.commands['build'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(
-            specs.map((spec) => spec.ideaProduct),
+            specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
-              'android-studio',
               'android-studio',
               'android-studio',
               'ideaIU',
@@ -50,9 +49,8 @@ void main() {
         var specs = (runner.commands['test'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(
-            specs.map((spec) => spec.ideaProduct),
+            specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
-              'android-studio',
               'android-studio',
               'android-studio',
               'ideaIU',
@@ -67,9 +65,8 @@ void main() {
         var specs = (runner.commands['deploy'] as ProductCommand).specs;
         expect(specs, isNotNull);
         expect(
-            specs.map((spec) => spec.ideaProduct),
+            specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
-              'android-studio',
               'android-studio',
               'android-studio',
               'ideaIU',
@@ -150,7 +147,6 @@ void main() {
       expect(
           cmd.paths.map((p) => p.substring(p.indexOf('releases'))),
           orderedEquals([
-            'releases/release_19/2017.3/flutter-intellij.zip',
             'releases/release_19/2018.1/flutter-intellij.zip',
             'releases/release_19/2018.2.1/flutter-intellij.zip',
             'releases/release_19/2018.2.4/flutter-intellij.zip',
