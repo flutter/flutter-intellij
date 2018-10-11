@@ -14,6 +14,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.SimpleColoredRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
@@ -45,8 +46,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -176,10 +177,35 @@ public class FlutterLogTree extends TreeTable {
       }
     }
 
-    private class CategoryCellRenderer extends EntryCellRenderer {
+    private class CategoryCellRenderer extends SimpleColoredRenderer implements TableCellRenderer {
+
       @Override
-      void render(FlutterLogEntry entry) {
-        appendStyled(entry, entry.getCategory());
+      public final Component getTableCellRendererComponent(JTable table, @Nullable Object value,
+                                                           boolean isSelected, boolean hasFocus, int row, int col) {
+        final JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
+
+        if (value instanceof FlutterLogEntry) {
+          final String category = ((FlutterLogEntry)value).getCategory();
+          final JLabel label = new JLabel(" " + category + " ");
+
+          label.setBackground(FlutterLogColors.forCategory(category));
+          label.setForeground(JBColor.background());
+          label.setOpaque(true);
+          panel.add(label);
+          panel.add(Box.createHorizontalGlue());
+        }
+
+        clear();
+        setPaintFocusBorder(hasFocus && table.getCellSelectionEnabled());
+        acquireState(table, isSelected, hasFocus, row, col);
+        getCellState().updateRenderer(this);
+
+        if (isSelected) {
+          panel.setBackground(table.getSelectionBackground());
+        }
+
+        return panel;
       }
     }
 
