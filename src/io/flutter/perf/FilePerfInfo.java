@@ -17,14 +17,13 @@ import java.util.Collection;
  */
 class SummaryStats {
   private final PerfReportKind kind;
-  private final int total;
+  private final SlidingWindowStatsSummary entry;
   private final String description;
-  private int pastSecond = 0;
+  boolean active = true;
 
-  SummaryStats(PerfReportKind kind, int total, int pastSecond, String description) {
+  SummaryStats(PerfReportKind kind, SlidingWindowStatsSummary entry, String description) {
     this.kind = kind;
-    this.total = total;
-    this.pastSecond = pastSecond;
+    this.entry = entry;
     this.description = description;
   }
 
@@ -33,25 +32,33 @@ class SummaryStats {
   }
 
   int getTotal() {
-    return total;
+    return entry.getTotal();
+  }
+
+  int getTotalSinceNavigation() {
+    return entry.getTotalSinceNavigation();
   }
 
   int getPastSecond() {
-    return pastSecond;
+    return active ? entry.getPastSecond() : 0;
   }
 
   public void markAppIdle() {
-    pastSecond = 0;
+    active = false;
   }
 
   public String getDescription() {
     return description;
   }
+
+  public Location getLocation() {
+    return entry.getLocation();
+  }
 }
 
 /**
  * Performance stats for a single source file.
- *
+ * <p>
  * Typically the TextRange objects correspond to widget constructor locations.
  * A single constructor location may have multiple SummaryStats objects one for
  * each kind of stats (Widget repaints, rebuilds, etc).
@@ -69,6 +76,10 @@ class FilePerfInfo {
 
   public Iterable<TextRange> getLocations() {
     return stats.keySet();
+  }
+
+  public Iterable<SummaryStats> getStats() {
+    return stats.values();
   }
 
   public boolean hasLocation(TextRange range) {

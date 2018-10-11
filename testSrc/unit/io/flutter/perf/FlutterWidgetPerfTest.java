@@ -19,6 +19,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.Navigatable;
+import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -34,15 +35,15 @@ import static org.junit.Assert.*;
 
 class MockWidgetPerfProvider implements WidgetPerfProvider {
 
-  Repaintable repaintable;
+  WidgetPerfListener widgetPerfListener;
   boolean isDisposed = false;
   boolean shouldDisplayStats = true;
   List<List<String>> requests = new ArrayList<>();
-  Queue<String> responses = new ArrayDeque<>();
+  List<Iterable<Integer>> locationIdRequests = new ArrayList<>();
 
   @Override
-  public void setTarget(Repaintable repaintable) {
-    this.repaintable = repaintable;
+  public void setTarget(WidgetPerfListener widgetPerfListener) {
+    this.widgetPerfListener = widgetPerfListener;
   }
 
   @Override
@@ -56,16 +57,13 @@ class MockWidgetPerfProvider implements WidgetPerfProvider {
   }
 
   @Override
-  public CompletableFuture<JsonObject> getPerfSourceReports(List<String> uris) {
-    requests.add(uris);
-    final String response = responses.remove();
-    final JsonParser parser = new JsonParser();
-    return CompletableFuture.completedFuture((JsonObject)parser.parse(response));
+  public boolean shouldDisplayPerfStats(FileEditor editor) {
+    return shouldDisplayStats;
   }
 
   @Override
-  public boolean shouldDisplayPerfStats(FileEditor editor) {
-    return shouldDisplayStats;
+  public CompletableFuture<DiagnosticsNode> getWidgetTree() {
+    return CompletableFuture.completedFuture(null);
   }
 
   @Override
@@ -73,12 +71,13 @@ class MockWidgetPerfProvider implements WidgetPerfProvider {
     isDisposed = true;
   }
 
-  public void addResponse(String json) {
-    responses.add(json);
+  public void simulateWidgetPerfEvent(PerfReportKind kind, String json) {
+    final JsonParser parser = new JsonParser();
+    widgetPerfListener.onWidgetPerfEvent(kind, (JsonObject)parser.parse(json));
   }
 
   public void repaint(When when) {
-    repaintable.requestRepaint(when);
+    widgetPerfListener.requestRepaint(when);
   }
 }
 
@@ -295,8 +294,6 @@ public class FlutterWidgetPerfTest {
   @Test
   public void testStatCalculation() throws InterruptedException, ExecutionException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
-    widgetPerfProvider.addResponse(
-      "{\"result\":{\"file:///sample/project/clock.dart\":{\"rebuild\":[[37,12,328,48],[74,12,1968,288],[80,16,1968,288],[84,14,1968,288],[87,17,1968,288],[49,7,328,48],[50,16,328,48]]}},\"type\":\"_extensionType\",\"method\":\"ext.flutter.inspector.getPerfSourceReports\"}\n");
 
     final Map<String, MockEditorPerfModel> perfModels = new HashMap<>();
     final FlutterWidgetPerf flutterWidgetPerf = new FlutterWidgetPerf(
@@ -309,58 +306,65 @@ public class FlutterWidgetPerfTest {
       },
       (TextEditor textEditor) -> new FakeFileLocationMapper()
     );
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
+
+    // Simulate 60fps for 2 seconds.
+    for (int frame = 1; frame <= 120; frame++) {
+      long startTime = 1000 + frame * 1000 * 1000 / 60;
+      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" + startTime + ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+    }
     final Set<TextEditor> textEditors = new HashSet<>();
     final TextEditor clockTextEditor = new MockTextEditor("/sample/project/clock.dart");
     textEditors.add(clockTextEditor);
-    flutterWidgetPerf.showFor(textEditors);
+     flutterWidgetPerf.showFor(textEditors);
     assertEquals(perfModels.size(), 1);
     MockEditorPerfModel clockModel = perfModels.get("/sample/project/clock.dart");
     assertEquals(clockModel.getTextEditor(), clockTextEditor);
 
     FilePerfInfo stats = clockModel.getStatsFuture().get();
     // Stats for the first response are rebuilds only
-    assertEquals(1296, stats.getCountPastSecond());
+    assertEquals(1620, stats.getCountPastSecond());
     List<TextRange> locations = Lists.newArrayList(stats.getLocations());
     assertEquals(7, locations.size());
     List<SummaryStats> rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());
-    assertEquals(48, rangeStats.get(0).getPastSecond());
-    assertEquals(328, rangeStats.get(0).getTotal());
-    assertEquals("Widget:37:12", rangeStats.get(0).getDescription());
+    assertEquals(360, rangeStats.get(0).getPastSecond());
+    assertEquals(726, rangeStats.get(0).getTotal());
+    assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
 
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(4)));
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());
-    assertEquals(288, rangeStats.get(0).getPastSecond());
-    assertEquals(1968, rangeStats.get(0).getTotal());
-    assertEquals("Widget:87:17", rangeStats.get(0).getDescription());
+    assertEquals(60, rangeStats.get(0).getPastSecond());
+    assertEquals(121, rangeStats.get(0).getTotal());
+    assertEquals("Widget:34:15", rangeStats.get(0).getDescription());
 
     clockModel.markAppIdle();
     assertEquals(0, stats.getCountPastSecond());
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(4)));
     assertEquals(0, rangeStats.get(0).getPastSecond());
     // Total is not impacted.
-    assertEquals(1968, rangeStats.get(0).getTotal());
+    assertEquals(121, rangeStats.get(0).getTotal());
 
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());
     assertEquals(0, rangeStats.get(0).getPastSecond());
-    assertEquals(328, rangeStats.get(0).getTotal());
-    assertEquals("Widget:37:12", rangeStats.get(0).getDescription());
+    assertEquals(726, rangeStats.get(0).getTotal());
+    assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
     final TextEditor mainTextEditor = new MockTextEditor("/sample/project/main.dart");
     textEditors.add(mainTextEditor);
 
     perfModels.clear();
-    // This response has both rebuilds and repaints.
-    widgetPerfProvider.addResponse(
-      "{\"result\":{\"file:///sample/project/clock.dart\":{\"rebuild\":[[37,12,328,48],[74,12,1968,288],[80,16,1968,288],[84,14,1968,288],[87,17,1968,288],[49,7,328,48],[50,16,328,48]],\"repaint\":[[37,12,327,47],[52,13,327,47],[74,12,1962,282],[80,16,1962,282],[84,14,1962,282],[87,17,1962,282],[49,7,327,47],[50,16,327,47]]},\"file:///sample/project/main.dart\":{\"rebuild\":[[24,17,1,0],[41,16,1,0],[47,16,1,0],[70,9,4,0],[71,9,4,0],[72,18,4,0],[42,19,1,0],[43,20,1,0],[52,58,328,48]],\"repaint\":[[41,16,9,0],[24,17,9,0],[46,17,9,0],[47,16,9,0],[48,22,9,0],[64,12,36,0],[67,9,36,0],[70,9,36,0],[71,9,36,0],[72,18,36,0],[42,19,9,0],[43,20,9,0],[19,16,4,0],[11,14,4,0],[52,58,327,47]]}},\"type\":\"_extensionType\",\"method\":\"ext.flutter.inspector.getPerfSourceReports\"}\n");
+    // Add events with both rebuilds and repaints.
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":19687239,\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.repaint, "{\"startTime\":19687239,\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
 
     flutterWidgetPerf.showFor(textEditors);
 
@@ -376,37 +380,37 @@ public class FlutterWidgetPerfTest {
 
     // We have new fake data for the files so the count in the past second is
     // back up from zero
-    assertEquals(2612, stats.getCountPastSecond());
-    assertEquals(95, mainStats.getCountPastSecond());
+    assertEquals(54, stats.getCountPastSecond());
+    assertEquals(2, mainStats.getCountPastSecond());
 
     locations = Lists.newArrayList(stats.getLocations());
-    assertEquals(8, locations.size());
+    assertEquals(7, locations.size());
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
 
     assertEquals(2, rangeStats.size());
     assertEquals(PerfReportKind.repaint, rangeStats.get(0).getKind());
-    assertEquals(47, rangeStats.get(0).getPastSecond());
-    assertEquals(327, rangeStats.get(0).getTotal());
-    assertEquals("Widget:37:12", rangeStats.get(0).getDescription());
+    assertEquals(6, rangeStats.get(0).getPastSecond());
+    assertEquals(6, rangeStats.get(0).getTotal());
+    assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
     assertEquals(PerfReportKind.rebuild, rangeStats.get(1).getKind());
-    assertEquals(48, rangeStats.get(1).getPastSecond());
-    assertEquals(328, rangeStats.get(1).getTotal());
-    assertEquals("Widget:37:12", rangeStats.get(1).getDescription());
+    assertEquals(6, rangeStats.get(1).getPastSecond());
+    assertEquals(732, rangeStats.get(1).getTotal());
+    assertEquals("Widget:52:12", rangeStats.get(1).getDescription());
 
 
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(5)));
 
     assertEquals(2, rangeStats.size());
     assertEquals(PerfReportKind.repaint, rangeStats.get(0).getKind());
-    assertEquals(282, rangeStats.get(0).getPastSecond());
-    assertEquals(1962, rangeStats.get(0).getTotal());
-    assertEquals("Widget:87:17", rangeStats.get(0).getDescription());
+    assertEquals(1, rangeStats.get(0).getPastSecond());
+    assertEquals(1, rangeStats.get(0).getTotal());
+    assertEquals("Widget:33:12", rangeStats.get(0).getDescription());
 
     assertEquals(PerfReportKind.rebuild, rangeStats.get(1).getKind());
-    assertEquals(288, rangeStats.get(1).getPastSecond());
-    assertEquals(1968, rangeStats.get(1).getTotal());
-    assertEquals("Widget:87:17", rangeStats.get(1).getDescription());
+    assertEquals(1, rangeStats.get(1).getPastSecond());
+    assertEquals(122, rangeStats.get(1).getTotal());
+    assertEquals("Widget:33:12", rangeStats.get(1).getDescription());
 
     assertFalse(clockModel.isDisposed);
     assertFalse(mainModel.isDisposed);
