@@ -6,8 +6,6 @@
 package io.flutter.logging;
 
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.ui.CollectionComboBoxModel;
-import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SearchTextField;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
@@ -95,7 +93,6 @@ public class FlutterLogFilterPanel {
   private JCheckBox matchCaseCheckBox;
   private JCheckBox regexCheckBox;
   private SearchTextField textExpression;
-  private JComboBox<FlutterLog.Level> logLevelComboBox;
 
   public FlutterLogFilterPanel(@NotNull OnFilterListener onFilterListener) {
     this.onFilterListener = onFilterListener;
@@ -103,26 +100,11 @@ public class FlutterLogFilterPanel {
     regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
-    logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
-    logLevelComboBox.setSelectedItem(FlutterLog.Level.CONFIG);
-    logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
-    logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
-      @Override
-      protected void customizeCellRenderer(@NotNull JList<? extends FlutterLog.Level> list,
-                                           FlutterLog.Level value,
-                                           int index,
-                                           boolean selected,
-                                           boolean hasFocus) {
-        append(value.toDisplayString());
-      }
-    });
   }
 
   @NotNull
   public FilterParam getCurrentFilterParam() {
-    final Object selected = logLevelComboBox.getSelectedItem();
-    final FlutterLog.Level logLevel = selected == null ? FlutterLog.Level.NONE : (FlutterLog.Level)selected;
-    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected(), logLevel);
+    return new FilterParam(textExpression.getText(), matchCaseCheckBox.isSelected(), regexCheckBox.isSelected(), FlutterLog.Level.NONE);
   }
 
   @NotNull
@@ -133,7 +115,6 @@ public class FlutterLogFilterPanel {
   public void initFromPreferences(@NotNull FlutterLogPreferences flutterLogPreferences) {
     regexCheckBox.setSelected(flutterLogPreferences.isToolWindowRegex());
     matchCaseCheckBox.setSelected(flutterLogPreferences.isToolWindowMatchCase());
-    logLevelComboBox.setSelectedItem(FlutterLog.Level.forValue(flutterLogPreferences.getToolWindowLogLevel()));
   }
 
   @Nullable
