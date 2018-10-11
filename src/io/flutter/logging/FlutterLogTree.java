@@ -192,8 +192,9 @@ public class FlutterLogTree extends TreeTable {
           label.setBackground(FlutterLogColors.forCategory(category));
           label.setForeground(JBColor.background());
           label.setOpaque(true);
-          panel.add(label);
           panel.add(Box.createHorizontalGlue());
+          panel.add(label);
+          panel.add(Box.createHorizontalStrut(8));
         }
 
         clear();
