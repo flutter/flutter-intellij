@@ -704,14 +704,14 @@ public class FlutterLogTree extends TreeTable {
     try {
       logMessageFilter = RowFilter.regexFilter(
         standardRegex,
-        FlutterTreeTableModel.ColumnIndex.MESSAGE.index, FlutterTreeTableModel.ColumnIndex.CATEGORY.index
+        FlutterTreeTableModel.ColumnIndex.MESSAGE.index, FlutterTreeTableModel.ColumnIndex.CATEGORY.index,
+        FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index
       );
-      logLevelFilter = RowFilter.regexFilter(LOG_LEVEL_FILTER.get(filter.getLogLevel()), FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index);
     }
     catch (PatternSyntaxException e) {
       return;
     }
-    rowSorter.setRowFilter(RowFilter.andFilter(Arrays.asList(logMessageFilter, logLevelFilter)));
+    rowSorter.setRowFilter(logMessageFilter);
   }
 
   void append(@NotNull FlutterLogEntry entry) {
