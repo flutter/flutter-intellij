@@ -242,8 +242,10 @@ public class VmServiceWrapper implements Disposable {
     // Just to make sure that the main isolate is not handled twice, both from handleDebuggerConnected() and DartVmServiceListener.received(PauseStart)
     if (newIsolate) {
       XDebugSessionImpl session = (XDebugSessionImpl)myDebugProcess.getSession();
-      session.reset();
-      session.initBreakpoints();
+      ApplicationManager.getApplication().runReadAction(() -> {
+        session.reset();
+        session.initBreakpoints();
+      });
       addRequest(() -> myVmService.setExceptionPauseMode(isolateRef.getId(),
                                                          myDebugProcess.getBreakOnExceptionMode(),
                                                          new VmServiceConsumers.SuccessConsumerWrapper() {
