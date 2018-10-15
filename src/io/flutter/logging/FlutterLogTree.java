@@ -43,8 +43,8 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -60,21 +60,6 @@ public class FlutterLogTree extends TreeTable {
 
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
   private static final Logger LOG = Logger.getInstance(FlutterLogTree.class);
-  @NotNull
-  private static final Map<FlutterLog.Level, String> LOG_LEVEL_FILTER;
-
-  static {
-    LOG_LEVEL_FILTER = new HashMap<>();
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.NONE, "NONE|FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINEST, "FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINER, "FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINE, "FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.CONFIG, "CONFIG|INFO|WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.INFO, "INFO|WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.WARNING, "WARNING|SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.SEVERE, "SEVERE|SHOUT");
-    LOG_LEVEL_FILTER.put(FlutterLog.Level.SHOUT, "SHOUT");
-  }
 
   private static class ColumnModel {
 
@@ -611,7 +596,6 @@ public class FlutterLogTree extends TreeTable {
     addMouseListener(new SimpleMouseListener() {
       @Override
       public void mouseDoublePressed(MouseEvent e) {
-        super.mouseDoublePressed(e);
         final String selectedLog = getSelectedLog();
         if (StringUtils.isNotEmpty(selectedLog)) {
           flutterLogPopup.showLogDialog(selectedLog);
@@ -734,11 +718,7 @@ public class FlutterLogTree extends TreeTable {
     model.clearEntries();
   }
 
-  private static class SimpleMouseListener implements MouseListener {
-    @Override
-    public void mouseClicked(MouseEvent e) {
-    }
-
+  private static abstract class SimpleMouseListener extends MouseAdapter {
     @Override
     public void mousePressed(MouseEvent e) {
       if (e.getClickCount() == 2) {
@@ -746,19 +726,6 @@ public class FlutterLogTree extends TreeTable {
       }
     }
 
-    public void mouseDoublePressed(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-    }
+    public abstract void mouseDoublePressed(MouseEvent e);
   }
 }
