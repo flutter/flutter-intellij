@@ -171,7 +171,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
           manager.scheduleUpdate();
         }
       });
-      manager.scheduleUpdate();
     }
   }
 
