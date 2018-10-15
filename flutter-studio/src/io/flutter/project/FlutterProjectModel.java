@@ -5,7 +5,11 @@
  */
 package io.flutter.project;
 
-import com.android.tools.idea.observable.core.*;
+import com.android.tools.idea.observable.core.BoolValueProperty;
+import com.android.tools.idea.observable.core.OptionalProperty;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.core.StringProperty;
+import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
@@ -36,6 +40,7 @@ public class FlutterProjectModel extends WizardModel {
   @NotNull final private BoolValueProperty myKotlin = new BoolValueProperty();
   @NotNull final private BoolValueProperty mySwift = new BoolValueProperty();
   @NotNull final private OptionalProperty<Project> myProject = new OptionalValueProperty<>();
+  @NotNull final private BoolValueProperty myIsOfflineSelected = new BoolValueProperty();
 
   public FlutterProjectModel(@NotNull FlutterProjectType type) {
     myProjectType.set(new OptionalValueProperty<>(type));
@@ -131,6 +136,10 @@ public class FlutterProjectModel extends WizardModel {
       return;
     }
     new FlutterProjectCreator(this).createProject();
+  }
+
+  public BoolValueProperty isOfflineSelected() {
+    return myIsOfflineSelected;
   }
 
   @NotNull
