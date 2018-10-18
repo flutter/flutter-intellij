@@ -762,12 +762,12 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
     super(app, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
 
-    setExtensionCommand("ext.flutter.debugWidgetInspector");
+    setExtensionCommand("ext.flutter.inspector.show");
   }
 
   protected void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected());
+      app.callBooleanExtension("ext.flutter.inspector.show", isSelected());
 
       // If toggling inspect mode on, bring all devices to the foreground.
       // TODO(jacobr): consider only bringing the device for the currently open inspector TAB.
