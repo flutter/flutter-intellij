@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.Nullable;
@@ -57,7 +58,16 @@ public class FlutterModuleImporter {
       return;
     }
 
-    myRelativePath = Paths.get(myRelativePath, ".android", "include_flutter.groovy").normalize().toString();
+    String newPath = Paths.get(myRelativePath, "android", "include_flutter.groovy").normalize().toString();
+    if (!new File(newPath).exists()) {
+      // For old modules
+      newPath = Paths.get(myRelativePath, ".android", "include_flutter.groovy").normalize().toString();
+      if (!new File(newPath).exists()) {
+        showHowToEditDialog();
+        return;
+      }
+    }
+    myRelativePath = StringUtil.escapeSlashes(newPath);
     VirtualFile settingsFile = projectRoot.findChild("settings.gradle");
     if (settingsFile == null) {
       showHowToEditDialog();
