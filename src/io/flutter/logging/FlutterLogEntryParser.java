@@ -103,7 +103,7 @@ public class FlutterLogEntryParser {
 
         @Override
         public void received(Sentinel response) {
-          // ignored
+          entry.setData(null);
         }
 
         @Override
