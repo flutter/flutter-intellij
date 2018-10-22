@@ -46,10 +46,7 @@ import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.AsyncUtils;
-import io.flutter.utils.EventStream;
-import io.flutter.utils.StreamSubscription;
-import io.flutter.utils.VmServiceListenerAdapter;
+import io.flutter.utils.*;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -137,7 +134,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (window instanceof ToolWindowEx) {
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
         @Override
-        public void actionPerformed(AnActionEvent event) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
           BrowserUtil.browse("https://goo.gl/WrMB43");
         }
       };
@@ -341,8 +338,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void addMemoryTab(JBRunnerTabs runnerTabs,
-                                 FlutterApp app,
-                                 boolean selectedTab) {
+                            FlutterApp app,
+                            boolean selectedTab) {
     final InspectorMemoryTab perfTab = new InspectorMemoryTab(runnerTabs, app);
     final TabInfo tabInfo = new TabInfo(perfTab)
       .append(MEMORY_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
@@ -359,9 +356,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final FlutterApp app = event.app;
 
     if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        debugActiveHelper(app, null);
-      });
+      ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
     }
     else {
       whenCompleteUiThread(
@@ -382,7 +377,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
 
       toolWindow.getContentManager().setSelectedContent(appState.content);
-      for(TabInfo tabInfo : appState.tabs.getTabs()) {
+      for (TabInfo tabInfo : appState.tabs.getTabs()) {
         if (tabInfo.getComponent() instanceof InspectorPerfTab) {
           appState.tabs.select(tabInfo, true);
           return (InspectorPerfTab)tabInfo.getComponent();
@@ -477,7 +472,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final ContentManager contentManager = toolWindow.getContentManager();
     contentManager.addContentManagerListener(new ContentManagerAdapter() {
       @Override
-      public void selectionChanged(ContentManagerEvent event) {
+      public void selectionChanged(@NotNull ContentManagerEvent event) {
         final ContentManagerEvent.ContentOperation operation = event.getOperation();
         if (operation == ContentManagerEvent.ContentOperation.add) {
           final String name = event.getContent().getTabName();
@@ -677,9 +672,8 @@ class TogglePlatformAction extends FlutterViewAction {
     }
 
     if (subscription == null) {
-      subscription = app.hasServiceExtension("ext.flutter.platformOverride", (enabled) -> {
-        e.getPresentation().setEnabled(app.isSessionActive() && enabled);
-      });
+      subscription = app
+        .hasServiceExtension("ext.flutter.platformOverride", (enabled) -> e.getPresentation().setEnabled(app.isSessionActive() && enabled));
     }
   }
 
@@ -810,9 +804,7 @@ class ForceRefreshAction extends FlutterViewAction {
 
       final CompletableFuture<?> future = inspectorService.forceRefresh();
 
-      AsyncUtils.whenCompleteUiThread(future, (o, throwable) -> {
-        setEnabled(event, true);
-      });
+      AsyncUtils.whenCompleteUiThread(future, (o, throwable) -> setEnabled(event, true));
     }
   }
 
@@ -915,12 +907,8 @@ class OverflowAction extends AnAction implements RightAlignedToolbarAction {
 
   @Override
   @SuppressWarnings("Duplicates")
-  public void actionPerformed(AnActionEvent e) {
-    final Presentation presentation = e.getPresentation();
-    JComponent component = (JComponent)presentation.getClientProperty("button");
-    if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
-      component = (JComponent)e.getInputEvent().getSource();
-    }
+  public void actionPerformed(@NotNull AnActionEvent e) {
+    final JComponent component = UIUtils.getComponentOfActionEvent(e);
     if (component == null) {
       return;
     }
@@ -965,9 +953,8 @@ class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
-    final Presentation presentation = e.getPresentation();
-    final JComponent button = (JComponent)presentation.getClientProperty("button");
+  public void actionPerformed(@NotNull AnActionEvent e) {
+    final JComponent button = UIUtils.getComponentOfActionEvent(e);
     if (button == null) {
       return;
     }
@@ -977,8 +964,9 @@ class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
     popupMenu.getComponent().show(button, button.getWidth(), 0);
   }
 
+  @NotNull
   @Override
-  public JComponent createCustomComponent(Presentation presentation) {
+  public JComponent createCustomComponent(@NotNull Presentation presentation) {
     final ActionButton button = new ActionButton(
       this,
       presentation,

@@ -40,6 +40,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.logging.FlutterLog.Level;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -143,11 +144,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @NotNull
     private Optional<JComponent> getComponentOfActionEvent(@NotNull AnActionEvent e) {
-      final Presentation presentation = e.getPresentation();
-      JComponent component = (JComponent)presentation.getClientProperty("button");
-      if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
-        component = (JComponent)e.getInputEvent().getSource();
-      }
+      final JComponent component = UIUtils.getComponentOfActionEvent(e);
       return Optional.ofNullable(component);
     }
 
