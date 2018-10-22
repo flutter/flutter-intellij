@@ -640,7 +640,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
     // TODO(pq): consider an affordance to hide/show data pane.
-    final Splitter treeSplitter = new Splitter(false, .75f);
+    final Splitter treeSplitter = new Splitter(false);
+    treeSplitter.setProportion(flutterLogPreferences.getSplitterProportion());
+    flutterLogPreferences.addViewStateListener(e -> {
+      final float newProportion = flutterLogPreferences.getSplitterProportion();
+      if (treeSplitter.getProportion() != newProportion) {
+        treeSplitter.setProportion(newProportion);
+      }
+    });
+    treeSplitter.addPropertyChangeListener("proportion", e -> flutterLogPreferences.setSplitterProportion(treeSplitter.getProportion()));
     treeSplitter.setFirstComponent(treePane);
     treeSplitter.setSecondComponent(dataPane);
     toolWindowPanel.setContent(treeSplitter);
