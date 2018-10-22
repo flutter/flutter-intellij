@@ -27,6 +27,7 @@ public class FlutterLogEntry {
   private final int level;
   @NotNull
   private final String message;
+  // TODO(pq): consider making data an Instance or JsonElement
   @Nullable
   private String data;
   private int sequenceNumber = -1;
