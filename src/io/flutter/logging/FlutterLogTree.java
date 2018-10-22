@@ -254,6 +254,8 @@ public class FlutterLogTree extends TreeTable {
         if (cursor < message.length()) {
           appendStyled(entry, message.substring(cursor));
         }
+
+        // TODO(pq): consider appending a badge if entry.getData() != null
       }
     }
 
@@ -339,6 +341,10 @@ public class FlutterLogTree extends TreeTable {
       treeTable = table;
       tableColumns = Collections.list(table.getColumnModel().getColumns());
     }
+  }
+
+  interface SelectionListener extends EventListener {
+    void selectionChanged();
   }
 
   static class TreeModel extends ListTreeTableModelOnColumns {
@@ -568,6 +574,8 @@ public class FlutterLogTree extends TreeTable {
   }
 
   private final EventDispatcher<EventCountListener> countDispatcher = EventDispatcher.create(EventCountListener.class);
+  private final EventDispatcher<SelectionListener> selectionEventDispatcher = EventDispatcher.create(SelectionListener.class);
+
   private final TreeModel model;
   private FlutterLogFilterPanel.FilterParam filter;
   @NotNull
@@ -612,9 +620,10 @@ public class FlutterLogTree extends TreeTable {
     });
 
     rowSorter.addRowSorterListener(e -> updateCounter());
+    getTree().addTreeSelectionListener(e -> selectionEventDispatcher.getMulticaster().selectionChanged());
   }
-
-  private List<FlutterEventNode> getSelectedNodes() {
+  
+  List<FlutterEventNode> getSelectedNodes() {
     final List<FlutterEventNode> nodes = new ArrayList<>();
     for (int row : getSelectedRows()) {
       final int realRow = convertRowIndexToModel(row);
@@ -664,6 +673,14 @@ public class FlutterLogTree extends TreeTable {
         sendSelectedLogsToClipboard();
       }
     });
+  }
+
+  public void addSelectionListener(SelectionListener listener){
+    selectionEventDispatcher.addListener(listener);
+  }
+
+  public void removeSelectionListener(SelectionListener listener){
+    selectionEventDispatcher.removeListener(listener);
   }
 
   public void addListener(@NotNull EventCountListener listener, @NotNull Disposable parent) {

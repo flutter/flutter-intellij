@@ -17,9 +17,8 @@ import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.element.Event;
-import org.dartlang.vm.service.element.Instance;
-import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -56,7 +55,7 @@ public class FlutterLogEntryParser {
 
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
-  private static FlutterLogEntry parseLoggingEvent(@NotNull Event event) {
+  private FlutterLogEntry parseLoggingEvent(@NotNull Event event) {
     // TODO(pq): parse more robustly; consider more properties (error, stackTrace)
     final JsonObject json = event.getJson();
     final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
@@ -81,13 +80,40 @@ public class FlutterLogEntryParser {
       }
     }
 
-    // TODO: If message.getValueAsStringIsTruncated() is true, we'll need to retrieve the full string
+    // TODO(pq): If message.getValueAsStringIsTruncated() is true, we'll need to retrieve the full string
     // value and update this entry after creation.
     String messageStr = message.getValueAsString();
     if (message.getValueAsStringIsTruncated()) {
       messageStr += "...";
     }
-    return new FlutterLogEntry(timestamp(event), category, level, messageStr);
+
+    final FlutterLogEntry entry = new FlutterLogEntry(timestamp(event), category, level, messageStr);
+
+    final Instance data = new Instance(logRecord.getAsJsonObject().get("error").getAsJsonObject());
+    if (!data.getValueAsStringIsTruncated()) {
+      entry.setData(data.getValueAsString());
+    }
+    else {
+      final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
+      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectConsumer() {
+        @Override
+        public void received(Obj response) {
+          entry.setData(((Instance)response).getValueAsString());
+        }
+
+        @Override
+        public void received(Sentinel response) {
+          entry.setData(null);
+        }
+
+        @Override
+        public void onError(RPCError error) {
+          // TODO(pq): log?
+        }
+      });
+    }
+
+    return entry;
   }
 
   @NotNull
