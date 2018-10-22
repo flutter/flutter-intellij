@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.openapi.Disposable;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.ui.JBUI;
 import io.flutter.inspector.FPSDisplay;
 import io.flutter.inspector.HeapDisplay;
@@ -41,24 +42,13 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REBUILD_WIDGETS, trackRebuildsCheckbox::setEnabled, parentDisposable);
     app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REPAINT_WIDGETS, trackRepaintsCheckbox::setEnabled, parentDisposable);
 
-    trackRebuildsCheckbox.addChangeListener((l) -> {
-      setTrackRebuildWidgets(trackRebuildsCheckbox.isSelected());
-    });
-
-    trackRepaintsCheckbox.addChangeListener((l) -> {
-      setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected());
-    });
+    trackRebuildsCheckbox.addChangeListener((l) -> setTrackRebuildWidgets(trackRebuildsCheckbox.isSelected()));
+    trackRepaintsCheckbox.addChangeListener((l) -> setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected()));
   }
 
   private void buildUI() {
-    setLayout(new GridBagLayout());
+    setLayout(new VerticalLayout(5));
     setBorder(JBUI.Borders.empty(5));
-
-    final GridBagConstraints constraints = new GridBagConstraints();
-    constraints.gridx = 0;
-    constraints.gridy = 0;
-    constraints.weightx = 1.0;
-    constraints.fill = GridBagConstraints.BOTH;
 
     // header
     final JPanel headerPanel = new JPanel(new BorderLayout(0, 3));
@@ -70,26 +60,24 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
       );
     }
     headerPanel.setBorder(JBUI.Borders.empty(5));
-    add(headerPanel, constraints);
+    add(headerPanel);
 
     // FPS
     final JPanel fpsPanel = new JPanel(new BorderLayout());
     final JPanel fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
     fpsPanel.add(fpsDisplay, BorderLayout.CENTER);
     fpsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "FPS"));
-    constraints.gridy = 1;
-    add(fpsPanel, constraints);
+    add(fpsPanel);
 
     // Memory
     final JPanel memoryPanel = new JPanel(new BorderLayout());
     final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
     memoryPanel.add(heapDisplay, BorderLayout.CENTER);
     memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory"));
-    constraints.gridy = 2;
-    add(memoryPanel, constraints);
+    add(memoryPanel);
 
     // Widgets stats (experimental)
-    final Box widgetsPanel = Box.createVerticalBox();
+    final JPanel widgetsPanel = new JPanel(new VerticalLayout(5));
     trackRebuildsCheckbox = new JCheckBox("Track widget rebuilds");
     widgetsPanel.add(trackRebuildsCheckbox);
     trackRepaintsCheckbox = new JCheckBox("Track widget repaints");
@@ -97,9 +85,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
     widgetsPanel.add(widgetPerfPanel);
     widgetsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Widgets stats (experimental)"));
-    constraints.gridy = 3;
-    constraints.weighty = 1.0;
-    add(widgetsPanel, constraints);
+    add(widgetsPanel);
   }
 
   private void setTrackRebuildWidgets(boolean selected) {
