@@ -291,7 +291,7 @@ public class TreeScrollAnimator implements Disposable {
       // Adjust the animation duration to account for the time we have left
       // ensuring the animation proceeds for at least half the default animation
       // duration.
-      animationDuration = Math.max(DEFAULT_ANIMATE_X_DURATION / 2, animationDuration - (currentTime - animationStartTime));
+      animationDuration = Math.max(DEFAULT_ANIMATE_X_DURATION / 2.0, animationDuration - (currentTime - animationStartTime));
       // Ideally we would manage the velocity keeping it consistent
       // with the existing velocity at the animationStart of the animation
       // but this is good enough. We use EASE_OUT assuming the
@@ -469,7 +469,7 @@ public class TreeScrollAnimator implements Disposable {
       // Adjust the animation duration to account for the time we have left
       // ensuring the animation proceeds for at least half the default animation
       // duration.
-      animationDuration = Math.max(DEFAULT_ANIMATION_DURATION / 2, animationDuration - (currentTime - animationStartTime));
+      animationDuration = Math.max(DEFAULT_ANIMATION_DURATION / 2.0, animationDuration - (currentTime - animationStartTime));
       // Ideally we would manage the velocity keeping it consistent
       // with the existing velocity at the animationStart of the animation
       // but this is good enough. We use EASE_OUT assuming the

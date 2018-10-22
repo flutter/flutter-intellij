@@ -7,14 +7,12 @@ package io.flutter.inspector;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.JBColor;
-import com.intellij.ui.SideBorder;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import io.flutter.server.vmService.FlutterFramesMonitor;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.FlutterFramesMonitor;
 
 import javax.swing.*;
 import java.awt.*;
