@@ -254,6 +254,8 @@ public class FlutterLogTree extends TreeTable {
         if (cursor < message.length()) {
           appendStyled(entry, message.substring(cursor));
         }
+
+        // TODO(pq): consider appending a badge if entry.getData() != null
       }
     }
 
