@@ -622,7 +622,7 @@ public class FlutterLogTree extends TreeTable {
     rowSorter.addRowSorterListener(e -> updateCounter());
     getTree().addTreeSelectionListener(e -> selectionEventDispatcher.getMulticaster().selectionChanged());
   }
-
+  
   List<FlutterEventNode> getSelectedNodes() {
     final List<FlutterEventNode> nodes = new ArrayList<>();
     for (int row : getSelectedRows()) {
