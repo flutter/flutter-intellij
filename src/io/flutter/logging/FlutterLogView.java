@@ -421,21 +421,17 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     public void update() {
-      final StringBuilder sb = new StringBuilder();
-      for (FlutterLogTree.FlutterEventNode node : logTree.getSelectedNodes()) {
-        final String data = node.entry.getData();
+      String text = "";
+      final List<FlutterLogTree.FlutterEventNode> nodes = logTree.getSelectedNodes();
+      if (!nodes.isEmpty()) {
+        // First selection.
+        final String data = nodes.get(0).entry.getData();
         if (data != null && !Objects.equals(data, "null")) {
-          sb.append(data);
+          final JsonElement jsonElement = new JsonParser().parse(data);
+          text = gsonHelper.toJson(jsonElement);
         }
       }
-
-      if (sb.length() > 0) {
-        final JsonElement jsonElement = new JsonParser().parse(sb.toString());
-        setText(gsonHelper.toJson(jsonElement));
-      }
-      else {
-        setText("");
-      }
+      setText(text);
     }
   }
 
@@ -530,7 +526,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull
   private final ClearLogAction clearLogAction = new ClearLogAction();
   @NotNull
-  private DataPanel dataPanel;
+  private final DataPanel dataPanel;
 
   private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
 
@@ -618,7 +614,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
     dataPanel = new DataPanel();
-    logTree.addSelectionListener(() -> dataPanel.update());
+    logTree.addSelectionListener(dataPanel::update);
 
     setupLogTreeScrollPane();
   }
