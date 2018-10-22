@@ -38,13 +38,10 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -602,20 +599,38 @@ public class FlutterLogTree extends TreeTable {
         }
       }
     });
+    addKeyListener(new KeyAdapter() {
+      @Override
+      public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+          getTree().setSelectionRow(getSelectedRow() + 1);
+        }
+        else if (e.getKeyCode() == KeyEvent.VK_UP) {
+          getTree().setSelectionRow(getSelectedRow() - 1);
+        }
+      }
+    });
+
     rowSorter.addRowSorterListener(e -> updateCounter());
+  }
+
+  private List<FlutterEventNode> getSelectedNodes() {
+    final List<FlutterEventNode> nodes = new ArrayList<>();
+    for (int row : getSelectedRows()) {
+      final int realRow = convertRowIndexToModel(row);
+      final Object pathComponent = getTree().getPathForRow(realRow).getLastPathComponent();
+      if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
+        nodes.add((FlutterEventNode)pathComponent);
+      }
+    }
+    return nodes;
   }
 
   @NotNull
   private String getSelectedLog() {
-    final int[] rows = getSelectedRows();
     final StringBuilder logBuilder = new StringBuilder();
-    for (int row : rows) {
-      final int realRow = convertRowIndexToModel(row);
-      final TreePath path = getTree().getPathForRow(realRow);
-      final Object pathComponent = path.getLastPathComponent();
-      if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
-        ((FlutterLogTree.FlutterEventNode)pathComponent).describeTo(logBuilder);
-      }
+    for (FlutterEventNode node : getSelectedNodes()) {
+      node.describeTo(logBuilder);
     }
     return logBuilder.toString();
   }
