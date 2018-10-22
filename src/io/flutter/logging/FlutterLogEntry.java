@@ -27,6 +27,8 @@ public class FlutterLogEntry {
   private final int level;
   @NotNull
   private final String message;
+  @Nullable
+  private String data;
   private int sequenceNumber = -1;
 
   @NotNull
@@ -55,6 +57,15 @@ public class FlutterLogEntry {
 
   public FlutterLogEntry(long timestamp, @NotNull String category, @Nullable String message) {
     this(timestamp, category, UNDEFINED_LEVEL.value, message);
+  }
+
+  @Nullable
+  public String getData() {
+    return data;
+  }
+
+  public void setData(@Nullable String data) {
+    this.data = data;
   }
 
   @NotNull
