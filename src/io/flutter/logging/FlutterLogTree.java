@@ -695,7 +695,7 @@ public class FlutterLogTree extends TreeTable {
         );
       }
       catch (PatternSyntaxException e) {
-        // Fall through.
+        // TODO(pq): Notify user; in the meantime, just fall-through.
       }
     }
 
@@ -719,7 +719,7 @@ public class FlutterLogTree extends TreeTable {
 
   public void clearEntries() {
     // Ensure selections are cleared on empty.
-    getTree().setSelectionRows(new int[]{});
+    getTree().clearSelection();
     model.clearEntries();
   }
 
