@@ -32,10 +32,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+import javax.swing.table.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
@@ -268,6 +265,8 @@ public class FlutterLogTree extends TreeTable {
     private ArrayList<TableColumn> tableColumns;
     private TreeTable treeTable;
 
+    private static final TableCellRenderer DEFAULT_RENDERER = new DefaultTableCellRenderer();
+
     ColumnModel(@NotNull FlutterApp app, @NotNull EntryModel entryModel) {
       this.app = app;
       this.entryModel = entryModel;
@@ -325,7 +324,10 @@ public class FlutterLogTree extends TreeTable {
     }
 
     public TableCellRenderer getRenderer(int column) {
-      return visible.get(column).renderer;
+      // To mitigate a race condition where invisible cells can ask for rendering (despite not
+      // being visible) we fall back on a default.
+      // (This has no noticeable impact but avoids an occasional range check exception on table init.)
+      return column < visible.size() ? visible.get(column).renderer : DEFAULT_RENDERER;
     }
 
     public boolean isShowing(String column) {
@@ -411,6 +413,9 @@ public class FlutterLogTree extends TreeTable {
 
       reload(getRoot());
       treeTable.updateUI();
+      // Preserve / restore selection state.
+      treeTable.getTree().setSelectionRows(treeTable.getSelectedRows());
+
       if (updateCallback != null) {
         updateCallback.updated();
       }
@@ -518,52 +523,12 @@ public class FlutterLogTree extends TreeTable {
     }
   }
 
-  public static class EntryFilter {
-    @NotNull
-    private final FlutterLogFilterPanel.FilterParam filterParam;
-
-    public EntryFilter(@NotNull FlutterLogFilterPanel.FilterParam filterParam) {
-      this.filterParam = filterParam;
-    }
-
-    public boolean accept(@NotNull FlutterLogEntry entry) {
-      if (entry.getLevel() < filterParam.getLogLevel().value) {
-        return false;
-      }
-      final String text = filterParam.getExpression();
-      if (text == null) {
-        return true;
-      }
-      final boolean isMatchCase = filterParam.isMatchCase();
-      final String standardText = isMatchCase ? text : text.toLowerCase();
-      final String standardMessage = isMatchCase ? entry.getMessage() : entry.getMessage().toLowerCase();
-      final String standardCategory = isMatchCase ? entry.getCategory() : entry.getCategory().toLowerCase();
-      if (acceptByCheckingRegexOption(standardCategory, standardText)) {
-        return true;
-      }
-      return acceptByCheckingRegexOption(standardMessage, standardText);
-    }
-
-    private boolean acceptByCheckingRegexOption(@NotNull String message, @NotNull String text) {
-      if (filterParam.isRegex()) {
-        return message.matches("(?s).*" + text + ".*");
-      }
-      return message.contains(text);
-    }
-
+  private static final RowFilter<TableModel, Object> EMPTY_FILTER = new RowFilter<TableModel, Object>() {
     @Override
-    public boolean equals(Object o) {
-      if (this == o) return true;
-      if (o == null || getClass() != o.getClass()) return false;
-      final EntryFilter filter = (EntryFilter)o;
-      return Objects.equals(filterParam, filter.filterParam);
+    public boolean include(Entry<? extends TableModel, ?> entry) {
+      return true;
     }
-
-    @Override
-    public int hashCode() {
-      return Objects.hash(filterParam);
-    }
-  }
+  };
 
   public interface EntryModel {
     SimpleTextAttributes style(@Nullable FlutterLogEntry entry, int attributes);
@@ -618,6 +583,10 @@ public class FlutterLogTree extends TreeTable {
         }
       }
     });
+
+    // The row sorter is our source of truth for row counts.
+    // To get notifications of unfiltered counts, we need to set a no-op filter.
+    rowSorter.setRowFilter(EMPTY_FILTER);
 
     rowSorter.addRowSorterListener(e -> updateCounter());
     getTree().addTreeSelectionListener(e -> selectionEventDispatcher.getMulticaster().selectionChanged());
@@ -706,31 +675,33 @@ public class FlutterLogTree extends TreeTable {
       return;
     }
     this.filter = filter;
-    updateRowFilter(filter);
-    updateCounter();
+    rowSorter.setRowFilter(getRowFilter(filter));
   }
 
-  private void updateRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
+  private RowFilter<TableModel, Object> getRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
     final String nonNullExpression = filter.getExpression() == null ? "" : filter.getExpression();
-    final String quoteRegex = filter.isRegex() ? nonNullExpression : Pattern.quote(nonNullExpression);
+    if (!nonNullExpression.isEmpty() || filter.isMatchCase() || filter.isRegex()) {
+      final String quoteRegex = filter.isRegex() ? nonNullExpression : Pattern.quote(nonNullExpression);
+      final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
+      final String standardRegex = matchCaseRegex + "(?s).*" + quoteRegex + ".*";
+      final RowFilter<TableModel, Object> logMessageFilter;
+      final RowFilter<TableModel, Object> logLevelFilter;
+      try {
+        return RowFilter.regexFilter(
+          standardRegex,
+          FlutterTreeTableModel.ColumnIndex.MESSAGE.index,
+          FlutterTreeTableModel.ColumnIndex.CATEGORY.index,
+          FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index
+        );
+      }
+      catch (PatternSyntaxException e) {
+        // TODO(pq): Notify user; in the meantime, just fall-through.
+      }
+    }
 
-    final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
-    final String standardRegex = matchCaseRegex + "(?s).*" + quoteRegex + ".*";
-    final RowFilter<TableModel, Object> logMessageFilter;
-    final RowFilter<TableModel, Object> logLevelFilter;
-    try {
-      logMessageFilter = RowFilter.regexFilter(
-        standardRegex,
-        FlutterTreeTableModel.ColumnIndex.MESSAGE.index, FlutterTreeTableModel.ColumnIndex.CATEGORY.index,
-        FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index
-      );
-    }
-    catch (PatternSyntaxException e) {
-      return;
-    }
-    rowSorter.setRowFilter(logMessageFilter);
+    return EMPTY_FILTER;
   }
-
+  
   void append(@NotNull FlutterLogEntry entry) {
     if (entry.getKind() == FlutterLogEntry.Kind.RELOAD && model.getLogPreferences().isClearOnReload() ||
         entry.getKind() == FlutterLogEntry.Kind.RESTART && model.getLogPreferences().isClearOnRestart()
@@ -747,6 +718,8 @@ public class FlutterLogTree extends TreeTable {
   }
 
   public void clearEntries() {
+    // Ensure selections are cleared on empty.
+    getTree().clearSelection();
     model.clearEntries();
   }
 
