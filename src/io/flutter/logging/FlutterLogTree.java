@@ -706,7 +706,7 @@ public class FlutterLogTree extends TreeTable {
     if (entry.getKind() == FlutterLogEntry.Kind.RELOAD && model.getLogPreferences().isClearOnReload() ||
         entry.getKind() == FlutterLogEntry.Kind.RESTART && model.getLogPreferences().isClearOnRestart()
     ) {
-      model.clearEntries();
+      clearEntries();
     }
     model.appendNodes(Collections.singletonList(entry));
   }
