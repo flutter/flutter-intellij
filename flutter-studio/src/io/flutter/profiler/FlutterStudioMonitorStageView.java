@@ -162,7 +162,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     Range allData = getTimeline().getDataRange();
 
-    legendComponentModel = new LegendComponentModel(100);
+    legendComponentModel = new LegendComponentModel(new Range(100.0, 100.0));
     timeGlobalRangeUs = new Range(0, 0);
 
     RangedContinuousSeries maxHeapRangedData = new RangedContinuousSeries("Max Heap", timeGlobalRangeUs, allData, memoryMax);

@@ -12,11 +12,15 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
+import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
+import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
@@ -27,6 +31,7 @@ import com.intellij.openapi.vfs.*;
 import com.intellij.util.containers.hash.HashSet;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
+import org.jetbrains.android.sdk.AndroidSdkUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,13 +63,28 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
   }
 
   private Void updateAndroidLibraryContent(@NotNull Project androidProject) {
+    ModuleManager mgr = ModuleManager.getInstance(androidProject);
+    Module module = null;
+    for (Module mod : mgr.getModules()) {
+      if (mod.getName().equals("android") || mod.getName().equals(".android")) {
+        module = mod;
+        break;
+      }
+    }
+    HashSet<String> urls = new HashSet<>();
+    if (module != null) {
+      AndroidSdkUtils.setupAndroidPlatformIfNecessary(module, true);
+      Sdk currentSdk = ModuleRootManager.getInstance(module).getSdk();
+      if (currentSdk != null){
+        urls.addAll(Arrays.asList(currentSdk.getRootProvider().getUrls(OrderRootType.CLASSES)));
+      }
+    }
     LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
     Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
     if (androidProjectLibraries.length == 0) {
       LOG.warn("Gradle sync was incomplete -- no Android libraries found");
       return null;
     }
-    HashSet<String> urls = new HashSet<>();
     for (Library refLibrary : androidProjectLibraries) {
       urls.addAll(Arrays.asList(refLibrary.getRootProvider().getUrls(OrderRootType.CLASSES)));
     }
