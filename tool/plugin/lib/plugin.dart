@@ -532,38 +532,10 @@ class BuildCommand extends ProductCommand {
         }
       }
 
-      // TODO(devoncarew): Remove this when we no longer support AS 3.1.
-      File processedFile1, processedFile2, processedFile3;
-      String oldSource1, oldSource2, oldSource3, newSource;
-      if (spec.version == '2017.3') {
-        processedFile1 = new File(
-            'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
-        log('Editing ${processedFile1.path}');
-        oldSource1 = processedFile1.readAsStringSync();
-        newSource = oldSource1;
-        newSource = newSource.replaceAll(
-          'import com.android.tools.idea.npw.model.NewModuleModel',
-          'import com.android.tools.idea.npw.module.NewModuleModel',
-        );
-        newSource = newSource.replaceAll(
-          'import java.awt.*',
-          'import javax.swing.*',
-        );
-        newSource = newSource.replaceAll('public Image', 'public Icon');
-        newSource =
-            newSource.replaceAll('IconUtil.toImage', ''); // Leaves parens
-        processedFile1.writeAsStringSync(newSource);
-        processedFile2 = new File(
-            'flutter-studio/src/io/flutter/project/ChoseProjectTypeStep.java');
-        log('Editing ${processedFile2.path}');
-        oldSource2 = processedFile2.readAsStringSync();
-        newSource = oldSource2;
-        newSource = newSource.replaceAll(
-            "import com.intellij.ui.components.JBScrollPane;",
-            "import com.intellij.ui.components.JBScrollPane;\nimport com.intellij.util.IconUtil;");
-        newSource = newSource.replaceAll(
-            'image.getIcon()', 'IconUtil.toImage(image.getIcon())');
-        processedFile2.writeAsStringSync(newSource);
+      // TODO: Remove this when we no longer support AS 3.2.
+      File processedFile3, processedFile4;
+      String oldSource3, oldSource4, newSource;
+      if (spec.version == '2018.1') {
         processedFile3 = new File(
             'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
         oldSource3 = processedFile3.readAsStringSync();
@@ -571,33 +543,28 @@ class BuildCommand extends ProductCommand {
         newSource = newSource.replaceAll('.LightResourceClassService', '.*');
         newSource =
             newSource.replaceAll(' LightResourceClassService', ' Object');
+        newSource = newSource.replaceAll(
+            'gradleProjectSystem.getLightResourceClassService()', 'null');
         processedFile3.writeAsStringSync(newSource);
-      } else if (spec.version == '2018.1') {
-        processedFile3 = new File(
-            'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
-        oldSource3 = processedFile3.readAsStringSync();
-        newSource = oldSource3;
-        newSource = newSource.replaceAll('.LightResourceClassService', '.*');
-        newSource =
-            newSource.replaceAll(' LightResourceClassService', ' Object');
-        processedFile3.writeAsStringSync(newSource);
+        processedFile4 = new File(
+            'flutter-studio/src/io/flutter/profiler/FlutterStudioMonitorStageView.java');
+        oldSource4 = processedFile4.readAsStringSync();
+        newSource = oldSource4;
+        newSource = newSource.replaceAll('new Range(100.0, 100.0)', '100');
+        processedFile4.writeAsStringSync(newSource);
       }
 
       try {
         result = await runner.javac2(spec);
       } finally {
-        // Restore 3.2 sources.
-        if (oldSource1 != null) {
-          log('Restoring ${processedFile1.path}');
-          processedFile1.writeAsStringSync(oldSource1);
-        }
-        if (oldSource2 != null) {
-          log('Reestoring ${processedFile2.path}');
-          processedFile2.writeAsStringSync(oldSource2);
-        }
+        // Restore sources.
         if (oldSource3 != null) {
           log('Reestoring ${processedFile3.path}');
           processedFile3.writeAsStringSync(oldSource3);
+        }
+        if (oldSource4 != null) {
+          log('Reestoring ${processedFile4.path}');
+          processedFile4.writeAsStringSync(oldSource4);
         }
 
         // Restore skipped files.
