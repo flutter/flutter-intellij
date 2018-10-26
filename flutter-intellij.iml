@@ -32,7 +32,7 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/173.4700/Dart.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/181.4892.1/Dart.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -41,7 +41,7 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/173.4700/resources_en.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/181.4892.1/resources_en.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
