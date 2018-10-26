@@ -10,21 +10,17 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.Alarm;
 import com.intellij.util.Producer;
-import com.intellij.util.ReflectionUtil;
 import com.intellij.xdebugger.XSourcePosition;
-import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.StreamSubscription;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.consumer.Consumer;
 import org.dartlang.vm.service.consumer.EvaluateConsumer;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
@@ -134,31 +130,11 @@ public class EvalOnDartLibrary implements Disposable {
     // TODO(jacobr): complete all pending futures as cancelled?
   }
 
-  /**
-   * Workaround until the version of the VmService 'eval' method supports
-   * the scope argument.
-   */
-  private void callVmServiceRequest(VmService vmService, String methodName, JsonObject params, EvaluateConsumer consumer) {
-    try {
-      final Method method = ReflectionUtil
-        .getDeclaredMethod(Class.forName("org.dartlang.vm.service.VmServiceBase"), "request", String.class, JsonObject.class,
-                           Consumer.class);
-      if (method == null) {
-        throw new RuntimeException("Cannot find method 'request'");
-      }
-      method.setAccessible(true);
-      method.invoke(vmService, methodName, params, consumer);
-    }
-    catch (IllegalAccessException | InvocationTargetException | ClassNotFoundException e) {
-      throw new RuntimeException((e.toString()));
-    }
-  }
-
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {
     return addRequest(isAlive, () -> {
       final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
       libraryRef.thenAcceptAsync((LibraryRef ref) -> {
-        evaluateHelper(
+        vmService.evaluate(
           getIsolateId(), ref.getId(), expression, scope,
           new EvaluateConsumer() {
             @Override
@@ -241,15 +217,6 @@ public class EvalOnDartLibrary implements Disposable {
 
   public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture, InspectorService.ObjectGroup isAlive) {
     return instanceFuture.thenComposeAsync((instance) -> getInstance(instance, isAlive));
-  }
-
-  private void evaluateHelper(String isolateId, String targetId, String expression, Map<String, String> scope, EvaluateConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    params.addProperty("targetId", targetId);
-    params.addProperty("expression", expression);
-    if (scope != null) params.add("scope", convertMapToJsonObject(scope));
-    callVmServiceRequest(vmService, "evaluate", params, consumer);
   }
 
   private JsonObject convertMapToJsonObject(Map<String, String> map) {
