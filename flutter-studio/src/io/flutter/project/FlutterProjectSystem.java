@@ -126,9 +126,9 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return false;
   }
 
-  @Nullable
+  @NotNull
   @SuppressWarnings("override")
   public LightResourceClassService getLightResourceClassService() {
-    return null;
+    return gradleProjectSystem.getLightResourceClassService();
   }
 }
