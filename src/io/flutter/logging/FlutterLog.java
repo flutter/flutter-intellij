@@ -125,7 +125,7 @@ public class FlutterLog {
     if (debugProcess != null) {
       final Map<String, Object> params = new HashMap<>();
       params.put("channel", channel.name);
-      params.put("enable", subscribe);
+      params.put("enabled", subscribe);
       debugProcess.getApp().callServiceExtension("ext.flutter.logs.enable", params);
     }
   }
