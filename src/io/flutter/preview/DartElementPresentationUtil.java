@@ -45,6 +45,9 @@ public class DartElementPresentationUtil {
     switch (element.getKind()) {
       case ElementKind.CLASS:
         return element.isAbstract() ? AbstractClass : Class;
+      case "MIXIN":
+        // TODO(devoncarew): Use ElementKind.MIXIN when its available.
+        return AbstractClass;
       case ElementKind.CONSTRUCTOR:
         return Method;
       case ElementKind.CONSTRUCTOR_INVOCATION:
