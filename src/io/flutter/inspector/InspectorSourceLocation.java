@@ -25,8 +25,12 @@ public class InspectorSourceLocation {
     this.parent = parent;
   }
 
+  public String getPath() {
+    return JsonUtils.getStringMember(json, "file");
+  }
+
   public VirtualFile getFile() {
-    String fileName = JsonUtils.getStringMember(json, "file");
+    String fileName = getPath();
     if (fileName == null) {
       return parent != null ? parent.getFile() : null;
     }

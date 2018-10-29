@@ -58,7 +58,10 @@ public class DiagnosticsNode {
 
   private ArrayList<DiagnosticsNode> cachedProperties;
 
-  public DiagnosticsNode(JsonObject json, InspectorService.ObjectGroup inspectorService, boolean isProperty) {
+  public DiagnosticsNode(JsonObject json,
+                         InspectorService.ObjectGroup inspectorService,
+                         boolean isProperty,
+                         DiagnosticsNode parent) {
     this.json = json;
     this.inspectorService = inspectorService;
     this.isProperty = isProperty;
@@ -387,6 +390,10 @@ public class DiagnosticsNode {
     return location != null || json.has("creationLocation");
   }
 
+  public int getLocationId() {
+    return JsonUtils.getIntMember(json, "locationId");
+  }
+
   public InspectorSourceLocation getCreationLocation() {
     if (location != null) {
       return location;
@@ -574,6 +581,17 @@ public class DiagnosticsNode {
   }
 
   /**
+   * Whether this node is being displayed as a full tree or a filtered tree.
+   */
+  public boolean isStateful() {
+    return getBooleanMember("stateful", false);
+  }
+
+  public String getWidgetRuntimeType() {
+    return getStringMember("widgetRuntimeType");
+  }
+
+  /**
    * Check whether children are already available.
    */
   public boolean childrenReady() {
@@ -586,11 +604,13 @@ public class DiagnosticsNode {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          nodes.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, false));
+          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, false, parent);
+          child.setParent(this);
+          nodes.add(child);
         }
         children = CompletableFuture.completedFuture(nodes);
       } else  if (hasChildren()) {
-        children = inspectorService.getChildren(getDartDiagnosticRef(), isSummaryTree());
+        children = inspectorService.getChildren(getDartDiagnosticRef(), isSummaryTree(), this);
       }
       else {
         // Known to have no children so we can provide the children immediately.
@@ -604,7 +624,8 @@ public class DiagnosticsNode {
    * Reference the actual Dart DiagnosticsNode object this object is referencing.
    */
   public InspectorInstanceRef getDartDiagnosticRef() {
-    return new InspectorInstanceRef(json.get("objectId").getAsString());
+    final JsonElement objectId = json.get("objectId");
+    return new InspectorInstanceRef(objectId.isJsonNull() ? null : objectId.getAsString());
   }
 
   /**
@@ -616,7 +637,7 @@ public class DiagnosticsNode {
       if (json.has("properties")) {
         final JsonArray jsonArray = json.get("properties").getAsJsonArray();
         for (JsonElement element : jsonArray) {
-          cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, true));
+          cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, true, parent));
         }
         trackPropertiesMatchingParameters(cachedProperties);
       }

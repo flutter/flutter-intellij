@@ -567,7 +567,7 @@ public class InspectorService implements Disposable {
         if (jsonElement == null || jsonElement.isJsonNull()) {
           return null;
         }
-        return new DiagnosticsNode(jsonElement.getAsJsonObject(), this, false);
+        return new DiagnosticsNode(jsonElement.getAsJsonObject(), this, false, null);
       });
     }
 
@@ -584,27 +584,27 @@ public class InspectorService implements Disposable {
       }));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(InstanceRef instanceRef) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(InstanceRef instanceRef, DiagnosticsNode parent) {
       return nullIfDisposed(() -> instanceRefToJson(instanceRef).thenApplyAsync((JsonElement jsonElement) -> {
         return nullValueIfDisposed(() -> {
           final JsonArray jsonArray = jsonElement != null ? jsonElement.getAsJsonArray() : null;
-          return parseDiagnosticsNodesHelper(jsonArray);
+          return parseDiagnosticsNodesHelper(jsonArray, parent);
         });
       }));
     }
 
-    ArrayList<DiagnosticsNode> parseDiagnosticsNodesHelper(JsonElement jsonObject) {
-      return parseDiagnosticsNodesHelper(jsonObject != null ? jsonObject.getAsJsonArray() : null);
+    ArrayList<DiagnosticsNode> parseDiagnosticsNodesHelper(JsonElement jsonObject, DiagnosticsNode parent) {
+      return parseDiagnosticsNodesHelper(jsonObject != null ? jsonObject.getAsJsonArray() : null, parent);
     }
 
-    ArrayList<DiagnosticsNode> parseDiagnosticsNodesHelper(JsonArray jsonArray) {
+    ArrayList<DiagnosticsNode> parseDiagnosticsNodesHelper(JsonArray jsonArray, DiagnosticsNode parent) {
       return nullValueIfDisposed(() -> {
         if (jsonArray == null) {
           return null;
         }
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          nodes.add(new DiagnosticsNode(element.getAsJsonObject(), this, false));
+          nodes.add(new DiagnosticsNode(element.getAsJsonObject(), this, false, parent));
         }
         return nodes;
       });
@@ -626,35 +626,35 @@ public class InspectorService implements Disposable {
         }));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture) {
-      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNodesObservatory));
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture, DiagnosticsNode parent) {
+      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture) {
-      return nullIfDisposed(() -> jsonFuture.thenApplyAsync(this::parseDiagnosticsNodesHelper));
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture, DiagnosticsNode parent) {
+      return nullIfDisposed(() -> jsonFuture.thenApplyAsync((json) -> parseDiagnosticsNodesHelper(json, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef, boolean summaryTree) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef, boolean summaryTree, DiagnosticsNode parent) {
       if (isDetailsSummaryViewSupported()) {
-        return getListHelper(instanceRef, summaryTree ? "getChildrenSummaryTree" : "getChildrenDetailsSubtree");
+        return getListHelper(instanceRef, summaryTree ? "getChildrenSummaryTree" : "getChildrenDetailsSubtree", parent);
       }
       else {
-        return getListHelper(instanceRef, "getChildren");
+        return getListHelper(instanceRef, "getChildren", parent);
       }
     }
 
     CompletableFuture<ArrayList<DiagnosticsNode>> getProperties(InspectorInstanceRef instanceRef) {
-      return getListHelper(instanceRef, "getProperties");
+      return getListHelper(instanceRef, "getProperties", null);
     }
 
     private CompletableFuture<ArrayList<DiagnosticsNode>> getListHelper(
-      InspectorInstanceRef instanceRef, String methodName) {
+      InspectorInstanceRef instanceRef, String methodName, DiagnosticsNode parent) {
       return nullIfDisposed(() -> {
         if (isDaemonApiSupported) {
-          return parseDiagnosticsNodesDaemon(invokeServiceMethodDaemon(methodName, instanceRef));
+          return parseDiagnosticsNodesDaemon(invokeServiceMethodDaemon(methodName, instanceRef), parent);
         }
         else {
-          return parseDiagnosticsNodesObservatory(invokeServiceMethodObservatory(methodName, instanceRef));
+          return parseDiagnosticsNodesObservatory(invokeServiceMethodObservatory(methodName, instanceRef), parent);
         }
       });
     }
@@ -705,6 +705,11 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<DiagnosticsNode> getRootWidget() {
       return invokeServiceMethodReturningNode(isDetailsSummaryViewSupported() ? "getRootWidgetSummaryTree" : "getRootWidget");
+    }
+
+    public CompletableFuture<DiagnosticsNode> getSummaryTreeWithoutIds() {
+      Map<String, Object> params = new HashMap<>();
+      return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon("getRootWidgetSummaryTree", params));
     }
 
     public CompletableFuture<DiagnosticsNode> getRootRenderObject() {
