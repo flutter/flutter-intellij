@@ -28,7 +28,7 @@ public class DiagnosticsPathNode {
   public DiagnosticsNode getNode() {
     // We are lazy about getting the diagnosticNode instanceRef so that no additional round trips using the observatory protocol
     // are yet triggered for the typical case where properties of a node are not inspected.
-    return new DiagnosticsNode(json.getAsJsonObject("node"), inspectorService, false);
+    return new DiagnosticsNode(json.getAsJsonObject("node"), inspectorService, false, null);
   }
 
   public ArrayList<DiagnosticsNode> getChildren() {
@@ -39,7 +39,7 @@ public class DiagnosticsPathNode {
     }
     final JsonArray childrenJson = childrenElement.getAsJsonArray();
     for (int i = 0; i < childrenJson.size(); ++i) {
-      children.add(new DiagnosticsNode(childrenJson.get(i).getAsJsonObject(), inspectorService, false));
+      children.add(new DiagnosticsNode(childrenJson.get(i).getAsJsonObject(), inspectorService, false, null));
     }
     return children;
   }
