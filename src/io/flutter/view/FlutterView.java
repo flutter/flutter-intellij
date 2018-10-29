@@ -592,15 +592,17 @@ class DebugDrawAction extends FlutterViewToggleableAction {
 }
 
 class PerformanceOverlayAction extends FlutterViewToggleableAction {
+
+  public static final String SHOW_PERFORMANCE_OVERLAY = "ext.flutter.showPerformanceOverlay";
+
   PerformanceOverlayAction(@NotNull FlutterApp app) {
     super(app, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
-
     setExtensionCommand("ext.flutter.showPerformanceOverlay");
   }
 
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected());
+      app.callBooleanExtension(SHOW_PERFORMANCE_OVERLAY, isSelected());
     }
   }
 
@@ -707,15 +709,18 @@ class TogglePlatformAction extends FlutterViewAction {
 }
 
 class RepaintRainbowAction extends FlutterViewToggleableAction {
-  RepaintRainbowAction(@NotNull FlutterApp app) {
-    super(app, "Enable Repaint Rainbow");
 
-    setExtensionCommand("ext.flutter.repaintRainbow");
+  public static final String SHOW_REPAINT_RAINBOW = "ext.flutter.repaintRainbow";
+
+  RepaintRainbowAction(@NotNull FlutterApp app) {
+    super(app, "Show Repaint Rainbow");
+
+    setExtensionCommand(SHOW_REPAINT_RAINBOW);
   }
 
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.repaintRainbow", isSelected());
+      app.callBooleanExtension(SHOW_REPAINT_RAINBOW, isSelected());
     }
   }
 
