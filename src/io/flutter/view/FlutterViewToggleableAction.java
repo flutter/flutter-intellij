@@ -11,6 +11,7 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,9 +19,10 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
-  private boolean selected = false;
   private String extensionCommand;
-  private StreamSubscription<Boolean> subscription;
+  private StreamSubscription<Boolean> serviceExtensionSubscription;
+  private EventStream<Boolean> currentValue;
+  private StreamSubscription<Boolean> currentValueSubscription;
 
   FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
     super(app, text);
@@ -42,16 +44,23 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     presentation.putClientProperty("selected", selected);
 
     if (!app.isSessionActive()) {
-      if (subscription != null) {
-        subscription.dispose();
-        subscription = null;
-      }
+      disposeSubscriptions();
       e.getPresentation().setEnabled(false);
       return;
     }
 
-    if (subscription == null) {
-      subscription = app.hasServiceExtension(extensionCommand, (enabled) -> {
+    if (currentValueSubscription == null) {
+      assert(currentValue == null);
+      currentValue = app.getVMServiceManager().getServiceExtensionState(extensionCommand);
+      currentValueSubscription = currentValue.listen((isSelected) -> {
+        if (presentation.getClientProperty("selected") != isSelected) {
+          presentation.putClientProperty("selected", isSelected);
+        }
+      }, true);
+    }
+
+    if (serviceExtensionSubscription == null) {
+      serviceExtensionSubscription = app.hasServiceExtension(extensionCommand, (enabled) -> {
         e.getPresentation().setEnabled(app.isSessionActive() && enabled);
       });
     }
@@ -59,30 +68,38 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
 
   @Override
   public void dispose() {
-    if (subscription != null) {
-      subscription.dispose();
-      subscription = null;
+    disposeSubscriptions();
+  }
+
+  void disposeSubscriptions() {
+    if (serviceExtensionSubscription != null) {
+      serviceExtensionSubscription.dispose();
+      serviceExtensionSubscription = null;
+    }
+    if (currentValueSubscription != null) {
+      currentValueSubscription.dispose();
+      currentValueSubscription = null;
+      currentValue = null;
     }
   }
 
   @Override
   public void actionPerformed(AnActionEvent event) {
     this.setSelected(event, !isSelected());
-    final Presentation presentation = event.getPresentation();
-    presentation.putClientProperty("selected", isSelected());
-
     super.actionPerformed(event);
   }
 
   public boolean isSelected() {
-    return selected;
+    return currentValue != null ? currentValue.getValue() : false;
   }
 
   public void setSelected(@Nullable AnActionEvent event, boolean selected) {
-    this.selected = selected;
+    if (currentValue != null) {
+      currentValue.setValue(selected);
 
-    if (event != null) {
-      ApplicationManager.getApplication().invokeLater(() -> this.update(event));
+      if (event != null) {
+        ApplicationManager.getApplication().invokeLater(() -> this.update(event));
+      }
     }
   }
 }
