@@ -314,7 +314,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
           range,
           new SummaryStats(
             kind,
-            new SlidingWindowStatsSummary(entry, lastStartTime, location), // XXX need to handle timeout better.
+            new SlidingWindowStatsSummary(entry, lastStartTime, location),
             fileLocationMapper.getText(range)
           )
         );

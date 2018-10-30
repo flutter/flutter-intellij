@@ -43,6 +43,7 @@ public class WidgetPerfLinter {
       return tips;
     }
     tips = new ArrayList<>();
+
     tips.add(new PerfTipRule(
       PerfReportKind.rebuild,
       3,
@@ -81,7 +82,6 @@ public class WidgetPerfLinter {
       AllIcons.Actions.IntentionBulb
     ));
 
-
     tips.add(new PerfTipRule(
       PerfReportKind.rebuild,
       2,
@@ -94,6 +94,7 @@ public class WidgetPerfLinter {
       8,
       AllIcons.Actions.IntentionBulb
     ));
+
     return tips;
   }
 
