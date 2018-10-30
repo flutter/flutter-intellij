@@ -1,3 +1,11 @@
+## 30.0
+- performance inspector changes
+- log view tweaks
+- memory profiler updates
+- support 'flutter attach' in the IDE (both IJ and AS)
+- support offline project creation in the AS wizard
+- code cleanup and bug fixes
+
 ## 29.1
 - address an issue with an NPE when debugging
 
