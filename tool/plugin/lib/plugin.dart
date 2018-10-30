@@ -533,39 +533,34 @@ class BuildCommand extends ProductCommand {
       }
 
       // TODO: Remove this when we no longer support AS 3.2.
-      File processedFile3, processedFile4;
-      String oldSource3, oldSource4, newSource;
+      var files = <File, String>{};
+      var processedFile, source;
       if (spec.version == '2018.1') {
-        processedFile3 = new File(
+        processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
-        oldSource3 = processedFile3.readAsStringSync();
-        newSource = oldSource3;
-        newSource = newSource.replaceAll('.LightResourceClassService', '.*');
-        newSource =
-            newSource.replaceAll(' LightResourceClassService', ' Object');
-        newSource = newSource.replaceAll(
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('.LightResourceClassService', '.*');
+        source = source.replaceAll(' LightResourceClassService', ' Object');
+        source = source.replaceAll(
             'gradleProjectSystem.getLightResourceClassService()', 'null');
-        processedFile3.writeAsStringSync(newSource);
-        processedFile4 = new File(
+        processedFile.writeAsStringSync(source);
+        processedFile = File(
             'flutter-studio/src/io/flutter/profiler/FlutterStudioMonitorStageView.java');
-        oldSource4 = processedFile4.readAsStringSync();
-        newSource = oldSource4;
-        newSource = newSource.replaceAll('new Range(100.0, 100.0)', '100');
-        processedFile4.writeAsStringSync(newSource);
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('new Range(100.0, 100.0)', '100');
+        processedFile.writeAsStringSync(source);
       }
 
       try {
         result = await runner.javac2(spec);
       } finally {
         // Restore sources.
-        if (oldSource3 != null) {
-          log('Reestoring ${processedFile3.path}');
-          processedFile3.writeAsStringSync(oldSource3);
-        }
-        if (oldSource4 != null) {
-          log('Reestoring ${processedFile4.path}');
-          processedFile4.writeAsStringSync(oldSource4);
-        }
+        files.forEach((file, src) {
+          log('Reestoring ${file.path}');
+          file.writeAsStringSync(src);
+        });
 
         // Restore skipped files.
         for (var file in spec.filesToSkip) {
