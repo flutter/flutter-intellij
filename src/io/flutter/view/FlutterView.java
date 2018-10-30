@@ -179,7 +179,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
-  private void addInspector(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
+  private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
@@ -213,7 +213,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
     final boolean hasInspectorService = inspectorService != null;
 
-    // If the inspector is available (non-profile mode), then show it.
+    // If the inspector is available (non-release mode), then show it.
     if (debugConnectionAvailable) {
       if (hasInspectorService) {
         final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
@@ -389,7 +389,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
-      autoActivateToolWindow();
+      activateToolWindow();
     }
 
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
@@ -406,7 +406,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     listenForRenderTreeActivations(toolWindow);
 
-    addInspector(app, inspectorService, toolWindow);
+    addInspectorViewContent(app, inspectorService, toolWindow);
 
     app.getVmService().addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -445,12 +445,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     app.addStateListener(new FlutterApp.FlutterAppListener() {
       public void notifyAppRestarted() {
-        // When we get a restart finishes, queue up a notification to the flutter view
+        // When we get a restart finished event, queue up a notification to the flutter view
         // actions. We don't notify right away because the new isolate can take a little
         // while to start up. We wait until we get the first frame event, which is
         // enough of an indication that the isolate and flutter framework are initialized
-        // enough to receive service calls (for example, calls to restore various framework
-        // debugging settings).
+        // to where they can receive service calls (for example, calls to restore various
+        // framework debugging settings).
         final PerAppState state = getStateForApp(app);
         if (state != null) {
           state.sendRestartNotificationOnNextFrame = true;
@@ -549,9 +549,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   /**
-   * Activate the tool window; on app termination, restore any previously active tool window.
+   * Activate the tool window.
    */
-  private void autoActivateToolWindow() {
+  private void activateToolWindow() {
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
