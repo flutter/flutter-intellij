@@ -533,7 +533,7 @@ class BuildCommand extends ProductCommand {
       }
 
       // TODO: Remove this when we no longer support AS 3.2.
-      var files = Map<File, String>();
+      var files = <File, String>{};
       var processedFile, source;
       if (spec.version == '2018.1') {
         processedFile = File(
