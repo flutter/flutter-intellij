@@ -18,7 +18,6 @@ import com.intellij.openapi.editor.ex.RangeHighlighterEx;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.ColorUtil;
@@ -33,8 +32,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
 
@@ -46,6 +43,14 @@ import java.util.List;
  */
 class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private static final int HIGHLIGHTER_LAYER = HighlighterLayer.SELECTION - 1;
+
+  /**
+   * Experimental option to animate highlighted widget names.
+   *
+   * Disabled by default as animating contents of the TextEditor results in
+   * higher than desired memory usage.
+   */
+  public static boolean ANIMATE_WIDGET_NAME_HIGLIGHTS = false;
 
   @NotNull
   private final TextEditor textEditor;
@@ -250,7 +255,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
 /**
  * This class renders the animated gutter icons used to visualize how much
  * widget repaint or rebuild work is happening.
- *
+ * <p>
  * This is a somewhat strange GutterIconRender in that we use it to orchestrate
  * animating the color of the associated RangeHighlighter and changing the icon
  * of the GutterIconRenderer when performance changes without requiring the
@@ -285,7 +290,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     this.perfModelForFile = perfModelForFile;
     final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
-    textAttributes.setEffectType(EffectType.ROUNDED_BOX);
+    textAttributes.setEffectType(EffectType.LINE_UNDERSCORE);
 
     updateUI(false);
   }
@@ -337,28 +342,10 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   private void showPerfViewMessage() {
     final FlutterView flutterView = ServiceManager.getService(getApp().getProject(), FlutterView.class);
     final InspectorPerfTab inspectorPerfTab = flutterView.showPerfTab(getApp());
-    final StringBuilder sb = new StringBuilder("<html><body>");
-    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    sb.append("<p style='padding-bottom: 10px'><strong>Widget performance stats for ");
-    sb.append(Objects.requireNonNull(perfModelForFile.getTextEditor().getFile()).getName());
-    sb.append(" at ");
-    sb.append(formatter.format(LocalDateTime.now()));
-    sb.append("</p>");
-    for (String line : getTooltipLines()) {
-      sb.append(line);
-      sb.append("<br>");
-    }
-    sb.append("</strong>");
-
-    sb.append("<p style='padding-top: 10px'>");
-    sb.append("<small>Rebuilding widgets is generally very cheap. You should only worry " +
-              "about optimizing code to reduce the the number of widget rebuilds " +
-              "if you notice that the frame rate is bellow 60fps or if widgets " +
-              "that you did not expect to be rebuilt are rebuilt a very large " +
-              "number of times.</small>");
-    sb.append("</p>");
-    sb.append("</body></html>");
-    inspectorPerfTab.getWidgetPerfPanel().setPerfMessage(perfModelForFile.getTextEditor(), range, sb.toString());
+    String message = "<html><body>" +
+                     getTooltipHtmlFragment() +
+                     "</body></html>";
+    inspectorPerfTab.getWidgetPerfPanel().setPerfStatusMessage(perfModelForFile.getTextEditor(), range, message);
   }
 
   @NotNull
@@ -403,16 +390,18 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     assert textAttributes != null;
     boolean changed = false;
     if (count > 0) {
-      final Color targetColor = getErrorStripeMarkColor();
-      final double animateTime = (double)(System.currentTimeMillis()) * 0.001;
-      // TODO(jacobr): consider tracking a start time for the individual
-      // animation instead of having all animations running in sync.
-      // 1.0 - Math.cos is used so that balance is 0.0 at the start of the animation
-      // and the value will vary from 0 to 1.0
-      final double balance = (1.0 - Math.cos(animateTime * ANIMATION_SPEED)) * 0.5;
-      final Color effectColor = ColorUtil.mix(JBColor.WHITE, targetColor, balance);
-      if (!effectColor.equals(textAttributes.getEffectColor())) {
-        textAttributes.setEffectColor(effectColor);
+      Color targetColor = getErrorStripeMarkColor();
+      if (EditorPerfDecorations.ANIMATE_WIDGET_NAME_HIGLIGHTS) {
+        final double animateTime = (double)(System.currentTimeMillis()) * 0.001;
+        // TODO(jacobr): consider tracking a start time for the individual
+        // animation instead of having all animations running in sync.
+        // 1.0 - Math.cos is used so that balance is 0.0 at the start of the animation
+        // and the value will vary from 0 to 1.0
+        final double balance = (1.0 - Math.cos(animateTime * ANIMATION_SPEED)) * 0.5;
+        targetColor = ColorUtil.mix(JBColor.WHITE, targetColor, balance);
+      }
+      if (!targetColor.equals(textAttributes.getEffectColor())) {
+        textAttributes.setEffectColor(targetColor);
         changed = true;
       }
     }
@@ -430,40 +419,36 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     }
   }
 
-  List<String> getTooltipLines() {
-    final List<String> lines = new ArrayList<>();
+  String getTooltipHtmlFragment() {
+    final StringBuilder sb = new StringBuilder();
+    boolean first = true;
     for (SummaryStats stats : perfModelForFile.getStats().getRangeStats(range)) {
+      final String style = first ? "" : "margin-top: 8px";
+      first = false;
+      sb.append("<p style='" + style + "'>");
       if (stats.getKind() == PerfReportKind.rebuild) {
-        lines.add(
-          stats.getDescription() +
-          " was rebuilt " +
-          stats.getPastSecond() +
-          " times in the past second and " +
-          stats.getTotal() +
-          " times overall."
-        );
+        sb.append("Rebuild");
       }
       else if (stats.getKind() == PerfReportKind.repaint) {
-        lines.add(
-          "RenderObjects created by " +
-          stats.getDescription() +
-          " were repainted " +
-          stats.getPastSecond() +
-          " times in the past second and " +
-          stats.getTotal() +
-          " times overall."
-        );
+        sb.append("Repaint");
       }
+      sb.append(" counts for: <strong>" + stats.getDescription());
+      sb.append("</strong></p>");
+      sb.append("<p style='padding-left: 8px'>");
+      sb.append("In past second: " + stats.getPastSecond() + "<br>");
+      sb.append("Since last route change: " + stats.getTotalSinceNavigation() + "<br>");
+      sb.append("Since last hot reload/restart: " + stats.getTotal());
+      sb.append("</p>");
     }
-    if (lines.isEmpty()) {
-      lines.add("No widget rebuilds or repaints detected for line.");
+    if (sb.length() == 0) {
+      sb.append("<p><b>No widget rebuilds or repaints detected for line.</p></b>");
     }
-    return lines;
+    return sb.toString();
   }
 
   @Override
   public String getTooltipText() {
-    return "<html><body><b>" + StringUtil.join(getTooltipLines(), "<br>") + " </b></body></html>";
+    return "<html><body>" + getTooltipHtmlFragment() + "</body></html>";
   }
 
   @Override

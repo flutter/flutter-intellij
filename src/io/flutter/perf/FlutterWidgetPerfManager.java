@@ -53,6 +53,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   public static boolean trackRebuildWidgetsDefault = false;
   public static boolean trackRepaintWidgetsDefault = false;
 
+  public FlutterWidgetPerf getCurrentStats() {
+    return currentStats;
+  }
+
   private FlutterWidgetPerf currentStats;
   private FlutterApp app;
   private final Project project;
@@ -66,6 +70,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private Set<TextEditor> lastSelectedEditors = new HashSet<>();
 
   private final List<StreamSubscription<Boolean>> streamSubscriptions = new ArrayList<>();
+
+  public Set<TextEditor> getSelectedEditors() {
+    return lastSelectedEditors;
+  }
 
   private FlutterWidgetPerfManager(@NotNull Project project) {
     this.project = project;
@@ -183,8 +191,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   public void stateChanged(FlutterApp.State newState) {
     switch (newState) {
       case RELOADING:
-      case RESTARTING:
         currentStats.clear();
+        break;
+      case RESTARTING:
+        currentStats.onRestart();
         break;
       case STARTED:
         notifyPerf();
