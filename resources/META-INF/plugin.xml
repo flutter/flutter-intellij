@@ -27,6 +27,15 @@
 
   <change-notes>
     <![CDATA[
+<h2>30.0</h2>
+<ul>
+  <li>performance inspector changes</li>
+  <li>log view tweaks</li>
+  <li>memory profiler updates</li>
+  <li>support 'flutter attach' in the IDE (both IJ and AS)</li>
+  <li>support offline project creation in the AS wizard</li>
+  <li>code cleanup and bug fixes</li>
+</ul>
 <h2>29.1</h2>
 <ul>
   <li>address an issue with an NPE when debugging</li>
