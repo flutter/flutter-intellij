@@ -51,7 +51,7 @@ public class BoolServiceExtensionCheckbox implements Disposable {
   @Override
   public void dispose() {
     if (currentValueSubscription != null) {
-      currentValueSubscription.dispose();;
+      currentValueSubscription.dispose();
       currentValueSubscription = null;
     }
   }

@@ -77,7 +77,7 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
       serviceExtensionSubscription = null;
     }
     if (currentValueSubscription != null) {
-      currentValueSubscription.dispose();;
+      currentValueSubscription.dispose();
       currentValueSubscription = null;
       currentValue = null;
     }

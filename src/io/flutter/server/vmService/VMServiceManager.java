@@ -36,7 +36,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
    * Boolean value applicable only for boolean service extensions indicating
    * whether the service extension is enabled or disabled.
    */
-  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensionsState = new THashMap<>();
+  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensionState = new THashMap<>();
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
@@ -285,7 +285,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   public @NotNull
   EventStream<Boolean> getServiceExtensionState(String name) {
-    return getStream(name, serviceExtensionsState);
+    return getStream(name, serviceExtensionState);
   }
 
   @NotNull
