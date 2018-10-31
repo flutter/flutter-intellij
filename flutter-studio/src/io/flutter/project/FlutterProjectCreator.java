@@ -276,8 +276,9 @@ public class FlutterProjectCreator {
     public void error(String message) {
     }
 
-    @Override
-    public void cannotWriteToFiles(List<File> readonlyFiles) {
+    //@Override
+    @SuppressWarnings("override")
+    public void cannotWriteToFiles(List<? extends File> readonlyFiles) {
     }
 
     public boolean isConversionNeeded() {

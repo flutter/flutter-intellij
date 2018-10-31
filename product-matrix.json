@@ -24,8 +24,8 @@
       "comments": "IntelliJ 2018.3",
       "name": "IntelliJ",
       "version": "2018.3",
-      "ideaProduct": "ideaIU",
-      "ideaVersion": "183.2407.10",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "183.5081642",
       "dartPluginVersion": "183.2153.10",
       "sinceBuild": "183.0",
       "untilBuild": "183.*"

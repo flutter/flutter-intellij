@@ -46,5 +46,6 @@
     <orderEntry type="library" exported="" name="Dart SDK" level="project" />
     <orderEntry type="library" exported="" name="Dart Packages" level="project" />
     <orderEntry type="library" name="miglayout-swing" level="project" />
+    <orderEntry type="library" name="netty-codec-http" level="project" />
   </component>
 </module>
