@@ -57,7 +57,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowPreviewAreaCheckBox;
   private JCheckBox myShowHeapDisplayCheckBox;
-  private JCheckBox myTrackWidgetCreationCheckBox;
+  private JCheckBox myLegacyTrackWidgetCreationCheckBox;
+  private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myEnableMemoryProfilerCheckBox;
@@ -165,7 +166,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isTrackWidgetCreation() != myTrackWidgetCreationCheckBox.isSelected()) {
+    if (settings.isLegacyTrackWidgetCreation() != myLegacyTrackWidgetCreationCheckBox.isSelected()) {
+      return true;
+    }
+
+    if (settings.isDisableTrackWidgetCreation() != myDisableTrackWidgetCreationCheckBox.isSelected()) {
       return true;
     }
 
@@ -209,7 +214,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
-    settings.setTrackWidgetCreation(myTrackWidgetCreationCheckBox.isSelected());
+    settings.setLegacyTrackWidgetCreation(myLegacyTrackWidgetCreationCheckBox.isSelected());
+    settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setMemoryProfilerEnabled(myEnableMemoryProfilerCheckBox.isSelected());
@@ -238,7 +244,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
-    myTrackWidgetCreationCheckBox.setSelected(settings.isTrackWidgetCreation());
+    myLegacyTrackWidgetCreationCheckBox.setSelected(settings.isLegacyTrackWidgetCreation());
+    myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
     myEnableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerEnabled());
