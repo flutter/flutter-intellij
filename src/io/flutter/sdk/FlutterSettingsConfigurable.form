@@ -154,7 +154,7 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Enable code completion, navigation, etc. for Java/Kotlin. Requires restart to do Gradle build."/>
+              <text value="Enable code completion, navigation, etc. for Java/Kotlin (requires restart to do Gradle build)"/>
               <toolTipText value="Provides advanced editing capabilities for Java and Kotlin code. Uses Gradle to find Android libraries then links them into the Flutter project."/>
             </properties>
           </component>
