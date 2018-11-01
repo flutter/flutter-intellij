@@ -27,7 +27,6 @@ public class FlutterSettings {
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String trackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-  private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -189,16 +188,6 @@ public class FlutterSettings {
 
   public void setVerboseLogging(boolean value) {
     getPropertiesComponent().setValue(verboseLoggingKey, value, false);
-
-    fireEvent();
-  }
-
-  public boolean isMemoryProfilerEnabled() {
-    return getPropertiesComponent().getBoolean(memoryProfilerKey, false);
-  }
-
-  public void setMemoryProfilerEnabled(boolean value) {
-    getPropertiesComponent().setValue(memoryProfilerKey, value, false);
 
     fireEvent();
   }
