@@ -102,10 +102,11 @@ public class FlutterSettings {
 
   public boolean isTrackWidgetCreationEnabled(Project project) {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
-    final boolean defaultValue = (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) ||
-                                 isLegacyTrackWidgetCreation();
-    final boolean disabled = getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
-    return defaultValue && !disabled;
+    if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
+      return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
+    } else {
+      return isLegacyTrackWidgetCreation();
+    }
   }
 
   public boolean isDisableTrackWidgetCreation() {

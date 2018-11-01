@@ -80,7 +80,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(final DocumentEvent e) {
-        updateVersionText();
+        onVersionChanged();
       }
     });
 
@@ -233,7 +233,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // (This can happen if the user changed the Dart SDK.)
     mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
 
-    updateVersionText();
+    onVersionChanged();
 
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
 
@@ -253,13 +253,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
 
-  private void updateVersionText() {
+  private void onVersionChanged() {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       myVersionLabel.setText("");
       return;
     }
     final ModalityState modalityState = ModalityState.current();
+
+    boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
+    myLegacyTrackWidgetCreationCheckBox.setVisible(!trackWidgetCreationRecommended);
+    myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
     sdk.flutterVersion().start((ProcessOutput output) -> {
       final String stdout = output.getStdout();
