@@ -35,7 +35,7 @@ public class FrameRenderingDisplay {
     final JPanel panel = new JPanel(new StackLayout());
     panel.setDoubleBuffered(true);
     panel.setPreferredSize(new Dimension(-1, HeapDisplay.PANEL_HEIGHT));
-    panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
+    panel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
     assert app.getVMServiceManager() != null;
     final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();

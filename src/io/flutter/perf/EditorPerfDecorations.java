@@ -23,10 +23,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
-import icons.FlutterIcons;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.AnimatedIcon;
 import io.flutter.view.FlutterPerfView;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.view.InspectorPerfTab;
@@ -267,13 +265,6 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
  * required.
  */
 class PerfGutterIconRenderer extends GutterIconRenderer {
-  static final AnimatedIcon RED_PROGRESS = new RedProgress();
-  static final AnimatedIcon NORMAL_PROGRESS = new AnimatedIcon.Grey();
-
-  private static final Icon EMPTY_ICON = new EmptyIcon(FlutterIcons.CustomInfo);
-
-  // Threshold for statistics to use red icons.
-  private static final int HIGH_LOAD_THRESHOLD = 100;
 
   // Speed of the animation in radians per second.
   private static final double ANIMATION_SPEED = 4.0;
@@ -375,14 +366,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   public Icon getIconInternal() {
-    final int count = getCurrentValue();
-    if (count == 0) {
-      return perfModelForFile.isHoveredOverLineMarkerArea() ? FlutterIcons.CustomInfo : EMPTY_ICON;
-    }
-    if (count > HIGH_LOAD_THRESHOLD) {
-      return RED_PROGRESS;
-    }
-    return NORMAL_PROGRESS;
+    return Icons.getIconForCount(getCurrentValue(), perfModelForFile.isHoveredOverLineMarkerArea());
   }
 
   Color getErrorStripeMarkColor() {
@@ -391,8 +375,8 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     if (count == 0) {
       return null;
     }
-    if (count > HIGH_LOAD_THRESHOLD) {
-      return JBColor.RED;
+    if (count >= Icons.HIGH_LOAD_THRESHOLD) {
+      return JBColor.YELLOW;
     }
     return JBColor.YELLOW; // TODO(jacobr): should we use green here instead?
   }
@@ -477,46 +461,5 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   @Override
   public int hashCode() {
     return getCurrentValue();
-  }
-
-  private static class EmptyIcon implements Icon {
-    final Icon iconForSize;
-
-    EmptyIcon(Icon iconForSize) {
-      this.iconForSize = iconForSize;
-    }
-
-    @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-    }
-
-    @Override
-    public int getIconWidth() {
-      return iconForSize.getIconWidth();
-    }
-
-    @Override
-    public int getIconHeight() {
-      return iconForSize.getIconHeight();
-    }
-  }
-
-  // Spinning red progress icon
-  //
-  // TODO(jacobr): it would be nice to tint the icons programatically so that
-  // we could have a wider range of icon colors representing various repaint
-  // rates.
-  static final class RedProgress extends AnimatedIcon {
-    public RedProgress() {
-      super(150,
-            FlutterIcons.State.RedProgr_1,
-            FlutterIcons.State.RedProgr_2,
-            FlutterIcons.State.RedProgr_3,
-            FlutterIcons.State.RedProgr_4,
-            FlutterIcons.State.RedProgr_5,
-            FlutterIcons.State.RedProgr_6,
-            FlutterIcons.State.RedProgr_7,
-            FlutterIcons.State.RedProgr_8);
-    }
   }
 }

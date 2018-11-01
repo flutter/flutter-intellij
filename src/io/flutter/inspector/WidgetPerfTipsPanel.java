@@ -5,6 +5,7 @@
  */
 package io.flutter.inspector;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileEditor.*;
@@ -14,6 +15,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.labels.LinkListener;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
@@ -22,23 +24,21 @@ import io.flutter.perf.FlutterWidgetPerf;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.perf.PerfTip;
 import io.flutter.perf.WidgetPerfLinter;
+import io.flutter.perf.*;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-
-// TODO(jacobr): display a table of all widget perf stats in this panel along
-// with the summary information about the current performance stats.
+import java.util.*;
 
 /**
- * Panel displaying basic information on Widget perf for the currently selected
- * file.
+ * Panel displaying performance tips for the currently visible files.
  */
-public class WidgetPerfPanel extends JPanel {
+public class WidgetPerfTipsPanel extends JPanel {
   static final int PERF_TIP_COMPUTE_DELAY = 1000;
-  private final JBLabel perfMessage;
   private final FlutterApp app;
   private final FlutterWidgetPerfManager perfManager;
 
@@ -56,26 +56,14 @@ public class WidgetPerfPanel extends JPanel {
   private TextEditor currentEditor;
   private ArrayList<TextEditor> currentTextEditors;
 
-  /**
-   * Range within the current active file editor to show stats for.
-   */
-  private TextRange currentRange;
-
   LinkListener<PerfTip> linkListener;
   private boolean visible = true;
+  private ArrayList<PerfTip> currentTips;
 
-  public WidgetPerfPanel(Disposable parentDisposable, @NotNull FlutterApp app) {
+  public WidgetPerfTipsPanel(Disposable parentDisposable, @NotNull FlutterApp app) {
     setLayout(new VerticalLayout(5));
     this.app = app;
     perfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
-
-    perfMessage = new JBLabel();
-    final Box labelBox = Box.createHorizontalBox();
-    labelBox.add(perfMessage);
-    labelBox.add(Box.createHorizontalGlue());
-    labelBox.setBorder(JBUI.Borders.empty(3, 10));
-    add(labelBox);
-
     perfTips = new JPanel();
     perfTips.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Perf Tips"));
     perfTips.setLayout(new VerticalLayout(0));
@@ -86,19 +74,15 @@ public class WidgetPerfPanel extends JPanel {
     final FileEditorManagerListener listener = new FileEditorManagerListener() {
       @Override
       public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        setSelectedEditor(event.getNewEditor());
+        selectedEditorChanged();
       }
     };
-    final FileEditor[] selectedEditors = FileEditorManager.getInstance(project).getSelectedEditors();
-    if (selectedEditors.length > 0) {
-      setSelectedEditor(selectedEditors[0]);
-    }
+    selectedEditorChanged();
     bus.subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, listener);
 
     perfTipComputeDelayTimer = new Timer(PERF_TIP_COMPUTE_DELAY, this::onComputePerfTips);
     perfTipComputeDelayTimer.start();
 
-    // TODO(jacobr): unsubscribe?
     Disposer.register(parentDisposable, perfTipComputeDelayTimer::stop);
   }
 
@@ -121,21 +105,12 @@ public class WidgetPerfPanel extends JPanel {
   }
 
   void hidePerfTip() {
+    currentTips = null;
     remove(perfTips);
   }
 
-  private void setSelectedEditor(FileEditor editor) {
+  private void selectedEditorChanged() {
     lastUpdateTime = -1;
-    if (!(editor instanceof TextEditor)) {
-      editor = null;
-    }
-    if (editor == currentEditor) {
-      return;
-    }
-    currentRange = null;
-    currentEditor = (TextEditor)editor;
-    perfMessage.setText("");
-
     updateTip();
   }
 
@@ -143,36 +118,68 @@ public class WidgetPerfPanel extends JPanel {
     if (perfManager.getCurrentStats() == null) {
       return;
     }
-    if (currentEditor == null) {
+    final Set<TextEditor> selectedEditors = new HashSet<>(perfManager.getSelectedEditors());
+    if (selectedEditors.isEmpty()) {
       hidePerfTip();
       return;
     }
 
     final WidgetPerfLinter linter = perfManager.getCurrentStats().getPerfLinter();
-    linter.getTipsFor(perfManager.getSelectedEditors()).whenCompleteAsync((tips, throwable) -> {
+    AsyncUtils.whenCompleteUiThread(linter.getTipsFor(selectedEditors), (tips, throwable) -> {
       if (tips == null || throwable != null || tips.isEmpty()) {
         hidePerfTip();
         return;
       }
-      showPerfTips(tips);
+
+      final Map<String, TextEditor> forPath = new HashMap<>();
+      for (TextEditor editor : selectedEditors) {
+        final VirtualFile file = editor.getFile();
+        if (file != null) {
+          forPath.put(InspectorService.toSourceLocationUri(file.getPath()), editor);
+        }
+      }
+      final ArrayListMultimap<TextEditor, PerfTip> newTipsForFile = ArrayListMultimap.create();
+      for (PerfTip tip : tips) {
+        for (Location location : tip.getLocations()) {
+          if (forPath.containsKey(location.path)) {
+            newTipsForFile.put(forPath.get(location.path), tip);
+          }
+        }
+      }
+
+      final ArrayList<TextEditor> changedEditors = new ArrayList<>();
+      for (TextEditor editor : newTipsForFile.keySet()) {
+        final List<PerfTip> entry = newTipsForFile.get(editor);
+        if (tipsPerFile == null || !PerfTipRule.equivalentPerfTips(entry, tipsPerFile.get(editor))) {
+          changedEditors.add(editor);
+        }
+      }
+      tipsPerFile = newTipsForFile;
+      if (!PerfTipRule.equivalentPerfTips(currentTips, tips)) {
+        showPerfTips(tips);
+      }
     });
   }
 
+  ArrayListMultimap<TextEditor, PerfTip> tipsPerFile;
+
   private void showPerfTips(ArrayList<PerfTip> tips) {
     perfTips.removeAll();
+    final PerfTip lastMainTip = currentTips != null && currentTips.size() > 0 ? currentTips.get(0) : null;
+    currentTips = tips;
     for (PerfTip tip : tips) {
-      final LinkLabel<PerfTip> label = new LinkLabel<>(tip.getMessage(), tip.getRule().getIcon(), linkListener, tip);
+      final LinkLabel<PerfTip> label = new LinkLabel<>(
+        "<html><body><a>" + tip.getMessage() + "</a><body></html>",
+        tip.getRule().getIcon(),
+        linkListener,
+        tip
+      );
+      label.setPaintUnderline(false);
       label.setBorder(JBUI.Borders.empty(5));
       perfTips.add(label);
     }
 
     add(perfTips, 0);
-  }
-
-  public void setPerfStatusMessage(FileEditor editor, TextRange range, String message) {
-    setSelectedEditor(editor);
-    currentRange = range;
-    perfMessage.setText(message);
   }
 
   public void setVisibleToUser(boolean visible) {
