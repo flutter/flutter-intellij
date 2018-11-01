@@ -87,7 +87,7 @@ public class WidgetPerfLinter {
       2,
       "perf_diagnosis_demo/lib/scorecard_demo.dart",
       "Performance considerations of Opacity animations",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/Opacity-class.html#opacity-animation",
+      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/Opacity-class.html#performance-considerations-for-opacity-animation",
       matchParent("Opacity"),
       1,
       20,
