@@ -183,7 +183,7 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterRun(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
-                                   @NotNull RunMode mode, @NotNull FlutterLaunchMode flutterLaunchMode, String... additionalArgs) {
+                                   @NotNull RunMode mode, @NotNull FlutterLaunchMode flutterLaunchMode, @NotNull Project project, String... additionalArgs) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
     if (FlutterSettings.getInstance().isVerboseLogging()) {
@@ -191,7 +191,7 @@ public class FlutterSdk {
     }
 
     if (flutterLaunchMode == FlutterLaunchMode.DEBUG) {
-      if (FlutterSettings.getInstance().isTrackWidgetCreation()) {
+      if (FlutterSettings.getInstance().isTrackWidgetCreationEnabled(project)) {
         args.add("--track-widget-creation");
       }
     }

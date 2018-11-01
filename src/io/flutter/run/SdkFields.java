@@ -128,7 +128,7 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, args);
+    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);
   }
 

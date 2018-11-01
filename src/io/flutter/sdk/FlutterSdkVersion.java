@@ -21,6 +21,14 @@ public class FlutterSdkVersion {
    */
   private static final FlutterSdkVersion MIN_SUPPORTED_SDK = new FlutterSdkVersion("0.0.12");
 
+  /**
+   * The minimum version we suggest people use to enable track-widget-creation.
+   *
+   * Before this version there were issues if you ran the app from the command
+   * line without the flag after running
+   */
+  private static final FlutterSdkVersion MIN_SAFE_TRACK_WIDGET_CREATION_SDK = new FlutterSdkVersion("0.10.2");
+
   @Nullable
   private final Version version;
 
@@ -69,6 +77,11 @@ public class FlutterSdkVersion {
   public boolean isMinRecommendedSupported() {
     assert (MIN_SUPPORTED_SDK.version != null);
     return version != null && version.compareTo(MIN_SUPPORTED_SDK.version) >= 0;
+  }
+
+  public boolean isTrackWidgetCreationRecommended() {
+    assert (MIN_SAFE_TRACK_WIDGET_CREATION_SDK.version != null);
+    return version != null && version.compareTo(MIN_SAFE_TRACK_WIDGET_CREATION_SDK.version) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {
