@@ -532,10 +532,11 @@ class BuildCommand extends ProductCommand {
         }
       }
 
-      // TODO: Remove this when we no longer support AS 3.2.
+      // TODO: Remove this when we no longer support AS 3.2 or IJ 2018.2
       var files = <File, String>{};
       var processedFile, source;
       if (spec.version == '2018.1') {
+
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectSystem.java');
         source = processedFile.readAsStringSync();
@@ -545,12 +546,30 @@ class BuildCommand extends ProductCommand {
         source = source.replaceAll(
             'gradleProjectSystem.getLightResourceClassService()', 'null');
         processedFile.writeAsStringSync(source);
+
         processedFile = File(
             'flutter-studio/src/io/flutter/profiler/FlutterStudioMonitorStageView.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
         source = source.replaceAll('new Range(100.0, 100.0)', '100');
         processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('List<? extends File>', 'List<File>');
+        processedFile.writeAsStringSync(source);
+
+      } else if (spec.version == '2018.2.4') {
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('List<? extends File>', 'List<File>');
+        processedFile.writeAsStringSync(source);
+
       }
 
       try {
