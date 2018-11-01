@@ -33,15 +33,20 @@ public class BoolServiceExtensionCheckbox implements Disposable {
     currentValue = app.getVMServiceManager().getServiceExtensionState(extensionCommand);
     app.hasServiceExtension(extensionCommand, checkbox::setEnabled, this);
 
-    checkbox.addChangeListener((l) -> {
+    checkbox.addActionListener((l) -> {
       final boolean newValue = checkbox.isSelected();
-      currentValue.setValue(newValue);
-      if (app.isSessionActive()) {
-        app.callBooleanExtension(extensionCommand, newValue);
+      if (currentValue.setValue(newValue)) {
+        if (app.isSessionActive()) {
+          app.callBooleanExtension(extensionCommand, newValue);
+        }
       }
     });
 
-    currentValueSubscription = currentValue.listen(checkbox::setSelected, true);
+    currentValueSubscription = currentValue.listen((value) -> {
+      if (checkbox.isSelected() != value) {
+        checkbox.setSelected(value);
+      }
+    }, true);
   }
 
   JCheckBox getComponent() {

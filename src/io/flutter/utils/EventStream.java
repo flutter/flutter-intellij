@@ -47,10 +47,16 @@ public class EventStream<T> {
     return currentValue;
   }
 
-  public void setValue(T value) {
+  /**
+   * Returns whether the value was changed.
+   */
+  public boolean setValue(T value) {
     final List<StreamSubscription<T>> regularSubscriptions = new ArrayList<>();
     final List<StreamSubscription<T>> uiThreadSubscriptions = new ArrayList<>();
-    synchronized (subscriptions) {
+    synchronized (this) {
+      if (currentValue == value) {
+        return false;
+      }
       currentValue = value;
       for (StreamSubscription<T> subscription : subscriptions) {
         if (subscription.onUIThread) {
@@ -60,25 +66,24 @@ public class EventStream<T> {
           regularSubscriptions.add(subscription);
         }
       }
-    }
-
-    for (StreamSubscription<T> subscription : regularSubscriptions) {
-      subscription.notify(value);
+      for (StreamSubscription<T> subscription : regularSubscriptions) {
+        subscription.notify(value);
+      }
     }
     if (!uiThreadSubscriptions.isEmpty()) {
-      Runnable doRun = () -> {
-        for (StreamSubscription<T> subscription : uiThreadSubscriptions) {
-          subscription.notify(value);
+      AsyncUtils.invokeLater(() -> {
+        synchronized (this) {
+          if (value != currentValue) {
+            // This update is obsolete.
+            return;
+          }
+          for (StreamSubscription<T> subscription : uiThreadSubscriptions) {
+            subscription.notify(value);
+          }
         }
-      };
-      if (ApplicationManager.getApplication() != null) {
-        ApplicationManager.getApplication().invokeLater(doRun);
-      }
-      else {
-        // This case existing to support unittesting.
-        SwingUtilities.invokeLater(doRun);
-      }
+      });
     }
+    return true;
   }
 
   /**
@@ -105,7 +110,7 @@ public class EventStream<T> {
   public StreamSubscription<T> listen(Consumer<T> onData, boolean onUIThread) {
     final StreamSubscription<T> subscription = new StreamSubscription<>(onData, onUIThread, this);
     final T cachedCurrentValue;
-    synchronized (subscriptions) {
+    synchronized (this) {
       cachedCurrentValue = currentValue;
       subscriptions.add(subscription);
     }
@@ -115,7 +120,7 @@ public class EventStream<T> {
   }
 
   protected void removeSubscription(StreamSubscription<T> subscription) {
-    synchronized (subscriptions) {
+    synchronized (this) {
       subscriptions.remove(subscription);
     }
   }
