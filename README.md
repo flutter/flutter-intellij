@@ -9,7 +9,7 @@ app SDK to help developers and designers build modern mobile apps for iOS and An
 ## Documentation
 
 - [flutter.io](https://flutter.io)
-- [Installing Flutter](https://flutter.io/setup/)
+- [Installing Flutter](https://flutter.io/docs/get-started/install)
 - [Getting Started with IntelliJ](https://flutter.io/intellij-ide/)
 
 ## Fast development
@@ -24,7 +24,7 @@ simulators, and hardware for iOS and Android.
 
 A brief summary of the [getting started guide](https://flutter.io/intellij-ide/):
 
-- install the [Flutter SDK](https://flutter.io/setup/)
+- install the [Flutter SDK](https://flutter.io/docs/get-started/install)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported [IntelliJ development environment](https://www.jetbrains.com/idea/download), either:
   - IntelliJ 2017.3 or 2018.1, Community or Ultimate Edition, or

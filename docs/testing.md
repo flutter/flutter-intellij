@@ -4,7 +4,7 @@ Manual tests to execute before plugin releases.
 
 ## Setup
 
-Pre-reqs: Run through the [flutter setup](https://flutter.io/setup/) and
+Pre-reqs: Run through the [flutter setup](https://flutter.io/docs/get-started/install) and
 [flutter getting started](https://flutter.io/getting-started/) guides.
 
 * Run `flutter upgrade` in a terminal to get the latest version prior to starting testing.
@@ -150,7 +150,7 @@ Verify installation and configuration in a fresh IDEA installation.
 
 * Follow the instructions to
   [simulate a fresh installation](https://github.com/flutter/flutter-intellij/wiki/Development#simulating-a-fresh-install).
-* (If not running in a "runtime workbench", [install the plugins](https://flutter.io/setup/#install-the-plugins).)
+* (If not running in a "runtime workbench", [install the plugins](https://flutter.io/docs/development/packages-and-plugins/using-packages).)
 * Open "Languages & Frameworks>Flutter" in Preferences and verify that there is
   no Flutter SDK set.
 * Set the Flutter SDK path to a valid SDK location.
