@@ -168,7 +168,7 @@ public class InstallSdkAction extends DumbAwareAction {
     @Override
     void perform() {
       FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
-      BrowserUtil.browse("https://flutter.io/setup/");
+      BrowserUtil.browse("https://flutter.io/docs/get-started/install");
     }
 
     @Override
