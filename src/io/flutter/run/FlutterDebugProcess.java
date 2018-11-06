@@ -8,8 +8,8 @@ package io.flutter.run;
 import com.intellij.execution.ExecutionResult;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunnerLayoutUi;
-import com.intellij.openapi.actionSystem.AnAction;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.ui.GuiUtils;
@@ -21,12 +21,12 @@ import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.server.vmService.DartVmServiceDebugProcess;
-import io.flutter.view.FlutterViewMessages;
-import io.flutter.view.OpenFlutterViewAction;
+import io.flutter.view.*;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
@@ -111,10 +111,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
-    topToolbar.addAction(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
-    topToolbar.addSeparator();
     topToolbar.addAction(new OpenFlutterViewAction(isSessionActive));
+    topToolbar.addAction(new OverflowAction(app, observatoryAvailable));
 
     // Don't call super since we have our own observatory action.
   }
@@ -143,6 +141,44 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
           LOG.warn(e);
         }
       }
+    }
+  }
+
+  private static class OverflowAction extends ComboBoxAction {
+    private final @NotNull FlutterApp myApp;
+    private final DefaultActionGroup myActionGroup;
+
+    public OverflowAction(@NotNull FlutterApp app, Computable<Boolean> observatoryAvailable) {
+      super();
+
+      myApp = app;
+      myActionGroup = createPopupActionGroup(app, observatoryAvailable);
+    }
+
+    @NotNull
+    @Override
+    protected DefaultActionGroup createPopupActionGroup(JComponent button) {
+      return myActionGroup;
+    }
+
+    @Override
+    public final void update(AnActionEvent e) {
+      e.getPresentation().setText("More Actions");
+      e.getPresentation().setEnabled(myApp.isSessionActive());
+    }
+
+    @Override
+    protected ComboBoxButton createComboBoxButton(Presentation presentation) {
+      final ComboBoxButton button = super.createComboBoxButton(presentation);
+      button.setBorder(null);
+      return button;
+    }
+
+    private static DefaultActionGroup createPopupActionGroup(FlutterApp app, Computable<Boolean> observatoryAvailable) {
+      final DefaultActionGroup group = new DefaultActionGroup();
+      group.addAction(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
+      group.addAction(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
+      return group;
     }
   }
 }
