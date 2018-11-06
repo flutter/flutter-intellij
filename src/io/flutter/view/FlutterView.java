@@ -14,6 +14,7 @@ import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationInfo;
@@ -888,46 +889,35 @@ class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   }
 }
 
-class OverflowAction extends AnAction implements RightAlignedToolbarAction {
+class OverflowAction extends ComboBoxAction implements RightAlignedToolbarAction {
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
   public OverflowAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
-    super("Additional actions", null, AllIcons.General.Gear);
+    super();
 
     this.app = app;
 
     myActionGroup = createPopupActionGroup(view, app);
   }
 
-  ActionButton getActionButton() {
-    final Presentation presentation = getTemplatePresentation().clone();
-    final ActionButton actionButton = new ActionButton(
-      this,
-      presentation,
-      ActionPlaces.UNKNOWN,
-      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    );
-    presentation.putClientProperty("button", actionButton);
-    return actionButton;
+  @NotNull
+  @Override
+  protected DefaultActionGroup createPopupActionGroup(JComponent button) {
+    return myActionGroup;
   }
 
   @Override
   public final void update(AnActionEvent e) {
+    e.getPresentation().setText("More Actions");
     e.getPresentation().setEnabled(app.isSessionActive());
   }
 
   @Override
-  @SuppressWarnings("Duplicates")
-  public void actionPerformed(@NotNull AnActionEvent e) {
-    final JComponent component = UIUtils.getComponentOfActionEvent(e);
-    if (component == null) {
-      return;
-    }
-    final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
-      ActionPlaces.UNKNOWN,
-      myActionGroup);
-    popupMenu.getComponent().show(component, component.getWidth(), 0);
+  protected ComboBoxButton createComboBoxButton(Presentation presentation) {
+    final ComboBoxButton button = super.createComboBoxButton(presentation);
+    button.setBorder(null);
+    return button;
   }
 
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
