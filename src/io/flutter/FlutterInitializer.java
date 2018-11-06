@@ -23,8 +23,8 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
-import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.editor.FlutterSaveActionsManager;
+import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
@@ -33,6 +33,7 @@ import io.flutter.run.daemon.DeviceService;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.view.FlutterPerfViewFactory;
 import io.flutter.view.FlutterViewFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -75,6 +76,10 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
+
+    if (FlutterUtils.isAndroidStudio()) {
+      FlutterPerfViewFactory.init(project);
+    }
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;

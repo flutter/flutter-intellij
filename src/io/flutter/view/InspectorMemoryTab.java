@@ -7,7 +7,9 @@ package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.JBFont;
 import com.intellij.util.ui.JBUI;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
@@ -26,26 +28,7 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
   InspectorMemoryTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
 
-    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-    add(Box.createVerticalStrut(6));
-
-    Box labelBox = Box.createHorizontalBox();
-    labelBox.add(new JLabel("Running in " + app.getLaunchMode() + " mode"));
-    labelBox.add(Box.createHorizontalGlue());
-    labelBox.setBorder(JBUI.Borders.empty(3, 10));
-    add(labelBox);
-
-
-    if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      labelBox = Box.createHorizontalBox();
-      labelBox.add(new JBLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"));
-      labelBox.add(Box.createHorizontalGlue());
-      labelBox.setBorder(JBUI.Borders.empty(3, 10));
-      add(labelBox);
-    }
-
-    add(Box.createVerticalStrut(6));
+    setLayout(new BorderLayout());
 
     // Dynamically load, instantiate the Flutter Profiler classes (only
     // available in Android Studio) then add the component to the the inspector
@@ -84,6 +67,20 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       Component component =
         (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[])noArguments);
 
+      final JPanel labels = new JPanel(new BorderLayout(6, 0));
+      labels.setBorder(JBUI.Borders.empty(3, 10));
+      add(labels, BorderLayout.NORTH);
+
+      labels.add(
+        new JBLabel("Running in " + app.getLaunchMode() + " mode"),
+        BorderLayout.WEST);
+
+      if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
+        final JBLabel label = new JBLabel("(note: for best results, re-run in profile mode)");
+        label.setForeground(JBColor.RED);
+        labels.add(label, BorderLayout.CENTER);
+      }
+
       add(component, BorderLayout.CENTER);
 
       // Start collecting immediately if memory profiling is enabled.
@@ -95,18 +92,11 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       InvocationTargetException e) {
       LOG.warn("Problem loading Flutter Memory Profiler - " + e.getMessage());
 
-      labelBox = Box.createHorizontalBox();
-      JLabel warningLabel = new JLabel("Memory profiling is only available in Android Studio.");
-
-      // Bold the message.
-      Font font = warningLabel.getFont();
-      Font boldFont = new Font(font.getFontName(), Font.BOLD, font.getSize());
-      warningLabel.setFont(boldFont);
-
-      labelBox.add(warningLabel);
-      labelBox.add(Box.createHorizontalGlue());
-      labelBox.setBorder(JBUI.Borders.empty(3, 10));
-      add(labelBox);
+      final JLabel warningLabel = new JLabel(
+        "Memory profiling is only available in Android Studio.", null, SwingConstants.CENTER);
+      warningLabel.setFont(JBFont.create(warningLabel.getFont()).asBold());
+      warningLabel.setBorder(JBUI.Borders.empty(3, 10));
+      add(warningLabel, BorderLayout.CENTER);
     }
   }
 
