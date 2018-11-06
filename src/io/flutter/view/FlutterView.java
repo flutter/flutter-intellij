@@ -143,7 +143,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         public void actionPerformed(@NotNull AnActionEvent event) {
           FlutterSdkVersion flutterSdkVersion = FlutterSdk.getFlutterSdk(myProject).getVersion();
           String pluginVersion = PluginManager.getPlugin(FlutterUtils.getPluginId()).getVersion();
-          String ideVersion = String.format("%s %s", PlatformUtils.getPlatformPrefix(), ApplicationInfo.getInstance().getStrictVersion());
+          String ideVersion = ApplicationInfo.getInstance().getStrictVersion();
+          String platformPrefix = PlatformUtils.getPlatformPrefix();
 
           String flutterSdkVersionEntryId = "entry.1740350095";
           String pluginVersionEntryId = "entry.1082356620";
@@ -151,12 +152,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
           BrowserUtil.browse(
             String.format(
-              "https://docs.google.com/forms/d/e/1FAIpQLSe5Fu-AFb2Wmxtr7UWgxZt6Z76B4z9fE0vf-eu4pdKxqJ8DQg/viewform?%s=%s&%s=%s&%s=%s",
+              "https://docs.google.com/forms/d/e/1FAIpQLSe5Fu-AFb2Wmxtr7UWgxZt6Z76B4z9fE0vf-eu4pdKxqJ8DQg/viewform?%s=%s&%s=%s&%s=%s+%s",
               flutterSdkVersionEntryId,
               flutterSdkVersion,
               pluginVersionEntryId,
               pluginVersion,
               ideVersionEntryId,
+              platformPrefix,
               ideVersion));
         }
       };
