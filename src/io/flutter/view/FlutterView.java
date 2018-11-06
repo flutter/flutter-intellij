@@ -11,10 +11,12 @@ import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.actionSystem.impl.ActionButton;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.Storage;
@@ -38,13 +40,17 @@ import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.*;
 import org.dartlang.vm.service.VmService;
@@ -135,7 +141,25 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
         @Override
         public void actionPerformed(@NotNull AnActionEvent event) {
-          BrowserUtil.browse("https://goo.gl/WrMB43");
+          FlutterSdkVersion flutterSdkVersion = FlutterSdk.getFlutterSdk(myProject).getVersion();
+          String pluginVersion = PluginManager.getPlugin(FlutterUtils.getPluginId()).getVersion();
+          String ideVersion = ApplicationInfo.getInstance().getStrictVersion();
+          String platformPrefix = PlatformUtils.getPlatformPrefix();
+
+          String flutterSdkVersionEntryId = "entry.1740350095";
+          String pluginVersionEntryId = "entry.1082356620";
+          String ideVersionEntryId = "entry.1842668120";
+
+          BrowserUtil.browse(
+            String.format(
+              "https://docs.google.com/forms/d/e/1FAIpQLSe5Fu-AFb2Wmxtr7UWgxZt6Z76B4z9fE0vf-eu4pdKxqJ8DQg/viewform?%s=%s&%s=%s&%s=%s+%s",
+              flutterSdkVersionEntryId,
+              flutterSdkVersion,
+              pluginVersionEntryId,
+              pluginVersion,
+              ideVersionEntryId,
+              platformPrefix,
+              ideVersion));
         }
       };
 
