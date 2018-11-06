@@ -17,12 +17,16 @@ public class FlutterStudioMonitorStage extends FlutterStage {
   @NotNull
   private final List<ProfilerMonitor> monitors;
 
-  public FlutterAllMemoryData.ThreadSafeData getMemoryUsedDataSeries() {
-    return allMemoryData.getHeapUsedDataSeries();
+  public FlutterAllMemoryData.ThreadSafeData getUsedDataSeries() {
+    return allMemoryData.getUsedDataSeries();
   }
 
-  public FlutterAllMemoryData.ThreadSafeData getMemoryMaxDataSeries() {
-    return allMemoryData.getHeapMaxDetails();
+  public FlutterAllMemoryData.ThreadSafeData getCapacityDataSeries() {
+    return allMemoryData.getCapacityDataSeries();
+  }
+
+  public FlutterAllMemoryData.ThreadSafeData getExternalDataSeries() {
+    return allMemoryData.getExternalDataSeries();
   }
 
   private final FlutterAllMemoryData allMemoryData;
