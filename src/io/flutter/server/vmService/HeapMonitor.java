@@ -98,6 +98,7 @@ public class HeapMonitor {
 
   public static class HeapSample {
     final int bytes;
+    final int external;
     final boolean isGC;
 
     public long getSampleTime() {
@@ -106,8 +107,9 @@ public class HeapMonitor {
 
     public final long sampleTime;
 
-    public HeapSample(int bytes, boolean isGC) {
+    public HeapSample(int bytes, int external, boolean isGC) {
       this.bytes = bytes;
+      this.external = external;
       this.isGC = isGC;
 
       this.sampleTime = System.currentTimeMillis();
@@ -115,6 +117,10 @@ public class HeapMonitor {
 
     public int getBytes() {
       return bytes;
+    }
+
+    public int getExternal() {
+      return external;
     }
 
     @Override
