@@ -144,11 +144,11 @@ public class FlutterSettings {
   }
 
   public boolean isShowOnlyWidgets() {
-    return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, true);
+    return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, false);
   }
 
   public void setShowOnlyWidgets(boolean value) {
-    getPropertiesComponent().setValue(showOnlyWidgetsKey, value, true);
+    getPropertiesComponent().setValue(showOnlyWidgetsKey, value, false);
 
     fireEvent();
   }
