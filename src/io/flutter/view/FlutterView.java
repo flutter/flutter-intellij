@@ -651,7 +651,7 @@ class OpenTimelineViewAction extends FlutterViewAction {
     if (app.isSessionActive()) {
       final String url = app.getConnector().getBrowserUrl();
       if (url != null) {
-        BrowserLauncher.getInstance().browse(url + "/#/timeline-dashboard", null);
+        BrowserLauncher.getInstance().browse(url + "/#/timeline", null);
       }
     }
   }
