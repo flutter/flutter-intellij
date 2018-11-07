@@ -16,7 +16,6 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class WorkspaceTest {
-
   @Rule
   public final ProjectFixture fixture = Testing.makeEmptyModule();
 
