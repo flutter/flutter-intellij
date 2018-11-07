@@ -20,11 +20,6 @@
     <projectService serviceInterface="io.flutter.android.AndroidModuleLibraryManager"
                     serviceImplementation="io.flutter.android.AndroidModuleLibraryManager"/>
 
-    <toolWindow id="Flutter Performance" anchor="bottom" icon="FlutterIcons.Flutter_13"
-                factoryClass="io.flutter.view.FlutterPerfViewFactory"/>
-    <projectService serviceInterface="io.flutter.view.FlutterPerfView"
-                    serviceImplementation="io.flutter.view.FlutterPerfView"
-                    overrides="false"/>
   </extensions>
 
   <actions>

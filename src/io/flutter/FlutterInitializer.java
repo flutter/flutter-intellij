@@ -77,9 +77,7 @@ public class FlutterInitializer implements StartupActivity {
     // Start watching for Flutter debug active events.
     FlutterViewFactory.init(project);
 
-    if (FlutterUtils.isAndroidStudio()) {
-      FlutterPerfViewFactory.init(project);
-    }
+    FlutterPerfViewFactory.init(project);
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
