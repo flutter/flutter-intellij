@@ -14,6 +14,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.ui.GuiUtils;
 import com.intellij.ui.content.Content;
+import com.intellij.util.ui.JBUI;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.actions.ReloadFlutterApp;
@@ -144,7 +145,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     }
   }
 
-  private static class OverflowAction extends ComboBoxAction {
+  private static class OverflowAction extends ToolbarComboBoxAction {
     private final @NotNull FlutterApp myApp;
     private final DefaultActionGroup myActionGroup;
 
@@ -165,13 +166,6 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     public final void update(AnActionEvent e) {
       e.getPresentation().setText("More Actions");
       e.getPresentation().setEnabled(myApp.isSessionActive());
-    }
-
-    @Override
-    protected ComboBoxButton createComboBoxButton(Presentation presentation) {
-      final ComboBoxButton button = super.createComboBoxButton(presentation);
-      button.setBorder(null);
-      return button;
     }
 
     private static DefaultActionGroup createPopupActionGroup(FlutterApp app, Computable<Boolean> observatoryAvailable) {
