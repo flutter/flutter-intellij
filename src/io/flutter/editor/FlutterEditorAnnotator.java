@@ -87,6 +87,9 @@ public class FlutterEditorAnnotator implements Annotator {
       }
     }
     else if (element instanceof DartCallExpression) {
+      // Look for call expressions that are really new (constructor) expressions; The IntelliJ parser can't
+      // distinguish between call expressions, and call expressions that are really constructor calls.
+
       // IconData(0xe914)
       final String text = element.getText();
 
@@ -117,7 +120,7 @@ public class FlutterEditorAnnotator implements Annotator {
 
   private static Integer parseNumberFromCallParam(String callText, String prefix) {
     if (callText.startsWith(prefix) && callText.endsWith(")")) {
-      String val = callText.substring(prefix.length(), callText.length() - 1);
+      String val = callText.substring(prefix.length(), callText.length() - 1).trim();
       final int index = val.indexOf(',');
       if (index != -1) {
         val = val.substring(0, index);

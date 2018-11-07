@@ -107,6 +107,48 @@ public class FlutterEditorAnnotatorTest extends AbstractDartElementTest {
   }
 
   @Test
+  public void locatesConstColorArray() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { const [Color(0xFFE3F2FD)]; }", "Color", LeafPsiElement.class);
+      final DartCallExpression element = DartSyntax.findEnclosingFunctionCall(testIdentifier, "Color");
+      assert element != null;
+
+      final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
+      final AnnotationSession annotationSession = new AnnotationSession(testIdentifier.getContainingFile());
+      final AnnotationHolderImpl annotationHolder = new AnnotationHolderImpl(annotationSession);
+
+      annotator.annotate(element, annotationHolder);
+
+      assertTrue(annotationHolder.hasAnnotations());
+      assertEquals(1, annotationHolder.size());
+
+      final Annotation annotation = annotationHolder.get(0);
+      assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
+    });
+  }
+
+  @Test
+  public void locatesConstColorWhitespace() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { const Color( 0xFFE3F2FD); }", "Color", LeafPsiElement.class);
+      final DartNewExpression element = DartSyntax.findEnclosingNewExpression(testIdentifier);
+      assert element != null;
+
+      final FlutterEditorAnnotator annotator = new FlutterEditorAnnotator();
+      final AnnotationSession annotationSession = new AnnotationSession(testIdentifier.getContainingFile());
+      final AnnotationHolderImpl annotationHolder = new AnnotationHolderImpl(annotationSession);
+
+      annotator.annotate(element, annotationHolder);
+
+      assertTrue(annotationHolder.hasAnnotations());
+      assertEquals(1, annotationHolder.size());
+
+      final Annotation annotation = annotationHolder.get(0);
+      assertEquals(HighlightSeverity.INFORMATION, annotation.getSeverity());
+    });
+  }
+
+  @Test
   public void locatesIconCtor() throws Exception {
     run(() -> {
       final PsiElement testIdentifier =
