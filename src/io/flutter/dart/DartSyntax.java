@@ -40,6 +40,30 @@ public class DartSyntax {
     return null; // not found
   }
 
+  @Nullable
+  public static DartNewExpression findEnclosingNewExpression(@NotNull PsiElement elt) {
+    while (elt != null) {
+      if (elt instanceof DartNewExpression) {
+        return (DartNewExpression)elt;
+      }
+      elt = elt.getParent();
+    }
+    return null;
+  }
+
+  @Nullable
+  public static DartReferenceExpression findEnclosingReferenceExpression(@NotNull PsiElement elt) {
+    while (elt != null) {
+      if (elt instanceof DartReferenceExpression) {
+        if (!(elt.getParent() instanceof DartReferenceExpression)) {
+          return (DartReferenceExpression)elt;
+        }
+      }
+      elt = elt.getParent();
+    }
+    return null;
+  }
+
   /**
    * Gets an argument to a function call, provided that the expression has the given type.
    * <p>
@@ -112,5 +136,4 @@ public class DartSyntax {
     if (!(call.getFirstChild() instanceof DartReference)) return null;
     return call.getFirstChild().getText();
   }
-
 }
