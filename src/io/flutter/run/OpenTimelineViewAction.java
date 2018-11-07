@@ -36,7 +36,7 @@ public class OpenTimelineViewAction extends DumbAwareAction {
 
     final String url = myConnector.getBrowserUrl();
     if (url != null) {
-      BrowserLauncher.getInstance().browse(url + "/#/timeline-dashboard", null);
+      BrowserLauncher.getInstance().browse(url + "/#/timeline", null);
     }
   }
 }
