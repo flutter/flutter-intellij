@@ -1,10 +1,16 @@
+// This code is forked from
+// com.intellij.openapi.actionSystem.ex.ComboBoxAction
+// to create a ComboBoxAction that dispays in a toolbar without a button border.
+
 // Copyright 2000-2018 JetBrains s.r.o. Use of this source code is governed by the Apache 2.0 license that can be found in the LICENSE file.
-package com.intellij.openapi.actionSystem.ex;
+package io.flutter.view;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.HelpTooltip;
 import com.intellij.openapi.actionSystem.*;
+import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
+import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.keymap.KeymapUtil;
@@ -13,7 +19,6 @@ import com.intellij.openapi.ui.popup.JBPopup;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.openapi.ui.popup.ListPopup;
 import com.intellij.openapi.util.Condition;
-import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.IdeFocusManager;
@@ -26,6 +31,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.plaf.ButtonUI;
+import javax.swing.plaf.basic.BasicButtonUI;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
@@ -34,29 +41,20 @@ import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 
-public abstract class ComboBoxAction extends AnAction implements CustomComponentAction {
+public abstract class ToolbarComboBoxAction extends AnAction implements CustomComponentAction {
   private static Icon myIcon = null;
   private static Icon myDisabledIcon = null;
   private static Icon myWin10ComboDropTriangleIcon = null;
 
   public static Icon getArrowIcon(boolean enabled) {
-    if (UIUtil.isUnderWin10LookAndFeel()) {
-      if (myWin10ComboDropTriangleIcon == null) {
-        myWin10ComboDropTriangleIcon = IconLoader.findLafIcon("win10/comboDropTriangle", ComboBoxAction.class, true);
-      }
-      return myWin10ComboDropTriangleIcon;
-    }
-    if (myIcon != AllIcons.General.ArrowDown) {
-      myIcon = AllIcons.General.ArrowDown;
-      myDisabledIcon = IconLoader.getDisabledIcon(myIcon);
-    }
-    return enabled ? myIcon : myDisabledIcon;
+    // We want to use a darker icon when the combo box is enabled.
+    return enabled ? AllIcons.General.Combo2 : ComboBoxAction.getArrowIcon(enabled);
   }
 
   private boolean mySmallVariant = true;
   private String myPopupTitle;
 
-  protected ComboBoxAction() {
+  protected ToolbarComboBoxAction() {
   }
 
   @Override
@@ -84,14 +82,14 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
   @Override
   public JComponent createCustomComponent(@NotNull Presentation presentation) {
     JPanel panel = new JPanel(new GridBagLayout());
-    ComboBoxButton button = createComboBoxButton(presentation);
+    ToolbarComboBoxButton button = createComboBoxButton(presentation);
     panel.add(button,
               new GridBagConstraints(0, 0, 1, 1, 1, 1, GridBagConstraints.CENTER, GridBagConstraints.BOTH, JBUI.insets(0, 3), 0, 0));
     return panel;
   }
 
-  protected ComboBoxButton createComboBoxButton(Presentation presentation) {
-    return new ComboBoxButton(presentation);
+  protected ToolbarComboBoxButton createComboBoxButton(Presentation presentation) {
+    return new ToolbarComboBoxButton(presentation);
   }
 
   public boolean isSmallVariant() {
@@ -130,22 +128,33 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
     return 1;
   }
 
-  protected class ComboBoxButton extends JButton implements UserActivityProviderComponent {
+  protected class ToolbarComboBoxButton extends JButton implements UserActivityProviderComponent {
     private final Presentation myPresentation;
     private boolean myForcePressed = false;
     private PropertyChangeListener myButtonSynchronizer;
 
-    public ComboBoxButton(Presentation presentation) {
+    @Override
+    public void setUI(ButtonUI ui) {
+      // We use the BasicButtonUI so we can display a button without a
+      // background.
+      super.setUI(new BasicButtonUI());
+    }
+
+    public ToolbarComboBoxButton(Presentation presentation) {
       myPresentation = presentation;
       setModel(new MyButtonModel());
       getModel().setEnabled(myPresentation.isEnabled());
       setVisible(presentation.isVisible());
       setHorizontalAlignment(LEFT);
       setFocusable(ScreenReader.isActive());
-      putClientProperty("styleCombo", ComboBoxAction.this);
-      setMargin(JBUI.insets(0, 5, 0, 2));
+      setBorder(JBUI.Borders.empty());
+      putClientProperty("styleCombo", ToolbarComboBoxAction.this);
+      setMargin(JBUI.insets(0, 0, 0, 2));
       if (isSmallVariant()) {
-        setFont(JBUI.Fonts.toolbarSmallComboBoxFont());
+        // TODO(jacobr): it would be better to use
+        // JBUI.Fonts.toolbarSmallComboBoxFont but it isn't availabe in all
+        // versions of IntelliJ we support.
+        setFont(JBUI.Fonts.miniFont());
       }
 
       addMouseListener(new MouseAdapter() {
@@ -243,7 +252,7 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
     }
 
     private void updateTooltipText(String description) {
-      String tooltip = KeymapUtil.createTooltipText(description, ComboBoxAction.this);
+      String tooltip = KeymapUtil.createTooltipText(description, ToolbarComboBoxAction.this);
       if (Registry.is("ide.helptooltip.enabled") && StringUtil.isNotEmpty(tooltip)) {
         HelpTooltip.dispose(this);
         new HelpTooltip().setDescription(tooltip).setLocation(HelpTooltip.Alignment.BOTTOM).installOn(this);
@@ -291,6 +300,11 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
     }
 
     @Override
+    public int getIconTextGap() {
+      return 0;
+    }
+
+    @Override
     public Dimension getPreferredSize() {
       Dimension prefSize = super.getPreferredSize();
       int width = prefSize.width
@@ -310,7 +324,10 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
 
     @Override
     public Font getFont() {
-      return isSmallVariant() ? UIUtil.getToolbarFont() : UIUtil.getLabelFont();
+      // TODO(jacobr): it would be better to use
+      // JBUI.Fonts.toolbarSmallComboBoxFont but it isn't availabe in all
+      // versions of IntelliJ we support.
+      return isSmallVariant() ? JBUI.Fonts.miniFont() : UIUtil.getLabelFont();
     }
 
     @Override
@@ -325,8 +342,7 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
         return;
       }
       Icon icon = getArrowIcon(isEnabled());
-      int x = getWidth() - icon.getIconWidth() - getInsets().right - getMargin().right -
-              (UIUtil.isUnderWin10LookAndFeel() ? JBUI.scale(3) : 0); // Different icons correction
+      int x = getWidth() - icon.getIconWidth() - getInsets().right - getMargin().right;
 
       icon.paintIcon(null, g, x, (getHeight() - icon.getIconHeight()) / 2);
     }
@@ -337,7 +353,7 @@ public abstract class ComboBoxAction extends AnAction implements CustomComponent
 
     @Override public void updateUI() {
       super.updateUI();
-      setMargin(JBUI.insets(0, 5, 0, 2));
+      setMargin(JBUI.insets(0, 0, 0, 2));
       updateButtonSize();
     }
 
