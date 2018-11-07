@@ -6,6 +6,7 @@
 package io.flutter.logging;
 
 import com.intellij.ui.JBColor;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -18,7 +19,7 @@ public class FlutterLogColors {
       return JBColor.gray;
     }
     if (category.startsWith("runtime.")) {
-      return JBColor.magenta;
+      return UIUtil.isUnderDarcula() ? JBColor.magenta : JBColor.pink;
     }
     if (category.equals("http")) {
       return JBColor.blue;
