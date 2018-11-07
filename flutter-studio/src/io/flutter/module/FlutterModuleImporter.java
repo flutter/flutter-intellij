@@ -58,14 +58,10 @@ public class FlutterModuleImporter {
       return;
     }
 
-    String newPath = Paths.get(myRelativePath, "android", "include_flutter.groovy").normalize().toString();
+    String newPath = Paths.get(myRelativePath, ".android", "include_flutter.groovy").normalize().toString();
     if (!new File(moduleRoot.getParent().getPath(), newPath).exists()) {
-      // For old modules
-      newPath = Paths.get(myRelativePath, ".android", "include_flutter.groovy").normalize().toString();
-      if (!new File(moduleRoot.getParent().getPath(), newPath).exists()) {
-        showHowToEditDialog();
-        return;
-      }
+      showHowToEditDialog();
+      return;
     }
     myRelativePath = StringUtil.escapeBackSlashes(newPath);
     VirtualFile settingsFile = projectRoot.findChild("settings.gradle");
