@@ -559,9 +559,6 @@
       <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction"
               text="Flutter Doctor"
               description="Run 'flutter doctor'"/>
-      <action id="flutter.makeHostAppEditable" class="io.flutter.actions.FlutterMakeHostAppEditableAction"
-              text="Flutter Make Host App Editable"
-              description="Run 'flutter make-host-app-editable' to use in an Android app"/>
       <separator/>
       <action id="flutter.packages.get" class="io.flutter.actions.FlutterPackagesGetAction"
               text="Flutter Packages Get"
