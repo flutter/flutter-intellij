@@ -7,7 +7,6 @@ package io.flutter.profiler;
 
 import com.android.tools.adtui.model.*;
 import com.android.tools.profilers.StudioProfilers;
-import com.android.tools.profilers.memory.MemoryDataSeries;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.inspector.HeapState;
@@ -15,17 +14,20 @@ import io.flutter.server.vmService.HeapMonitor;
 import io.flutter.run.daemon.FlutterApp;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 // Refactored from Android Studio 3.2 adt-ui code.
 public class FlutterAllMemoryData {
+  // Indexes into mMultiData for each memory profiler value.
+  private static final int HEAP_USED = 0;
+  private static final int HEAP_CAPACITY = 1;
+  private static final int EXTERNAL_MEMORY_USED = 2;
+
   public class ThreadSafeData implements DataSeries<Long> {
     List<SeriesData<Long>> mData = new CopyOnWriteArrayList<SeriesData<Long>>();
 
@@ -47,9 +49,13 @@ public class FlutterAllMemoryData {
         if (data.x >= xRange.getMin()) {
           // TODO(terry): Hack for now to get last item so we don't flicker. Consider using a for/loop instead of iterator.
           if (lastData != null && outData.isEmpty()) {
-            outData.add(lastData);
+            // Copy data because of modification of the original by LineChart for stacked plotting.
+            // TODO(terry): Replace next line with this "outData.add(data)" when data isn't modified by the chart.
+            outData.add(new SeriesData<>(lastData.x, lastData.value));
           }
-          outData.add(data);
+          // Copy data because of modification of the original by LineChart for stacked plotting.
+          // TODO(terry): Replace next line with this "outData.add(data)" when data isn't modified by the chart.
+          outData.add(new SeriesData<>(data.x, data.value));
         }
         lastData = data;
       }
@@ -58,15 +64,16 @@ public class FlutterAllMemoryData {
     }
   }
 
-  // mMultiData[0] is heap used
-  // mMultiData[1] is total heap allocated
+  // mMultiData[HEAP_USED] is total heap in use.
+  // mMultiData[HEAP_CAPACITY] is heap capacity.
+  // mMultiData[EXTERNAL_MEMORY_USED] is total external in use.
   List<ThreadSafeData> mMultiData;
 
   public FlutterAllMemoryData(Disposable parentDisposable, FlutterApp app) {
-    // TODO(terry): Look at re-organizing mMultiData without brittleness [0] implying heap used and [1] implying allocated.
     mMultiData = new ArrayList<>();
-    mMultiData.add(0, new ThreadSafeData());    // Heap used.
-    mMultiData.add(1, new ThreadSafeData());    // Max Heap allocated
+    mMultiData.add(HEAP_USED, new ThreadSafeData());              // Heap used.
+    mMultiData.add(HEAP_CAPACITY, new ThreadSafeData());          // Heap capacity.
+    mMultiData.add(EXTERNAL_MEMORY_USED, new ThreadSafeData());   // External memory size.
 
     HeapMonitor.HeapListener listener = new HeapMonitor.HeapListener() {
       @Override
@@ -77,37 +84,44 @@ public class FlutterAllMemoryData {
       }
 
       @Override
-      public void handleGCEvent(IsolateRef iIsolateRef, HeapMonitor.HeapSpace newHeapSpvace, HeapMonitor.HeapSpace oldHeapSpace) {
+      public void handleGCEvent(IsolateRef iIsolateRef,
+                                HeapMonitor.HeapSpace newHeapSpvace,
+                                HeapMonitor.HeapSpace oldHeapSpace) {
         // TODO(terry): Add trashcan glyph for GC in timeline.
       }
 
       private void updateModel(HeapState heapState) {
         List<HeapMonitor.HeapSample> samples = heapState.getSamples();
         for (HeapMonitor.HeapSample sample : samples) {
-          // Collect # of bytes used in the heap.
-          mMultiData.get(0).mData.add(new SeriesData<>(TimeUnit.MILLISECONDS.toMicros(sample.getSampleTime()), (long)sample.getBytes()));
-          // Collect allocated size of heap.
-          mMultiData.get(1).mData
-            .add(new SeriesData<>(TimeUnit.MILLISECONDS.toMicros(sample.getSampleTime()), (long)heapState.getMaxHeapInBytes()));
+          long sampleTime = TimeUnit.MILLISECONDS.toMicros(sample.getSampleTime());
+          mMultiData.get(HEAP_USED).mData.add(new SeriesData<>(sampleTime,
+                                                               (long)sample.getBytes()));
+          mMultiData.get(HEAP_CAPACITY).mData.add(new SeriesData<>(sampleTime,
+                                                                   (long)heapState.getCapacity()));
+          mMultiData.get(EXTERNAL_MEMORY_USED).mData.add(new SeriesData<>(sampleTime,
+                                                                          (long)sample.getExternal()));
         }
       }
     };
+
     assert app.getVMServiceManager() != null;
     app.getVMServiceManager().addHeapListener(listener);
     Disposer.register(parentDisposable, () -> app.getVMServiceManager().removeHeapListener(listener));
   }
 
-  protected RangedContinuousSeries createRangedSeries(StudioProfilers profilers,
-                                                      String name,
-                                                      Range range) {
-    return new RangedContinuousSeries(name, profilers.getTimeline().getViewRange(), range, getHeapMaxDetails());
+  protected RangedContinuousSeries createRangedSeries(StudioProfilers profilers, String name, Range range) {
+    return new RangedContinuousSeries(name, profilers.getTimeline().getViewRange(), range, getCapacityDataSeries());
   }
 
-  ThreadSafeData getHeapUsedDataSeries() {
-    return mMultiData.get(0);
+  ThreadSafeData getUsedDataSeries() {
+    return mMultiData.get(HEAP_USED);
   }
 
-  ThreadSafeData getHeapMaxDetails() {
-    return mMultiData.get(1);
+  ThreadSafeData getCapacityDataSeries() {
+    return mMultiData.get(HEAP_CAPACITY);
+  }
+
+  ThreadSafeData getExternalDataSeries() {
+    return mMultiData.get(EXTERNAL_MEMORY_USED);
   }
 }

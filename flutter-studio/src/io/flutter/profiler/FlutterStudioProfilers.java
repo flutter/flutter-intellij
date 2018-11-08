@@ -125,7 +125,7 @@ public class FlutterStudioProfilers
           isClockSynced[0] = true;
           long timeUs =
             TimeUnit.MILLISECONDS.toNanos(heapState.getSamples()
-                                                   .get(0).getSampleTime());
+                                            .get(0).getSampleTime());
           timeline.reset(timeUs, timeUs);
         }
       }
