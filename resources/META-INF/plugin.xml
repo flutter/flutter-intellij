@@ -559,6 +559,9 @@
       <action id="flutter.doctor" class="io.flutter.actions.FlutterDoctorAction"
               text="Flutter Doctor"
               description="Run 'flutter doctor'"/>
+      <action id="flutter.makeHostAppEditable" class="io.flutter.actions.FlutterMakeHostAppEditableAction"
+              text="Flutter Make Host App Editable"
+              description="Run 'flutter make-host-app-editable' to use in an Android app"/>
       <separator/>
       <action id="flutter.packages.get" class="io.flutter.actions.FlutterPackagesGetAction"
               text="Flutter Packages Get"
@@ -570,6 +573,9 @@
       <action id="flutter.clean" class="io.flutter.actions.FlutterCleanAction"
               text="Flutter Clean"
               description="Run 'flutter clean'"/>
+      <action id="flutter.makeHostAppEditable" class="io.flutter.actions.FlutterMakeHostAppEditableAction"
+              text="Flutter Make Host App Editable"
+              description="Run 'flutter make-host-app-editable' to use in an Android app"/>
       <separator/>
       <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
               text="Open Android module in Android Studio"

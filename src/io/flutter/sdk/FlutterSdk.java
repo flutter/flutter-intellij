@@ -174,6 +174,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_UPGRADE);
   }
 
+  public FlutterCommand flutterMakeHostAppEditable(@NotNull PubRoot root) {
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.MAKE_HOST_APP_EDITABLE);
+  }
+
   public FlutterCommand flutterBuild(@NotNull PubRoot root, String... additionalArgs) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.BUILD, additionalArgs);
   }
@@ -370,6 +374,13 @@ public class FlutterSdk {
       baseDir.refresh(false, true); // The current thread must NOT be in a read action.
     }
     return PubRoot.forDirectory(baseDir);
+  }
+
+  public Process startMakeHostAppEditable(@NotNull PubRoot root, @NotNull Project project) {
+    final Module module = root.getModule(project);
+    if (module == null) return null;
+    // Refresh afterwards to ensure new directory is recognized.
+    return flutterMakeHostAppEditable(root).startInModuleConsole(module, root::refresh, null);
   }
 
   /**
