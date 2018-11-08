@@ -14,8 +14,10 @@ import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -32,12 +34,17 @@ import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import org.jetbrains.annotations.NotNull;
 
+
 public class FilterLibraryDialog extends DialogWrapper {
+  // String to represent all Dart libraries in filter dialog.
+  public static final String ALL_DART_LIBRARIES = "dart:*";
+  public static final String DART_LIBRARY_PREFIX = "dart:";
+
   private String[] allLibraries;
   private PopupLibraryFilter popupDialog;
-  private List<String> previousSelectedLibraries;
+  private Set<String> previousSelectedLibraries;
 
-  public FilterLibraryDialog(@NotNull Component parent, String[] myLibraries, @NotNull List<String> selectedLibraries) {
+  public FilterLibraryDialog(@NotNull Component parent, String[] myLibraries, @NotNull Set<String> selectedLibraries) {
     super(parent, true);
 
     this.allLibraries = myLibraries;
@@ -47,7 +54,7 @@ public class FilterLibraryDialog extends DialogWrapper {
     init();
   }
 
-  public List<String> selectedLibraries() {
+  public Set<String> selectedLibraries() {
     return popupDialog.librariesToFilter();
   }
 
@@ -62,7 +69,7 @@ public class FilterLibraryDialog extends DialogWrapper {
 
     Border buttonBorder = BorderFactory.createLineBorder(Color.LIGHT_GRAY);
 
-    CommonButton check = new CommonButton("Check All");
+    CommonButton check = new CommonButton("Select All");
     check.setForeground(Color.BLACK);
     check.setBorder(buttonBorder);
     check.addMouseListener(new MouseAdapter() {
@@ -73,7 +80,7 @@ public class FilterLibraryDialog extends DialogWrapper {
       }
     });
 
-    CommonButton uncheck = new CommonButton("Uncheck All");
+    CommonButton uncheck = new CommonButton("Unselect All");
     uncheck.setForeground(Color.BLACK);
     uncheck.setBorder(buttonBorder);
     uncheck.addMouseListener(new MouseAdapter() {
@@ -119,8 +126,8 @@ class PopupLibraryFilter extends JPanel {
     this.setVisible(true);
   }
 
-  List<String> librariesToFilter() {
-    List<String> checkedLibraries = new ArrayList<>();
+  Set<String> librariesToFilter() {
+    Set<String> checkedLibraries = new HashSet<>();
 
     for (int index = 0; index < model.getSize(); index++) {
       JCheckBox cb = model.get(index);
@@ -163,7 +170,7 @@ class PopupLibraryFilter extends JPanel {
       }
     }
 
-    public void setCheckStateAllItems(List<String> librariesSelected) {
+    public void setCheckStateAllItems(Set<String> librariesSelected) {
       int modelSize = this.getModel().getSize();
       for (int index = 0; index < modelSize; index++) {
         JCheckBox checkbox = this.getModel().getElementAt(index);

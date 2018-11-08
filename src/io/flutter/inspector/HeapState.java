@@ -56,7 +56,7 @@ public class HeapState implements HeapMonitor.HeapListener {
     return samples.samples;
   }
 
-  // Aollocated heap size.
+  // Allocated heap size.
   public int getCapacity() {
     int max = heapMaxInBytes;
 

@@ -46,7 +46,7 @@ class Memory {
     public static final int INSTANCE_COUNT_COLUMN_INDEX = 1;
     public static final int TOTAL_BYTES_COLUMN_INDEX = 2;
 
-    private final String[] COLUMN_NAMES = { "Class", "Instances", "Instances Total Bytes" };
+    private final String[] COLUMN_NAMES = {"Class", "Instances", "Instances Total Bytes"};
 
     private DefaultMutableTreeNode _classesRoot;
 
@@ -89,13 +89,17 @@ class Memory {
 
       DefaultMutableTreeNode node = (DefaultMutableTreeNode)(_classesRoot.getChildAt(rowIndex));
       ClassNode classNode = (ClassNode)(node.getUserObject());
-      if (columnIndex == CLASS_COLUMN_INDEX)
+      if (columnIndex == CLASS_COLUMN_INDEX) {
         return classNode.getClassName();
-      else if (columnIndex == INSTANCE_COUNT_COLUMN_INDEX)
+      }
+      else if (columnIndex == INSTANCE_COUNT_COLUMN_INDEX) {
         return classNode.getInstancesCount();
+      }
       else
-        // Implied column index of TOTAL_BYTES_COLUMN_INDEX
+      // Implied column index of TOTAL_BYTES_COLUMN_INDEX
+      {
         return classNode.getByteSize();
+      }
     }
 
     Memory.ClassNode getClassNode(int rowIndex) {
@@ -137,6 +141,7 @@ class Memory {
     String getObjectRef() {
       return _objectRef;
     }
+
     void setObjectRef(String newRef) { _objectRef = newRef; }
 
     DefaultTreeModel getInstancesModel() { return _myInstancesTreeModel; }
@@ -166,11 +171,15 @@ class Memory {
     }
 
     ClassRef getClassRef() { return _ref; }
+
     String getClassName() { return _ref.getName(); }
+
     int getByteSize() { return _byteSize; }
+
     int getInstancesCount() { return _instanceCount; }
 
     List<String> getInstanceIds() { return _instanceIds; }
+
     void addInstances(List<String> instanceIds) {
       _instanceIds = instanceIds;
     }
@@ -273,7 +282,8 @@ class Memory {
 
       AsyncUtils.whenCompleteUiThread(view.vmGetObject(classId), (JsonObject response, Throwable exception) -> {
         ClassObj classObj = new ClassObj(response);
-        AllClassesInformation currentClass = new AllClassesInformation(classRef, classObj, data.getPromotedBytes(), data.getPromotedInstances());
+        AllClassesInformation currentClass =
+          new AllClassesInformation(classRef, classObj, data.getPromotedBytes(), data.getPromotedInstances());
         _allClassesUnfiltered.add(currentClass);
 
         filterClassesTable(view, classesTable, currentClass);
@@ -303,7 +313,7 @@ class Memory {
       addClassToTreeModel(node);
 
       // Update the UI
-      SwingUtilities.invokeLater( () -> {
+      SwingUtilities.invokeLater(() -> {
         tableModel.fireTableStructureChanged();     // Update the table UI.
         _myClassesTreeModel.reload();
 
@@ -342,7 +352,7 @@ class Memory {
 
     instanceObjects.setModel(_myInstancesTreeModel);
 
-    DefaultMutableTreeNode r = TreeUtil.deepCopyTree(_myInstancesRoot, (DefaultMutableTreeNode) _myInstancesRoot.clone());
+    DefaultMutableTreeNode r = TreeUtil.deepCopyTree(_myInstancesRoot, (DefaultMutableTreeNode)_myInstancesRoot.clone());
     //TreeUtil.sortClasses(_myInstancesRoot);
 
     view.updateClassesStatus(instances.size() + " Instances loaded.");
@@ -355,21 +365,14 @@ class Memory {
 
 final class TreeUtil {
   private static boolean ascending;
-
-  // JDK 1.8.0
-  // a lambda expression Comparator
   private static Comparator<DefaultMutableTreeNode> tnc = Comparator.comparing(DefaultMutableTreeNode::isLeaf)
-                                                                    .thenComparing(n -> n.getUserObject().toString());
+    .thenComparing(n -> n.getUserObject().toString());
 
   private static Comparator<DefaultMutableTreeNode> tncCount =
     Comparator.comparing(DefaultMutableTreeNode::isLeaf)
-              .thenComparing(n -> ((Memory.ClassNode)(n.getUserObject())).getInstancesCount());
+      .thenComparing(n -> ((Memory.ClassNode)(n.getUserObject())).getInstancesCount());
 
   private static void timsort(DefaultMutableTreeNode parent) {
-    // @SuppressWarnings("unchecked")
-    // Enumeration<DefaultMutableTreeNode> e = parent.children();
-    // ArrayList<DefaultMutableTreeNode> children = Collections.list(e);
-
     int n = parent.getChildCount();
     List<DefaultMutableTreeNode> children = new ArrayList<>(n);
     for (int i = 0; i < n; i++) {
@@ -379,8 +382,9 @@ final class TreeUtil {
     Collections.sort(children, tncCount);
 
     parent.removeAllChildren();
-    if (ascending)
+    if (ascending) {
       children.forEach(parent::add);
+    }
     else {
       int numChildren = children.size();
       for (int idx = numChildren - 1; idx >= 0; idx--) {
@@ -391,27 +395,24 @@ final class TreeUtil {
 
   public static void sortClasses(DefaultMutableTreeNode parent, boolean sortAscending) {
     ascending = sortAscending;
-    // Java 9: Collections.list(parent.preorderEnumeration()).stream()
     Collections.list((Enumeration<?>)parent.preorderEnumeration()).stream()
-               .filter(DefaultMutableTreeNode.class::isInstance)
-               .map(DefaultMutableTreeNode.class::cast)
-               .filter(node -> !node.isLeaf())
-               .forEach(TreeUtil::timsort);
+      .filter(DefaultMutableTreeNode.class::isInstance)
+      .map(DefaultMutableTreeNode.class::cast)
+      .filter(node -> !node.isLeaf())
+      .forEach(TreeUtil::timsort);
   }
 
   public static DefaultMutableTreeNode deepCopyTree(DefaultMutableTreeNode src, DefaultMutableTreeNode tgt) {
-    // Java 9: Collections.list(src.children()).stream()
-    Collections.list((Enumeration<?>) src.children()).stream()
-               .filter(DefaultMutableTreeNode.class::isInstance)
-               .map(DefaultMutableTreeNode.class::cast)
-               .forEach(node -> {
-                 DefaultMutableTreeNode clone = new DefaultMutableTreeNode(node.getUserObject());
-                 tgt.add(clone);
-                 if (!node.isLeaf()) {
-                   deepCopyTree(node, clone);
-                 }
-               });
+    Collections.list((Enumeration<?>)src.children()).stream()
+      .filter(DefaultMutableTreeNode.class::isInstance)
+      .map(DefaultMutableTreeNode.class::cast)
+      .forEach(node -> {
+        DefaultMutableTreeNode clone = new DefaultMutableTreeNode(node.getUserObject());
+        tgt.add(clone);
+        if (!node.isLeaf()) {
+          deepCopyTree(node, clone);
+        }
+      });
     return tgt;
   }
-
 }

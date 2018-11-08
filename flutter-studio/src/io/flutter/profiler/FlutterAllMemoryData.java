@@ -49,12 +49,12 @@ public class FlutterAllMemoryData {
         if (data.x >= xRange.getMin()) {
           // TODO(terry): Hack for now to get last item so we don't flicker. Consider using a for/loop instead of iterator.
           if (lastData != null && outData.isEmpty()) {
-            // TODO(terry): Need to copy data because of modification done in LineChart for stacked plotting.
-            // outData.add(lastData);
+            // Copy data because of modification of the original by LineChart for stacked plotting.
+            // TODO(terry): Replace next line with this "outData.add(data)" when data isn't modified by the chart.
             outData.add(new SeriesData<>(lastData.x, lastData.value));
           }
-          // TODO(terry): Need to copy data because of modification done in LineChart for stacked plotting.
-          // outData.add(data);
+          // Copy data because of modification of the original by LineChart for stacked plotting.
+          // TODO(terry): Replace next line with this "outData.add(data)" when data isn't modified by the chart.
           outData.add(new SeriesData<>(data.x, data.value));
         }
         lastData = data;
@@ -95,7 +95,7 @@ public class FlutterAllMemoryData {
         for (HeapMonitor.HeapSample sample : samples) {
           long sampleTime = TimeUnit.MILLISECONDS.toMicros(sample.getSampleTime());
           mMultiData.get(HEAP_USED).mData.add(new SeriesData<>(sampleTime,
-                                                                          (long)sample.getBytes()));
+                                                               (long)sample.getBytes()));
           mMultiData.get(HEAP_CAPACITY).mData.add(new SeriesData<>(sampleTime,
                                                                    (long)heapState.getCapacity()));
           mMultiData.get(EXTERNAL_MEMORY_USED).mData.add(new SeriesData<>(sampleTime,

@@ -72,6 +72,7 @@ import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_VERTICAL_BORDERS
 import static com.android.tools.profilers.ProfilerLayout.MARKER_LENGTH;
 import static com.android.tools.profilers.ProfilerLayout.MONITOR_LABEL_PADDING;
 import static com.android.tools.profilers.ProfilerLayout.Y_AXIS_TOP_MARGIN;
+import static io.flutter.profiler.FilterLibraryDialog.DART_LIBRARY_PREFIX;
 import static javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN;
 
 /**
@@ -84,7 +85,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   private static final String TAB_NAME = "Memory";
   private static final String HEAP_LABEL = "Heap";
 
-  private static final Color MEMORY_USED = new JBColor(new Color(0x56BFEC),new Color(0x2B7DA2));
+  private static final Color MEMORY_USED = new JBColor(new Color(0x56BFEC), new Color(0x2B7DA2));
   private static final Color MEMORY_EXTERNAL = new JBColor(new Color(0x56A5CB), new Color(0x226484));
   private static final Color MEMORY_CAPACITY = new JBColor(new Color(0x1B4D65), new Color(0xF6F6F6));
 
@@ -132,12 +133,13 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
   // TODO(terry): Remove below debugging before checking in.
   LineChartModel debugModel;
+
   private void DEBUG_dumpChartModels() {
     List<SeriesData<Long>> usedSeriesData = ((List<SeriesData<Long>>)(debugModel.getSeries().get(0).getSeries()));
     List<SeriesData<Long>> capacitySeriesData = ((List<SeriesData<Long>>)(debugModel.getSeries().get(1).getSeries()));
     List<SeriesData<Long>> externalSeriesData = ((List<SeriesData<Long>>)(debugModel.getSeries().get(2).getSeries()));
 
-    assert(usedSeriesData.size() == capacitySeriesData.size() &&  usedSeriesData.size() == externalSeriesData.size());
+    assert (usedSeriesData.size() == capacitySeriesData.size() && usedSeriesData.size() == externalSeriesData.size());
     for (int i = 0; i < usedSeriesData.size(); i++) {
       long usedTime = usedSeriesData.get(i).x;
       long capacityTime = capacitySeriesData.get(i).x;
@@ -150,7 +152,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       System.out.println("DUMP time [" + i + "] " + usedTime);
       if (usedTime == capacityTime && usedTime == externalTime) {
         System.out.println("    " + usedValue + ", " + capacityValue + ", " + externalValue);
-      } else {
+      }
+      else {
         System.out.println("ERROR: timestamps don't match for entry " + i);
       }
     }
@@ -275,7 +278,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
           if (node.getFirstChild().toString() == "") {
             // TODO(terry): Don't inundate the VM with more than more one at a time.
             inspectInstance(node);
-          } else {
+          }
+          else {
             DefaultMutableTreeNode childNode = (DefaultMutableTreeNode)(node.getFirstChild());
             Object userObj = childNode.getUserObject();
             if (userObj instanceof String) {
@@ -287,6 +291,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
           }
         }
       }
+
       @Override
       public void treeCollapsed(TreeExpansionEvent event) { }
     });
@@ -313,9 +318,9 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       }
     });
 
-    closeClasses.setBorder(new EmptyBorder(0,0,0,0));
-    closeClasses.setPreferredSize(new Dimension(20,20));
-    closeClasses.setMaximumSize(new Dimension(20,20));
+    closeClasses.setBorder(new EmptyBorder(0, 0, 0, 0));
+    closeClasses.setPreferredSize(new Dimension(20, 20));
+    closeClasses.setMaximumSize(new Dimension(20, 20));
     classesToolbar.add(closeClasses, BorderLayout.EAST);
 
     classesPanel.add(classesToolbar, BorderLayout.PAGE_END);
@@ -344,9 +349,9 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       }
     });
 
-    closeInstances.setBorder(new EmptyBorder(0,0,0,0));
-    closeInstances.setPreferredSize(new Dimension(20,20));
-    closeInstances.setMaximumSize(new Dimension(20,20));
+    closeInstances.setBorder(new EmptyBorder(0, 0, 0, 0));
+    closeInstances.setPreferredSize(new Dimension(20, 20));
+    closeInstances.setMaximumSize(new Dimension(20, 20));
     instancesToolbar.add(closeInstances, BorderLayout.EAST);
 
     instancesPanel.add(instancesToolbar, BorderLayout.PAGE_END);
@@ -396,8 +401,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     profilers.getApp().getVmService().getIsolate(isolateId, new GetIsolateConsumer() {
       @Override
       public void onError(RPCError error) {
-          isolateFuture.completeExceptionally(new RuntimeException(error.getMessage()));
-        }
+        isolateFuture.completeExceptionally(new RuntimeException(error.getMessage()));
+      }
 
       @Override
       public void received(Isolate response) {
@@ -410,21 +415,27 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
             // Non-empty string is the library name (use it for key)
             if (ref.getName().startsWith("dart.")) {
               dartLibraries.put(ref.getName(), ref);
-            } else if (ref.getUri().startsWith("file:///")) {
+            }
+            else if (ref.getUri().startsWith("file:///")) {
               // Is user code (not in a package or library)
               // TODO(terry): Need to store local file names for each libraryRef we'll always display classes from user code.
               allLibraries.put(ref.getName(), ref);
-            } else {
-              if (ref.getUri().startsWith("dart:")) {
+            }
+            else {
+              if (ref.getUri().startsWith(DART_LIBRARY_PREFIX)) {
                 // Library named 'nativewrappers' but URI is 'dart:nativewrappers' is a Dart library.
                 dartLibraries.put(ref.getName(), ref);
-              } else {
+              }
+              else {
                 allLibraries.put(ref.getUri(), ref);
               }
             }
           }
         }
         allLibraries.put("dart:*", null);   // All Dart libraries are in this entry.
+
+        // The initial list of selected libraries is all of them.
+        getProfilersView().setInitialSelectedLibraries(allLibraries.keySet());
         isolateFuture.complete(response);
       }
 
@@ -443,22 +454,22 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     FlutterStudioProfilers profilers = getStage().getStudioProfilers();
 
     profilers.getApp().getVmService().getObject(isolateId, classOrInstanceRefId, new GetObjectConsumer() {
-        @Override
-        public void onError(RPCError error) {
-          future.completeExceptionally(new RuntimeException(error.toString()));
-        }
+                                                  @Override
+                                                  public void onError(RPCError error) {
+                                                    future.completeExceptionally(new RuntimeException(error.toString()));
+                                                  }
 
-        @Override
-        public void received(Obj response) {
-          updateClassesStatus("getObject " + classOrInstanceRefId + " processed.");
-          future.complete((response.getJson()));
-        }
+                                                  @Override
+                                                  public void received(Obj response) {
+                                                    updateClassesStatus("getObject " + classOrInstanceRefId + " processed.");
+                                                    future.complete((response.getJson()));
+                                                  }
 
-        @Override
-        public void received(Sentinel response) {
-          future.completeExceptionally(new RuntimeException(response.toString()));
-        }
-      }
+                                                  @Override
+                                                  public void received(Sentinel response) {
+                                                    future.completeExceptionally(new RuntimeException(response.toString()));
+                                                  }
+                                                }
     );
 
     return future;
@@ -471,11 +482,11 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     FlutterStudioProfilers profilers = getStage().getStudioProfilers();
     return profilers.getApp().callServiceExtension("_getInstances", params)
-             .thenApply((response) -> response)
-             .exceptionally(err -> {
-               LOG.warn(err);
-               return null;
-             });
+      .thenApply((response) -> response)
+      .exceptionally(err -> {
+        LOG.warn(err);
+        return null;
+      });
   }
 
   private void initializeVM() {
@@ -614,7 +625,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     Range dataRanges = new Range(0, 1024 * 1024 * 100);
     RangedContinuousSeries usedMemoryRange =
-      new RangedContinuousSeries("Memory", getTimeline().getViewRange(),  dataRanges, memoryUsedDataSeries);
+      new RangedContinuousSeries("Memory", getTimeline().getViewRange(), dataRanges, memoryUsedDataSeries);
     RangedContinuousSeries maxMemoryRange =
       new RangedContinuousSeries("MemoryMax", getTimeline().getViewRange(), dataRanges, memoryMaxDataSeries);
     RangedContinuousSeries externalMemoryRange =
@@ -765,7 +776,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
       ElementList<BoundField> fields = instance.getFields();
       if (!fields.isEmpty()) {
-        final Iterator<BoundField> iter = fields.iterator();;
+        final Iterator<BoundField> iter = fields.iterator();
+        ;
         while (iter.hasNext()) {
           BoundField field = iter.next();
           String fieldName = field.getDecl().getName();
@@ -807,7 +819,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
             case Uint8ClampedList:
             case Uint8List:
               try {
-              final String fieldValue = valueRef.getValueAsString();
+                final String fieldValue = valueRef.getValueAsString();
                 addNode(parent, fieldName, " = " + fieldValue);
               }
               catch (Exception e) {
@@ -857,7 +869,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
           }
         }
 
-        SwingUtilities.invokeLater( () -> {
+        SwingUtilities.invokeLater(() -> {
           memorySnapshot._myInstancesTreeModel.reload(parent);
         });
       }

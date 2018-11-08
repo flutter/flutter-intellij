@@ -49,6 +49,7 @@ import java.util.function.BiFunction;
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_BOTTOM_BORDER;
 import static com.android.tools.profilers.ProfilerFonts.H4_FONT;
 import static com.android.tools.profilers.ProfilerLayout.TOOLBAR_HEIGHT;
+import static io.flutter.profiler.FilterLibraryDialog.ALL_DART_LIBRARIES;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
@@ -98,12 +99,12 @@ public class FlutterStudioProfilersView
   private ProfilerAction frameSelectionAction;
   private CommonButton snapshot;      // Snapshot the VM memory.
   private CommonButton filterLibrary; // Filter libraries
-  private List<String> selectedLibraries;
+  private Set<String> selectedLibraries;
 
   public FlutterStudioProfilersView(@NotNull FlutterStudioProfilers theProfiler) {
     profiler = theProfiler;
     stageView = null;
-    selectedLibraries = new ArrayList<String>();
+    selectedLibraries = new HashSet<String>();
 
     stageComponent = new JPanel(new BorderLayout());
     stageCenterCardLayout = new CardLayout();
@@ -139,7 +140,7 @@ public class FlutterStudioProfilersView
     //binder.bind(EnergyProfilerStage.class, EnergyProfilerStageView::new);
 
     profiler.addDependency(this)
-            .onChange(ProfilerAspect.STAGE, this::updateStageView);
+      .onChange(ProfilerAspect.STAGE, this::updateStageView);
     updateStageView();
   }
 
@@ -255,7 +256,7 @@ public class FlutterStudioProfilersView
       runningFilterCollection = 0;
 
       JFrame parentFrame = (JFrame)SwingUtilities.windowForComponent(toolbar);
-      List<String> selectedOnes = loadFilterDialog(parentFrame, libraryNames.toArray(new String[0]), selectedLibraries);
+      Set<String> selectedOnes = loadFilterDialog(parentFrame, libraryNames.toArray(new String[0]), selectedLibraries);
       if (selectedOnes != null) {
         // New libraries to filter.
         selectedLibraries = selectedOnes;
@@ -273,7 +274,7 @@ public class FlutterStudioProfilersView
         String libraryName = iterator.next();
         LibraryRef libraryRef = view.allLibraries.get(libraryName);
         if (libraryRef == null) {
-          if (libraryName == "dart:*") {
+          if (libraryName == ALL_DART_LIBRARIES) {
             // Filter all dart libraries.
             view.dartLibraries.forEach((String key, LibraryRef dartLibraryRef) -> {
               String dartLibraryId = dartLibraryRef.getId();
@@ -327,11 +328,11 @@ public class FlutterStudioProfilersView
     });
     ProfilerAction zoomInAction =
       new ProfilerAction.Builder(ZOOM_IN).setContainerComponent(stageComponent)
-                                         .setActionRunnable(() -> zoomIn.doClick(0))
-                                         .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, SHORTCUT_MODIFIER_MASK_NUMBER),
-                                                        KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, SHORTCUT_MODIFIER_MASK_NUMBER),
-                                                        KeyStroke.getKeyStroke(KeyEvent.VK_ADD, SHORTCUT_MODIFIER_MASK_NUMBER))
-                                         .build();
+        .setActionRunnable(() -> zoomIn.doClick(0))
+        .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_PLUS, SHORTCUT_MODIFIER_MASK_NUMBER),
+                       KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, SHORTCUT_MODIFIER_MASK_NUMBER),
+                       KeyStroke.getKeyStroke(KeyEvent.VK_ADD, SHORTCUT_MODIFIER_MASK_NUMBER))
+        .build();
     zoomIn.setToolTipText(zoomInAction.getDefaultToolTipText());
     rightToolbar.add(zoomIn);
 
@@ -343,9 +344,9 @@ public class FlutterStudioProfilersView
     });
     ProfilerAction resetZoomAction =
       new ProfilerAction.Builder("Reset zoom").setContainerComponent(stageComponent)
-                                              .setActionRunnable(() -> resetZoom.doClick(0))
-                                              .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, 0),
-                                                             KeyStroke.getKeyStroke(KeyEvent.VK_0, 0)).build();
+        .setActionRunnable(() -> resetZoom.doClick(0))
+        .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_NUMPAD0, 0),
+                       KeyStroke.getKeyStroke(KeyEvent.VK_0, 0)).build();
     resetZoom.setToolTipText(resetZoomAction.getDefaultToolTipText());
     rightToolbar.add(resetZoom);
 
@@ -361,9 +362,9 @@ public class FlutterStudioProfilersView
     frameSelection.setToolTipText(frameSelectionAction.getDefaultToolTipText());
     rightToolbar.add(frameSelection);
     timeline.getSelectionRange()
-            .addDependency(this)
-            .onChange(Range.Aspect.RANGE,
-                      () -> frameSelection.setEnabled(frameSelectionAction.isEnabled()));
+      .addDependency(this)
+      .onChange(Range.Aspect.RANGE,
+                () -> frameSelection.setEnabled(frameSelectionAction.isEnabled()));
 
     goLiveToolbar = new JPanel(ProfilerLayout.createToolbarLayout());
     goLiveToolbar.add(new FlatSeparator());
@@ -377,23 +378,23 @@ public class FlutterStudioProfilersView
     // Configure shortcuts for GoLive.
     ProfilerAction attachAction =
       new ProfilerAction.Builder(ATTACH_LIVE).setContainerComponent(stageComponent)
-                                             .setActionRunnable(() -> goLive.doClick(0))
-                                             .setEnableBooleanSupplier(
-                                               () -> goLive.isEnabled() &&
-                                                     !goLive.isSelected() &&
-                                                     stageView.navigationControllersEnabled())
-                                             .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
-                                                                                   SHORTCUT_MODIFIER_MASK_NUMBER))
-                                             .build();
+        .setActionRunnable(() -> goLive.doClick(0))
+        .setEnableBooleanSupplier(
+          () -> goLive.isEnabled() &&
+                !goLive.isSelected() &&
+                stageView.navigationControllersEnabled())
+        .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_RIGHT,
+                                              SHORTCUT_MODIFIER_MASK_NUMBER))
+        .build();
     ProfilerAction detachAction =
       new ProfilerAction.Builder(DETACH_LIVE).setContainerComponent(stageComponent)
-                                             .setActionRunnable(() -> goLive.doClick(0))
-                                             .setEnableBooleanSupplier(
-                                               () -> goLive.isEnabled() &&
-                                                     goLive.isSelected() &&
-                                                     stageView.navigationControllersEnabled())
-                                             .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
-                                                                                   0)).build();
+        .setActionRunnable(() -> goLive.doClick(0))
+        .setEnableBooleanSupplier(
+          () -> goLive.isEnabled() &&
+                goLive.isSelected() &&
+                stageView.navigationControllersEnabled())
+        .setKeyStrokes(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE,
+                                              0)).build();
 
     goLive.setToolTipText(detachAction.getDefaultToolTipText());
     goLive.addActionListener(event -> {
@@ -410,7 +411,7 @@ public class FlutterStudioProfilersView
     rightToolbar.add(goLiveToolbar);
 
     ProfilerContextMenu.createIfAbsent(stageComponent)
-                       .add(attachAction, detachAction, ContextMenuItem.SEPARATOR, zoomInAction, zoomOutAction);
+      .add(attachAction, detachAction, ContextMenuItem.SEPARATOR, zoomInAction, zoomOutAction);
     toggleTimelineButtons();
 
     stageToolbar = new JPanel(new BorderLayout());
@@ -441,7 +442,8 @@ public class FlutterStudioProfilersView
             view.memorySnapshot.filterClassesTable(view, view.getClassesTable(), currentClass);
           }
         }
-        view.updateClassesStatus("Filtering " + view.filteredLibraries.size() + " libraries for " + view.memorySnapshot.getFilteredClassesCount() + " classes.");
+        view.updateClassesStatus(
+          "Filtering " + view.filteredLibraries.size() + " libraries for " + view.memorySnapshot.getFilteredClassesCount() + " classes.");
       }
     });
   }
@@ -487,6 +489,10 @@ public class FlutterStudioProfilersView
     commonToolbar.setVisible(!topLevel && stageView.navigationControllersEnabled());
   }
 
+  void setInitialSelectedLibraries(Set<String> allLibraries) {
+    selectedLibraries = allLibraries;
+  }
+
   @NotNull
   public JLayeredPane getComponent() {
     return layeredPane;
@@ -526,7 +532,7 @@ public class FlutterStudioProfilersView
     }
   }
 
-  static public List<String> loadFilterDialog(JFrame parentFrame, String[] libraryNames, List<String> selectedLibraries) {
+  static public Set<String> loadFilterDialog(JFrame parentFrame, String[] libraryNames, Set<String> selectedLibraries) {
     FilterLibraryDialog filterDialog = new FilterLibraryDialog(parentFrame,
                                                                libraryNames,
                                                                selectedLibraries);
