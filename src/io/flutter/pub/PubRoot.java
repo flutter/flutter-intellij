@@ -252,7 +252,11 @@ public class PubRoot {
    * Returns true if the directory content looks like a Flutter module.
    */
   public boolean isFlutterModule() {
-    return root.findChild("android") != null || root.findChild(".android") != null;
+    return root.findChild(".android") != null;
+  }
+
+  public boolean isNonEditableFlutterModule() {
+    return isFlutterModule() && root.findChild("android") == null;
   }
 
   @Nullable

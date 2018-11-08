@@ -134,7 +134,7 @@ public class HeapDisplay extends JPanel {
     final int width = getWidth();
     final long now = System.currentTimeMillis();
 
-    final long maxDataSize = Math.round(heapState.getMaxHeapInBytes() / (double)TEN_MB) * TEN_MB + TEN_MB;
+    final long maxDataSize = Math.round(heapState.getCapacity() / (double)TEN_MB) * TEN_MB + TEN_MB;
 
     final Graphics2D graphics2D = (Graphics2D)g;
     graphics2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

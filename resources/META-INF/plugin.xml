@@ -570,6 +570,9 @@
       <action id="flutter.clean" class="io.flutter.actions.FlutterCleanAction"
               text="Flutter Clean"
               description="Run 'flutter clean'"/>
+      <action id="flutter.makeHostAppEditable" class="io.flutter.actions.FlutterMakeHostAppEditableAction"
+              text="Make Host App Editable"
+              description="Run 'flutter make-host-app-editable' to use in an Android app"/>
       <separator/>
       <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
               text="Open Android module in Android Studio"
