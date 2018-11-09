@@ -62,8 +62,6 @@ public class DaemonApi {
    */
   private final Deque<String> stderr = new ArrayDeque<>();
 
-  // app domain
-
   /**
    * Creates an Api that sends JSON to a callback.
    */
@@ -85,8 +83,6 @@ public class DaemonApi {
   CompletableFuture<Boolean> stopApp(@NotNull String appId) {
     return send("app.stop", new AppStop(appId));
   }
-
-  // device domain
 
   void cancelPending() {
     final List<Command> commands;
