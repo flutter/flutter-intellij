@@ -60,8 +60,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
@@ -184,8 +184,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
-    toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
+    toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
 
     return toolbarGroup;
   }
@@ -743,8 +743,8 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
 }
 
 class TimeDilationAction extends FlutterViewToggleableAction {
-  TimeDilationAction(@NotNull FlutterApp app) {
-    super(app, "Enable Slow Animations");
+  TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
+    super(app, "Enable Slow Animations", null, showIcon? AllIcons.Vcs.History : null);
 
     setExtensionCommand("ext.flutter.timeDilation");
   }
@@ -864,8 +864,8 @@ class HighlightNodesShownInBothTrees extends FlutterViewLocalToggleableAction {
 }
 
 class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
-  ShowPaintBaselinesAction(@NotNull FlutterApp app) {
-    super(app, "Show Paint Baselines");
+  ShowPaintBaselinesAction(@NotNull FlutterApp app, boolean showIcon) {
+    super(app, "Show Paint Baselines", null, showIcon? FlutterIcons.Painting : null);
 
     setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
   }
@@ -914,15 +914,15 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
     final DefaultActionGroup group = new DefaultActionGroup();
 
-    group.add(view.registerAction(new ShowPaintBaselinesAction(app)));
-    group.addSeparator();
     group.add(view.registerAction(new RepaintRainbowAction(app)));
-    group.add(view.registerAction(new TimeDilationAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new HideSlowBannerAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
+    group.addSeparator();
+    group.add(view.registerAction(new OpenTimelineViewAction(app)));
+    group.add(view.registerAction(new OpenObservatoryAction(app)));
 
     return group;
   }
