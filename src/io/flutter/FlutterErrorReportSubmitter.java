@@ -12,7 +12,6 @@ package io.flutter;
 
 import static com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT;
 
-import com.intellij.diagnostic.IdeaReportingEvent;
 import com.intellij.ide.DataManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
 import com.intellij.ide.plugins.PluginManager;
@@ -194,15 +193,14 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     if (file != null) {
       // Open the file.
       new OpenFileDescriptor(project, file).navigate(true);
+      consumer.consume(new SubmittedReportInfo(
+        null,
+        "",
+        SubmittedReportInfo.SubmissionStatus.NEW_ISSUE));
     }
     else {
       fail(consumer);
     }
-
-    consumer.consume(new SubmittedReportInfo(
-      null,
-      "",
-      SubmittedReportInfo.SubmissionStatus.NEW_ISSUE));
   }
 
   @SuppressWarnings("deprecation")
