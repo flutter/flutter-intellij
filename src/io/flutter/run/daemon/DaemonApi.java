@@ -48,6 +48,7 @@ import org.jetbrains.annotations.Nullable;
  */
 public class DaemonApi {
   public static final String FLUTTER_ERROR_PREFIX = "error from";
+  public static final String COMPLETION_EXCEPTION_PREFIX = "java.util.concurrent.CompletionException: java.io.IOException: ";
 
   private static final int STDERR_LINES_TO_KEEP = 100;
   private static final Gson GSON = new Gson();
@@ -195,6 +196,7 @@ public class DaemonApi {
         if (trace != null) {
           message += "\n" + trace;
         }
+        // Be sure to keep this statement in sync with COMPLETION_EXCEPTION_PREFIX.
         cmd.completeExceptionally(new IOException(message));
       }
       else {
