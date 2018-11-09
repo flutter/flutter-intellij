@@ -8,6 +8,7 @@ package io.flutter.logging;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.filters.UrlFilter;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
@@ -22,9 +23,11 @@ import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.Alarm;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
+import com.intellij.util.ui.JBUI;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.JsonUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -198,6 +201,10 @@ public class FlutterLogTree extends TreeTable {
       MessageCellRenderer(@NotNull FlutterApp app) {
         this.app = app;
         filters = createMessageFilters().toArray(new Filter[0]);
+        setIconTextGap(JBUI.scale(5));
+        setIconOnTheRight(true);
+        setIconOpaque(false);
+        setTransparentIconBackground(true);
       }
 
       @NotNull
@@ -252,7 +259,10 @@ public class FlutterLogTree extends TreeTable {
           appendStyled(entry, message.substring(cursor));
         }
 
-        // TODO(pq): consider appending a badge if entry.getData() != null
+        // append data badge
+        if (JsonUtils.hasJsonData(entry.getData())) {
+          setIcon(AllIcons.General.Information);
+        }
       }
     }
 
