@@ -25,6 +25,7 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBEmptyBorder;
 import icons.StudioIcons;
 import io.flutter.utils.AsyncUtils;
@@ -82,15 +83,15 @@ public class FlutterStudioProfilersView
    */
   @NotNull private final ThreeComponentsSplitter splitter;
   //@NotNull private final LoadingPanel stageLoadingPanel;
-  private final JPanel stageComponent;
-  private final JPanel stageCenterComponent;
+  private final JBPanel stageComponent;
+  private final JBPanel stageCenterComponent;
   private final CardLayout stageCenterCardLayout;
   private SessionsView sessionsView;
-  private JPanel toolbar;
-  private JPanel stageToolbar;
-  private JPanel monitoringToolbar;
-  private JPanel commonToolbar;
-  private JPanel goLiveToolbar;
+  private JBPanel toolbar;
+  private JBPanel stageToolbar;
+  private JBPanel monitoringToolbar;
+  private JBPanel commonToolbar;
+  private JBPanel goLiveToolbar;
   private JToggleButton goLive;
   private CommonButton zoomOut;
   private CommonButton zoomIn;
@@ -106,9 +107,9 @@ public class FlutterStudioProfilersView
     stageView = null;
     selectedLibraries = new HashSet<String>();
 
-    stageComponent = new JPanel(new BorderLayout());
+    stageComponent = new JBPanel(new BorderLayout());
     stageCenterCardLayout = new CardLayout();
-    stageCenterComponent = new JPanel(stageCenterCardLayout);
+    stageCenterComponent = new JBPanel(stageCenterCardLayout);
 
     // TODO(terry): Multiple profiler views.
     //stageLoadingPanel = myIdeProfilerComponents.createLoadingPanel(0);
@@ -198,13 +199,13 @@ public class FlutterStudioProfilersView
   }
 
   private void initializeStageUi() {
-    toolbar = new JPanel(new BorderLayout());
-    JPanel leftToolbar = new JPanel(ProfilerLayout.createToolbarLayout());
+    toolbar = new JBPanel(new BorderLayout());
+    JBPanel leftToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
 
     toolbar.setBorder(DEFAULT_BOTTOM_BORDER);
     toolbar.setPreferredSize(new Dimension(0, TOOLBAR_HEIGHT));
 
-    commonToolbar = new JPanel(ProfilerLayout.createToolbarLayout());
+    commonToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
     JButton button = new CommonButton(StudioIcons.Common.BACK_ARROW);
     button.addActionListener(action -> {
       profiler.setMonitoringStage();
@@ -229,7 +230,7 @@ public class FlutterStudioProfilersView
     commonToolbar.add(stageCombo);
     commonToolbar.add(new FlatSeparator());
 
-    monitoringToolbar = new JPanel(ProfilerLayout.createToolbarLayout());
+    monitoringToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
 
     leftToolbar.add(commonToolbar);
     toolbar.add(leftToolbar, BorderLayout.WEST);
@@ -298,7 +299,7 @@ public class FlutterStudioProfilersView
     filterLibrary.setToolTipText("Filter Dart Libraries");
     leftToolbar.add(filterLibrary);
 
-    JPanel rightToolbar = new JPanel(ProfilerLayout.createToolbarLayout());
+    JBPanel rightToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
     toolbar.add(rightToolbar, BorderLayout.EAST);
     rightToolbar.setBorder(new JBEmptyBorder(0, 0, 0, 2));
 
@@ -366,7 +367,7 @@ public class FlutterStudioProfilersView
       .onChange(Range.Aspect.RANGE,
                 () -> frameSelection.setEnabled(frameSelectionAction.isEnabled()));
 
-    goLiveToolbar = new JPanel(ProfilerLayout.createToolbarLayout());
+    goLiveToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
     goLiveToolbar.add(new FlatSeparator());
 
     goLive = new CommonToggleButton("", StudioIcons.Profiler.Toolbar.GOTO_LIVE);
@@ -414,7 +415,7 @@ public class FlutterStudioProfilersView
       .add(attachAction, detachAction, ContextMenuItem.SEPARATOR, zoomInAction, zoomOutAction);
     toggleTimelineButtons();
 
-    stageToolbar = new JPanel(new BorderLayout());
+    stageToolbar = new JBPanel(new BorderLayout());
     toolbar.add(stageToolbar, BorderLayout.CENTER);
 
     stageComponent.add(toolbar, BorderLayout.NORTH);
@@ -510,7 +511,7 @@ public class FlutterStudioProfilersView
   }
 
   @VisibleForTesting
-  final JPanel getStageComponent() {
+  final JBPanel getStageComponent() {
     return stageComponent;
   }
 

@@ -10,6 +10,7 @@ import com.android.tools.adtui.model.AspectObserver;
 import com.android.tools.adtui.model.Range;
 import com.android.tools.adtui.model.formatter.TimeFormatter;
 import com.android.tools.profilers.*;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import icons.StudioIcons;
 import org.jetbrains.annotations.NotNull;
@@ -25,13 +26,13 @@ import static com.android.tools.profilers.ProfilerFonts.STANDARD_FONT;
 // Refactored from Android Studio 3.2 adt-ui code.
 public abstract class FlutterStageView<T extends FlutterStage> extends AspectObserver {
   private final T stage;
-  private final JPanel component;
+  private final JBPanel component;
   private final FlutterStudioProfilersView profilersView;
 
   /**
    * Container for the tooltip.
    */
-  private final JPanel tooltipPanel;
+  private final JBPanel tooltipPanel;
 
   /**
    * View of the active tooltip for stages that contain more than one tooltips.
@@ -46,7 +47,7 @@ public abstract class FlutterStageView<T extends FlutterStage> extends AspectObs
   /**
    * A common component for showing the current selection range.
    */
-  @NotNull private final JLabel selectionTimeLabel;
+  @NotNull private final JBLabel selectionTimeLabel;
 
   // TODO (b/77709239): All Stages currently have a Panel that defines a tabular layout, and a tooltip.
   // we should refactor this so common functionality is in the base class to avoid more duplication.
@@ -57,7 +58,7 @@ public abstract class FlutterStageView<T extends FlutterStage> extends AspectObs
     component.setBackground(ProfilerColors.DEFAULT_BACKGROUND);
 
     // Use FlowLayout instead of the usual BorderLayout since BorderLayout doesn't respect min/preferred sizes.
-    tooltipPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    tooltipPanel = new JBPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
     tooltipPanel.setBackground(ProfilerColors.TOOLTIP_BACKGROUND);
     tooltipBinder = new ViewBinder<>();
 
@@ -91,18 +92,18 @@ public abstract class FlutterStageView<T extends FlutterStage> extends AspectObs
     return tooltipBinder;
   }
 
-  public JPanel getTooltipPanel() {
+  public JBPanel getTooltipPanel() {
     return tooltipPanel;
   }
 
   @NotNull
-  public JLabel getSelectionTimeLabel() {
+  public JBLabel getSelectionTimeLabel() {
     return selectionTimeLabel;
   }
 
   @NotNull
   protected JComponent buildTimeAxis(FlutterStudioProfilers profilers) {
-    JPanel axisPanel = new JPanel(new BorderLayout());
+    JBPanel axisPanel = new JBPanel(new BorderLayout());
     axisPanel.setBackground(ProfilerColors.DEFAULT_BACKGROUND);
     AxisComponent timeAxis = new AxisComponent(profilers.getViewAxis(), AxisComponent.AxisOrientation.BOTTOM);
     timeAxis.setShowAxisLine(false);
@@ -174,8 +175,8 @@ public abstract class FlutterStageView<T extends FlutterStage> extends AspectObs
   }
 
   @NotNull
-  private JLabel createSelectionTimeLabel() {
-    JLabel selectionTimeLabel = new JLabel("");
+  private JBLabel createSelectionTimeLabel() {
+    JBLabel selectionTimeLabel = new JBLabel("");
     selectionTimeLabel.setFont(STANDARD_FONT);
     selectionTimeLabel.setBorder(BorderFactory.createEmptyBorder(3, 3, 3, 3));
     selectionTimeLabel.addMouseListener(new MouseAdapter() {
