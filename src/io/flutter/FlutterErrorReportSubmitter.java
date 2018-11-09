@@ -11,6 +11,7 @@
 package io.flutter;
 
 import static com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT;
+import static io.flutter.run.daemon.DaemonApi.COMPLETION_EXCEPTION_PREFIX;
 
 import com.intellij.ide.DataManager;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;
@@ -43,7 +44,6 @@ import org.jetbrains.annotations.Nullable;
 public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   private static final Logger LOG = Logger.getInstance(FlutterErrorReportSubmitter.class);
   private static final String[] KNOWN_ERRORS = new String[]{"Bad state: No element"};
-  private static final String COMPLETION_EXCEPTION_PREFIX = "java.util.concurrent.CompletionException: java.io.IOException: ";
 
   @NotNull
   @Override
