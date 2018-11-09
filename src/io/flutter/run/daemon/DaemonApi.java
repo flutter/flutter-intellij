@@ -6,7 +6,12 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Charsets;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
@@ -15,18 +20,22 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Sends JSON commands to a flutter daemon process, assigning a new id to each one.
@@ -38,18 +47,21 @@ import java.util.function.Function;
  * >The Flutter Daemon Mode</a>.
  */
 public class DaemonApi {
-  private static final int STDERR_LINES_TO_KEEP = 100;
+  public static final String FLUTTER_ERROR_PREFIX = "error from";
 
+  private static final int STDERR_LINES_TO_KEEP = 100;
+  private static final Gson GSON = new Gson();
+  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
   @NotNull private final Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
-
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
-
   /**
    * A ring buffer holding the last few lines that the process sent to stderr.
    */
   private final Deque<String> stderr = new ArrayDeque<>();
+
+  // app domain
 
   /**
    * Creates an Api that sends JSON to a callback.
@@ -65,8 +77,6 @@ public class DaemonApi {
     this((String json) -> sendCommand(json, process));
   }
 
-  // app domain
-
   CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause) {
     return send("app.restart", new AppRestart(appId, fullRestart, pause));
   }
@@ -74,6 +84,8 @@ public class DaemonApi {
   CompletableFuture<Boolean> stopApp(@NotNull String appId) {
     return send("app.stop", new AppStop(appId));
   }
+
+  // device domain
 
   void cancelPending() {
     final List<Command> commands;
@@ -96,8 +108,6 @@ public class DaemonApi {
                                                         @NotNull Map<String, Object> params) {
     return send("app.callServiceExtension", new AppServiceExtension(appId, methodName, params));
   }
-
-  // device domain
 
   CompletableFuture enableDeviceEvents() {
     return send("device.enable", null);
@@ -178,7 +188,12 @@ public class DaemonApi {
 
       final JsonElement error = obj.get("error");
       if (error != null) {
-        cmd.completeExceptionally(new IOException("error from " + cmd.method + ": " + error));
+        final JsonElement trace = obj.get("trace");
+        String message = FLUTTER_ERROR_PREFIX + " " + cmd.method + ": " + error;
+        if (trace != null) {
+          message += "\n" + trace;
+        }
+        cmd.completeExceptionally(new IOException(message));
       }
       else {
         cmd.complete(obj.get("result"));
@@ -205,12 +220,21 @@ public class DaemonApi {
       final int id = nextId.getAndIncrement();
       final Command<T> command = new Command<>(method, params, id);
       final String json = command.toString();
+      //noinspection NestedSynchronizedStatement
       synchronized (pending) {
         pending.put(id, command);
       }
       callback.accept(json);
       return command.done;
     }
+  }
+
+  /**
+   * Returns the last lines written to stderr.
+   */
+  public String getStderrTail() {
+    final String[] lines = stderr.toArray(new String[]{});
+    return String.join("", lines);
   }
 
   /**
@@ -258,7 +282,7 @@ public class DaemonApi {
       }
 
       try {
-        final int id = idField.getAsInt();
+        idField.getAsInt();
         return obj;
       }
       catch (NumberFormatException e) {
@@ -293,14 +317,7 @@ public class DaemonApi {
     return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
   }
 
-  /**
-   * Returns the last lines written to stderr.
-   */
-  public String getStderrTail() {
-    final String[] lines = stderr.toArray(new String[]{});
-    return String.join("", lines);
-  }
-
+  @SuppressWarnings("unused")
   public static class RestartResult {
     private int code;
     private String message;
@@ -441,7 +458,4 @@ public class DaemonApi {
       return obj;
     }
   }
-
-  private static final Gson GSON = new Gson();
-  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
 }
