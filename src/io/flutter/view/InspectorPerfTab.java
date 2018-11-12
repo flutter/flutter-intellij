@@ -6,35 +6,18 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ActionGroup;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.DataProvider;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.ui.ColoredTableCellRenderer;
-import com.intellij.ui.PopupHandler;
-import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.panels.VerticalLayout;
-import com.intellij.ui.dualView.TreeTableView;
-import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
-import com.intellij.util.ui.ColumnInfo;
 import com.intellij.util.ui.JBUI;
-import io.flutter.FlutterBundle;
 import io.flutter.inspector.*;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.table.JTableHeader;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.tree.DefaultMutableTreeNode;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.view.PerformanceOverlayAction.SHOW_PERFORMANCE_OVERLAY;
 import static io.flutter.view.RepaintRainbowAction.SHOW_REPAINT_RAINBOW;
@@ -83,10 +66,10 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   }
 
   private void buildUI() {
-    setLayout(new VerticalLayout(5));
+    setLayout(new GridLayout(1, 2, 5, 5));
     setBorder(JBUI.Borders.empty(5));
 
-    // header
+    // Header
     final JPanel headerPanel = new JPanel(new BorderLayout(0, 3));
     headerPanel.add(new JBLabel("Running in " + app.getLaunchMode() + " mode"), BorderLayout.NORTH);
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
@@ -96,22 +79,26 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
       );
     }
     headerPanel.setBorder(JBUI.Borders.empty(5));
-    add(headerPanel);
 
     // FPS
     final JPanel fpsPanel = new JPanel(new BorderLayout());
     final JPanel fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
     fpsPanel.add(fpsDisplay, BorderLayout.CENTER);
     fpsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "FPS"));
-    add(fpsPanel);
 
     // Memory
     final JPanel memoryPanel = new JPanel(new BorderLayout());
     final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
     memoryPanel.add(heapDisplay, BorderLayout.CENTER);
     memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory"));
-    add(memoryPanel);
 
+    final JPanel fpsAndMemoryContainer = new JPanel(new VerticalLayout(5));
+    fpsAndMemoryContainer.add(headerPanel);
+    fpsAndMemoryContainer.add(fpsPanel);
+    fpsAndMemoryContainer.add(memoryPanel);
+    add(fpsAndMemoryContainer);
+
+    // Performance settings
     final JPanel perfSettings = new JPanel(new VerticalLayout(5));
     trackRebuildsCheckbox = new JCheckBox("Show widget rebuild indicators");
     trackRebuildsCheckbox.setHorizontalAlignment(JLabel.LEFT);
@@ -124,10 +111,14 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     }
     perfSettings.add(showRepaintRainbow.getComponent());
     perfSettings.add(showPerfOverlay.getComponent());
-    add(perfSettings);
 
+    // Perf info and tips
     widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
-    add(widgetPerfPanel);
+
+    final JPanel settingsAndWidgetPerfContainer = new JPanel(new VerticalLayout(5));
+    settingsAndWidgetPerfContainer.add(perfSettings);
+    settingsAndWidgetPerfContainer.add(widgetPerfPanel);
+    add(settingsAndWidgetPerfContainer);
   }
 
   private void setTrackRebuildWidgets(boolean selected) {

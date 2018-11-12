@@ -87,7 +87,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String WIDGET_TAB_LABEL = "Widgets";
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
-  public static final String MEMORY_TAB_LABEL = "Memory";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -252,8 +251,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, app, toolbarGroup);
         addDisabledTab(RENDER_TAB_LABEL, runnerTabs, app, toolbarGroup);
       }
-
-      addPerformanceTab(runnerTabs, app, !hasInspectorService);
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -344,18 +341,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     runnerTabs.addTab(tabInfo);
   }
 
-  private void addPerformanceTab(JBRunnerTabs runnerTabs,
-                                 FlutterApp app,
-                                 boolean selectedTab) {
-    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app);
-    final TabInfo tabInfo = new TabInfo(perfTab)
-      .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-    runnerTabs.addTab(tabInfo);
-    if (selectedTab) {
-      runnerTabs.select(tabInfo, false);
-    }
-  }
-
   /**
    * Called when a debug connection starts.
    */
@@ -376,22 +361,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           debugActiveHelper(app, inspectorService);
         });
     }
-  }
-
-  public InspectorPerfTab showPerfTab(@NotNull FlutterApp app) {
-    PerAppState appState = perAppViewState.get(app);
-    if (appState != null) {
-      final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
-
-      toolWindow.getContentManager().setSelectedContent(appState.content);
-      for (TabInfo tabInfo : appState.tabs.getTabs()) {
-        if (tabInfo.getComponent() instanceof InspectorPerfTab) {
-          appState.tabs.select(tabInfo, true);
-          return (InspectorPerfTab)tabInfo.getComponent();
-        }
-      }
-    }
-    return null;
   }
 
   private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
