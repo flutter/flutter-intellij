@@ -9,12 +9,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class JsonUtils {
 
@@ -47,5 +49,9 @@ public class JsonUtils {
     rawValues.forEach(element -> values.add(element.getAsString()));
 
     return values;
+  }
+
+  public static boolean hasJsonData(@Nullable String data) {
+    return StringUtils.isNotEmpty(data) && !Objects.equals(data, "null");
   }
 }

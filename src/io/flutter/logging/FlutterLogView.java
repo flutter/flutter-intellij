@@ -40,6 +40,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.logging.FlutterLog.Level;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.JsonUtils;
 import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -423,7 +424,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       if (!nodes.isEmpty()) {
         // First selection.
         final String data = nodes.get(0).entry.getData();
-        if (data != null && !Objects.equals(data, "null")) {
+        if (JsonUtils.hasJsonData(data)) {
+          @SuppressWarnings("ConstantConditions")
           final JsonElement jsonElement = new JsonParser().parse(data);
           text = gsonHelper.toJson(jsonElement);
         }
