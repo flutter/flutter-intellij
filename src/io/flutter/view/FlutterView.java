@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -101,6 +102,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private final Map<FlutterApp, PerAppState> perAppViewState = new HashMap<>();
 
+
+  private FlutterApp app;
+
   public FlutterView(@NotNull Project project) {
     myProject = project;
 
@@ -169,7 +173,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow,
-                                           @NotNull FlutterApp app,
                                            Disposable parentDisposable,
                                            InspectorService inspectorService) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
@@ -190,19 +193,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   FlutterViewAction registerAction(FlutterViewAction action) {
-    getOrCreateStateForApp(action.app).flutterViewActions.add(action);
+    getOrCreateStateForApp().flutterViewActions.add(action);
     return action;
   }
 
-  private PerAppState getStateForApp(FlutterApp app) {
+  private PerAppState getStateForApp() {
     return perAppViewState.get(app);
   }
 
-  private PerAppState getOrCreateStateForApp(FlutterApp app) {
+  private PerAppState getOrCreateStateForApp() {
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
-  private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
+  private void addInspectorViewContent(@Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
@@ -218,12 +221,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
-    final PerAppState state = getOrCreateStateForApp(app);
+    final PerAppState state = getOrCreateStateForApp();
     assert (state.content == null);
     state.content = content;
     state.tabs = runnerTabs;
 
-    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs, inspectorService);
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, runnerTabs, inspectorService);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
     toolbarGroup.add(new OverflowAction(this, app));
@@ -240,17 +243,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (debugConnectionAvailable) {
       if (hasInspectorService) {
         final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
-        addInspectorPanel(WIDGET_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.widget, app, inspectorService, toolWindow,
+        addInspectorPanel(WIDGET_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.widget, inspectorService, toolWindow,
                           toolbarGroup, true, detailsSummaryViewSupported);
-        addInspectorPanel(RENDER_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.renderObject, app, inspectorService,
+        addInspectorPanel(RENDER_TAB_LABEL, runnerTabs, state, InspectorService.FlutterTreeType.renderObject, inspectorService,
                           toolWindow,
                           toolbarGroup, false, false);
       }
       else {
         // If in profile mode, add disabled tabs for the inspector.
-        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, app, toolbarGroup);
-        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, app, toolbarGroup);
+        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, toolbarGroup);
+        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, toolbarGroup);
       }
+
+      addPerformancePlaceholderTab(runnerTabs, false);
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -264,6 +269,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (info.getComponent() instanceof InspectorTabPanel) {
       final InspectorTabPanel panel = (InspectorTabPanel)info.getComponent();
       panel.setVisibleToUser(true);
+    }
+
+    if (info.getText() == PERFORMANCE_TAB_LABEL) {
+      // Open the performance tab in the Flutter Performance window.
+      showFlutterPerformanceWindow();
     }
 
     final TabInfo previous = info.getPreviousSelection();
@@ -282,24 +292,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return doChangeSelection.run();
   }
 
-  public void switchToRenderTree(FlutterApp app) {
-    final PerAppState state = perAppViewState.get(app);
-    for (TabInfo tabInfo : state.tabs.getTabs()) {
-      if (tabInfo.getComponent() instanceof InspectorPanel) {
-        final InspectorPanel panel = (InspectorPanel)tabInfo.getComponent();
-        if (panel.getTreeType() == InspectorService.FlutterTreeType.renderObject) {
-          state.tabs.select(tabInfo, true);
-          return;
-        }
-      }
-    }
-  }
-
   private void addInspectorPanel(String displayName,
                                  JBRunnerTabs tabs,
                                  PerAppState state,
                                  InspectorService.FlutterTreeType treeType,
-                                 FlutterApp flutterApp,
                                  InspectorService inspectorService,
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
@@ -307,9 +303,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  boolean useSummaryTree) {
     final InspectorPanel inspectorPanel = new InspectorPanel(
       this,
-      flutterApp,
+      app,
       inspectorService,
-      flutterApp::isSessionActive,
+      app::isSessionActive,
       treeType,
       useSummaryTree,
       // TODO(jacobr): support the summary tree view for the RenderObject
@@ -329,7 +325,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void addDisabledTab(String displayName,
                               JBRunnerTabs runnerTabs,
-                              FlutterApp app,
                               DefaultActionGroup toolbarGroup) {
     final JPanel panel = new JPanel(new BorderLayout());
     final JBLabel label = new JBLabel("Widget info not available in profile mode", SwingConstants.CENTER);
@@ -341,14 +336,38 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     runnerTabs.addTab(tabInfo);
   }
 
+  private void addPerformancePlaceholderTab(JBRunnerTabs runnerTabs,
+                                            boolean selectedTab) {
+    final JBLabel label = new JBLabel("See the Flutter Performance window for performance info", SwingConstants.CENTER);
+    final TabInfo tabInfo = new TabInfo(label)
+      .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    runnerTabs.addTab(tabInfo);
+    if (selectedTab) {
+      runnerTabs.select(tabInfo, false);
+      showFlutterPerformanceWindow();
+    }
+  }
+
+  private void showFlutterPerformanceWindow() {
+    final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(myProject);
+    final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
+    final FlutterPerfView flutterPerfView = ServiceManager.getService(myProject, FlutterPerfView.class);
+    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(app);
+    if (flutterPerfToolWindow.isVisible()) {
+      inspectorPerfTab.setVisibleToUser(true);
+      return;
+    }
+    flutterPerfToolWindow.show(() -> inspectorPerfTab.setVisibleToUser(true));
+  }
+
   /**
    * Called when a debug connection starts.
    */
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
-    final FlutterApp app = event.app;
+    app = event.app;
 
     if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
-      ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
+      ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(null));
     }
     else {
       whenCompleteUiThread(
@@ -358,12 +377,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
             LOG.warn(throwable);
             return;
           }
-          debugActiveHelper(app, inspectorService);
+          debugActiveHelper(inspectorService);
         });
     }
   }
 
-  private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
+  private void debugActiveHelper(@Nullable InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       activateToolWindow();
     }
@@ -382,19 +401,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     listenForRenderTreeActivations(toolWindow);
 
-    addInspectorViewContent(app, inspectorService, toolWindow);
+    addInspectorViewContent(inspectorService, toolWindow);
 
     app.getVmService().addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void connectionOpened() {
-        onAppChanged(app);
+        onAppChanged();
       }
 
       @Override
       public void received(String streamId, Event event) {
         if (StringUtil.equals(streamId, VmService.EXTENSION_STREAM_ID)) {
           if (StringUtil.equals("Flutter.Frame", event.getExtensionKind())) {
-            handleFlutterFrame(app);
+            handleFlutterFrame();
           }
         }
       }
@@ -404,7 +423,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         ApplicationManager.getApplication().invokeLater(() -> {
           if (toolWindow.isDisposed()) return;
           final ContentManager contentManager = toolWindow.getContentManager();
-          onAppChanged(app);
+          onAppChanged();
           final PerAppState state = perAppViewState.remove(app);
           if (state != null && state.content != null) {
             contentManager.removeContent(state.content, true);
@@ -417,7 +436,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
     });
 
-    onAppChanged(app);
+    onAppChanged();
 
     app.addStateListener(new FlutterApp.FlutterAppListener() {
       public void notifyAppRestarted() {
@@ -427,7 +446,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         // enough of an indication that the isolate and flutter framework are initialized
         // to where they can receive service calls (for example, calls to restore various
         // framework debugging settings).
-        final PerAppState state = getStateForApp(app);
+        final PerAppState state = getStateForApp();
         if (state != null) {
           state.sendRestartNotificationOnNextFrame = true;
         }
@@ -463,16 +482,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     });
   }
 
-  private void handleFlutterFrame(FlutterApp app) {
-    final PerAppState state = getStateForApp(app);
+  private void handleFlutterFrame() {
+    final PerAppState state = getStateForApp();
     if (state != null && state.sendRestartNotificationOnNextFrame) {
       state.sendRestartNotificationOnNextFrame = false;
-      notifyActionsOnRestart(app);
+      notifyActionsOnRestart();
     }
   }
 
-  private void notifyActionsAppStarted(FlutterApp app) {
-    final PerAppState state = getStateForApp(app);
+  private void notifyActionsAppStarted() {
+    final PerAppState state = getStateForApp();
     if (state == null) {
       return;
     }
@@ -481,8 +500,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void notifyActionsOnRestart(FlutterApp app) {
-    final PerAppState state = getStateForApp(app);
+  private void notifyActionsOnRestart() {
+    final PerAppState state = getStateForApp();
     if (state == null) {
       return;
     }
@@ -491,15 +510,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void notifyActionsAppStopped(FlutterApp app) {
-    final PerAppState state = getStateForApp(app);
+  private void notifyActionsAppStopped() {
+    final PerAppState state = getStateForApp();
     if (state == null) {
       return;
     }
     state.sendRestartNotificationOnNextFrame = false;
   }
 
-  private void onAppChanged(FlutterApp app) {
+  private void onAppChanged() {
     if (myProject.isDisposed()) {
       return;
     }
@@ -510,13 +529,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     if (perAppViewState.isEmpty()) {
-      notifyActionsAppStopped(app);
+      notifyActionsAppStopped();
     }
     else {
-      notifyActionsAppStarted(app);
+      notifyActionsAppStarted();
     }
 
-    final PerAppState state = getStateForApp(app);
+    final PerAppState state = getStateForApp();
     if (state != null) {
       for (InspectorPanel inspectorPanel : state.inspectorPanels) {
         inspectorPanel.onAppChanged();
