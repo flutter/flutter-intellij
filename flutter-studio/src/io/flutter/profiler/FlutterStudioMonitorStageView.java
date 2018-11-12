@@ -21,7 +21,11 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.ui.components.JBScrollPane;
+import com.intellij.ui.table.JBTable;
+import com.intellij.ui.treeStructure.Tree;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;
@@ -95,15 +99,15 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
   private static final int AXIS_SIZE = 100000;
 
-  JPanel classesPanel;                          // All classes information in this panel.
-  JScrollPane heapObjectsScoller;               // Contains the JTree of heap objects.
-  private final JLabel classesStatusArea;       // Classes status area.
-  private final JTable classesTable;            // Display classes found in the heap snapshot.
+  JBPanel classesPanel;                         // All classes information in this panel.
+  JBScrollPane heapObjectsScoller;              // Contains the JTree of heap objects.
+  private final JBLabel classesStatusArea;      // Classes status area.
+  private final JBTable classesTable;           // Display classes found in the heap snapshot.
 
-  private JPanel instancesPanel;                // All instances info in panel (title, close and JTree).
-  private JLabel instancesTitleArea;            // Display of all instances displayed.
-  private JScrollPane instanceObjectsScoller;   // Contains the JTree of instance objects.
-  private final JTree instanceObjects;          // Instances of all objects of the same object class type.
+  private JBPanel instancesPanel;               // All instances info in panel (title, close and JTree).
+  private JBLabel instancesTitleArea;           // Display of all instances displayed.
+  private JBScrollPane instanceObjectsScoller;  // Contains the JTree of instance objects.
+  private final Tree instanceObjects;           // Instances of all objects of the same object class type.
 
   private List<RangedContinuousSeries> rangedData;
   private LegendComponentModel legendComponentModel;
@@ -174,7 +178,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     myChartCaptureSplitter.setFirstComponent(buildUI(stage));
 
-    classesTable = new JTable(memorySnapshot.getClassesTableModel());
+    classesTable = new JBTable(memorySnapshot.getClassesTableModel());
     classesTable.setVisible(true);
     classesTable.setAutoCreateRowSorter(true);
     classesTable.getRowSorter().toggleSortOrder(1);   // Sort by number of instances in descending order.
@@ -183,7 +187,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     classesTable.getColumnModel().getColumn(2).setPreferredWidth(AUTO_RESIZE_LAST_COLUMN);
     classesTable.doLayout();
 
-    heapObjectsScoller = new JScrollPane(classesTable);
+    heapObjectsScoller = new JBScrollPane(classesTable);
 
     FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this);
 
@@ -202,7 +206,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         memorySnapshot.removeAllInstanceChildren(true);
 
         // Find the selected item in the JTable.
-        JTable selectedUi = (JTable)(e.getSource());
+        JBTable selectedUi = (JBTable)(e.getSource());
 
         int col = selectedUi.columnAtPoint(e.getPoint());
 
@@ -258,7 +262,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       }
     });
 
-    instanceObjects = new JTree();
+    instanceObjects = new Tree();
     instanceObjects.setVisible(true);
 
     instanceObjects.setEditable(false);
@@ -296,15 +300,15 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       public void treeCollapsed(TreeExpansionEvent event) { }
     });
 
-    classesPanel = new JPanel();
+    classesPanel = new JBPanel();
     classesPanel.setVisible(false);
     classesPanel.setLayout(new BoxLayout(classesPanel, BoxLayout.PAGE_AXIS));
 
-    JPanel classesToolbar = new JPanel();
+    JBPanel classesToolbar = new JBPanel();
     classesToolbar.setLayout(new BorderLayout());
     classesToolbar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
 
-    classesStatusArea = new JLabel();
+    classesStatusArea = new JBLabel();
     classesStatusArea.setText("Computing...");
     classesToolbar.add(classesStatusArea, BorderLayout.WEST);
 
@@ -326,17 +330,17 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     classesPanel.add(classesToolbar, BorderLayout.PAGE_END);
     classesPanel.add(heapObjectsScoller);
 
-    instanceObjectsScoller = new JScrollPane(instanceObjects);
+    instanceObjectsScoller = new JBScrollPane(instanceObjects);
 
-    instancesPanel = new JPanel();
+    instancesPanel = new JBPanel();
     instancesPanel.setVisible(false);
     instancesPanel.setLayout(new BoxLayout(instancesPanel, BoxLayout.PAGE_AXIS));
 
-    JPanel instancesToolbar = new JPanel();
+    JBPanel instancesToolbar = new JBPanel();
     instancesToolbar.setLayout(new BorderLayout());
     instancesToolbar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 20));
 
-    instancesTitleArea = new JLabel();
+    instancesTitleArea = new JBLabel();
     setClassForInstancesTitle("");
     instancesToolbar.add(instancesTitleArea, BorderLayout.WEST);
 
@@ -375,7 +379,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     getComponent().add(myMainSplitter, BorderLayout.CENTER);
   }
 
-  public JTable getClassesTable() { return classesTable; }
+  public JBTable getClassesTable() { return classesTable; }
 
   void inspectInstance(@NotNull DefaultMutableTreeNode node) {
     // Is it one of our models?  Otherwise its synthesized nodes from other getObjects.
@@ -553,7 +557,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     });
   }
 
-  private JPanel buildUI(@NotNull FlutterStudioMonitorStage stage) {
+  private JBPanel buildUI(@NotNull FlutterStudioMonitorStage stage) {
     ProfilerTimeline timeline = stage.getStudioProfilers().getTimeline();
     Range viewRange = getTimeline().getViewRange();
 
@@ -580,7 +584,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
                                           getProfilersView().getComponent(), () -> true);
 
     TabularLayout layout = new TabularLayout("*");
-    JPanel panel = new JBPanel(layout);
+    JBPanel panel = new JBPanel(layout);
     panel.setBackground(ProfilerColors.DEFAULT_BACKGROUND);
 
     ProfilerScrollbar sb = new ProfilerScrollbar(timeline, panel);
@@ -591,15 +595,15 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     panel.add(timeAxis, new TabularLayout.Constraint(2, 0));
 
-    JPanel monitorPanel = new JBPanel(new TabularLayout("*", "*"));
+    JBPanel monitorPanel = new JBPanel(new TabularLayout("*", "*"));
     monitorPanel.setOpaque(false);
     monitorPanel.setBorder(MONITOR_BORDER);
-    final JLabel label = new JLabel(TAB_NAME);
+    final JBLabel label = new JBLabel(TAB_NAME);
     label.setBorder(MONITOR_LABEL_PADDING);
-    label.setVerticalAlignment(JLabel.TOP);
+    label.setVerticalAlignment(JBLabel.TOP);
     label.setForeground(ProfilerColors.MONITORS_HEADER_TEXT);
 
-    final JPanel lineChartPanel = new JBPanel(new BorderLayout());
+    final JBPanel lineChartPanel = new JBPanel(new BorderLayout());
     lineChartPanel.setOpaque(false);
 
     // Initial size of Y-axis in MB set a range of 100 MB multiply is 1024 (1K), so upper range is 100 MB
@@ -652,7 +656,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     mLineChart.setTopPadding(Y_AXIS_TOP_MARGIN);
     mLineChart.setFillEndGap(true);
 
-    final JPanel axisPanel = new JBPanel(new BorderLayout());
+    final JBPanel axisPanel = new JBPanel(new BorderLayout());
     axisPanel.setOpaque(false);
     axisPanel.add(yAxisBytes, BorderLayout.WEST);
 
@@ -684,7 +688,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     legendComponent.configure(legendExternal, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_EXTERNAL));
 
     // Place legend in a panel.
-    final JPanel legendPanel = new JBPanel(new BorderLayout());
+    final JBPanel legendPanel = new JBPanel(new BorderLayout());
     legendPanel.setOpaque(false);
     legendPanel.add(legendComponent, BorderLayout.EAST);
 
@@ -716,7 +720,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   @Override
   public JComponent getToolbar() {
     // TODO(terry): What should I return here?
-    return new JPanel();
+    return new JBPanel();
   }
 
   @Override

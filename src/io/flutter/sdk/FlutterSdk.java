@@ -491,6 +491,11 @@ public class FlutterSdk {
         try {
           final JsonParser jp = new JsonParser();
           final JsonElement elem = jp.parse(stdout.toString());
+          if (elem.isJsonNull()) {
+            LOG.warn("Invalid Json from flutter config");
+            return null;
+          }
+
           final JsonObject obj = elem.getAsJsonObject();
           final JsonPrimitive primitive = obj.getAsJsonPrimitive(key);
           if (primitive != null) {

@@ -10,7 +10,6 @@ import com.intellij.ui.LayeredIcon;
 import com.intellij.ui.SimpleTextAttributes;
 import com.jetbrains.lang.dart.DartComponentType;
 import com.jetbrains.lang.dart.util.DartPresentableUtil;
-import icons.DartIcons;
 import org.dartlang.analysis.server.protocol.Element;
 import org.dartlang.analysis.server.protocol.ElementKind;
 import org.jetbrains.annotations.NotNull;
@@ -77,9 +76,9 @@ public class DartElementPresentationUtil {
       case ElementKind.TOP_LEVEL_VARIABLE:
         return finalOrConst ? TOP_LEVEL_CONST_ICON : TOP_LEVEL_VAR_ICON;
       case ElementKind.UNIT_TEST_GROUP:
-        return Junit;
+        return TestSourceFolder;
       case ElementKind.UNIT_TEST_TEST:
-        return DartIcons.TestNode;
+        return Junit;
 
       case ElementKind.CLASS_TYPE_ALIAS:
       case ElementKind.COMPILATION_UNIT:
