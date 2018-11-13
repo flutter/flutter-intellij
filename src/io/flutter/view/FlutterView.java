@@ -36,6 +36,8 @@ import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
@@ -56,6 +58,7 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.*;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
+import org.jdesktop.swingx.HorizontalLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -271,11 +274,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       panel.setVisibleToUser(true);
     }
 
-    if (info.getText() == PERFORMANCE_TAB_LABEL) {
-      // Open the performance tab in the Flutter Performance window.
-      showFlutterPerformanceWindow();
-    }
-
     final TabInfo previous = info.getPreviousSelection();
 
     // Track analytics for explicit inspector tab selections.
@@ -338,13 +336,27 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void addPerformancePlaceholderTab(JBRunnerTabs runnerTabs,
                                             boolean selectedTab) {
-    final JBLabel label = new JBLabel("See the Flutter Performance window for performance info", SwingConstants.CENTER);
-    final TabInfo tabInfo = new TabInfo(label)
+    final JPanel labelRow = new JPanel(new HorizontalLayout());
+    labelRow.add(new JLabel("Open the "));
+
+    final LinkLabel<String> linkLabel = new LinkLabel<>("Flutter Performance window", null);
+    linkLabel.setListener(new LinkListener<String>() {
+      @Override
+      public void linkSelected(LinkLabel aSource, String aLinkData) {
+        showFlutterPerformanceWindow();
+      }
+    }, null);
+    labelRow.add(linkLabel);
+
+    labelRow.add(new JLabel(" for performance information"));
+
+    final JPanel panel = new JPanel(new GridBagLayout());
+    panel.add(labelRow, new GridBagConstraints());
+    final TabInfo tabInfo = new TabInfo(panel)
       .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
     if (selectedTab) {
       runnerTabs.select(tabInfo, false);
-      showFlutterPerformanceWindow();
     }
   }
 
