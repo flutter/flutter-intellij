@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterMessages;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.Workspace;
@@ -189,7 +190,13 @@ class DeviceDaemon {
                        Consumer<String> processStopped) throws ExecutionException {
       final int daemonId = nextDaemonId.incrementAndGet();
       LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
-      final ProcessHandler process = new OSProcessHandler(toCommandLine());
+      final ProcessHandler process = new OSProcessHandler(toCommandLine()) {
+        @NotNull
+        @Override
+        public BaseOutputReader.Options readerOptions() {
+          return BaseOutputReader.Options.forMostlySilentProcess();
+        }
+      };
       boolean succeeded = false;
       try {
         final AtomicReference<ImmutableList<FlutterDevice>> devices = new AtomicReference<>(ImmutableList.of());
@@ -331,6 +338,7 @@ class DeviceDaemon {
 
     // device domain
 
+    @Override
     public void onDeviceAdded(@NotNull DaemonEvent.DeviceAdded event) {
       if (event.id == null) {
         // We can't start a flutter app on this device if it doesn't have a device id.
@@ -346,6 +354,7 @@ class DeviceDaemon {
       deviceChanged.run();
     }
 
+    @Override
     public void onDeviceRemoved(@NotNull DaemonEvent.DeviceRemoved event) {
       devices.updateAndGet((old) -> removeDevice(old.stream(), event.id));
       deviceChanged.run();
