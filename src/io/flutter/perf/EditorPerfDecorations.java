@@ -25,7 +25,7 @@ import com.intellij.ui.JBColor;
 import icons.FlutterIcons;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AnimatedIcon;
-import io.flutter.view.FlutterView;
+import io.flutter.view.FlutterPerfView;
 import io.flutter.view.InspectorPerfTab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -328,20 +328,20 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
         if (isActive()) {
 
           final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());
-          final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
-          if (flutterToolWindow.isVisible()) {
+          final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
+          if (flutterPerfToolWindow.isVisible()) {
             showPerfViewMessage();
             return;
           }
-          flutterToolWindow.show(() -> showPerfViewMessage());
+          flutterPerfToolWindow.show(() -> showPerfViewMessage());
         }
       }
     };
   }
 
   private void showPerfViewMessage() {
-    final FlutterView flutterView = ServiceManager.getService(getApp().getProject(), FlutterView.class);
-    final InspectorPerfTab inspectorPerfTab = flutterView.showPerfTab(getApp());
+    final FlutterPerfView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerfView.class);
+    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(getApp());
     String message = "<html><body>" +
                      getTooltipHtmlFragment() +
                      "</body></html>";

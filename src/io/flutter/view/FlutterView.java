@@ -19,6 +19,7 @@ import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -35,12 +36,15 @@ import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
+import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
 import com.intellij.util.PlatformUtils;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
@@ -87,7 +91,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public static final String WIDGET_TAB_LABEL = "Widgets";
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
-  public static final String MEMORY_TAB_LABEL = "Memory";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -249,11 +252,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       else {
         // If in profile mode, add disabled tabs for the inspector.
-        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, app, toolbarGroup);
-        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, app, toolbarGroup);
+        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, toolbarGroup);
+        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, toolbarGroup);
       }
 
-      addPerformanceTab(runnerTabs, app, !hasInspectorService);
+      addPerformancePlaceholderTab(runnerTabs, app, false);
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -285,24 +288,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return doChangeSelection.run();
   }
 
-  public void switchToRenderTree(FlutterApp app) {
-    final PerAppState state = perAppViewState.get(app);
-    for (TabInfo tabInfo : state.tabs.getTabs()) {
-      if (tabInfo.getComponent() instanceof InspectorPanel) {
-        final InspectorPanel panel = (InspectorPanel)tabInfo.getComponent();
-        if (panel.getTreeType() == InspectorService.FlutterTreeType.renderObject) {
-          state.tabs.select(tabInfo, true);
-          return;
-        }
-      }
-    }
-  }
-
   private void addInspectorPanel(String displayName,
                                  JBRunnerTabs tabs,
                                  PerAppState state,
                                  InspectorService.FlutterTreeType treeType,
-                                 FlutterApp flutterApp,
+                                 FlutterApp app,
                                  InspectorService inspectorService,
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
@@ -310,9 +300,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  boolean useSummaryTree) {
     final InspectorPanel inspectorPanel = new InspectorPanel(
       this,
-      flutterApp,
+      app,
       inspectorService,
-      flutterApp::isSessionActive,
+      app::isSessionActive,
       treeType,
       useSummaryTree,
       // TODO(jacobr): support the summary tree view for the RenderObject
@@ -332,7 +322,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void addDisabledTab(String displayName,
                               JBRunnerTabs runnerTabs,
-                              FlutterApp app,
                               DefaultActionGroup toolbarGroup) {
     final JPanel panel = new JPanel(new BorderLayout());
     final JBLabel label = new JBLabel("Widget info not available in profile mode", SwingConstants.CENTER);
@@ -344,16 +333,42 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     runnerTabs.addTab(tabInfo);
   }
 
-  private void addPerformanceTab(JBRunnerTabs runnerTabs,
-                                 FlutterApp app,
-                                 boolean selectedTab) {
-    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app);
-    final TabInfo tabInfo = new TabInfo(perfTab)
+  private void addPerformancePlaceholderTab(JBRunnerTabs runnerTabs,
+                                            FlutterApp app,
+                                            boolean selectedTab) {
+    final LinkLabel<String> linkLabel = new LinkLabel<>("See Flutter Performance window", null);
+    linkLabel.setListener(new LinkListener<String>() {
+      @Override
+      public void linkSelected(LinkLabel aSource, String aLinkData) {
+        showFlutterPerformanceWindow(app);
+      }
+    }, null);
+    linkLabel.setBorder(JBUI.Borders.empty(3, 10));
+    linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    if (FlutterUtils.isAndroidStudio()) {
+      // Remove underline for Android Studio to avoid LinkLabel bug where underline is left aligned even though text is center aligned.
+      // TODO(kenzieschmoll): remove this once AndroidStudio is based on IntelliJ 182.
+      linkLabel.setPaintUnderline(false);
+    }
+
+    final TabInfo tabInfo = new TabInfo(linkLabel)
       .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
     if (selectedTab) {
       runnerTabs.select(tabInfo, false);
     }
+  }
+
+  private void showFlutterPerformanceWindow(FlutterApp app) {
+    final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(myProject);
+    final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
+    final FlutterPerfView flutterPerfView = ServiceManager.getService(myProject, FlutterPerfView.class);
+    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(app);
+    if (flutterPerfToolWindow.isVisible()) {
+      inspectorPerfTab.setVisibleToUser(true);
+      return;
+    }
+    flutterPerfToolWindow.show(() -> inspectorPerfTab.setVisibleToUser(true));
   }
 
   /**
@@ -378,23 +393,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  public InspectorPerfTab showPerfTab(@NotNull FlutterApp app) {
-    PerAppState appState = perAppViewState.get(app);
-    if (appState != null) {
-      final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
-
-      toolWindow.getContentManager().setSelectedContent(appState.content);
-      for (TabInfo tabInfo : appState.tabs.getTabs()) {
-        if (tabInfo.getComponent() instanceof InspectorPerfTab) {
-          appState.tabs.select(tabInfo, true);
-          return (InspectorPerfTab)tabInfo.getComponent();
-        }
-      }
-    }
-    return null;
-  }
-
-  private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
+  private void debugActiveHelper(FlutterApp app, @Nullable InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
       activateToolWindow();
     }
