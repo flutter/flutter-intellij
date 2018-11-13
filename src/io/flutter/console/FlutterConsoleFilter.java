@@ -21,6 +21,7 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
@@ -195,7 +196,7 @@ public class FlutterConsoleFilter implements Filter {
       }
 
       FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-      FlutterReloadManager.getInstance(project).saveAllAndRestart(app);
+      FlutterReloadManager.getInstance(project).saveAllAndRestart(app, FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }
 

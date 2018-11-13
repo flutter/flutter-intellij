@@ -305,7 +305,7 @@ public class FlutterApp {
   /**
    * Perform a hot restart of the the app.
    */
-  public CompletableFuture<DaemonApi.RestartResult> performRestartApp() {
+  public CompletableFuture<DaemonApi.RestartResult> performRestartApp(@NotNull String reason) {
     if (myAppId == null) {
       LOG.warn("cannot restart Flutter app because app id is not set");
 
@@ -324,7 +324,7 @@ public class FlutterApp {
     changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
-      myDaemonApi.restartApp(myAppId, true, false);
+      myDaemonApi.restartApp(myAppId, true, false, reason);
     future.thenAccept(result -> changeState(State.STARTED));
     future.thenRun(this::notifyAppRestarted);
     return future;
@@ -352,7 +352,7 @@ public class FlutterApp {
   /**
    * Perform a hot reload of the app.
    */
-  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart) {
+  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart, @NotNull String reason) {
     if (myAppId == null) {
       LOG.warn("cannot reload Flutter app because app id is not set");
 
@@ -371,7 +371,7 @@ public class FlutterApp {
     changeState(State.RELOADING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
-      myDaemonApi.restartApp(myAppId, false, pauseAfterRestart);
+      myDaemonApi.restartApp(myAppId, false, pauseAfterRestart, reason);
     future.thenAccept(result -> changeState(State.STARTED));
     future.thenRun(this::notifyAppReloaded);
     return future;

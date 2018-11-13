@@ -67,8 +67,8 @@ public class DaemonApi {
 
   // app domain
 
-  CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause) {
-    return send("app.restart", new AppRestart(appId, fullRestart, pause));
+  CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
+    return send("app.restart", new AppRestart(appId, fullRestart, pause, reason));
   }
 
   CompletableFuture<Boolean> stopApp(@NotNull String appId) {
@@ -391,11 +391,13 @@ public class DaemonApi {
     @NotNull final String appId;
     final boolean fullRestart;
     final boolean pause;
+    @NotNull final String reason;
 
-    AppRestart(@NotNull String appId, boolean fullRestart, boolean pause) {
+    AppRestart(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
       this.appId = appId;
       this.fullRestart = fullRestart;
       this.pause = pause;
+      this.reason = reason;
     }
 
     @Override
