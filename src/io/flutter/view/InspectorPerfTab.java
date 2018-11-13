@@ -66,19 +66,22 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   }
 
   private void buildUI() {
-    setLayout(new GridLayout(1, 2, 5, 5));
+    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
     setBorder(JBUI.Borders.empty(5));
 
     // Header
-    final JPanel headerPanel = new JPanel(new BorderLayout(0, 3));
-    headerPanel.add(new JBLabel("Running in " + app.getLaunchMode() + " mode"), BorderLayout.NORTH);
+    final JPanel headerPanel = new JPanel();
+    final BoxLayout boxLayout = new BoxLayout(headerPanel, BoxLayout.X_AXIS);
+    headerPanel.setLayout(boxLayout);
+    headerPanel.add(new JBLabel("Running in " + app.getLaunchMode() + " mode. "));
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
       headerPanel.add(
-        new JBLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"),
-        BorderLayout.SOUTH
-      );
+        new JLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"));
     }
     headerPanel.setBorder(JBUI.Borders.empty(5));
+    add(headerPanel);
+
+    final JPanel body = new JPanel(new GridLayout(1, 2, 5, 5));
 
     // FPS
     final JPanel fpsPanel = new JPanel(new BorderLayout());
@@ -93,10 +96,9 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory"));
 
     final JPanel fpsAndMemoryContainer = new JPanel(new VerticalLayout(5));
-    fpsAndMemoryContainer.add(headerPanel);
     fpsAndMemoryContainer.add(fpsPanel);
     fpsAndMemoryContainer.add(memoryPanel);
-    add(fpsAndMemoryContainer);
+    body.add(fpsAndMemoryContainer);
 
     // Performance settings
     final JPanel perfSettings = new JPanel(new VerticalLayout(5));
@@ -118,7 +120,9 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel settingsAndWidgetPerfContainer = new JPanel(new VerticalLayout(5));
     settingsAndWidgetPerfContainer.add(perfSettings);
     settingsAndWidgetPerfContainer.add(widgetPerfPanel);
-    add(settingsAndWidgetPerfContainer);
+    body.add(settingsAndWidgetPerfContainer);
+
+    add(body);
   }
 
   private void setTrackRebuildWidgets(boolean selected) {
