@@ -98,6 +98,9 @@ public class FlutterConstants {
     "watcher",
     "yaml");
 
+  // Aligned w/ VSCode (https://github.com/flutter/flutter-intellij/issues/2682)
+  public static String RELOAD_REASON_SAVE = "save";
+  public static String RELOAD_REASON_MANUAL = "manual";
 
   public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   public static final String INDEPENDENT_PATH_SEPARATOR = "/";

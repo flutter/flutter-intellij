@@ -43,6 +43,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.analyzer.DartServerData;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import icons.FlutterIcons;
+import io.flutter.FlutterConstants;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
@@ -114,7 +115,7 @@ public class FlutterReloadManager {
       private @Nullable Project eventProject;
       private @Nullable Editor eventEditor;
 
-      public void beforeActionPerformed(AnAction action, DataContext dataContext, AnActionEvent event) {
+      public void beforeActionPerformed(@NotNull AnAction action, @NotNull DataContext dataContext, AnActionEvent event) {
         if (action instanceof SaveAllAction) {
           // Save the current project value here. If we access later (in afterActionPerformed), we can get
           // exceptions if another event occurs before afterActionPerformed is called.
@@ -134,7 +135,7 @@ public class FlutterReloadManager {
       }
 
       @Override
-      public void afterActionPerformed(AnAction action, DataContext dataContext, AnActionEvent event) {
+      public void afterActionPerformed(AnAction action, @NotNull DataContext dataContext, AnActionEvent event) {
         if (!(action instanceof SaveAllAction)) {
           return;
         }
@@ -206,7 +207,7 @@ public class FlutterReloadManager {
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
-      app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
+      app.performHotReload(supportsPauseAfterReload(), FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
         if (!result.ok()) {
           notification.expire();
           showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
@@ -232,11 +233,11 @@ public class FlutterReloadManager {
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
-  public void saveAllAndReload(@NotNull FlutterApp app) {
+  public void saveAllAndReload(@NotNull FlutterApp app, String reason) {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
 
-      app.performHotReload(supportsPauseAfterReload()).thenAccept(result -> {
+      app.performHotReload(supportsPauseAfterReload(), reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
         }
@@ -250,10 +251,10 @@ public class FlutterReloadManager {
     }
   }
 
-  public void saveAllAndRestart(@NotNull FlutterApp app) {
+  public void saveAllAndRestart(@NotNull FlutterApp app, String reason) {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
-      app.performRestartApp().thenAccept(result -> {
+      app.performRestartApp(reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Restart", result.getMessage(), true);
         }

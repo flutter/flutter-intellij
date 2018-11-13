@@ -15,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import io.flutter.FlutterConstants;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
@@ -333,7 +334,8 @@ class RenderThread extends Thread {
       if (myProcessRequest != null && myApp != null) {
         if (Objects.equals(myProcessRequest.pubRoot.getPath(), packagePath)) {
           try {
-            final DaemonApi.RestartResult restartResult = myApp.performHotReload(false).get(5000, TimeUnit.MILLISECONDS);
+            final DaemonApi.RestartResult restartResult =
+              myApp.performHotReload(false, FlutterConstants.RELOAD_REASON_SAVE).get(5000, TimeUnit.MILLISECONDS);
             if (restartResult.ok()) {
               canRenderWithCurrentProcess = true;
             }
