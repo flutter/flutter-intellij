@@ -3,11 +3,6 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-// Not sure how others debug this but here's one technique.
-// Edit com.intellij.ide.plugins.PluginManagerCore.
-// Add this line at the top of getPluginByClassName():
-// if (true) return getPlugins()[getPlugins().length-1].getPluginId(); // DEBUG do not merge
 package io.flutter;
 
 import static com.intellij.openapi.actionSystem.CommonDataKeys.PROJECT;
@@ -41,6 +36,10 @@ import java.util.concurrent.TimeUnit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// Not sure how others debug this but here's one technique.
+// Edit com.intellij.ide.plugins.PluginManagerCore.
+// Add this line at the top of getPluginByClassName():
+// if (true) return getPlugins()[getPlugins().length-1].getPluginId(); // DEBUG do not merge
 public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
   private static final Logger LOG = Logger.getInstance(FlutterErrorReportSubmitter.class);
   private static final String[] KNOWN_ERRORS = new String[]{"Bad state: No element"};
@@ -63,7 +62,6 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     }
 
     String stackTrace = null, errorMessage = null;
-    String destUrl = "https://github.com/flutter/flutter-intellij/issues/new";
     for (IdeaLoggingEvent event : events) {
       String stackTraceText = event.getThrowableText();
       if (stackTraceText.startsWith(COMPLETION_EXCEPTION_PREFIX)) {
@@ -85,8 +83,6 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
                 if (endOfDartStack > 0) {
                   // Get only the part between quotes. If the format is wrong just use the whole thing.
                   stackTrace = stackTrace.substring(1, endOfDartStack);
-                  // Only send it to Flutter if it is a known issue and in the expected format.
-                  destUrl = "https://github.com/flutter/flutter/issues/new";
                 }
                 break;
               }
@@ -105,7 +101,7 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
     final StringBuilder builder = new StringBuilder();
 
     builder.append("Please file this bug report at ");
-    builder.append(destUrl);
+    builder.append("https://github.com/flutter/flutter-intellij/issues/new");
     builder.append(".\n");
     builder.append("\n");
     builder.append("---\n");
