@@ -6,6 +6,7 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.panels.VerticalLayout;
@@ -66,22 +67,22 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   }
 
   private void buildUI() {
-    setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-    setBorder(JBUI.Borders.empty(5));
+    setLayout(new BorderLayout());
 
     // Header
-    final JPanel headerPanel = new JPanel();
-    final BoxLayout boxLayout = new BoxLayout(headerPanel, BoxLayout.X_AXIS);
-    headerPanel.setLayout(boxLayout);
-    headerPanel.add(new JBLabel("Running in " + app.getLaunchMode() + " mode. "));
-    if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      headerPanel.add(
-        new JLabel("<html><body><p style='color:red'>Note: for best results, re-run in profile mode</p></body></html>"));
-    }
-    headerPanel.setBorder(JBUI.Borders.empty(5));
-    add(headerPanel);
+    final JPanel labels = new JPanel(new BorderLayout(6, 0));
+    labels.setBorder(JBUI.Borders.empty(3, 10));
+    add(labels, BorderLayout.NORTH);
 
-    final JPanel body = new JPanel(new GridLayout(1, 2, 5, 5));
+    labels.add(
+      new JBLabel("Running in " + app.getLaunchMode() + " mode"),
+      BorderLayout.WEST);
+
+    if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
+      final JBLabel label = new JBLabel("(note: for best results, re-run in profile mode)");
+      label.setForeground(JBColor.RED);
+      labels.add(label, BorderLayout.CENTER);
+    }
 
     // FPS
     final JPanel fpsPanel = new JPanel(new BorderLayout());
@@ -94,11 +95,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
     memoryPanel.add(heapDisplay, BorderLayout.CENTER);
     memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory"));
-
-    final JPanel fpsAndMemoryContainer = new JPanel(new VerticalLayout(5));
-    fpsAndMemoryContainer.add(fpsPanel);
-    fpsAndMemoryContainer.add(memoryPanel);
-    body.add(fpsAndMemoryContainer);
 
     // Performance settings
     final JPanel perfSettings = new JPanel(new VerticalLayout(5));
@@ -117,12 +113,19 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     // Perf info and tips
     widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
 
+    final JPanel fpsAndMemoryContainer = new JPanel(new VerticalLayout(5));
+    fpsAndMemoryContainer.add(fpsPanel);
+    fpsAndMemoryContainer.add(memoryPanel);
+
     final JPanel settingsAndWidgetPerfContainer = new JPanel(new VerticalLayout(5));
     settingsAndWidgetPerfContainer.add(perfSettings);
     settingsAndWidgetPerfContainer.add(widgetPerfPanel);
-    body.add(settingsAndWidgetPerfContainer);
 
-    add(body);
+    final JPanel bodyPanel = new JPanel(new GridLayout(1, 2, 5, 5));
+    bodyPanel.setBorder(JBUI.Borders.empty(5));
+    bodyPanel.add(fpsAndMemoryContainer);
+    bodyPanel.add(settingsAndWidgetPerfContainer);
+    add(bodyPanel, BorderLayout.CENTER);
   }
 
   private void setTrackRebuildWidgets(boolean selected) {
