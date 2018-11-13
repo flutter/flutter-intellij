@@ -76,7 +76,6 @@ public class DaemonApi {
     this((String json) -> sendCommand(json, process));
   }
 
-  // app domain
 
   CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
     return send("app.restart", new AppRestart(appId, fullRestart, pause, reason));
