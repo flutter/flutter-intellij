@@ -86,6 +86,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     boolean sendRestartNotificationOnNextFrame = false;
   }
 
+  private Content emptyContent;
+
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
 
   public static final String WIDGET_TAB_LABEL = "Widgets";
@@ -408,6 +410,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
+    if (emptyContent != null) {
+      final ContentManager contentManager = toolWindow.getContentManager();
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     listenForRenderTreeActivations(toolWindow);
@@ -472,6 +480,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     toolWindow.setIcon(FlutterIcons.Flutter_13);
+
+    // Display a 'No running applications' message.
+    final ContentManager contentManager = toolWindow.getContentManager();
+    final JPanel panel = new JPanel(new BorderLayout());
+    final JBLabel label = new JBLabel("No running applications", SwingConstants.CENTER);
+    label.setForeground(UIUtil.getLabelDisabledForeground());
+    panel.add(label, BorderLayout.CENTER);
+    emptyContent = contentManager.getFactory().createContent(panel, null, false);
+    contentManager.addContent(emptyContent);
   }
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
