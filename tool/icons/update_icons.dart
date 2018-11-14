@@ -81,10 +81,6 @@ void generateProperties(List<Icon> icons, String filename, String pathSegment) {
 
 void generateDart(
     List<Icon> icons, String filename, String prefix, String import) {
-//  final List<IconData> icons = [
-//    Icons.visibility
-//  ];
-
   StringBuffer buf = StringBuffer();
   buf.writeln('// Generated file - do not edit.');
   buf.writeln();
