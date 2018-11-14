@@ -21,9 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Objects;
 
-
 public class FlutterCompletionContributor extends DartCompletionExtension {
-
   private static final int ICON_SIZE = 16;
   private static final Icon EMPTY_ICON = JBUI.scale(EmptyIcon.create(ICON_SIZE));
 
@@ -56,7 +54,12 @@ public class FlutterCompletionContributor extends DartCompletionExtension {
             }
           }
           else if (Objects.equals(declaringType, "Icons")) {
-            final Icon icon = FlutterMaterialIcons.getMaterialIconForName(name);
+            final Icon icon = FlutterMaterialIcons.getIconForName(name);
+            // If we have no icon, show an empty node (which is preferable to the default "IconData" text).
+            return icon != null ? icon : EMPTY_ICON;
+          }
+          else if (Objects.equals(declaringType, "CupertinoIcons")) {
+            final Icon icon = FlutterCupertinoIcons.getIconForName(name);
             // If we have no icon, show an empty node (which is preferable to the default "IconData" text).
             return icon != null ? icon : EMPTY_ICON;
           }

@@ -154,7 +154,7 @@ class DiagnosticsTreeCellRenderer extends InspectorColoredTreeCellRenderer {
           case "IconData": {
             final int codePoint = getIntMember(properties, "codePoint");
             if (codePoint > 0) {
-              final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(String.format("%1$04x", codePoint));
+              final Icon icon = FlutterMaterialIcons.getIconForHex(String.format("%1$04x", codePoint));
               if (icon != null) {
                 this.addIcon(icon);
                 this.setIconOpaque(false);
