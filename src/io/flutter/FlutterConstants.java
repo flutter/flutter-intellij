@@ -11,7 +11,7 @@ import java.util.List;
 
 public class FlutterConstants {
 
-  // From: analyzer Token.Keywords
+  // From: https://github.com/dart-lang/sdk/blob/master/pkg/front_end/lib/src/scanner/token.dart
   public static final List<String> DART_KEYWORDS = Arrays.asList(
     "abstract",
     "as",
@@ -46,8 +46,10 @@ public class FlutterConstants {
     "implements",
     "import",
     "in",
+    "interface",
     "is",
     "library",
+    "mixin",
     "native",
     "new",
     "null",
