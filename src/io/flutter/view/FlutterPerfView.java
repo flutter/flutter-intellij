@@ -155,9 +155,9 @@ public class FlutterPerfView implements Disposable {
     state.tabs = runnerTabs;
 
     final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs);
-    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
+    toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterPerfViewToolbar", toolbarGroup, true).getComponent());
 
-    final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("InspectorToolbar", toolbarGroup, true);
+    final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("PerformanceToolbar", toolbarGroup, true);
     final JComponent toolbarComponent = toolbar.getComponent();
     toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
     tabContainer.add(toolbarComponent, BorderLayout.NORTH);
