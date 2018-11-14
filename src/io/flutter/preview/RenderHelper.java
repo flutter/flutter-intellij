@@ -335,7 +335,7 @@ class RenderThread extends Thread {
         if (Objects.equals(myProcessRequest.pubRoot.getPath(), packagePath)) {
           try {
             final DaemonApi.RestartResult restartResult =
-              myApp.performHotReload(false, FlutterConstants.RELOAD_REASON_SAVE).get(5000, TimeUnit.MILLISECONDS);
+              myApp.performHotReload(false, FlutterConstants.RELOAD_REASON_TOOL).get(5000, TimeUnit.MILLISECONDS);
             if (restartResult.ok()) {
               canRenderWithCurrentProcess = true;
             }
