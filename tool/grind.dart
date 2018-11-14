@@ -32,8 +32,8 @@ colors() async {
   file.writeAsStringSync(str);
 
   // Run tool/color/colors_main.dart, pipe output to //resources/flutter/color.properties.
-  ProcessResult result = Process
-      .runSync(Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
+  ProcessResult result = Process.runSync(
+      Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
   if (result.exitCode != 0) {
     fail('${result.stdout}\n${result.stderr}');
   }
@@ -44,18 +44,8 @@ colors() async {
 
 @Task('Generate Flutter icon information')
 icons() async {
-  final String kUrl = 'https://raw.githubusercontent.com/flutter/flutter/'
-      'master/dev/tools/update_icons.dart';
-
-  // Get color file from flutter.
-  HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
-  HttpClientResponse response = await request.close();
-  List<String> data = await response.transform(utf8.decoder).toList();
-  File file = new File('tool/icons/update_icons.dart');
-  file.writeAsStringSync(data.join(''));
-
-  // Run tool/icons/icons_main.dart.
-  await Dart.runAsync('tool/icons/icons_main.dart');
+  // Run tool/icons/update_icons.dart.
+  await Dart.runAsync('tool/icons/update_icons.dart');
 }
 
 @Task('Create Outline view icons from svgs')
@@ -103,8 +93,8 @@ void _createPng(
     ]);
 
     if (result.exitCode != 0) {
-      print('Error resizing image with imagemagick: ${result.stdout}\n${result
-          .stderr}');
+      print(
+          'Error resizing image with imagemagick: ${result.stdout}\n${result.stderr}');
       exit(1);
     }
   } finally {
