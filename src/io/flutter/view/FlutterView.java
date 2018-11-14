@@ -484,7 +484,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     // Display a 'No running applications' message.
     final ContentManager contentManager = toolWindow.getContentManager();
     final JPanel panel = new JPanel(new BorderLayout());
-    final JLabel label = new JLabel("No running applications", SwingConstants.CENTER);
+    final JBLabel label = new JBLabel("No running applications", SwingConstants.CENTER);
     label.setForeground(UIUtil.getLabelDisabledForeground());
     panel.add(label, BorderLayout.CENTER);
     emptyContent = contentManager.getFactory().createContent(panel, null, false);
