@@ -633,19 +633,10 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
     setExtensionCommand(SHOW_REPAINT_RAINBOW);
   }
 
+  @Override
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension(SHOW_REPAINT_RAINBOW, isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
     }
   }
 }
@@ -657,6 +648,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
     setExtensionCommand("ext.flutter.inspector.show");
   }
 
+  @Override
   protected void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension("ext.flutter.inspector.show", isSelected());
@@ -672,6 +664,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
     }
   }
 
+  @Override
   public void handleAppRestarted() {
     if (isSelected()) {
       setSelected(null, false);
@@ -696,6 +689,7 @@ class ForceRefreshAction extends FlutterViewAction {
     update(event);
   }
 
+  @Override
   protected void perform(final AnActionEvent event) {
     if (app.isSessionActive()) {
       setEnabled(event, false);
@@ -723,16 +717,6 @@ class HideSlowBannerAction extends FlutterViewToggleableAction {
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
     }
   }
 }

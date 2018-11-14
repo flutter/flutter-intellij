@@ -203,7 +203,7 @@ public class FlutterPerfView implements Disposable {
   }
 
   FlutterViewAction registerAction(FlutterViewAction action) {
-    getOrCreateStateForApp(action.app).flutterPerfViewActions.add(action);
+    getOrCreateStateForApp(action.app).flutterViewActions.add(action);
     return action;
   }
 
@@ -307,7 +307,7 @@ public class FlutterPerfView implements Disposable {
   private static class PerfViewAppState {
     @Nullable Content content;
     @Nullable Disposable disposable;
-    ArrayList<FlutterViewAction> flutterPerfViewActions = new ArrayList<>();
     JBRunnerTabs tabs;
+    ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
   }
 }

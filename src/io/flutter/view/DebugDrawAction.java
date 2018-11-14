@@ -19,19 +19,10 @@ class DebugDrawAction extends FlutterViewToggleableAction {
     setExtensionCommand("ext.flutter.debugPaint");
   }
 
+  @Override
   protected void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension("ext.flutter.debugPaint", isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
     }
   }
 }

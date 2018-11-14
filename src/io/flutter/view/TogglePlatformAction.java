@@ -66,6 +66,7 @@ class TogglePlatformAction extends FlutterViewAction {
     }
   }
 
+  @Override
   public void handleAppRestarted() {
     if (isCurrentlyAndroid != null) {
       app.togglePlatform(isCurrentlyAndroid);

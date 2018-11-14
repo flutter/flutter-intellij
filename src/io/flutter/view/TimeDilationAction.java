@@ -21,6 +21,7 @@ class TimeDilationAction extends FlutterViewToggleableAction {
     setExtensionCommand("ext.flutter.timeDilation");
   }
 
+  @Override
   protected void perform(@Nullable AnActionEvent event) {
     final Map<String, Object> params = new HashMap<>();
     params.put("timeDilation", isSelected() ? 5.0 : 1.0);
@@ -29,6 +30,7 @@ class TimeDilationAction extends FlutterViewToggleableAction {
     }
   }
 
+  @Override
   public void handleAppRestarted() {
     if (isSelected()) {
       perform(null);

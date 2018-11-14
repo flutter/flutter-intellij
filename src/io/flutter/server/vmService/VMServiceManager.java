@@ -9,6 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
+import com.jetbrains.lang.dart.flutter.FlutterUtil;
 import gnu.trove.THashMap;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.HeapMonitor.HeapListener;
@@ -42,8 +43,10 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   private boolean isRunning;
   private int polledCount;
+  private FlutterApp app;
 
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
+    this.app = app;
     app.addStateListener(this);
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
@@ -244,6 +247,16 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
       else if (!stream.getValue()) {
         stream.setValue(true);
+      }
+
+      if (serviceExtensionState.get(name) != null && serviceExtensionState.get(name).getValue()) {
+        // We should not call the service extension for the follwing extension.
+        if (StringUtil.equals(name, "ext.flutter.inspector.show")) {
+          return;
+        }
+        if (app.isSessionActive()) {
+          app.callBooleanExtension(name, true);
+        }
       }
     }
   }

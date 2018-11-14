@@ -18,22 +18,13 @@ class PerformanceOverlayAction extends FlutterViewToggleableAction {
 
   PerformanceOverlayAction(@NotNull FlutterApp app) {
     super(app, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
-    setExtensionCommand("ext.flutter.showPerformanceOverlay");
+    setExtensionCommand(SHOW_PERFORMANCE_OVERLAY);
   }
 
+  @Override
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension(SHOW_PERFORMANCE_OVERLAY, isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
     }
   }
 }
