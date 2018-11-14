@@ -22,6 +22,11 @@ Future main() async {
 
   await pumpEventQueue();
 
+  // TODO(devoncarew): Below, we could queue up some or all findAndSave()
+  // operations and then wait for all futures to complete (using a Pool?).
+  // Assuming we don't get out of memory issues this might finish much faster as
+  // there is a decent amount of delay getting data from the gpu for each icon.
+
   for (material.IconTuple icon in material.icons) {
     await findAndSave(icon.smallKey, '$root/material/${icon.name}.png',
         small: true);
@@ -41,11 +46,13 @@ class MyIconApp extends StatelessWidget {
   MyIconApp(this.materialIcons, this.cupertinoIcons)
       : super(key: new UniqueKey());
 
-  final List<material.IconTuple> materialIcons; // 16x16
-  final List<cupertino.IconTuple> cupertinoIcons; // 32x32
+  final List<material.IconTuple> materialIcons;
+  final List<cupertino.IconTuple> cupertinoIcons;
 
   @override
   Widget build(BuildContext context) {
+    // We use this color as it works well in both IntelliJ's light theme and in
+    // Darkula.
     const Color color = const Color(0xFF777777);
 
     Stack cupertinoSmallStack = new Stack(
@@ -131,7 +138,8 @@ Future findAndSave(Key key, String path, {bool small: true}) async {
   final ui.Image image = await imageFuture;
   final ByteData bytes = await image.toByteData(format: ui.ImageByteFormat.png);
 
-  new File(path).writeAsBytesSync(bytes.buffer.asUint8List());
+  await new File(path).writeAsBytes(bytes.buffer.asUint8List());
+
   print('wrote $path');
 }
 

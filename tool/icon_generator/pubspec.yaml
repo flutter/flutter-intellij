@@ -1,5 +1,5 @@
 name: icon_generator
-description: A new Flutter project.
+description: Generates preview images for the Material and Cupertino icons.
 version: 1.0.0+1
 
 environment:

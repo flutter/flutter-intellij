@@ -43,7 +43,8 @@ Future<String> downloadUrl(String url) async {
   return data.join('');
 }
 
-// static const IconData threesixty = IconData(0xe577,
+// The pattern below is meant to match lines like:
+//   'static const IconData threesixty = IconData(0xe577,'
 final RegExp regexp =
     new RegExp(r'static const IconData (\S+) = IconData\(0x(\S+),');
 
@@ -82,20 +83,21 @@ void generateProperties(List<Icon> icons, String filename, String pathSegment) {
 void generateDart(
     List<Icon> icons, String filename, String prefix, String import) {
   StringBuffer buf = StringBuffer();
-  buf.writeln('// Generated file - do not edit.');
-  buf.writeln();
-  buf.writeln("import 'package:flutter/$import.dart';");
-  buf.writeln();
-  buf.writeln('class IconTuple {');
-  buf.writeln('  final IconData data;');
-  buf.writeln('  final String name;');
-  buf.writeln('  final Key smallKey = new UniqueKey();');
-  buf.writeln('  final Key largeKey = new UniqueKey();');
-  buf.writeln('');
-  buf.writeln('  IconTuple(this.data, this.name);');
-  buf.writeln('}');
-  buf.writeln('');
-  buf.writeln('final List<IconTuple> icons = [');
+  buf.writeln('''
+// Generated file - do not edit.
+
+import 'package:flutter/$import.dart';
+
+class IconTuple {
+  final IconData data;
+  final String name;
+  final Key smallKey = new UniqueKey();
+  final Key largeKey = new UniqueKey();
+
+  IconTuple(this.data, this.name);
+}
+
+final List<IconTuple> icons = [''');
 
   for (Icon icon in icons) {
     buf.writeln('  new IconTuple($prefix.${icon.name}, \'${icon.name}\'),');
