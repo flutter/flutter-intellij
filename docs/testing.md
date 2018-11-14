@@ -5,7 +5,7 @@ Manual tests to execute before plugin releases.
 ## Setup
 
 Pre-reqs: Run through the [flutter setup](https://flutter.io/docs/get-started/install) and
-[flutter getting started](https://flutter.io/getting-started/) guides.
+[flutter getting started](https://flutter.io/docs/development/tools/ide) guides.
 
 * Run `flutter upgrade` in a terminal to get the latest version prior to starting testing.
 

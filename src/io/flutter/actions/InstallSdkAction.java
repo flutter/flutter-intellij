@@ -26,6 +26,7 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.labels.LinkLabel;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
@@ -168,7 +169,7 @@ public class InstallSdkAction extends DumbAwareAction {
     @Override
     void perform() {
       FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
-      BrowserUtil.browse("https://flutter.io/docs/get-started/install");
+      BrowserUtil.browse(FlutterConstants.URL_GETTING_STARTED);
     }
 
     @Override
