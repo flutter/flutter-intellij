@@ -8,6 +8,7 @@ package io.flutter.module.settings;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ui.components.labels.LinkLabel;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -40,7 +41,7 @@ public class SettingsHelpForm {
     gettingStartedUrl.setIcon(null);
     //noinspection unchecked
     gettingStartedUrl
-      .setListener((label, linkUrl) -> BrowserLauncher.getInstance().browse("https://flutter.io/getting-started/", null), null);
+      .setListener((label, linkUrl) -> BrowserLauncher.getInstance().browse(FlutterConstants.URL_GETTING_STARTED, null), null);
   }
 
 

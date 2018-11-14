@@ -21,6 +21,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.wm.ToolWindowId;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
@@ -29,18 +30,14 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import java.util.ArrayList;
-import java.util.List;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JTextPane;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class AttachDebuggerAction extends FlutterSdkAction {
-  @SuppressWarnings("FieldCanBeLocal")
-  private static String RUN_DEBUG_LINK = "https://flutter.io/using-ide/#running-and-debugging";
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.List;
 
+public class AttachDebuggerAction extends FlutterSdkAction {
   @Override
   public void startCommand(@NotNull Project project, @NotNull FlutterSdk sdk, @Nullable PubRoot root, @NotNull DataContext context) {
     // NOTE: When making changes here, consider making similar changes to RunFlutterAction.
@@ -136,7 +133,7 @@ public class AttachDebuggerAction extends FlutterSdkAction {
                             "<p>The run configuration for the Flutter module must be selected." +
                             "<p>Please change the run configuration to the one created when the<br>" +
                             "module was created. See <a href=\"" +
-                            RUN_DEBUG_LINK +
+                            FlutterConstants.URL_RUN_AND_DEBUG +
                             "\">the Flutter documentation</a> for more information.</body></html>";
       myTextPane.setText(selectConfig);
       myPanel.add(myTextPane);

@@ -107,6 +107,10 @@ public class FlutterConstants {
   public static final String INDEPENDENT_PATH_SEPARATOR = "/";
   public static final int MAX_MODULE_NAME_LENGTH = 30;
 
+  public static final String URL_GETTING_STARTED = "https://flutter.io/docs/get-started/install";
+  public static final String URL_GETTING_STARTED_IDE = "https://flutter.io/docs/development/tools/ide";
+  public static final String URL_RUN_AND_DEBUG = "https://flutter.io/docs/development/tools/ide/android-studio#running-and-debugging";
+
   private FlutterConstants() {
 
   }
