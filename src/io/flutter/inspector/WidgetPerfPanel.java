@@ -37,7 +37,6 @@ import java.util.ArrayList;
  * file.
  */
 public class WidgetPerfPanel extends JPanel {
-  static final int PANEL_HEIGHT = 240;
   static final int PERF_TIP_COMPUTE_DELAY = 1000;
   private final JBLabel perfMessage;
   private final FlutterApp app;
@@ -70,8 +69,6 @@ public class WidgetPerfPanel extends JPanel {
     this.app = app;
     perfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
 
-    setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
-    setMaximumSize(new Dimension(Short.MAX_VALUE, PANEL_HEIGHT));
     perfMessage = new JBLabel();
     final Box labelBox = Box.createHorizontalBox();
     labelBox.add(perfMessage);
