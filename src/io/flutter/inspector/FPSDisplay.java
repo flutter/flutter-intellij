@@ -171,7 +171,11 @@ class FPSPanel extends JPanel {
           widget = new JLabel();
           widget.setOpaque(true);
           widget.setBackground(frame.isSlowFrame() ? JBColor.RED : UIUtil.getLabelForeground());
-          widget.setToolTipText(FPSDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms");
+          widget.setToolTipText(frame.isSlowFrame()
+                                ? "This frame took " +
+                                  FPSDisplay.df.format(frame.elapsedMicros / 1000.0d) +
+                                  "ms to render, which can cause frame rate to drop below 60 FPS"
+                                : "This frame took " + FPSDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms to render");
           frameWidgets.put(frame, widget);
           add(widget);
         }

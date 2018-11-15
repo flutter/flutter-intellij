@@ -88,7 +88,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel fpsPanel = new JPanel(new BorderLayout());
     final JPanel fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
     fpsPanel.add(fpsDisplay, BorderLayout.CENTER);
-    fpsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "FPS"));
+    fpsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Frames Per Second"));
 
     // Memory
     final JPanel memoryPanel = new JPanel(new BorderLayout());
