@@ -59,7 +59,7 @@ public class FrameRenderingDisplay {
     targetFrameTimeLabel.setForeground(UIUtil.getLabelDisabledForeground());
     targetFrameTimeLabel.setBorder(JBUI.Borders.empty(2));
     targetFrameTimeLabel.setOpaque(false);
-    targetFrameTimeLabel.setToolTipText("Targeting 16ms per frame will\n result in 60 frames per second.");
+    targetFrameTimeLabel.setToolTipText("Targeting 16ms per frame will\nresult in 60 frames per second.");
     final JBPanel targetFrameTimePanel = new JBPanel();
     targetFrameTimePanel.setLayout(new BoxLayout(targetFrameTimePanel, BoxLayout.Y_AXIS));
     targetFrameTimePanel.setOpaque(false);
@@ -141,6 +141,7 @@ class FrameRenderingPanel extends JPanel {
     try {
       g2.setStroke(STROKE);
       final Path2D path = new Path2D.Float();
+      // Slight left indent to allow space for [targetFrameTimeLabel].
       path.moveTo(34, height - y);
       path.lineTo(bounds.width, height - y);
       g2.draw(path);
@@ -183,7 +184,7 @@ class FrameRenderingPanel extends JPanel {
           widget.setToolTipText(frame.isSlowFrame()
                                 ? "This frame took " +
                                   FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) +
-                                  "ms to render, which\n can cause frame rate to drop below 60 FPS."
+                                  "ms to render, which\ncan cause frame rate to drop below 60 FPS."
                                 : "This frame took " + FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms to render.");
           frameWidgets.put(frame, widget);
           add(widget);
