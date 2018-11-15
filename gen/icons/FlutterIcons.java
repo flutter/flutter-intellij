@@ -48,6 +48,7 @@ public class FlutterIcons {
   public static final Icon AndroidStudioNewProject = load("/icons/template_new_project.png");
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
   public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
+  public static final Icon AndroidStudioNewModule = load("/icons/template_new_module.png");
 
   public static final Icon AttachDebugger = load("/icons/attachDebugger.png");
 
