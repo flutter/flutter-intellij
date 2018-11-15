@@ -184,7 +184,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       toolbarGroup.add(registerAction(new ForceRefreshAction(app, inspectorService)));
     }
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new DebugDrawAction(app)));
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
@@ -620,7 +620,6 @@ class OpenTimelineViewAction extends FlutterViewAction {
     }
   }
 }
-
 
 
 class RepaintRainbowAction extends FlutterViewToggleableAction {

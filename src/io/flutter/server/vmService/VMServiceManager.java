@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener {
+  @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
@@ -43,7 +44,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   private boolean isRunning;
   private int polledCount;
-  private FlutterApp app;
 
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
@@ -249,13 +249,13 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
         stream.setValue(true);
       }
 
-      if (serviceExtensionState.get(name) != null && serviceExtensionState.get(name).getValue()) {
+      // Restore any previously true states by calling their service extensions.
+      if (getServiceExtensionState(name).getValue()) {
         // We should not call the service extension for the follwing extension.
-        if (StringUtil.equals(name, "ext.flutter.inspector.show")) {
-          return;
-        }
-        if (app.isSessionActive()) {
-          app.callBooleanExtension(name, true);
+        if (!StringUtil.equals(name, "ext.flutter.inspector.show")) {
+          if (app.isSessionActive()) {
+            app.callBooleanExtension(name, true);
+          }
         }
       }
     }

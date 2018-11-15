@@ -11,8 +11,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-class DebugDrawAction extends FlutterViewToggleableAction {
-  DebugDrawAction(@NotNull FlutterApp app) {
+class DebugPaintAction extends FlutterViewToggleableAction {
+  DebugPaintAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
           AllIcons.General.TbShown);
 
