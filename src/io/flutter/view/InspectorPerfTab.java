@@ -6,6 +6,7 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
@@ -15,10 +16,12 @@ import io.flutter.inspector.*;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.FlutterFramesMonitor;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.text.DecimalFormat;
 
 import static io.flutter.view.PerformanceOverlayAction.SHOW_PERFORMANCE_OVERLAY;
 import static io.flutter.view.RepaintRainbowAction.SHOW_REPAINT_RAINBOW;
@@ -85,10 +88,22 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     }
 
     // FPS
-    final JPanel fpsPanel = new JPanel(new BorderLayout());
-    final JPanel fpsDisplay = FPSDisplay.createJPanelView(parentDisposable, app);
-    fpsPanel.add(fpsDisplay, BorderLayout.CENTER);
-    fpsPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "FPS"));
+    assert app.getVMServiceManager() != null;
+    final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();
+    final JBLabel fpsLabel = new JBLabel("Frames per second: ");
+    final FlutterFramesMonitor.Listener listener = event -> {
+      fpsLabel.setText("Frames per second: " + new DecimalFormat().format(flutterFramesMonitor.getFPS()));
+      SwingUtilities.invokeLater(fpsLabel::repaint);
+    };
+    flutterFramesMonitor.addListener(listener);
+    Disposer.register(parentDisposable, () -> flutterFramesMonitor.removeListener(listener));
+    fpsLabel.setBorder(JBUI.Borders.empty(0, 5));
+
+    // Frame Rendering
+    final JPanel frameRenderingPanel = new JPanel(new BorderLayout());
+    final JPanel frameRenderingDisplay = FrameRenderingDisplay.createJPanelView(parentDisposable, app);
+    frameRenderingPanel.add(frameRenderingDisplay, BorderLayout.CENTER);
+    frameRenderingPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Frame Rendering Time"));
 
     // Memory
     final JPanel memoryPanel = new JPanel(new BorderLayout());
@@ -113,18 +128,19 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     // Perf info and tips
     widgetPerfPanel = new WidgetPerfPanel(parentDisposable, app);
 
-    final JPanel fpsAndMemoryContainer = new JPanel(new VerticalLayout(5));
-    fpsAndMemoryContainer.add(fpsPanel);
-    fpsAndMemoryContainer.add(memoryPanel);
+    final JPanel leftColumn = new JPanel(new VerticalLayout(5));
+    leftColumn.add(fpsLabel);
+    leftColumn.add(frameRenderingPanel);
+    leftColumn.add(memoryPanel);
 
-    final JPanel settingsAndWidgetPerfContainer = new JPanel(new VerticalLayout(5));
-    settingsAndWidgetPerfContainer.add(perfSettings);
-    settingsAndWidgetPerfContainer.add(widgetPerfPanel);
+    final JPanel rightColumn = new JPanel(new VerticalLayout(5));
+    rightColumn.add(perfSettings);
+    rightColumn.add(widgetPerfPanel);
 
     final JPanel bodyPanel = new JPanel(new GridLayout(1, 2, 5, 5));
     bodyPanel.setBorder(JBUI.Borders.empty(5));
-    bodyPanel.add(fpsAndMemoryContainer);
-    bodyPanel.add(settingsAndWidgetPerfContainer);
+    bodyPanel.add(leftColumn);
+    bodyPanel.add(rightColumn);
     add(bodyPanel, BorderLayout.CENTER);
   }
 

@@ -9,6 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
@@ -21,12 +22,14 @@ import java.text.DecimalFormat;
 import java.util.*;
 import java.util.List;
 
-public class FPSDisplay {
+public class FrameRenderingDisplay {
   static final DecimalFormat df = new DecimalFormat();
 
   static {
     df.setMaximumFractionDigits(1);
   }
+
+  private static final String TARGET_FRAME_RENDERING_TIME = "16ms";
 
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
@@ -37,41 +40,47 @@ public class FPSDisplay {
     assert app.getVMServiceManager() != null;
     final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();
 
-    final FPSPanel fpsPanel = new FPSPanel(flutterFramesMonitor);
+    final FrameRenderingPanel frameRenderingPanel = new FrameRenderingPanel(flutterFramesMonitor);
 
-    final JPanel labelsPanel = new JPanel();
-    labelsPanel.setOpaque(false);
-    labelsPanel.setLayout(new BoxLayout(labelsPanel, BoxLayout.X_AXIS));
-    panel.add(fpsPanel);
-    panel.add(labelsPanel);
+    final JBLabel latestFrameTimeLabel = new JBLabel();
+    latestFrameTimeLabel.setAlignmentX(Component.RIGHT_ALIGNMENT);
+    latestFrameTimeLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+    latestFrameTimeLabel.setForeground(UIUtil.getLabelDisabledForeground());
+    latestFrameTimeLabel.setBorder(JBUI.Borders.empty(0, 4));
+    latestFrameTimeLabel.setOpaque(false);
+    latestFrameTimeLabel.setToolTipText("Rendering time of latest frame.");
+    final JBPanel latestFrameTimePanel = new JBPanel();
+    latestFrameTimePanel.setLayout(new BoxLayout(latestFrameTimePanel, BoxLayout.Y_AXIS));
+    latestFrameTimePanel.setOpaque(false);
+    latestFrameTimePanel.add(latestFrameTimeLabel);
 
-    final JBLabel fpsLabel = new JBLabel();
-    fpsLabel.setAlignmentY(Component.TOP_ALIGNMENT);
-    fpsLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-    fpsLabel.setForeground(UIUtil.getLabelDisabledForeground());
-    fpsLabel.setOpaque(false);
-    fpsLabel.setBorder(JBUI.Borders.empty(4));
+    final JBLabel targetFrameTimeLabel = new JBLabel(TARGET_FRAME_RENDERING_TIME);
+    targetFrameTimeLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
+    targetFrameTimeLabel.setForeground(UIUtil.getLabelDisabledForeground());
+    targetFrameTimeLabel.setBorder(JBUI.Borders.empty(2));
+    targetFrameTimeLabel.setOpaque(false);
+    targetFrameTimeLabel.setToolTipText("Targeting 16ms per frame will\nresult in 60 frames per second.");
+    final JBPanel targetFrameTimePanel = new JBPanel();
+    targetFrameTimePanel.setLayout(new BoxLayout(targetFrameTimePanel, BoxLayout.Y_AXIS));
+    targetFrameTimePanel.setOpaque(false);
+    targetFrameTimePanel.add(Box.createVerticalGlue());
+    targetFrameTimePanel.add(targetFrameTimeLabel);
+    targetFrameTimePanel.add(Box.createVerticalGlue());
 
-    final JBLabel elapsedLabel = new JBLabel("", SwingConstants.RIGHT);
-    elapsedLabel.setAlignmentY(Component.TOP_ALIGNMENT);
-    elapsedLabel.setFont(UIUtil.getLabelFont(UIUtil.FontSize.SMALL));
-    elapsedLabel.setForeground(UIUtil.getLabelDisabledForeground());
-    elapsedLabel.setOpaque(false);
-    elapsedLabel.setBorder(JBUI.Borders.empty(4));
-
-    labelsPanel.add(fpsLabel);
-    labelsPanel.add(Box.createHorizontalGlue());
-    labelsPanel.add(elapsedLabel);
+    panel.add(frameRenderingPanel);
+    panel.add(latestFrameTimePanel);
+    panel.add(targetFrameTimePanel);
 
     final FlutterFramesMonitor.Listener listener = event -> {
-      fpsPanel.update();
+      frameRenderingPanel.update();
 
       final int ms = Math.round(event.elapsedMicros / 1000.0f);
-      elapsedLabel.setText(ms + "ms");
-      SwingUtilities.invokeLater(elapsedLabel::repaint);
+      latestFrameTimeLabel.setText(ms + "ms");
+      SwingUtilities.invokeLater(latestFrameTimeLabel::repaint);
 
-      fpsLabel.setText(df.format(flutterFramesMonitor.getFPS()) + " FPS");
-      SwingUtilities.invokeLater(fpsLabel::repaint);
+      // Repaint this after each frame so that the label does not get painted over by the frame rendering panel.
+      targetFrameTimeLabel.setText(TARGET_FRAME_RENDERING_TIME);
+      SwingUtilities.invokeLater(targetFrameTimeLabel::repaint);
     };
 
     flutterFramesMonitor.addListener(listener);
@@ -81,14 +90,14 @@ public class FPSDisplay {
   }
 }
 
-class FPSPanel extends JPanel {
+class FrameRenderingPanel extends JPanel {
   private final FlutterFramesMonitor framesMonitor;
 
   private final Map<FlutterFramesMonitor.FlutterFrameEvent, JComponent> frameWidgets = new HashMap<>();
 
   private Rectangle lastSavedBounds;
 
-  FPSPanel(FlutterFramesMonitor framesMonitor) {
+  FrameRenderingPanel(FlutterFramesMonitor framesMonitor) {
     this.framesMonitor = framesMonitor;
 
     setLayout(null);
@@ -132,7 +141,8 @@ class FPSPanel extends JPanel {
     try {
       g2.setStroke(STROKE);
       final Path2D path = new Path2D.Float();
-      path.moveTo(0, height - y);
+      // Slight left indent to allow space for [targetFrameTimeLabel].
+      path.moveTo(34, height - y);
       path.lineTo(bounds.width, height - y);
       g2.draw(path);
     }
@@ -171,7 +181,11 @@ class FPSPanel extends JPanel {
           widget = new JLabel();
           widget.setOpaque(true);
           widget.setBackground(frame.isSlowFrame() ? JBColor.RED : UIUtil.getLabelForeground());
-          widget.setToolTipText(FPSDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms");
+          widget.setToolTipText(frame.isSlowFrame()
+                                ? "This frame took " +
+                                  FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) +
+                                  "ms to render, which\ncan cause frame rate to drop below 60 FPS."
+                                : "This frame took " + FrameRenderingDisplay.df.format(frame.elapsedMicros / 1000.0d) + "ms to render.");
           frameWidgets.put(frame, widget);
           add(widget);
         }
