@@ -124,7 +124,7 @@
     <!-- main toolbar run actions -->
     <action id="AttachDebuggerAction"
             class="io.flutter.actions.AttachDebuggerAction"
-            text="Attach debugger to embedded Flutter process"
+            text="Flutter Attach"
             description="Attach debugger to a Flutter process embedded in an Android app"
             icon="FlutterIcons.AttachDebugger">
       <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
@@ -139,6 +139,7 @@
     <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">
       <separator/>
+      <reference ref="AttachDebuggerAction"/>
       <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
