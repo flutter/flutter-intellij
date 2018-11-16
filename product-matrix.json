@@ -11,7 +11,17 @@
       "untilBuild": "181.*"
     },
     {
-      "comments": "AS 3.3 Beta and IntelliJ 2018.2",
+      "comments": "IntelliJ 2018.2",
+      "name": "IntelliJ",
+      "version": "2018.2.2",
+      "ideaProduct": "ideaIU",
+      "ideaVersion": "2018.2.2",
+      "dartPluginVersion": "182.4129.13",
+      "sinceBuild": "182.0",
+      "untilBuild": "182.4505"
+    },
+    {
+      "comments": "AS 3.3 Beta and IntelliJ 2018.4",
       "name": "IntelliJ",
       "version": "2018.2.4",
       "ideaProduct": "android-studio",
