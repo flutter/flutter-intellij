@@ -58,6 +58,9 @@ public class FlutterSettings {
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
+    if (isOpenInspectorOnAppLaunch()) {
+      analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+    }
     if (isFormatCodeOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
 
@@ -65,14 +68,24 @@ public class FlutterSettings {
         analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
       }
     }
-    if (isOpenInspectorOnAppLaunch()) {
-      analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
-    }
     if (isShowOnlyWidgets()) {
       analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
     }
     if (isShowPreviewArea()) {
       analytics.sendEvent("settings", afterLastPeriod(showPreviewAreaKey));
+    }
+
+    if (isSyncingAndroidLibraries()) {
+      analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
+    }
+    if (isLegacyTrackWidgetCreation()) {
+      analytics.sendEvent("settings", afterLastPeriod(legacyTrackWidgetCreationKey));
+    }
+    if (isDisableTrackWidgetCreation()) {
+      analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
+    }
+    if (useFlutterLogView()) {
+      analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
   }
 
@@ -103,7 +116,8 @@ public class FlutterSettings {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
       return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
-    } else {
+    }
+    else {
       return isLegacyTrackWidgetCreation();
     }
   }
@@ -193,7 +207,7 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  // TODO(devoncarew): Remove this after M26 ships.
+  // TODO(devoncarew): Remove this after M31 ships.
   private void updateAnalysisServerArgs() {
     final String serverRegistryKey = "dart.server.additional.arguments";
     final String previewDart2FlagSuffix = "preview-dart-2";
