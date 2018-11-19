@@ -11,9 +11,7 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.ui.JBUI;
-import io.flutter.inspector.FPSDisplay;
-import io.flutter.inspector.HeapDisplay;
-import io.flutter.inspector.WidgetPerfPanel;
+import io.flutter.inspector.*;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
@@ -40,7 +38,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   private JCheckBox trackRebuildsCheckbox;
   private JCheckBox trackRepaintsCheckbox;
   private WidgetPerfPanel widgetPerfPanel;
-
 
   InspectorPerfTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
