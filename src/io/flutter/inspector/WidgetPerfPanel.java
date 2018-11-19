@@ -104,7 +104,7 @@ public class WidgetPerfPanel extends JPanel {
 
   private static void handleTipSelection(@NotNull PerfTip tip) {
     // Send analytics.
-    FlutterInitializer.getAnalytics().sendEvent("perf", "perfTipSelected");
+    FlutterInitializer.getAnalytics().sendEvent("perf", "perfTipSelected." + tip.getRule().getAnalyticsId());
     BrowserLauncher.getInstance().browse(tip.getUrl(), null);
   }
 
