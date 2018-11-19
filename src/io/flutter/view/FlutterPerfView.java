@@ -8,6 +8,8 @@ package io.flutter.view;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.ActionManager;
+import com.intellij.openapi.actionSystem.ActionToolbar;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -18,6 +20,8 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
+import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.content.Content;
@@ -150,6 +154,15 @@ public class FlutterPerfView implements Disposable {
     state.content = content;
     state.tabs = runnerTabs;
 
+    final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs);
+    toolWindowPanel
+      .setToolbar(ActionManager.getInstance().createActionToolbar("FlutterPerfViewToolbar", toolbarGroup, true).getComponent());
+
+    final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("PerformanceToolbar", toolbarGroup, true);
+    final JComponent toolbarComponent = toolbar.getComponent();
+    toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
+    tabContainer.add(toolbarComponent, BorderLayout.NORTH);
+
     final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
     final boolean isInProfileMode = app.getMode().isProfiling() || app.getLaunchMode().isProfiling();
 
@@ -174,6 +187,25 @@ public class FlutterPerfView implements Disposable {
       label.setForeground(UIUtil.getLabelDisabledForeground());
       tabContainer.add(label, BorderLayout.CENTER);
     }
+  }
+
+  private DefaultActionGroup createToolbar(@NotNull ToolWindow toolWindow,
+                                           @NotNull FlutterApp app,
+                                           Disposable parentDisposable) {
+    final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
+    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
+    toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
+
+    return toolbarGroup;
+  }
+
+  FlutterViewAction registerAction(FlutterViewAction action) {
+    getOrCreateStateForApp(action.app).flutterViewActions.add(action);
+    return action;
   }
 
   private void addPerformanceTab(JBRunnerTabs runnerTabs,
@@ -275,9 +307,8 @@ public class FlutterPerfView implements Disposable {
 
   private static class PerfViewAppState {
     @Nullable Content content;
-
     @Nullable Disposable disposable;
-
     JBRunnerTabs tabs;
+    ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
   }
 }

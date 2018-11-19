@@ -6,7 +6,6 @@
 package io.flutter.view;
 
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
@@ -185,7 +184,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       toolbarGroup.add(registerAction(new ForceRefreshAction(app, inspectorService)));
     }
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new DebugDrawAction(app)));
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
     toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
@@ -589,57 +588,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 }
 
-class DebugDrawAction extends FlutterViewToggleableAction {
-  DebugDrawAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
-          AllIcons.General.TbShown);
-
-    setExtensionCommand("ext.flutter.debugPaint");
-  }
-
-  protected void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugPaint", isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
-}
-
-class PerformanceOverlayAction extends FlutterViewToggleableAction {
-
-  public static final String SHOW_PERFORMANCE_OVERLAY = "ext.flutter.showPerformanceOverlay";
-
-  PerformanceOverlayAction(@NotNull FlutterApp app) {
-    super(app, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
-    setExtensionCommand("ext.flutter.showPerformanceOverlay");
-  }
-
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension(SHOW_PERFORMANCE_OVERLAY, isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
-}
-
 class OpenObservatoryAction extends FlutterViewAction {
   OpenObservatoryAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"),
@@ -673,64 +621,6 @@ class OpenTimelineViewAction extends FlutterViewAction {
   }
 }
 
-class TogglePlatformAction extends FlutterViewAction {
-  private Boolean isCurrentlyAndroid;
-  CompletableFuture<Boolean> cachedHasExtensionFuture;
-  private StreamSubscription<Boolean> subscription;
-
-  TogglePlatformAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.togglePlatform.text"),
-          FlutterBundle.message("flutter.view.togglePlatform.description"),
-          AllIcons.RunConfigurations.Application);
-  }
-
-  @Override
-  @SuppressWarnings("Duplicates")
-  public void update(@NotNull AnActionEvent e) {
-    if (!app.isSessionActive()) {
-      if (subscription != null) {
-        subscription.dispose();
-        subscription = null;
-      }
-      e.getPresentation().setEnabled(false);
-      return;
-    }
-
-    if (subscription == null) {
-      subscription = app
-        .hasServiceExtension("ext.flutter.platformOverride", (enabled) -> e.getPresentation().setEnabled(app.isSessionActive() && enabled));
-    }
-  }
-
-  @Override
-  public void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.togglePlatform().thenAccept(isAndroid -> {
-        if (isAndroid == null) {
-          return;
-        }
-
-        app.togglePlatform(!isAndroid).thenAccept(isNowAndroid -> {
-          if (app.getConsole() != null && isNowAndroid != null) {
-            isCurrentlyAndroid = isNowAndroid;
-
-            app.getConsole().print(
-              FlutterBundle.message("flutter.view.togglePlatform.output",
-                                    isNowAndroid ? "Android" : "iOS"),
-              ConsoleViewContentType.SYSTEM_OUTPUT);
-          }
-        });
-      });
-    }
-  }
-
-  public void handleAppRestarted() {
-    if (isCurrentlyAndroid != null) {
-      app.togglePlatform(isCurrentlyAndroid);
-    }
-  }
-}
-
 class RepaintRainbowAction extends FlutterViewToggleableAction {
 
   public static final String SHOW_REPAINT_RAINBOW = "ext.flutter.repaintRainbow";
@@ -741,41 +631,10 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
     setExtensionCommand(SHOW_REPAINT_RAINBOW);
   }
 
+  @Override
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension(SHOW_REPAINT_RAINBOW, isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
-}
-
-class TimeDilationAction extends FlutterViewToggleableAction {
-  TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
-    super(app, "Enable Slow Animations", null, showIcon? AllIcons.Vcs.History : null);
-
-    setExtensionCommand("ext.flutter.timeDilation");
-  }
-
-  protected void perform(@Nullable AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("timeDilation", isSelected() ? 5.0 : 1.0);
-    if (app.isSessionActive()) {
-      app.callServiceExtension("ext.flutter.timeDilation", params);
-    }
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
     }
   }
 }
@@ -787,6 +646,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
     setExtensionCommand("ext.flutter.inspector.show");
   }
 
+  @Override
   protected void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
       app.callBooleanExtension("ext.flutter.inspector.show", isSelected());
@@ -802,6 +662,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
     }
   }
 
+  @Override
   public void handleAppRestarted() {
     if (isSelected()) {
       setSelected(null, false);
@@ -826,6 +687,7 @@ class ForceRefreshAction extends FlutterViewAction {
     update(event);
   }
 
+  @Override
   protected void perform(final AnActionEvent event) {
     if (app.isSessionActive()) {
       setEnabled(event, false);
@@ -855,16 +717,6 @@ class HideSlowBannerAction extends FlutterViewToggleableAction {
       app.callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
     }
   }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
 }
 
 class AutoHorizontalScrollAction extends FlutterViewLocalToggleableAction {
@@ -876,31 +728,6 @@ class AutoHorizontalScrollAction extends FlutterViewLocalToggleableAction {
 class HighlightNodesShownInBothTrees extends FlutterViewLocalToggleableAction {
   HighlightNodesShownInBothTrees(@NotNull FlutterApp app, EventStream<Boolean> value) {
     super(app, "Highlight nodes displayed in both trees", value);
-  }
-}
-
-class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
-  ShowPaintBaselinesAction(@NotNull FlutterApp app, boolean showIcon) {
-    super(app, "Show Paint Baselines", null, showIcon? FlutterIcons.Painting : null);
-
-    setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
-  }
-
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
   }
 }
 

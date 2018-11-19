@@ -9,7 +9,9 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
+import com.jetbrains.lang.dart.flutter.FlutterUtil;
 import gnu.trove.THashMap;
+import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.utils.EventStream;
@@ -22,10 +24,12 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener {
+  @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
@@ -44,6 +48,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   private int polledCount;
 
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
+    this.app = app;
     app.addStateListener(this);
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
@@ -244,6 +249,31 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
       else if (!stream.getValue()) {
         stream.setValue(true);
+      }
+
+      // Restore any previously true states by calling their service extensions.
+      if (getServiceExtensionState(name).getValue()) {
+        restoreServiceExtensionState(name);
+      }
+    }
+  }
+
+  private void restoreServiceExtensionState(String name) {
+    if (app.isSessionActive()) {
+      // We should not call the service extension for the follwing extensions.
+      if (StringUtil.equals(name, "ext.flutter.inspector.show")
+          || StringUtil.equals(name, "ext.flutter.platformOverride")) {
+        // Do not call the service extension for these extensions. 1) We do not want to persist showing the
+        // inspector on restart. 2) Restoring the platform override state is handled by [TogglePlatformAction].
+        return;
+      }
+      else if (StringUtil.equals(name, "ext.flutter.timeDilation")) {
+        final Map<String, Object> params = new HashMap<>();
+        params.put("timeDilation", 5.0);
+        app.callServiceExtension("ext.flutter.timeDilation", params);
+      }
+      else {
+        app.callBooleanExtension(name, true);
       }
     }
   }
