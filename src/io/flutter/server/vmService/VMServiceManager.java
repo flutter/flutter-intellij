@@ -261,16 +261,19 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   private void restoreServiceExtensionState(String name) {
     if (app.isSessionActive()) {
       // We should not call the service extension for the follwing extensions.
-      if (!StringUtil.equals(name, "ext.flutter.inspector.show")
-          && !StringUtil.equals(name, "ext.flutter.platformOverride")) {
-        if (StringUtil.equals(name, "ext.flutter.timeDilation")) {
-          final Map<String, Object> params = new HashMap<>();
-          params.put("timeDilation", 5.0);
-          app.callServiceExtension("ext.flutter.timeDilation", params);
-        }
-        else {
-          app.callBooleanExtension(name, true);
-        }
+      if (StringUtil.equals(name, "ext.flutter.inspector.show")
+          || StringUtil.equals(name, "ext.flutter.platformOverride")) {
+        // Do not call the service extension for these extensions. 1) We do not want to persist showing the
+        // inspector on restart. 2) Restoring the platform override state is handled by [TogglePlatformAction].
+        return;
+      }
+      else if (StringUtil.equals(name, "ext.flutter.timeDilation")) {
+        final Map<String, Object> params = new HashMap<>();
+        params.put("timeDilation", 5.0);
+        app.callServiceExtension("ext.flutter.timeDilation", params);
+      }
+      else {
+        app.callBooleanExtension(name, true);
       }
     }
   }
