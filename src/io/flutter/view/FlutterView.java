@@ -621,7 +621,6 @@ class OpenTimelineViewAction extends FlutterViewAction {
   }
 }
 
-
 class RepaintRainbowAction extends FlutterViewToggleableAction {
 
   public static final String SHOW_REPAINT_RAINBOW = "ext.flutter.repaintRainbow";

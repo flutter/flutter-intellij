@@ -66,6 +66,7 @@ class TogglePlatformAction extends FlutterViewAction {
     }
   }
 
+  // TODO(kenzieschmoll): handle app restart in VMServiceManager so that this action synced across toolbars.
   @Override
   public void handleAppRestarted() {
     if (isCurrentlyAndroid != null) {
