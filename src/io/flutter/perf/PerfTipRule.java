@@ -22,6 +22,8 @@ import java.util.Collection;
  * rules activate could easily be made looser.
  */
 public class PerfTipRule {
+  // Unique identifier used for analytics.
+  final String analyticsId;
   final String hackFileName;
   final String message;
   final String url;
@@ -38,6 +40,7 @@ public class PerfTipRule {
     int priority,
     String hackFileName,
     String message,
+    String analyticsId,
     String url,
     WidgetPattern pattern,
     int minProblemLocationsInSubtree,
@@ -49,6 +52,7 @@ public class PerfTipRule {
     this.priority = priority;
     this.hackFileName = hackFileName;
     this.message = message;
+    this.analyticsId = analyticsId;
     this.url = url;
     this.pattern = pattern;
     this.minProblemLocationsInSubtree = minProblemLocationsInSubtree;
@@ -63,6 +67,10 @@ public class PerfTipRule {
 
   static public WidgetPattern matchWidget(String name) {
     return new WidgetPattern(null, name);
+  }
+
+  public String getAnalyticsId() {
+    return analyticsId;
   }
 
   public String getMessage() {
