@@ -10,34 +10,26 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.flutter.utils.AsyncUtils;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.TreeNode;
-import kotlin.jvm.internal.Ref;
 import org.dartlang.vm.service.element.AllocationProfile;
 import org.dartlang.vm.service.element.ClassHeapStats;
 import org.dartlang.vm.service.element.ClassObj;
 import org.dartlang.vm.service.element.ClassRef;
-import org.dartlang.vm.service.element.ElementList;
-import org.dartlang.vm.service.element.Library;
-import org.dartlang.vm.service.element.LibraryDependency;
 
 
 class Memory {
@@ -46,7 +38,9 @@ class Memory {
     public static final int INSTANCE_COUNT_COLUMN_INDEX = 1;
     public static final int TOTAL_BYTES_COLUMN_INDEX = 2;
 
-    private final String[] COLUMN_NAMES = {"Class", "Instances", "Instances Total Bytes"};
+    // Class is class name, "Instances Allocated" is number of instances (active / to be GC'd), and
+    // "Total Bytes Allocated" is number of bytes allocated in the heap (active and to be GC'd).
+    private final String[] COLUMN_NAMES = {"Class", "Instances Allocated", "Total Bytes Allocated"};
 
     private DefaultMutableTreeNode _classesRoot;
 
@@ -269,7 +263,7 @@ class Memory {
       String className = classRef.getName();
       String classId = classRef.getId();
 
-      // TODO(terry): Check with VM team - _vmName looks like internal things, ignoring for now.
+      // Ignore any class with _vmName it's an internal VM thing.
       if (className.length() == 0) {
         JsonElement jsonVmName = classRef.getJson().get("_vmName");
         if (jsonVmName != null) {
@@ -282,8 +276,45 @@ class Memory {
 
       AsyncUtils.whenCompleteUiThread(view.vmGetObject(classId), (JsonObject response, Throwable exception) -> {
         ClassObj classObj = new ClassObj(response);
-        AllClassesInformation currentClass =
-          new AllClassesInformation(classRef, classObj, data.getPromotedBytes(), data.getPromotedInstances());
+
+        List<Integer> newHeap = data.getNew();
+        List<Integer> oldHeap = data.getOld();
+
+        // Structure of the ClassHeapStats:
+        //
+        //     public List<Integer> getNew() the list returned has 8 entries in this order:
+        //
+        //        [0] Pre-GC new space allocation count
+        //        [1] Pre-GC new space allocations (includes new external)
+        //        [2] Post-GC new space allocation count
+        //        [3] Post-GC new space allocations (includes new external)
+        //        [4] Recent new space allocation count
+        //        [5] Recent new space allocations (includes new external)
+        //        [6] Total new space allocation count since last reset
+        //        [7] Total new space allocations (including new external) since last reset
+        //
+        //     public List<Integer> getOld()
+        //
+        //        [0] Pre-GC old space allocation count
+        //        [1] Pre-GC old space allocations (includes old external)
+        //        [2] Post-GC old space allocation count
+        //        [3] Post-GC old space allocations (includes old external)
+        //        [4] Recent old space allocation count
+        //        [5] Recent old space allocations (includes old external)
+        //        [6] Total old space allocation count since last reset
+        //        [7] Total old space allocations (including old external) since last reset
+        //
+        //     public int getPromotedBytes()
+        //        number of bytes promoted from new space to old space since last GC of new space
+        //     public int getPromotedInstances()
+        //        number of instances promoted from new space to old space since last GC of new space
+
+        int totalBytesAllocated = newHeap.get(7) + oldHeap.get(7);
+        int totalInstances = newHeap.get(6) + oldHeap.get(6);
+
+        AllClassesInformation currentClass = new AllClassesInformation(classRef, classObj,
+                                                                       totalBytesAllocated,
+                                                                       totalInstances);
         _allClassesUnfiltered.add(currentClass);
 
         filterClassesTable(view, classesTable, currentClass);
@@ -296,6 +327,18 @@ class Memory {
         }
       });
     }
+  }
+
+  int getClassRefInstanceCount(FlutterStudioMonitorStageView view, ClassRef classRef) {
+    int instanceLimit =1;
+    String classId = classRef.getId();
+
+    AtomicInteger totalCount = new AtomicInteger();
+    AsyncUtils.whenCompleteUiThread(view.getInstances(classId, instanceLimit), (JsonObject response, Throwable exception) -> {
+      totalCount.set(response.get("totalCount").getAsInt());
+    });
+
+    return totalCount.get();
   }
 
   public void filterClassesTable(FlutterStudioMonitorStageView view, JTable classesTable, AllClassesInformation currentClass) {
