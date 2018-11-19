@@ -1351,7 +1351,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
               // IconData(U+0E88F)
               final int codePoint = getIntProperty(properties, "codePoint");
               if (codePoint > 0) {
-                final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(String.format("%1$04x", codePoint));
+                final Icon icon = FlutterMaterialIcons.getIconForHex(String.format("%1$04x", codePoint));
                 if (icon != null) {
                   this.setIcon(icon);
                   this.setIconOpaque(false);

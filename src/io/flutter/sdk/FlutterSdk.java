@@ -8,6 +8,7 @@ package io.flutter.sdk;
 import com.google.gson.*;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.OrderRootType;
@@ -393,6 +394,8 @@ public class FlutterSdk {
   public Process startPackagesGet(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
+    // Ensure pubspec is saved.
+    FileDocumentManager.getInstance().saveAllDocuments();
     // Refresh afterwards to ensure Dart Plugin sees .packages and doesn't mistakenly nag to run pub.
     return flutterPackagesGet(root).startInModuleConsole(module, root::refresh, null);
   }
@@ -407,6 +410,8 @@ public class FlutterSdk {
   public Process startPackagesUpgrade(@NotNull PubRoot root, @NotNull Project project) {
     final Module module = root.getModule(project);
     if (module == null) return null;
+    // Ensure pubspec is saved.
+    FileDocumentManager.getInstance().saveAllDocuments();
     return flutterPackagesUpgrade(root).startInModuleConsole(module, root::refresh, null);
   }
 

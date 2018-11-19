@@ -21,19 +21,19 @@ public class FlutterMaterialIcons {
     icons = new Properties();
 
     try {
-      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons.properties"));
+      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/material_icons.properties"));
     }
     catch (IOException e) {
       LOG.warn(e);
     }
   }
 
-  public static Icon getMaterialIconForHex(String hexValue) {
+  public static Icon getIconForHex(String hexValue) {
     final String iconName = icons.getProperty(hexValue + ".codepoint");
     return getIcon(iconName);
   }
 
-  public static Icon getMaterialIconForName(String name) {
+  public static Icon getIconForName(String name) {
     return getIcon(name);
   }
 

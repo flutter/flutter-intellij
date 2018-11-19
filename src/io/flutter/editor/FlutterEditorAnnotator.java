@@ -53,7 +53,14 @@ public class FlutterEditorAnnotator implements Annotator {
       }
       else if (text.startsWith("Icons.")) {
         final String key = text.substring("Icons.".length());
-        final Icon icon = FlutterMaterialIcons.getMaterialIconForName(key);
+        final Icon icon = FlutterMaterialIcons.getIconForName(key);
+        if (icon != null) {
+          attachIcon(element, holder, icon);
+        }
+      }
+      else if (text.startsWith("CupertinoIcons.")) {
+        final String key = text.substring("CupertinoIcons.".length());
+        final Icon icon = FlutterCupertinoIcons.getIconForName(key);
         if (icon != null) {
           attachIcon(element, holder, icon);
         }
@@ -70,9 +77,16 @@ public class FlutterEditorAnnotator implements Annotator {
         final Integer val = parseNumberFromCallParam(text, constIconDataText);
         if (val != null) {
           final String hex = Long.toHexString(val);
-          final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(hex);
+          // We look for the codepoint for material icons, and fall back on those for Cupertino.
+          Icon icon = FlutterMaterialIcons.getIconForHex(hex);
           if (icon != null) {
             attachIcon(element, holder, icon);
+          }
+          else {
+            icon = FlutterCupertinoIcons.getIconForHex(hex);
+            if (icon != null) {
+              attachIcon(element, holder, icon);
+            }
           }
         }
       }
@@ -100,9 +114,16 @@ public class FlutterEditorAnnotator implements Annotator {
         final Integer val = parseNumberFromCallParam(text, iconDataText);
         if (val != null) {
           final String hex = Long.toHexString(val);
-          final Icon icon = FlutterMaterialIcons.getMaterialIconForHex(hex);
+          // We look for the codepoint for material icons, and fall back on those for Cupertino.
+          Icon icon = FlutterMaterialIcons.getIconForHex(hex);
           if (icon != null) {
             attachIcon(element, holder, icon);
+          }
+          else {
+            icon = FlutterCupertinoIcons.getIconForHex(hex);
+            if (icon != null) {
+              attachIcon(element, holder, icon);
+            }
           }
         }
       }

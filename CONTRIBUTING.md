@@ -1,5 +1,7 @@
 ## Contributing code
 
+![GitHub contributors](https://img.shields.io/github/contributors/flutter/flutter-intellij.svg)
+
 We gladly accept contributions via GitHub pull requests!
 
 You must complete the
