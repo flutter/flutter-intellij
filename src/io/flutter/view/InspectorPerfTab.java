@@ -11,7 +11,6 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.ui.JBUI;
-import io.flutter.FlutterInitializer;
 import io.flutter.inspector.FPSDisplay;
 import io.flutter.inspector.HeapDisplay;
 import io.flutter.inspector.WidgetPerfPanel;
@@ -42,9 +41,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   private JCheckBox trackRepaintsCheckbox;
   private WidgetPerfPanel widgetPerfPanel;
 
-  private static void sendAnalyticEvent(boolean enabled, @NotNull String eventSuffix) {
-    FlutterInitializer.getAnalytics().sendEvent("perf", enabled ? "enable" : "disable" + eventSuffix);
-  }
 
   InspectorPerfTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
@@ -138,8 +134,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   private void setTrackRebuildWidgets(boolean selected) {
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
     widgetPerfManager.setTrackRebuildWidgets(selected);
-    // Send analytics.
-    sendAnalyticEvent(selected, "TrackRebuildWidgets");
     // Update default so next app launched will match the existing setting.
     FlutterWidgetPerfManager.trackRebuildWidgetsDefault = selected;
   }
@@ -147,8 +141,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   private void setTrackRepaintWidgets(boolean selected) {
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
     widgetPerfManager.setTrackRepaintWidgets(selected);
-    // Send analytics.
-    sendAnalyticEvent(selected, "TrackRepaintWidgets");
     // Update default so next app launched will match the existing setting.
     FlutterWidgetPerfManager.trackRepaintWidgetsDefault = selected;
   }
