@@ -126,7 +126,7 @@
             <properties>
               <focusable value="true"/>
               <horizontalTextPosition value="0"/>
-              <icon value="flutter/icons/navigation/cancel.png"/>
+              <icon value="flutter/material/cancel.png"/>
               <iconTextGap value="0"/>
               <opaque value="false"/>
               <text value=""/>
