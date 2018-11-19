@@ -630,13 +630,6 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
 
     setExtensionCommand(SHOW_REPAINT_RAINBOW);
   }
-
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension(SHOW_REPAINT_RAINBOW, isSelected());
-    }
-  }
 }
 
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
@@ -648,9 +641,9 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
 
   @Override
   protected void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.inspector.show", isSelected());
+    super.perform(event);
 
+    if (app.isSessionActive()) {
       // If toggling inspect mode on, bring all devices to the foreground.
       // TODO(jacobr): consider only bringing the device for the currently open inspector TAB.
       if (isSelected()) {

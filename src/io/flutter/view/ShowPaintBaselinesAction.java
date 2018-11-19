@@ -17,11 +17,4 @@ class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
 
     setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
   }
-
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected());
-    }
-  }
 }

@@ -84,6 +84,13 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
   }
 
   @Override
+  protected void perform(AnActionEvent event) {
+    if (app.isSessionActive()) {
+      app.callBooleanExtension(extensionCommand, isSelected());
+    }
+  }
+
+  @Override
   public void actionPerformed(AnActionEvent event) {
     this.setSelected(event, !isSelected());
     super.actionPerformed(event);
