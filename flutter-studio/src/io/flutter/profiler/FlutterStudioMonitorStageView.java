@@ -6,6 +6,7 @@
 package io.flutter.profiler;
 
 import com.android.tools.adtui.*;
+import com.android.tools.adtui.chart.linechart.DurationDataRenderer;
 import com.android.tools.adtui.chart.linechart.LineChart;
 import com.android.tools.adtui.chart.linechart.LineConfig;
 import com.android.tools.adtui.model.*;
@@ -14,6 +15,7 @@ import com.android.tools.adtui.model.formatter.BaseAxisFormatter;
 import com.android.tools.adtui.model.formatter.MemoryAxisFormatter;
 import com.android.tools.adtui.model.legend.LegendComponentModel;
 import com.android.tools.adtui.model.legend.SeriesLegend;
+import com.android.tools.adtui.stdui.CommonButton;
 import com.android.tools.profilers.*;
 
 import com.google.gson.JsonArray;
@@ -26,6 +28,7 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.treeStructure.Tree;
+import icons.StudioIcons;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;
@@ -92,6 +95,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   private static final Color MEMORY_USED = new JBColor(new Color(0x56BFEC), new Color(0x2B7DA2));
   private static final Color MEMORY_EXTERNAL = new JBColor(new Color(0x56A5CB), new Color(0x226484));
   private static final Color MEMORY_CAPACITY = new JBColor(new Color(0x1B4D65), new Color(0xF6F6F6));
+  private static final Color MEMORY_RSS = new JBColor(new Color(0xF1B876), new Color(0xFFDFA6));
 
   static final BaseAxisFormatter MEMORY_AXIS_FORMATTER = new MemoryAxisFormatter(1, 5, 5);
 
@@ -312,7 +316,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     classesStatusArea.setText("Computing...");
     classesToolbar.add(classesStatusArea, BorderLayout.WEST);
 
-    JButton closeClasses = new JButton("x");
+    CommonButton closeClasses = new CommonButton("x");
     closeClasses.setToolTipText("Close Classes");
     closeClasses.addMouseListener(new MouseAdapter() {
       @Override
@@ -344,7 +348,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     setClassForInstancesTitle("");
     instancesToolbar.add(instancesTitleArea, BorderLayout.WEST);
 
-    JButton closeInstances = new JButton("x");
+    CommonButton closeInstances = new CommonButton("x");
     closeInstances.setToolTipText("Close Instances");
     closeInstances.addMouseListener(new MouseAdapter() {
       @Override
@@ -440,6 +444,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
         // The initial list of selected libraries is all of them.
         getProfilersView().setInitialSelectedLibraries(allLibraries.keySet());
+
         isolateFuture.complete(response);
       }
 
@@ -524,7 +529,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     instanceObjectsScoller.setVisible(false);
   }
 
-  protected void displaySnapshot(FlutterStudioMonitorStageView view) {
+  protected void displaySnapshot(FlutterStudioMonitorStageView view, boolean reset) {
     memorySnapshot.removeAllClassChildren(true);
     classesTable.updateUI();
 
@@ -538,8 +543,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     final CompletableFuture<AllocationProfile> future = new CompletableFuture<AllocationProfile>();
 
-    vmService.getAllocationProfile(isolateId, new AllocationProfileConsumer() {
-
+    vmService.getAllocationProfile(isolateId, "full", reset ? true : null, new AllocationProfileConsumer() {
       @Override
       public void onError(RPCError error) {
         LOG.error("Allocation Profile - " + error.getDetails());
@@ -626,6 +630,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     FlutterAllMemoryData.ThreadSafeData memoryUsedDataSeries = stage.getUsedDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryMaxDataSeries = stage.getCapacityDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryExternalDataSeries = stage.getExternalDataSeries();
+    FlutterAllMemoryData.ThreadSafeData rssDataSeries = stage.getRSSDataSeries();
 
     Range dataRanges = new Range(0, 1024 * 1024 * 100);
     RangedContinuousSeries usedMemoryRange =
@@ -634,7 +639,11 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       new RangedContinuousSeries("MemoryMax", getTimeline().getViewRange(), dataRanges, memoryMaxDataSeries);
     RangedContinuousSeries externalMemoryRange =
       new RangedContinuousSeries("MemoryExtern", getTimeline().getViewRange(), dataRanges, memoryExternalDataSeries);
+    // TODO(terry): Temporary comment out working on displaying RSS properly in chart.
+    // RangedContinuousSeries rssRange = new RangedContinuousSeries("RSS",
+    //                                                              getTimeline().getViewRange(), dataRanges, rssDataSeries);
 
+    // model.add(rssRange);              // Plot used RSS size line.
     model.add(maxMemoryRange);        // Plot total size of allocated heap.
     model.add(externalMemoryRange);   // Plot total size of external memory (bottom of stacked chart).
     model.add(usedMemoryRange);       // Plot used memory (top of stacked chart).
@@ -644,6 +653,10 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     getStage().getStudioProfilers().getUpdater().register(model);
     LineChart mLineChart = new LineChart(model);
     mLineChart.setBackground(JBColor.background());
+
+    // TODO(terry): Temporary comment out working on displaying RSS properly in chart.
+    // mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
+    //   .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
 
     mLineChart.configure(maxMemoryRange, new LineConfig(MEMORY_CAPACITY)
       .setStroke(LineConfig.DEFAULT_DASH_STROKE).setLegendIconType(LegendConfig.IconType.DASHED_LINE));
@@ -661,6 +674,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     axisPanel.add(yAxisBytes, BorderLayout.WEST);
 
     // Build the legend.
+    FlutterAllMemoryData.ThreadSafeData rssMax = stage.getRSSDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryMax = stage.getCapacityDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryExternal = stage.getExternalDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryUsed = stage.getUsedDataSeries();
@@ -670,10 +684,13 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     legendComponentModel = new LegendComponentModel(new Range(100.0, 100.0));
     timeGlobalRangeUs = new Range(0, 0);
 
+    RangedContinuousSeries rssRangedData = new RangedContinuousSeries("RSS", timeGlobalRangeUs, allData, rssMax);
     RangedContinuousSeries maxHeapRangedData = new RangedContinuousSeries("Max Heap", timeGlobalRangeUs, allData, memoryMax);
     RangedContinuousSeries usedHeapRangedData = new RangedContinuousSeries("Used Heap", timeGlobalRangeUs, allData, memoryUsed);
     RangedContinuousSeries externalHeapRangedData = new RangedContinuousSeries("External", timeGlobalRangeUs, allData, memoryExternal);
 
+    SeriesLegend legendRss = new SeriesLegend(rssRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
+    legendComponentModel.add(legendRss);
     SeriesLegend legendMax = new SeriesLegend(maxHeapRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
     legendComponentModel.add(legendMax);
     SeriesLegend legendUsed = new SeriesLegend(usedHeapRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
@@ -683,6 +700,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     legendComponent = new LegendComponent(legendComponentModel);
 
+    legendComponent.configure(legendRss, new LegendConfig(LegendConfig.IconType.LINE, MEMORY_RSS));
     legendComponent.configure(legendMax, new LegendConfig(LegendConfig.IconType.DASHED_LINE, MEMORY_CAPACITY));
     legendComponent.configure(legendUsed, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_USED));
     legendComponent.configure(legendExternal, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_EXTERNAL));
@@ -802,26 +820,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
             // Primitive Dart Types display raw value
             case Bool:
             case Double:
-            case Float32List:
             case Float32x4:
-            case Float32x4List:
-            case Float64List:
             case Float64x2:
-            case Float64x2List:
             case Int:
-            case Int16List:
-            case Int32List:
             case Int32x4:
-            case Int32x4List:
-            case Int64List:
-            case Int8List:
             case Null:
             case String:
-            case Uint16List:
-            case Uint32List:
-            case Uint64List:
-            case Uint8ClampedList:
-            case Uint8List:
               try {
                 final String fieldValue = valueRef.getValueAsString();
                 addNode(parent, fieldName, " = " + fieldValue);
@@ -833,8 +837,17 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
             case List:
             case Map:
-              // TODO(terry): Should show the Map/List as an object to be drilled into.
-              addNode(parent, fieldName, " = [List/Map]");
+              // Pointing to a nested class.
+              if (valueRef == null) {
+                // TODO(terry): This shouldn't happen.
+                LOG.error("ValueRef is NULL");
+              }
+              final String nestedObjectRef1 = valueRef.getId();    // Pull the object/Class we're pointing too.
+              final DefaultMutableTreeNode node1 = addNode(parent, fieldName, " [" + nestedObjectRef1 + "]");
+
+              // Add a placeholder for this object being interogated iff the user clicks on the expand then we'll
+              // call the VM to drill into the object.
+              addPlaceHodlerNode(node1, nestedObjectRef1);
               break;
 
             case MirrorReference:
@@ -843,6 +856,27 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
               break;
 
             // A general instance of the Dart class Object.
+            case Float32List:
+            case Float32x4List:
+            case Float64List:
+            case Float64x2List:
+            case Int16List:
+            case Int32List:
+            case Int32x4List:
+            case Int64List:
+            case Int8List:
+            case Uint16List:
+            case Uint32List:
+            case Uint64List:
+            case Uint8ClampedList:
+            case Uint8List:
+              // Pointing to a nested class.
+              if (valueRef == null) {
+                // TODO(terry): This shouldn't happen.
+                LOG.error("ValueRef is NULL for nnnnnList");
+              }
+              break;
+
             case PlainInstance:
               // Pointing to a nested class.
               if (valueRef == null) {
@@ -876,6 +910,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         SwingUtilities.invokeLater(() -> {
           memorySnapshot._myInstancesTreeModel.reload(parent);
         });
+      } else if (instance.getKind() == InstanceKind.List) {
+        // Empty list.
+        addNode(parent, "", "[]");
+      } else if (instance.getKind() == InstanceKind.Map) {
+        // Empty list.
+        addNode(parent, "", "{}");
       }
     });
   }
