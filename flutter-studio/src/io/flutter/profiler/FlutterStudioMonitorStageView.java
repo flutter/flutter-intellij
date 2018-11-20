@@ -34,6 +34,7 @@ import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,8 +46,11 @@ import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
+import javax.swing.text.TableView;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
@@ -73,6 +77,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.table.*;
 
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_HORIZONTAL_BORDERS;
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_VERTICAL_BORDERS;
@@ -80,6 +85,7 @@ import static com.android.tools.profilers.ProfilerLayout.MARKER_LENGTH;
 import static com.android.tools.profilers.ProfilerLayout.MONITOR_LABEL_PADDING;
 import static com.android.tools.profilers.ProfilerLayout.Y_AXIS_TOP_MARGIN;
 import static io.flutter.profiler.FilterLibraryDialog.DART_LIBRARY_PREFIX;
+import static javax.swing.JTable.AUTO_RESIZE_ALL_COLUMNS;
 import static javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN;
 
 /**
@@ -106,7 +112,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   JBPanel classesPanel;                         // All classes information in this panel.
   JBScrollPane heapObjectsScoller;              // Contains the JTree of heap objects.
   private final JBLabel classesStatusArea;      // Classes status area.
-  private final JBTable classesTable;           // Display classes found in the heap snapshot.
+  private final ClassesJBTable classesTable;    // Display classes found in the heap snapshot.
 
   private JBPanel instancesPanel;               // All instances info in panel (title, close and JTree).
   private JBLabel instancesTitleArea;           // Display of all instances displayed.
@@ -182,20 +188,14 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     myChartCaptureSplitter.setFirstComponent(buildUI(stage));
 
-    classesTable = new JBTable(memorySnapshot.getClassesTableModel());
+    classesTable = new ClassesJBTable(memorySnapshot.getClassesTableModel());
     classesTable.setVisible(true);
     classesTable.setAutoCreateRowSorter(true);
     classesTable.getRowSorter().toggleSortOrder(1);   // Sort by number of instances in descending order.
-    classesTable.getColumnModel().getColumn(0).setPreferredWidth(400);
-    classesTable.getColumnModel().getColumn(1).setPreferredWidth(200);
-    classesTable.getColumnModel().getColumn(2).setPreferredWidth(AUTO_RESIZE_LAST_COLUMN);
-    classesTable.doLayout();
 
     heapObjectsScoller = new JBScrollPane(classesTable);
 
     FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this);
-
-    boolean computingInstances = false;
 
     classesTable.addMouseListener(new MouseAdapter() {
       @Override
@@ -206,6 +206,10 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
           view.updateClassesStatus("Ignored - other instances computation in process...");
           return;
         }
+
+        Point p = e.getPoint();
+        int selectedRow = classesTable.rowAtPoint(p);
+        classesTable.setClickedRow(selectedRow);
 
         memorySnapshot.removeAllInstanceChildren(true);
 
@@ -228,7 +232,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         view.updateClassesStatus("Fetching " + instanceLimit + " instances.");
 
         AsyncUtils.whenCompleteUiThread(getInstances(classRef, instanceLimit), (JsonObject response, Throwable exception) -> {
-
           JsonArray instances = response.getAsJsonArray("samples");
           int totalInstances = response.get("totalCount").getAsInt();
           List<String> instanceIds = new ArrayList<String>(totalInstances);
@@ -918,5 +921,77 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         addNode(parent, "", "{}");
       }
     });
+  }
+
+  /**
+   * JBTable custom selection and hover renderer for Classes table.
+   */
+  public class ClassesJBTable extends JBTable {
+    final private Color HOVER_BACKGROUND_COLOR = new Color(0xCFE6EF);
+    final private Color HOVER_FOREGROUND_COLOR = Color.BLACK;
+
+    private int rollOverRowIndex = -1;
+    private int lastClickedRow = -1;
+
+    public ClassesJBTable(TableModel model) {
+      super(model);
+      RollOverListener lst = new RollOverListener();
+      addMouseMotionListener(lst);
+      addMouseListener(lst);
+    }
+
+    void setClickedRow(int row) {
+      lastClickedRow = row;
+    }
+
+    @Override
+    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+      Component c = super.prepareRenderer(renderer, row, column);
+      Font font = c.getFont();
+      if (font != null) {
+        // Iff we have a font for this component (TableRow).
+        if (lastClickedRow == row) {
+          c.setFont(font.deriveFont(Font.BOLD));
+          c.setForeground(getSelectionForeground());
+          c.setBackground(getSelectionBackground());
+        }
+        else {
+          c.setFont(font.deriveFont(Font.PLAIN));
+          if (row == rollOverRowIndex) {
+            c.setForeground(HOVER_FOREGROUND_COLOR);
+            c.setBackground(HOVER_BACKGROUND_COLOR);
+          }
+          else {
+            c.setForeground(getForeground());
+            c.setBackground(getBackground());
+          }
+        }
+      }
+
+      return c;
+    }
+
+    private class RollOverListener extends MouseInputAdapter {
+      @Override
+      public void mouseExited(MouseEvent e) {
+        rollOverRowIndex = -1;
+        repaint();
+      }
+
+      @Override
+      public void mouseMoved(MouseEvent e) {
+        int row = rowAtPoint(e.getPoint());
+        if( row != rollOverRowIndex ) {
+          rollOverRowIndex = row;
+          repaint();
+        }
+      }
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        setClickedRow(rowAtPoint(e.getPoint()));
+        repaint();
+      }
+    }
   }
 }
