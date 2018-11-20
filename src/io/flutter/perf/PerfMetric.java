@@ -13,12 +13,22 @@ package io.flutter.perf;
  * the SlidingWindowStats class.
  */
 public enum PerfMetric {
-  total("total"),
-  totalSinceRouteChange("totalSinceRouteChange"),
-  lastSecond("lastSecond");
-  public final String name;
+  lastFrame("Last Frame", true),
+  peakRecent("Peak Recent", true),
+  pastSecond("Past Second", true),
+  totalSinceRouteChange("Route Change", false),
+  total("Total", false);
 
-  PerfMetric(String name) {
+  public final String name;
+  public final boolean timeIntervalMetric;
+
+  PerfMetric(String name, boolean timeIntervalMetric) {
     this.name = name;
+    this.timeIntervalMetric = timeIntervalMetric;
+  }
+
+  @Override
+  public String toString() {
+    return name;
   }
 }

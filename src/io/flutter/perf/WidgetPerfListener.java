@@ -16,4 +16,6 @@ public interface WidgetPerfListener {
   void requestRepaint(When when);
   void onWidgetPerfEvent(PerfReportKind kind, JsonObject json);
   void onNavigation();
+
+  void addPerfListener(PerfModel listener);
 }

@@ -5,6 +5,7 @@
  */
 package io.flutter.perf;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -23,9 +24,11 @@ import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
 import icons.FlutterIcons;
+import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AnimatedIcon;
 import io.flutter.view.FlutterPerfView;
+import io.flutter.utils.AsyncUtils;
 import io.flutter.view.InspectorPerfTab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -161,7 +164,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
 
   @Override
   public boolean isAnimationActive() {
-    return getStats().getCountPastSecond() > 0;
+    return getStats().getTotalValue(PerfMetric.peakRecent) > 0;
   }
 
   @Override
@@ -303,12 +306,12 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     return perfModelForFile.getApp();
   }
 
-  private int getCountPastSecond() {
-    return perfModelForFile.getStats().getCountPastSecond(range);
+  private int getCurrentValue() {
+    return perfModelForFile.getStats().getCurrentValue(range);
   }
 
   private boolean isActive() {
-    return perfModelForFile.isHoveredOverLineMarkerArea() || getCountPastSecond() > 0;
+    return perfModelForFile.isHoveredOverLineMarkerArea() || getCurrentValue() > 0;
   }
 
   RangeHighlighter getHighlighter() {
@@ -345,7 +348,17 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     String message = "<html><body>" +
                      getTooltipHtmlFragment() +
                      "</body></html>";
-    inspectorPerfTab.getWidgetPerfPanel().setPerfStatusMessage(perfModelForFile.getTextEditor(), range, message);
+    final Iterable<SummaryStats> current = perfModelForFile.getStats().getRangeStats(range);
+    if (current.iterator().hasNext()) {
+      final SummaryStats first = current.iterator().next();
+      final XSourcePosition position = first.getLocation().getXSourcePosition();
+      if (position != null) {
+        AsyncUtils.invokeLater(() -> {
+          position.createNavigatable(getApp().getProject()).navigate(true);
+          HintManager.getInstance().showInformationHint(perfModelForFile.getTextEditor().getEditor(), message);
+        });
+      }
+    }
   }
 
   @NotNull
@@ -362,7 +375,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   public Icon getIconInternal() {
-    final int count = getCountPastSecond();
+    final int count = getCurrentValue();
     if (count == 0) {
       return perfModelForFile.isHoveredOverLineMarkerArea() ? FlutterIcons.CustomInfo : EMPTY_ICON;
     }
@@ -374,7 +387,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   Color getErrorStripeMarkColor() {
     // TODO(jacobr): tween from green or blue to red depending on the count.
-    final int count = getCountPastSecond();
+    final int count = getCurrentValue();
     if (count == 0) {
       return null;
     }
@@ -385,7 +398,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   public void updateUI(boolean repaint) {
-    final int count = getCountPastSecond();
+    final int count = getCurrentValue();
     final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
     boolean changed = false;
@@ -435,13 +448,14 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
       sb.append(" counts for: <strong>" + stats.getDescription());
       sb.append("</strong></p>");
       sb.append("<p style='padding-left: 8px'>");
-      sb.append("In past second: " + stats.getPastSecond() + "<br>");
-      sb.append("Since last route change: " + stats.getTotalSinceNavigation() + "<br>");
-      sb.append("Since last hot reload/restart: " + stats.getTotal());
+      sb.append("For last frame: " + stats.getValue(PerfMetric.lastFrame) + "<br>");
+      sb.append("In past second: " + stats.getValue(PerfMetric.pastSecond) + "<br>");
+      sb.append("Since last route change: " + stats.getValue(PerfMetric.totalSinceRouteChange) + "<br>");
+      sb.append("Since last hot reload/restart: " + stats.getValue(PerfMetric.total));
       sb.append("</p>");
     }
     if (sb.length() == 0) {
-      sb.append("<p><b>No widget rebuilds or repaints detected for line.</p></b>");
+      sb.append("<p><b>No widget rebuilds detected for line.</b></p>");
     }
     return sb.toString();
   }
@@ -457,12 +471,12 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
       return false;
     }
     final PerfGutterIconRenderer other = (PerfGutterIconRenderer)obj;
-    return other.getCountPastSecond() == getCountPastSecond();
+    return other.getCurrentValue() == getCurrentValue();
   }
 
   @Override
   public int hashCode() {
-    return getCountPastSecond();
+    return getCurrentValue();
   }
 
   private static class EmptyIcon implements Icon {

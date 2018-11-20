@@ -41,10 +41,7 @@ public class InspectorSourceLocation {
     // TODO(jacobr): remove this workaround after the code in package:flutter
     // is fixed to return operating system paths instead of URIs.
     // https://github.com/flutter/flutter-intellij/issues/2217
-    final String filePrefix = SystemInfo.isWindows ? "file:///" : "file://";
-    if (fileName.startsWith(filePrefix)) {
-      fileName = fileName.substring(filePrefix.length());
-    }
+    fileName = InspectorService.fromSourceLocationUri(fileName);
 
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(fileName);
     if (virtualFile != null && !virtualFile.exists()) {

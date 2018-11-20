@@ -12,6 +12,7 @@ import io.netty.util.collection.IntObjectHashMap;
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Rule describing when to generate a performance tip.
@@ -73,6 +74,28 @@ public class PerfTipRule {
     return analyticsId;
   }
 
+  public static boolean equalTipRule(PerfTip a, PerfTip b) {
+    if (a == null || b == null) {
+      return a == b;
+    }
+    return Objects.equal(a.getRule(), b.getRule());
+  }
+
+  public static boolean equivalentPerfTips(List<PerfTip> a, List<PerfTip> b) {
+    if (a == null || b == null) {
+      return a == b;
+    }
+    if (a.size() != b.size()) {
+      return false;
+    }
+    for (int i = 0; i < a.size(); ++i) {
+      if (!equalTipRule(a.get(i), b.get(i))) {
+        return false;
+      }
+    }
+    return true;
+  }
+
   public String getMessage() {
     return message;
   }
@@ -97,8 +120,8 @@ public class PerfTipRule {
   }
 
   boolean matchesFrequency(SummaryStats summary) {
-    return (minSinceNavigate > 0 && summary.getTotalSinceNavigation() >= minSinceNavigate) ||
-           (minPerSecond > 0 && summary.getPastSecond() >= minPerSecond);
+    return (minSinceNavigate > 0 && summary.getValue(PerfMetric.totalSinceRouteChange) >= minSinceNavigate) ||
+           (minPerSecond > 0 && summary.getValue(PerfMetric.pastSecond) >= minPerSecond);
   }
 
 

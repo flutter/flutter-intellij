@@ -99,4 +99,45 @@ class SlidingWindowStats {
       _start = -1;
     }
   }
+
+  public int getPeakWithinWindow(int windowStart) {
+    if (_next == _start) {
+      return 0;
+    }
+    final int end = _start >= 0 ? _start : _next;
+    int i = _next;
+    int peakValue = 0;
+    while (true) {
+      i -= 2;
+      if (i < 0) {
+        i += _windowLength;
+      }
+
+      if (_window[i] < windowStart) {
+        break;
+      }
+      peakValue = Math.max(peakValue, _window[i + 1]);
+      if (i == end) {
+        break;
+      }
+    }
+    return peakValue;
+  }
+
+  public int getValue(PerfMetric metric, int currentTime) {
+    switch (metric) {
+      case total:
+        return getTotal();
+      case pastSecond:
+        return getTotalWithinWindow(currentTime - 999);
+      case lastFrame:
+        return getPeakWithinWindow(currentTime);
+      case peakRecent:
+        return getPeakWithinWindow(currentTime - 499);
+      case totalSinceRouteChange:
+        return getTotalSinceNavigation();
+      default:
+        return 0;
+    }
+  }
 }
