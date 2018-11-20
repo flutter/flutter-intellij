@@ -17,6 +17,7 @@ import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
+import io.flutter.FlutterInitializer;
 import io.flutter.perf.FlutterWidgetPerf;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.perf.PerfTip;
@@ -25,7 +26,6 @@ import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 
@@ -80,7 +80,7 @@ public class WidgetPerfPanel extends JPanel {
     perfTips.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Perf Tips"));
     perfTips.setLayout(new VerticalLayout(0));
 
-    linkListener = (source, tip) -> BrowserLauncher.getInstance().browse(tip.getUrl(), null);
+    linkListener = (source, tip) -> handleTipSelection(tip);
     final Project project = app.getProject();
     final MessageBusConnection bus = project.getMessageBus().connect(project);
     final FileEditorManagerListener listener = new FileEditorManagerListener() {
@@ -100,6 +100,12 @@ public class WidgetPerfPanel extends JPanel {
 
     // TODO(jacobr): unsubscribe?
     Disposer.register(parentDisposable, perfTipComputeDelayTimer::stop);
+  }
+
+  private static void handleTipSelection(@NotNull PerfTip tip) {
+    // Send analytics.
+    FlutterInitializer.getAnalytics().sendEvent("perf", "perfTipSelected." + tip.getRule().getAnalyticsId());
+    BrowserLauncher.getInstance().browse(tip.getUrl(), null);
   }
 
   private void onComputePerfTips(ActionEvent event) {

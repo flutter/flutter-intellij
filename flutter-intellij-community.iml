@@ -15,6 +15,9 @@
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator/build" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/plugin/build" />

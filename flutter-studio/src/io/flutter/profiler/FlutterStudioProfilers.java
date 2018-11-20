@@ -7,6 +7,7 @@ package io.flutter.profiler;
 
 import com.android.tools.adtui.model.AspectModel;
 import com.android.tools.adtui.model.FpsTimer;
+import com.android.tools.adtui.model.SeriesData;
 import com.android.tools.adtui.model.StopwatchTimer;
 import com.android.tools.adtui.model.axis.AxisComponentModel;
 import com.android.tools.adtui.model.axis.ResizingAxisComponentModel;
@@ -117,8 +118,9 @@ public class FlutterStudioProfilers
 
       @Override
       public void handleGCEvent(IsolateRef iIsolateRef,
-                                HeapMonitor.HeapSpace newHeapSpvace,
-                                HeapMonitor.HeapSpace oldHeapSpace) { }
+                                HeapMonitor.HeapSpace newHeapSpace,
+                                HeapMonitor.HeapSpace oldHeapSpace) {
+      }
 
       private void updateModel(HeapState heapState) {
         if (!isClockSynced[0]) {
