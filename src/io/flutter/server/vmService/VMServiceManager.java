@@ -40,7 +40,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
    * Boolean value applicable only for boolean service extensions indicating
    * whether the service extension is enabled or disabled.
    */
-  @NotNull private final Map<String, EventStream<Boolean>> serviceExtensionState = new THashMap<>();
+  @NotNull private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = new THashMap<>();
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
@@ -252,7 +252,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
 
       // Restore any previously true states by calling their service extensions.
-      if (getServiceExtensionState(name).getValue()) {
+      if (getServiceExtensionState(name).getValue().isEnabled()) {
         restoreServiceExtensionState(name);
       }
     }
@@ -260,20 +260,28 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   private void restoreServiceExtensionState(String name) {
     if (app.isSessionActive()) {
-      // We should not call the service extension for the follwing extensions.
-      if (StringUtil.equals(name, "ext.flutter.inspector.show")
-          || StringUtil.equals(name, "ext.flutter.platformOverride")) {
-        // Do not call the service extension for these extensions. 1) We do not want to persist showing the
-        // inspector on restart. 2) Restoring the platform override state is handled by [TogglePlatformAction].
+      if (StringUtil.equals(name, "ext.flutter.inspector.show")) {
+        // Do not call the service extension for this extension. We do not want to persist showing the
+        // inspector on app restart.
         return;
       }
-      else if (StringUtil.equals(name, "ext.flutter.timeDilation")) {
-        final Map<String, Object> params = new HashMap<>();
-        params.put("timeDilation", 5.0);
-        app.callServiceExtension("ext.flutter.timeDilation", params);
+
+      final Object value = getServiceExtensionState(name).getValue().getValue();
+
+      if (value instanceof Boolean) {
+        app.callBooleanExtension(name, (Boolean) value);
       }
-      else {
-        app.callBooleanExtension(name, true);
+      else if (value instanceof String) {
+        final Map<String, Object> params = new HashMap<>();
+        params.put("value", value);
+        app.callServiceExtension(name, params);
+      }
+      else if (value instanceof Double) {
+        final Map<String, Object> params = new HashMap<>();
+        // The param name for a numeric service extension will be the last part of the extension name
+        // (ext.flutter.extensionName => extensionName).
+        params.put(name.substring(name.lastIndexOf(".") + 1), value);
+        app.callServiceExtension(name, params);
       }
     }
   }
@@ -313,11 +321,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     return stream.listen(onData, true);
   }
 
-  public @NotNull
-  EventStream<Boolean> getServiceExtensionState(String name) {
-    return getStream(name, serviceExtensionState);
-  }
-
   @NotNull
   private EventStream<Boolean> getStream(String name, Map<String, EventStream<Boolean>> streamMap) {
     EventStream<Boolean> stream;
@@ -329,6 +332,30 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
     }
     return stream;
+  }
+
+  public @NotNull
+  EventStream<ServiceExtensionState> getServiceExtensionState(String name) {
+    return getStateStream(name, serviceExtensionState);
+  }
+
+  @NotNull
+  private EventStream<ServiceExtensionState> getStateStream(
+    String name, Map<String, EventStream<ServiceExtensionState>> streamMap) {
+    EventStream<ServiceExtensionState> stream;
+    synchronized (streamMap) {
+      stream = streamMap.get(name);
+      if (stream == null) {
+        stream = new EventStream<>(new ServiceExtensionState(false, null));
+        streamMap.put(name, stream);
+      }
+    }
+    return stream;
+  }
+
+  public void setServiceExtensionState(String name, boolean enabled, Object value) {
+    EventStream<ServiceExtensionState> stream = getServiceExtensionState(name);
+    stream.setValue(new ServiceExtensionState(enabled, value));
   }
 
   /**

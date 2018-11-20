@@ -7,7 +7,7 @@ package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.EventStream;
+import io.flutter.server.vmService.ServiceExtensionState;
 import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 
@@ -21,30 +21,30 @@ import javax.swing.*;
  */
 public class BoolServiceExtensionCheckbox implements Disposable {
 
-  private final EventStream<Boolean> currentValue;
   private final JCheckBox checkbox;
-  private StreamSubscription<Boolean> currentValueSubscription;
+  private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
   BoolServiceExtensionCheckbox(FlutterApp app, @NotNull String extensionCommand, String label, String tooltip) {
     checkbox = new JCheckBox(label);
     checkbox.setHorizontalAlignment(JLabel.LEFT);
     checkbox.setToolTipText(tooltip);
     assert(app.getVMServiceManager() != null);
-    currentValue = app.getVMServiceManager().getServiceExtensionState(extensionCommand);
     app.hasServiceExtension(extensionCommand, checkbox::setEnabled, this);
 
     checkbox.addActionListener((l) -> {
       final boolean newValue = checkbox.isSelected();
-      if (currentValue.setValue(newValue)) {
-        if (app.isSessionActive()) {
-          app.callBooleanExtension(extensionCommand, newValue);
-        }
+      app.getVMServiceManager().setServiceExtensionState(
+        extensionCommand,
+        newValue,
+        newValue);
+      if (app.isSessionActive()) {
+        app.callBooleanExtension(extensionCommand, newValue);
       }
     });
 
-    currentValueSubscription = currentValue.listen((value) -> {
-      if (checkbox.isSelected() != value) {
-        checkbox.setSelected(value);
+    currentValueSubscription = app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
+      if (checkbox.isSelected() != state.isEnabled()) {
+        checkbox.setSelected(state.isEnabled());
       }
     }, true);
   }

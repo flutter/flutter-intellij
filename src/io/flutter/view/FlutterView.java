@@ -696,11 +696,12 @@ class ForceRefreshAction extends FlutterViewAction {
   }
 }
 
-class HideSlowBannerAction extends FlutterViewToggleableAction {
-  HideSlowBannerAction(@NotNull FlutterApp app) {
+class HideDebugModeBannerAction extends FlutterViewToggleableAction {
+  HideDebugModeBannerAction(@NotNull FlutterApp app) {
     super(app, "Hide Debug Mode Banner");
 
     setExtensionCommand("ext.flutter.debugAllowBanner");
+    setEnabledStateValue(false);
   }
 
   @Override
@@ -751,7 +752,7 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
 
     group.add(view.registerAction(new RepaintRainbowAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new HideSlowBannerAction(app)));
+    group.add(view.registerAction(new HideDebugModeBannerAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
