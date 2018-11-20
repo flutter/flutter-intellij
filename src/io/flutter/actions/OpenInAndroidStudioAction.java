@@ -18,17 +18,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.vfs.newvfs.impl.VirtualDirectoryImpl;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
-import java.util.Arrays;
+import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 public class OpenInAndroidStudioAction extends AnAction {
   private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
