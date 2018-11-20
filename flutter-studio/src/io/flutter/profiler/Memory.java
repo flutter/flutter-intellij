@@ -33,6 +33,34 @@ import org.dartlang.vm.service.element.ClassRef;
 
 
 class Memory {
+  // Entries returned from call to getAllocationProfile - new and old heap statistics (ClassHeapStats).
+  //
+  //     public List<Integer> getNew()  // new heap space
+  //     public List<Integer> getOld()  // old heap space
+  //
+  //     getNew/getOld both returns a list with 8 entries of the particular heap (new/old) in this order:
+  //        [0] Pre-GC heap space allocation count
+  //        [1] Pre-GC heap space allocations (includes new external)
+  //        [2] Post-GC heap space allocation count
+  //        [3] Post-GC heap space allocations (includes new external)
+  //        [4] Recent heap space allocation count
+  //        [5] Recent heap space allocations (includes new external)
+  //        [6] Total heap space allocation count since last reset
+  //        [7] Total heap space allocations (including new external) since last reset
+  //
+  //     public int getPromotedBytes()
+  //        number of bytes promoted from new space to old space since last GC of new space
+  //     public int getPromotedInstances()
+  //        number of instances promoted from new space to old space since last GC of new space
+  private final int ALLOCATED_BEFORE_GC = 0;
+  private final int ALLOCATED_BEFORE_GC_SIZE = 1;
+  private final int LIVE_AFTER_GC = 2;
+  private final int LIVE_AFTER_GC_SIZE = 3;
+  private final int ALLOCATED_SINCE_GC = 4;
+  private final int ALLOCATED_SINCE_GC_SIZE = 5;
+  private final int ACCUMULATED = 6;
+  private final int ACCUMULATED_SIZE = 7;
+
   class ClassesTableModel extends AbstractTableModel {
     public static final int CLASS_COLUMN_INDEX = 0;
     public static final int INSTANCE_COUNT_COLUMN_INDEX = 1;
@@ -40,7 +68,7 @@ class Memory {
 
     // Class is class name, "Instances Allocated" is number of instances (active / to be GC'd), and
     // "Total Bytes Allocated" is number of bytes allocated in the heap (active and to be GC'd).
-    private final String[] COLUMN_NAMES = {"Class", "Instances Allocated", "Total Bytes Allocated"};
+    private final String[] COLUMN_NAMES = {"Class", "Instances", "Total Bytes"};
 
     private DefaultMutableTreeNode _classesRoot;
 
@@ -280,41 +308,16 @@ class Memory {
         List<Integer> newHeap = data.getNew();
         List<Integer> oldHeap = data.getOld();
 
-        // Structure of the ClassHeapStats:
-        //
-        //     public List<Integer> getNew() the list returned has 8 entries in this order:
-        //
-        //        [0] Pre-GC new space allocation count
-        //        [1] Pre-GC new space allocations (includes new external)
-        //        [2] Post-GC new space allocation count
-        //        [3] Post-GC new space allocations (includes new external)
-        //        [4] Recent new space allocation count
-        //        [5] Recent new space allocations (includes new external)
-        //        [6] Total new space allocation count since last reset
-        //        [7] Total new space allocations (including new external) since last reset
-        //
-        //     public List<Integer> getOld()
-        //
-        //        [0] Pre-GC old space allocation count
-        //        [1] Pre-GC old space allocations (includes old external)
-        //        [2] Post-GC old space allocation count
-        //        [3] Post-GC old space allocations (includes old external)
-        //        [4] Recent old space allocation count
-        //        [5] Recent old space allocations (includes old external)
-        //        [6] Total old space allocation count since last reset
-        //        [7] Total old space allocations (including old external) since last reset
-        //
-        //     public int getPromotedBytes()
-        //        number of bytes promoted from new space to old space since last GC of new space
-        //     public int getPromotedInstances()
-        //        number of instances promoted from new space to old space since last GC of new space
-
-        int totalBytesAllocated = newHeap.get(7) + oldHeap.get(7);
-        int totalInstances = newHeap.get(6) + oldHeap.get(6);
+        int totalBytesAllocated = newHeap.get(ACCUMULATED_SIZE) + oldHeap.get(ACCUMULATED_SIZE);
+        int totalInstances = newHeap.get(ACCUMULATED) + oldHeap.get(ACCUMULATED);
+        int totalCurrentInstances = newHeap.get(LIVE_AFTER_GC) + newHeap.get(ALLOCATED_SINCE_GC) +
+                                    oldHeap.get(LIVE_AFTER_GC) + oldHeap.get(ALLOCATED_SINCE_GC);
+        int totalCurrentBytesAllocated = newHeap.get(LIVE_AFTER_GC_SIZE) + newHeap.get(ALLOCATED_SINCE_GC_SIZE) +
+                                         oldHeap.get(LIVE_AFTER_GC_SIZE) + oldHeap.get(ALLOCATED_SINCE_GC_SIZE);
 
         AllClassesInformation currentClass = new AllClassesInformation(classRef, classObj,
-                                                                       totalBytesAllocated,
-                                                                       totalInstances);
+                                                                       totalCurrentBytesAllocated,
+                                                                       totalCurrentInstances);
         _allClassesUnfiltered.add(currentClass);
 
         filterClassesTable(view, classesTable, currentClass);
@@ -330,7 +333,7 @@ class Memory {
   }
 
   int getClassRefInstanceCount(FlutterStudioMonitorStageView view, ClassRef classRef) {
-    int instanceLimit =1;
+    int instanceLimit = 1;
     String classId = classRef.getId();
 
     AtomicInteger totalCount = new AtomicInteger();

@@ -639,10 +639,11 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       new RangedContinuousSeries("MemoryMax", getTimeline().getViewRange(), dataRanges, memoryMaxDataSeries);
     RangedContinuousSeries externalMemoryRange =
       new RangedContinuousSeries("MemoryExtern", getTimeline().getViewRange(), dataRanges, memoryExternalDataSeries);
-//    RangedContinuousSeries rssRange = new RangedContinuousSeries("RSS",
-//                                                                 getTimeline().getViewRange(), dataRanges, rssDataSeries);
+    // TODO(terry): Temporary comment out working on displaying RSS properly in chart.
+    // RangedContinuousSeries rssRange = new RangedContinuousSeries("RSS",
+    //                                                              getTimeline().getViewRange(), dataRanges, rssDataSeries);
 
-//    model.add(rssRange);              // Plot used RSS size line.
+    // model.add(rssRange);              // Plot used RSS size line.
     model.add(maxMemoryRange);        // Plot total size of allocated heap.
     model.add(externalMemoryRange);   // Plot total size of external memory (bottom of stacked chart).
     model.add(usedMemoryRange);       // Plot used memory (top of stacked chart).
@@ -653,8 +654,9 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     LineChart mLineChart = new LineChart(model);
     mLineChart.setBackground(JBColor.background());
 
-//    mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
-//      .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
+    // TODO(terry): Temporary comment out working on displaying RSS properly in chart.
+    // mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
+    //   .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
 
     mLineChart.configure(maxMemoryRange, new LineConfig(MEMORY_CAPACITY)
       .setStroke(LineConfig.DEFAULT_DASH_STROKE).setLegendIconType(LegendConfig.IconType.DASHED_LINE));
@@ -678,14 +680,14 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     FlutterAllMemoryData.ThreadSafeData memoryUsed = stage.getUsedDataSeries();
 
     Range allData = getTimeline().getDataRange();
+
+    legendComponentModel = new LegendComponentModel(new Range(100.0, 100.0));
     timeGlobalRangeUs = new Range(0, 0);
 
     RangedContinuousSeries rssRangedData = new RangedContinuousSeries("RSS", timeGlobalRangeUs, allData, rssMax);
     RangedContinuousSeries maxHeapRangedData = new RangedContinuousSeries("Max Heap", timeGlobalRangeUs, allData, memoryMax);
     RangedContinuousSeries usedHeapRangedData = new RangedContinuousSeries("Used Heap", timeGlobalRangeUs, allData, memoryUsed);
     RangedContinuousSeries externalHeapRangedData = new RangedContinuousSeries("External", timeGlobalRangeUs, allData, memoryExternal);
-
-    legendComponentModel = new LegendComponentModel(timeGlobalRangeUs);
 
     SeriesLegend legendRss = new SeriesLegend(rssRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
     legendComponentModel.add(legendRss);

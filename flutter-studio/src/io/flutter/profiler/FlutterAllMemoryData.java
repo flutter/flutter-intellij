@@ -83,7 +83,7 @@ public class FlutterAllMemoryData {
   //    1. heap used
   //    2. external space used
   //    3. heap capacity
-  //    4. RSS.
+  //    4. RSS (Resident Set Size)
   // And store a a data series.
   public FlutterAllMemoryData(Disposable parentDisposable, FlutterApp app) {
     multiData = new ArrayList<>();
