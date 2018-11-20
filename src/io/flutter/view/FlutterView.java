@@ -346,11 +346,10 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }, null);
     linkLabel.setBorder(JBUI.Borders.empty(3, 10));
     linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
-    if (FlutterUtils.isAndroidStudio()) {
-      // Remove underline for Android Studio to avoid LinkLabel bug where underline is left aligned even though text is center aligned.
-      // TODO(kenzieschmoll): remove this once AndroidStudio is based on IntelliJ 182.
-      linkLabel.setPaintUnderline(false);
-    }
+    // Remove underline to avoid LinkLabel bug where underline is left aligned
+    // even though text is center aligned.
+    // TODO(kenzieschmoll): remove this if this bug is fixed in IntelliJ.
+    linkLabel.setPaintUnderline(false);
 
     final TabInfo tabInfo = new TabInfo(linkLabel)
       .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
