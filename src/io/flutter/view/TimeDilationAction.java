@@ -19,6 +19,7 @@ class TimeDilationAction extends FlutterViewToggleableAction {
     super(app, "Enable Slow Animations", null, showIcon ? AllIcons.Vcs.History : null);
 
     setExtensionCommand("ext.flutter.timeDilation");
+    setEnabledStateValue(5.0);
   }
 
   @Override
@@ -27,13 +28,6 @@ class TimeDilationAction extends FlutterViewToggleableAction {
     params.put("timeDilation", isSelected() ? 5.0 : 1.0);
     if (app.isSessionActive()) {
       app.callServiceExtension("ext.flutter.timeDilation", params);
-    }
-  }
-
-  @Override
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
     }
   }
 }

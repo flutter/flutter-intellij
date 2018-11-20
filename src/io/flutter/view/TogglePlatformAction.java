@@ -10,15 +10,14 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
 class TogglePlatformAction extends FlutterViewAction {
+  private static final String PLATFORM_OVERRIDE = "ext.flutter.platformOverride";
   private Boolean isCurrentlyAndroid;
   CompletableFuture<Boolean> cachedHasExtensionFuture;
-  private StreamSubscription<Boolean> subscription;
 
   TogglePlatformAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("flutter.view.togglePlatform.text"),
@@ -30,18 +29,13 @@ class TogglePlatformAction extends FlutterViewAction {
   @SuppressWarnings("Duplicates")
   public void update(@NotNull AnActionEvent e) {
     if (!app.isSessionActive()) {
-      if (subscription != null) {
-        subscription.dispose();
-        subscription = null;
-      }
       e.getPresentation().setEnabled(false);
       return;
     }
 
-    if (subscription == null) {
-      subscription = app
-        .hasServiceExtension("ext.flutter.platformOverride", (enabled) -> e.getPresentation().setEnabled(app.isSessionActive() && enabled));
-    }
+    app.hasServiceExtension(PLATFORM_OVERRIDE, (enabled) -> {
+      e.getPresentation().setEnabled(app.isSessionActive() && enabled);
+    });
   }
 
   @Override
@@ -60,17 +54,14 @@ class TogglePlatformAction extends FlutterViewAction {
               FlutterBundle.message("flutter.view.togglePlatform.output",
                                     isNowAndroid ? "Android" : "iOS"),
               ConsoleViewContentType.SYSTEM_OUTPUT);
+
+            app.getVMServiceManager().setServiceExtensionState(
+              PLATFORM_OVERRIDE,
+              true,
+              isNowAndroid ? "android" : "iOS");
           }
         });
       });
-    }
-  }
-
-  // TODO(kenzieschmoll): handle app restart in VMServiceManager so that this action synced across toolbars.
-  @Override
-  public void handleAppRestarted() {
-    if (isCurrentlyAndroid != null) {
-      app.togglePlatform(isCurrentlyAndroid);
     }
   }
 }
