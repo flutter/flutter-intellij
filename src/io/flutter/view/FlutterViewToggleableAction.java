@@ -5,19 +5,23 @@
  */
 package io.flutter.view;
 
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensionState;
+import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable {
+abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
   private String extensionCommand;
   private Object enabledStateValue = true;
+  private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
   FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
     super(app, text);
@@ -44,19 +48,31 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     presentation.putClientProperty("selected", selected);
 
     if (!app.isSessionActive()) {
+      dispose();
       e.getPresentation().setEnabled(false);
       return;
     }
 
-    app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
-        if (presentation.getClientProperty("selected") != (Boolean) state.isEnabled()) {
-          presentation.putClientProperty("selected", state.isEnabled());
-        }
-      }, true);
+    if (currentValueSubscription == null) {
+      currentValueSubscription =
+        app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
+          if (presentation.getClientProperty("selected") != (Boolean) state.isEnabled()) {
+            presentation.putClientProperty("selected", state.isEnabled());
+          }
+        }, true);
+    }
 
     app.hasServiceExtension(extensionCommand, (enabled) -> {
         e.getPresentation().setEnabled(app.isSessionActive() && enabled);
       });
+  }
+
+  @Override
+  public void dispose() {
+    if (currentValueSubscription != null) {
+      currentValueSubscription.dispose();
+      currentValueSubscription = null;
+    }
   }
 
   @Override

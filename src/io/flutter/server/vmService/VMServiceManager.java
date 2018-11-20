@@ -278,7 +278,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
       else if (value instanceof Double) {
         final Map<String, Object> params = new HashMap<>();
-        // The param name for a numeric service extension will be the latter part of the extension name
+        // The param name for a numeric service extension will be the last part of the extension name
         // (ext.flutter.extensionName => extensionName).
         params.put(name.substring(name.lastIndexOf(".") + 1), value);
         app.callServiceExtension(name, params);
@@ -412,24 +412,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       // IsolateExit event cannot be relied on to track when a restart is
       // occurring for unclear reasons.
       resetAvailableExtensions();
-    }
-  }
-
-  public final class ServiceExtensionState {
-    private final boolean enabled;
-    private final Object value;
-
-    public ServiceExtensionState(boolean enabled, Object value) {
-      this.enabled = enabled;
-      this.value = value;
-    }
-
-    public boolean isEnabled() {
-      return enabled;
-    }
-
-    public Object getValue() {
-      return value;
     }
   }
 }

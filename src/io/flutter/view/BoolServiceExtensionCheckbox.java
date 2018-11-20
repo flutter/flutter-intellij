@@ -5,7 +5,10 @@
  */
 package io.flutter.view;
 
+import com.intellij.openapi.Disposable;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensionState;
+import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -16,16 +19,17 @@ import javax.swing.*;
  * enabling embedding UI to turn on and off the service extension
  * in a JPanel.
  */
-public class BoolServiceExtensionCheckbox {
+public class BoolServiceExtensionCheckbox implements Disposable {
 
   private final JCheckBox checkbox;
+  private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
   BoolServiceExtensionCheckbox(FlutterApp app, @NotNull String extensionCommand, String label, String tooltip) {
     checkbox = new JCheckBox(label);
     checkbox.setHorizontalAlignment(JLabel.LEFT);
     checkbox.setToolTipText(tooltip);
     assert(app.getVMServiceManager() != null);
-    app.hasServiceExtension(extensionCommand, checkbox::setEnabled);
+    app.hasServiceExtension(extensionCommand, checkbox::setEnabled, this);
 
     checkbox.addActionListener((l) -> {
       final boolean newValue = checkbox.isSelected();
@@ -38,7 +42,7 @@ public class BoolServiceExtensionCheckbox {
       }
     });
 
-    app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
+    currentValueSubscription = app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
       if (checkbox.isSelected() != state.isEnabled()) {
         checkbox.setSelected(state.isEnabled());
       }
@@ -47,5 +51,13 @@ public class BoolServiceExtensionCheckbox {
 
   JCheckBox getComponent() {
     return checkbox;
+  }
+
+  @Override
+  public void dispose() {
+    if (currentValueSubscription != null) {
+      currentValueSubscription.dispose();
+      currentValueSubscription = null;
+    }
   }
 }
