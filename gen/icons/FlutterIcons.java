@@ -89,5 +89,15 @@ public class FlutterIcons {
     public static final Icon RedProgr_6 = load("/icons/perf/RedProgr_6.png"); // 16x16
     public static final Icon RedProgr_7 = load("/icons/perf/RedProgr_7.png"); // 16x16
     public static final Icon RedProgr_8 = load("/icons/perf/RedProgr_8.png"); // 16x16
+
+    public static final Icon YellowProgr = load("/icons/perf/YellowProgr.png"); // 16x16
+    public static final Icon YellowProgr_1 = load("/icons/perf/YellowProgr_1.png"); // 16x16
+    public static final Icon YellowProgr_2 = load("/icons/perf/YellowProgr_2.png"); // 16x16
+    public static final Icon YellowProgr_3 = load("/icons/perf/YellowProgr_3.png"); // 16x16
+    public static final Icon YellowProgr_4 = load("/icons/perf/YellowProgr_4.png"); // 16x16
+    public static final Icon YellowProgr_5 = load("/icons/perf/YellowProgr_5.png"); // 16x16
+    public static final Icon YellowProgr_6 = load("/icons/perf/YellowProgr_6.png"); // 16x16
+    public static final Icon YellowProgr_7 = load("/icons/perf/YellowProgr_7.png"); // 16x16
+    public static final Icon YellowProgr_8 = load("/icons/perf/YellowProgr_8.png"); // 16x16
   }
 }
