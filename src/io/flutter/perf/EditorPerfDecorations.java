@@ -455,7 +455,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
       sb.append("</p>");
     }
     if (sb.length() == 0) {
-      sb.append("<p><b>No widget rebuilds detected for line.</p></b>");
+      sb.append("<p><b>No widget rebuilds detected for line.</b></p>");
     }
     return sb.toString();
   }
