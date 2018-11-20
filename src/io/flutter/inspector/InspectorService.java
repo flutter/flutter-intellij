@@ -888,11 +888,20 @@ public class InspectorService implements Disposable {
     }
   }
 
+  public static String getFileUriPrefix() {
+    return SystemInfo.isWindows ? "file:///" : "file://";
+  }
+
   // TODO(jacobr): remove this method as soon as the
   // track-widget-creation kernel transformer is fixed to return paths instead
   // of URIs.
   public static String toSourceLocationUri(String path) {
-    return "file://" + path;
+    return getFileUriPrefix() + path;
+  }
+
+  public static String fromSourceLocationUri(String path) {
+    final String filePrefix = getFileUriPrefix();
+    return (path.startsWith(filePrefix)) ? path.substring(filePrefix.length()) : path;
   }
 
   public enum FlutterTreeType {

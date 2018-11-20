@@ -6,32 +6,55 @@
 package io.flutter.perf;
 
 import com.intellij.openapi.editor.Document;
+import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.fileEditor.FileEditor;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.impl.http.HttpVirtualFile;
 import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
+import io.flutter.inspector.InspectorService;
 import org.jetbrains.annotations.Nullable;
 
-public class TextEditorFileLocationMapper implements FileLocationMapper {
+public class DocumentFileLocationMapper implements FileLocationMapper {
   final Document document;
   private final PsiFile psiFile;
   private final VirtualFile virtualFile;
-  private final TextEditor textEditor;
-
   private final XDebuggerUtil debuggerUtil;
 
-  TextEditorFileLocationMapper(TextEditor textEditor, Project project) {
-    this.textEditor = textEditor;
-    document = textEditor.getEditor().getDocument();
-    psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
-    virtualFile = psiFile != null ? psiFile.getVirtualFile() : null;
-    debuggerUtil = XDebuggerUtil.getInstance();
+  public DocumentFileLocationMapper(String path, Project project) {
+    this(lookupDocument(path), project);
+  }
+
+  public static Document lookupDocument(String path) {
+    final String fileName = InspectorService.fromSourceLocationUri(path);
+
+    final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(fileName);
+    if (virtualFile != null && virtualFile.exists() &&
+        !(virtualFile instanceof LightVirtualFile) && !(virtualFile instanceof HttpVirtualFile)) {
+      return FileDocumentManager.getInstance().getDocument(virtualFile);
+    }
+    return null;
+  }
+
+  DocumentFileLocationMapper(Document document, Project project) {
+    this.document = document;
+    if (document != null) {
+      psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
+      virtualFile = psiFile != null ? psiFile.getVirtualFile() : null;
+      debuggerUtil = XDebuggerUtil.getInstance();
+    } else {
+      psiFile = null;
+      virtualFile = null;
+      debuggerUtil = null;
+    }
   }
 
   @Override

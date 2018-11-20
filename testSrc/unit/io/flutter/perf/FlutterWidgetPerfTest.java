@@ -31,6 +31,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
+import static io.flutter.perf.FlutterWidgetPerf.IDLE_DELAY_MILISECONDS;
 import static org.junit.Assert.*;
 
 class MockWidgetPerfProvider implements WidgetPerfProvider {
@@ -81,15 +82,41 @@ class MockWidgetPerfProvider implements WidgetPerfProvider {
   }
 }
 
-class MockEditorPerfModel implements EditorPerfModel {
+class MockPerfModel implements PerfModel {
+
+  volatile int idleCount = 0;
+  volatile int clearCount = 0;
+  volatile int frameCount = 0;
+
+  @Override
+  public void markAppIdle() {
+    idleCount++;
+  }
+
+  @Override
+  public void clear() {
+    clearCount++;
+  }
+
+  @Override
+  public void onFrame() {
+    frameCount++;
+  }
+
+  @Override
+  public boolean isAnimationActive() {
+    return idleCount == 0;
+  }
+}
+
+class MockEditorPerfModel extends MockPerfModel implements EditorPerfModel {
 
   public boolean isHoveredOverLineMarkerAreaOverride = false;
   boolean isDisposed;
-  int frameCount = 0;
   CompletableFuture<FilePerfInfo> statsFuture;
   private FlutterApp app;
   private FilePerfInfo stats;
-  private TextEditor textEditor;
+  private final TextEditor textEditor;
 
   MockEditorPerfModel(TextEditor textEditor) {
     this.textEditor = textEditor;
@@ -124,17 +151,14 @@ class MockEditorPerfModel implements EditorPerfModel {
 
   @Override
   public void markAppIdle() {
+    super.markAppIdle();
     stats.markAppIdle();
   }
 
   @Override
   public void clear() {
+    super.clear();
     stats.clear();
-  }
-
-  @Override
-  public void onFrame() {
-    frameCount++;
   }
 
   @Override
@@ -145,7 +169,7 @@ class MockEditorPerfModel implements EditorPerfModel {
 
   @Override
   public boolean isAnimationActive() {
-    return stats.getCountPastSecond() > 0;
+    return stats.getTotalValue(PerfMetric.peakRecent) > 0;
   }
 
   @Override
@@ -292,7 +316,7 @@ class MockTextEditor implements TextEditor {
 
 public class FlutterWidgetPerfTest {
   @Test
-  public void testStatCalculation() throws InterruptedException, ExecutionException {
+  public void testFileStatsCalculation() throws InterruptedException, ExecutionException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
     final Map<String, MockEditorPerfModel> perfModels = new HashMap<>();
@@ -304,13 +328,13 @@ public class FlutterWidgetPerfTest {
         perfModels.put(textEditor.getName(), model);
         return model;
       },
-      (TextEditor textEditor) -> new FakeFileLocationMapper()
+      path -> new FakeFileLocationMapper()
     );
     widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
 
     // Simulate 60fps for 2 seconds.
     for (int frame = 1; frame <= 120; frame++) {
-      long startTime = 1000 + frame * 1000 * 1000 / 60;
+      final long startTime = 1000 + frame * 1000 * 1000 / 60;
       widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" + startTime + ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
     }
     final Set<TextEditor> textEditors = new HashSet<>();
@@ -323,15 +347,15 @@ public class FlutterWidgetPerfTest {
 
     FilePerfInfo stats = clockModel.getStatsFuture().get();
     // Stats for the first response are rebuilds only
-    assertEquals(1620, stats.getCountPastSecond());
+    assertEquals(1620, stats.getTotalValue(PerfMetric.pastSecond));
     List<TextRange> locations = Lists.newArrayList(stats.getLocations());
     assertEquals(7, locations.size());
     List<SummaryStats> rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());
-    assertEquals(360, rangeStats.get(0).getPastSecond());
-    assertEquals(726, rangeStats.get(0).getTotal());
+    assertEquals(360, rangeStats.get(0).getValue(PerfMetric.pastSecond));
+    assertEquals(726, rangeStats.get(0).getValue(PerfMetric.total));
     assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
 
@@ -339,23 +363,23 @@ public class FlutterWidgetPerfTest {
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());
-    assertEquals(60, rangeStats.get(0).getPastSecond());
-    assertEquals(121, rangeStats.get(0).getTotal());
+    assertEquals(60, rangeStats.get(0).getValue(PerfMetric.pastSecond));
+    assertEquals(121, rangeStats.get(0).getValue(PerfMetric.total));
     assertEquals("Widget:34:15", rangeStats.get(0).getDescription());
 
     clockModel.markAppIdle();
-    assertEquals(0, stats.getCountPastSecond());
+    assertEquals(0, stats.getTotalValue(PerfMetric.pastSecond));
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(4)));
-    assertEquals(0, rangeStats.get(0).getPastSecond());
+    assertEquals(0, rangeStats.get(0).getValue(PerfMetric.pastSecond));
     // Total is not impacted.
-    assertEquals(121, rangeStats.get(0).getTotal());
+    assertEquals(121, rangeStats.get(0).getValue(PerfMetric.total));
 
     rangeStats = Lists.newArrayList(stats.getRangeStats(locations.get(0)));
 
     assertEquals(1, rangeStats.size());
     assertEquals(PerfReportKind.rebuild, rangeStats.get(0).getKind());
-    assertEquals(0, rangeStats.get(0).getPastSecond());
-    assertEquals(726, rangeStats.get(0).getTotal());
+    assertEquals(0, rangeStats.get(0).getValue(PerfMetric.pastSecond));
+    assertEquals(726, rangeStats.get(0).getValue(PerfMetric.total));
     assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
     final TextEditor mainTextEditor = new MockTextEditor("/sample/project/main.dart");
@@ -380,8 +404,8 @@ public class FlutterWidgetPerfTest {
 
     // We have new fake data for the files so the count in the past second is
     // back up from zero
-    assertEquals(54, stats.getCountPastSecond());
-    assertEquals(2, mainStats.getCountPastSecond());
+    assertEquals(3321, stats.getTotalValue(PerfMetric.total));
+    assertEquals(2, mainStats.getTotalValue(PerfMetric.pastSecond));
 
     locations = Lists.newArrayList(stats.getLocations());
     assertEquals(7, locations.size());
@@ -389,13 +413,13 @@ public class FlutterWidgetPerfTest {
 
     assertEquals(2, rangeStats.size());
     assertEquals(PerfReportKind.repaint, rangeStats.get(0).getKind());
-    assertEquals(6, rangeStats.get(0).getPastSecond());
-    assertEquals(6, rangeStats.get(0).getTotal());
+    assertEquals(6, rangeStats.get(0).getValue(PerfMetric.pastSecond));
+    assertEquals(6, rangeStats.get(0).getValue(PerfMetric.total));
     assertEquals("Widget:52:12", rangeStats.get(0).getDescription());
 
     assertEquals(PerfReportKind.rebuild, rangeStats.get(1).getKind());
-    assertEquals(6, rangeStats.get(1).getPastSecond());
-    assertEquals(732, rangeStats.get(1).getTotal());
+    assertEquals(6, rangeStats.get(1).getValue(PerfMetric.pastSecond));
+    assertEquals(732, rangeStats.get(1).getValue(PerfMetric.total));
     assertEquals("Widget:52:12", rangeStats.get(1).getDescription());
 
 
@@ -403,13 +427,13 @@ public class FlutterWidgetPerfTest {
 
     assertEquals(2, rangeStats.size());
     assertEquals(PerfReportKind.repaint, rangeStats.get(0).getKind());
-    assertEquals(1, rangeStats.get(0).getPastSecond());
-    assertEquals(1, rangeStats.get(0).getTotal());
+    assertEquals(1, rangeStats.get(0).getValue(PerfMetric.pastSecond));
+    assertEquals(1, rangeStats.get(0).getValue(PerfMetric.total));
     assertEquals("Widget:33:12", rangeStats.get(0).getDescription());
 
     assertEquals(PerfReportKind.rebuild, rangeStats.get(1).getKind());
-    assertEquals(1, rangeStats.get(1).getPastSecond());
-    assertEquals(122, rangeStats.get(1).getTotal());
+    assertEquals(1, rangeStats.get(1).getValue(PerfMetric.pastSecond));
+    assertEquals(122, rangeStats.get(1).getValue(PerfMetric.total));
     assertEquals("Widget:33:12", rangeStats.get(1).getDescription());
 
     assertFalse(clockModel.isDisposed);
@@ -419,5 +443,74 @@ public class FlutterWidgetPerfTest {
 
     assertTrue(clockModel.isDisposed);
     assertTrue(mainModel.isDisposed);
+
+    flutterWidgetPerf.dispose();
+  }
+
+  @Test
+  public void testOverallStatsCalculation() throws InterruptedException, ExecutionException {
+    final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
+
+    final FlutterWidgetPerf flutterWidgetPerf = new FlutterWidgetPerf(
+      true,
+      widgetPerfProvider,
+      textEditor -> null,
+      path -> new FakeFileLocationMapper()
+    );
+    MockPerfModel perfModel = new MockPerfModel();
+    flutterWidgetPerf.addPerfListener(perfModel);
+
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
+
+    // Simulate 60fps for 2 seconds.
+    for (int frame = 1; frame <= 120; frame++) {
+      final long startTime = 1000 + frame * 1000 * 1000 / 60;
+      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" + startTime + ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+    }
+    final ArrayList<PerfMetric> lastFrameOnly = new ArrayList<>();
+    lastFrameOnly.add(PerfMetric.lastFrame);
+    final ArrayList<PerfMetric> metrics = new ArrayList<>();
+    metrics.add(PerfMetric.lastFrame);
+    metrics.add(PerfMetric.totalSinceRouteChange);
+
+    ArrayList<SlidingWindowStatsSummary> stats = flutterWidgetPerf.getStatsForMetric(lastFrameOnly, PerfReportKind.repaint);
+    // No repaint stats are provided.
+    assertTrue(stats.isEmpty());
+
+    stats = flutterWidgetPerf.getStatsForMetric(lastFrameOnly, PerfReportKind.rebuild);
+    assertEquals(8, stats.size());
+
+    for (SlidingWindowStatsSummary stat : stats) {
+      assertTrue(stat.getValue(PerfMetric.lastFrame) > 0);
+    }
+
+    stats = flutterWidgetPerf.getStatsForMetric(metrics, PerfReportKind.rebuild);
+    assertEquals(18, stats.size());
+    for (SlidingWindowStatsSummary stat : stats) {
+      assertTrue(stat.getValue(PerfMetric.lastFrame) > 0 ||
+                 stat.getValue(PerfMetric.totalSinceRouteChange) > 0);
+    }
+
+    /// Test that the perfModel gets notified correctly when there are
+    // events to draw a frame of the ui.
+    assertEquals(perfModel.frameCount, 0);
+    SwingUtilities.invokeLater(() -> {
+      flutterWidgetPerf.requestRepaint(When.now);
+    });
+
+    while (perfModel.frameCount == 0) {
+      try {
+        Thread.sleep(1);
+      }
+      catch (InterruptedException e) {
+        fail(e.toString());
+      }
+    }
+    assertEquals(1, perfModel.frameCount);
+    assertEquals(0, perfModel.idleCount);
+    // Verify that an idle event occurs once we wait the idle time delay.
+    Thread.sleep(IDLE_DELAY_MILISECONDS);
+    assertEquals(1, perfModel.idleCount);
+    flutterWidgetPerf.dispose();
   }
 }

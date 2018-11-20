@@ -19,7 +19,7 @@ import java.util.List;
  * the text editor along with the actual perf stats accessible via the
  * getStats method.
  */
-public interface EditorPerfModel extends Disposable {
+public interface EditorPerfModel extends PerfModel, Disposable {
   @NotNull
   FilePerfInfo getStats();
 
@@ -30,13 +30,5 @@ public interface EditorPerfModel extends Disposable {
 
   boolean isHoveredOverLineMarkerArea();
 
-  void markAppIdle();
-
-  void clear();
-
-  void onFrame();
-
   void setPerfInfo(FilePerfInfo stats);
-
-  boolean isAnimationActive();
 }

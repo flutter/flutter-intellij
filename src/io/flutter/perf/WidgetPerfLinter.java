@@ -105,10 +105,7 @@ public class WidgetPerfLinter {
   public CompletableFuture<ArrayList<PerfTip>> getTipsFor(Set<TextEditor> textEditors) {
     final ArrayList<PerfTipRule> candidateRules = new ArrayList<>();
     final Set<Location> candidateLocations = new HashSet<>();
-    final ArrayList<FilePerfInfo> allFileStats = new ArrayList<>();
-    for (TextEditor textEditor : textEditors) {
-      allFileStats.add(widgetPerf.buildSummaryStats(textEditor));
-    }
+    final ArrayList<FilePerfInfo> allFileStats = widgetPerf.buildAllSummaryStats(textEditors);
     for (PerfTipRule rule : getAllTips()) {
       for (FilePerfInfo fileStats : allFileStats) {
         for (SummaryStats stats : fileStats.getStats()) {

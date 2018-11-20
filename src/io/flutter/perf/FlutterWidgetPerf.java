@@ -14,7 +14,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -44,6 +46,14 @@ import static io.flutter.inspector.InspectorService.toSourceLocationUri;
  */
 public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
+  public static final long IDLE_DELAY_MILISECONDS = 400;
+
+  class StatsForReportKind {
+    final TIntObjectHashMap<SlidingWindowStats> data = new TIntObjectHashMap<>();
+    private int lastStartTime = -1;
+    private int lastNonEmptyReportTime = -1;
+  }
+
   // Retry requests if we do not receive a response within this interval.
   private static final long REQUEST_TIMEOUT_INTERVAL = 2000;
 
@@ -54,10 +64,12 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   private boolean requestInProgress = false;
   private long lastRequestTime;
 
+  private final List<PerfModel> perfListeners = new ArrayList<>();
+
   private final Map<TextEditor, EditorPerfModel> editorDecorations = new HashMap<>();
   private final TIntObjectHashMap<Location> knownLocationIds = new TIntObjectHashMap<>();
   private final SetMultimap<String, Location> locationsPerFile = HashMultimap.create();
-  private final Map<PerfReportKind, TIntObjectHashMap<SlidingWindowStats>> stats = new HashMap<>();
+  private final Map<PerfReportKind, StatsForReportKind> stats = new HashMap<>();
 
   final Set<TextEditor> currentEditors = new HashSet<>();
   private boolean profilingEnabled = false;
@@ -66,7 +78,6 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   private boolean isDisposed = false;
   private final FilePerfModelFactory perfModelFactory;
   private final FileLocationMapperFactory fileLocationMapperFactory;
-  private int lastStartTime = -1;
   private volatile long lastLocalPerfEventTime;
   private final WidgetPerfLinter perfLinter;
 
@@ -94,6 +105,10 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.onFrame();
     }
+
+    for (PerfModel model : perfListeners) {
+      model.onFrame();
+    }
   }
 
   private boolean isConnected() {
@@ -119,7 +134,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     }
     isDirty = true;
 
-    if (!isConnected() || this.currentEditors.isEmpty()) {
+    if (!isConnected() || (this.currentEditors.isEmpty() && this.perfListeners.isEmpty())) {
       return;
     }
 
@@ -136,70 +151,90 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
   @Override
   public void onWidgetPerfEvent(PerfReportKind kind, JsonObject json) {
-    synchronized (this) {
-      final long startTimeMicros = json.get("startTime").getAsLong();
-      final int startTimeMilis = (int)(startTimeMicros / 1000);
-      lastLocalPerfEventTime = System.currentTimeMillis();
-      if (lastStartTime > startTimeMilis) {
-        // We went backwards in time. There must have been a hot restart so
-        // clear all old stats.
-        for (TIntObjectHashMap<SlidingWindowStats> statsForKind : stats.values()) {
-          statsForKind.forEachValue((SlidingWindowStats entry) -> {
+    // Read access to the Document objects on background thread is needed so
+    // a ReadAction is required. Document objects are used to determine the
+    // widget names at specific locations in documents.
+    final Runnable action = () -> {
+      synchronized (this) {
+        final long startTimeMicros = json.get("startTime").getAsLong();
+        final int startTimeMilis = (int)(startTimeMicros / 1000);
+        lastLocalPerfEventTime = System.currentTimeMillis();
+        final StatsForReportKind statsForReportKind = getStatsForKind(kind);
+        if (statsForReportKind.lastStartTime > startTimeMilis) {
+          // We went backwards in time. There must have been a hot restart so
+          // clear all old stats.
+          statsForReportKind.data.forEachValue((SlidingWindowStats entry) -> {
             entry.clear();
             return true;
           });
         }
-      }
-      lastStartTime = startTimeMilis;
+        statsForReportKind.lastStartTime = startTimeMilis;
 
-      if (json.has("newLocations")) {
-        final JsonObject newLocations = json.getAsJsonObject("newLocations");
-        for (Map.Entry<String, JsonElement> entry : newLocations.entrySet()) {
-          final String path = entry.getKey();
-          final JsonArray entries = entry.getValue().getAsJsonArray();
-          assert (entries.size() % 3 == 0);
-          for (int i = 0; i < entries.size(); i += 3) {
-            final int id = entries.get(i).getAsInt();
-            final int line = entries.get(i + 1).getAsInt();
-            final int column = entries.get(i + 2).getAsInt();
-            final Location location = new Location(path, line, column, id);
-            final Location existingLocation = knownLocationIds.get(id);
-            if (existingLocation == null) {
-              addNewLocation(id, location);
-            }
-            else {
-              if (!location.equals(existingLocation)) {
-                // Cleanup all references to the old location as it is stale.
-                // This occurs if there is a hot restart or reload that we weren't aware of.
-                locationsPerFile.remove(existingLocation.path, existingLocation);
-                for (TIntObjectHashMap<SlidingWindowStats> statsForKind : stats.values()) {
-                  statsForKind.remove(id);
-                }
+        if (json.has("newLocations")) {
+          final JsonObject newLocations = json.getAsJsonObject("newLocations");
+          for (Map.Entry<String, JsonElement> entry : newLocations.entrySet()) {
+            final String path = entry.getKey();
+            FileLocationMapper locationMapper = fileLocationMapperFactory.create(path);
+            final JsonArray entries = entry.getValue().getAsJsonArray();
+            assert (entries.size() % 3 == 0);
+            for (int i = 0; i < entries.size(); i += 3) {
+              final int id = entries.get(i).getAsInt();
+              final int line = entries.get(i + 1).getAsInt();
+              final int column = entries.get(i + 2).getAsInt();
+              final TextRange textRange = locationMapper.getIdentifierRange(line, column);
+              final String name = locationMapper.getText(textRange);
+              assert (name != null);
+              final Location location = new Location(path, line, column, id, textRange, name);
+
+              final Location existingLocation = knownLocationIds.get(id);
+              if (existingLocation == null) {
                 addNewLocation(id, location);
+              }
+              else {
+                if (!location.equals(existingLocation)) {
+                  // Cleanup all references to the old location as it is stale.
+                  // This occurs if there is a hot restart or reload that we weren't aware of.
+                  locationsPerFile.remove(existingLocation.path, existingLocation);
+                  for (StatsForReportKind statsForKind : stats.values()) {
+                    statsForKind.data.remove(id);
+                  }
+                  addNewLocation(id, location);
+                }
               }
             }
           }
         }
-      }
-      final TIntObjectHashMap<SlidingWindowStats> statsForKind = getStatsForKind(kind);
-      final PerfSourceReport report = new PerfSourceReport(json.getAsJsonArray("events"), kind, startTimeMicros);
-      for (PerfSourceReport.Entry entry : report.getEntries()) {
-        final int locationId = entry.locationId;
-        SlidingWindowStats statsForLocation = statsForKind.get(locationId);
-        if (statsForLocation == null) {
-          statsForLocation = new SlidingWindowStats();
-          statsForKind.put(locationId, statsForLocation);
+        final StatsForReportKind statsForKind = getStatsForKind(kind);
+        final PerfSourceReport report = new PerfSourceReport(json.getAsJsonArray("events"), kind, startTimeMicros);
+        if (report.getEntries().size() > 0) {
+          statsForReportKind.lastNonEmptyReportTime = startTimeMilis;
         }
-        statsForLocation.add(entry.total, startTimeMilis);
+        for (PerfSourceReport.Entry entry : report.getEntries()) {
+          final int locationId = entry.locationId;
+          SlidingWindowStats statsForLocation = statsForKind.data.get(locationId);
+          if (statsForLocation == null) {
+            statsForLocation = new SlidingWindowStats();
+            statsForKind.data.put(locationId, statsForLocation);
+          }
+          statsForLocation.add(entry.total, startTimeMilis);
+        }
       }
+    };
+
+    final Application application = ApplicationManager.getApplication();
+    if (application != null) {
+      application.runReadAction(action);
+    } else {
+      // Unittest case.
+      action.run();
     }
   }
 
   @Override
   public void onNavigation() {
     synchronized (this) {
-      for (TIntObjectHashMap<SlidingWindowStats> statsForKind : stats.values()) {
-        statsForKind.forEachValue((SlidingWindowStats entry) -> {
+      for (StatsForReportKind statsForKind : stats.values()) {
+        statsForKind.data.forEachValue((SlidingWindowStats entry) -> {
           entry.onNavigation();
           return true;
         });
@@ -207,10 +242,15 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     }
   }
 
-  private TIntObjectHashMap<SlidingWindowStats> getStatsForKind(PerfReportKind kind) {
-    TIntObjectHashMap<SlidingWindowStats> report = stats.get(kind);
+  @Override
+  public void addPerfListener(PerfModel listener) {
+    perfListeners.add(listener);
+  }
+
+  private StatsForReportKind getStatsForKind(PerfReportKind kind) {
+    StatsForReportKind report = stats.get(kind);
     if (report == null) {
-      report = new TIntObjectHashMap<>();
+      report = new StatsForReportKind();
       stats.put(kind, report);
     }
     return report;
@@ -244,7 +284,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
       editorForPath.put(uri, editor);
       uris.add(uri);
     }
-    if (uris.isEmpty()) {
+    if (uris.isEmpty() && perfListeners.isEmpty()) {
       setRequestInProgress(false);
       return;
     }
@@ -281,6 +321,15 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
       }
     }
 
+    if (!animate) {
+      for (PerfModel listener : perfListeners) {
+        if (listener.isAnimationActive()) {
+          animate = true;
+          break;
+        }
+      }
+    }
+
     if (animate != uiAnimationTimer.isRunning()) {
       if (animate) {
         uiAnimationTimer.start();
@@ -292,21 +341,21 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
     performRequestFinish();
   }
 
-  FilePerfInfo buildSummaryStats(TextEditor fileEditor) {
+  private FilePerfInfo buildSummaryStats(TextEditor fileEditor) {
     final String path = toSourceLocationUri(fileEditor.getFile().getPath());
-    final FileLocationMapper fileLocationMapper = fileLocationMapperFactory.create(fileEditor);
     final FilePerfInfo fileStats = new FilePerfInfo();
     for (PerfReportKind kind : PerfReportKind.values()) {
-      final TIntObjectHashMap<SlidingWindowStats> statsForKind = stats.get(kind);
-      if (statsForKind == null) {
+      final StatsForReportKind forKind = stats.get(kind);
+      if (forKind == null) {
         continue;
       }
+      final TIntObjectHashMap<SlidingWindowStats> data = forKind.data;
       for (Location location : locationsPerFile.get(path)) {
-        final SlidingWindowStats entry = statsForKind.get(location.id);
+        final SlidingWindowStats entry = data.get(location.id);
         if (entry == null) {
           continue;
         }
-        final TextRange range = fileLocationMapper.getIdentifierRange(location.line, location.column);
+        final TextRange range = location.textRange;
         if (range == null) {
           continue;
         }
@@ -314,8 +363,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
           range,
           new SummaryStats(
             kind,
-            new SlidingWindowStatsSummary(entry, lastStartTime, location),
-            fileLocationMapper.getText(range)
+            new SlidingWindowStatsSummary(entry, forKind.lastStartTime, location),
+            location.name
           )
         );
       }
@@ -325,17 +374,23 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
   private void performRequestFinish() {
     setRequestInProgress(false);
-    JobScheduler.getScheduler().schedule(this::maybeNotifyIdle, 1, TimeUnit.SECONDS);
+    JobScheduler.getScheduler().schedule(this::maybeNotifyIdle, IDLE_DELAY_MILISECONDS, TimeUnit.MILLISECONDS);
     if (isDirty) {
       requestRepaint(When.soon);
     }
   }
 
   private void maybeNotifyIdle() {
-    if (System.currentTimeMillis() >= lastRequestTime + 1000) {
-      ApplicationManager.getApplication().invokeLater(() -> {
+    if (isDisposed) {
+      return;
+    }
+    if (System.currentTimeMillis() >= lastRequestTime + IDLE_DELAY_MILISECONDS) {
+      AsyncUtils.invokeLater(() -> {
         for (EditorPerfModel decoration : editorDecorations.values()) {
           decoration.markAppIdle();
+        }
+        for (PerfModel listener : perfListeners) {
+          listener.markAppIdle();
         }
         uiAnimationTimer.stop();
       });
@@ -379,30 +434,37 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
     this.isDisposed = true;
 
+    if (uiAnimationTimer.isRunning()) {
+      uiAnimationTimer.stop();
+    }
     perfProvider.dispose();
 
-    clearDecorations();
+    clearModels();
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.dispose();
     }
     editorDecorations.clear();
+    perfListeners.clear();
   }
 
-  void clearDecorations() {
+  void clearModels() {
     for (EditorPerfModel decorations : editorDecorations.values()) {
       decorations.clear();
+    }
+    for (PerfModel listener: perfListeners) {
+      listener.clear();
     }
   }
 
   public void clear() {
-    ApplicationManager.getApplication().invokeLater(this::clearDecorations);
+    ApplicationManager.getApplication().invokeLater(this::clearModels);
   }
 
   private void onRestartHelper() {
     // The app has restarted. Location ids may not be valid.
     knownLocationIds.clear();
     stats.clear();
-    clearDecorations();
+    clearModels();
   }
 
   public void onRestart() {
@@ -411,5 +473,39 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
 
   public WidgetPerfLinter getPerfLinter() {
     return perfLinter;
+  }
+
+  public ArrayList<FilePerfInfo> buildAllSummaryStats(Set<TextEditor> textEditors) {
+    final ArrayList<FilePerfInfo> stats = new ArrayList<>();
+    synchronized (this) {
+      for (TextEditor textEditor : textEditors) {
+        stats.add(buildSummaryStats(textEditor));
+      }
+    }
+    return stats;
+  }
+
+  public ArrayList<SlidingWindowStatsSummary> getStatsForMetric(ArrayList<PerfMetric> metrics, PerfReportKind kind) {
+    final ArrayList<SlidingWindowStatsSummary> entries = new ArrayList<>();
+    synchronized (this) {
+      final StatsForReportKind forKind = stats.get(kind);
+      if (forKind != null) {
+        final int time = forKind.lastNonEmptyReportTime;
+        forKind.data.forEachEntry((int locationId, SlidingWindowStats stats) -> {
+          for (PerfMetric metric : metrics) {
+            if (stats.getValue(metric, time) > 0) {
+              entries.add(new SlidingWindowStatsSummary(
+                stats,
+                time,
+                knownLocationIds.get(locationId)
+              ));
+              return true;
+            }
+          }
+          return true;
+        });
+      }
+    }
+    return entries;
   }
 }

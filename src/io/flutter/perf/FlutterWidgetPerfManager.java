@@ -71,6 +71,8 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
 
   private final List<StreamSubscription<Boolean>> streamSubscriptions = new ArrayList<>();
 
+
+  @NotNull
   public Set<TextEditor> getSelectedEditors() {
     return lastSelectedEditors;
   }
@@ -184,7 +186,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
       isProfilingEnabled(),
       new VmServiceWidgetPerfProvider(app),
       (TextEditor textEditor) -> new EditorPerfDecorations(textEditor, app),
-      (TextEditor textEditor) -> new TextEditorFileLocationMapper(textEditor, app.getProject())
+      path -> new DocumentFileLocationMapper(path, app.getProject())
     );
   }
 
@@ -269,6 +271,11 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   }
 
   private void notifyPerf() {
+    if (!trackRepaintWidgets && !trackRebuildWidgets && currentStats != null) {
+      // TODO(jacobr): consider just marking as idle.
+      currentStats.clear();
+    }
+
     if (currentStats == null) {
       return;
     }

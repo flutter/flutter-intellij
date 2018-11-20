@@ -5,8 +5,6 @@
  */
 package io.flutter.perf;
 
-import com.intellij.openapi.fileEditor.TextEditor;
-
 public interface  FileLocationMapperFactory {
-  FileLocationMapper create(TextEditor fileEditor);
+  FileLocationMapper create(String path);
 }
