@@ -87,10 +87,10 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       assert app.getVMServiceManager() != null;
       app.getVMServiceManager().addPollingClient();
     }
-    catch (ClassNotFoundException | NoSuchMethodException |
+    catch (ClassNotFoundException | NoSuchMethodException | NoClassDefFoundError |
       InstantiationException | IllegalAccessException |
       InvocationTargetException e) {
-      LOG.warn("Problem loading Flutter Memory Profiler - " + e.getMessage());
+      LOG.info("Unable to load Flutter Memory Profiler: " + e.getMessage());
 
       final JLabel warningLabel = new JLabel(
         "Memory profiling is only available in Android Studio.", null, SwingConstants.CENTER);
