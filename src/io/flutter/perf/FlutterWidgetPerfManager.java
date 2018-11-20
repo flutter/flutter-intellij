@@ -15,6 +15,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
@@ -147,6 +148,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     if (debugIsActive && app != null && app.isSessionActive()) {
       updateTrackWidgetRebuilds();
     }
+    // Send analytics.
+    if (trackRebuildWidgets) {
+      FlutterInitializer.getAnalytics().sendEvent("intellij", "TrackWidgetRebuilds");
+    }
   }
 
   public boolean isTrackRepaintWidgets() {
@@ -161,6 +166,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     onProfilingFlagsChanged();
     if (debugIsActive && app != null && app.isSessionActive()) {
       updateTrackWidgetRepaints();
+    }
+    // Send analytics.
+    if (trackRepaintWidgets) {
+      FlutterInitializer.getAnalytics().sendEvent("intellij", "TrackRepaintWidgets");
     }
   }
 
