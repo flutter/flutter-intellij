@@ -36,6 +36,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiConsumer;
+import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.ElementList;
 import org.dartlang.vm.service.element.Library;
 import org.dartlang.vm.service.element.LibraryDependency;
@@ -98,8 +100,9 @@ public class FlutterStudioProfilersView
   private CommonButton resetZoom;
   private CommonButton frameSelection;
   private ProfilerAction frameSelectionAction;
-  private CommonButton snapshot;      // Snapshot the VM memory.
-  private CommonButton filterLibrary; // Filter libraries
+  private CommonButton snapshot;                    // Snapshot the VM memory.
+  private CommonButton filterLibrary;               // Filter libraries
+  private CommonButton resetSnapshotStatistics;     // Compact the GC
   private Set<String> selectedLibraries;
 
   public FlutterStudioProfilersView(@NotNull FlutterStudioProfilers theProfiler) {
@@ -237,14 +240,15 @@ public class FlutterStudioProfilersView
 
     snapshot = new CommonButton("Snapshot");
     snapshot.addActionListener(event -> {
-      //profiler.getApp().getPerfService().
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
-      view.displaySnapshot(view);
+      view.displaySnapshot(view, false);
       view.updateClassesStatus("Snapshoting...");
       snapshot.setEnabled(false);
+      resetSnapshotStatistics.setEnabled(false);
     });
     snapshot.setToolTipText("Snapshot of VM's memory");
     leftToolbar.add(snapshot);
+
 
     filterLibrary = new CommonButton("Filter");
     filterLibrary.addActionListener(filterEvent -> {
@@ -270,34 +274,25 @@ public class FlutterStudioProfilersView
         view.memorySnapshot.removeAllClassChildren(true);
       }
 
-      Iterator<String> iterator = selectedLibraries.iterator();
-      while (iterator.hasNext()) {
-        String libraryName = iterator.next();
-        LibraryRef libraryRef = view.allLibraries.get(libraryName);
-        if (libraryRef == null) {
-          if (libraryName == ALL_DART_LIBRARIES) {
-            // Filter all dart libraries.
-            view.dartLibraries.forEach((String key, LibraryRef dartLibraryRef) -> {
-              String dartLibraryId = dartLibraryRef.getId();
-              view.filteredLibraries.add(dartLibraryId);
-              processLibrary(view, dartLibraryId);
-            });
-          }
-          LOG.warn("Library not found " + libraryName);
-        }
-        else {
-          String libraryId = libraryRef.getId();
-          view.filteredLibraries.add(libraryId);
-
-          processLibrary(view, libraryId);
-        }
-      }
-
+      selectedLibrariesToFilter(selectedLibraries, true);
       view.getClassesTable().updateUI();
     });
-
     filterLibrary.setToolTipText("Filter Dart Libraries");
     leftToolbar.add(filterLibrary);
+
+    resetSnapshotStatistics = new CommonButton("Reset Stats");
+    resetSnapshotStatistics.addActionListener(event -> {
+      FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+
+      view.displaySnapshot(view, true);
+
+      view.updateClassesStatus("Reset Snapshot...");
+
+      snapshot.setEnabled(false);
+      resetSnapshotStatistics.setEnabled(false);
+    });
+    resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
+    leftToolbar.add(resetSnapshotStatistics);
 
     JBPanel rightToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
     toolbar.add(rightToolbar, BorderLayout.EAST);
@@ -424,6 +419,34 @@ public class FlutterStudioProfilersView
     updateStreaming();
   }
 
+  private void selectedLibrariesToFilter(Set<String> selectedLibraries, boolean processTheLibrary) {
+    FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+
+    selectedLibraries.forEach((String libraryName) -> {
+      LibraryRef libraryRef = view.allLibraries.get(libraryName);
+      if (libraryRef == null) {
+        if (libraryName == ALL_DART_LIBRARIES) {
+          // Filter all dart libraries.
+          view.dartLibraries.forEach((String key, LibraryRef dartLibraryRef) -> {
+            String dartLibraryId = dartLibraryRef.getId();
+            view.filteredLibraries.add(dartLibraryId);
+            if (processTheLibrary) {
+              processLibrary(view, dartLibraryId);
+            }
+          });
+        }
+        LOG.warn("Library not found " + libraryName);
+      }
+      else {
+        String libraryId = libraryRef.getId();
+        view.filteredLibraries.add(libraryId);
+        if (processTheLibrary) {
+          processLibrary(view, libraryId);
+        }
+      }
+    });
+  }
+
   // Process a library ID to see all
   private void processLibrary(FlutterStudioMonitorStageView view, String libraryId) {
     runningFilterCollection++;
@@ -451,6 +474,7 @@ public class FlutterStudioProfilersView
 
   public void snapshotComplete() {
     snapshot.setEnabled(true);
+    resetSnapshotStatistics.setEnabled(true);
   }
 
   private void toggleTimelineButtons() {
@@ -492,6 +516,7 @@ public class FlutterStudioProfilersView
 
   void setInitialSelectedLibraries(Set<String> allLibraries) {
     selectedLibraries = allLibraries;
+    selectedLibrariesToFilter(allLibraries, false);
   }
 
   @NotNull

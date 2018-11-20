@@ -29,6 +29,10 @@ public class FlutterStudioMonitorStage extends FlutterStage {
     return allMemoryData.getExternalDataSeries();
   }
 
+  public FlutterAllMemoryData.ThreadSafeData getRSSDataSeries() {
+    return allMemoryData.getRSSDataSeries();
+  }
+
   private final FlutterAllMemoryData allMemoryData;
 
   // TODO(terry): Constructor must take a StudioProfilers???

@@ -20,14 +20,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import org.jetbrains.annotations.NotNull;
 
 // Refactored from Android Studio 3.2 adt-ui code.
 public class FlutterAllMemoryData {
-  // Indexes into mMultiData for each memory profiler value.
+  // Indexes into multiData for each memory profiler value.
   private static final int HEAP_USED = 0;
   private static final int HEAP_CAPACITY = 1;
   private static final int EXTERNAL_MEMORY_USED = 2;
+  // Resident set size (RSS) memory held by a process in main memory.
+  private static final int RSS_SIZE = 3;
 
+  private boolean manualGC = false;
+
+  boolean isManualGC() { return manualGC; }
+  void setManualGC(boolean value) { manualGC = value; }
+
+  // DataSeries of Use Heap space used, External space and Heap capacity.
   public class ThreadSafeData implements DataSeries<Long> {
     List<SeriesData<Long>> mData = new CopyOnWriteArrayList<SeriesData<Long>>();
 
@@ -64,16 +73,24 @@ public class FlutterAllMemoryData {
     }
   }
 
-  // mMultiData[HEAP_USED] is total heap in use.
-  // mMultiData[HEAP_CAPACITY] is heap capacity.
-  // mMultiData[EXTERNAL_MEMORY_USED] is total external in use.
-  List<ThreadSafeData> mMultiData;
+  // multiData[HEAP_USED] is total heap in use.
+  // multiData[HEAP_CAPACITY] is heap capacity.
+  // multiData[EXTERNAL_MEMORY_USED] is total external in use.
+  // multiData[RSS_SIZE] is Resident Set Size of the application (process) in memory.
+  List<ThreadSafeData> multiData;
 
+  // Hookup VM listeners to collect all the VM memory information:
+  //    1. heap used
+  //    2. external space used
+  //    3. heap capacity
+  //    4. RSS (Resident Set Size)
+  // And store a a data series.
   public FlutterAllMemoryData(Disposable parentDisposable, FlutterApp app) {
-    mMultiData = new ArrayList<>();
-    mMultiData.add(HEAP_USED, new ThreadSafeData());              // Heap used.
-    mMultiData.add(HEAP_CAPACITY, new ThreadSafeData());          // Heap capacity.
-    mMultiData.add(EXTERNAL_MEMORY_USED, new ThreadSafeData());   // External memory size.
+    multiData = new ArrayList<>();
+    multiData.add(HEAP_USED, new ThreadSafeData());             // Heap used.
+    multiData.add(HEAP_CAPACITY, new ThreadSafeData());         // Heap capacity.
+    multiData.add(EXTERNAL_MEMORY_USED, new ThreadSafeData());  // External memory size.
+    multiData.add(RSS_SIZE, new ThreadSafeData());              // RSS of application (process) memory.
 
     HeapMonitor.HeapListener listener = new HeapMonitor.HeapListener() {
       @Override
@@ -85,21 +102,34 @@ public class FlutterAllMemoryData {
 
       @Override
       public void handleGCEvent(IsolateRef iIsolateRef,
-                                HeapMonitor.HeapSpace newHeapSpvace,
+                                HeapMonitor.HeapSpace newHeapSpace,
                                 HeapMonitor.HeapSpace oldHeapSpace) {
-        // TODO(terry): Add trashcan glyph for GC in timeline.
       }
 
       private void updateModel(HeapState heapState) {
         List<HeapMonitor.HeapSample> samples = heapState.getSamples();
         for (HeapMonitor.HeapSample sample : samples) {
           long sampleTime = TimeUnit.MILLISECONDS.toMicros(sample.getSampleTime());
-          mMultiData.get(HEAP_USED).mData.add(new SeriesData<>(sampleTime,
-                                                               (long)sample.getBytes()));
-          mMultiData.get(HEAP_CAPACITY).mData.add(new SeriesData<>(sampleTime,
-                                                                   (long)heapState.getCapacity()));
-          mMultiData.get(EXTERNAL_MEMORY_USED).mData.add(new SeriesData<>(sampleTime,
-                                                                          (long)sample.getExternal()));
+          multiData.get(HEAP_USED).mData.add(new SeriesData<>(sampleTime,
+                                                              (long)sample.getBytes()));
+          multiData.get(HEAP_CAPACITY).mData.add(new SeriesData<>(sampleTime,
+                                                                  (long)heapState.getCapacity() + sample.getExternal()));
+          multiData.get(EXTERNAL_MEMORY_USED).mData.add(new SeriesData<>(sampleTime,
+                                                                         (long)sample.getExternal()));
+
+          String rssString = heapState.getRSSSummary();
+          rssString = rssString.substring(0, rssString.indexOf(" RSS"));
+          int rssLength = rssString.length();
+          int rssSize = Integer.valueOf(rssString.substring(0, rssLength - 2));
+          String rssUnit = rssString.substring(rssLength - 2);
+          if (rssUnit.equals("KB")) {
+            rssSize *= 1000;
+          } else if (rssUnit.equals("MB")) {
+            rssSize *= 1000000;
+          } else if (rssUnit.equals("GB")) {
+            rssSize *= 1000000000;
+          }
+          multiData.get(RSS_SIZE).mData.add(new SeriesData<>(sampleTime, (long)rssSize));
         }
       }
     };
@@ -114,14 +144,19 @@ public class FlutterAllMemoryData {
   }
 
   ThreadSafeData getUsedDataSeries() {
-    return mMultiData.get(HEAP_USED);
+    return multiData.get(HEAP_USED);
   }
 
   ThreadSafeData getCapacityDataSeries() {
-    return mMultiData.get(HEAP_CAPACITY);
+    return multiData.get(HEAP_CAPACITY);
   }
 
   ThreadSafeData getExternalDataSeries() {
-    return mMultiData.get(EXTERNAL_MEMORY_USED);
+    return multiData.get(EXTERNAL_MEMORY_USED);
   }
+
+  ThreadSafeData getRSSDataSeries() {
+    return multiData.get(RSS_SIZE);
+  }
+
 }
