@@ -30,6 +30,7 @@ import com.intellij.ui.treeStructure.Tree;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.view.HighlightedTable;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -43,7 +44,6 @@ import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -71,7 +71,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import javax.swing.table.*;
 
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_HORIZONTAL_BORDERS;
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_VERTICAL_BORDERS;
@@ -104,7 +103,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   JBPanel classesPanel;                         // All classes information in this panel.
   JBScrollPane heapObjectsScoller;              // Contains the JTree of heap objects.
   private final JBLabel classesStatusArea;      // Classes status area.
-  private final ClassesJBTable classesTable;    // Display classes found in the heap snapshot.
+  private final HighlightedTable classesTable;  // Display classes found in the heap snapshot.
 
   private JBPanel instancesPanel;               // All instances info in panel (title, close and JTree).
   private JBLabel instancesTitleArea;           // Display of all instances displayed.
@@ -180,7 +179,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     myChartCaptureSplitter.setFirstComponent(buildUI(stage));
 
-    classesTable = new ClassesJBTable(memorySnapshot.getClassesTableModel());
+    classesTable = new HighlightedTable(memorySnapshot.getClassesTableModel());
     classesTable.setVisible(true);
     classesTable.setAutoCreateRowSorter(true);
     classesTable.getRowSorter().toggleSortOrder(1);   // Sort by number of instances in descending order.
@@ -908,78 +907,5 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         addNode(parent, "", "{}");
       }
     });
-  }
-
-  /**
-   * JBTable custom selection and hover renderer for Classes table.
-   */
-  public class ClassesJBTable extends JBTable {
-    final private JBColor HOVER_BACKGROUND_COLOR =
-      new JBColor(new Color(0xCFE6EF), JBColor.LIGHT_GRAY.brighter());
-    final private JBColor HOVER_FOREGROUND_COLOR = JBColor.BLACK;
-
-    private int rollOverRowIndex = -1;
-    private int lastClickedRow = -1;
-
-    public ClassesJBTable(TableModel model) {
-      super(model);
-      RollOverListener listener = new RollOverListener();
-      addMouseMotionListener(listener);
-      addMouseListener(listener);
-    }
-
-    private void setClickedRow(int row) {
-      lastClickedRow = row;
-    }
-
-    @Override
-    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-      Component c = super.prepareRenderer(renderer, row, column);
-      Font font = c.getFont();
-      if (font != null) {
-        // Iff we have a font for this component (TableRow).
-        if (lastClickedRow == row) {
-          c.setFont(font.deriveFont(Font.BOLD));
-          c.setForeground(getSelectionForeground());
-          c.setBackground(getSelectionBackground());
-        }
-        else {
-          c.setFont(font.deriveFont(Font.PLAIN));
-          if (row == rollOverRowIndex) {
-            c.setForeground(HOVER_FOREGROUND_COLOR);
-            c.setBackground(HOVER_BACKGROUND_COLOR);
-          }
-          else {
-            c.setForeground(getForeground());
-            c.setBackground(getBackground());
-          }
-        }
-      }
-
-      return c;
-    }
-
-    private class RollOverListener extends MouseInputAdapter {
-      @Override
-      public void mouseExited(MouseEvent e) {
-        rollOverRowIndex = -1;
-        repaint();
-      }
-
-      @Override
-      public void mouseMoved(MouseEvent e) {
-        int row = rowAtPoint(e.getPoint());
-        if( row != rollOverRowIndex ) {
-          rollOverRowIndex = row;
-          repaint();
-        }
-      }
-
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        setClickedRow(rowAtPoint(e.getPoint()));
-        repaint();
-      }
-    }
   }
 }
