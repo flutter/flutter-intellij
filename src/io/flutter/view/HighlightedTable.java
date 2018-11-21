@@ -32,11 +32,7 @@ public class HighlightedTable extends JBTable {
     addMouseMotionListener(listener);
     addMouseListener(listener);
   }
-
-  private void setClickedRow(int row) {
-    lastClickedRow = row;
-  }
-
+  
   @Override
   public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
     Component c = super.prepareRenderer(renderer, row, column);
@@ -82,7 +78,7 @@ public class HighlightedTable extends JBTable {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-      setClickedRow(rowAtPoint(e.getPoint()));
+      lastClickedRow = rowAtPoint(e.getPoint());
       repaint();
     }
   }
