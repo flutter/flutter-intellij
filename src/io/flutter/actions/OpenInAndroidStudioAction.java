@@ -23,10 +23,9 @@ import io.flutter.FlutterMessages;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
+import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 public class OpenInAndroidStudioAction extends AnAction {
   private static final String LABEL_FILE = FlutterBundle.message("flutter.androidstudio.open.file.text");
@@ -178,9 +177,15 @@ public class OpenInAndroidStudioAction extends AnAction {
         if (isProjectFileName(child.getName())) {
           return child;
         }
+        if (FlutterExternalIdeActionGroup.isAndroidDirectory(child)) {
+          for (VirtualFile androidChild : child.getChildren()) {
+            if (isProjectFileName(androidChild.getName())) {
+              return androidChild;
+            }
+          }
+        }
       }
     }
-
     return null;
   }
 
@@ -233,12 +238,16 @@ public class OpenInAndroidStudioAction extends AnAction {
     if (project != null && isAndroidWithApp(project)) {
       return project;
     }
+    project = dir.findChild(".android");
+    if (project != null && isAndroidWithApp(project)) {
+      return project;
+    }
     return null;
   }
 
   // Return true if the directory is named android and contains either an app (for applications) or a src (for plugins) directory.
   private static boolean isAndroidWithApp(@NotNull VirtualFile file) {
-    return file.getName().equals("android") && (file.findChild("app") != null || file.findChild("src") != null);
+    return FlutterExternalIdeActionGroup.isAndroidDirectory(file) && (file.findChild("app") != null || file.findChild("src") != null);
   }
 
   // Return true if the directory has the structure of a plugin example application: a pubspec.yaml and an

@@ -332,7 +332,11 @@ public class PubRoot {
    */
   @Nullable
   public VirtualFile getAndroidDir() {
-    return root.findChild("android");
+    VirtualFile dir = root.findChild("android");
+    if (dir == null) {
+      dir = root.findChild(".android");
+    }
+    return dir;
   }
 
   /**
@@ -340,7 +344,11 @@ public class PubRoot {
    */
   @Nullable
   public VirtualFile getiOsDir() {
-    return root.findChild("ios");
+    VirtualFile dir = root.findChild("ios");
+    if (dir == null) {
+      dir = root.findChild(".ios");
+    }
+    return dir;
   }
 
   /**

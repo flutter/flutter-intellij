@@ -31,12 +31,12 @@ public class FlutterExternalIdeActionGroup extends DefaultActionGroup {
       FlutterUtils.isXcodeProjectFileName(file.getName()) || OpenInAndroidStudioAction.isProjectFileName(file.getName());
   }
 
-  private static boolean isAndroidDirectory(@NotNull VirtualFile file) {
-    return file.isDirectory() && file.getName().equals("android");
+  public static boolean isAndroidDirectory(@NotNull VirtualFile file) {
+    return file.isDirectory() && (file.getName().equals("android") || file.getName().equals(".android"));
   }
 
-  private static boolean isIOsDirectory(@NotNull VirtualFile file) {
-    return file.isDirectory() && file.getName().equals("ios");
+  public static boolean isIOsDirectory(@NotNull VirtualFile file) {
+    return file.isDirectory() && (file.getName().equals("ios") || file.getName().equals(".ios"));
   }
 
   protected static boolean isWithinAndroidDirectory(@NotNull VirtualFile file, @NotNull Project project) {
