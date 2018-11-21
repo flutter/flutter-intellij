@@ -75,10 +75,10 @@ class Memory {
     // "Total Bytes Allocated" is number of bytes allocated in the heap (active and to be GC'd).
     private final String[] COLUMN_NAMES = {"Class", "Instances", "Accumulated Instances", "Total Bytes"};
 
-    private DefaultMutableTreeNode _classesRoot;
+    private DefaultMutableTreeNode classesRoot;
 
     public ClassesTableModel(DefaultMutableTreeNode classesRoot) {
-      this._classesRoot = classesRoot;
+      this.classesRoot = classesRoot;
     }
 
     @Override
@@ -88,7 +88,7 @@ class Memory {
 
     @Override
     public int getRowCount() {
-      return _classesRoot.getChildCount();
+      return classesRoot.getChildCount();
     }
 
     @Override
@@ -109,12 +109,12 @@ class Memory {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-      if (rowIndex >= _classesRoot.getChildCount()) {
+      if (rowIndex >= classesRoot.getChildCount()) {
         // TODO(terry): How is this possible?
         return "????";
       }
 
-      DefaultMutableTreeNode node = (DefaultMutableTreeNode)(_classesRoot.getChildAt(rowIndex));
+      DefaultMutableTreeNode node = (DefaultMutableTreeNode)(classesRoot.getChildAt(rowIndex));
       ClassNode classNode = (ClassNode)(node.getUserObject());
       switch (columnIndex) {
         case CLASS_COLUMN_INDEX:
@@ -132,19 +132,19 @@ class Memory {
     }
 
     Memory.ClassNode getClassNode ( int rowIndex){
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)(_classesRoot.getChildAt(rowIndex));
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)(classesRoot.getChildAt(rowIndex));
         return (Memory.ClassNode)(node.getUserObject());
       }
     }
 
-    DefaultMutableTreeNode _classesRoot;
-    DefaultTreeModel _myClassesTreeModel;
+    DefaultMutableTreeNode classesRoot;
+    DefaultTreeModel myClassesTreeModel;
 
-    DefaultMutableTreeNode _myInstancesRoot;
-    DefaultTreeModel _myInstancesTreeModel;
+    DefaultMutableTreeNode myInstancesRoot;
+    DefaultTreeModel myInstancesTreeModel;
 
     // All Classes (unfiltered) associated with the ClassesTable.
-    List<AllClassesInformation> _allClassesUnfiltered;
+    List<AllClassesInformation> allClassesUnfiltered;
 
     // Used to signal when all ClassRefs have been interrogated.
     private int runningClassInfo;
@@ -161,23 +161,23 @@ class Memory {
     protected class InstanceNode {
       static final String ROOT_POSTFIX = " Instances";
 
-      private String _objectRef;
+      private String objectRef;
 
       InstanceNode(String objectRef) {
-        this._objectRef = objectRef;
+        this.objectRef = objectRef;
       }
 
       String getObjectRef() {
-        return _objectRef;
+        return objectRef;
       }
 
-      void setObjectRef(String newRef) { _objectRef = newRef; }
+      void setObjectRef(String newRef) { objectRef = newRef; }
 
-      DefaultTreeModel getInstancesModel() { return _myInstancesTreeModel; }
+      DefaultTreeModel getInstancesModel() { return myInstancesTreeModel; }
 
       void setRootSize(int size) {
-        if (_objectRef.endsWith(ROOT_POSTFIX)) {
-          _objectRef = size + ROOT_POSTFIX;
+        if (objectRef.endsWith(ROOT_POSTFIX)) {
+          objectRef = size + ROOT_POSTFIX;
         }
       }
 
@@ -188,41 +188,41 @@ class Memory {
     }
 
     protected class ClassNode {
-      private ClassRef _ref;
-      private int _byteSize;
-      private int _instanceCount;
-      private int _accumulatedInstanceCount;
-      private List<String> _instanceIds;
+      private ClassRef ref;
+      private int byteSize;
+      private int instanceCount;
+      private int accumulatedInstanceCount;
+      private List<String> instanceIds;
 
       ClassNode(ClassRef ref, int byteSize, int instanceCount, int accumulatedInstanceCount) {
-        this._ref = ref;
-        this._byteSize = byteSize;
-        this._instanceCount = instanceCount;
-        this._accumulatedInstanceCount = accumulatedInstanceCount;
+        this.ref = ref;
+        this.byteSize = byteSize;
+        this.instanceCount = instanceCount;
+        this.accumulatedInstanceCount = accumulatedInstanceCount;
       }
 
-      ClassRef getClassRef() { return _ref; }
+      ClassRef getClassRef() { return ref; }
 
-      String getClassName() { return _ref.getName(); }
+      String getClassName() { return ref.getName(); }
 
-      int getByteSize() { return _byteSize; }
+      int getByteSize() { return byteSize; }
 
-      int getInstancesCount() { return _instanceCount; }
+      int getInstancesCount() { return instanceCount; }
 
-      int getAccumulatedInstancesCount() { return _accumulatedInstanceCount; }
+      int getAccumulatedInstancesCount() { return accumulatedInstanceCount; }
 
-      List<String> getInstanceIds() { return _instanceIds; }
+      List<String> getInstanceIds() { return instanceIds; }
 
       void addInstances(List<String> instanceIds) {
-        _instanceIds = instanceIds;
+        this.instanceIds = instanceIds;
       }
 
       @Override
       public String toString() {
-        if (_ref == null) {
+        if (ref == null) {
           return "CLASSES USED";
         }
-        return getClassName() + "  " + _instanceCount + "  [" + _byteSize + "]";
+        return getClassName() + "  " + instanceCount + "  [" + byteSize + "]";
       }
     }
 
@@ -244,39 +244,39 @@ class Memory {
     }
 
     Memory() {
-      _classesRoot = new DefaultMutableTreeNode(new ClassNode(null, -1, -1, -1));
-      _myClassesTreeModel = new DefaultTreeModel(_classesRoot);
+      classesRoot = new DefaultMutableTreeNode(new ClassNode(null, -1, -1, -1));
+      myClassesTreeModel = new DefaultTreeModel(classesRoot);
 
-      _myInstancesRoot = new DefaultMutableTreeNode(new InstanceNode(InstanceNode.ROOT_POSTFIX));
-      _myInstancesTreeModel = new DefaultTreeModel(_myInstancesRoot);
+      myInstancesRoot = new DefaultMutableTreeNode(new InstanceNode(InstanceNode.ROOT_POSTFIX));
+      myInstancesTreeModel = new DefaultTreeModel(myInstancesRoot);
     }
 
-    DefaultTreeModel getClassTreeModel() { return _myClassesTreeModel; }
+    DefaultTreeModel getClassTreeModel() { return myClassesTreeModel; }
 
     ClassesTableModel getClassesTableModel() {
-      return new ClassesTableModel(_classesRoot);
+      return new ClassesTableModel(classesRoot);
     }
 
     void removeAllClassChildren(Boolean updateUI) {
-      _classesRoot.removeAllChildren();
+      classesRoot.removeAllChildren();
       if (updateUI) {
-        _myClassesTreeModel.reload();
+        myClassesTreeModel.reload();
       }
     }
 
     void removeAllInstanceChildren(Boolean updateUI) {
-      _myInstancesRoot.removeAllChildren();
+      myInstancesRoot.removeAllChildren();
       if (updateUI) {
-        _myInstancesTreeModel.reload();
+        myInstancesTreeModel.reload();
       }
     }
 
     void addClassToTreeModel(DefaultMutableTreeNode node) {
-      _myClassesTreeModel.insertNodeInto(node, _classesRoot, _classesRoot.getChildCount());
+      myClassesTreeModel.insertNodeInto(node, classesRoot, classesRoot.getChildCount());
     }
 
     void addInstanceToTreeModel(DefaultMutableTreeNode node) {
-      _myInstancesTreeModel.insertNodeInto(node, _myInstancesRoot, _myInstancesRoot.getChildCount());
+      myInstancesTreeModel.insertNodeInto(node, myInstancesRoot, myInstancesRoot.getChildCount());
     }
 
     void addDetailNodeInstance(DefaultMutableTreeNode parent, DefaultMutableTreeNode node) {
@@ -285,9 +285,9 @@ class Memory {
 
 
     protected void decodeClassesInHeap(FlutterStudioMonitorStageView view, AllocationProfile allocatedResponse, JTable classesTable) {
-      _myClassesTreeModel = new DefaultTreeModel(_classesRoot);
+      myClassesTreeModel = new DefaultTreeModel(classesRoot);
 
-      _allClassesUnfiltered = new ArrayList<AllClassesInformation>();
+      allClassesUnfiltered = new ArrayList<AllClassesInformation>();
 
       ClassesTableModel tableModel = getClassesTableModel();
       classesTable.setModel(tableModel);          // Change underlying model associated with this JTable.
@@ -332,7 +332,7 @@ class Memory {
                                                                          totalBytesAllocated,
                                                                          totalInstances,
                                                                          totalAccumulatedInstances);
-          _allClassesUnfiltered.add(currentClass);
+          allClassesUnfiltered.add(currentClass);
 
           filterClassesTable(view, classesTable, currentClass);
 
@@ -377,7 +377,7 @@ class Memory {
         // Update the UI
         SwingUtilities.invokeLater(() -> {
           tableModel.fireTableStructureChanged();     // Update the table UI.
-          _myClassesTreeModel.reload();
+          myClassesTreeModel.reload();
 
           // Setup for sorting the classes table.
           TableRowSorter<TableModel> sorter = new TableRowSorter(classesTable.getModel());
@@ -396,9 +396,9 @@ class Memory {
     }
 
     protected void decodeInstances(FlutterStudioMonitorStageView view, List<String> instances, JTree instanceObjects) {
-      _myInstancesTreeModel = new DefaultTreeModel(_myInstancesRoot);
+      myInstancesTreeModel = new DefaultTreeModel(myInstancesRoot);
 
-      InstanceNode rootNode = (InstanceNode)(_myInstancesRoot.getUserObject());
+      InstanceNode rootNode = (InstanceNode)(myInstancesRoot.getUserObject());
       rootNode.setRootSize(instances.size());
 
       for (int index = 0; index < instances.size(); index++) {
@@ -412,16 +412,16 @@ class Memory {
         addDetailNodeInstance(node, instanceDetailNode);
       }
 
-      instanceObjects.setModel(_myInstancesTreeModel);
+      instanceObjects.setModel(myInstancesTreeModel);
 
-      DefaultMutableTreeNode r = TreeUtil.deepCopyTree(_myInstancesRoot, (DefaultMutableTreeNode)_myInstancesRoot.clone());
+      DefaultMutableTreeNode r = TreeUtil.deepCopyTree(myInstancesRoot, (DefaultMutableTreeNode)myInstancesRoot.clone());
       //TreeUtil.sortClasses(_myInstancesRoot);
 
       view.updateClassesStatus(instances.size() + " Instances loaded.");
       // TODO(terry): enabling clicking in classes again.
 
       // Update the new data.
-      _myInstancesTreeModel.reload();
+      myInstancesTreeModel.reload();
     }
   }
 

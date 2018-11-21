@@ -29,15 +29,12 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBEmptyBorder;
 import icons.StudioIcons;
 import io.flutter.utils.AsyncUtils;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.function.BiConsumer;
-import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.ElementList;
 import org.dartlang.vm.service.element.Library;
 import org.dartlang.vm.service.element.LibraryDependency;
@@ -460,7 +457,7 @@ public class FlutterStudioProfilersView
         // All libraries have been computed update the current snapshot.
         // Filter the ClassesTable if it's visible - update the model/view.
         if (view.classesPanel.isVisible()) {
-          Iterator<Memory.AllClassesInformation> allClassesIterator = view.memorySnapshot._allClassesUnfiltered.iterator();
+          Iterator<Memory.AllClassesInformation> allClassesIterator = view.memorySnapshot.allClassesUnfiltered.iterator();
           while (allClassesIterator.hasNext()) {
             Memory.AllClassesInformation currentClass = allClassesIterator.next();
             view.memorySnapshot.filterClassesTable(view, view.getClassesTable(), currentClass);
