@@ -50,6 +50,8 @@ import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_BOTTOM_BORDER;
 import static com.android.tools.profilers.ProfilerFonts.H4_FONT;
 import static com.android.tools.profilers.ProfilerLayout.TOOLBAR_HEIGHT;
 import static io.flutter.profiler.FilterLibraryDialog.ALL_DART_LIBRARIES;
+import static io.flutter.profiler.FilterLibraryDialog.ALL_FLUTTER_LIBRARIES;
+import static io.flutter.profiler.FlutterStudioMonitorStageView.PREFIX_LIBRARY_NAME_HIDDEN;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
@@ -252,6 +254,8 @@ public class FlutterStudioProfilersView
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
 
       Set<String> libraryKeys = view.allLibraries.keySet();
+
+      libraryKeys.removeIf((String libraryName) -> libraryName.startsWith(PREFIX_LIBRARY_NAME_HIDDEN));
       List<String> libraryNames = Arrays.asList(libraryKeys.toArray(new String[libraryKeys.size()]));
       Collections.sort((libraryNames));
 
@@ -422,7 +426,7 @@ public class FlutterStudioProfilersView
     selectedLibraries.forEach((String libraryName) -> {
       LibraryRef libraryRef = view.allLibraries.get(libraryName);
       if (libraryRef == null) {
-        if (libraryName == ALL_DART_LIBRARIES) {
+        if (libraryName.equals(ALL_DART_LIBRARIES)) {
           // Filter all dart libraries.
           view.dartLibraries.forEach((String key, LibraryRef dartLibraryRef) -> {
             String dartLibraryId = dartLibraryRef.getId();
@@ -432,7 +436,18 @@ public class FlutterStudioProfilersView
             }
           });
         }
-        LOG.warn("Library not found " + libraryName);
+        else if (libraryName.equals(ALL_FLUTTER_LIBRARIES)) {
+          // Filter all dart libraries.
+          view.flutterLibraries.forEach((String key, LibraryRef flutterLibraryRef) -> {
+            String flutterLibraryId = flutterLibraryRef.getId();
+            view.filteredLibraries.add(flutterLibraryId);
+            if (processTheLibrary) {
+              processLibrary(view, flutterLibraryId);
+            }
+          });
+        } else {
+          LOG.warn("Library not found " + libraryName);
+        }
       }
       else {
         String libraryId = libraryRef.getId();
