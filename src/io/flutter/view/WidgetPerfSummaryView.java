@@ -8,15 +8,14 @@ package io.flutter.view;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.ScrollPaneFactory;
-import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.panels.VerticalLayout;
-import com.intellij.util.ui.JBUI;
 import io.flutter.inspector.WidgetPerfTipsPanel;
-import io.flutter.perf.*;
+import io.flutter.perf.FlutterWidgetPerf;
+import io.flutter.perf.FlutterWidgetPerfManager;
+import io.flutter.perf.PerfMetric;
+import io.flutter.perf.PerfReportKind;
 import io.flutter.run.daemon.FlutterApp;
 
 import javax.swing.*;
-import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
@@ -27,7 +26,8 @@ class WidgetPerfSummaryView extends JPanel {
   private final Timer refreshTableTimer;
   private final WidgetPerfTable table;
   private final PerfReportKind reportKind;
-  private final JBLabel tableTitle;
+  //private final JBLabel tableTitle;
+
   private final WidgetPerfTipsPanel myWidgetPerfTipsPanel;
   private boolean visible = true;
 
@@ -47,28 +47,29 @@ class WidgetPerfSummaryView extends JPanel {
     table = new WidgetPerfTable(app, parentDisposable, metric);
 
     perfManager.getCurrentStats().addPerfListener(table);
-    final JPanel header = new JPanel();
-    header.setLayout(new VerticalLayout(5));
-    header.setBorder(JBUI.Borders.empty(5));
-    add(header, BorderLayout.NORTH);
+    //final JPanel header = new JPanel();
+    //header.setLayout(new VerticalLayout(5));
+    //header.setBorder(JBUI.Borders.empty(5));
+    //add(header, BorderLayout.NORTH);
     // Update header message.
-    tableTitle = new JBLabel();
+    //tableTitle = new JBLabel();
     setTableTitle(reportKind);
-    header.add(tableTitle);
+    //header.add(tableTitle);
 
     add(ScrollPaneFactory.createScrollPane(table), BorderLayout.CENTER);
 
     // Perf info and tips
     myWidgetPerfTipsPanel = new WidgetPerfTipsPanel(parentDisposable, app);
-    add(myWidgetPerfTipsPanel, BorderLayout.SOUTH);
 
     Disposer.register(parentDisposable, refreshTableTimer::stop);
   }
 
+  public WidgetPerfTipsPanel getWidgetPerfTipsPanel() {
+    return myWidgetPerfTipsPanel;
+  }
+
   private void setTableTitle(PerfReportKind kind) {
-    final String name = reportKind.name;
-    final String upperCaseName = name.substring(0, 1).toUpperCase() + name.substring(1);
-    tableTitle.setText("Widget " + upperCaseName + " Stats for the Current Screen");
+    //tableTitle.setText("Widget " + reportKind.name + " stats for the current screen:");
   }
 
   private void onUpdateTable(ActionEvent event) {
@@ -85,6 +86,7 @@ class WidgetPerfSummaryView extends JPanel {
 
   public void setVisibleToUser(boolean visible) {
     myWidgetPerfTipsPanel.setVisibleToUser(visible);
+
     if (visible != this.visible) {
       this.visible = visible;
       if (visible) {

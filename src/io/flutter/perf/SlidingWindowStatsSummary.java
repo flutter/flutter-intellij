@@ -9,7 +9,7 @@ package io.flutter.perf;
  * Snapshot of a SlidingWindowStats object for a specific time.
  */
 public class SlidingWindowStatsSummary {
-  final int[] cachedStats;
+  private final int[] cachedStats;
   private final Location location;
 
   public SlidingWindowStatsSummary(SlidingWindowStats stats, int currentTime, Location location) {

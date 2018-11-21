@@ -19,7 +19,6 @@ import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
 import com.intellij.util.PathUtil;
 import com.intellij.util.ui.ColumnInfo;
-import com.intellij.util.ui.JBEmptyBorder;
 import com.intellij.xdebugger.XSourcePosition;
 import gnu.trove.TIntArrayList;
 import io.flutter.inspector.InspectorActions;
@@ -149,6 +148,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
   private void updateIconUIAnimations() {
     int lastActive = -1;
+    // TODO(devoncarew): We've seen NPEs from here.
     for (int i = 0; i < entries.size() && entries.get(i).getValue(metric) > 0; ++i) {
       lastActive = i;
     }
@@ -337,7 +337,6 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
   }
 
   private static class WidgetNameRenderer extends SimpleColoredRenderer implements TableCellRenderer {
-
     @Override
     public final Component getTableCellRendererComponent(JTable table, @Nullable Object value,
                                                          boolean isSelected, boolean hasFocus, int row, int col) {
@@ -352,7 +351,10 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         final JBLabel label = new JBLabel(stats.getLocation().name);
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         panel.add(label, BorderLayout.CENTER);
-        panel.add(Box.createHorizontalStrut(16), BorderLayout.EAST);
+
+        if (isSelected) {
+          label.setForeground(table.getSelectionForeground());
+        }
       }
 
       clear();
@@ -363,6 +365,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       if (isSelected) {
         panel.setBackground(table.getSelectionBackground());
       }
+
       return panel;
     }
   }
@@ -374,7 +377,6 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       final JPanel panel = new JPanel();
       if (value == null) return panel;
       panel.setLayout(new BorderLayout());
-      panel.setBorder(new JBEmptyBorder(0, 8, 0, 8));
 
       if (value instanceof SlidingWindowStatsSummary) {
         final SlidingWindowStatsSummary stats = (SlidingWindowStatsSummary)value;
@@ -388,8 +390,14 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         label.setHorizontalAlignment(SwingConstants.RIGHT);
         panel.add(Box.createHorizontalGlue());
         panel.add(label, BorderLayout.CENTER);
+
         final JBLabel lineLabel = new JBLabel(":" + location.line);
         panel.add(lineLabel, BorderLayout.EAST);
+
+        if (isSelected) {
+          label.setForeground(table.getSelectionForeground());
+          lineLabel.setForeground(table.getSelectionForeground());
+        }
       }
 
       clear();
@@ -427,11 +435,15 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
         final JBLabel label = new JBLabel(Integer.toString(count));
         if (metric.timeIntervalMetric) {
-          label.setIcon(getIconForCount(idle ? 0 : count, true));
+          label.setIcon(getIconForCount(idle ? 0 : count, false));
         }
         panel.add(Box.createHorizontalGlue());
         panel.add(label);
-        panel.add(Box.createHorizontalStrut(16));
+        panel.add(Box.createHorizontalStrut(8));
+
+        if (isSelected) {
+          label.setForeground(table.getSelectionForeground());
+        }
       }
 
       clear();
