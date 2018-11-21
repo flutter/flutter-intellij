@@ -6,6 +6,7 @@
 package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
+import com.intellij.ui.components.JBCheckBox;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.ServiceExtensionState;
 import io.flutter.utils.StreamSubscription;
@@ -25,7 +26,7 @@ public class BoolServiceExtensionCheckbox implements Disposable {
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
   BoolServiceExtensionCheckbox(FlutterApp app, @NotNull String extensionCommand, String label, String tooltip) {
-    checkbox = new JCheckBox(label);
+    checkbox = new JBCheckBox(label);
     checkbox.setHorizontalAlignment(JLabel.LEFT);
     checkbox.setToolTipText(tooltip);
     assert(app.getVMServiceManager() != null);

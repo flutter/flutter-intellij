@@ -170,7 +170,7 @@ public class FlutterPerfView implements Disposable {
     if (debugConnectionAvailable) {
       state.disposable = Disposer.newDisposable();
 
-      addPerformanceTab(runnerTabs, app, true);
+      addPerformanceTab(runnerTabs, app, toolWindow, true);
 
       if (FlutterUtils.isAndroidStudio()) {
         addMemoryTab(runnerTabs, app, false, state);
@@ -210,8 +210,9 @@ public class FlutterPerfView implements Disposable {
 
   private void addPerformanceTab(JBRunnerTabs runnerTabs,
                                  FlutterApp app,
+                                 ToolWindow toolWindow,
                                  boolean selectedTab) {
-    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app);
+    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app, toolWindow);
     final TabInfo tabInfo = new TabInfo(perfTab)
       .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
