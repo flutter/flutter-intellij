@@ -14,9 +14,6 @@
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title="SDK"/>
         <children>
           <component id="a59e7" class="javax.swing.JLabel">
@@ -24,7 +21,7 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="9" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Version:"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.flutter.version"/>
             </properties>
           </component>
           <component id="926fd" class="com.intellij.ui.components.JBLabel">
@@ -60,9 +57,6 @@
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title="General"/>
         <children>
           <component id="6304a" class="javax.swing.JCheckBox" binding="myReportUsageInformationCheckBox">
@@ -70,7 +64,7 @@
               <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="&amp;Report usage information to Google Analytics"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.report.google.analytics"/>
               <toolTipText value="Report anonymized usage information to Google Analytics."/>
             </properties>
           </component>
@@ -90,7 +84,7 @@
               <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Enable &amp;verbose logging"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.verbose.logging"/>
               <toolTipText value="Enables verbose logging (this can be useful for diagnostic purposes)."/>
             </properties>
           </component>
@@ -99,7 +93,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Format code on save"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.format.code.on.save"/>
               <toolTipText value="On save, run dartfmt on changed Dart files."/>
             </properties>
           </component>
@@ -108,7 +102,7 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Organize imports on save"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.organize.imports.on.save"/>
               <toolTipText value="On save, organize imports for changed Dart files."/>
             </properties>
           </component>
@@ -120,9 +114,6 @@
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title="Experiments"/>
         <children>
           <component id="42d6c" class="javax.swing.JLabel">
@@ -130,7 +121,7 @@
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Try out features still under development (a restart may be required)"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.try.out.features.still.under.development"/>
             </properties>
           </component>
           <component id="39243" class="javax.swing.JCheckBox" binding="myShowPreviewAreaCheckBox">
@@ -138,7 +129,7 @@
               <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Show a live preview area in Flutter Outline"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.show.preview.area"/>
             </properties>
           </component>
           <component id="1f6f8" class="javax.swing.JCheckBox" binding="myUseLogViewCheckBox">
@@ -146,7 +137,7 @@
               <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Replace the Run and Debug console output with an experimental Flutter Logging view"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.experimental.flutter.logging.view"/>
             </properties>
           </component>
           <component id="33088" class="javax.swing.JCheckBox" binding="mySyncAndroidLibrariesCheckBox">
@@ -154,7 +145,7 @@
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Enable code completion, navigation, etc. for Java/Kotlin (requires restart to do Gradle build)"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.android.gradle.sync"/>
               <toolTipText value="Provides advanced editing capabilities for Java and Kotlin code. Uses Gradle to find Android libraries then links them into the Flutter project."/>
             </properties>
           </component>
@@ -166,9 +157,6 @@
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
-        <clientProperties>
-          <BorderFactoryClass class="java.lang.String" value="com.intellij.ui.IdeBorderFactory$PlainSmallWithIndent"/>
-        </clientProperties>
         <border type="etched" title="App Execution"/>
         <children>
           <component id="356a" class="javax.swing.JCheckBox" binding="myOpenInspectorOnAppLaunchCheckBox">
@@ -176,7 +164,7 @@
               <grid row="1" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Open Flutter Inspector view on app launch"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.open.inspector.on.launch"/>
             </properties>
           </component>
           <component id="87b06" class="javax.swing.JCheckBox" binding="myHotReloadOnSaveCheckBox">
@@ -184,7 +172,7 @@
               <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Perform hot reload on save"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.hot.reload.on.save"/>
               <toolTipText value="On save, hot reload changes into running Flutter apps."/>
             </properties>
           </component>
@@ -193,7 +181,7 @@
               <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <text value="Disable tracking widget creation locations"/>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.disable.tracking.widget.creation"/>
               <toolTipText value="Disabling this setting breaks advanced Flutter Inspector functionality and performance tools. Only disable if you are noticing unexpected behavior differences between apps run in debug and release build."/>
             </properties>
           </component>
