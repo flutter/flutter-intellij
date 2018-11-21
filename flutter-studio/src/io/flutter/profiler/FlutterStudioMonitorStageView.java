@@ -6,7 +6,6 @@
 package io.flutter.profiler;
 
 import com.android.tools.adtui.*;
-import com.android.tools.adtui.chart.linechart.DurationDataRenderer;
 import com.android.tools.adtui.chart.linechart.LineChart;
 import com.android.tools.adtui.chart.linechart.LineConfig;
 import com.android.tools.adtui.model.*;
@@ -28,7 +27,6 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.treeStructure.Tree;
-import icons.StudioIcons;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;
@@ -45,6 +43,7 @@ import java.util.Stack;
 import java.util.concurrent.CompletableFuture;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -59,7 +58,6 @@ import org.dartlang.vm.service.element.AllocationProfile;
 import org.dartlang.vm.service.element.BoundField;
 import org.dartlang.vm.service.element.ClassRef;
 import org.dartlang.vm.service.element.ElementList;
-import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.Instance;
 import org.dartlang.vm.service.element.InstanceKind;
 import org.dartlang.vm.service.element.InstanceRef;
@@ -73,6 +71,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.table.*;
 
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_HORIZONTAL_BORDERS;
 import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_VERTICAL_BORDERS;
@@ -80,7 +79,6 @@ import static com.android.tools.profilers.ProfilerLayout.MARKER_LENGTH;
 import static com.android.tools.profilers.ProfilerLayout.MONITOR_LABEL_PADDING;
 import static com.android.tools.profilers.ProfilerLayout.Y_AXIS_TOP_MARGIN;
 import static io.flutter.profiler.FilterLibraryDialog.DART_LIBRARY_PREFIX;
-import static javax.swing.JTable.AUTO_RESIZE_LAST_COLUMN;
 
 /**
  * Bird eye view displaying high-level information across all profilers.
@@ -106,7 +104,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   JBPanel classesPanel;                         // All classes information in this panel.
   JBScrollPane heapObjectsScoller;              // Contains the JTree of heap objects.
   private final JBLabel classesStatusArea;      // Classes status area.
-  private final JBTable classesTable;           // Display classes found in the heap snapshot.
+  private final ClassesJBTable classesTable;    // Display classes found in the heap snapshot.
 
   private JBPanel instancesPanel;               // All instances info in panel (title, close and JTree).
   private JBLabel instancesTitleArea;           // Display of all instances displayed.
@@ -182,20 +180,14 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     myChartCaptureSplitter.setFirstComponent(buildUI(stage));
 
-    classesTable = new JBTable(memorySnapshot.getClassesTableModel());
+    classesTable = new ClassesJBTable(memorySnapshot.getClassesTableModel());
     classesTable.setVisible(true);
     classesTable.setAutoCreateRowSorter(true);
     classesTable.getRowSorter().toggleSortOrder(1);   // Sort by number of instances in descending order.
-    classesTable.getColumnModel().getColumn(0).setPreferredWidth(400);
-    classesTable.getColumnModel().getColumn(1).setPreferredWidth(200);
-    classesTable.getColumnModel().getColumn(2).setPreferredWidth(AUTO_RESIZE_LAST_COLUMN);
-    classesTable.doLayout();
 
     heapObjectsScoller = new JBScrollPane(classesTable);
 
     FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this);
-
-    boolean computingInstances = false;
 
     classesTable.addMouseListener(new MouseAdapter() {
       @Override
@@ -212,10 +204,9 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         // Find the selected item in the JTable.
         JBTable selectedUi = (JBTable)(e.getSource());
 
-        int col = selectedUi.columnAtPoint(e.getPoint());
-
-        int uiRowIndex = selectedUi.getSelectionModel().getMinSelectionIndex();
-        int modelIndex = selectedUi.convertRowIndexToModel(uiRowIndex);
+        Point p = e.getPoint();
+        int selectedRow = classesTable.rowAtPoint(p);
+        int modelIndex = selectedUi.convertRowIndexToModel(selectedRow);
 
         Memory.ClassesTableModel tableModel = (Memory.ClassesTableModel)(selectedUi.getModel());
         Memory.ClassNode classNode = tableModel.getClassNode(modelIndex);
@@ -228,7 +219,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         view.updateClassesStatus("Fetching " + instanceLimit + " instances.");
 
         AsyncUtils.whenCompleteUiThread(getInstances(classRef, instanceLimit), (JsonObject response, Throwable exception) -> {
-
           JsonArray instances = response.getAsJsonArray("samples");
           int totalInstances = response.get("totalCount").getAsInt();
           List<String> instanceIds = new ArrayList<String>(totalInstances);
@@ -521,8 +511,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     memorySnapshot.removeAllInstanceChildren(true);
     memorySnapshot.removeAllClassChildren(true);
 
-    memorySnapshot._myClassesTreeModel.reload();
-    memorySnapshot._myInstancesTreeModel.reload();
+    memorySnapshot.myClassesTreeModel.reload();
+    memorySnapshot.myInstancesTreeModel.reload();
 
     //heapObjectsScoller.setVisible(false);
     classesPanel.setVisible(false);
@@ -788,7 +778,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         if (!userNodeName.endsWith(" [Sentinel]")) {
           userNode.setObjectRef(userNodeName + " [Sentinel]");
           SwingUtilities.invokeLater(() -> {
-            memorySnapshot._myInstancesTreeModel.reload(parent);
+            memorySnapshot.myInstancesTreeModel.reload(parent);
           });
         }
         return;
@@ -908,7 +898,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         }
 
         SwingUtilities.invokeLater(() -> {
-          memorySnapshot._myInstancesTreeModel.reload(parent);
+          memorySnapshot.myInstancesTreeModel.reload(parent);
         });
       } else if (instance.getKind() == InstanceKind.List) {
         // Empty list.
@@ -918,5 +908,78 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         addNode(parent, "", "{}");
       }
     });
+  }
+
+  /**
+   * JBTable custom selection and hover renderer for Classes table.
+   */
+  public class ClassesJBTable extends JBTable {
+    final private JBColor HOVER_BACKGROUND_COLOR =
+      new JBColor(new Color(0xCFE6EF), JBColor.LIGHT_GRAY.brighter());
+    final private JBColor HOVER_FOREGROUND_COLOR = JBColor.BLACK;
+
+    private int rollOverRowIndex = -1;
+    private int lastClickedRow = -1;
+
+    public ClassesJBTable(TableModel model) {
+      super(model);
+      RollOverListener listener = new RollOverListener();
+      addMouseMotionListener(listener);
+      addMouseListener(listener);
+    }
+
+    private void setClickedRow(int row) {
+      lastClickedRow = row;
+    }
+
+    @Override
+    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+      Component c = super.prepareRenderer(renderer, row, column);
+      Font font = c.getFont();
+      if (font != null) {
+        // Iff we have a font for this component (TableRow).
+        if (lastClickedRow == row) {
+          c.setFont(font.deriveFont(Font.BOLD));
+          c.setForeground(getSelectionForeground());
+          c.setBackground(getSelectionBackground());
+        }
+        else {
+          c.setFont(font.deriveFont(Font.PLAIN));
+          if (row == rollOverRowIndex) {
+            c.setForeground(HOVER_FOREGROUND_COLOR);
+            c.setBackground(HOVER_BACKGROUND_COLOR);
+          }
+          else {
+            c.setForeground(getForeground());
+            c.setBackground(getBackground());
+          }
+        }
+      }
+
+      return c;
+    }
+
+    private class RollOverListener extends MouseInputAdapter {
+      @Override
+      public void mouseExited(MouseEvent e) {
+        rollOverRowIndex = -1;
+        repaint();
+      }
+
+      @Override
+      public void mouseMoved(MouseEvent e) {
+        int row = rowAtPoint(e.getPoint());
+        if( row != rollOverRowIndex ) {
+          rollOverRowIndex = row;
+          repaint();
+        }
+      }
+
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        setClickedRow(rowAtPoint(e.getPoint()));
+        repaint();
+      }
+    }
   }
 }

@@ -8,6 +8,7 @@ package io.flutter.profiler;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.diagnostic.Logger;
 import io.flutter.utils.AsyncUtils;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,9 +31,12 @@ import org.dartlang.vm.service.element.AllocationProfile;
 import org.dartlang.vm.service.element.ClassHeapStats;
 import org.dartlang.vm.service.element.ClassObj;
 import org.dartlang.vm.service.element.ClassRef;
+import org.gradle.internal.impldep.com.esotericsoftware.minlog.Log;
 
 
 class Memory {
+  private final static Logger LOG = Logger.getInstance(Memory.class);
+
   // Entries returned from call to getAllocationProfile - new and old heap statistics (ClassHeapStats).
   //
   //     public List<Integer> getNew()  // new heap space
@@ -64,16 +68,17 @@ class Memory {
   class ClassesTableModel extends AbstractTableModel {
     public static final int CLASS_COLUMN_INDEX = 0;
     public static final int INSTANCE_COUNT_COLUMN_INDEX = 1;
-    public static final int TOTAL_BYTES_COLUMN_INDEX = 2;
+    public static final int ACCUMULATED_INSTNACE_COUNT_COLUMN_INDEX = 2;
+    public static final int TOTAL_BYTES_COLUMN_INDEX = 3;
 
     // Class is class name, "Instances Allocated" is number of instances (active / to be GC'd), and
     // "Total Bytes Allocated" is number of bytes allocated in the heap (active and to be GC'd).
-    private final String[] COLUMN_NAMES = {"Class", "Instances", "Total Bytes"};
+    private final String[] COLUMN_NAMES = {"Class", "Instances", "Accumulated Instances", "Total Bytes"};
 
-    private DefaultMutableTreeNode _classesRoot;
+    private DefaultMutableTreeNode classesRoot;
 
     public ClassesTableModel(DefaultMutableTreeNode classesRoot) {
-      this._classesRoot = classesRoot;
+      this.classesRoot = classesRoot;
     }
 
     @Override
@@ -83,7 +88,7 @@ class Memory {
 
     @Override
     public int getRowCount() {
-      return _classesRoot.getChildCount();
+      return classesRoot.getChildCount();
     }
 
     @Override
@@ -104,361 +109,372 @@ class Memory {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-      if (rowIndex >= _classesRoot.getChildCount()) {
+      if (rowIndex >= classesRoot.getChildCount()) {
         // TODO(terry): How is this possible?
         return "????";
       }
 
-      DefaultMutableTreeNode node = (DefaultMutableTreeNode)(_classesRoot.getChildAt(rowIndex));
+      DefaultMutableTreeNode node = (DefaultMutableTreeNode)(classesRoot.getChildAt(rowIndex));
       ClassNode classNode = (ClassNode)(node.getUserObject());
-      if (columnIndex == CLASS_COLUMN_INDEX) {
-        return classNode.getClassName();
-      }
-      else if (columnIndex == INSTANCE_COUNT_COLUMN_INDEX) {
-        return classNode.getInstancesCount();
-      }
-      else
-      // Implied column index of TOTAL_BYTES_COLUMN_INDEX
-      {
-        return classNode.getByteSize();
-      }
-    }
-
-    Memory.ClassNode getClassNode(int rowIndex) {
-      DefaultMutableTreeNode node = (DefaultMutableTreeNode)(_classesRoot.getChildAt(rowIndex));
-      return (Memory.ClassNode)(node.getUserObject());
-    }
-  }
-
-  DefaultMutableTreeNode _classesRoot;
-  DefaultTreeModel _myClassesTreeModel;
-
-  DefaultMutableTreeNode _myInstancesRoot;
-  DefaultTreeModel _myInstancesTreeModel;
-
-  // All Classes (unfiltered) associated with the ClassesTable.
-  List<AllClassesInformation> _allClassesUnfiltered;
-
-  // Used to signal when all ClassRefs have been interrogated.
-  private int runningClassInfo;
-  private int filteredClasses;        // Total filtered classes displayed in snapshot
-
-  public void resetFilteredClasses() {
-    filteredClasses = 0;
-  }
-
-  public int getFilteredClassesCount() {
-    return filteredClasses;
-  }
-
-  protected class InstanceNode {
-    static final String ROOT_POSTFIX = " Instances";
-
-    private String _objectRef;
-
-    InstanceNode(String objectRef) {
-      this._objectRef = objectRef;
-    }
-
-    String getObjectRef() {
-      return _objectRef;
-    }
-
-    void setObjectRef(String newRef) { _objectRef = newRef; }
-
-    DefaultTreeModel getInstancesModel() { return _myInstancesTreeModel; }
-
-    void setRootSize(int size) {
-      if (_objectRef.endsWith(ROOT_POSTFIX)) {
-        _objectRef = size + ROOT_POSTFIX;
+      switch (columnIndex) {
+        case CLASS_COLUMN_INDEX:
+          return classNode.getClassName();
+        case INSTANCE_COUNT_COLUMN_INDEX:
+          return classNode.getInstancesCount();
+        case TOTAL_BYTES_COLUMN_INDEX:
+          return classNode.getByteSize();
+        case ACCUMULATED_INSTNACE_COUNT_COLUMN_INDEX:
+          return classNode.getAccumulatedInstancesCount();
+        default:
+          Log.error("Unexpected columnIndex: " + columnIndex);
+          return "";
       }
     }
 
-    @Override
-    public String toString() {
-      return getObjectRef();
-    }
-  }
-
-  protected class ClassNode {
-    private ClassRef _ref;
-    private int _byteSize;
-    private int _instanceCount;
-    private List<String> _instanceIds;
-
-    ClassNode(ClassRef ref, int byteSize, int instanceCount) {
-      this._ref = ref;
-      this._byteSize = byteSize;
-      this._instanceCount = instanceCount;
-    }
-
-    ClassRef getClassRef() { return _ref; }
-
-    String getClassName() { return _ref.getName(); }
-
-    int getByteSize() { return _byteSize; }
-
-    int getInstancesCount() { return _instanceCount; }
-
-    List<String> getInstanceIds() { return _instanceIds; }
-
-    void addInstances(List<String> instanceIds) {
-      _instanceIds = instanceIds;
-    }
-
-    @Override
-    public String toString() {
-      if (_ref == null) {
-        return "CLASSES USED";
+    Memory.ClassNode getClassNode ( int rowIndex){
+        DefaultMutableTreeNode node = (DefaultMutableTreeNode)(classesRoot.getChildAt(rowIndex));
+        return (Memory.ClassNode)(node.getUserObject());
       }
-      return getClassName() + "  " + _instanceCount + "  [" + _byteSize + "]";
     }
-  }
 
-  // All Classes information displayed in ClassTable.
-  protected class AllClassesInformation {
-    private ClassRef classRef;
-    private ClassObj classObj;
-    private int bytes;
-    private int instances;
+    DefaultMutableTreeNode classesRoot;
+    DefaultTreeModel myClassesTreeModel;
 
-    public AllClassesInformation(ClassRef classRef, ClassObj classObj, int total_bytes, int total_instances) {
-      this.classRef = classRef;
-      this.classObj = classObj;
-      this.bytes = total_bytes;
-      this.instances = total_instances;
+    DefaultMutableTreeNode myInstancesRoot;
+    DefaultTreeModel myInstancesTreeModel;
+
+    // All Classes (unfiltered) associated with the ClassesTable.
+    List<AllClassesInformation> allClassesUnfiltered;
+
+    // Used to signal when all ClassRefs have been interrogated.
+    private int runningClassInfo;
+    private int filteredClasses;        // Total filtered classes displayed in snapshot
+
+    public void resetFilteredClasses() {
+      filteredClasses = 0;
     }
-  }
 
-  Memory() {
-    _classesRoot = new DefaultMutableTreeNode(new ClassNode(null, -1, -1));
-    _myClassesTreeModel = new DefaultTreeModel(_classesRoot);
-
-    _myInstancesRoot = new DefaultMutableTreeNode(new InstanceNode(InstanceNode.ROOT_POSTFIX));
-    _myInstancesTreeModel = new DefaultTreeModel(_myInstancesRoot);
-  }
-
-  DefaultTreeModel getClassTreeModel() { return _myClassesTreeModel; }
-
-  ClassesTableModel getClassesTableModel() {
-    return new ClassesTableModel(_classesRoot);
-  }
-
-  void removeAllClassChildren(Boolean updateUI) {
-    _classesRoot.removeAllChildren();
-    if (updateUI) {
-      _myClassesTreeModel.reload();
+    public int getFilteredClassesCount() {
+      return filteredClasses;
     }
-  }
 
-  void removeAllInstanceChildren(Boolean updateUI) {
-    _myInstancesRoot.removeAllChildren();
-    if (updateUI) {
-      _myInstancesTreeModel.reload();
+    protected class InstanceNode {
+      static final String ROOT_POSTFIX = " Instances";
+
+      private String objectRef;
+
+      InstanceNode(String objectRef) {
+        this.objectRef = objectRef;
+      }
+
+      String getObjectRef() {
+        return objectRef;
+      }
+
+      void setObjectRef(String newRef) { objectRef = newRef; }
+
+      DefaultTreeModel getInstancesModel() { return myInstancesTreeModel; }
+
+      void setRootSize(int size) {
+        if (objectRef.endsWith(ROOT_POSTFIX)) {
+          objectRef = size + ROOT_POSTFIX;
+        }
+      }
+
+      @Override
+      public String toString() {
+        return getObjectRef();
+      }
     }
-  }
 
-  void addClassToTreeModel(DefaultMutableTreeNode node) {
-    _myClassesTreeModel.insertNodeInto(node, _classesRoot, _classesRoot.getChildCount());
-  }
+    protected class ClassNode {
+      private ClassRef ref;
+      private int byteSize;
+      private int instanceCount;
+      private int accumulatedInstanceCount;
+      private List<String> instanceIds;
 
-  void addInstanceToTreeModel(DefaultMutableTreeNode node) {
-    _myInstancesTreeModel.insertNodeInto(node, _myInstancesRoot, _myInstancesRoot.getChildCount());
-  }
+      ClassNode(ClassRef ref, int byteSize, int instanceCount, int accumulatedInstanceCount) {
+        this.ref = ref;
+        this.byteSize = byteSize;
+        this.instanceCount = instanceCount;
+        this.accumulatedInstanceCount = accumulatedInstanceCount;
+      }
 
-  void addDetailNodeInstance(DefaultMutableTreeNode parent, DefaultMutableTreeNode node) {
-    parent.insert(node, parent.getChildCount());
-  }
+      ClassRef getClassRef() { return ref; }
+
+      String getClassName() { return ref.getName(); }
+
+      int getByteSize() { return byteSize; }
+
+      int getInstancesCount() { return instanceCount; }
+
+      int getAccumulatedInstancesCount() { return accumulatedInstanceCount; }
+
+      List<String> getInstanceIds() { return instanceIds; }
+
+      void addInstances(List<String> instanceIds) {
+        this.instanceIds = instanceIds;
+      }
+
+      @Override
+      public String toString() {
+        if (ref == null) {
+          return "CLASSES USED";
+        }
+        return getClassName() + "  " + instanceCount + "  [" + byteSize + "]";
+      }
+    }
+
+    // All Classes information displayed in ClassTable.
+    protected class AllClassesInformation {
+      private ClassRef classRef;
+      private ClassObj classObj;
+      private int bytes;
+      private int instances;
+      private int accumulatedInstances;
+
+      public AllClassesInformation(ClassRef classRef, ClassObj classObj, int total_bytes, int total_instances, int accumulated_instances) {
+        this.classRef = classRef;
+        this.classObj = classObj;
+        this.bytes = total_bytes;
+        this.instances = total_instances;
+        this.accumulatedInstances = accumulated_instances;
+      }
+    }
+
+    Memory() {
+      classesRoot = new DefaultMutableTreeNode(new ClassNode(null, -1, -1, -1));
+      myClassesTreeModel = new DefaultTreeModel(classesRoot);
+
+      myInstancesRoot = new DefaultMutableTreeNode(new InstanceNode(InstanceNode.ROOT_POSTFIX));
+      myInstancesTreeModel = new DefaultTreeModel(myInstancesRoot);
+    }
+
+    DefaultTreeModel getClassTreeModel() { return myClassesTreeModel; }
+
+    ClassesTableModel getClassesTableModel() {
+      return new ClassesTableModel(classesRoot);
+    }
+
+    void removeAllClassChildren(Boolean updateUI) {
+      classesRoot.removeAllChildren();
+      if (updateUI) {
+        myClassesTreeModel.reload();
+      }
+    }
+
+    void removeAllInstanceChildren(Boolean updateUI) {
+      myInstancesRoot.removeAllChildren();
+      if (updateUI) {
+        myInstancesTreeModel.reload();
+      }
+    }
+
+    void addClassToTreeModel(DefaultMutableTreeNode node) {
+      myClassesTreeModel.insertNodeInto(node, classesRoot, classesRoot.getChildCount());
+    }
+
+    void addInstanceToTreeModel(DefaultMutableTreeNode node) {
+      myInstancesTreeModel.insertNodeInto(node, myInstancesRoot, myInstancesRoot.getChildCount());
+    }
+
+    void addDetailNodeInstance(DefaultMutableTreeNode parent, DefaultMutableTreeNode node) {
+      parent.insert(node, parent.getChildCount());
+    }
 
 
-  protected void decodeClassesInHeap(FlutterStudioMonitorStageView view, AllocationProfile allocatedResponse, JTable classesTable) {
-    _myClassesTreeModel = new DefaultTreeModel(_classesRoot);
+    protected void decodeClassesInHeap(FlutterStudioMonitorStageView view, AllocationProfile allocatedResponse, JTable classesTable) {
+      myClassesTreeModel = new DefaultTreeModel(classesRoot);
 
-    _allClassesUnfiltered = new ArrayList<AllClassesInformation>();
+      allClassesUnfiltered = new ArrayList<AllClassesInformation>();
 
-    ClassesTableModel tableModel = getClassesTableModel();
-    classesTable.setModel(tableModel);          // Change underlying model associated with this JTable.
+      ClassesTableModel tableModel = getClassesTableModel();
+      classesTable.setModel(tableModel);          // Change underlying model associated with this JTable.
 
-    runningClassInfo = 0;
-    filteredClasses = 0;
-    view.updateClassesStatus("Decoding Classes...");
+      runningClassInfo = 0;
+      filteredClasses = 0;
+      view.updateClassesStatus("Decoding Classes...");
 
-    final Iterator<ClassHeapStats> itClassStats = allocatedResponse.getMembers().iterator();
-    while (itClassStats.hasNext()) {
-      ClassHeapStats data = itClassStats.next();
-      ClassRef classRef = data.getClassRef();
+      final Iterator<ClassHeapStats> itClassStats = allocatedResponse.getMembers().iterator();
+      while (itClassStats.hasNext()) {
+        ClassHeapStats data = itClassStats.next();
+        ClassRef classRef = data.getClassRef();
 
-      String className = classRef.getName();
+        String className = classRef.getName();
+        String classId = classRef.getId();
+
+        // Ignore any class with _vmName it's an internal VM thing.
+        if (className.length() == 0) {
+          JsonElement jsonVmName = classRef.getJson().get("_vmName");
+          if (jsonVmName != null) {
+            String vmName = jsonVmName.getAsString();
+            if (vmName.length() != 0) continue;
+          }
+        }
+
+        runningClassInfo++;
+
+        AsyncUtils.whenCompleteUiThread(view.vmGetObject(classId), (JsonObject response, Throwable exception) -> {
+          ClassObj classObj = new ClassObj(response);
+
+          List<Integer> newHeap = data.getNew();
+          List<Integer> oldHeap = data.getOld();
+
+          int totalAccumulatedBytes = newHeap.get(ACCUMULATED_SIZE) + oldHeap.get(ACCUMULATED_SIZE);
+          int totalAccumulatedInstances = newHeap.get(ACCUMULATED) + oldHeap.get(ACCUMULATED);
+          int totalInstances = newHeap.get(LIVE_AFTER_GC) + newHeap.get(ALLOCATED_SINCE_GC) +
+                               oldHeap.get(LIVE_AFTER_GC) + oldHeap.get(ALLOCATED_SINCE_GC);
+          int totalBytesAllocated = newHeap.get(LIVE_AFTER_GC_SIZE) + newHeap.get(ALLOCATED_SINCE_GC_SIZE) +
+                                    oldHeap.get(LIVE_AFTER_GC_SIZE) + oldHeap.get(ALLOCATED_SINCE_GC_SIZE);
+
+          AllClassesInformation currentClass = new AllClassesInformation(classRef, classObj,
+                                                                         totalBytesAllocated,
+                                                                         totalInstances,
+                                                                         totalAccumulatedInstances);
+          allClassesUnfiltered.add(currentClass);
+
+          filterClassesTable(view, classesTable, currentClass);
+
+          view.updateClassesStatus("Processing ClassRefs: " + runningClassInfo);
+
+          if (--runningClassInfo == 0) {
+            view.updateClassesStatus("Snapshot complete filtered " + filteredClasses + " classes.");
+            view.getProfilersView().snapshotComplete();
+          }
+        });
+      }
+    }
+
+    int getClassRefInstanceCount(FlutterStudioMonitorStageView view, ClassRef classRef) {
+      int instanceLimit = 1;
       String classId = classRef.getId();
 
-      // Ignore any class with _vmName it's an internal VM thing.
-      if (className.length() == 0) {
-        JsonElement jsonVmName = classRef.getJson().get("_vmName");
-        if (jsonVmName != null) {
-          String vmName = jsonVmName.getAsString();
-          if (vmName.length() != 0) continue;
-        }
-      }
-
-      runningClassInfo++;
-
-      AsyncUtils.whenCompleteUiThread(view.vmGetObject(classId), (JsonObject response, Throwable exception) -> {
-        ClassObj classObj = new ClassObj(response);
-
-        List<Integer> newHeap = data.getNew();
-        List<Integer> oldHeap = data.getOld();
-
-        int totalBytesAllocated = newHeap.get(ACCUMULATED_SIZE) + oldHeap.get(ACCUMULATED_SIZE);
-        int totalInstances = newHeap.get(ACCUMULATED) + oldHeap.get(ACCUMULATED);
-        int totalCurrentInstances = newHeap.get(LIVE_AFTER_GC) + newHeap.get(ALLOCATED_SINCE_GC) +
-                                    oldHeap.get(LIVE_AFTER_GC) + oldHeap.get(ALLOCATED_SINCE_GC);
-        int totalCurrentBytesAllocated = newHeap.get(LIVE_AFTER_GC_SIZE) + newHeap.get(ALLOCATED_SINCE_GC_SIZE) +
-                                         oldHeap.get(LIVE_AFTER_GC_SIZE) + oldHeap.get(ALLOCATED_SINCE_GC_SIZE);
-
-        AllClassesInformation currentClass = new AllClassesInformation(classRef, classObj,
-                                                                       totalCurrentBytesAllocated,
-                                                                       totalCurrentInstances);
-        _allClassesUnfiltered.add(currentClass);
-
-        filterClassesTable(view, classesTable, currentClass);
-
-        view.updateClassesStatus("Processing ClassRefs: " + runningClassInfo);
-
-        if (--runningClassInfo == 0) {
-          view.updateClassesStatus("Snapshot complete filtered " + filteredClasses + " classes.");
-          view.getProfilersView().snapshotComplete();
-        }
+      AtomicInteger totalCount = new AtomicInteger();
+      AsyncUtils.whenCompleteUiThread(view.getInstances(classId, instanceLimit), (JsonObject response, Throwable exception) -> {
+        totalCount.set(response.get("totalCount").getAsInt());
       });
-    }
-  }
 
-  int getClassRefInstanceCount(FlutterStudioMonitorStageView view, ClassRef classRef) {
-    int instanceLimit = 1;
-    String classId = classRef.getId();
-
-    AtomicInteger totalCount = new AtomicInteger();
-    AsyncUtils.whenCompleteUiThread(view.getInstances(classId, instanceLimit), (JsonObject response, Throwable exception) -> {
-      totalCount.set(response.get("totalCount").getAsInt());
-    });
-
-    return totalCount.get();
-  }
-
-  public void filterClassesTable(FlutterStudioMonitorStageView view, JTable classesTable, AllClassesInformation currentClass) {
-    String classLibrary = currentClass.classObj.getLibrary().getId();
-
-    ClassesTableModel tableModel = (ClassesTableModel)(classesTable.getModel());
-
-    // Only show ClassRef's if its in a library checked.
-    if (view.filteredLibraries.contains(classLibrary)) {
-      filteredClasses++;
-      int bytes = currentClass.bytes;
-      int instances = currentClass.instances;
-
-      DefaultMutableTreeNode node = new DefaultMutableTreeNode(new ClassNode(currentClass.classRef, bytes, instances));
-      addClassToTreeModel(node);
-
-      // Update the UI
-      SwingUtilities.invokeLater(() -> {
-        tableModel.fireTableStructureChanged();     // Update the table UI.
-        _myClassesTreeModel.reload();
-
-        // Setup for sorting the classes table.
-        TableRowSorter<TableModel> sorter = new TableRowSorter(classesTable.getModel());
-        classesTable.setRowSorter(sorter);
-        List<RowSorter.SortKey> sortKeys = new ArrayList<>();
-
-        // Default sorting of the instance count in descending order.
-        int columnIndexToSort = ClassesTableModel.INSTANCE_COUNT_COLUMN_INDEX;
-        sortKeys.add(new RowSorter.SortKey(columnIndexToSort, SortOrder.DESCENDING));
-
-        // Apply the sorting.
-        sorter.setSortKeys(sortKeys);
-        sorter.sort();
-      });
-    }
-  }
-
-  protected void decodeInstances(FlutterStudioMonitorStageView view, List<String> instances, JTree instanceObjects) {
-    _myInstancesTreeModel = new DefaultTreeModel(_myInstancesRoot);
-
-    InstanceNode rootNode = (InstanceNode)(_myInstancesRoot.getUserObject());
-    rootNode.setRootSize(instances.size());
-
-    for (int index = 0; index < instances.size(); index++) {
-      String instanceId = instances.get(index);
-
-      DefaultMutableTreeNode node = new DefaultMutableTreeNode(new InstanceNode(instanceId));
-      addInstanceToTreeModel(node);
-
-      // TODO(terry): Fake node for now need to hookup Instance Detail node.
-      DefaultMutableTreeNode instanceDetailNode = new DefaultMutableTreeNode();
-      addDetailNodeInstance(node, instanceDetailNode);
+      return totalCount.get();
     }
 
-    instanceObjects.setModel(_myInstancesTreeModel);
+    public void filterClassesTable(FlutterStudioMonitorStageView view, JTable classesTable, AllClassesInformation currentClass) {
+      String classLibrary = currentClass.classObj.getLibrary().getId();
 
-    DefaultMutableTreeNode r = TreeUtil.deepCopyTree(_myInstancesRoot, (DefaultMutableTreeNode)_myInstancesRoot.clone());
-    //TreeUtil.sortClasses(_myInstancesRoot);
+      ClassesTableModel tableModel = (ClassesTableModel)(classesTable.getModel());
 
-    view.updateClassesStatus(instances.size() + " Instances loaded.");
-    // TODO(terry): enabling clicking in classes again.
+      // Only show ClassRef's if its in a library checked.
+      if (view.filteredLibraries.contains(classLibrary)) {
+        filteredClasses++;
+        int bytes = currentClass.bytes;
+        int instances = currentClass.instances;
+        int accumulatedInstances = currentClass.accumulatedInstances;
 
-    // Update the new data.
-    _myInstancesTreeModel.reload();
-  }
-}
+        DefaultMutableTreeNode node =
+          new DefaultMutableTreeNode(new ClassNode(currentClass.classRef, bytes, instances, accumulatedInstances));
+        addClassToTreeModel(node);
 
-final class TreeUtil {
-  private static boolean ascending;
-  private static Comparator<DefaultMutableTreeNode> tnc = Comparator.comparing(DefaultMutableTreeNode::isLeaf)
-    .thenComparing(n -> n.getUserObject().toString());
+        // Update the UI
+        SwingUtilities.invokeLater(() -> {
+          tableModel.fireTableStructureChanged();     // Update the table UI.
+          myClassesTreeModel.reload();
 
-  private static Comparator<DefaultMutableTreeNode> tncCount =
-    Comparator.comparing(DefaultMutableTreeNode::isLeaf)
-      .thenComparing(n -> ((Memory.ClassNode)(n.getUserObject())).getInstancesCount());
+          // Setup for sorting the classes table.
+          TableRowSorter<TableModel> sorter = new TableRowSorter(classesTable.getModel());
+          classesTable.setRowSorter(sorter);
+          List<RowSorter.SortKey> sortKeys = new ArrayList<>();
 
-  private static void timsort(DefaultMutableTreeNode parent) {
-    int n = parent.getChildCount();
-    List<DefaultMutableTreeNode> children = new ArrayList<>(n);
-    for (int i = 0; i < n; i++) {
-      children.add((DefaultMutableTreeNode)parent.getChildAt(i));
-    }
+          // Default sorting of the instance count in descending order.
+          int columnIndexToSort = ClassesTableModel.INSTANCE_COUNT_COLUMN_INDEX;
+          sortKeys.add(new RowSorter.SortKey(columnIndexToSort, SortOrder.DESCENDING));
 
-    Collections.sort(children, tncCount);
-
-    parent.removeAllChildren();
-    if (ascending) {
-      children.forEach(parent::add);
-    }
-    else {
-      int numChildren = children.size();
-      for (int idx = numChildren - 1; idx >= 0; idx--) {
-        parent.add(children.get(idx));
+          // Apply the sorting.
+          sorter.setSortKeys(sortKeys);
+          sorter.sort();
+        });
       }
     }
+
+    protected void decodeInstances(FlutterStudioMonitorStageView view, List<String> instances, JTree instanceObjects) {
+      myInstancesTreeModel = new DefaultTreeModel(myInstancesRoot);
+
+      InstanceNode rootNode = (InstanceNode)(myInstancesRoot.getUserObject());
+      rootNode.setRootSize(instances.size());
+
+      for (int index = 0; index < instances.size(); index++) {
+        String instanceId = instances.get(index);
+
+        DefaultMutableTreeNode node = new DefaultMutableTreeNode(new InstanceNode(instanceId));
+        addInstanceToTreeModel(node);
+
+        // TODO(terry): Fake node for now need to hookup Instance Detail node.
+        DefaultMutableTreeNode instanceDetailNode = new DefaultMutableTreeNode();
+        addDetailNodeInstance(node, instanceDetailNode);
+      }
+
+      instanceObjects.setModel(myInstancesTreeModel);
+
+      DefaultMutableTreeNode r = TreeUtil.deepCopyTree(myInstancesRoot, (DefaultMutableTreeNode)myInstancesRoot.clone());
+      //TreeUtil.sortClasses(_myInstancesRoot);
+
+      view.updateClassesStatus(instances.size() + " Instances loaded.");
+      // TODO(terry): enabling clicking in classes again.
+
+      // Update the new data.
+      myInstancesTreeModel.reload();
+    }
   }
 
-  public static void sortClasses(DefaultMutableTreeNode parent, boolean sortAscending) {
-    ascending = sortAscending;
-    Collections.list((Enumeration<?>)parent.preorderEnumeration()).stream()
-      .filter(DefaultMutableTreeNode.class::isInstance)
-      .map(DefaultMutableTreeNode.class::cast)
-      .filter(node -> !node.isLeaf())
-      .forEach(TreeUtil::timsort);
-  }
+  final class TreeUtil {
+    private static boolean ascending;
+    private static Comparator<DefaultMutableTreeNode> tnc = Comparator.comparing(DefaultMutableTreeNode::isLeaf)
+      .thenComparing(n -> n.getUserObject().toString());
 
-  public static DefaultMutableTreeNode deepCopyTree(DefaultMutableTreeNode src, DefaultMutableTreeNode tgt) {
-    Collections.list((Enumeration<?>)src.children()).stream()
-      .filter(DefaultMutableTreeNode.class::isInstance)
-      .map(DefaultMutableTreeNode.class::cast)
-      .forEach(node -> {
-        DefaultMutableTreeNode clone = new DefaultMutableTreeNode(node.getUserObject());
-        tgt.add(clone);
-        if (!node.isLeaf()) {
-          deepCopyTree(node, clone);
+    private static Comparator<DefaultMutableTreeNode> tncCount =
+      Comparator.comparing(DefaultMutableTreeNode::isLeaf)
+        .thenComparing(n -> ((Memory.ClassNode)(n.getUserObject())).getInstancesCount());
+
+    private static void timsort(DefaultMutableTreeNode parent) {
+      int n = parent.getChildCount();
+      List<DefaultMutableTreeNode> children = new ArrayList<>(n);
+      for (int i = 0; i < n; i++) {
+        children.add((DefaultMutableTreeNode)parent.getChildAt(i));
+      }
+
+      Collections.sort(children, tncCount);
+
+      parent.removeAllChildren();
+      if (ascending) {
+        children.forEach(parent::add);
+      }
+      else {
+        int numChildren = children.size();
+        for (int idx = numChildren - 1; idx >= 0; idx--) {
+          parent.add(children.get(idx));
         }
-      });
-    return tgt;
+      }
+    }
+
+    public static void sortClasses(DefaultMutableTreeNode parent, boolean sortAscending) {
+      ascending = sortAscending;
+      Collections.list((Enumeration<?>)parent.preorderEnumeration()).stream()
+        .filter(DefaultMutableTreeNode.class::isInstance)
+        .map(DefaultMutableTreeNode.class::cast)
+        .filter(node -> !node.isLeaf())
+        .forEach(TreeUtil::timsort);
+    }
+
+    public static DefaultMutableTreeNode deepCopyTree(DefaultMutableTreeNode src, DefaultMutableTreeNode tgt) {
+      Collections.list((Enumeration<?>)src.children()).stream()
+        .filter(DefaultMutableTreeNode.class::isInstance)
+        .map(DefaultMutableTreeNode.class::cast)
+        .forEach(node -> {
+          DefaultMutableTreeNode clone = new DefaultMutableTreeNode(node.getUserObject());
+          tgt.add(clone);
+          if (!node.isLeaf()) {
+            deepCopyTree(node, clone);
+          }
+        });
+      return tgt;
+    }
   }
-}
