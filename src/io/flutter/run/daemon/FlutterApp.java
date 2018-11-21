@@ -413,7 +413,13 @@ public class FlutterApp {
       LOG.warn("cannot invoke " + methodName + " on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
-    return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
+    if (isFlutterIsolateSuspended()) {
+      return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
+        myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
+      );
+    } else {
+      return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
+    }
   }
 
   @SuppressWarnings("UnusedReturnValue")
@@ -610,6 +616,14 @@ public class FlutterApp {
   @Override
   public String toString() {
     return myExecutionEnvironment.toString() + ":" + deviceId();
+  }
+
+  public boolean isFlutterIsolateSuspended() {
+    return getFlutterDebugProcess().isIsolateSuspended(myVMServiceManager.getCurrentFlutterIsolateRaw().getId());
+  }
+
+  private CompletableFuture<?> whenFlutterIsolateResumed() {
+    return getFlutterDebugProcess().whenIsolateResumed(myVMServiceManager.getCurrentFlutterIsolateRaw().getId());
   }
 
   public interface FlutterAppListener extends EventListener {

@@ -54,14 +54,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.JFrame;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -93,7 +87,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   private final int myObservatoryPort;
   @NotNull private final XBreakpointHandler[] myBreakpointHandlers;
   private final IsolatesInfo myIsolatesInfo;
-  @NotNull private final Set<String> mySuspendedIsolateIds = Collections.synchronizedSet(new THashSet<String>());
+  @NotNull private final Map<String, CompletableFuture<Object>> mySuspendedIsolateIds = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, LightVirtualFile> myScriptIdToContentMap = new THashMap<>();
   private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap =
     new THashMap<>();
@@ -347,7 +341,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   public void startStepOver(@Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
+    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.containsKey(myLatestCurrentIsolateId)) {
       final DartVmServiceSuspendContext suspendContext = (DartVmServiceSuspendContext)context;
       final StepOption stepOption = suspendContext != null && suspendContext.getAtAsyncSuspension() ? StepOption.OverAsyncSuspension
                                                                                                     : StepOption.Over;
@@ -357,14 +351,14 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   public void startStepInto(@Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
+    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.containsKey(myLatestCurrentIsolateId)) {
       myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, StepOption.Into);
     }
   }
 
   @Override
   public void startStepOut(@Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
+    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.containsKey(myLatestCurrentIsolateId)) {
       myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, StepOption.Out);
     }
   }
@@ -387,7 +381,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   public void resume(@Nullable XSuspendContext context) {
-    for (String isolateId : new ArrayList<>(mySuspendedIsolateIds)) {
+    for (String isolateId : new ArrayList<>(mySuspendedIsolateIds.keySet())) {
       myVmServiceWrapper.resumeIsolate(isolateId, null);
     }
   }
@@ -395,7 +389,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   @Override
   public void startPausing() {
     for (IsolatesInfo.IsolateInfo info : getIsolateInfos()) {
-      if (!mySuspendedIsolateIds.contains(info.getIsolateId())) {
+      if (!mySuspendedIsolateIds.containsKey(info.getIsolateId())) {
         myVmServiceWrapper.pauseIsolate(info.getIsolateId());
       }
     }
@@ -403,7 +397,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Override
   public void runToPosition(@NotNull XSourcePosition position, @Nullable XSuspendContext context) {
-    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.contains(myLatestCurrentIsolateId)) {
+    if (myLatestCurrentIsolateId != null && mySuspendedIsolateIds.containsKey(myLatestCurrentIsolateId)) {
       // Set a temporary breakpoint and resume.
       myVmServiceWrapper.addTemporaryBreakpoint(position, myLatestCurrentIsolateId);
       myVmServiceWrapper.resumeIsolate(myLatestCurrentIsolateId, null);
@@ -411,11 +405,26 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   public void isolateSuspended(@NotNull final IsolateRef isolateRef) {
-    mySuspendedIsolateIds.add(isolateRef.getId());
+    final String id = isolateRef.getId();
+    assert(!mySuspendedIsolateIds.containsKey(id));
+    if (!mySuspendedIsolateIds.containsKey(id)) {
+      mySuspendedIsolateIds.put(id, new CompletableFuture<>());
+    }
   }
 
   public boolean isIsolateSuspended(@NotNull final String isolateId) {
-    return mySuspendedIsolateIds.contains(isolateId);
+    return mySuspendedIsolateIds.containsKey(isolateId);
+  }
+
+  public CompletableFuture<?> whenIsolateResumed(String isolateId) {
+    CompletableFuture<?> future = mySuspendedIsolateIds.get(isolateId);
+    if (future == null) {
+      // Isolate wasn't actually suspended.
+      return CompletableFuture.completedFuture(null);
+    } else {
+      return future;
+    }
+
   }
 
   public boolean isIsolateAlive(@NotNull final String isolateId) {
@@ -428,7 +437,10 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   public void isolateResumed(@NotNull final IsolateRef isolateRef) {
-    mySuspendedIsolateIds.remove(isolateRef.getId());
+    final CompletableFuture<Object> future = mySuspendedIsolateIds.remove(isolateRef.getId());
+    if (future != null) {
+      future.complete(null); // Notify listeners that the isolate resumed.
+    }
   }
 
   public void isolateExit(@NotNull final IsolateRef isolateRef) {
