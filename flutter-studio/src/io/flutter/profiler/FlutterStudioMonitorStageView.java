@@ -426,7 +426,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         allLibraries.put(ALL_DART_LIBRARIES, null);       // All Dart libraries are in this entry.
         allLibraries.put(ALL_FLUTTER_LIBRARIES, null);    // All Flutter libraries are in this entry.
 
-        Set<String> displayedLibraries = new TreeSet<String>();
+        Set<String> displayedLibraries = new TreeSet<>();
         // The initial list of selected libraries is all of them.
         for (String s : allLibraries.keySet()) {
           if (!s.startsWith(PREFIX_LIBRARY_NAME_HIDDEN)) {
