@@ -19,9 +19,9 @@ import javax.swing.table.TableModel;
  * JBTable custom selection and hover renderer for a table view.
  */
 public class HighlightedTable extends JBTable {
-  final private JBColor HOVER_BACKGROUND_COLOR =
+  final static private JBColor HOVER_BACKGROUND_COLOR =
     new JBColor(new Color(0xCFE6EF), JBColor.LIGHT_GRAY.brighter());
-  final private JBColor HOVER_FOREGROUND_COLOR = JBColor.BLACK;
+  final static private JBColor HOVER_FOREGROUND_COLOR = JBColor.BLACK;
 
   private int rollOverRowIndex = -1;
   private int lastClickedRow = -1;
@@ -32,7 +32,7 @@ public class HighlightedTable extends JBTable {
     addMouseMotionListener(listener);
     addMouseListener(listener);
   }
-  
+
   @Override
   public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
     Component c = super.prepareRenderer(renderer, row, column);
