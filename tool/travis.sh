@@ -39,8 +39,7 @@ else
   ./bin/plugin lint
 
   # Check plugin-referenced urls for liveness.
-  pub global activate grinder
-  grind check-urls
+  dart tool/grind.dart check-urls
 
   # Run the build.
   ./bin/plugin build --only-version=$IDEA_VERSION
