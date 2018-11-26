@@ -145,8 +145,12 @@ class MockEditorPerfModel extends MockPerfModel implements EditorPerfModel {
   }
 
   @Override
-  public boolean isHoveredOverLineMarkerArea() {
+  public boolean getAlwaysShowLineMarkers() {
     return isHoveredOverLineMarkerAreaOverride;
+  }
+
+  @Override
+  public void setAlwaysShowLineMarkersOverride(boolean show) {
   }
 
   @Override

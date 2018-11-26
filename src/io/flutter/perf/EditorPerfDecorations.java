@@ -64,6 +64,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private boolean hoveredOverLineMarkerArea = false;
 
   private final Map<TextRange, PerfGutterIconRenderer> perfMarkers = new HashMap<>();
+  private boolean alwaysShowLineMarkersOverride = false;
 
   EditorPerfDecorations(@NotNull TextEditor textEditor, @NotNull FlutterApp app) {
     this.textEditor = textEditor;
@@ -73,8 +74,17 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 
   @Override
-  public boolean isHoveredOverLineMarkerArea() {
-    return hoveredOverLineMarkerArea;
+  public boolean getAlwaysShowLineMarkers() {
+    return hoveredOverLineMarkerArea || alwaysShowLineMarkersOverride;
+  }
+
+  @Override
+  public void setAlwaysShowLineMarkersOverride(boolean show) {
+    boolean lastValue = getAlwaysShowLineMarkers();
+    alwaysShowLineMarkersOverride = show;
+    if (lastValue != getAlwaysShowLineMarkers()) {
+      updateIconUIAnimations();
+    }
   }
 
   @NotNull
@@ -155,7 +165,6 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
       rangeHighlighter
     );
     rangeHighlighter.setGutterIconRenderer(renderer);
-    rangeHighlighter.setThinErrorStripeMark(true);
     assert !perfMarkers.containsKey(textRange);
     perfMarkers.put(textRange, renderer);
   }
@@ -301,8 +310,21 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     return perfModelForFile.getStats().getCurrentValue(range);
   }
 
+  private int getDisplayValue() {
+    int value = getCurrentValue();
+    if (value == 0 && perfModelForFile.getAlwaysShowLineMarkers()) {
+      // This is the case where the value was previously non-zero but the app
+      // is idle so the value was reset. For all ui rendering logic we treat
+      // the value as 1 so that consistent coloring is used throughout the
+      // ui. Alternately we could use the original non-zero value but that
+      // could be more confusing to users.
+      return 1;
+    }
+    return value;
+  }
+
   private boolean isActive() {
-    return perfModelForFile.isHoveredOverLineMarkerArea() || getCurrentValue() > 0;
+    return getDisplayValue() > 0;
   }
 
   RangeHighlighter getHighlighter() {
@@ -366,23 +388,23 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   public Icon getIconInternal() {
-    return Icons.getIconForCount(getCurrentValue(), perfModelForFile.isHoveredOverLineMarkerArea());
+    return Icons.getIconForCount(getCurrentValue(), perfModelForFile.getAlwaysShowLineMarkers());
   }
 
   Color getErrorStripeMarkColor() {
     // TODO(jacobr): tween from green or blue to red depending on the count.
-    final int count = getCurrentValue();
+    final int count = getDisplayValue();
     if (count == 0) {
       return null;
     }
     if (count >= Icons.HIGH_LOAD_THRESHOLD) {
       return JBColor.YELLOW;
     }
-    return JBColor.YELLOW; // TODO(jacobr): should we use green here instead?
+    return JBColor.GRAY;
   }
 
   public void updateUI(boolean repaint) {
-    final int count = getCurrentValue();
+    final int count = getDisplayValue();
     final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
     boolean changed = false;

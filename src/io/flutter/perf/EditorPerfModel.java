@@ -28,7 +28,9 @@ public interface EditorPerfModel extends PerfModel, Disposable {
 
   FlutterApp getApp();
 
-  boolean isHoveredOverLineMarkerArea();
+  boolean getAlwaysShowLineMarkers();
+
+  void setAlwaysShowLineMarkersOverride(boolean show);
 
   void setPerfInfo(FilePerfInfo stats);
 }

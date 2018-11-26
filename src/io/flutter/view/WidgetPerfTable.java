@@ -35,7 +35,11 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -44,6 +48,7 @@ import static io.flutter.perf.Icons.getIconForCount;
 class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
   private final ColumnInfo[] modelColumns;
   private final CountColumnInfo countColumnInfo;
+  private final WidgetNameColumnInfo widgetNameColumnInfo;
   private final FlutterApp app;
   private final FlutterWidgetPerfManager perfManager;
   private final ListTreeTableModelOnColumns model;
@@ -51,9 +56,9 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
   private final PerfMetric metric;
   private final HashSet<String> openPaths = new HashSet<>();
   private final ArrayList<PerfMetric> metrics;
-  private ArrayList<SlidingWindowStatsSummary> entries;
-  private int pendingSelectionChangedActions = 0;
+  private ArrayList<SlidingWindowStatsSummary> entries = new ArrayList<>();
   private boolean idle;
+  private DefaultMutableTreeNode currentSelection;
 
   WidgetPerfTable(FlutterApp app, Disposable parentDisposable, PerfMetric metric) {
     super(new ListTreeTableModelOnColumns(
@@ -70,6 +75,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     this.app = app;
     model = getTreeModel();
     modelColumns = model.getColumns();
+    widgetNameColumnInfo = (WidgetNameColumnInfo)model.getColumns()[0];
     countColumnInfo = (CountColumnInfo)model.getColumns()[2];
     perfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
 
@@ -77,6 +83,25 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
     getTree().addTreeSelectionListener(this::selectionListener);
 
+    final MouseListener mouseListener = new MouseAdapter() {
+      public void mousePressed(MouseEvent e) {
+        final int rowIndex = getTree().getRowForLocation(e.getX(), e.getY());
+        if (rowIndex != -1) {
+          onClickRow(rowIndex);
+        }
+      }
+
+      @Override
+      public void mouseEntered(MouseEvent e) {
+        perfManager.getCurrentStats().setAlwaysShowLineMarkersOverride(true);
+      }
+
+      @Override
+      public void mouseExited(MouseEvent e) {
+        perfManager.getCurrentStats().setAlwaysShowLineMarkersOverride(false);
+      }
+    };
+    addMouseListener(mouseListener);
     setStriped(true);
 
     final JTableHeader tableHeader = getTableHeader();
@@ -135,7 +160,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       return false;
     }
     // If any rows will be animating, the first row will be animating.
-    return entries != null && entries.size() > 0 && entries.get(0).getValue(metric) > 0;
+    return entries.size() > 0 && entries.get(0).getValue(metric) > 0;
   }
 
   @Override
@@ -161,31 +186,49 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     }
   }
 
-  private void selectionListener(TreeSelectionEvent event) {
-    if (pendingSelectionChangedActions > 0) {
+  private void onClickRow(int index) {
+    if (index < 0 || index >= entries.size()) {
       return;
     }
+    final SlidingWindowStatsSummary stats = entries.get(index);
+    // If the selection is changed by this click there is no need to trigger
+    // the navigation event here as it will be triggered by the selectionListener.
+    final boolean selectionChanged = currentSelection == null || currentSelection.getUserObject() == stats;
+    if (!selectionChanged) {
+      navigateToStatsEntry(stats);
+    }
+  }
+
+  private void selectionListener(TreeSelectionEvent event) {
+    final DefaultMutableTreeNode selection = (DefaultMutableTreeNode)event.getPath().getLastPathComponent();
     if (!event.isAddedPath()) {
       // We only care about selection events not deselection events.
       return;
     }
-    pendingSelectionChangedActions++;
-    final DefaultMutableTreeNode selection = (DefaultMutableTreeNode)event.getPath().getLastPathComponent();
+    if (currentSelection == selection) {
+      // Selection didn't really change. Unfortunately, events about modifying
+      // nodes result in spurious selection changed events.
+      return;
+    }
+    currentSelection = selection;
+
     if (selection != null) {
       final SlidingWindowStatsSummary stats = (SlidingWindowStatsSummary)selection.getUserObject();
-      if (stats != null) {
-        final Location location = stats.getLocation();
-        final XSourcePosition position = location.getXSourcePosition();
-        if (position != null) {
-          AsyncUtils.invokeLater(() -> {
-            position.createNavigatable(app.getProject()).navigate(false);
-            pendingSelectionChangedActions--;
-          });
-          return;
-        }
-      }
+      navigateToStatsEntry(stats);
     }
-    pendingSelectionChangedActions--;
+  }
+
+  private void navigateToStatsEntry(SlidingWindowStatsSummary stats) {
+    if (stats == null) {
+      return;
+    }
+    final Location location = stats.getLocation();
+    final XSourcePosition position = location.getXSourcePosition();
+    if (position != null) {
+      AsyncUtils.invokeLater(() -> {
+        position.createNavigatable(app.getProject()).navigate(false);
+      });
+    }
   }
 
   @Override
@@ -207,14 +250,16 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
   public void markAppIdle() {
     idle = true;
-    countColumnInfo.setIdle(true);
+    widgetNameColumnInfo.setIdle(true);
     updateIconUIAnimations();
   }
 
   public void showStats(ArrayList<SlidingWindowStatsSummary> entries) {
-    pendingSelectionChangedActions++;
+    if (entries == null) {
+      entries = new ArrayList<>();
+    }
     idle = false;
-    countColumnInfo.setIdle(false);
+    widgetNameColumnInfo.setIdle(false);
     final ArrayList<SlidingWindowStatsSummary> oldEntries = this.entries;
     sortByMetric(entries);
     this.entries = entries;
@@ -233,68 +278,69 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
           }
         }
       }
-      if (entries != null) {
-        final boolean previouslyEmpty = root.getChildCount() == 0;
-        int childIndex = 0;
-        final TIntArrayList indicesChanged = new TIntArrayList();
-        final TIntArrayList indicesInserted = new TIntArrayList();
-        for (SlidingWindowStatsSummary entry : entries) {
-          if (entry.getLocation().equals(lastSelectedLocation)) {
-            selectionIndex = childIndex;
-          }
-          if (childIndex >= root.getChildCount()) {
-            root.add(new DefaultMutableTreeNode(entry, false));
-            indicesInserted.add(childIndex);
-          }
-          else {
-            final DefaultMutableTreeNode existing = (DefaultMutableTreeNode)root.getChildAt(childIndex);
-            final SlidingWindowStatsSummary existingEntry = (SlidingWindowStatsSummary)existing.getUserObject();
-            if (displayChanged(entry, existingEntry)) {
-              model.nodeChanged(existing);
-              indicesChanged.add(childIndex);
-            }
-            existing.setUserObject(entry);
-          }
-          childIndex++;
+      final boolean previouslyEmpty = root.getChildCount() == 0;
+      int childIndex = 0;
+      final TIntArrayList indicesChanged = new TIntArrayList();
+      final TIntArrayList indicesInserted = new TIntArrayList();
+      for (SlidingWindowStatsSummary entry : entries) {
+        if (entry.getLocation().equals(lastSelectedLocation)) {
+          selectionIndex = childIndex;
         }
-        final int endChildIndex = childIndex;
-        final ArrayList<TreeNode> nodesRemoved = new ArrayList<>();
-        final TIntArrayList indicesRemoved = new TIntArrayList();
-        // Gather nodes to remove.
-        for (int j = endChildIndex; j < root.getChildCount(); j++) {
-          nodesRemoved.add(root.getChildAt(j));
-          indicesRemoved.add(j);
-        }
-        // Actuallly remove nodes.
-        while (endChildIndex < root.getChildCount()) {
-          // Removing the last element is slightly more efficient.
-          final int lastChild = root.getChildCount() - 1;
-          root.remove(lastChild);
-        }
-
-        if (previouslyEmpty) {
-          // TODO(jacobr): I'm not clear why this event is needed in this case.
-          model.nodeStructureChanged(root);
+        if (childIndex >= root.getChildCount()) {
+          root.add(new DefaultMutableTreeNode(entry, false));
+          indicesInserted.add(childIndex);
         }
         else {
-          // Report events for all the changes made to the table.
-          if (indicesChanged.size() > 0) {
-            model.nodesChanged(root, indicesChanged.toNativeArray());
+          final DefaultMutableTreeNode existing = (DefaultMutableTreeNode)root.getChildAt(childIndex);
+          final SlidingWindowStatsSummary existingEntry = (SlidingWindowStatsSummary)existing.getUserObject();
+          if (displayChanged(entry, existingEntry)) {
+            model.nodeChanged(existing);
+            indicesChanged.add(childIndex);
           }
-          if (indicesInserted.size() > 0) {
-            model.nodesWereInserted(root, indicesInserted.toNativeArray());
-          }
-          if (indicesRemoved.size() > 0) {
-            model.nodesWereRemoved(root, indicesRemoved.toNativeArray(), nodesRemoved.toArray());
-          }
+          existing.setUserObject(entry);
+        }
+        childIndex++;
+      }
+      final int endChildIndex = childIndex;
+      final ArrayList<TreeNode> nodesRemoved = new ArrayList<>();
+      final TIntArrayList indicesRemoved = new TIntArrayList();
+      // Gather nodes to remove.
+      for (int j = endChildIndex; j < root.getChildCount(); j++) {
+        nodesRemoved.add(root.getChildAt(j));
+        indicesRemoved.add(j);
+      }
+      // Actuallly remove nodes.
+      while (endChildIndex < root.getChildCount()) {
+        // Removing the last element is slightly more efficient.
+        final int lastChild = root.getChildCount() - 1;
+        root.remove(lastChild);
+      }
+
+      if (previouslyEmpty) {
+        // TODO(jacobr): I'm not clear why this event is needed in this case.
+        model.nodeStructureChanged(root);
+      }
+      else {
+        // Report events for all the changes made to the table.
+        if (indicesChanged.size() > 0) {
+          model.nodesChanged(root, indicesChanged.toNativeArray());
+        }
+        if (indicesInserted.size() > 0) {
+          model.nodesWereInserted(root, indicesInserted.toNativeArray());
+        }
+        if (indicesRemoved.size() > 0) {
+          model.nodesWereRemoved(root, indicesRemoved.toNativeArray(), nodesRemoved.toArray());
         }
       }
 
       if (selectionIndex >= 0) {
         getSelectionModel().setSelectionInterval(selectionIndex, selectionIndex);
+        currentSelection = (DefaultMutableTreeNode)root.getChildAt(selectionIndex);
+      }
+      else {
+        getSelectionModel().clearSelection();
       }
     }
-    pendingSelectionChangedActions--;
   }
 
   private boolean statsChanged(ArrayList<SlidingWindowStatsSummary> previous, ArrayList<SlidingWindowStatsSummary> current) {
@@ -337,24 +383,28 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
   }
 
   private static class WidgetNameRenderer extends SimpleColoredRenderer implements TableCellRenderer {
+
+    private boolean idle = false;
+
     @Override
     public final Component getTableCellRendererComponent(JTable table, @Nullable Object value,
                                                          boolean isSelected, boolean hasFocus, int row, int col) {
       final JPanel panel = new JPanel();
       if (value == null) return panel;
-      panel.setLayout(new BorderLayout());
+      panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
 
       if (value instanceof SlidingWindowStatsSummary) {
         final SlidingWindowStatsSummary stats = (SlidingWindowStatsSummary)value;
         final SimpleTextAttributes attributes = SimpleTextAttributes.REGULAR_ATTRIBUTES;
 
         final JBLabel label = new JBLabel(stats.getLocation().name);
-        label.setHorizontalAlignment(SwingConstants.RIGHT);
-        panel.add(label, BorderLayout.CENTER);
-
         if (isSelected) {
           label.setForeground(table.getSelectionForeground());
         }
+        final int count = stats.getValue(PerfMetric.lastFrame);
+        label.setIcon(getIconForCount(idle ? 0 : count, true));
+        panel.add(Box.createHorizontalStrut(16));
+        panel.add(label);
       }
 
       clear();
@@ -367,6 +417,10 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       }
 
       return panel;
+    }
+
+    public void setIdle(boolean idle) {
+      this.idle = idle;
     }
   }
 
@@ -457,14 +511,10 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
       return panel;
     }
-
-    public void setIdle(boolean idle) {
-      this.idle = idle;
-    }
   }
 
   static class WidgetNameColumnInfo extends ColumnInfo<DefaultMutableTreeNode, SlidingWindowStatsSummary> {
-    private final TableCellRenderer renderer = new WidgetNameRenderer();
+    private final WidgetNameRenderer renderer = new WidgetNameRenderer();
 
     public WidgetNameColumnInfo(String name) {
       super(name);
@@ -479,6 +529,10 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     @Override
     public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
       return renderer;
+    }
+
+    public void setIdle(boolean idle) {
+      renderer.setIdle(idle);
     }
   }
 
@@ -520,10 +574,6 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     @Override
     public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
       return defaultRenderer;
-    }
-
-    public void setIdle(boolean idle) {
-      defaultRenderer.setIdle(idle);
     }
   }
 }
