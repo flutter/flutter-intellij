@@ -5,3 +5,4 @@ dependencies:
   path: any
 dev_dependencies:
   grinder: ^0.8.0
+  http: ^0.12.0

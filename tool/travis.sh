@@ -38,6 +38,10 @@ else
   # Run some validations on the repo code.
   ./bin/plugin lint
 
+  # Check plugin-referenced urls for liveness.
+  pub global activate grinder
+  grind check-urls
+
   # Run the build.
   ./bin/plugin build --only-version=$IDEA_VERSION
 fi
