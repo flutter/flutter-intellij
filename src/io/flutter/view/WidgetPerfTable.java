@@ -469,7 +469,6 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
   private static class CountRenderer extends SimpleColoredRenderer implements TableCellRenderer {
     private final PerfMetric metric;
-    private boolean idle = false;
 
     CountRenderer(PerfMetric metric) {
       this.metric = metric;
@@ -488,9 +487,6 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         final int count = stats.getValue(metric);
 
         final JBLabel label = new JBLabel(Integer.toString(count));
-        if (metric.timeIntervalMetric) {
-          label.setIcon(getIconForCount(idle ? 0 : count, false));
-        }
         panel.add(Box.createHorizontalGlue());
         panel.add(label);
         panel.add(Box.createHorizontalStrut(8));
