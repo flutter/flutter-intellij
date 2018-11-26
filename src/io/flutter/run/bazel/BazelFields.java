@@ -27,6 +27,8 @@ import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static io.flutter.run.daemon.RunMode.*;
+
 /**
  * The fields in a Bazel run configuration.
  */
@@ -227,12 +229,22 @@ public class BazelFields {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // Set the mode.
+    // Set the mode. We track the bazel versions of the flutter_build_mode parameters.
     if (enableReleaseMode) {
       commandLine.addParameters("--define", "flutter_build_mode=release");
     }
-    else if (mode != RunMode.DEBUG) {
-      commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    else {
+      switch (mode) {
+        case PROFILE:
+          commandLine.addParameters("--define", "flutter_build_mode=profile");
+          break;
+        case RUN:
+        case DEBUG:
+        default:
+          commandLine.addParameters("--define", "flutter_build_mode=debug");
+          break;
+
+      }
     }
     // (the implicit else here is the debug case)
 
@@ -280,7 +292,7 @@ public class BazelFields {
     commandLine.addParameter("--machine");
 
     // Pause the app at startup in order to set breakpoints.
-    if (!enableReleaseMode && mode == RunMode.DEBUG) {
+    if (!enableReleaseMode && mode == DEBUG) {
       commandLine.addParameter("--start-paused");
     }
 
