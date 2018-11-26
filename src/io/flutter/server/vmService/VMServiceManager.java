@@ -248,7 +248,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   private void maybeAddServiceExtension(String name) {
     if (firstFrameEventReceived) {
       addServiceExtension(name);
-      if (pendingServiceExtensions.size() > 0) {
+      if (!pendingServiceExtensions.isEmpty()) {
         addPendingServiceExtensions();
       }
     }
