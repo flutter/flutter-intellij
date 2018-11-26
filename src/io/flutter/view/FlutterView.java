@@ -227,6 +227,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
+
+    if (emptyContent != null) {
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
+    contentManager.setSelectedContent(content);
+
     final PerAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);
     state.content = content;
