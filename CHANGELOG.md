@@ -1,3 +1,14 @@
+## 31.0
+- change FPS display to "Frame Rendering Time" and improve UI
+- reorganize inspector tools
+- better error reporting for Flutter runtime issues
+- fewer Flutter runtime issues
+- updated icons for Material and Cupertino
+- searchable preferences/settings
+- added refactoring to outline view: extract widget
+- new menu item to run 'flutter make-host-app-editable'
+- code cleanup and bug fixes
+
 ## 30.0
 - performance inspector changes
 - log view tweaks

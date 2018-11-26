@@ -8,22 +8,18 @@ package io.flutter.inspector;
 import com.google.common.collect.ArrayListMultimap;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditorManagerEvent;
+import com.intellij.openapi.fileEditor.FileEditorManagerListener;
+import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
-import com.intellij.openapi.util.TextRange;
-import com.intellij.ui.components.JBLabel;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.labels.LinkListener;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.messages.MessageBusConnection;
 import com.intellij.util.ui.JBUI;
 import io.flutter.FlutterInitializer;
-import io.flutter.perf.FlutterWidgetPerf;
-import io.flutter.perf.FlutterWidgetPerfManager;
-import io.flutter.perf.PerfTip;
-import io.flutter.perf.WidgetPerfLinter;
 import io.flutter.perf.*;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
@@ -56,16 +52,17 @@ public class WidgetPerfTipsPanel extends JPanel {
   private TextEditor currentEditor;
   private ArrayList<TextEditor> currentTextEditors;
 
-  LinkListener<PerfTip> linkListener;
+  final LinkListener<PerfTip> linkListener;
   private boolean visible = true;
-  private ArrayList<PerfTip> currentTips;
+  private List<PerfTip> currentTips;
 
   public WidgetPerfTipsPanel(Disposable parentDisposable, @NotNull FlutterApp app) {
-    setLayout(new VerticalLayout(5));
     this.app = app;
+
+    setLayout(new VerticalLayout(5));
+
     perfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
     perfTips = new JPanel();
-    perfTips.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Perf Tips"));
     perfTips.setLayout(new VerticalLayout(0));
 
     linkListener = (source, tip) -> handleTipSelection(tip);
@@ -107,6 +104,8 @@ public class WidgetPerfTipsPanel extends JPanel {
   void hidePerfTip() {
     currentTips = null;
     remove(perfTips);
+
+    setVisible(hasPerfTips());
   }
 
   private void selectedEditorChanged() {
@@ -180,6 +179,12 @@ public class WidgetPerfTipsPanel extends JPanel {
     }
 
     add(perfTips, 0);
+
+    setVisible(hasPerfTips());
+  }
+
+  private boolean hasPerfTips() {
+    return currentTips != null && !currentTips.isEmpty();
   }
 
   public void setVisibleToUser(boolean visible) {

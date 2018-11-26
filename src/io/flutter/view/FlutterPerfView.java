@@ -193,11 +193,12 @@ public class FlutterPerfView implements Disposable {
                                            @NotNull FlutterApp app,
                                            Disposable parentDisposable) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
-    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
+    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.addSeparator();
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
     toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.addSeparator();
     toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
 
     return toolbarGroup;
@@ -257,7 +258,7 @@ public class FlutterPerfView implements Disposable {
   }
 
   public InspectorPerfTab showPerfTab(@NotNull FlutterApp app) {
-    PerfViewAppState appState = perAppViewState.get(app);
+    final PerfViewAppState appState = perAppViewState.get(app);
     if (appState != null) {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
 
