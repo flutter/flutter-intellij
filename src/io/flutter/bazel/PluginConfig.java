@@ -46,6 +46,11 @@ class PluginConfig {
     return fields.launchScript;
   }
 
+  @Nullable
+  String getTestScript() {
+    return fields.testScript;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (!(obj instanceof PluginConfig)) return false;
@@ -108,10 +113,16 @@ class PluginConfig {
     private String doctorScript;
 
     /**
-     *
+     * The script to run to start 'bazel'
      */
     @SerializedName("launchScript")
     private String launchScript;
+
+    /**
+     * The script to run to start 'flutter test'
+     */
+    @SerializedName("testScript")
+    private String testScript;
 
     Fields() {
     }
@@ -122,7 +133,8 @@ class PluginConfig {
       final Fields other = (Fields)obj;
       return Objects.equal(daemonScript, other.daemonScript)
              && Objects.equal(doctorScript, other.doctorScript)
-             && Objects.equal(launchScript, other.launchScript);
+             && Objects.equal(launchScript, other.launchScript)
+             && Objects.equal(testScript, other.testScript);
     }
 
     @Override

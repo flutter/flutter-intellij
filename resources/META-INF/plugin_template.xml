@@ -200,6 +200,7 @@
     <runConfigurationProducer implementation="io.flutter.run.test.TestConfigProducer"/>
     <programRunner implementation="io.flutter.run.test.DebugTestRunner"/>
     <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
+    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
     <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
