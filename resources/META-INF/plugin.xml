@@ -27,6 +27,18 @@
 
   <change-notes>
     <![CDATA[
+<h2>31.0</h2>
+<ul>
+  <li>change FPS display to "Frame Rendering Time" and improve UI</li>
+  <li>reorganize inspector tools</li>
+  <li>better error reporting for Flutter runtime issues</li>
+  <li>fewer Flutter runtime issues</li>
+  <li>updated icons for Material and Cupertino</li>
+  <li>searchable preferences/settings</li>
+  <li>added refactoring to outline view: extract widget</li>
+  <li>new menu item to run 'flutter make-host-app-editable'</li>
+  <li>code cleanup and bug fixes</li>
+</ul>
 <h2>30.0</h2>
 <ul>
   <li>performance inspector changes</li>
