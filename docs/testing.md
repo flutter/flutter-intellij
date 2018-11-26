@@ -46,6 +46,23 @@ Validate basic project creation.
     * Select `Flutter > Open Android module in Android Studio` from the project list menu
     * Verify that the new project window allows editing of `<project root>/example/android/app`
     
+* Create a **module project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`), specify "Module" as the project type.
+* Confirm that:
+  * Project contents are created.
+    * Verify that a run configuration (`<Project Name>.dart`) is enabled in the run/debug selector.
+    * Verify that directories `.ios` and `.android` exist.
+* Convert to editable native code (`Tools > Flutter > Make host app editable`)
+* Confirm that:
+  * Project contents are created.
+    * Verify that directories `ios` and `android` exist, in addition to `.ios` and `.android`.
+    * Navigate down the `android/app` tree to `MainActivity.java`, open it in the editor, and verify that no `Module SDK not defined` banner appears in the editor.
+  * `Open Android module in Android Studio` does the right thing
+    * Verify that Gradle sync completes normally
+    * Verify that no `Framework detected` notification is shown.
+    * Navigate to and select `<project root>/.android/src/main`
+    * Select `Flutter > Open Android module in Android Studio` from the project list menu
+    * Verify that the new project window allows editing of `android/app/src/main/java`
+
 ## Project Open
 
 Validate that our example projects can be opened.
@@ -99,6 +116,10 @@ In the newly created app:
 * tap the `'+'` icon on the app
 * verify that the IDE pauses at the breakpoint, and that the `Variables` pane has
   the right value for `_counter`
+* open the inspector
+* change the display by clicking `Render Tree` and the refresh button
+* open the performance view
+* (in Android Studio): verify that the memory view is active and the performance view is not
 * hit resume in the debugger
 
 ## Hot Reload
