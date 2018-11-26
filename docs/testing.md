@@ -52,7 +52,6 @@ Validate basic project creation.
     * Verify that a run configuration (`<Project Name>.dart`) is enabled in the run/debug selector.
     * Verify that directories `.ios` and `.android` exist.
 * Convert to editable native code (`Tools > Flutter > Make host app editable`)
-* Verify that no `Framework detected` notification is shown.
 * Confirm that:
   * Project contents are created.
     * Verify that directories `ios` and `android` exist, in addition to `.ios` and `.android`.
