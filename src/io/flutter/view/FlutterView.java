@@ -55,7 +55,10 @@ import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.*;
+import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.EventStream;
+import io.flutter.utils.UIUtils;
+import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -184,11 +187,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       toolbarGroup.add(registerAction(new ForceRefreshAction(app, inspectorService)));
     }
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
-    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
+    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.addSeparator();
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
     toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.addSeparator();
     toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
 
     return toolbarGroup;

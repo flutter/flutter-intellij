@@ -194,7 +194,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel perfView = new JPanel(new BorderLayout());
     perfView.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Rebuild stats"));
     final JPanel perfViewSettings = new JPanel(new VerticalLayout(5));
-    trackRebuildsCheckbox = new JCheckBox("Collect widget rebuild information");
+    trackRebuildsCheckbox = new JCheckBox("Show widget rebuild information");
     trackRebuildsCheckbox.setHorizontalAlignment(JLabel.LEFT);
     trackRebuildsCheckbox.setToolTipText(
       "<html><body><p><b>This profiler identifies widgets that are rebuilt when the UI changes.</b></p>" +
@@ -203,7 +203,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
       "</body></html>");
     perfViewSettings.add(trackRebuildsCheckbox);
     if (ENABLE_TRACK_REPAINTS) {
-      trackRepaintsCheckbox = new JCheckBox("Collect widget repaint information");
+      trackRepaintsCheckbox = new JCheckBox("Show widget repaint information");
       perfViewSettings.add(trackRepaintsCheckbox);
     }
     perfViewSettings.add(new JSeparator());
