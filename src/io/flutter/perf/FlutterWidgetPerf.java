@@ -16,7 +16,6 @@ import com.intellij.concurrency.JobScheduler;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.Application;
 import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.application.ReadAction;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -423,6 +422,12 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
         editors.remove();
         editorPerfDecorations.dispose();
       }
+    }
+  }
+
+  public void setAlwaysShowLineMarkersOverride(boolean show) {
+    for (EditorPerfModel model : editorDecorations.values()) {
+      model.setAlwaysShowLineMarkersOverride(show);
     }
   }
 
