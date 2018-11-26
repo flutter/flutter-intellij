@@ -26,7 +26,6 @@ class WidgetPerfSummaryView extends JPanel {
   private final Timer refreshTableTimer;
   private final WidgetPerfTable table;
   private final PerfReportKind reportKind;
-  //private final JBLabel tableTitle;
 
   private final WidgetPerfTipsPanel myWidgetPerfTipsPanel;
   private boolean visible = true;
@@ -47,14 +46,6 @@ class WidgetPerfSummaryView extends JPanel {
     table = new WidgetPerfTable(app, parentDisposable, metric);
 
     perfManager.getCurrentStats().addPerfListener(table);
-    //final JPanel header = new JPanel();
-    //header.setLayout(new VerticalLayout(5));
-    //header.setBorder(JBUI.Borders.empty(5));
-    //add(header, BorderLayout.NORTH);
-    // Update header message.
-    //tableTitle = new JBLabel();
-    setTableTitle(reportKind);
-    //header.add(tableTitle);
 
     add(ScrollPaneFactory.createScrollPane(table), BorderLayout.CENTER);
 
@@ -66,10 +57,6 @@ class WidgetPerfSummaryView extends JPanel {
 
   public WidgetPerfTipsPanel getWidgetPerfTipsPanel() {
     return myWidgetPerfTipsPanel;
-  }
-
-  private void setTableTitle(PerfReportKind kind) {
-    //tableTitle.setText("Widget " + reportKind.name + " stats for the current screen:");
   }
 
   private void onUpdateTable(ActionEvent event) {
