@@ -246,22 +246,26 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   }
 
   private void maybeAddServiceExtension(String name) {
-    if (firstFrameEventReceived) {
-      addServiceExtension(name);
-      if (!pendingServiceExtensions.isEmpty()) {
-        addPendingServiceExtensions();
+    synchronized (pendingServiceExtensions) {
+      if (firstFrameEventReceived) {
+        addServiceExtension(name);
+        if (!pendingServiceExtensions.isEmpty()) {
+          addPendingServiceExtensions();
+        }
       }
-    }
-    else {
-      pendingServiceExtensions.add(name);
+      else {
+        pendingServiceExtensions.add(name);
+      }
     }
   }
 
   private void addPendingServiceExtensions() {
-    for (String extensionName : pendingServiceExtensions) {
-      addServiceExtension(extensionName);
+    synchronized (pendingServiceExtensions) {
+      for (String extensionName : pendingServiceExtensions) {
+        addServiceExtension(extensionName);
+      }
+      pendingServiceExtensions.clear();
     }
-    pendingServiceExtensions.clear();
   }
 
   /**
