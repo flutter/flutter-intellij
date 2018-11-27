@@ -35,7 +35,7 @@ if [ "$DART_BOT" = true ] ; then
   # run the tests for the plugin tool
   (cd tool/plugin; dart test/plugin_test.dart)
 
-else if [ "$CHECK_BOT" = true ] ; then
+elif [ "$CHECK_BOT" = true ] ; then
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
 
