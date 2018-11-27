@@ -135,8 +135,10 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel labels = new JPanel(new BorderLayout(6, 0));
     labels.setBorder(JBUI.Borders.empty(0, 8));
 
+    final JLabel runModeLabel = new JBLabel("Running in " + app.getLaunchMode() + " mode");
+    runModeLabel.setVerticalAlignment(SwingConstants.TOP);
     labels.add(
-      new JBLabel("Running in " + app.getLaunchMode() + " mode"),
+      runModeLabel,
       BorderLayout.WEST
     );
 
