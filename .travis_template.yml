@@ -25,3 +25,4 @@ script: ./tool/travis.sh
 # Testing product matrix; the values are generated from product-matrix.json.
 env:
   - DART_BOT=true
+  - CHECK_BOT=true

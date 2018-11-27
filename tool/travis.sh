@@ -34,12 +34,14 @@ if [ "$DART_BOT" = true ] ; then
 
   # run the tests for the plugin tool
   (cd tool/plugin; dart test/plugin_test.dart)
+
+elif [ "$CHECK_BOT" = true ] ; then
+  # Check plugin-referenced urls for liveness.
+  dart tool/grind.dart check-urls
+
 else
   # Run some validations on the repo code.
   ./bin/plugin lint
-
-  # Check plugin-referenced urls for liveness.
-  dart tool/grind.dart check-urls
 
   # Run the build.
   ./bin/plugin build --only-version=$IDEA_VERSION
