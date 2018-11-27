@@ -619,10 +619,17 @@ public class FlutterApp {
   }
 
   public boolean isFlutterIsolateSuspended() {
+    if (!isSessionActive() || myVMServiceManager.getCurrentFlutterIsolateRaw() == null) {
+      // The isolate cannot be suspended if it isn't running yet.
+      return false;
+    }
     return getFlutterDebugProcess().isIsolateSuspended(myVMServiceManager.getCurrentFlutterIsolateRaw().getId());
   }
 
   private CompletableFuture<?> whenFlutterIsolateResumed() {
+    if (!isFlutterIsolateSuspended()) {
+      return CompletableFuture.completedFuture(null);
+    }
     return getFlutterDebugProcess().whenIsolateResumed(myVMServiceManager.getCurrentFlutterIsolateRaw().getId());
   }
 
