@@ -55,13 +55,14 @@ Validate basic project creation.
 * Confirm that:
   * Project contents are created.
     * Verify that directories `ios` and `android` exist, in addition to `.ios` and `.android`.
-    * Navigate down the `android/app` tree to `MainActivity.java`, open it in the editor, and verify that no `Module SDK not defined` banner appears in the editor.
-  * `Open Android module in Android Studio` does the right thing
-    * Verify that Gradle sync completes normally
-    * Verify that no `Framework detected` notification is shown.
-    * Navigate to and select `<project root>/.android/src/main`
-    * Select `Flutter > Open Android module in Android Studio` from the project list menu
-    * Verify that the new project window allows editing of `android/app/src/main/java`
+* Run the app and verify that it starts correctly.
+* Stop the app.
+* Navigate to and select `<project root>/android`
+* Select `Flutter > Open Android module in Android Studio` from the project list menu
+  * Opening in a new window is recommended. If necessary change your preference/setting to allow that.
+* Verify that Gradle sync completes normally
+* Verify that the new project window allows editing of `app/java` (using the Android view of the project)
+  * The file icon should be blue to indicate it is a source folder.
 
 ## Project Open
 
