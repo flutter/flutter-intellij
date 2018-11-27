@@ -139,7 +139,6 @@
     <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">
       <separator/>
-      <reference ref="AttachDebuggerAction"/>
       <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
@@ -147,6 +146,7 @@
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
       </action>
+      <separator/>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Flutter Run Profile Mode"
               icon="AllIcons.Actions.Execute">
@@ -155,6 +155,7 @@
               description="Flutter Run Release Mode"
               icon="AllIcons.Actions.Execute">
       </action>
+      <reference ref="AttachDebuggerAction"/>
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
