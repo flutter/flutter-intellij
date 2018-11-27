@@ -10,6 +10,7 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
+import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.panels.VerticalLayout;
@@ -64,27 +65,9 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   private boolean lastUseSplitter = false;
 
   private float lastSplitterProportion = 0.5f;
-
-  private boolean isSplitterEnabled() {
-    return true;
-    //return widgetPerfManager.isTrackRebuildWidgets() || widgetPerfManager.isTrackRebuildWidgets();
-  }
-
-  void updateUseSplitter(boolean force) {
-    final boolean useSplitter = isSplitterEnabled();
-    if (lastUseSplitter != useSplitter || force) {
-      if (lastUseSplitter != useSplitter && !useSplitter) {
-        lastSplitterProportion = treeSplitter.getProportion();
-      }
-      treeSplitter.setShowDividerControls(useSplitter);
-      treeSplitter.setShowDividerIcon(useSplitter);
-      treeSplitter.setResizeEnabled(useSplitter);
-      // When the splitter is not used we lock the splitter proportion to 1.0 to hide the second component.
-      treeSplitter.setProportion(useSplitter ? lastSplitterProportion : 1.0f);
-      lastUseSplitter = useSplitter;
-      treeSplitter.setSecondComponent(useSplitter ? rebuildStatsPanel : new JPanel());
-    }
-  }
+  private JPanel perfSummaryContainer;
+  private JPanel perfSummaryPlaceholder;
+  private JComponent currentSummaryView;
 
   InspectorPerfTab(Disposable parentDisposable, @NotNull FlutterApp app, ToolWindow toolWindow) {
     this.app = app;
@@ -110,15 +93,36 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     trackRebuildsCheckbox.addChangeListener((l) -> {
       setTrackRebuildWidgets(trackRebuildsCheckbox.isSelected());
-      updateUseSplitter(false);
+      updateShowPerfSummaryView();
     });
 
     if (ENABLE_TRACK_REPAINTS) {
       trackRepaintsCheckbox.addChangeListener((l) -> {
         setTrackRepaintWidgets(trackRepaintsCheckbox.isSelected());
-        updateUseSplitter(false);
+        updateShowPerfSummaryView();
       });
     }
+  }
+
+  void updateShowPerfSummaryView() {
+    final boolean show = getShowPerfTable();
+    final boolean firstRender = currentSummaryView == null;
+    final JComponent summaryView = show ? perfSummaryView : perfSummaryPlaceholder;
+
+    if (summaryView != currentSummaryView) {
+      if (currentSummaryView != null) {
+        perfSummaryContainer.remove(currentSummaryView);
+      }
+      currentSummaryView = summaryView;
+      perfSummaryContainer.add(summaryView, BorderLayout.CENTER);
+      perfSummaryContainer.revalidate();
+      perfSummaryContainer.repaint();
+    }
+  }
+
+  boolean getShowPerfTable() {
+    final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
+    return widgetPerfManager.isTrackRebuildWidgets() || widgetPerfManager.isTrackRebuildWidgets();
   }
 
   private void buildUI() {
@@ -126,17 +130,21 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     setBorder(JBUI.Borders.empty(3));
 
     // Header
+    final JPanel footer = new JPanel(new VerticalLayout(0));
+    footer.add(new JSeparator());
     final JPanel labels = new JPanel(new BorderLayout(6, 0));
     labels.setBorder(JBUI.Borders.empty(0, 8));
-    add(labels, BorderLayout.NORTH);
 
+    final JLabel runModeLabel = new JBLabel("Running in " + app.getLaunchMode() + " mode");
+    runModeLabel.setVerticalAlignment(SwingConstants.TOP);
     labels.add(
-      new JBLabel("Running in " + app.getLaunchMode() + " mode"),
+      runModeLabel,
       BorderLayout.WEST
     );
 
+    footer.add(labels);
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      final JBLabel label = new JBLabel("(note: for best results, re-run in profile mode)");
+      final JBLabel label = new JBLabel("<html><body>(note: frame rendering times are not indicative of release mode performance unless run in profile mode)</body></html>");
       label.setForeground(JBColor.RED);
       labels.add(label, BorderLayout.CENTER);
     }
@@ -182,17 +190,45 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JBPanel generalPerfPanel = new JBPanel(new VerticalLayout(5));
     generalPerfPanel.add(perfSettings);
     generalPerfPanel.add(frameRenderingPanel);
+
+    final JBPanel leftColumn = new JBPanel(new BorderLayout());
+    leftColumn.add(ScrollPaneFactory.createScrollPane(generalPerfPanel), BorderLayout.CENTER);
+    leftColumn.add(footer, BorderLayout.SOUTH);
+
     if (memoryPanel != null) {
       generalPerfPanel.add(memoryPanel);
     }
 
     Disposer.register(parentDisposable, treeSplitter::dispose);
-    treeSplitter.setFirstComponent(generalPerfPanel);
+    treeSplitter.setFirstComponent(leftColumn);
     rebuildStatsPanel = new JPanel(new BorderLayout(0, 5));
 
     // rebuild stats
-    final JPanel perfView = new JPanel(new BorderLayout());
-    perfView.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Rebuild stats"));
+    perfSummaryContainer = new JPanel(new BorderLayout());
+    currentSummaryView = null;
+    perfSummaryPlaceholder = new JPanel(new BorderLayout());
+    perfSummaryPlaceholder.add(
+      ScrollPaneFactory.createScrollPane(
+        new JBLabel(
+          "<html><body style='padding-left:25px; padding-right:25px;'>" +
+          "<p>" +
+          "Widget rebuild information tells you what widgets have been " +
+          "recently rebuilt on your current screen and in the source file you're " +
+          "viewing." +
+          "</p>" +
+          "<br>" +
+          "<p>" +
+          "It also provides you with relevant performance advices based on the " +
+          "behavior of your UI." +
+          "</p>" +
+          "</body></html>"
+        ),
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+      )
+    );
+
+    perfSummaryContainer.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Rebuild stats"));
     final JPanel perfViewSettings = new JPanel(new VerticalLayout(5));
     trackRebuildsCheckbox = new JCheckBox("Show widget rebuild information");
     trackRebuildsCheckbox.setHorizontalAlignment(JLabel.LEFT);
@@ -208,9 +244,10 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     }
     perfViewSettings.add(new JSeparator());
     perfSummaryView = new WidgetPerfSummaryView(parentDisposable, app, PerfMetric.lastFrame, PerfReportKind.rebuild);
-    perfView.add(perfViewSettings, BorderLayout.NORTH);
-    perfView.add(perfSummaryView, BorderLayout.CENTER);
-    rebuildStatsPanel.add(perfView, BorderLayout.CENTER);
+    perfSummaryContainer.add(perfViewSettings, BorderLayout.NORTH);
+
+    updateShowPerfSummaryView();
+    rebuildStatsPanel.add(perfSummaryContainer, BorderLayout.CENTER);
 
     // perf tips
     final JPanel perfTipsPanel = perfSummaryView.getWidgetPerfTipsPanel();
@@ -219,7 +256,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     perfTipsPanel.setVisible(false);
 
     treeSplitter.setHonorComponentsMinimumSize(false);
-    updateUseSplitter(true);
+    treeSplitter.setSecondComponent(rebuildStatsPanel);
 
     toolWindow.getComponent().addComponentListener(new ComponentListener() {
       @Override

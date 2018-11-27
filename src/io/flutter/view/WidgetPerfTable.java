@@ -93,12 +93,19 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
 
       @Override
       public void mouseEntered(MouseEvent e) {
-        perfManager.getCurrentStats().setAlwaysShowLineMarkersOverride(true);
+        showLineMarkers(true);
       }
 
       @Override
       public void mouseExited(MouseEvent e) {
-        perfManager.getCurrentStats().setAlwaysShowLineMarkersOverride(false);
+        showLineMarkers(false);
+      }
+
+      private void showLineMarkers(boolean show) {
+        final FlutterWidgetPerf stats = perfManager.getCurrentStats();
+        if (stats != null) {
+          stats.setAlwaysShowLineMarkersOverride(true);
+        }
       }
     };
     addMouseListener(mouseListener);
