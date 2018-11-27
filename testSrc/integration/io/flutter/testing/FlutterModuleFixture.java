@@ -19,21 +19,27 @@ import org.junit.rules.ExternalResource;
 public class FlutterModuleFixture extends ExternalResource {
   private final ProjectFixture parent;
   private final Disposable testRoot = () -> {};
+  private final boolean realSdk;
 
   public FlutterModuleFixture(ProjectFixture parent) {
+    this(parent, true);
+  }
+
+  public FlutterModuleFixture(ProjectFixture parent, boolean realSdk) {
     this.parent = parent;
+    this.realSdk = realSdk;
   }
 
   @Override
   protected void before() throws Exception {
     Testing.runOnDispatchThread(() -> {
-      FlutterTestUtils.configureFlutterSdk(parent.getModule(), testRoot, true);
+      FlutterTestUtils.configureFlutterSdk(parent.getModule(), testRoot, realSdk);
       final FlutterSdk sdk = FlutterSdk.getFlutterSdk(parent.getProject());
       assert(sdk != null);
       final String path = sdk.getHomePath();
       final String dartSdkPath = path + "/bin/cache/dart-sdk";
       System.setProperty("dart.sdk", dartSdkPath);
-      DartTestUtils.configureDartSdk(parent.getModule(), testRoot, true);
+      DartTestUtils.configureDartSdk(parent.getModule(), testRoot, realSdk);
     });
   }
 

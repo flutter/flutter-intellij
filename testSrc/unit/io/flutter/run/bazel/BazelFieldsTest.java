@@ -5,21 +5,42 @@
  */
 package io.flutter.run.bazel;
 
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.openapi.project.Project;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
+import io.flutter.dart.DartPlugin;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
+import io.flutter.testing.FlutterModuleFixture;
+import io.flutter.testing.FlutterTestUtils;
+import io.flutter.testing.ProjectFixture;
+import io.flutter.testing.Testing;
 import org.jdom.Element;
+import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * Verifies run configuration persistence.
  */
 public class BazelFieldsTest {
+  @Rule
+  public ProjectFixture projectFixture = Testing.makeCodeInsightModule();
+
+  @Rule
+  public FlutterModuleFixture flutterFixture = new FlutterModuleFixture(projectFixture, false);
 
   @Test
   public void shouldReadFieldsFromXml() {
@@ -80,6 +101,27 @@ public class BazelFieldsTest {
     assertEquals("target", after.getBazelTarget());
     assertEquals(true, after.getEnableReleaseMode());
     assertEquals("args", after.getAdditionalArgs());
+  }
+
+  @Test
+  public void shouldProduceCorrectCommandLine() {
+    final BazelFields fields = new BazelFields();
+    fields.setEntryFile("/tmp/foo/lib/main.dart");
+    fields.setLaunchingScript("launch");
+    fields.setBazelTarget("target");
+    fields.setEnableReleaseMode(true);
+    fields.setAdditionalArgs("args");
+
+    FlutterDevice device = FlutterDevice.getTester();
+    GeneralCommandLine launchCommand = null;
+    try {
+      launchCommand = fields.getLaunchCommand(flutterFixture.getModule().getProject(), device, RunMode.DEBUG);
+    } catch (ExecutionException e) {
+      e.printStackTrace();
+    }
+    final List<String> expectedParameters = new ArrayList<>();
+    expectedParameters.add("");
+    assertThat(launchCommand.getParametersList(), equalTo(expectedParameters));
   }
 
   private void addOption(Element elt, String name, String value) {
