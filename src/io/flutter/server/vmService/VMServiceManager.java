@@ -56,10 +56,16 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     app.addStateListener(this);
+
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
+
+    // The VM Service depends on events from the Extension event stream to
+    // determine when Flutter.Frame events are fired.
+    // Without the call to listen, events from the stream will not be sent.
+    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
