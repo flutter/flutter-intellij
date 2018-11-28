@@ -10,6 +10,7 @@ import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.execution.configurations.RunProfileState;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.RunContentDescriptor;
+import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,10 +30,12 @@ public class SdkRunner extends LaunchState.Runner<SdkRunConfig> {
 
   @Override
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
-    // Force "allow running in parallel" (see: #2875).
-    final RunnerAndConfigurationSettings settings = env.getRunnerAndConfigurationSettings();
-    if (settings != null) {
-      settings.setSingleton(false);
+    if (FlutterUtils.is2018_3_or_higher()) {
+      // Force "allow running in parallel" (see: #2875).
+      final RunnerAndConfigurationSettings settings = env.getRunnerAndConfigurationSettings();
+      if (settings != null) {
+        settings.setSingleton(false);
+      }
     }
     return super.doExecute(state, env);
   }
