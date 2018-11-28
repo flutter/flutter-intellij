@@ -51,20 +51,10 @@ public class LaunchCommandsTest {
 
     // When release mode is enabled, using different RunModes has no effect.
 
-    launchCommand = null;
-    try {
-      launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.DEBUG);
-    } catch (ExecutionException e) {
-      e.printStackTrace();
-    }
+    launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.DEBUG);
     assertThat(launchCommand.getCommandLineString(), equalTo(String.join(" ", expectedCommandLine)));
 
-    launchCommand = null;
-    try {
-      launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.PROFILE);
-    } catch (ExecutionException e) {
-      e.printStackTrace();
-    }
+    launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.PROFILE);
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
@@ -281,7 +271,7 @@ public class LaunchCommandsTest {
         return null;
       @NotNull
       final String entryFile = getEntryFile();
-      
+
       // With the default entryFile from setupBazelFields, the application directory is the container of lib/main.dart.
       return fs.refreshAndFindFileByPath(entryFile.replace("lib/main.dart", ""));
     }
