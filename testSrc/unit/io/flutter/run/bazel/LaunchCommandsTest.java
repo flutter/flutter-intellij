@@ -236,6 +236,9 @@ public class LaunchCommandsTest {
   }
 
 
+  /**
+   * Gets the command line to run a test app.
+   */
   @Nullable
   private static GeneralCommandLine getLaunchCommand(BazelFields fields,
                                                      FlutterDevice device,
@@ -252,6 +255,9 @@ public class LaunchCommandsTest {
   }
 
 
+  /**
+   * Default configuration for the bazel test fields.
+   */
   private void setupBazelFields(BazelFields fields) {
     fields.setEntryFile("/tmp/foo/lib/main.dart");
     fields.setLaunchingScript("bazel-run.sh");
@@ -259,6 +265,9 @@ public class LaunchCommandsTest {
     fields.setEnableReleaseMode(false);
   }
 
+  /**
+   * Fake bazel test fields that doesn't depend on the Dart SDK.
+   */
   private static class FakeBazelTestFields extends BazelFields {
     MockVirtualFileSystem fs = new MockVirtualFileSystem();
 
@@ -272,7 +281,9 @@ public class LaunchCommandsTest {
         return null;
       @NotNull
       final String entryFile = getEntryFile();
-      return fs.refreshAndFindFileByPath(entryFile.replace("main.dart", ""));
+      
+      // With the default entryFile from setupBazelFields, the application directory is the container of lib/main.dart.
+      return fs.refreshAndFindFileByPath(entryFile.replace("lib/main.dart", ""));
     }
   }
 }
