@@ -8,6 +8,7 @@ package io.flutter.run;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RunConfigurationSingletonPolicy;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.search.FileTypeIndex;
@@ -19,13 +20,12 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterRunConfigurationType extends ConfigurationTypeBase {
-
-  private final Factory factory;
+  private final FlutterRunConfigurationTypeFactory factory;
 
   public FlutterRunConfigurationType() {
     super("FlutterRunConfigurationType", FlutterBundle.message("runner.flutter.configuration.name"),
           FlutterBundle.message("runner.flutter.configuration.description"), FlutterIcons.Flutter);
-    factory = new Factory(this);
+    factory = new FlutterRunConfigurationTypeFactory(this);
     addFactory(factory);
   }
 
@@ -37,8 +37,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
            FlutterModuleUtils.hasFlutterModule(project);
   }
 
-
-  public Factory getFactory() {
+  public FlutterRunConfigurationTypeFactory getFactory() {
     return factory;
   }
 
@@ -46,8 +45,8 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterRunConfigurationType.class);
   }
 
-  public static class Factory extends ConfigurationFactory {
-    public Factory(FlutterRunConfigurationType type) {
+  public static class FlutterRunConfigurationTypeFactory extends ConfigurationFactory {
+    public FlutterRunConfigurationTypeFactory(FlutterRunConfigurationType type) {
       super(type);
     }
 
@@ -67,6 +66,12 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
     @Override
     public boolean isApplicable(@NotNull Project project) {
       return FlutterRunConfigurationType.doShowFlutterRunConfigurationForProject(project);
+    }
+
+    @NotNull
+    @Override
+    public RunConfigurationSingletonPolicy getSingletonPolicy() {
+      return RunConfigurationSingletonPolicy.MULTIPLE_INSTANCE_ONLY;
     }
   }
 }
