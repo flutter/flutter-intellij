@@ -16,7 +16,7 @@ public enum PerfMetric {
   lastFrame("Last Frame", true),
   peakRecent("Peak Recent", true),
   pastSecond("Past Second", true),
-  totalSinceRouteChange("Route Change", false),
+  totalSinceEnteringCurrentScreen("Current Screen", false),
   total("Total", false);
 
   public final String name;
