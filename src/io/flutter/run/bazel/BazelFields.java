@@ -247,7 +247,6 @@ public class BazelFields {
         default:
           commandLine.addParameters("--define", "flutter_build_mode=debug");
           break;
-
       }
     }
     // (the implicit else here is the debug case)

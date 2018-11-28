@@ -5,43 +5,22 @@
  */
 package io.flutter.run.bazel;
 
-import com.intellij.execution.ExecutionException;
-import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.mock.MockVirtualFileSystem;
-import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
-import io.flutter.dart.DartPlugin;
-import io.flutter.run.MainFile;
-import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.run.daemon.RunMode;
-import io.flutter.testing.FlutterModuleFixture;
-import io.flutter.testing.FlutterTestUtils;
-import io.flutter.testing.ProjectFixture;
-import io.flutter.testing.Testing;
 import org.jdom.Element;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.*;
 
 /**
  * Verifies run configuration persistence.
  */
 public class BazelFieldsTest {
+
   @Test
   public void shouldReadFieldsFromXml() {
     final Element elt = new Element("test");
@@ -102,7 +81,6 @@ public class BazelFieldsTest {
     assertEquals(true, after.getEnableReleaseMode());
     assertEquals("args", after.getAdditionalArgs());
   }
-
 
   private void addOption(Element elt, String name, String value) {
     final Element child = new Element("option");
