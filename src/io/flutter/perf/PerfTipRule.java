@@ -23,20 +23,20 @@ import java.util.List;
  * rules activate could easily be made looser.
  */
 public class PerfTipRule {
-  /**
-   * Unique identifier used for analytics and for message bundle identifiers.
-   */
-  final String id;
-  final String hackFileName;
-  final String message;
-  final String url;
-  final int minSinceNavigate;
-  final int minPerSecond;
   final PerfReportKind kind;
   final int priority;
-  final int minProblemLocationsInSubtree;
-  final Icon icon;
+  final String hackFileName;
+  final String message;
+  /**
+   * A unique identifier used for analytics.
+   */
+  final String id;
+  final String url;
   WidgetPattern pattern;
+  final int minProblemLocationsInSubtree;
+  final int minSinceNavigate;
+  final int minPerSecond;
+  final Icon icon;
 
   PerfTipRule(
     PerfReportKind kind,
