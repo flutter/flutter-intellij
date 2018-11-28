@@ -120,7 +120,7 @@ public class PerfTipRule {
   }
 
   boolean matchesFrequency(SummaryStats summary) {
-    return (minSinceNavigate > 0 && summary.getValue(PerfMetric.totalSinceRouteChange) >= minSinceNavigate) ||
+    return (minSinceNavigate > 0 && summary.getValue(PerfMetric.totalSinceEnteringCurrentScreen) >= minSinceNavigate) ||
            (minPerSecond > 0 && summary.getValue(PerfMetric.pastSecond) >= minPerSecond);
   }
 

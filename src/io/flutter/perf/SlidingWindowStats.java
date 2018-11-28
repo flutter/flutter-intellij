@@ -134,7 +134,7 @@ class SlidingWindowStats {
         return getPeakWithinWindow(currentTime);
       case peakRecent:
         return getPeakWithinWindow(currentTime - 499);
-      case totalSinceRouteChange:
+      case totalSinceEnteringCurrentScreen:
         return getTotalSinceNavigation();
       default:
         return 0;

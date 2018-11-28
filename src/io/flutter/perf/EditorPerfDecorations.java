@@ -456,7 +456,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
       sb.append("<p style='padding-left: 8px'>");
       sb.append("For last frame: " + stats.getValue(PerfMetric.lastFrame) + "<br>");
       sb.append("In past second: " + stats.getValue(PerfMetric.pastSecond) + "<br>");
-      sb.append("Since last route change: " + stats.getValue(PerfMetric.totalSinceRouteChange) + "<br>");
+      sb.append("Since entering the current screen: " + stats.getValue(PerfMetric.totalSinceEnteringCurrentScreen) + "<br>");
       sb.append("Since last hot reload/restart: " + stats.getValue(PerfMetric.total));
       sb.append("</p>");
     }

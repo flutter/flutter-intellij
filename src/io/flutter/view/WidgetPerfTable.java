@@ -35,7 +35,6 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -67,7 +66,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
         new WidgetNameColumnInfo("Widget"),
         new LocationColumnInfo("Location"),
         new CountColumnInfo(metric),
-        new CountColumnInfo(PerfMetric.totalSinceRouteChange)
+        new CountColumnInfo(PerfMetric.totalSinceEnteringCurrentScreen)
       }
     ));
 
@@ -121,7 +120,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     this.metric = metric;
     this.metrics = new ArrayList<>();
     metrics.add(metric);
-    metrics.add(PerfMetric.totalSinceRouteChange);
+    metrics.add(PerfMetric.totalSinceEnteringCurrentScreen);
     root = new DefaultMutableTreeNode();
     model.setRoot(root);
   }
@@ -534,6 +533,11 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       return renderer;
     }
 
+    @Override
+    public String getTooltipText() {
+      return "The widget that was rebuilt.";
+    }
+
     public void setIdle(boolean idle) {
       renderer.setIdle(idle);
     }
@@ -556,6 +560,11 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
       return renderer;
     }
+
+    @Override
+    public String getTooltipText() {
+      return "Click to locate the widget's constructor in the code.";
+    }
   }
 
   static class CountColumnInfo extends ColumnInfo<DefaultMutableTreeNode, SlidingWindowStatsSummary> {
@@ -577,6 +586,19 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
     @Override
     public TableCellRenderer getRenderer(DefaultMutableTreeNode item) {
       return defaultRenderer;
+    }
+
+    @Override
+    public String getTooltipText() {
+      switch (metric) {
+        case lastFrame:
+          return "The number of times the widget was rebuilt in the last frame.";
+        case totalSinceEnteringCurrentScreen:
+          return "The number of times the widget was rebuilt since entering the current screen.";
+        default:
+          return null;
+      }
+
     }
   }
 }
