@@ -499,11 +499,23 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
         forKind.data.forEachEntry((int locationId, SlidingWindowStats stats) -> {
           for (PerfMetric metric : metrics) {
             if (stats.getValue(metric, time) > 0) {
-              entries.add(new SlidingWindowStatsSummary(
-                stats,
-                time,
-                knownLocationIds.get(locationId)
-              ));
+              final Location location = knownLocationIds.get(locationId);
+              // TODO(jacobr): consider changing this check for
+              // location != null to an assert once the edge case leading to
+              // occassional null locations has been fixed. I expect the edge
+              // case occurs because we are sometimes including a few stats
+              // from before a hot restart due to an incorrect ordering for
+              // when the events occur. In any case, the extra != null check
+              // is harmless and ensures the UI display is robust at the cost
+              // of perhaps ommiting a little likely stale data.
+              // See https://github.com/flutter/flutter-intellij/issues/2892
+              if (location != null) {
+                entries.add(new SlidingWindowStatsSummary(
+                  stats,
+                  time,
+                  location
+                ));
+              }
               return true;
             }
           }

@@ -6,6 +6,7 @@
 package io.flutter.perf;
 
 import com.google.common.base.Objects;
+import io.flutter.FlutterBundle;
 import io.flutter.inspector.DiagnosticsNode;
 import io.netty.util.collection.IntObjectHashMap;
 
@@ -23,8 +24,10 @@ import java.util.List;
  * rules activate could easily be made looser.
  */
 public class PerfTipRule {
-  // Unique identifier used for analytics.
-  final String analyticsId;
+  /**
+   * Unique identifier used for analytics and for message bundle identifiers.
+   */
+  final String id;
   final String hackFileName;
   final String message;
   final String url;
@@ -41,8 +44,7 @@ public class PerfTipRule {
     int priority,
     String hackFileName,
     String message,
-    String analyticsId,
-    String url,
+    String id,
     WidgetPattern pattern,
     int minProblemLocationsInSubtree,
     int minSinceNavigate,
@@ -53,8 +55,8 @@ public class PerfTipRule {
     this.priority = priority;
     this.hackFileName = hackFileName;
     this.message = message;
-    this.analyticsId = analyticsId;
-    this.url = url;
+    this.id = id;
+    this.url = FlutterBundle.message("flutter.perf.linter." + id + ".url");
     this.pattern = pattern;
     this.minProblemLocationsInSubtree = minProblemLocationsInSubtree;
     this.minSinceNavigate = minSinceNavigate;
@@ -70,8 +72,8 @@ public class PerfTipRule {
     return new WidgetPattern(null, name);
   }
 
-  public String getAnalyticsId() {
-    return analyticsId;
+  public String getId() {
+    return id;
   }
 
   public static boolean equalTipRule(PerfTip a, PerfTip b) {
