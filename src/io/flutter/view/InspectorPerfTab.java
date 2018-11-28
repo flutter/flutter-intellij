@@ -129,6 +129,12 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     setLayout(new BorderLayout(0, 8));
     setBorder(JBUI.Borders.empty(3));
 
+    // We have to set the minimum size to make "Split Mode" work well.
+    // Otherwise, this tab will require the majority of the IntelliJ window
+    // width largely due to the long warning message about running in debug
+    // mode.
+    setMinimumSize(new Dimension(0,0));
+
     // Header
     final JPanel footer = new JPanel(new VerticalLayout(0));
     footer.add(new JSeparator());
