@@ -248,6 +248,9 @@ public class BazelFields {
         case RUN:
         case DEBUG:
         default:
+          // The default mode of a flutter app is debug mode. This is the mode that supports hot reloading.
+          // So far as flutter is concerned, there is no difference between debug mode and run mode;
+          // the only difference is that a debug mode app will --start-paused.
           commandLine.addParameters("--define", "flutter_build_mode=debug");
           break;
       }
