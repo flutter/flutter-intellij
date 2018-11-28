@@ -5,14 +5,16 @@
  */
 package io.flutter.perf;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Snapshot of a SlidingWindowStats object for a specific time.
  */
 public class SlidingWindowStatsSummary {
   private final int[] cachedStats;
-  private final Location location;
+  private final @NotNull Location location;
 
-  public SlidingWindowStatsSummary(SlidingWindowStats stats, int currentTime, Location location) {
+  public SlidingWindowStatsSummary(@NotNull SlidingWindowStats stats, int currentTime, @NotNull Location location) {
     cachedStats = new int[PerfMetric.values().length];
     for (PerfMetric metric : PerfMetric.values()) {
       cachedStats[metric.ordinal()] = stats.getValue(metric, currentTime);
@@ -20,7 +22,7 @@ public class SlidingWindowStatsSummary {
     this.location = location;
   }
 
-  public Location getLocation() {
+  public @NotNull Location getLocation() {
     return location;
   }
 

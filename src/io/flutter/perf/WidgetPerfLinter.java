@@ -9,6 +9,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileEditor.TextEditor;
+import io.flutter.FlutterBundle;
 import io.flutter.inspector.DiagnosticsNode;
 import io.netty.util.collection.IntObjectHashMap;
 
@@ -50,7 +51,6 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/clock_demo.dart",
       "Performance considerations of StatefulWidget",
       "statefulWidget",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/StatefulWidget-class.html#performance-considerations",
       matchParent("StatefulWidget"),
       4, // Only relevant if the build method is somewhat large.
       50,
@@ -63,7 +63,6 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/list_demo.dart",
       "Using ListView to load items efficiently",
       "listViewLoad",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/ListView-class.html#child-elements-lifecycle",
       matchParent("ListView"),
       1,
       40,
@@ -77,7 +76,6 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/spinning_box_demo.dart",
       "Performance optimizations when using AnimatedBuilder",
       "animatedBuilder",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/AnimatedBuilder-class.html#performance-optimizations",
       matchParent("AnimatedBuilder"),
       1,
       50,
@@ -91,7 +89,6 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/scorecard_demo.dart",
       "Performance considerations of Opacity animations",
       "opacityAnimations",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/Opacity-class.html#performance-considerations-for-opacity-animation",
       matchParent("Opacity"),
       1,
       20,
