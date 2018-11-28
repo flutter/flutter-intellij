@@ -236,7 +236,7 @@ public class BazelFields {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // Set the mode. We track the bazel versions of the flutter_build_mode parameters.
+    // Set the mode. This section needs to match the bazel versions of the flutter_build_mode parameters.
     if (enableReleaseMode) {
       commandLine.addParameters("--define", "flutter_build_mode=release");
     }
