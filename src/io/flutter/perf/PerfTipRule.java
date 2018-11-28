@@ -6,7 +6,6 @@
 package io.flutter.perf;
 
 import com.google.common.base.Objects;
-import io.flutter.FlutterBundle;
 import io.flutter.inspector.DiagnosticsNode;
 import io.netty.util.collection.IntObjectHashMap;
 
@@ -45,6 +44,7 @@ public class PerfTipRule {
     String hackFileName,
     String message,
     String id,
+    String url,
     WidgetPattern pattern,
     int minProblemLocationsInSubtree,
     int minSinceNavigate,
@@ -56,7 +56,7 @@ public class PerfTipRule {
     this.hackFileName = hackFileName;
     this.message = message;
     this.id = id;
-    this.url = FlutterBundle.message("flutter.perf.linter." + id + ".url");
+    this.url = url;
     this.pattern = pattern;
     this.minProblemLocationsInSubtree = minProblemLocationsInSubtree;
     this.minSinceNavigate = minSinceNavigate;
