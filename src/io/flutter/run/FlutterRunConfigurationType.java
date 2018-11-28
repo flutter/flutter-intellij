@@ -37,7 +37,7 @@ public class FlutterRunConfigurationType extends ConfigurationTypeBase {
            FlutterModuleUtils.hasFlutterModule(project);
   }
 
-  public FlutterRunConfigurationTypeFactory getFactory() {
+  public ConfigurationFactory getFactory() {
     return factory;
   }
 
