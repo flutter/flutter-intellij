@@ -31,6 +31,7 @@ public class BazelRunner extends LaunchState.Runner<BazelRunConfig> {
   protected RunContentDescriptor doExecute(@NotNull RunProfileState state, @NotNull ExecutionEnvironment env) throws ExecutionException {
     if (FlutterUtils.is2018_3_or_higher()) {
       // Force "allow running in parallel" (see: #2875).
+      // TODO(pq): when 2018.3 is our lower bound, migrate to using `RunConfigurationSingletonPolicy` (see: #2897).
       final RunnerAndConfigurationSettings settings = env.getRunnerAndConfigurationSettings();
       if (settings != null) {
         settings.setSingleton(false);
