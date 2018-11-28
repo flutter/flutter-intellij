@@ -30,7 +30,7 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
   }
 
   private static void add(@NotNull SearchableOptionProcessor processor, @NotNull String key) {
-    processor.addOptions(key, null, null, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID,
+    processor.addOptions(key, null, key, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID,
                          FlutterSettingsConfigurable.FLUTTER_SETTINGS_PAGE_NAME, true);
   }
 }
