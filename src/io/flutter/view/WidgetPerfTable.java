@@ -70,6 +70,7 @@ class WidgetPerfTable extends TreeTable implements DataProvider, PerfModel {
       }
     ));
 
+    getTableHeader().setReorderingAllowed(false);
     setSurrendersFocusOnKeystroke(false);
     this.app = app;
     model = getTreeModel();
