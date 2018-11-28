@@ -42,7 +42,7 @@ import java.net.URISyntaxException;
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
-  private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
+  public static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
   private JPanel mainPanel;

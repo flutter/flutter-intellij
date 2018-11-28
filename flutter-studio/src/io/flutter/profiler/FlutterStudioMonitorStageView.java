@@ -41,7 +41,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.BiConsumer;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeExpansionEvent;
@@ -77,7 +79,10 @@ import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_VERTICAL_BORDERS
 import static com.android.tools.profilers.ProfilerLayout.MARKER_LENGTH;
 import static com.android.tools.profilers.ProfilerLayout.MONITOR_LABEL_PADDING;
 import static com.android.tools.profilers.ProfilerLayout.Y_AXIS_TOP_MARGIN;
+import static io.flutter.profiler.FilterLibraryDialog.ALL_DART_LIBRARIES;
+import static io.flutter.profiler.FilterLibraryDialog.ALL_FLUTTER_LIBRARIES;
 import static io.flutter.profiler.FilterLibraryDialog.DART_LIBRARY_PREFIX;
+import static io.flutter.profiler.FilterLibraryDialog.FLUTTER_LIBRARY_PREFIX;
 
 /**
  * Bird eye view displaying high-level information across all profilers.
@@ -131,10 +136,13 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   // Used to manage fetching instances status.
   boolean runningComputingInstances;
 
+  // Any library name key in allLibraries prefixed with "%%" is not displayed in the filter dialog.
+  final static String PREFIX_LIBRARY_NAME_HIDDEN = "%%";
+
   // All Dart Libraries associated with the Flutter application, key is name and value is Uri as String.
   final Map<String, LibraryRef> allLibraries = new HashMap<>();
-  boolean hideDartLibraries = true;
   final Map<String, LibraryRef> dartLibraries = new HashMap<>();
+  final Map<String, LibraryRef> flutterLibraries = new HashMap<>();
 
   // TODO(terry): Remove below debugging before checking in.
   LineChartModel debugModel;
@@ -409,30 +417,23 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
           LibraryRef ref = iterator.next();
 
           if (ref.getName().length() > 0) {
-            // Non-empty string is the library name (use it for key)
-            if (ref.getName().startsWith("dart.")) {
-              dartLibraries.put(ref.getName(), ref);
-            }
-            else if (ref.getUri().startsWith("file:///")) {
-              // Is user code (not in a package or library)
-              // TODO(terry): Need to store local file names for each libraryRef we'll always display classes from user code.
-              allLibraries.put(ref.getName(), ref);
-            }
-            else {
-              if (ref.getUri().startsWith(DART_LIBRARY_PREFIX)) {
-                // Library named 'nativewrappers' but URI is 'dart:nativewrappers' is a Dart library.
-                dartLibraries.put(ref.getName(), ref);
-              }
-              else {
-                allLibraries.put(ref.getUri(), ref);
-              }
-            }
+            rememberLibrary(ref.getName(), ref);
+          } else {
+            // No unique name to display use the Uri and don't display in list of known library/packages.
+            rememberLibrary(PREFIX_LIBRARY_NAME_HIDDEN + ref.getUri(), ref);
           }
         }
-        allLibraries.put("dart:*", null);   // All Dart libraries are in this entry.
+        allLibraries.put(ALL_DART_LIBRARIES, null);       // All Dart libraries are in this entry.
+        allLibraries.put(ALL_FLUTTER_LIBRARIES, null);    // All Flutter libraries are in this entry.
 
+        Set<String> displayedLibraries = new TreeSet<>();
         // The initial list of selected libraries is all of them.
-        getProfilersView().setInitialSelectedLibraries(allLibraries.keySet());
+        for (String s : allLibraries.keySet()) {
+          if (!s.startsWith(PREFIX_LIBRARY_NAME_HIDDEN)) {
+            displayedLibraries.add(s);
+          }
+        }
+        getProfilersView().setInitialSelectedLibraries(displayedLibraries);
 
         isolateFuture.complete(response);
       }
@@ -444,6 +445,31 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       }
     });
     return isolateFuture;
+  }
+
+  void rememberLibrary(String name, LibraryRef ref) {
+    assert name.length() > 0;
+
+    if (name.startsWith("dart.")) {
+      dartLibraries.put(name, ref);
+    }
+    else if (name.startsWith("file:///")) {
+      // Is user code (not in a package or library)
+      // TODO(terry): Need to store local file names for each libraryRef we'll always display classes from user code.
+      allLibraries.put(name, ref);
+    }
+    else {
+      if (ref.getUri().startsWith(DART_LIBRARY_PREFIX)) {
+        // Library named 'nativewrappers' but URI is 'dart:nativewrappers' is a Dart library.
+        dartLibraries.put(name, ref);
+      }
+      else if (ref.getUri().startsWith(FLUTTER_LIBRARY_PREFIX)) {
+        flutterLibraries.put(name, ref);
+      }
+      else {
+        allLibraries.put(name, ref);
+      }
+    }
   }
 
   public CompletableFuture<JsonObject> vmGetObject(String classOrInstanceRefId) {
@@ -899,10 +925,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         SwingUtilities.invokeLater(() -> {
           memorySnapshot.myInstancesTreeModel.reload(parent);
         });
-      } else if (instance.getKind() == InstanceKind.List) {
+      }
+      else if (instance.getKind() == InstanceKind.List) {
         // Empty list.
         addNode(parent, "", "[]");
-      } else if (instance.getKind() == InstanceKind.Map) {
+      }
+      else if (instance.getKind() == InstanceKind.Map) {
         // Empty list.
         addNode(parent, "", "{}");
       }

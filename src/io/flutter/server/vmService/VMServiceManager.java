@@ -9,9 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
-import com.jetbrains.lang.dart.flutter.FlutterUtil;
 import gnu.trove.THashMap;
-import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.utils.EventStream;
@@ -25,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
@@ -47,13 +46,26 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   private boolean isRunning;
   private int polledCount;
 
+  private boolean firstFrameEventReceived = false;
+  /**
+   * Temporarily stores service extensions that we need to add. We should not add extensions until the first frame event
+   * has been received [firstFrameEventReceived].
+   */
+  private List<String> pendingServiceExtensions = new ArrayList<>();
+
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     app.addStateListener(this);
+
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
+
+    // The VM Service depends on events from the Extension event stream to
+    // determine when Flutter.Frame events are fired.
+    // Without the call to listen, events from the stream will not be sent.
+    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -199,22 +211,23 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     if (flutterIsolateRef != null) {
       if (event.getKind() == EventKind.IsolateExit && StringUtil.equals(event.getIsolate().getId(), flutterIsolateRef.getId())) {
         setFlutterIsolate(null);
+        firstFrameEventReceived = false;
         resetAvailableExtensions();
       }
     }
 
+    // Track whether we have received the first frame event and add pending service extensions if we have.
+    if (event.getKind() == EventKind.Extension && event.getExtensionKind().startsWith("Flutter.FirstFrame")) {
+      firstFrameEventReceived = true;
+      addPendingServiceExtensions();
+    }
+
     if (event.getKind() == EventKind.ServiceExtensionAdded) {
-      addServiceExtension(event.getExtensionRPC());
+      maybeAddServiceExtension(event.getExtensionRPC());
     }
 
     // Check to see if there's a new Flutter isolate.
     if (flutterIsolateRefStream.getValue() == null) {
-      // Check for Flutter frame events.
-      if (event.getKind() == EventKind.Extension && event.getExtensionKind().startsWith("Flutter.")) {
-        // Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame
-        setFlutterIsolate(event.getIsolate());
-      }
-
       // Check for service extension registrations.
       if (event.getKind() == EventKind.ServiceExtensionAdded) {
         final String extensionName = event.getExtensionRPC();
@@ -235,6 +248,29 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
 
       heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
+    }
+  }
+
+  private void maybeAddServiceExtension(String name) {
+    synchronized (pendingServiceExtensions) {
+      if (firstFrameEventReceived) {
+        addServiceExtension(name);
+        if (!pendingServiceExtensions.isEmpty()) {
+          addPendingServiceExtensions();
+        }
+      }
+      else {
+        pendingServiceExtensions.add(name);
+      }
+    }
+  }
+
+  private void addPendingServiceExtensions() {
+    synchronized (pendingServiceExtensions) {
+      for (String extensionName : pendingServiceExtensions) {
+        addServiceExtension(extensionName);
+      }
+      pendingServiceExtensions.clear();
     }
   }
 
@@ -407,11 +443,12 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   public void stateChanged(FlutterApp.State newState) {
     if (newState == FlutterApp.State.RESTARTING) {
       // The set of service extensions available may be different once the app
-      // restarts and no service extensions will be availabe until the app is
+      // restarts and no service extensions will be available until the app is
       // suitably far along in the restart process. It turns out the
       // IsolateExit event cannot be relied on to track when a restart is
       // occurring for unclear reasons.
       resetAvailableExtensions();
+      firstFrameEventReceived = false;
     }
   }
 }

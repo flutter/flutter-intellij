@@ -38,7 +38,10 @@ import org.jetbrains.annotations.NotNull;
 public class FilterLibraryDialog extends DialogWrapper {
   // String to represent all Dart libraries in filter dialog.
   public static final String ALL_DART_LIBRARIES = "dart:*";
+  public static final String ALL_FLUTTER_LIBRARIES = "package:flutter/*";
+
   public static final String DART_LIBRARY_PREFIX = "dart:";
+  public static final String FLUTTER_LIBRARY_PREFIX = "package:flutter/";
 
   private String[] allLibraries;
   private PopupLibraryFilter popupDialog;

@@ -9,6 +9,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileEditor.TextEditor;
+import io.flutter.FlutterBundle;
 import io.flutter.inspector.DiagnosticsNode;
 import io.netty.util.collection.IntObjectHashMap;
 
@@ -19,7 +20,7 @@ import static io.flutter.perf.PerfTipRule.matchParent;
 
 /**
  * Linter that determines what performance tips to show.
- *
+ * <p>
  * Performance tips are generally derived from a FlutterWidgetPerf object to
  * provide rebuild counts for widgets in the app and the Widget tree expressed
  * as a tree of DiagnositcsNode to give information about the types of
@@ -50,7 +51,7 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/clock_demo.dart",
       "Performance considerations of StatefulWidget",
       "statefulWidget",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/StatefulWidget-class.html#performance-considerations",
+      FlutterBundle.message("flutter.perf.linter.statefulWidget.url"),
       matchParent("StatefulWidget"),
       4, // Only relevant if the build method is somewhat large.
       50,
@@ -63,7 +64,7 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/list_demo.dart",
       "Using ListView to load items efficiently",
       "listViewLoad",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/ListView-class.html#child-elements-lifecycle",
+      FlutterBundle.message("flutter.perf.linter.listViewLoad.url"),
       matchParent("ListView"),
       1,
       40,
@@ -77,7 +78,7 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/spinning_box_demo.dart",
       "Performance optimizations when using AnimatedBuilder",
       "animatedBuilder",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/AnimatedBuilder-class.html#performance-optimizations",
+      FlutterBundle.message("flutter.perf.linter.animatedBuilder.url"),
       matchParent("AnimatedBuilder"),
       1,
       50,
@@ -91,7 +92,7 @@ public class WidgetPerfLinter {
       "perf_diagnosis_demo/lib/scorecard_demo.dart",
       "Performance considerations of Opacity animations",
       "opacityAnimations",
-      "https://master-docs-flutter-io.firebaseapp.com/flutter/widgets/Opacity-class.html#performance-considerations-for-opacity-animation",
+      FlutterBundle.message("flutter.perf.linter.opacityAnimations.url"),
       matchParent("Opacity"),
       1,
       20,
@@ -133,7 +134,8 @@ public class WidgetPerfLinter {
         nodesForLocation = LinkedListMultimap.create();
         addNodesToMap(treeRoot);
         return computeMatches(candidateRules, allFileStats);
-      } else {
+      }
+      else {
         return new ArrayList<>();
       }
     });
@@ -163,7 +165,6 @@ public class WidgetPerfLinter {
               // TODO(jacobr): warn that we need a new widget tree.
               continue;
             }
-            assert (nodesForLocation != null);
             assert (stats.getLocation() != null);
             final Collection<DiagnosticsNode> nodes = nodesForLocation.get(stats.getLocation().id);
             if (nodes == null || nodes.isEmpty()) {
