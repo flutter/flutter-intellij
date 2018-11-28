@@ -76,13 +76,20 @@ public class FlutterUtils {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
   }
 
-  public static boolean is2017_3() {
-    final ApplicationInfo appInfo = ApplicationInfo.getInstance();
-    if (appInfo == null) {
-      return false;
-    }
+  public static boolean is2018_3_or_higher() {
+    return getBaselineVersion() >= 183;
+  }
 
-    return appInfo.getBuild().getBaselineVersion() == 173;
+  public static boolean is2017_3() {
+    return getBaselineVersion() == 173;
+  }
+
+  private static int getBaselineVersion() {
+    final ApplicationInfo appInfo = ApplicationInfo.getInstance();
+    if (appInfo != null) {
+      return appInfo.getBuild().getBaselineVersion();
+    }
+    return -1;
   }
 
   public static void disableGradleProjectMigrationNotification(@NotNull Project project) {
