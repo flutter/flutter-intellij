@@ -201,6 +201,9 @@ public class BazelFields {
     }
   }
 
+  /**
+   * Returns the app directory that corresponds to the entryFile and the given project.
+   */
   protected VirtualFile getAppDir(@NotNull Project project) {
     return MainFile.verify(entryFile, project).get().getAppDir();
   }
