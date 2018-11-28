@@ -201,6 +201,10 @@ public class BazelFields {
     }
   }
 
+  protected VirtualFile getAppDir(@NotNull Project project) {
+    return MainFile.verify(entryFile, project).get().getAppDir();
+  }
+
   /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
@@ -215,7 +219,7 @@ public class BazelFields {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile appDir = MainFile.verify(entryFile, project).get().getAppDir();
+    final VirtualFile appDir = getAppDir(project);
 
     final String launchingScript = getLaunchingScript();
     assert launchingScript != null; // already checked

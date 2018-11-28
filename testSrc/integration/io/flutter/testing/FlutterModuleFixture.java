@@ -34,11 +34,13 @@ public class FlutterModuleFixture extends ExternalResource {
   protected void before() throws Exception {
     Testing.runOnDispatchThread(() -> {
       FlutterTestUtils.configureFlutterSdk(parent.getModule(), testRoot, realSdk);
-      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(parent.getProject());
-      assert(sdk != null);
-      final String path = sdk.getHomePath();
-      final String dartSdkPath = path + "/bin/cache/dart-sdk";
-      System.setProperty("dart.sdk", dartSdkPath);
+      if (realSdk) {
+        final FlutterSdk sdk = FlutterSdk.getFlutterSdk(parent.getProject());
+        assert (sdk != null);
+        final String path = sdk.getHomePath();
+        final String dartSdkPath = path + "/bin/cache/dart-sdk";
+        System.setProperty("dart.sdk", dartSdkPath);
+      }
       DartTestUtils.configureDartSdk(parent.getModule(), testRoot, realSdk);
     });
   }
