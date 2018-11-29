@@ -173,7 +173,7 @@ public class FlutterPerfView implements Disposable {
 
       addPerformanceTab(runnerTabs, app, toolWindow, true);
 
-      if (FlutterUtils.isAndroidStudio() && FlutterSettings.getInstance().isMemoryProfilerEnabled()) {
+      if (FlutterUtils.isAndroidStudio() && !FlutterSettings.getInstance().isMemoryProfilerDisabled()) {
         addMemoryTab(runnerTabs, app, false, state);
       }
 

@@ -229,12 +229,12 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isMemoryProfilerEnabled() {
-    return getPropertiesComponent().getBoolean(memoryProfilerKey, true);
+  public boolean isMemoryProfilerDisabled() {
+    return getPropertiesComponent().getBoolean(memoryProfilerKey, false);
   }
 
-  public void setMemoryProfilerEnabled(boolean value) {
-    getPropertiesComponent().setValue(memoryProfilerKey, value, true);
+  public void setMemoryProfilerDisabled(boolean value) {
+    getPropertiesComponent().setValue(memoryProfilerKey, value, false);
 
     fireEvent();
   }
