@@ -1,3 +1,8 @@
+## 31.1
+- perf table polish and fix links to tip docs
+- fix Split Mode resize issue
+- rebuild stats wording tweaks
+
 ## 31.0
 - change FPS display to "Frame Rendering Time" and improve UI
 - reorganize inspector tools

@@ -27,6 +27,12 @@
 
   <change-notes>
     <![CDATA[
+<h2>31.1</h2>
+<ul>
+  <li>perf table polish and fix links to tip docs</li>
+  <li>fix Split Mode resize issue</li>
+  <li>rebuild stats wording tweaks</li>
+</ul>
 <h2>31.0</h2>
 <ul>
   <li>change FPS display to "Frame Rendering Time" and improve UI</li>
