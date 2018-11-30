@@ -24,19 +24,20 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class LaunchCommandsTest {
   @Rule
   public ProjectFixture projectFixture = Testing.makeCodeInsightModule();
 
   @Test
-  public void producesCorrectCommandLineInReleaseMode() {
+  public void producesCorrectCommandLineInReleaseMode() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
     fields.setEnableReleaseMode(true);
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -51,20 +52,20 @@ public class LaunchCommandsTest {
 
     // When release mode is enabled, using different RunModes has no effect.
 
-    launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.DEBUG);
+    launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.DEBUG);
     assertThat(launchCommand.getCommandLineString(), equalTo(String.join(" ", expectedCommandLine)));
 
-    launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.PROFILE);
+    launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.PROFILE);
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
   @Test
-  public void producesCorrectCommandLineInRunMode() {
+  public void producesCorrectCommandLineInRunMode() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -79,13 +80,13 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void producesCorrectCommandLineWithAdditionalArgs() {
+  public void producesCorrectCommandLineWithAdditionalArgs() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
     fields.setAdditionalArgs("additional_args");
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -100,13 +101,13 @@ public class LaunchCommandsTest {
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
   @Test
-  public void producesCorrectCommandLineInDebugMode() {
+  public void producesCorrectCommandLineInDebugMode() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = FlutterDevice.getTester();
     GeneralCommandLine launchCommand =
-      getLaunchCommand(fields, device, projectFixture, RunMode.DEBUG);
+      fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.DEBUG);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -122,13 +123,13 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void producesCorrectCommandLineInProfileMode() {
+  public void producesCorrectCommandLineInProfileMode() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = FlutterDevice.getTester();
     GeneralCommandLine launchCommand =
-      getLaunchCommand(fields, device, projectFixture, RunMode.PROFILE);
+      fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.PROFILE);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -143,12 +144,12 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void producesCorrectCommandLineWithAndroidDevice() {
+  public void producesCorrectCommandLineWithAndroidDevice() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = new FlutterDevice("android-tester", "android device", "android", false);
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -164,12 +165,12 @@ public class LaunchCommandsTest {
 
 
   @Test
-  public void producesCorrectCommandLineWithAndroidEmulator() {
+  public void producesCorrectCommandLineWithAndroidEmulator() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = new FlutterDevice("android-tester", "android device", "android", true);
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -184,12 +185,12 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void producesCorrectCommandLineWithIosDevice() {
+  public void producesCorrectCommandLineWithIosDevice() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = new FlutterDevice("ios-tester", "ios device", "ios", false);
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -205,12 +206,12 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void producesCorrectCommandLineWithIosSimulator() {
+  public void producesCorrectCommandLineWithIosSimulator() throws ExecutionException {
     final BazelFields fields = new FakeBazelTestFields();
     setupBazelFields(fields);
 
     final FlutterDevice device = new FlutterDevice("ios-tester", "ios device", "ios", true);
-    GeneralCommandLine launchCommand = getLaunchCommand(fields, device, projectFixture, RunMode.RUN);
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("bazel-run.sh");
@@ -223,25 +224,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("-d");
     expectedCommandLine.add("ios-tester");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
-  }
-
-
-  /**
-   * Gets the command line to run a test app.
-   */
-  @Nullable
-  private static GeneralCommandLine getLaunchCommand(BazelFields fields,
-                                                     FlutterDevice device,
-                                                     ProjectFixture projectFixture,
-                                                     RunMode run) {
-    GeneralCommandLine launchCommand = null;
-    try {
-      launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, run);
-    }
-    catch (ExecutionException e) {
-      e.printStackTrace();
-    }
-    return launchCommand;
   }
 
 
