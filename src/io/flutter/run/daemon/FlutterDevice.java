@@ -18,7 +18,7 @@ public class FlutterDevice {
   private final @Nullable String myPlatform;
   private final boolean myEmulator;
 
-  FlutterDevice(@NotNull String deviceId, @NotNull String deviceName, @Nullable String platform, boolean emulator) {
+  public FlutterDevice(@NotNull String deviceId, @NotNull String deviceName, @Nullable String platform, boolean emulator) {
     myDeviceId = deviceId;
     myDeviceName = deviceName;
     myPlatform = platform;
