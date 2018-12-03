@@ -17,6 +17,7 @@ import com.android.tools.adtui.model.legend.SeriesLegend;
 import com.android.tools.adtui.stdui.CommonButton;
 import com.android.tools.profilers.*;
 
+import com.android.tools.profilers.memory.MemoryProfilerStage;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
@@ -45,6 +46,7 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.BiConsumer;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeExpansionListener;
@@ -118,7 +120,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   private List<RangedContinuousSeries> rangedData;
   private LegendComponentModel legendComponentModel;
   private LegendComponent legendComponent;
-  private Range timeGlobalRangeUs;
 
   @NotNull private final JBSplitter myMainSplitter = new JBSplitter(false);
   @NotNull private final JBSplitter myChartCaptureSplitter = new JBSplitter(true);
@@ -578,7 +579,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
   private JBPanel buildUI(@NotNull FlutterStudioMonitorStage stage) {
     ProfilerTimeline timeline = stage.getStudioProfilers().getTimeline();
-    Range viewRange = getTimeline().getViewRange();
 
     SelectionModel selectionModel = new SelectionModel(timeline.getSelectionRange());
     SelectionComponent selection = new SelectionComponent(selectionModel, timeline.getViewRange());
@@ -648,28 +648,30 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     FlutterAllMemoryData.ThreadSafeData rssDataSeries = stage.getRSSDataSeries();
 
     Range dataRanges = new Range(0, 1024 * 1024 * 100);
+    Range viewRange = getTimeline().getViewRange();
+
     RangedContinuousSeries usedMemoryRange =
-      new RangedContinuousSeries("Memory", getTimeline().getViewRange(), dataRanges, memoryUsedDataSeries);
+      new RangedContinuousSeries("Used", viewRange, dataRanges, memoryUsedDataSeries);
     RangedContinuousSeries maxMemoryRange =
-      new RangedContinuousSeries("MemoryMax", getTimeline().getViewRange(), dataRanges, memoryMaxDataSeries);
+      new RangedContinuousSeries("Capacity", viewRange, dataRanges, memoryMaxDataSeries);
     RangedContinuousSeries externalMemoryRange =
-      new RangedContinuousSeries("MemoryExtern", getTimeline().getViewRange(), dataRanges, memoryExternalDataSeries);
-    // TODO(terry): Temporary comment out working on displaying RSS properly in chart.
-    // RangedContinuousSeries rssRange = new RangedContinuousSeries("RSS",
-    //                                                              getTimeline().getViewRange(), dataRanges, rssDataSeries);
+      new RangedContinuousSeries("External", viewRange, dataRanges, memoryExternalDataSeries);
+    RangedContinuousSeries rssRange =
+      new RangedContinuousSeries("RSS", viewRange, dataRanges, rssDataSeries);
 
     // model.add(rssRange);              // Plot used RSS size line.
     model.add(maxMemoryRange);        // Plot total size of allocated heap.
     model.add(externalMemoryRange);   // Plot total size of external memory (bottom of stacked chart).
     model.add(usedMemoryRange);       // Plot used memory (top of stacked chart).
 
+    // TODO(terry): Used for debugging only.
     debugModel = model;
 
     getStage().getStudioProfilers().getUpdater().register(model);
     LineChart mLineChart = new LineChart(model);
     mLineChart.setBackground(JBColor.background());
 
-    // TODO(terry): Temporary comment out working on displaying RSS properly in chart.
+    // TODO(terry): Looks nice but might be too much information in chart.  Only display the RSS in the legend.
     // mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
     //   .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
 
@@ -688,29 +690,18 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     axisPanel.setOpaque(false);
     axisPanel.add(yAxisBytes, BorderLayout.WEST);
 
-    // Build the legend.
-    FlutterAllMemoryData.ThreadSafeData rssMax = stage.getRSSDataSeries();
-    FlutterAllMemoryData.ThreadSafeData memoryMax = stage.getCapacityDataSeries();
-    FlutterAllMemoryData.ThreadSafeData memoryExternal = stage.getExternalDataSeries();
-    FlutterAllMemoryData.ThreadSafeData memoryUsed = stage.getUsedDataSeries();
+    Range timelineDataRange = getTimeline().getDataRange();
 
-    Range allData = getTimeline().getDataRange();
+    legendComponentModel = new LegendComponentModel(usedMemoryRange.getXRange());
 
-    legendComponentModel = new LegendComponentModel(new Range(100.0, 100.0));
-    timeGlobalRangeUs = new Range(0, 0);
-
-    RangedContinuousSeries rssRangedData = new RangedContinuousSeries("RSS", timeGlobalRangeUs, allData, rssMax);
-    RangedContinuousSeries maxHeapRangedData = new RangedContinuousSeries("Max Heap", timeGlobalRangeUs, allData, memoryMax);
-    RangedContinuousSeries usedHeapRangedData = new RangedContinuousSeries("Used Heap", timeGlobalRangeUs, allData, memoryUsed);
-    RangedContinuousSeries externalHeapRangedData = new RangedContinuousSeries("External", timeGlobalRangeUs, allData, memoryExternal);
-
-    SeriesLegend legendRss = new SeriesLegend(rssRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
+    // TODO(terry): Check w/ Joshua on timeLineDataRange seems outside when ThreadSafeData's getDataForXRange is called.
+    SeriesLegend legendRss = new SeriesLegend(rssRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendRss);
-    SeriesLegend legendMax = new SeriesLegend(maxHeapRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
+    SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendMax);
-    SeriesLegend legendUsed = new SeriesLegend(usedHeapRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
+    SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendUsed);
-    SeriesLegend legendExternal = new SeriesLegend(externalHeapRangedData, MEMORY_AXIS_FORMATTER, timeGlobalRangeUs);
+    SeriesLegend legendExternal = new SeriesLegend(externalMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendExternal);
 
     legendComponent = new LegendComponent(legendComponentModel);
@@ -724,6 +715,10 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     final JBPanel legendPanel = new JBPanel(new BorderLayout());
     legendPanel.setOpaque(false);
     legendPanel.add(legendComponent, BorderLayout.EAST);
+    // Give the right-side a little space so it doesn't intersect with the right-side label.
+    Border border = legendPanel.getBorder();
+    Border margin = new EmptyBorder(0,0,0,30);
+    legendPanel.setBorder(new CompoundBorder(border, margin));
 
     // Make the legend visible.
     monitorPanel.add(legendPanel, new TabularLayout.Constraint(0, 0));
