@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The shared code for managing a library. To use it, define a subclass that implements the required methods,
@@ -40,13 +41,10 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
   }
 
   protected void updateLibraryContent(@NotNull Set<String> contentUrls) {
-    final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(project);
-
-    final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
-    final Library existingLibrary = projectLibraryTable.getLibraryByName(getLibraryName());
-
-    if (!declaresFlutter) {
+    if (!FlutterModuleUtils.declaresFlutter(project)) {
       // If we have a Flutter library, remove it.
+      final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
+      final Library existingLibrary = projectLibraryTable.getLibraryByName(getLibraryName());
       if (existingLibrary != null) {
         WriteAction.compute(() -> {
           final LibraryTableBase.ModifiableModel libraryTableModel =
@@ -56,9 +54,15 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
           return null;
         });
       }
-
       return;
     }
+    updateLibraryContent(getLibraryName(), contentUrls, null);
+  }
+
+  protected void updateLibraryContent(@NotNull String name, @NotNull Set<String> contentUrls, @Nullable Set<String> sourceUrls) {
+    // TODO(messick) Add support for source URLs; currently that parameter is unused.
+    final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
+    final Library existingLibrary = projectLibraryTable.getLibraryByName(name);
 
     final Library library = existingLibrary != null
                             ? existingLibrary
@@ -66,7 +70,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
                               final LibraryTableBase.ModifiableModel libraryTableModel =
                                 ProjectLibraryTable.getInstance(project).getModifiableModel();
                               final Library lib = libraryTableModel.createLibrary(
-                                getLibraryName(),
+                                name,
                                 getLibraryKind());
                               libraryTableModel.commit();
                               return lib;

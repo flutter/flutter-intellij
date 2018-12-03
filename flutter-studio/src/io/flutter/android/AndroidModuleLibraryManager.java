@@ -5,6 +5,9 @@
  */
 package io.flutter.android;
 
+import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
+import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
+
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.ProjectTopics;
@@ -18,29 +21,33 @@ import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.projectRoots.Sdk;
+import com.intellij.openapi.roots.DependencyScope;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.roots.OrderRootType;
+import com.intellij.openapi.roots.impl.IdeaProjectModelModifier;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.roots.libraries.LibraryTable;
 import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
 import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.util.io.FileUtilRt;
-import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.LocalFileSystem;
+import com.intellij.openapi.vfs.VfsUtilCore;
+import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
+import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.containers.hash.HashSet;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.utils.FlutterModuleUtils;
+import java.util.Arrays;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import org.jetbrains.android.sdk.AndroidSdkUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
-
-import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
-import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 
 /**
  * Manages the Android Libraries library, which hooks the libraries used by Android modules referenced in a project
@@ -58,8 +65,55 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     super(project);
   }
 
-  public void update() {
+  public void updateOld() {
     doGradleSync(getProject(), (Project x) -> updateAndroidLibraryContent(x));
+  }
+
+  public void update() {
+    doGradleSync(getProject(), this::scheduleAddAndroidLibraryDeps);
+  }
+
+  private Void scheduleAddAndroidLibraryDeps(@NotNull Project androidProject) {
+    ApplicationManager.getApplication().invokeLater(
+      () -> addAndroidLibraryDeps(androidProject),
+      ModalityState.NON_MODAL);
+    return null;
+  }
+
+  private void addAndroidLibraryDeps(@NotNull Project androidProject) {
+    for (Module flutterModule : FlutterModuleUtils.getModules(getProject())) {
+      if (FlutterModuleUtils.isFlutterModule(flutterModule)) {
+        for (Module module : ModuleManager.getInstance(androidProject).getModules()) {
+          addAndroidLibraryDeps(androidProject, module, flutterModule);
+        }
+      }
+    }
+    isUpdating.set(false);
+  }
+
+  private void addAndroidLibraryDeps(@NotNull Project androidProject, @NotNull Module androidModule, @NotNull Module flutterModule) {
+    AndroidSdkUtils.setupAndroidPlatformIfNecessary(androidModule, true);
+    Sdk currentSdk = ModuleRootManager.getInstance(androidModule).getSdk();
+    if (currentSdk != null) {
+      // add sdk dependency on currentSdk if not already set
+    }
+    LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
+    Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
+    LibraryTable flutterProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(getProject());
+    Library[] flutterProjectLibraries = flutterProjectLibraryTable.getLibraries();
+    Set<String> knownLibraryNames = new HashSet<>(flutterProjectLibraries.length);
+    for (Library lib : flutterProjectLibraries) {
+      if (lib.getName() != null) {
+        knownLibraryNames.add(lib.getName());
+      }
+    }
+    for (Library library : androidProjectLibraries) {
+      if (library.getName() != null && !knownLibraryNames.contains(library.getName())) {
+        HashSet<String> urls = new HashSet<>();
+        urls.addAll(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.CLASSES)));
+        updateLibraryContent(library.getName(), urls, null);
+      }
+    }
   }
 
   private Void updateAndroidLibraryContent(@NotNull Project androidProject) {
@@ -75,7 +129,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (module != null) {
       AndroidSdkUtils.setupAndroidPlatformIfNecessary(module, true);
       Sdk currentSdk = ModuleRootManager.getInstance(module).getSdk();
-      if (currentSdk != null){
+      if (currentSdk != null) {
         urls.addAll(Arrays.asList(currentSdk.getRootProvider().getUrls(OrderRootType.CLASSES)));
       }
     }
@@ -140,8 +194,9 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
       @Override
       public void syncSucceeded(@NotNull Project project) {
-        callback.apply(androidProject);
-        isUpdating.set(false);
+        if (isUpdating.get()) {
+          callback.apply(androidProject);
+        }
       }
 
       @Override
@@ -187,10 +242,11 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
       project.getMessageBus().connect().subscribe(ProjectTopics.PROJECT_ROOTS, new ModuleRootListener() {
         @Override
-        public void rootsChanged(ModuleRootEvent event) {
+        public void rootsChanged(@NotNull ModuleRootEvent event) {
           manager.scheduleUpdate();
         }
       });
+      manager.scheduleUpdate();
     }
   }
 
