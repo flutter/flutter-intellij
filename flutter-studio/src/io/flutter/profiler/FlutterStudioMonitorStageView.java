@@ -107,6 +107,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
   private static final int AXIS_SIZE = 100000;
 
+  // TODO(terry): Currently don't display any RSS (resident set size) might be too confusing to users.
+  //              Check with asiva on why this is so important.  There are a number of set sizes e.g.,
+  //              Resident Set Size, Virtual Set Size, Proportial Set Size, and Unique Set Size in the Dalvik heap.
+  //              Also, consider exposing an a option to enable RSS statistics?
+  private static final Boolean displayRSSInformation = false;
+
   JBPanel classesPanel;                         // All classes information in this panel.
   JBScrollPane heapObjectsScoller;              // Contains the JTree of heap objects.
   private final JBLabel classesStatusArea;      // Classes status area.
@@ -419,7 +425,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
           if (ref.getName().length() > 0) {
             rememberLibrary(ref.getName(), ref);
-          } else {
+          }
+          else {
             // No unique name to display use the Uri and don't display in list of known library/packages.
             rememberLibrary(PREFIX_LIBRARY_NAME_HIDDEN + ref.getUri(), ref);
           }
@@ -645,7 +652,10 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     FlutterAllMemoryData.ThreadSafeData memoryUsedDataSeries = stage.getUsedDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryMaxDataSeries = stage.getCapacityDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryExternalDataSeries = stage.getExternalDataSeries();
-    FlutterAllMemoryData.ThreadSafeData rssDataSeries = stage.getRSSDataSeries();
+    FlutterAllMemoryData.ThreadSafeData rssDataSeries = null;
+    if (displayRSSInformation) {
+      rssDataSeries = stage.getRSSDataSeries();
+    }
 
     Range dataRanges = new Range(0, 1024 * 1024 * 100);
     Range viewRange = getTimeline().getViewRange();
@@ -656,10 +666,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       new RangedContinuousSeries("Capacity", viewRange, dataRanges, memoryMaxDataSeries);
     RangedContinuousSeries externalMemoryRange =
       new RangedContinuousSeries("External", viewRange, dataRanges, memoryExternalDataSeries);
-    RangedContinuousSeries rssRange =
-      new RangedContinuousSeries("RSS", viewRange, dataRanges, rssDataSeries);
+    RangedContinuousSeries rssRange = null;
+    if (displayRSSInformation) {
+      rssRange = new RangedContinuousSeries("RSS", viewRange, dataRanges, rssDataSeries);
+      model.add(rssRange);              // Plot used RSS size line.
+    }
 
-    // model.add(rssRange);              // Plot used RSS size line.
     model.add(maxMemoryRange);        // Plot total size of allocated heap.
     model.add(externalMemoryRange);   // Plot total size of external memory (bottom of stacked chart).
     model.add(usedMemoryRange);       // Plot used memory (top of stacked chart).
@@ -672,9 +684,10 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     mLineChart.setBackground(JBColor.background());
 
     // TODO(terry): Looks nice but might be too much information in chart.  Only display the RSS in the legend.
-    // mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
-    //   .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
-
+    if (displayRSSInformation) {
+      mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
+        .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
+    }
     mLineChart.configure(maxMemoryRange, new LineConfig(MEMORY_CAPACITY)
       .setStroke(LineConfig.DEFAULT_DASH_STROKE).setLegendIconType(LegendConfig.IconType.DASHED_LINE));
 
@@ -695,8 +708,11 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     legendComponentModel = new LegendComponentModel(usedMemoryRange.getXRange());
 
     // TODO(terry): Check w/ Joshua on timeLineDataRange seems outside when ThreadSafeData's getDataForXRange is called.
-    SeriesLegend legendRss = new SeriesLegend(rssRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
-    legendComponentModel.add(legendRss);
+    SeriesLegend legendRss = null;
+    if (displayRSSInformation) {
+      legendRss = new SeriesLegend(rssRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+      legendComponentModel.add(legendRss);
+    }
     SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendMax);
     SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
@@ -706,7 +722,9 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     legendComponent = new LegendComponent(legendComponentModel);
 
-    legendComponent.configure(legendRss, new LegendConfig(LegendConfig.IconType.LINE, MEMORY_RSS));
+    if (displayRSSInformation) {
+      legendComponent.configure(legendRss, new LegendConfig(LegendConfig.IconType.LINE, MEMORY_RSS));
+    }
     legendComponent.configure(legendMax, new LegendConfig(LegendConfig.IconType.DASHED_LINE, MEMORY_CAPACITY));
     legendComponent.configure(legendUsed, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_USED));
     legendComponent.configure(legendExternal, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_EXTERNAL));
@@ -715,9 +733,9 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     final JBPanel legendPanel = new JBPanel(new BorderLayout());
     legendPanel.setOpaque(false);
     legendPanel.add(legendComponent, BorderLayout.EAST);
-    // Give the right-side a little space so it doesn't intersect with the right-side label.
+    // Give the right-side edge a 30 pixel gap from the "Heap" name in the right-side chart title.
     Border border = legendPanel.getBorder();
-    Border margin = new EmptyBorder(0,0,0,30);
+    Border margin = new EmptyBorder(0, 0, 0, 30);
     legendPanel.setBorder(new CompoundBorder(border, margin));
 
     // Make the legend visible.
