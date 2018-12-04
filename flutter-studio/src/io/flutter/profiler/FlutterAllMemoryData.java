@@ -49,26 +49,31 @@ public class FlutterAllMemoryData {
       // TODO(terry): Consider binary search for mData.x >= xRange.getMin() add till max
       final Iterator<SeriesData<Long>> it = mData.iterator();
       SeriesData<Long> lastData = null;
+
       while (it.hasNext()) {
         SeriesData<Long> data = it.next();
-
         if (data.x > xRange.getMax()) {
           break;
         }
         if (data.x >= xRange.getMin()) {
           // TODO(terry): Hack for now to get last item so we don't flicker. Consider using a for/loop instead of iterator.
           if (lastData != null && outData.isEmpty()) {
-            // Copy data because of modification of the original by LineChart for stacked plotting.
-            // TODO(terry): Replace next line with this "outData.add(data)" when data isn't modified by the chart.
+            // TODO(terry): Copy data because of modification of the original by LineChart for stacked plotting.
+            //              Replace next line with this "outData.add(data)" when data isn't modified by the chart.
             outData.add(new SeriesData<>(lastData.x, lastData.value));
           }
-          // Copy data because of modification of the original by LineChart for stacked plotting.
-          // TODO(terry): Replace next line with this "outData.add(data)" when data isn't modified by the chart.
+          // TODO(terry): Copy data because of modification of the original by LineChart for stacked plotting.
+          //              Replace next line with this "outData.add(data)" when data isn't modified by the chart.
           outData.add(new SeriesData<>(data.x, data.value));
         }
         lastData = data;
       }
 
+      // TODO(terry): Hack to display legend if outData series is empty show the last value in the series.  Expected
+      //              getTimeline().getDataRange() passed to new SeriesLegend in FlutterStudioMonitorStageView to be
+      //              within the series x-range.
+      if (outData.size() == 0 && lastData != null)
+        outData.add(lastData);
       return outData;
     }
   }
