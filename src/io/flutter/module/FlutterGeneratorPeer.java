@@ -25,6 +25,7 @@ import com.intellij.xml.util.XmlStringUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.actions.InstallSdkAction;
 import io.flutter.sdk.FlutterSdkUtil;
+import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,7 +70,6 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
     myCancelProgressButton.setVisible(false);
 
     init();
-    validate();
   }
 
   private void init() {
@@ -107,6 +107,11 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
         myListener.actionCanceled();
       }
     });
+
+    myInstallActionLink.setEnabled(getSdkComboPath().trim().isEmpty());
+
+    errorIcon.setVisible(false);
+    errorPane.setVisible(false);
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -139,6 +144,9 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   @Nullable
   private ValidationInfo validateSdk() {
     final String sdkPath = getSdkComboPath();
+    if (StringUtils.isEmpty(sdkPath)) {
+      return new ValidationInfo("A Flutter SDK is required for project creation.", mySdkPathComboWithBrowse);
+    }
     final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath);
     if (message != null) {
       return new ValidationInfo(message, mySdkPathComboWithBrowse);
