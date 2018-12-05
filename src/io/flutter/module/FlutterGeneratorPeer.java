@@ -83,7 +83,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
     final JTextComponent editorComponent = (JTextComponent)getSdkEditor().getEditorComponent();
     editorComponent.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(DocumentEvent e) {
+      protected void textChanged(@NotNull DocumentEvent e) {
         validate();
       }
     });
@@ -145,7 +145,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
   private ValidationInfo validateSdk() {
     final String sdkPath = getSdkComboPath();
     if (StringUtils.isEmpty(sdkPath)) {
-      return new ValidationInfo("A Flutter SDK is required for project creation.", mySdkPathComboWithBrowse);
+      return new ValidationInfo("A Flutter SDK must be specified for project creation.", mySdkPathComboWithBrowse);
     }
     final String message = FlutterSdkUtil.getErrorMessageIfWrongSdkRootPath(sdkPath);
     if (message != null) {
