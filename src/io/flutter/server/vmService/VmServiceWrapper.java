@@ -263,7 +263,7 @@ public class VmServiceWrapper implements Disposable {
     if (app != null) {
       VMServiceManager service = app.getVMServiceManager();
       if (service != null) {
-        service.addRegisteredExtensionRPCs(isolate);
+        service.addRegisteredExtensionRPCs(isolate, true);
       }
     }
   }
