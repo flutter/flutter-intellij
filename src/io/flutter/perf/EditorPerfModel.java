@@ -10,8 +10,6 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 /**
  * View model for displaying perf stats for a TextEditor.
  *

@@ -128,7 +128,7 @@ public class OpenInXcodeAction extends AnAction {
   }
 
   @Override
-  public void update(AnActionEvent event) {
+  public void update(@NotNull AnActionEvent event) {
     // Enable in global menu; action group controls context menu visibility.
     if (!SystemInfo.isMac) {
       event.getPresentation().setVisible(false);
@@ -142,7 +142,7 @@ public class OpenInXcodeAction extends AnAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
     final VirtualFile projectFile = findProjectFile(e);
     if (projectFile != null) {
       openFile(projectFile);

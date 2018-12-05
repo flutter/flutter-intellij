@@ -6,9 +6,6 @@
 package io.flutter.utils;
 
 
-import com.intellij.openapi.application.ApplicationManager;
-
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;

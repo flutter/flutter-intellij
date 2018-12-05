@@ -7,10 +7,8 @@ package io.flutter.view;
 
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 class PerformanceOverlayAction extends FlutterViewToggleableAction {
 
