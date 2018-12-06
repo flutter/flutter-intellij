@@ -296,9 +296,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
   }
 
-  /**
-   * This method must only be called on the UI thread.
-   */
   private void addServiceExtension(String name) {
     synchronized (serviceExtensions) {
       final EventStream<Boolean> stream = serviceExtensions.get(name);
