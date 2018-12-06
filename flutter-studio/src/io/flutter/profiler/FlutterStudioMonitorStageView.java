@@ -107,12 +107,6 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
   private static final int AXIS_SIZE = 100000;
 
-  // TODO(terry): Currently don't display any RSS (resident set size) might be too confusing to users.
-  //              Check with asiva on why this is so important.  There are a number of set sizes e.g.,
-  //              Resident Set Size, Virtual Set Size, Proportial Set Size, and Unique Set Size in the Dalvik heap.
-  //              Also, consider exposing an a option to enable RSS statistics?
-  private static final Boolean displayRSSInformation = false;
-
   JBPanel classesPanel;                         // All classes information in this panel.
   JBScrollPane heapObjectsScoller;              // Contains the JTree of heap objects.
   private final JBLabel classesStatusArea;      // Classes status area.
@@ -387,6 +381,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     getComponent().add(myMainSplitter, BorderLayout.CENTER);
   }
 
+  void buildCharting() {
+    JComponent chartingUI = myChartCaptureSplitter.getFirstComponent();
+    myChartCaptureSplitter.remove(chartingUI);
+    myChartCaptureSplitter.setFirstComponent(buildUI(this.getStage()));
+  }
+
   public JBTable getClassesTable() { return classesTable; }
 
   void inspectInstance(@NotNull DefaultMutableTreeNode node) {
@@ -653,7 +653,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     FlutterAllMemoryData.ThreadSafeData memoryMaxDataSeries = stage.getCapacityDataSeries();
     FlutterAllMemoryData.ThreadSafeData memoryExternalDataSeries = stage.getExternalDataSeries();
     FlutterAllMemoryData.ThreadSafeData rssDataSeries = null;
-    if (displayRSSInformation) {
+    if (getProfilersView().displayRSSInformation) {
       rssDataSeries = stage.getRSSDataSeries();
     }
 
@@ -666,10 +666,10 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       new RangedContinuousSeries("Capacity", viewRange, dataRanges, memoryMaxDataSeries);
     RangedContinuousSeries externalMemoryRange =
       new RangedContinuousSeries("External", viewRange, dataRanges, memoryExternalDataSeries);
-    RangedContinuousSeries rssRange = null;
-    if (displayRSSInformation) {
+    RangedContinuousSeries rssRange = rssRange = null;
+    if (getProfilersView().displayRSSInformation) {
       rssRange = new RangedContinuousSeries("RSS", viewRange, dataRanges, rssDataSeries);
-      model.add(rssRange);              // Plot used RSS size line.
+      model.add(rssRange);            // Plot used RSS size line.
     }
 
     model.add(maxMemoryRange);        // Plot total size of allocated heap.
@@ -684,7 +684,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     mLineChart.setBackground(JBColor.background());
 
     // TODO(terry): Looks nice but might be too much information in chart.  Only display the RSS in the legend.
-    if (displayRSSInformation) {
+    if (getProfilersView().displayRSSInformation) {
       mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
         .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
     }
@@ -709,10 +709,11 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     // TODO(terry): Check w/ Joshua on timeLineDataRange seems outside when ThreadSafeData's getDataForXRange is called.
     SeriesLegend legendRss = null;
-    if (displayRSSInformation) {
+    if (getProfilersView().displayRSSInformation) {
       legendRss = new SeriesLegend(rssRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
       legendComponentModel.add(legendRss);
     }
+
     SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendMax);
     SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
@@ -722,7 +723,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     legendComponent = new LegendComponent(legendComponentModel);
 
-    if (displayRSSInformation) {
+    if (getProfilersView().displayRSSInformation) {
       legendComponent.configure(legendRss, new LegendConfig(LegendConfig.IconType.LINE, MEMORY_RSS));
     }
     legendComponent.configure(legendMax, new LegendConfig(LegendConfig.IconType.DASHED_LINE, MEMORY_CAPACITY));

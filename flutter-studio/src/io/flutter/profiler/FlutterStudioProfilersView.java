@@ -17,18 +17,31 @@ import com.android.tools.profilers.stacktrace.ContextMenuItem;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
+import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.actionSystem.AnActionEvent;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.RightAlignedToolbarAction;
+import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.ui.JBMenuItem;
+import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.openapi.ui.ThreeComponentsSplitter;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.ui.components.JBCheckBoxMenuItem;
+import com.intellij.ui.components.JBMenu;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBEmptyBorder;
+import com.intellij.util.ui.LafIconLookup;
 import icons.StudioIcons;
 import io.flutter.utils.AsyncUtils;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -55,6 +68,7 @@ import static io.flutter.profiler.FlutterStudioMonitorStageView.PREFIX_LIBRARY_N
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
+
 // Refactored from Android 3.2 Studio adt-ui code.
 public class FlutterStudioProfilersView
   extends AspectObserver implements Disposable {
@@ -69,6 +83,22 @@ public class FlutterStudioProfilersView
   @NotNull public static final String DETACH_LIVE = "Detach live";
   @NotNull public static final String ZOOM_IN = "Zoom in";
   @NotNull public static final String ZOOM_OUT = "Zoom out";
+
+  private final String MORE_ACTIONS_MENU = "More Actions";
+  private final String VIEW_RSS_STATISTICS_MENU_ITEM = "View Resident Set Size Statistics";
+
+  // Flutter Profiler setting icon.
+  private static Icon load(String path) {
+    return IconLoader.getIcon(path);
+  }
+
+  public static final Icon ProfilerCheckMarkArea = load("/icons/profiler/checkmark_area.png");
+
+  // TODO(terry): RSS (resident set size) might be too much information for first-time users.
+  //              By default don't show. Check with asiva on why this is so important.  There
+  //              are a number of set sizes e.g., Resident Set Size, Virtual Set Size,
+  //              Proportional Set Size, and Unique Set Size in the Dalvik heap.
+  public Boolean displayRSSInformation = false;
 
   private final FlutterStudioProfilers profiler;
   private final ViewBinder<FlutterStudioProfilersView, FlutterStage,
@@ -281,6 +311,7 @@ public class FlutterStudioProfilersView
     filterLibrary.setToolTipText("Filter Dart Libraries");
     leftToolbar.add(filterLibrary);
 
+    // Reset button.
     resetSnapshotStatistics = new CommonButton("Reset Stats");
     resetSnapshotStatistics.addActionListener(event -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
@@ -295,6 +326,40 @@ public class FlutterStudioProfilersView
     resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
     leftToolbar.add(resetSnapshotStatistics);
 
+    // Memory Profiler setting button.
+    JBPopupMenu menuBar = new JBPopupMenu();
+
+    Icon enabledCheckmark = LafIconLookup.getIcon("checkmark");
+
+    JBMenuItem rssEnabledMenu = new JBMenuItem(VIEW_RSS_STATISTICS_MENU_ITEM, ProfilerCheckMarkArea);
+    rssEnabledMenu.addActionListener(event -> {
+      FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+      displayRSSInformation = !displayRSSInformation;   // Toggle the state.
+      rssEnabledMenu.setIcon(displayRSSInformation ? enabledCheckmark : ProfilerCheckMarkArea);
+      view.buildCharting();
+    });
+
+    menuBar.add(rssEnabledMenu);
+
+    CommonButton profilerActions = new CommonButton(MORE_ACTIONS_MENU, getArrowIcon(true));
+
+    // Place the arrow to the right of the text.
+    profilerActions.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    profilerActions.setHorizontalAlignment(SwingConstants.RIGHT);
+    profilerActions.setHorizontalTextPosition(SwingConstants.LEFT);
+
+    profilerActions.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent event) {
+        super.mouseClicked(event);
+        Component component = event.getComponent();
+        menuBar.show(component, 0, component.getHeight() - 2);
+      }
+    });
+    leftToolbar.add(profilerActions);
+
+    leftToolbar.add(menuBar);
+
     JBPanel rightToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
     toolbar.add(rightToolbar, BorderLayout.EAST);
     rightToolbar.setBorder(new JBEmptyBorder(0, 0, 0, 2));
@@ -304,7 +369,6 @@ public class FlutterStudioProfilersView
     zoomOut.setDisabledIcon(IconLoader.getDisabledIcon(StudioIcons.Common.ZOOM_OUT));
     zoomOut.addActionListener(event -> {
       timeline.zoomOut();
-      //profiler.getIdeServices().getFeatureTracker().trackZoomOut();
     });
     ProfilerAction zoomOutAction =
       new ProfilerAction.Builder(ZOOM_OUT)
@@ -321,7 +385,6 @@ public class FlutterStudioProfilersView
     zoomIn.setDisabledIcon(IconLoader.getDisabledIcon(StudioIcons.Common.ZOOM_IN));
     zoomIn.addActionListener(event -> {
       timeline.zoomIn();
-      //profiler.getIdeServices().getFeatureTracker().trackZoomIn();
     });
     ProfilerAction zoomInAction =
       new ProfilerAction.Builder(ZOOM_IN).setContainerComponent(stageComponent)
@@ -337,7 +400,6 @@ public class FlutterStudioProfilersView
     resetZoom.setDisabledIcon(IconLoader.getDisabledIcon(StudioIcons.Common.RESET_ZOOM));
     resetZoom.addActionListener(event -> {
       timeline.resetZoom();
-      //profiler.getIdeServices().getFeatureTracker().trackResetZoom();
     });
     ProfilerAction resetZoomAction =
       new ProfilerAction.Builder("Reset zoom").setContainerComponent(stageComponent)
@@ -396,13 +458,13 @@ public class FlutterStudioProfilersView
     goLive.setToolTipText(detachAction.getDefaultToolTipText());
     goLive.addActionListener(event -> {
       timeline.toggleStreaming();
-      //profiler.getIdeServices().getFeatureTracker().trackToggleStreaming();
     });
     goLive.addChangeListener(e -> {
       boolean isSelected = goLive.isSelected();
       goLive.setIcon(isSelected ? StudioIcons.Profiler.Toolbar.PAUSE_LIVE : StudioIcons.Profiler.Toolbar.GOTO_LIVE);
       goLive.setToolTipText(isSelected ? detachAction.getDefaultToolTipText() : attachAction.getDefaultToolTipText());
     });
+
     timeline.addDependency(this).onChange(ProfilerTimeline.Aspect.STREAMING, this::updateStreaming);
     goLiveToolbar.add(goLive);
     rightToolbar.add(goLiveToolbar);
@@ -418,6 +480,11 @@ public class FlutterStudioProfilersView
     stageComponent.add(stageCenterComponent, BorderLayout.CENTER);
 
     updateStreaming();
+  }
+
+  public static Icon getArrowIcon(boolean enabled) {
+    // We want to use a darker icon when the combo box is enabled.
+    return enabled ? AllIcons.General.Combo2 : ComboBoxAction.getArrowIcon(enabled);
   }
 
   private void selectedLibrariesToFilter(Set<String> selectedLibraries, boolean processTheLibrary) {
@@ -445,7 +512,8 @@ public class FlutterStudioProfilersView
               processLibrary(view, flutterLibraryId);
             }
           });
-        } else {
+        }
+        else {
           LOG.warn("Library not found " + libraryName);
         }
       }
