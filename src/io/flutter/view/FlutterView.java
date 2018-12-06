@@ -36,7 +36,6 @@ import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
@@ -350,12 +349,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                             FlutterApp app,
                                             boolean selectedTab) {
     final LinkLabel<String> linkLabel = new LinkLabel<>("See Flutter Performance window", null);
-    linkLabel.setListener(new LinkListener<String>() {
-      @Override
-      public void linkSelected(LinkLabel aSource, String aLinkData) {
-        showFlutterPerformanceWindow(app);
-      }
-    }, null);
+    linkLabel.setListener((aSource, aLinkData) -> showFlutterPerformanceWindow(app), null);
     linkLabel.setBorder(JBUI.Borders.empty(3, 10));
     linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
     // Remove underline to avoid LinkLabel bug where underline is left aligned

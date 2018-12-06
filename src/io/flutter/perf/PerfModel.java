@@ -5,8 +5,6 @@
  */
 package io.flutter.perf;
 
-import com.intellij.openapi.Disposable;
-
 /**
  * Base class for all view models displaying performance stats
  */

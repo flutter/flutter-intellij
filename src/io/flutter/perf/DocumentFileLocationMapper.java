@@ -7,8 +7,6 @@ package io.flutter.perf;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
-import com.intellij.openapi.fileEditor.FileEditor;
-import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.LocalFileSystem;
@@ -21,7 +19,6 @@ import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.inspector.InspectorService;
-import org.jetbrains.annotations.Nullable;
 
 public class DocumentFileLocationMapper implements FileLocationMapper {
   final Document document;

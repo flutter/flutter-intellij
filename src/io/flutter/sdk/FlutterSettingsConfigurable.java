@@ -79,7 +79,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(final DocumentEvent e) {
+      protected void textChanged(@NotNull final DocumentEvent e) {
         onVersionChanged();
       }
     });

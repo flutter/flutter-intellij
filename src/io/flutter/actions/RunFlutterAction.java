@@ -48,7 +48,7 @@ public abstract class RunFlutterAction extends AnAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
     // NOTE: When making changes here, consider making similar changes to ConnectAndroidDebuggerAction.
     FlutterInitializer.sendAnalyticsAction(this);
 
@@ -97,7 +97,7 @@ public abstract class RunFlutterAction extends AnAction {
   }
 
   @Override
-  public void update(AnActionEvent e) {
+  public void update(@NotNull AnActionEvent e) {
     // Text.
     final String config = getSelectedRunConfig(e);
     final String message =

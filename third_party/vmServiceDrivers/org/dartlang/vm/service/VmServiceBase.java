@@ -202,7 +202,7 @@ abstract class VmServiceBase implements VmServiceConst {
   /**
    * A list of objects to which {@link Event}s from the VM are forwarded.
    */
-  private final List<VmServiceListener> vmListeners = new ArrayList<VmServiceListener>();
+  private final List<VmServiceListener> vmListeners = new ArrayList<>();
 
   /**
    * A list of objects to which {@link Event}s from the VM are forwarded.
