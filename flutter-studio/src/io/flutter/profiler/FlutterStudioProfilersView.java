@@ -17,9 +17,7 @@ import com.android.tools.profilers.stacktrace.ContextMenuItem;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.JBMenuItem;
 import com.intellij.openapi.ui.JBPopupMenu;
@@ -60,6 +58,7 @@ import static com.android.tools.profilers.ProfilerLayout.TOOLBAR_HEIGHT;
 import static io.flutter.profiler.FilterLibraryDialog.ALL_DART_LIBRARIES;
 import static io.flutter.profiler.FilterLibraryDialog.ALL_FLUTTER_LIBRARIES;
 import static io.flutter.profiler.FlutterStudioMonitorStageView.PREFIX_LIBRARY_NAME_HIDDEN;
+import static io.flutter.view.ToolbarComboBoxAction.getArrowIcon;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
@@ -86,7 +85,6 @@ public class FlutterStudioProfilersView
   private static Icon load(String path) {
     return IconLoader.getIcon(path);
   }
-
   public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
 
   // TODO(terry): RSS (resident set size) might be too much information for first-time users.
@@ -321,6 +319,7 @@ public class FlutterStudioProfilersView
     resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
     leftToolbar.add(resetSnapshotStatistics);
 
+    // TODO(terry): Re-use the same frame menu as Flutter Outline window not the below popup menu.
     // Memory Profiler setting button.
     JBPopupMenu menuBar = new JBPopupMenu();
 
@@ -477,11 +476,6 @@ public class FlutterStudioProfilersView
     stageComponent.add(stageCenterComponent, BorderLayout.CENTER);
 
     updateStreaming();
-  }
-
-  public static Icon getArrowIcon(boolean enabled) {
-    // We want to use a darker icon when the combo box is enabled.
-    return enabled ? AllIcons.General.Combo2 : ComboBoxAction.getArrowIcon(enabled);
   }
 
   private void selectedLibrariesToFilter(Set<String> selectedLibraries, boolean processTheLibrary) {
