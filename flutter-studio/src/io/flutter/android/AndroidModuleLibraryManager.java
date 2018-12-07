@@ -11,6 +11,7 @@ import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.intellij.ProjectTopics;
+import com.intellij.facet.FacetManager;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.components.ServiceManager;
@@ -22,6 +23,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.impl.ProjectImpl;
 import com.intellij.openapi.projectRoots.Sdk;
 import com.intellij.openapi.roots.DependencyScope;
+import com.intellij.openapi.roots.JavaProjectModelModifier;
 import com.intellij.openapi.roots.ModuleRootEvent;
 import com.intellij.openapi.roots.ModuleRootListener;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -38,20 +40,31 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileContentsChangedAdapter;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.containers.hash.HashSet;
+import com.intellij.util.modules.CircularModuleDependenciesDetector;
 import io.flutter.sdk.AbstractLibraryManager;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.jetbrains.android.facet.AndroidFacet;
 import org.jetbrains.android.sdk.AndroidSdkUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Manages the Android Libraries library, which hooks the libraries used by Android modules referenced in a project
- * into the project, so full editing support is available.
+ * Manages the Android libraries. Add the libraries used by Android modules referenced in a project
+ * into the Flutter project, so full editing support is available. Add dependencies to each library
+ * to the Android modules. Add a dependency from the Android module to the Flutter module so the
+ * libraries can be resolved. Do not add a dependency from the Flutter module to the libraries since
+ * Java and Kotlin code are only found in the Android modules. Also set the project SDK to that used
+ * by Android.
+ * <p>
+ * TODO(messick) Test with plugins and modules
+ * These are not looking so good. Source files are not marked correctly. Re-check make-host-app-editable.
  *
  * @see AndroidModuleLibraryType
  * @see AndroidModuleLibraryProperties
@@ -65,37 +78,35 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     super(project);
   }
 
-  public void updateOld() {
-    doGradleSync(getProject(), (Project x) -> updateAndroidLibraryContent(x));
-  }
-
   public void update() {
     doGradleSync(getProject(), this::scheduleAddAndroidLibraryDeps);
   }
 
   private Void scheduleAddAndroidLibraryDeps(@NotNull Project androidProject) {
     ApplicationManager.getApplication().invokeLater(
-      () -> addAndroidLibraryDeps(androidProject),
+      () -> addAndroidLibraryDependencies(androidProject),
       ModalityState.NON_MODAL);
     return null;
   }
 
-  private void addAndroidLibraryDeps(@NotNull Project androidProject) {
+  private void addAndroidLibraryDependencies(@NotNull Project androidProject) {
     for (Module flutterModule : FlutterModuleUtils.getModules(getProject())) {
       if (FlutterModuleUtils.isFlutterModule(flutterModule)) {
         for (Module module : ModuleManager.getInstance(androidProject).getModules()) {
-          addAndroidLibraryDeps(androidProject, module, flutterModule);
+          addAndroidLibraryDependencies(androidProject, module, flutterModule);
         }
       }
     }
     isUpdating.set(false);
   }
 
-  private void addAndroidLibraryDeps(@NotNull Project androidProject, @NotNull Module androidModule, @NotNull Module flutterModule) {
+  private void addAndroidLibraryDependencies(@NotNull Project androidProject,
+                                             @NotNull Module androidModule,
+                                             @NotNull Module flutterModule) {
     AndroidSdkUtils.setupAndroidPlatformIfNecessary(androidModule, true);
     Sdk currentSdk = ModuleRootManager.getInstance(androidModule).getSdk();
     if (currentSdk != null) {
-      // add sdk dependency on currentSdk if not already set
+      // TODO(messick) Add sdk dependency on currentSdk if not already set
     }
     LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
     Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
@@ -109,46 +120,58 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     }
     for (Library library : androidProjectLibraries) {
       if (library.getName() != null && !knownLibraryNames.contains(library.getName())) {
-        HashSet<String> urls = new HashSet<>();
-        urls.addAll(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.CLASSES)));
-        updateLibraryContent(library.getName(), urls, null);
+
+        List<String> roots = Arrays.asList(library.getRootProvider().getUrls(OrderRootType.CLASSES));
+        Set<String> filteredRoots = roots.stream().filter(s -> shouldIncludeRoot(s)).collect(Collectors.toSet());
+        if (filteredRoots.isEmpty()) continue;
+
+        HashSet<String> sources = new HashSet<>();
+        sources.addAll(Arrays.asList(library.getRootProvider().getUrls(OrderRootType.SOURCES)));
+
+        updateLibraryContent(library.getName(), filteredRoots, sources);
+        updateAndroidModuleLibraryDependencies(flutterModule);
       }
     }
   }
 
-  private Void updateAndroidLibraryContent(@NotNull Project androidProject) {
-    ModuleManager mgr = ModuleManager.getInstance(androidProject);
-    Module module = null;
-    for (Module mod : mgr.getModules()) {
-      if (mod.getName().equals("android") || mod.getName().equals(".android")) {
-        module = mod;
-        break;
+  @Override
+  protected void updateModuleLibraryDependencies(@NotNull Library library) {
+    for (final Module module : ModuleManager.getInstance(getProject()).getModules()) {
+      // The logic is inverted wrt superclass.
+      if (!FlutterModuleUtils.declaresFlutter(module)) {
+        addFlutterLibraryDependency(module, library);
+      }
+      else {
+        removeFlutterLibraryDependency(module, library);
       }
     }
-    HashSet<String> urls = new HashSet<>();
-    if (module != null) {
-      AndroidSdkUtils.setupAndroidPlatformIfNecessary(module, true);
-      Sdk currentSdk = ModuleRootManager.getInstance(module).getSdk();
-      if (currentSdk != null) {
-        urls.addAll(Arrays.asList(currentSdk.getRootProvider().getUrls(OrderRootType.CLASSES)));
+  }
+
+  private void updateAndroidModuleLibraryDependencies(Module flutterModule) {
+    for (final Module module : ModuleManager.getInstance(getProject()).getModules()) {
+      if (module != flutterModule) {
+        if (null != FacetManager.getInstance(module).findFacet(AndroidFacet.ID, "Android")) {
+          Object circularModules = CircularModuleDependenciesDetector.addingDependencyFormsCircularity(module, flutterModule);
+          if (circularModules == null) {
+            ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+            if (!rootManager.isDependsOn(flutterModule)) {
+              JavaProjectModelModifier[] modifiers = JavaProjectModelModifier.EP_NAME.getExtensions(getProject());
+              for (JavaProjectModelModifier modifier : modifiers) {
+                if (modifier instanceof IdeaProjectModelModifier) {
+                  modifier.addModuleDependency(module, flutterModule, DependencyScope.COMPILE, false);
+                }
+              }
+            }
+          }
+        }
       }
     }
-    LibraryTable androidProjectLibraryTable = LibraryTablesRegistrar.getInstance().getLibraryTable(androidProject);
-    Library[] androidProjectLibraries = androidProjectLibraryTable.getLibraries();
-    if (androidProjectLibraries.length == 0) {
-      LOG.warn("Gradle sync was incomplete -- no Android libraries found");
-      return null;
-    }
-    for (Library refLibrary : androidProjectLibraries) {
-      urls.addAll(Arrays.asList(refLibrary.getRootProvider().getUrls(OrderRootType.CLASSES)));
-    }
-    updateLibraryContent(urls);
-    return null;
   }
 
   @NotNull
   @Override
   protected String getLibraryName() {
+    // This is not used since we create many libraries, not one.
     return LIBRARY_NAME;
   }
 
@@ -210,10 +233,14 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       }
     };
 
-    GradleSyncInvoker.Request request = GradleSyncInvoker.Request.projectLoaded();
+    GradleSyncInvoker.Request request = GradleSyncInvoker.Request.projectModified();
     request.runInBackground = true;
     GradleSyncInvoker gradleSyncInvoker = ServiceManager.getService(GradleSyncInvoker.class);
     gradleSyncInvoker.requestProjectSync(androidProject, request, listener);
+  }
+
+  private static boolean shouldIncludeRoot(String path) {
+    return !path.endsWith("res") && !path.contains("flutter.jar") && !path.contains("flutter-x86.jar");
   }
 
   @NotNull
@@ -223,7 +250,6 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
 
   public static void startWatching(@NotNull Project project) {
     // Start a process to monitor changes to Android dependencies and update the library content.
-    // This loop is for debugging, not production.
     if (project.isDefault()) {
       return;
     }

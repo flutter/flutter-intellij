@@ -47,6 +47,6 @@
     <orderEntry type="module" module-name="intellij.javascript.protocolModelGenerator" />
     <orderEntry type="module" module-name="intellij.android.artwork" />
     <orderEntry type="module" module-name="android.sdktools.common" />
-
+    <orderEntry type="module" module-name="intellij.java" />
   </component>
 </module>

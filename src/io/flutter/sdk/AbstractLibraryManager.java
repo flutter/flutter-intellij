@@ -10,18 +10,25 @@ import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.*;
+import com.intellij.openapi.roots.LibraryOrderEntry;
+import com.intellij.openapi.roots.ModifiableRootModel;
+import com.intellij.openapi.roots.ModuleRootManager;
+import com.intellij.openapi.roots.OrderEntry;
+import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.LibraryEx;
 import com.intellij.openapi.roots.impl.libraries.LibraryTableBase;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
-import com.intellij.openapi.roots.libraries.*;
+import com.intellij.openapi.roots.libraries.Library;
+import com.intellij.openapi.roots.libraries.LibraryProperties;
+import com.intellij.openapi.roots.libraries.LibraryTable;
+import com.intellij.openapi.roots.libraries.LibraryTablesRegistrar;
+import com.intellij.openapi.roots.libraries.PersistentLibraryKind;
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.utils.FlutterModuleUtils;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -29,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
  * and calls #updateLibraryContent() with the library URLs.
  * It will need a LibraryType and LibraryProperties, which are registered in plugin.xml.
  *
- * @see io.flutter.sdk.FlutterPluginsLibraryManager
+ * @see FlutterPluginsLibraryManager
  */
 public abstract class AbstractLibraryManager<K extends LibraryProperties> {
 
@@ -59,8 +66,10 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
     updateLibraryContent(getLibraryName(), contentUrls, null);
   }
 
-  protected void updateLibraryContent(@NotNull String name, @NotNull Set<String> contentUrls, @Nullable Set<String> sourceUrls) {
-    // TODO(messick) Add support for source URLs; currently that parameter is unused.
+  protected void updateLibraryContent(@NotNull String name,
+                                      @NotNull Set<String> contentUrls,
+                                      @SuppressWarnings("unused") @Nullable Set<String> sourceUrls) {
+    // TODO(messick) Add support for source URLs.
     final LibraryTable projectLibraryTable = ProjectLibraryTable.getInstance(project);
     final Library existingLibrary = projectLibraryTable.getLibraryByName(name);
 
@@ -100,6 +109,10 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
       model.commit();
     });
 
+    updateModuleLibraryDependencies(library);
+  }
+
+  protected void updateModuleLibraryDependencies(@NotNull Library library) {
     for (final Module module : ModuleManager.getInstance(project).getModules()) {
       if (FlutterModuleUtils.declaresFlutter(module)) {
         addFlutterLibraryDependency(module, library);
@@ -121,7 +134,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
   @NotNull
   protected abstract PersistentLibraryKind<K> getLibraryKind();
 
-  private static void addFlutterLibraryDependency(@NotNull Module module, @NotNull Library library) {
+  protected static void addFlutterLibraryDependency(@NotNull Module module, @NotNull Library library) {
     final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
 
     try {
@@ -144,7 +157,7 @@ public abstract class AbstractLibraryManager<K extends LibraryProperties> {
     }
   }
 
-  private static void removeFlutterLibraryDependency(@NotNull Module module, @NotNull Library library) {
+  protected static void removeFlutterLibraryDependency(@NotNull Module module, @NotNull Library library) {
     final ModifiableRootModel modifiableModel = ModuleRootManager.getInstance(module).getModifiableModel();
 
     try {
