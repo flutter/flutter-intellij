@@ -19,9 +19,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DefaultActionGroup;
-import com.intellij.openapi.actionSystem.RightAlignedToolbarAction;
 import com.intellij.openapi.actionSystem.ex.ComboBoxAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.ui.JBMenuItem;
@@ -32,11 +29,9 @@ import com.intellij.openapi.util.IconLoader;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.ui.components.JBCheckBoxMenuItem;
-import com.intellij.ui.components.JBMenu;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBEmptyBorder;
-import com.intellij.util.ui.LafIconLookup;
 import icons.StudioIcons;
 import io.flutter.utils.AsyncUtils;
 import java.awt.event.MouseAdapter;
@@ -92,7 +87,6 @@ public class FlutterStudioProfilersView
     return IconLoader.getIcon(path);
   }
 
-  public static final Icon ProfilerCheckMarkArea = load("/icons/profiler/checkmark_area.png");
   public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
 
   // TODO(terry): RSS (resident set size) might be too much information for first-time users.
@@ -332,12 +326,13 @@ public class FlutterStudioProfilersView
 
     // TODO(terry): When LafIconLookup in all IDE builds use LafIconLookup.getIcon("checkmark")
     Icon enabledCheckmark = ProfilerCheckMark;
+    Icon checkMarkSpacer = new EmptyIcon(enabledCheckmark.getIconWidth(), enabledCheckmark.getIconHeight());
 
-    JBMenuItem rssEnabledMenu = new JBMenuItem(VIEW_RSS_STATISTICS_MENU_ITEM, ProfilerCheckMarkArea);
+    JBMenuItem rssEnabledMenu = new JBMenuItem(VIEW_RSS_STATISTICS_MENU_ITEM, checkMarkSpacer);
     rssEnabledMenu.addActionListener(event -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
       displayRSSInformation = !displayRSSInformation;   // Toggle the state.
-      rssEnabledMenu.setIcon(displayRSSInformation ? enabledCheckmark : ProfilerCheckMarkArea);
+      rssEnabledMenu.setIcon(displayRSSInformation ? enabledCheckmark : checkMarkSpacer);
       view.buildCharting();
     });
 
