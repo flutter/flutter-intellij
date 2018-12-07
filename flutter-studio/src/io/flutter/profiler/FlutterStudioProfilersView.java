@@ -93,6 +93,7 @@ public class FlutterStudioProfilersView
   }
 
   public static final Icon ProfilerCheckMarkArea = load("/icons/profiler/checkmark_area.png");
+  public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
 
   // TODO(terry): RSS (resident set size) might be too much information for first-time users.
   //              By default don't show. Check with asiva on why this is so important.  There
@@ -329,7 +330,8 @@ public class FlutterStudioProfilersView
     // Memory Profiler setting button.
     JBPopupMenu menuBar = new JBPopupMenu();
 
-    Icon enabledCheckmark = LafIconLookup.getIcon("checkmark");
+    // TODO(terry): When LafIconLookup in all IDE builds use LafIconLookup.getIcon("checkmark")
+    Icon enabledCheckmark = ProfilerCheckMark;
 
     JBMenuItem rssEnabledMenu = new JBMenuItem(VIEW_RSS_STATISTICS_MENU_ITEM, ProfilerCheckMarkArea);
     rssEnabledMenu.addActionListener(event -> {
