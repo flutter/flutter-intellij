@@ -62,7 +62,6 @@ import static io.flutter.view.ToolbarComboBoxAction.getArrowIcon;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
-
 // Refactored from Android 3.2 Studio adt-ui code.
 public class FlutterStudioProfilersView
   extends AspectObserver implements Disposable {
@@ -270,7 +269,6 @@ public class FlutterStudioProfilersView
     });
     snapshot.setToolTipText("Snapshot of VM's memory");
     leftToolbar.add(snapshot);
-
 
     filterLibrary = new CommonButton("Filter");
     filterLibrary.addActionListener(filterEvent -> {
