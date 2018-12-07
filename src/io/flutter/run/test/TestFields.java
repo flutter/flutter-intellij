@@ -16,6 +16,7 @@ import io.flutter.run.MainFile;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterCommandStartResult;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -175,9 +176,9 @@ public class TestFields {
   }
 
   void writeTo(Element elt) {
-    addOption(elt, "testName", testName);
-    addOption(elt, "testFile", testFile);
-    addOption(elt, "testDir", testDir);
+    ElementIO.addOption(elt, "testName", testName);
+    ElementIO.addOption(elt, "testFile", testFile);
+    ElementIO.addOption(elt, "testDir", testDir);
   }
 
   /**
@@ -185,7 +186,7 @@ public class TestFields {
    */
   @NotNull
   static TestFields readFrom(Element elt) throws InvalidDataException {
-    final Map<String, String> options = readOptions(elt);
+    final Map<String, String> options = ElementIO.readOptions(elt);
 
     final String testName = options.get("testName");
     final String testFile = options.get("testFile");
@@ -237,29 +238,6 @@ public class TestFields {
     if (FlutterSdk.getFlutterSdk(project) == null) {
       throw new RuntimeConfigurationError("Flutter SDK isn't set");
     }
-  }
-
-  private void addOption(@NotNull Element elt, @NotNull String name, @Nullable String value) {
-    if (value == null) return;
-
-    final Element child = new Element("option");
-    child.setAttribute("name", name);
-    child.setAttribute("value", value);
-    elt.addContent(child);
-  }
-
-  private static Map<String, String> readOptions(Element elt) {
-    final Map<String, String> result = new HashMap<>();
-    for (Element child : elt.getChildren()) {
-      if ("option".equals(child.getName())) {
-        final String name = child.getAttributeValue("name");
-        final String value = child.getAttributeValue("value");
-        if (name != null && value != null) {
-          result.put(name, value);
-        }
-      }
-    }
-    return result;
   }
 
   /**

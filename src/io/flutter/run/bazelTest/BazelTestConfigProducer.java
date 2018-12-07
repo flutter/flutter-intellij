@@ -13,7 +13,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
@@ -28,15 +30,15 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Determines when we can run a test using "flutter test".
  */
-public class BazelTestConfigProducer extends RunConfigurationProducer<TestConfig> {
+public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestConfig> {
 
   protected BazelTestConfigProducer() {
-    super(TestConfigType.getInstance());
+    super(FlutterBazelTestConfigurationType.getInstance());
   }
 
   private static boolean isFlutterContext(@NotNull ConfigurationContext context) {
     final PsiElement location = context.getPsiLocation();
-    return location != null && FlutterUtils.isInFlutterProject(location);
+    return location != null;
   }
 
   /**
@@ -45,12 +47,12 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<TestConfig
    * Returns true if successfully set up.
    */
   @Override
-  protected boolean setupConfigurationFromContext(TestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+  protected boolean setupConfigurationFromContext(BazelTestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
     if (!isFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();
     if (elt instanceof PsiDirectory) {
-      return setupForDirectory(config, (PsiDirectory)elt);
+      return setupForTarget(config, context, ((PsiDirectory)elt).getVirtualFile().getPath());
     }
 
     final DartFile file = FlutterRunConfigurationProducer.getDartFile(context);
@@ -58,11 +60,9 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<TestConfig
       return false;
     }
 
-    if (supportsFiltering(config.getSdk())) {
-      final String testName = TestConfigUtils.findTestName(elt);
-      if (testName != null) {
-        return setupForSingleTest(config, context, file, testName);
-      }
+    final String testName = TestConfigUtils.findTestName(elt);
+    if (testName != null) {
+      return setupForSingleTest(config, context, file, testName);
     }
 
     return setupForDartFile(config, context, file);
@@ -72,40 +72,35 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<TestConfig
     return sdk != null && sdk.getVersion().flutterTestSupportsFiltering();
   }
 
-  private boolean setupForSingleTest(TestConfig config, ConfigurationContext context, DartFile file, String testName) {
+  private boolean setupForSingleTest(BazelTestConfig config, ConfigurationContext context, DartFile file, String testName) {
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(TestFields.forTestName(testName, testFile.getPath()));
+    config.setFields(BazelTestFields.forTestName(testName, testFile.getPath(), Workspace.load(context.getProject())));
     config.setGeneratedName();
 
     return true;
   }
 
-  private boolean setupForDartFile(TestConfig config, ConfigurationContext context, DartFile file) {
+  private boolean setupForDartFile(BazelTestConfig config, ConfigurationContext context, DartFile file) {
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(TestFields.forFile(testFile.getPath()));
+    config.setFields(BazelTestFields.forFile(testFile.getPath(), Workspace.load(context.getProject())));
     config.setGeneratedName();
 
     return true;
   }
 
-  private VirtualFile verifyFlutterTestFile(TestConfig config, ConfigurationContext context, DartFile file) {
+  private VirtualFile verifyFlutterTestFile(BazelTestConfig config, ConfigurationContext context, DartFile file) {
     final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
-    return FlutterUtils.isInTestDir(file) ?  candidate : null;
+    return file.getVirtualFile().getPath().contains("/test/") ?  candidate : null;
   }
 
-  private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {
-    final PubRoot root = PubRoot.forDescendant(dir.getVirtualFile(), dir.getProject());
-    if (root == null) return false;
-
-    if (!root.hasTests(dir.getVirtualFile())) return false;
-
-    config.setFields(TestFields.forDir(dir.getVirtualFile().getPath()));
+  private boolean setupForTarget(BazelTestConfig config, ConfigurationContext context, String target) {
+    config.setFields(BazelTestFields.forTarget(target, Workspace.load(context.getProject())));
     config.setGeneratedName();
     return true;
   }
@@ -114,19 +109,19 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<TestConfig
    * Returns true if a run config was already created for this file. If so we will reuse it.
    */
   @Override
-  public boolean isConfigurationFromContext(TestConfig config, ConfigurationContext context) {
-    final VirtualFile fileOrDir = config.getFields().getFileOrDir();
-    if (fileOrDir == null) return false;
+  public boolean isConfigurationFromContext(BazelTestConfig config, ConfigurationContext context) {
+    final VirtualFile file = config.getFields().getFile();
+    if (file == null) return false;
 
     final PsiElement target = context.getPsiLocation();
     if (target instanceof PsiDirectory) {
-      return ((PsiDirectory)target).getVirtualFile().equals(fileOrDir);
+      return ((PsiDirectory)target).getVirtualFile().equals(file);
     }
 
-    if (!FlutterRunConfigurationProducer.hasDartFile(context, fileOrDir.getPath())) return false;
+    if (!FlutterRunConfigurationProducer.hasDartFile(context, file.getPath())) return false;
 
     final String testName = TestConfigUtils.findTestName(context.getPsiLocation());
-    if (config.getFields().getScope() == TestFields.Scope.NAME) {
+    if (config.getFields().getTestName() != null) {
       return testName != null && testName.equals(config.getFields().getTestName());
     }
     else {
