@@ -198,7 +198,7 @@ public class BazelTestFields {
     commandLine.addParameter("--no-color");
     switch (getScope()) {
       case NAME:
-        commandLine.addParameter("--name=" + testName);
+        commandLine.addParameters("--name", testName);
         commandLine.addParameter(relativeEntryFilePath);
         break;
       case FILE:
@@ -210,7 +210,7 @@ public class BazelTestFields {
     }
 
     if (mode == RunMode.DEBUG) {
-      commandLine.addParameters("--", "--enable-debugging");
+      commandLine.addParameters("--", "--enable-debugging", "--machine");
     }
     return commandLine;
   }

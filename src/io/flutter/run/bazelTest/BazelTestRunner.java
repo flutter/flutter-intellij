@@ -127,10 +127,10 @@ public class BazelTestRunner extends GenericProgramRunner {
           stdoutParser.appendOutput(text);
 
           for (String line : stdoutParser.getAvailableLines()) {
-            if (line.startsWith("[{")) {
+            if (line.startsWith("{")) {
               line = line.trim();
 
-              final String json = line.substring(1, line.length() - 1);
+              final String json = line;
               dispatchJson(json);
             }
           }
@@ -202,7 +202,7 @@ public class BazelTestRunner extends GenericProgramRunner {
         return;
       }
 
-      final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
+      final JsonPrimitive primEvent = obj.getAsJsonPrimitive("type");
       if (primEvent == null) {
         LOG.error("Missing event field in JSON from Flutter test: " + obj);
         return;

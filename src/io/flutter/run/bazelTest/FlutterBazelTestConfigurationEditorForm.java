@@ -74,6 +74,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   @Override
   protected void resetEditorFrom(@NotNull final BazelTestConfig configuration) {
     final BazelTestFields fields = configuration.getFields();
+    myTestName.setText(fields.getTestName());
     myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
     myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
     myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getLaunchingScript())));
