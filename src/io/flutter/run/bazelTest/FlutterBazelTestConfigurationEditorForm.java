@@ -34,10 +34,6 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   private TextFieldWithBrowseButton myEntryFile;
   private JLabel myEntryFileHintLabel;
 
-  private JLabel myLaunchingScriptLabel;
-  private TextFieldWithBrowseButton myLaunchingScript;
-  private JLabel myLaunchingScriptHintLabel;
-
   private JTextField myBuildTarget;
   private JLabel myBuildTargetHintLabel;
   private JLabel myBuildTargetLabel;
@@ -66,7 +62,6 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       }
     });
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-    myLaunchingScript.addBrowseFolderListener("Select Launching Script", "Choose launching script", project, descriptor);
 
     DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse(project, myEntryFile);
   }
@@ -77,7 +72,6 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     myTestName.setText(fields.getTestName());
     myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
     myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
-    myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getLaunchingScript())));
     final Scope next = fields.getScope();
     scope.setSelectedItem(next);
     render(next);
@@ -87,12 +81,10 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   protected void applyEditorTo(@NotNull final BazelTestConfig configuration) {
     final String testName = StringUtil.nullize(this.myTestName.getText().trim(), true);
     final String entryFile = StringUtil.nullize(FileUtil.toSystemIndependentName(myEntryFile.getText().trim()), true);
-    final String launchScript = StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true);
     final String bazelTarget = StringUtil.nullize(myBuildTarget.getText().trim(), true);
     final BazelTestFields fields = new BazelTestFields(
       testName,
       entryFile,
-      launchScript,
       bazelTarget
     );
     configuration.setFields(fields);

@@ -28,7 +28,7 @@ public class BazelTestConfig extends LocatableConfigurationBase {
   BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
     final Workspace workspace = Workspace.load(project);
-    fields = new BazelTestFields(null, null, workspace.getLaunchScript(), null);
+    fields = new BazelTestFields(null, null, null);
   }
 
   @NotNull

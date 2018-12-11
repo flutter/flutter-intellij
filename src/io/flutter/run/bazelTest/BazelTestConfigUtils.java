@@ -24,7 +24,7 @@ import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 
-public class TestConfigUtils {
+public class BazelTestConfigUtils {
 
   /**
    * Widget test function as defined in package:flutter_test/src/widget_tester.dart.

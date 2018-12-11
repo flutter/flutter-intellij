@@ -39,19 +39,14 @@ public class BazelTestFields {
 
   @Nullable private final String testName;
   @Nullable private final String entryFile;
-  @Nullable private final String launchScript;
   @Nullable private final String bazelTarget;
 
-  BazelTestFields(@Nullable String testName, @Nullable String entryFile, @Nullable String launchScript, @Nullable String bazelTarget) {
-    if (launchScript == null) {
-      throw new IllegalArgumentException("launchScript must be non-null");
-    }
-    else if (testName != null && entryFile == null) {
+  BazelTestFields(@Nullable String testName, @Nullable String entryFile, @Nullable String bazelTarget) {
+    if (testName != null && entryFile == null) {
       throw new IllegalArgumentException("testName must be specified with an entryFile");
     }
     this.testName = testName;
     this.entryFile = entryFile;
-    this.launchScript = launchScript;
     this.bazelTarget = bazelTarget;
   }
 
@@ -59,7 +54,7 @@ public class BazelTestFields {
    * Copy constructor
    */
   BazelTestFields(@NotNull BazelTestFields template) {
-    this(template.testName, template.entryFile, template.launchScript, template.bazelTarget);
+    this(template.testName, template.entryFile, template.bazelTarget);
   }
 
   /**
@@ -69,17 +64,16 @@ public class BazelTestFields {
     this(
       template.testName,
       template.entryFile,
-      StringUtil.isEmptyOrSpaces(template.launchScript) ? getLaunchScriptFromWorkspace(workspace) : template.launchScript,
       template.bazelTarget
     );
   }
 
-  private static String getLaunchScriptFromWorkspace(@NotNull final Workspace workspace) {
-    String launchScript = workspace.getLaunchScript();
-    if (launchScript != null && !launchScript.startsWith("/")) {
-      launchScript = workspace.getRoot().getPath() + "/" + launchScript;
+  private static String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
+    String testScript = workspace.getTestScript();
+    if (testScript != null && !testScript.startsWith("/")) {
+      testScript = workspace.getRoot().getPath() + "/" + testScript;
     }
-    return launchScript;
+    return testScript;
   }
 
   /**
@@ -87,21 +81,21 @@ public class BazelTestFields {
    */
   @NotNull
   public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path, @NotNull final Workspace workspace) {
-    return new BazelTestFields(testName, path, workspace.getLaunchScript(), null);
+    return new BazelTestFields(testName, path, null);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
   public static BazelTestFields forFile(@NotNull String path, @NotNull final Workspace workspace) {
-    return new BazelTestFields(null, path, null, null);
+    return new BazelTestFields(null, path, null);
   }
 
   /**
    * Creates settings for running all the tests in a Bazel target
    */
   public static BazelTestFields forTarget(@NotNull String target, @NotNull final Workspace workspace) {
-    return new BazelTestFields(null, null, workspace.getLaunchScript(), target);
+    return new BazelTestFields(null, null, target);
   }
 
 
@@ -126,11 +120,6 @@ public class BazelTestFields {
     final String path = getEntryFile();
     if (path == null) return null;
     return LocalFileSystem.getInstance().findFileByPath(path);
-  }
-
-  @Nullable
-  public String getLaunchingScript() {
-    return launchScript;
   }
 
   @Nullable
@@ -159,7 +148,7 @@ public class BazelTestFields {
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
-    BazelFields.checkRunnable(project, getEntryFile(), getLaunchingScript(), getBazelTarget());
+    BazelFields.checkRunnable(project, getEntryFile(), getTestScriptFromWorkspace(Workspace.load(project)), getBazelTarget());
   }
 
   /**
@@ -186,10 +175,10 @@ public class BazelTestFields {
 
     final VirtualFile appDir = MainFile.verify(entryFile, project).get().getAppDir();
 
-    final String launchingScript = getLaunchingScript();
-    assert launchingScript != null; // already checked
+    final Workspace workspace = Workspace.load(project);
 
-    Workspace workspace = Workspace.load(project);
+    final String launchingScript = getTestScriptFromWorkspace(workspace);
+    assert launchingScript != null; // already checked
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
@@ -245,7 +234,6 @@ public class BazelTestFields {
   }
 
   public void writeTo(Element element) {
-    ElementIO.addOption(element, "launchingScript", launchScript);
     ElementIO.addOption(element, "testName", testName);
     ElementIO.addOption(element, "entryFile", entryFile);
     ElementIO.addOption(element, "bazelTarget", bazelTarget);
@@ -256,11 +244,10 @@ public class BazelTestFields {
 
     final String testName = options.get("testName");
     final String entryFile = options.get("entryFile");
-    final String launchScript = options.get("launchingScript");
     final String bazelTarget = options.get("bazelTarget");
 
     try {
-      return new BazelTestFields(testName, entryFile, launchScript, bazelTarget);
+      return new BazelTestFields(testName, entryFile, bazelTarget);
     } catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());
     }

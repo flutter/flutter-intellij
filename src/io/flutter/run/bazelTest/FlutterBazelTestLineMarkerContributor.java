@@ -34,7 +34,7 @@ public class FlutterBazelTestLineMarkerContributor extends RunLineMarkerContribu
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    final TestConfigUtils.TestType testCall = TestConfigUtils.asTestCall(element);
+    final BazelTestConfigUtils.TestType testCall = BazelTestConfigUtils.asTestCall(element);
     if (testCall != null) {
       final Icon icon = getTestStateIcon(element, testCall.getIcon());
       final Function<PsiElement, String> tooltipProvider =
