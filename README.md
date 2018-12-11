@@ -67,3 +67,7 @@ Please note the following known issues:
   read the PATH variable just once on startup. Thus, if you change PATH later to
   include the Flutter SDK path, this will not have an affect in IntelliJ until you
   restart the IDE.
+- If you require network access to go through proxy settings, you will need to set the 
+  `https_proxy` variable in your environment as as described in the 
+  [pub docs](https://www.dartlang.org/tools/pub/troubleshoot#pub-get-fails-from-behind-a-corporate-firewall).
+  (See also: #2914.)
