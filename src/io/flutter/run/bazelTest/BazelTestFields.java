@@ -17,9 +17,13 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.jetbrains.lang.dart.sdk.DartConfigurable;
+import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.bazel.BazelFields;
 import io.flutter.run.daemon.RunMode;
@@ -148,7 +152,35 @@ public class BazelTestFields {
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
-    BazelFields.checkRunnable(project, getEntryFile(), getTestScriptFromWorkspace(Workspace.load(project)), getBazelTarget());
+    // The UI only shows one error message at a time.
+    // The order we do the checks here determines priority.
+
+    final DartSdk sdk = DartPlugin.getDartSdk(project);
+    if (sdk == null) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
+                                          () -> DartConfigurable.openDartSettings(project));
+    }
+
+    switch (getScope()) {
+      case TARGET_PATTERN:
+        // check that bazel target is not empty
+        if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
+        }
+        // check that the bazel target starts with "//"
+        if (!bazelTarget.startsWith("//")) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
+        }
+        break;
+      case FILE:
+      case NAME:
+
+        final MainFile.Result main = MainFile.verify(entryFile, project);
+        if (!main.canLaunch()) {
+          throw new RuntimeConfigurationError(main.getError());
+        }
+        break;
+    }
   }
 
   /**

@@ -31,10 +31,14 @@ public class BazelTestConfigUtils {
    */
   public static final String WIDGET_TEST_FUNCTION = "testWidgets";
 
+  public static boolean isFlutterTest(DartFile file) {
+    return true;
+  }
+
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
     final DartFile file = FlutterUtils.getDartFile(element);
-    if (FlutterUtils.isInTestDir(file)/* && FlutterUtils.isInFlutterProject(element)*/) {
+    if (isFlutterTest(file)/* && FlutterUtils.isInFlutterProject(element)*/) {
       // Named tests.
       final TestType namedTestCall = findNamedTestCall(element);
       if (namedTestCall != null) return namedTestCall;
