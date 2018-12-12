@@ -107,7 +107,7 @@ public class NewProjectTest {
   }
 
   @Test
-  public void checkPersistentState() {
+  public void checkPersistentState(NewProjectTest test) {
     FlutterProjectType type = FlutterProjectType.APP;
     WizardUtils.createNewProject(myGuiTest, type, "super_tron", "A super fancy tron", "google.com", true, true);
     EditorFixture editor = myGuiTest.ideFrame().getEditor();

@@ -117,7 +117,7 @@ public class SdkAttachConfig extends SdkRunConfig {
   @NotNull
   @Override
   public GeneralCommandLine getCommand(@NotNull ExecutionEnvironment env, FlutterDevice device) throws ExecutionException {
-    return getFields().createFlutterSdkAttachCommand(env.getProject(), FlutterLaunchMode.fromEnv(env));
+    return getFields().createFlutterSdkAttachCommand(env.getProject(), FlutterLaunchMode.fromEnv(env), device);
   }
 
   private void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {

@@ -228,7 +228,7 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.RUN, args.toArray(new String[]{}));
   }
 
-  public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main,
+  public FlutterCommand flutterAttach(@NotNull PubRoot root, @NotNull VirtualFile main, @Nullable FlutterDevice device,
                                       @NotNull FlutterLaunchMode flutterLaunchMode, String... additionalArgs) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
@@ -242,6 +242,10 @@ public class FlutterSdk {
     }
     else if (flutterLaunchMode == FlutterLaunchMode.RELEASE) {
       args.add("--release");
+    }
+
+    if (device != null) {
+      args.add("--device-id=" + device.deviceId());
     }
 
     // TODO(messick): Add others (target, debug-port).
