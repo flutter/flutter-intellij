@@ -74,6 +74,10 @@ public class BazelTestFields {
 
   private static String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
     String testScript = workspace.getTestScript();
+    // Fall back on the regular launch script if the test script is not available.
+    if (testScript == null) {
+      testScript = workspace.getLaunchScript();
+    }
     if (testScript != null && !testScript.startsWith("/")) {
       testScript = workspace.getRoot().getPath() + "/" + testScript;
     }

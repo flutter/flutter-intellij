@@ -37,15 +37,11 @@ public class BazelTestConfigUtils {
 
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
-    final DartFile file = FlutterUtils.getDartFile(element);
-    if (isFlutterTest(file)/* && FlutterUtils.isInFlutterProject(element)*/) {
-      // Named tests.
-      final TestType namedTestCall = findNamedTestCall(element);
-      if (namedTestCall != null) return namedTestCall;
+    final TestType namedTestCall = findNamedTestCall(element);
+    if (namedTestCall != null) return namedTestCall;
 
-      // Main.
-      if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
-    }
+    // Main.
+    if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
 
     return null;
   }
