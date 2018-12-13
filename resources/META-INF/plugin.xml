@@ -34,7 +34,6 @@
   <li>fix a race condition causing unexpected conditions in attach</li>
   <li>added control of RSS display to memory profiler</li>
   <li>when running the flutter doctor command, use the -v flag</li>
-  <li>add https_proxy to the readme</li>
   <li>make attach use selected device</li>
 </ul>
 <h2>31.1</h2>
