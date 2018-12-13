@@ -27,6 +27,15 @@
 
   <change-notes>
     <![CDATA[
+<h2>31.2</h2>
+<ul>
+  <li>show memory profiler legend with proper line chart color or line style</li>
+  <li>prevent the (IntelliJ) New Project wizard from completing when there is no Flutter SDK</li>
+  <li>fix a race condition causing unexpected conditions in attach</li>
+  <li>added control of RSS display to memory profiler</li>
+  <li>when running the flutter doctor command, use the -v flag</li>
+  <li>make attach use selected device</li>
+</ul>
 <h2>31.1</h2>
 <ul>
   <li>perf table polish and fix links to tip docs</li>

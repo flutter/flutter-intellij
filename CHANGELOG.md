@@ -1,3 +1,11 @@
+## 31.2
+- show memory profiler legend with proper line chart color or line style
+- prevent the (IntelliJ) New Project wizard from completing when there is no Flutter SDK
+- fix a race condition causing unexpected conditions in attach
+- added control of RSS display to memory profiler
+- when running the flutter doctor command, use the -v flag
+- make attach use selected device
+
 ## 31.1
 - perf table polish and fix links to tip docs
 - fix Split Mode resize issue
