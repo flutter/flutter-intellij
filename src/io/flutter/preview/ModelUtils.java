@@ -17,6 +17,9 @@ public class ModelUtils {
   }
 
   public static boolean isBuildMethod(@NotNull Element element) {
+    if (element.getName() == null || element.getParameters() == null) {
+      return false;
+    }
     return StringUtil.equals("build", element.getName()) &&
            StringUtil.startsWith(element.getParameters(), "(BuildContext ");
   }

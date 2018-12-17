@@ -31,11 +31,11 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
 
   private static final String GIT_EXECUTABLE = "git";
@@ -59,7 +59,7 @@ public class InstallSdkAction extends DumbAwareAction {
   }
 
   @Override
-  public void actionPerformed(@NotNull AnActionEvent e) {
+  public void actionPerformed(@Nullable /* null when called from AS */ AnActionEvent e) {
     myInstallAction.perform();
   }
 
@@ -194,7 +194,7 @@ public class InstallSdkAction extends DumbAwareAction {
     @Override
     void perform() {
       // Defaults to ~/flutter
-      @SuppressWarnings("DialogTitleCapitalization") final FileChooserDescriptor descriptor =
+      final FileChooserDescriptor descriptor =
         new FileChooserDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
           @Override
           public void validateSelectedFiles(VirtualFile[] files) {

@@ -38,7 +38,6 @@ import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.ProjectAndLibrariesScope;
 import com.intellij.ui.LightweightHint;
 import com.intellij.util.ui.UIUtil;
-import com.jetbrains.lang.dart.DartPluginCapabilities;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.analyzer.DartServerData;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
@@ -207,7 +206,7 @@ public class FlutterReloadManager {
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
-      app.performHotReload(supportsPauseAfterReload(), FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
+      app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
         if (!result.ok()) {
           notification.expire();
           showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
@@ -237,7 +236,7 @@ public class FlutterReloadManager {
     if (app.isStarted()) {
       FileDocumentManager.getInstance().saveAllDocuments();
 
-      app.performHotReload(supportsPauseAfterReload(), reason).thenAccept(result -> {
+      app.performHotReload(true, reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
         }
@@ -340,10 +339,6 @@ public class FlutterReloadManager {
   private FlutterApp getApp() {
     final AnAction action = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
     return action instanceof FlutterAppAction ? ((FlutterAppAction)action).getApp() : null;
-  }
-
-  private boolean supportsPauseAfterReload() {
-    return DartPluginCapabilities.isSupported("supports.pausePostRequest");
   }
 
   private boolean hasErrors(@NotNull Project project, @Nullable Module module, @NotNull Document document) {
