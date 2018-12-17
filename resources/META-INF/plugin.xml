@@ -27,6 +27,11 @@
 
   <change-notes>
     <![CDATA[
+<h2>31.3</h2>
+<ul>
+  <li>fix NPE in sdk installation (#2965)</li>
+  <li>fix NPE caused by internal inconsistency (#2963)</li>
+</ul>
 <h2>31.2</h2>
 <ul>
   <li>show memory profiler legend with proper line chart color or line style</li>
