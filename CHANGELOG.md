@@ -1,3 +1,7 @@
+## 31.3
+- fix NPE in sdk installation (#2965)
+- fix NPE caused by internal inconsistency (#2963)
+
 ## 31.2
 - show memory profiler legend with proper line chart color or line style
 - prevent the (IntelliJ) New Project wizard from completing when there is no Flutter SDK
