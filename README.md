@@ -27,8 +27,8 @@ A brief summary of the [getting started guide](https://flutter.io/docs/developme
 - install the [Flutter SDK](https://flutter.io/docs/get-started/install)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported [IntelliJ development environment](https://www.jetbrains.com/idea/download), either:
-  - IntelliJ 2017.3 or 2018.1, Community or Ultimate Edition, or
-  - Android Studio 3.1 (note: Android Studio Canary versions are generally _not_ supported)
+  - IntelliJ 2018.1 or more recent, Community or Ultimate Edition, or
+  - Android Studio 3.2 (note: Android Studio Canary versions are generally _not_ supported)
 - open the plugin preferences
   - `Preferences > Plugins` on macOS, `File > Settings > Plugins` on Linux, select "Browse repositories…"
 - search for and install the 'Flutter' plugin
