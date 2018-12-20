@@ -11,9 +11,4 @@ public final class ResetData extends DefaultDurationData {
   public ResetData(long duration) {
     super(duration);
   }
-
-  @Override
-  public String toString() {
-    return "Reset Event";
-  }
 }

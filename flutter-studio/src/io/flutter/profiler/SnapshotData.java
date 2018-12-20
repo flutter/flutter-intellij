@@ -11,9 +11,4 @@ public final class SnapshotData extends DefaultDurationData {
   public SnapshotData(long duration) {
     super(duration);
   }
-
-  @Override
-  public String toString() {
-    return "Reset Event";
-  }
 }

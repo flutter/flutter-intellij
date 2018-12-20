@@ -609,7 +609,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     });
   }
 
-  // TODO(terry): Remove for testing only.
+  // TODO(terry): Need to remove when we 3.2 of AS isn't supported only post 3.2 have this png.
   private static Icon load(String path) {
     return IconLoader.getIcon(path);
   }
@@ -742,13 +742,13 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     axisPanel.add(yAxisBytes, BorderLayout.WEST);
 
     // Render the GC glyphs.
-    DurationDataModel<GcDurationData> durationModel =
+    final DurationDataModel<GcDurationData> durationModel =
       new DurationDataModel<>(new RangedSeries<>(viewRange, new GcStatsDataSeries(gcDataSeries)));
     durationModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
     durationModel.update(0);
 
     // Build the GC icon rendering.
-    DurationDataRenderer<GcDurationData> gcRenderer = new DurationDataRenderer.Builder<>(durationModel, Color.BLACK)
+    final DurationDataRenderer<GcDurationData> gcRenderer = new DurationDataRenderer.Builder<>(durationModel, JBColor.BLACK)
       .setIcon(StudioIcons.Profiler.Events.GARBAGE_EVENT)
       // Need to offset the GcDurationData by the margin difference between the overlay component and the
       // line chart. This ensures we are able to render the Gc events in the proper locations on the line.
@@ -763,12 +763,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     overlayComponent.addDurationDataRenderer(gcRenderer);
 
     // Build the Reset icon rendering.
-    DurationDataModel<ResetData> resetModel =
+    final DurationDataModel<ResetData> resetModel =
       new DurationDataModel<>(new RangedSeries<>(viewRange, new ResetStatsDataSeries(resetDataSeries)));
     resetModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
     resetModel.update(0);
 
-    DurationDataRenderer<ResetData> resetRenderer = new DurationDataRenderer.Builder<>(resetModel, Color.BLACK)
+    final DurationDataRenderer<ResetData> resetRenderer = new DurationDataRenderer.Builder<>(resetModel, JBColor.BLACK)
       .setIcon(FlutterIcons.ResetMemoryStats)
       .setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 0, 0))
       .build();
@@ -777,12 +777,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     overlayComponent.addDurationDataRenderer(resetRenderer);
 
     // Build the Snapshot icon rendering.
-    DurationDataModel<SnapshotData> snapshotModel =
+    final DurationDataModel<SnapshotData> snapshotModel =
       new DurationDataModel<>(new RangedSeries<>(viewRange, new SnapshotDataSeries(snapshotDataSeries)));
     snapshotModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
     snapshotModel.update(0);
 
-    DurationDataRenderer<SnapshotData> snapshotRenderer = new DurationDataRenderer.Builder<>(snapshotModel, Color.BLACK)
+    final DurationDataRenderer<SnapshotData> snapshotRenderer = new DurationDataRenderer.Builder<>(snapshotModel, JBColor.BLACK)
       .setIcon(FlutterIcons.Snapshot)
       .setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 0, 0))
       .build();
@@ -792,14 +792,13 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     final JPanel overlayPanel = new JBPanel(new BorderLayout());
     overlayPanel.setOpaque(false);
-    overlayPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
     final OverlayComponent overlay = new OverlayComponent(selection);
     overlay.addDurationDataRenderer(gcRenderer);
     overlay.addDurationDataRenderer(resetRenderer);
     overlay.addDurationDataRenderer(snapshotRenderer);
     overlayPanel.add(overlay, BorderLayout.CENTER);
 
-    Range timelineDataRange = getTimeline().getDataRange();
+    final Range timelineDataRange = getTimeline().getDataRange();
 
     legendComponentModel = new LegendComponentModel(usedMemoryRange.getXRange());
 
@@ -810,18 +809,19 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       legendComponentModel.add(legendRss);
     }
 
-    SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+    final SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendMax);
-    SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+    final SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendUsed);
-    SeriesLegend legendExternal = new SeriesLegend(externalMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+    final SeriesLegend legendExternal = new SeriesLegend(externalMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendExternal);
 
     legendComponent = new LegendComponent(legendComponentModel);
 
     if (getProfilersView().displayRSSInformation) {
       legendComponent.configure(legendRss, new LegendConfig(LegendConfig.IconType.LINE, MEMORY_RSS));
-    }
+    }      new DurationDataModel<>(new RangedSeries<>(viewRange, new ResetStatsDataSeries(resetDataSeries)));
+
     legendComponent.configure(legendMax, new LegendConfig(LegendConfig.IconType.DASHED_LINE, MEMORY_CAPACITY));
     legendComponent.configure(legendUsed, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_USED));
     legendComponent.configure(legendExternal, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_EXTERNAL));
@@ -832,7 +832,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     legendPanel.add(legendComponent, BorderLayout.EAST);
     // Give the right-side edge a 30 pixel gap from the "Heap" name in the right-side chart title.
     Border border = legendPanel.getBorder();
-    Border margin = new EmptyBorder(0, 0, 0, 30);
+    final Border margin = new EmptyBorder(0, 0, 0, 30);
     legendPanel.setBorder(new CompoundBorder(border, margin));
 
     // Make the legend visible.

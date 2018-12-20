@@ -51,9 +51,9 @@ public class FlutterAllMemoryData {
 
     @Override
     public List<SeriesData<Long>> getDataForXRange(Range range) {
-      // NOTE: adt-ui is off on the range, need to adjust. The view is beyojd the last item in the series
-      // //    so adjust to get the last value in the series for the legend to update.  All adt-ui profiling
-      //       does a similar adjustment not efficient but we match their code.
+      // NOTE: adt-ui is off on the range, need to adjust. The view range (visible data in the chart passed) doesn't
+      //       lineup with the last data point in the data series (we're looking at the next item to fill in now the
+      //       current last item). All adt-ui profiling does a similar adjustment - not efficient but we match their code.
       range = new Range(range.getMin() - TimeUnit.SECONDS.toNanos(1), range.getMax() + TimeUnit.SECONDS.toNanos(1));
       List<SeriesData<Long>> outData = new ArrayList<>();
 

@@ -11,9 +11,4 @@ public final class GcDurationData extends DefaultDurationData {
   public GcDurationData(long duration) {
     super(duration);
   }
-
-  @Override
-  public String toString() {
-    return "GC Event";
-  }
 }
