@@ -79,6 +79,10 @@ public class FlutterIcons {
   public static final Icon Down = load("/icons/preview/down.png");
   public static final Icon ExtractMethod = load("/icons/preview/extract_method.png");
 
+  // Flutter profiler
+  public static final Icon Snapshot = load("/icons/profiler/snapshot_color_1x_24dp.png");
+  public static final Icon ResetMemoryStats = load("/icons/profiler/reset_icon.png");
+
   public static class State {
     public static final Icon RedProgr = load("/icons/perf/RedProgr.png"); // 16x16
     public static final Icon RedProgr_1 = load("/icons/perf/RedProgr_1.png"); // 16x16
