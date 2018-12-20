@@ -46,7 +46,9 @@ public class FlutterStudioMonitorStage extends FlutterStage {
   }
 
   public void recordGC() { allMemoryData.recordGC(); }
+
   public void recordSnapshot() { allMemoryData.recordSnapshot(); }
+
   public void recordReset() { allMemoryData.recordReset(); }
 
   private final FlutterAllMemoryData allMemoryData;

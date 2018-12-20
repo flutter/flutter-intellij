@@ -576,6 +576,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         LOG.error("Allocation Profile - " + error.getDetails());
         future.completeExceptionally(new RuntimeException(error.toString()));
       }
+
       @Override
       public void received(AllocationProfile response) {
         future.complete(response);
@@ -599,6 +600,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
         LOG.error("Allocation Profile during gcNow - " + error.getDetails());
         future.completeExceptionally(new RuntimeException(error.toString()));
       }
+
       @Override
       public void received(AllocationProfile response) {
         // TODO(terry): Add GC Icon to overlay - should happen in FlutterAllMemoryData however handleGCEvent is never called.
@@ -611,6 +613,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
   private static Icon load(String path) {
     return IconLoader.getIcon(path);
   }
+
   public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
 
   private JBPanel buildUI(@NotNull FlutterStudioMonitorStage stage) {
@@ -739,7 +742,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     axisPanel.add(yAxisBytes, BorderLayout.WEST);
 
     // Render the GC glyphs.
-    DurationDataModel<GcDurationData> durationModel = new DurationDataModel<>(new RangedSeries<>(viewRange, new GcStatsDataSeries(gcDataSeries)));
+    DurationDataModel<GcDurationData> durationModel =
+      new DurationDataModel<>(new RangedSeries<>(viewRange, new GcStatsDataSeries(gcDataSeries)));
     durationModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
     durationModel.update(0);
 
@@ -759,7 +763,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     overlayComponent.addDurationDataRenderer(gcRenderer);
 
     // Build the Reset icon rendering.
-    DurationDataModel<ResetData> resetModel = new DurationDataModel<>(new RangedSeries<>(viewRange, new ResetStatsDataSeries(resetDataSeries)));
+    DurationDataModel<ResetData> resetModel =
+      new DurationDataModel<>(new RangedSeries<>(viewRange, new ResetStatsDataSeries(resetDataSeries)));
     resetModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
     resetModel.update(0);
 
@@ -772,7 +777,8 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     overlayComponent.addDurationDataRenderer(resetRenderer);
 
     // Build the Snapshot icon rendering.
-    DurationDataModel<SnapshotData> snapshotModel = new DurationDataModel<>(new RangedSeries<>(viewRange, new SnapshotDataSeries(snapshotDataSeries)));
+    DurationDataModel<SnapshotData> snapshotModel =
+      new DurationDataModel<>(new RangedSeries<>(viewRange, new SnapshotDataSeries(snapshotDataSeries)));
     snapshotModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
     snapshotModel.update(0);
 

@@ -40,6 +40,7 @@ public class FlutterAllMemoryData {
   private boolean manualGC = false;
 
   boolean isManualGC() { return manualGC; }
+
   void setManualGC(boolean value) { manualGC = value; }
 
   // DataSeries of Use Heap space used, External space and Heap capacity.
@@ -137,7 +138,7 @@ public class FlutterAllMemoryData {
           multiData.get(HEAP_USED).mData.add(new SeriesData<>(sampleTime,
                                                               (long)sample.getBytes()));
           multiData.get(HEAP_CAPACITY).mData.add(new SeriesData<>(sampleTime,
-                                                        (long)heapState.getCapacity() + sample.getExternal()));
+                                                                  (long)heapState.getCapacity() + sample.getExternal()));
           multiData.get(EXTERNAL_MEMORY_USED).mData.add(new SeriesData<>(sampleTime,
                                                                          (long)sample.getExternal()));
 
@@ -148,9 +149,11 @@ public class FlutterAllMemoryData {
           String rssUnit = rssString.substring(rssLength - 2);
           if (rssUnit.equals("KB")) {
             rssSize *= 1000;
-          } else if (rssUnit.equals("MB")) {
+          }
+          else if (rssUnit.equals("MB")) {
             rssSize *= 1000000;
-          } else if (rssUnit.equals("GB")) {
+          }
+          else if (rssUnit.equals("GB")) {
             rssSize *= 1000000000;
           }
           multiData.get(RSS_SIZE).mData.add(new SeriesData<>(sampleTime, (long)rssSize));
@@ -215,5 +218,4 @@ public class FlutterAllMemoryData {
     long yValue = lastItem.value;
     multiData.get(RESET).mData.add(new SeriesData<Long>(timestamp, yValue));
   }
-
 }

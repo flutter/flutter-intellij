@@ -27,7 +27,7 @@ public final class GcStatsDataSeries implements DataSeries<GcDurationData> {
     List<SeriesData<GcDurationData>> seriesData = new ArrayList<>();
 
     List<SeriesData<Long>> rawGcValues = gcData.getDataForXRange(xRange);
-    for (SeriesData<Long>  sample : rawGcValues) {
+    for (SeriesData<Long> sample : rawGcValues) {
       seriesData.add(new SeriesData<>(sample.x, new GcDurationData(sample.value)));
     }
     return seriesData;

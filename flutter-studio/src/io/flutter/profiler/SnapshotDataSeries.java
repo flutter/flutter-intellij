@@ -25,7 +25,7 @@ public final class SnapshotDataSeries implements DataSeries<SnapshotData> {
     List<SeriesData<SnapshotData>> seriesData = new ArrayList<>();
 
     List<SeriesData<Long>> rawGcValues = snapshotData.getDataForXRange(xRange);
-    for (SeriesData<Long>  sample : rawGcValues) {
+    for (SeriesData<Long> sample : rawGcValues) {
       seriesData.add(new SeriesData<>(sample.x, new SnapshotData(sample.value)));
     }
     return seriesData;

@@ -8,12 +8,12 @@ package io.flutter.profiler;
 import com.android.tools.adtui.model.DefaultDurationData;
 
 public final class GcDurationData extends DefaultDurationData {
-   public GcDurationData(long duration) {
-      super(duration);
-   }
+  public GcDurationData(long duration) {
+    super(duration);
+  }
 
-   @Override
-   public String toString() {
-     return "GC Event";
-   }
+  @Override
+  public String toString() {
+    return "GC Event";
+  }
 }

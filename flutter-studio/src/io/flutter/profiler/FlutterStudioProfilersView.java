@@ -85,6 +85,7 @@ public class FlutterStudioProfilersView
   private static Icon load(String path) {
     return IconLoader.getIcon(path);
   }
+
   public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
 
   // TODO(terry): RSS (resident set size) might be too much information for first-time users.

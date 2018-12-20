@@ -25,7 +25,7 @@ public final class ResetStatsDataSeries implements DataSeries<ResetData> {
     List<SeriesData<ResetData>> seriesData = new ArrayList<>();
 
     List<SeriesData<Long>> rawGcValues = resetData.getDataForXRange(xRange);
-    for (SeriesData<Long>  sample : rawGcValues) {
+    for (SeriesData<Long> sample : rawGcValues) {
       seriesData.add(new SeriesData<>(sample.x, new ResetData(sample.value)));
     }
     return seriesData;
