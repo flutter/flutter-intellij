@@ -19,15 +19,12 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
-import io.flutter.run.bazel.BazelFields;
 import io.flutter.run.daemon.RunMode;
-import io.flutter.run.test.TestFields;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -37,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * The fields in a Bazel test run configuration, see {@link io.flutter.run.test.TestFields}.
+ * The fields in a Bazel test run configuration.
  */
 public class BazelTestFields {
 

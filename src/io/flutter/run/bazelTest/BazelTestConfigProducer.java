@@ -13,22 +13,15 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
-import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
-import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
-import io.flutter.run.test.TestConfig;
-import io.flutter.run.test.TestConfigType;
-import io.flutter.run.test.TestConfigUtils;
-import io.flutter.run.test.TestFields;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Determines when we can run a test using "flutter test".
+ * Determines when we can run a Flutter test using "bazel test".
  */
 public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestConfig> {
 
@@ -60,7 +53,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
       return false;
     }
 
-    final String testName = TestConfigUtils.findTestName(elt);
+    final String testName = BazelTestConfigUtils.findTestName(elt);
     if (testName != null) {
       return setupForSingleTest(config, context, file, testName);
     }
@@ -120,7 +113,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
 
     if (!FlutterRunConfigurationProducer.hasDartFile(context, file.getPath())) return false;
 
-    final String testName = TestConfigUtils.findTestName(context.getPsiLocation());
+    final String testName = BazelTestConfigUtils.findTestName(context.getPsiLocation());
     if (config.getFields().getTestName() != null) {
       return testName != null && testName.equals(config.getFields().getTestName());
     }

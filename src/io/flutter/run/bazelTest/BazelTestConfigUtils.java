@@ -15,6 +15,7 @@ import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartSyntax;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -31,8 +32,8 @@ public class BazelTestConfigUtils {
    */
   public static final String WIDGET_TEST_FUNCTION = "testWidgets";
 
-  public static boolean isFlutterTest(DartFile file) {
-    return true;
+  public static boolean isBazelFlutterCode(DartFile file) {
+    return Workspace.load(file.getProject()) != null;
   }
 
   @Nullable
