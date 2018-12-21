@@ -8,6 +8,7 @@ package io.flutter.profiler;
 import com.android.tools.adtui.model.*;
 import com.android.tools.profilers.StudioProfilers;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.inspector.HeapState;
 import io.flutter.server.vmService.HeapMonitor;
@@ -24,16 +25,22 @@ import org.jetbrains.annotations.NotNull;
 
 // Refactored from Android Studio 3.2 adt-ui code.
 public class FlutterAllMemoryData {
+  private static final Logger LOG = Logger.getInstance(FlutterAllMemoryData.class);
+
   // Indexes into multiData for each memory profiler value.
   private static final int HEAP_USED = 0;
   private static final int HEAP_CAPACITY = 1;
   private static final int EXTERNAL_MEMORY_USED = 2;
   // Resident set size (RSS) memory held by a process in main memory.
   private static final int RSS_SIZE = 3;
+  private static final int GC_DATA = 4;
+  private static final int SNAPSHOT = 5;
+  private static final int RESET = 6;
 
   private boolean manualGC = false;
 
   boolean isManualGC() { return manualGC; }
+
   void setManualGC(boolean value) { manualGC = value; }
 
   // DataSeries of Use Heap space used, External space and Heap capacity.
@@ -43,7 +50,11 @@ public class FlutterAllMemoryData {
     public ThreadSafeData() { }
 
     @Override
-    public List<SeriesData<Long>> getDataForXRange(Range xRange) {
+    public List<SeriesData<Long>> getDataForXRange(Range range) {
+      // NOTE: adt-ui is off on the range, need to adjust. The view range (visible data in the chart passed) doesn't
+      //       lineup with the last data point in the data series (we're looking at the next item to fill in now the
+      //       current last item). All adt-ui profiling does a similar adjustment - not efficient but we match their code.
+      range = new Range(range.getMin() - TimeUnit.SECONDS.toNanos(1), range.getMax() + TimeUnit.SECONDS.toNanos(1));
       List<SeriesData<Long>> outData = new ArrayList<>();
 
       // TODO(terry): Consider binary search for mData.x >= xRange.getMin() add till max
@@ -52,10 +63,10 @@ public class FlutterAllMemoryData {
 
       while (it.hasNext()) {
         SeriesData<Long> data = it.next();
-        if (data.x > xRange.getMax()) {
+        if (data.x > range.getMax()) {
           break;
         }
-        if (data.x >= xRange.getMin()) {
+        if (data.x >= range.getMin()) {
           // TODO(terry): Hack for now to get last item so we don't flicker. Consider using a for/loop instead of iterator.
           if (lastData != null && outData.isEmpty()) {
             // TODO(terry): Copy data because of modification of the original by LineChart for stacked plotting.
@@ -68,12 +79,6 @@ public class FlutterAllMemoryData {
         }
         lastData = data;
       }
-
-      // TODO(terry): Hack to display legend if outData series is empty show the last value in the series.  Expected
-      //              getTimeline().getDataRange() passed to new SeriesLegend in FlutterStudioMonitorStageView to be
-      //              within the series x-range.
-      if (outData.size() == 0 && lastData != null)
-        outData.add(lastData);
       return outData;
     }
   }
@@ -89,6 +94,9 @@ public class FlutterAllMemoryData {
   //    2. external space used
   //    3. heap capacity
   //    4. RSS (Resident Set Size)
+  //    5. GC
+  //    6. Snapshot
+  //    7. Reset memory statistics
   // And store a a data series.
   public FlutterAllMemoryData(Disposable parentDisposable, FlutterApp app) {
     multiData = new ArrayList<>();
@@ -96,6 +104,9 @@ public class FlutterAllMemoryData {
     multiData.add(HEAP_CAPACITY, new ThreadSafeData());         // Heap capacity.
     multiData.add(EXTERNAL_MEMORY_USED, new ThreadSafeData());  // External memory size.
     multiData.add(RSS_SIZE, new ThreadSafeData());              // RSS of application (process) memory.
+    multiData.add(GC_DATA, new ThreadSafeData());               // GC occurred
+    multiData.add(SNAPSHOT, new ThreadSafeData());              // Snapshot or reset memory statistics
+    multiData.add(RESET, new ThreadSafeData());                 // Reset memory statistics
 
     HeapMonitor.HeapListener listener = new HeapMonitor.HeapListener() {
       @Override
@@ -109,6 +120,15 @@ public class FlutterAllMemoryData {
       public void handleGCEvent(IsolateRef iIsolateRef,
                                 HeapMonitor.HeapSpace newHeapSpace,
                                 HeapMonitor.HeapSpace oldHeapSpace) {
+        // TODO(terry): This event isn't being called?
+        // Add a GC event.
+        int diffCapacity = oldHeapSpace.getCapacity() - newHeapSpace.getCapacity();
+        long timestamp = TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis());
+
+        int lastEntry = multiData.get(HEAP_CAPACITY).mData.size();
+        SeriesData<Long> lastItem = multiData.get(HEAP_CAPACITY).mData.get(lastEntry - 1);
+        long yValue = lastItem.value;
+        multiData.get(GC_DATA).mData.add(new SeriesData<Long>(timestamp, yValue));
       }
 
       private void updateModel(HeapState heapState) {
@@ -129,9 +149,11 @@ public class FlutterAllMemoryData {
           String rssUnit = rssString.substring(rssLength - 2);
           if (rssUnit.equals("KB")) {
             rssSize *= 1000;
-          } else if (rssUnit.equals("MB")) {
+          }
+          else if (rssUnit.equals("MB")) {
             rssSize *= 1000000;
-          } else if (rssUnit.equals("GB")) {
+          }
+          else if (rssUnit.equals("GB")) {
             rssSize *= 1000000000;
           }
           multiData.get(RSS_SIZE).mData.add(new SeriesData<>(sampleTime, (long)rssSize));
@@ -164,4 +186,36 @@ public class FlutterAllMemoryData {
     return multiData.get(RSS_SIZE);
   }
 
+  ThreadSafeData getGcDataSeries() { return multiData.get(GC_DATA); }
+
+  ThreadSafeData getResetDataSeries() { return multiData.get(RESET); }
+
+  ThreadSafeData getSnapshotDataSeries() { return multiData.get(SNAPSHOT); }
+
+  // Added a GC event into the timeline.
+  void recordGC() {
+    int lastEntry = multiData.get(HEAP_CAPACITY).mData.size();
+    SeriesData<Long> lastItem = multiData.get(HEAP_CAPACITY).mData.get(lastEntry - 1);
+    long timestamp = lastItem.x;
+    long yValue = lastItem.value;
+    multiData.get(GC_DATA).mData.add(new SeriesData<Long>(timestamp, yValue));
+  }
+
+  // Added a Snapshot event into the timeline.
+  void recordSnapshot() {
+    int lastEntry = multiData.get(HEAP_CAPACITY).mData.size();
+    SeriesData<Long> lastItem = multiData.get(HEAP_CAPACITY).mData.get(lastEntry - 1);
+    long timestamp = lastItem.x;
+    long yValue = lastItem.value;
+    multiData.get(SNAPSHOT).mData.add(new SeriesData<Long>(timestamp, yValue));
+  }
+
+  // Add a reset memory statistics into the timeline.
+  void recordReset() {
+    int lastEntry = multiData.get(HEAP_CAPACITY).mData.size();
+    SeriesData<Long> lastItem = multiData.get(HEAP_CAPACITY).mData.get(lastEntry - 1);
+    long timestamp = lastItem.x;
+    long yValue = lastItem.value;
+    multiData.get(RESET).mData.add(new SeriesData<Long>(timestamp, yValue));
+  }
 }

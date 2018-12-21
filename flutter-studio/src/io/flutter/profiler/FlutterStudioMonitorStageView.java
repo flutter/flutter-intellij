@@ -6,8 +6,10 @@
 package io.flutter.profiler;
 
 import com.android.tools.adtui.*;
+import com.android.tools.adtui.chart.linechart.DurationDataRenderer;
 import com.android.tools.adtui.chart.linechart.LineChart;
 import com.android.tools.adtui.chart.linechart.LineConfig;
+import com.android.tools.adtui.chart.linechart.OverlayComponent;
 import com.android.tools.adtui.model.*;
 import com.android.tools.adtui.model.axis.ResizingAxisComponentModel;
 import com.android.tools.adtui.model.formatter.BaseAxisFormatter;
@@ -17,10 +19,11 @@ import com.android.tools.adtui.model.legend.SeriesLegend;
 import com.android.tools.adtui.stdui.CommonButton;
 import com.android.tools.profilers.*;
 
-import com.android.tools.profilers.memory.MemoryProfilerStage;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.util.IconLoader;
+import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.JBSplitter;
 import com.intellij.ui.components.JBLabel;
@@ -28,6 +31,8 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.table.JBTable;
 import com.intellij.ui.treeStructure.Tree;
+import icons.FlutterIcons;
+import icons.StudioIcons;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;
@@ -44,7 +49,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
@@ -566,7 +570,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
 
     final CompletableFuture<AllocationProfile> future = new CompletableFuture<AllocationProfile>();
 
-    vmService.getAllocationProfile(isolateId, "full", reset ? true : null, new AllocationProfileConsumer() {
+    vmService.getAllocationProfile(isolateId, null, reset ? true : null, new AllocationProfileConsumer() {
       @Override
       public void onError(RPCError error) {
         LOG.error("Allocation Profile - " + error.getDetails());
@@ -584,11 +588,40 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     });
   }
 
+  protected void gcNow(FlutterStudioMonitorStageView view) {
+    FlutterStudioProfilers profilers = getStage().getStudioProfilers();
+    VmService vmService = profilers.getApp().getVmService();
+
+    final CompletableFuture<AllocationProfile> future = new CompletableFuture<AllocationProfile>();
+
+    vmService.getAllocationProfile(isolateId, "full", null, new AllocationProfileConsumer() {
+      @Override
+      public void onError(RPCError error) {
+        LOG.error("Allocation Profile during gcNow - " + error.getDetails());
+        future.completeExceptionally(new RuntimeException(error.toString()));
+      }
+
+      @Override
+      public void received(AllocationProfile response) {
+        // TODO(terry): Add GC Icon to overlay - should happen in FlutterAllMemoryData however handleGCEvent is never called.
+        view.getStage().recordGC();
+      }
+    });
+  }
+
+  // TODO(terry): Need to remove when we 3.2 of AS isn't supported only post 3.2 have this png.
+  private static Icon load(String path) {
+    return IconLoader.getIcon(path);
+  }
+
+  public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
+
   private JBPanel buildUI(@NotNull FlutterStudioMonitorStage stage) {
     ProfilerTimeline timeline = stage.getStudioProfilers().getTimeline();
 
     SelectionModel selectionModel = new SelectionModel(timeline.getSelectionRange());
     SelectionComponent selection = new SelectionComponent(selectionModel, timeline.getViewRange());
+    OverlayComponent overlayComponent = new OverlayComponent(selection);
     selection.setCursorSetter(ProfilerLayeredPane::setCursorOnProfilerLayeredPane);
     selectionModel.addListener(new SelectionListener() {
       @Override
@@ -657,6 +690,11 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       rssDataSeries = stage.getRSSDataSeries();
     }
 
+    FlutterAllMemoryData.ThreadSafeData gcDataSeries = stage.getGcDataSeries();
+    FlutterAllMemoryData.ThreadSafeData resetDataSeries = stage.getResetDataSeries();
+    FlutterAllMemoryData.ThreadSafeData snapshotDataSeries = stage.getSnapshotDataSeries();
+
+
     Range dataRanges = new Range(0, 1024 * 1024 * 100);
     Range viewRange = getTimeline().getViewRange();
 
@@ -688,12 +726,12 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       mLineChart.configure(rssRange, new LineConfig(MEMORY_RSS)
         .setStroke(LineConfig.DEFAULT_LINE_STROKE).setLegendIconType(LegendConfig.IconType.LINE));
     }
-    mLineChart.configure(maxMemoryRange, new LineConfig(MEMORY_CAPACITY)
-      .setStroke(LineConfig.DEFAULT_DASH_STROKE).setLegendIconType(LegendConfig.IconType.DASHED_LINE));
-
     // Stacked chart of external and used memory.
     configureStackedFilledLine(mLineChart, MEMORY_USED, usedMemoryRange);
     configureStackedFilledLine(mLineChart, MEMORY_EXTERNAL, externalMemoryRange);
+
+    mLineChart.configure(maxMemoryRange, new LineConfig(MEMORY_CAPACITY)
+      .setStroke(LineConfig.DEFAULT_DASH_STROKE).setLegendIconType(LegendConfig.IconType.DASHED_LINE));
 
     mLineChart.setRenderOffset(0, (int)LineConfig.DEFAULT_DASH_STROKE.getLineWidth() / 2);
     mLineChart.setTopPadding(Y_AXIS_TOP_MARGIN);
@@ -703,7 +741,64 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     axisPanel.setOpaque(false);
     axisPanel.add(yAxisBytes, BorderLayout.WEST);
 
-    Range timelineDataRange = getTimeline().getDataRange();
+    // Render the GC glyphs.
+    final DurationDataModel<GcDurationData> durationModel =
+      new DurationDataModel<>(new RangedSeries<>(viewRange, new GcStatsDataSeries(gcDataSeries)));
+    durationModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
+    durationModel.update(0);
+
+    // Build the GC icon rendering.
+    final DurationDataRenderer<GcDurationData> gcRenderer = new DurationDataRenderer.Builder<>(durationModel, JBColor.BLACK)
+      .setIcon(StudioIcons.Profiler.Events.GARBAGE_EVENT)
+      // Need to offset the GcDurationData by the margin difference between the overlay component and the
+      // line chart. This ensures we are able to render the Gc events in the proper locations on the line.
+      .setLabelOffsets(-StudioIcons.Profiler.Events.GARBAGE_EVENT.getIconWidth() / 2f,
+                       StudioIcons.Profiler.Events.GARBAGE_EVENT.getIconHeight() / 2f)
+      .setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 100, 0))
+      // TODO(terry): Need to display number of bytes reclaimed e.g., QC(.07 MB) when handleGCEvent is called (doesn't work yet).
+      .setLabelProvider(data -> String.format("GC"))
+      .build();
+
+    mLineChart.addCustomRenderer(gcRenderer);
+    overlayComponent.addDurationDataRenderer(gcRenderer);
+
+    // Build the Reset icon rendering.
+    final DurationDataModel<ResetData> resetModel =
+      new DurationDataModel<>(new RangedSeries<>(viewRange, new ResetStatsDataSeries(resetDataSeries)));
+    resetModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
+    resetModel.update(0);
+
+    final DurationDataRenderer<ResetData> resetRenderer = new DurationDataRenderer.Builder<>(resetModel, JBColor.BLACK)
+      .setIcon(FlutterIcons.ResetMemoryStats)
+      .setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 0, 0))
+      .build();
+
+    mLineChart.addCustomRenderer(resetRenderer);
+    overlayComponent.addDurationDataRenderer(resetRenderer);
+
+    // Build the Snapshot icon rendering.
+    final DurationDataModel<SnapshotData> snapshotModel =
+      new DurationDataModel<>(new RangedSeries<>(viewRange, new SnapshotDataSeries(snapshotDataSeries)));
+    snapshotModel.setAttachedSeries(maxMemoryRange, Interpolatable.SegmentInterpolator);
+    snapshotModel.update(0);
+
+    final DurationDataRenderer<SnapshotData> snapshotRenderer = new DurationDataRenderer.Builder<>(snapshotModel, JBColor.BLACK)
+      .setIcon(FlutterIcons.Snapshot)
+      .setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 0, 0))
+      .build();
+
+    mLineChart.addCustomRenderer(snapshotRenderer);
+    overlayComponent.addDurationDataRenderer(snapshotRenderer);
+
+    final JPanel overlayPanel = new JBPanel(new BorderLayout());
+    overlayPanel.setOpaque(false);
+    final OverlayComponent overlay = new OverlayComponent(selection);
+    overlay.addDurationDataRenderer(gcRenderer);
+    overlay.addDurationDataRenderer(resetRenderer);
+    overlay.addDurationDataRenderer(snapshotRenderer);
+    overlayPanel.add(overlay, BorderLayout.CENTER);
+
+    final Range timelineDataRange = getTimeline().getDataRange();
 
     legendComponentModel = new LegendComponentModel(usedMemoryRange.getXRange());
 
@@ -714,18 +809,19 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
       legendComponentModel.add(legendRss);
     }
 
-    SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+    final SeriesLegend legendMax = new SeriesLegend(maxMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendMax);
-    SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+    final SeriesLegend legendUsed = new SeriesLegend(usedMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendUsed);
-    SeriesLegend legendExternal = new SeriesLegend(externalMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
+    final SeriesLegend legendExternal = new SeriesLegend(externalMemoryRange, MEMORY_AXIS_FORMATTER, timelineDataRange);
     legendComponentModel.add(legendExternal);
 
     legendComponent = new LegendComponent(legendComponentModel);
 
     if (getProfilersView().displayRSSInformation) {
       legendComponent.configure(legendRss, new LegendConfig(LegendConfig.IconType.LINE, MEMORY_RSS));
-    }
+    }      new DurationDataModel<>(new RangedSeries<>(viewRange, new ResetStatsDataSeries(resetDataSeries)));
+
     legendComponent.configure(legendMax, new LegendConfig(LegendConfig.IconType.DASHED_LINE, MEMORY_CAPACITY));
     legendComponent.configure(legendUsed, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_USED));
     legendComponent.configure(legendExternal, new LegendConfig(LegendConfig.IconType.BOX, MEMORY_EXTERNAL));
@@ -736,14 +832,16 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     legendPanel.add(legendComponent, BorderLayout.EAST);
     // Give the right-side edge a 30 pixel gap from the "Heap" name in the right-side chart title.
     Border border = legendPanel.getBorder();
-    Border margin = new EmptyBorder(0, 0, 0, 30);
+    final Border margin = new EmptyBorder(0, 0, 0, 30);
     legendPanel.setBorder(new CompoundBorder(border, margin));
 
     // Make the legend visible.
     monitorPanel.add(legendPanel, new TabularLayout.Constraint(0, 0));
+    monitorPanel.add(overlayPanel, new TabularLayout.Constraint(0, 0));
 
     monitorPanel.add(tooltip, new TabularLayout.Constraint(0, 0));
     monitorPanel.add(selection, new TabularLayout.Constraint(0, 0));
+    monitorPanel.add(overlayComponent, new TabularLayout.Constraint(0, 0));
     monitorPanel.add(yAxisBytes, new TabularLayout.Constraint(0, 0));
     monitorPanel.add(mLineChart, new TabularLayout.Constraint(0, 0));
 

@@ -30,6 +30,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBEmptyBorder;
+import icons.FlutterIcons;
 import icons.StudioIcons;
 import io.flutter.utils.AsyncUtils;
 import java.awt.event.MouseAdapter;
@@ -84,6 +85,7 @@ public class FlutterStudioProfilersView
   private static Icon load(String path) {
     return IconLoader.getIcon(path);
   }
+
   public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
 
   // TODO(terry): RSS (resident set size) might be too much information for first-time users.
@@ -123,7 +125,8 @@ public class FlutterStudioProfilersView
   private ProfilerAction frameSelectionAction;
   private CommonButton snapshot;                    // Snapshot the VM memory.
   private CommonButton filterLibrary;               // Filter libraries
-  private CommonButton resetSnapshotStatistics;     // Compact the GC
+  private CommonButton resetSnapshotStatistics;     // Reset Memory Statistics
+  private CommonButton manualGC;                    // Mnaula GC
   private Set<String> selectedLibraries;
 
   public FlutterStudioProfilersView(@NotNull FlutterStudioProfilers theProfiler) {
@@ -259,9 +262,10 @@ public class FlutterStudioProfilersView
     leftToolbar.add(commonToolbar);
     toolbar.add(leftToolbar, BorderLayout.WEST);
 
-    snapshot = new CommonButton("Snapshot");
+    snapshot = new CommonButton(FlutterIcons.Snapshot);
     snapshot.addActionListener(event -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+      view.getStage().recordSnapshot();
       view.displaySnapshot(view, false);
       view.updateClassesStatus("Snapshoting...");
       snapshot.setEnabled(false);
@@ -270,7 +274,24 @@ public class FlutterStudioProfilersView
     snapshot.setToolTipText("Snapshot of VM's memory");
     leftToolbar.add(snapshot);
 
-    filterLibrary = new CommonButton("Filter");
+    // Reset button.
+    resetSnapshotStatistics = new CommonButton(FlutterIcons.ResetMemoryStats);
+    resetSnapshotStatistics.addActionListener(event -> {
+      FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+
+      view.displaySnapshot(view, true);
+      view.getStage().recordReset();
+
+      view.updateClassesStatus("Reset Snapshot...");
+
+      snapshot.setEnabled(false);
+      resetSnapshotStatistics.setEnabled(false);
+    });
+    resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
+    leftToolbar.add(resetSnapshotStatistics);
+
+    // Filter
+    filterLibrary = new CommonButton(StudioIcons.Common.FILTER);
     filterLibrary.addActionListener(filterEvent -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
 
@@ -302,20 +323,17 @@ public class FlutterStudioProfilersView
     filterLibrary.setToolTipText("Filter Dart Libraries");
     leftToolbar.add(filterLibrary);
 
-    // Reset button.
-    resetSnapshotStatistics = new CommonButton("Reset Stats");
-    resetSnapshotStatistics.addActionListener(event -> {
+    // GC button.
+    manualGC = new CommonButton(StudioIcons.Profiler.Events.GARBAGE_EVENT);
+    manualGC.addActionListener(event -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
 
-      view.displaySnapshot(view, true);
+      view.gcNow(view);
 
-      view.updateClassesStatus("Reset Snapshot...");
-
-      snapshot.setEnabled(false);
-      resetSnapshotStatistics.setEnabled(false);
+      view.updateClassesStatus("Manual GC...");
     });
-    resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
-    leftToolbar.add(resetSnapshotStatistics);
+    manualGC.setToolTipText("Manual Garbage Collect");
+    leftToolbar.add(manualGC);
 
     // TODO(terry): Re-use the same frame menu as Flutter Outline window not the below popup menu.
     // Memory Profiler setting button.
