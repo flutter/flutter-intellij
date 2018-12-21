@@ -9,6 +9,7 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.intellij.openapi.util.TextRange;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -26,9 +27,7 @@ class FilePerfInfo {
   public void clear() {
     stats.clear();
     maxTimestamp = -1;
-    for (int i = 0; i < totalForMetric.length; ++i) {
-      totalForMetric[i] = 0;
-    }
+    Arrays.fill(totalForMetric, 0);
   }
 
   public Iterable<TextRange> getLocations() {

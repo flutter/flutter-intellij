@@ -36,7 +36,6 @@ import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.labels.LinkLabel;
-import com.intellij.ui.components.labels.LinkListener;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
@@ -55,7 +54,10 @@ import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.*;
+import io.flutter.utils.AsyncUtils;
+import io.flutter.utils.EventStream;
+import io.flutter.utils.UIUtils;
+import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -184,11 +186,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       toolbarGroup.add(registerAction(new ForceRefreshAction(app, inspectorService)));
     }
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
-    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
+    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.addSeparator();
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
     toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.addSeparator();
     toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
 
     return toolbarGroup;
@@ -223,6 +226,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
+
+    if (emptyContent != null) {
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
+    contentManager.setSelectedContent(content);
+
     final PerAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);
     state.content = content;
@@ -338,12 +349,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                             FlutterApp app,
                                             boolean selectedTab) {
     final LinkLabel<String> linkLabel = new LinkLabel<>("See Flutter Performance window", null);
-    linkLabel.setListener(new LinkListener<String>() {
-      @Override
-      public void linkSelected(LinkLabel aSource, String aLinkData) {
-        showFlutterPerformanceWindow(app);
-      }
-    }, null);
+    linkLabel.setListener((aSource, aLinkData) -> showFlutterPerformanceWindow(app), null);
     linkLabel.setBorder(JBUI.Borders.empty(3, 10));
     linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
     // Remove underline to avoid LinkLabel bug where underline is left aligned

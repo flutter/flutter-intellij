@@ -5,12 +5,10 @@
  */
 package io.flutter.perf;
 
-import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.fileEditor.FileEditor;
 import io.flutter.inspector.DiagnosticsNode;
 
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**

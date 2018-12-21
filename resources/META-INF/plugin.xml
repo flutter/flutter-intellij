@@ -27,6 +27,38 @@
 
   <change-notes>
     <![CDATA[
+<h2>31.3</h2>
+<ul>
+  <li>fix NPE in sdk installation (#2965)</li>
+  <li>fix NPE caused by internal inconsistency (#2963)</li>
+</ul>
+<h2>31.2</h2>
+<ul>
+  <li>show memory profiler legend with proper line chart color or line style</li>
+  <li>prevent the (IntelliJ) New Project wizard from completing when there is no Flutter SDK</li>
+  <li>fix a race condition causing unexpected conditions in attach</li>
+  <li>added control of RSS display to memory profiler</li>
+  <li>when running the flutter doctor command, use the -v flag</li>
+  <li>make attach use selected device</li>
+</ul>
+<h2>31.1</h2>
+<ul>
+  <li>perf table polish and fix links to tip docs</li>
+  <li>fix Split Mode resize issue</li>
+  <li>rebuild stats wording tweaks</li>
+</ul>
+<h2>31.0</h2>
+<ul>
+  <li>change FPS display to "Frame Rendering Time" and improve UI</li>
+  <li>reorganize inspector tools</li>
+  <li>better error reporting for Flutter runtime issues</li>
+  <li>fewer Flutter runtime issues</li>
+  <li>updated icons for Material and Cupertino</li>
+  <li>searchable preferences/settings</li>
+  <li>added refactoring to outline view: extract widget</li>
+  <li>new menu item to run 'flutter make-host-app-editable'</li>
+  <li>code cleanup and bug fixes</li>
+</ul>
 <h2>30.0</h2>
 <ul>
   <li>performance inspector changes</li>
@@ -631,7 +663,6 @@
     <!-- run menu actions -->
     <group id="Flutter.MenuActions.Run">
       <separator/>
-      <reference ref="AttachDebuggerAction"/>
       <reference ref="Flutter.Toolbar.ReloadAction"/>
       <action id="Flutter.Toolbar.RestartAction" class="io.flutter.actions.RestartFlutterAppRetarget"
               description="Restart"
@@ -639,6 +670,7 @@
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
       </action>
+      <separator/>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Flutter Run Profile Mode"
               icon="AllIcons.Actions.Execute">
@@ -647,6 +679,7 @@
               description="Flutter Run Release Mode"
               icon="AllIcons.Actions.Execute">
       </action>
+      <reference ref="AttachDebuggerAction"/>
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
@@ -765,6 +798,7 @@
     <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
     <colorSettingsPage implementation="io.flutter.logging.FlutterLogColorPage"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
+    <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->

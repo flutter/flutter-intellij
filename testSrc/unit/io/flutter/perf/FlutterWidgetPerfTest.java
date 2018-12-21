@@ -145,8 +145,12 @@ class MockEditorPerfModel extends MockPerfModel implements EditorPerfModel {
   }
 
   @Override
-  public boolean isHoveredOverLineMarkerArea() {
+  public boolean getAlwaysShowLineMarkers() {
     return isHoveredOverLineMarkerAreaOverride;
+  }
+
+  @Override
+  public void setAlwaysShowLineMarkersOverride(boolean show) {
   }
 
   @Override
@@ -471,7 +475,7 @@ public class FlutterWidgetPerfTest {
     lastFrameOnly.add(PerfMetric.lastFrame);
     final ArrayList<PerfMetric> metrics = new ArrayList<>();
     metrics.add(PerfMetric.lastFrame);
-    metrics.add(PerfMetric.totalSinceRouteChange);
+    metrics.add(PerfMetric.totalSinceEnteringCurrentScreen);
 
     ArrayList<SlidingWindowStatsSummary> stats = flutterWidgetPerf.getStatsForMetric(lastFrameOnly, PerfReportKind.repaint);
     // No repaint stats are provided.
@@ -488,7 +492,7 @@ public class FlutterWidgetPerfTest {
     assertEquals(18, stats.size());
     for (SlidingWindowStatsSummary stat : stats) {
       assertTrue(stat.getValue(PerfMetric.lastFrame) > 0 ||
-                 stat.getValue(PerfMetric.totalSinceRouteChange) > 0);
+                 stat.getValue(PerfMetric.totalSinceEnteringCurrentScreen) > 0);
     }
 
     /// Test that the perfModel gets notified correctly when there are

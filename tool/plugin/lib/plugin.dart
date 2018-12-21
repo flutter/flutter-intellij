@@ -551,7 +551,9 @@ class BuildCommand extends ProductCommand {
             'flutter-studio/src/io/flutter/profiler/FlutterStudioMonitorStageView.java');
         source = processedFile.readAsStringSync();
         files[processedFile] = source;
-        source = source.replaceAll('new Range(100.0, 100.0)', '100');
+        source = source.replaceAll('usedMemoryRange.getXRange()', '100');
+        source = source.replaceAll('.setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 100, 0))', '');
+        source = source.replaceAll('.setHostInsets(new Insets(Y_AXIS_TOP_MARGIN, 0, 0, 0))', '');
         processedFile.writeAsStringSync(source);
 
         processedFile = File(

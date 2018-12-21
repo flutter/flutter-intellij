@@ -27,6 +27,8 @@ import io.flutter.run.daemon.RunMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static io.flutter.run.daemon.RunMode.*;
+
 /**
  * The fields in a Bazel run configuration.
  */
@@ -200,6 +202,13 @@ public class BazelFields {
   }
 
   /**
+   * Returns the app directory that corresponds to the entryFile and the given project.
+   */
+  protected VirtualFile getAppDir(@NotNull Project project) {
+    return MainFile.verify(entryFile, project).get().getAppDir();
+  }
+
+  /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
   GeneralCommandLine getLaunchCommand(@NotNull Project project,
@@ -213,7 +222,7 @@ public class BazelFields {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile appDir = MainFile.verify(entryFile, project).get().getAppDir();
+    final VirtualFile appDir = getAppDir(project);
 
     final String launchingScript = getLaunchingScript();
     assert launchingScript != null; // already checked
@@ -227,12 +236,24 @@ public class BazelFields {
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // Set the mode.
+    // Set the mode. This section needs to match the bazel versions of the flutter_build_mode parameters.
     if (enableReleaseMode) {
       commandLine.addParameters("--define", "flutter_build_mode=release");
     }
-    else if (mode != RunMode.DEBUG) {
-      commandLine.addParameters("--define", "flutter_build_mode=" + mode.name());
+    else {
+      switch (mode) {
+        case PROFILE:
+          commandLine.addParameters("--define", "flutter_build_mode=profile");
+          break;
+        case RUN:
+        case DEBUG:
+        default:
+          // The default mode of a flutter app is debug mode. This is the mode that supports hot reloading.
+          // So far as flutter is concerned, there is no difference between debug mode and run mode;
+          // the only difference is that a debug mode app will --start-paused.
+          commandLine.addParameters("--define", "flutter_build_mode=debug");
+          break;
+      }
     }
     // (the implicit else here is the debug case)
 
@@ -280,7 +301,7 @@ public class BazelFields {
     commandLine.addParameter("--machine");
 
     // Pause the app at startup in order to set breakpoints.
-    if (!enableReleaseMode && mode == RunMode.DEBUG) {
+    if (!enableReleaseMode && mode == DEBUG) {
       commandLine.addParameter("--start-paused");
     }
 

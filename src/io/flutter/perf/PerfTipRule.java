@@ -23,25 +23,27 @@ import java.util.List;
  * rules activate could easily be made looser.
  */
 public class PerfTipRule {
-  // Unique identifier used for analytics.
-  final String analyticsId;
-  final String hackFileName;
-  final String message;
-  final String url;
-  final int minSinceNavigate;
-  final int minPerSecond;
   final PerfReportKind kind;
   final int priority;
-  final int minProblemLocationsInSubtree;
-  final Icon icon;
+  final String hackFileName;
+  final String message;
+  /**
+   * A unique identifier used for analytics.
+   */
+  final String id;
+  final String url;
   WidgetPattern pattern;
+  final int minProblemLocationsInSubtree;
+  final int minSinceNavigate;
+  final int minPerSecond;
+  final Icon icon;
 
   PerfTipRule(
     PerfReportKind kind,
     int priority,
     String hackFileName,
     String message,
-    String analyticsId,
+    String id,
     String url,
     WidgetPattern pattern,
     int minProblemLocationsInSubtree,
@@ -53,7 +55,7 @@ public class PerfTipRule {
     this.priority = priority;
     this.hackFileName = hackFileName;
     this.message = message;
-    this.analyticsId = analyticsId;
+    this.id = id;
     this.url = url;
     this.pattern = pattern;
     this.minProblemLocationsInSubtree = minProblemLocationsInSubtree;
@@ -70,8 +72,8 @@ public class PerfTipRule {
     return new WidgetPattern(null, name);
   }
 
-  public String getAnalyticsId() {
-    return analyticsId;
+  public String getId() {
+    return id;
   }
 
   public static boolean equalTipRule(PerfTip a, PerfTip b) {
@@ -120,7 +122,7 @@ public class PerfTipRule {
   }
 
   boolean matchesFrequency(SummaryStats summary) {
-    return (minSinceNavigate > 0 && summary.getValue(PerfMetric.totalSinceRouteChange) >= minSinceNavigate) ||
+    return (minSinceNavigate > 0 && summary.getValue(PerfMetric.totalSinceEnteringCurrentScreen) >= minSinceNavigate) ||
            (minPerSecond > 0 && summary.getValue(PerfMetric.pastSecond) >= minPerSecond);
   }
 

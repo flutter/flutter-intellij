@@ -11,6 +11,7 @@ import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.Objects;
 
 public class FlutterIconRenderer extends GutterIconRenderer implements DumbAware {
   private final Icon myIcon;
@@ -37,7 +38,7 @@ public class FlutterIconRenderer extends GutterIconRenderer implements DumbAware
     if (o == null || getClass() != o.getClass()) return false;
 
     final FlutterIconRenderer renderer = (FlutterIconRenderer)o;
-    return myId != null ? myId.equals(renderer.myId) : renderer.myId == null;
+    return Objects.equals(myId, renderer.myId);
   }
 
   @Override

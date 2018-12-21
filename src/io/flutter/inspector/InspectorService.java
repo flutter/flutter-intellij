@@ -42,11 +42,6 @@ public class InspectorService implements Disposable {
   @NotNull private final EvalOnDartLibrary inspectorLibrary;
   @NotNull private final Set<String> supportedServiceMethods;
 
-  // TODO(jacobr): remove this field as soon as
-  // `ext.flutter.inspector.*` has been in two revs of the Flutter Beta
-  // channel. The feature landed in the Flutter dev chanel on
-  // April 16, 2018.
-  private final boolean isDaemonApiSupported;
   private final StreamSubscription<Boolean> setPubRootDirectoriesSubscription;
 
   public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
@@ -89,12 +84,6 @@ public class InspectorService implements Disposable {
     this.inspectorLibrary = inspectorLibrary;
     this.supportedServiceMethods = supportedServiceMethods;
 
-    // TODO(jacobr): remove this field as soon as
-    // `ext.flutter.inspector.*` has been in two revs of the Flutter Beta
-    // channel. The feature landed in the Flutter dev chanel on
-    // April 16, 2018.
-    this.isDaemonApiSupported = hasServiceMethod("initServiceExtensions");
-
     clients = new HashSet<>();
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
@@ -130,6 +119,17 @@ public class InspectorService implements Disposable {
         }
         setPubRootDirectories(rootDirectories);
       });
+  }
+
+  /**
+   * Returns whether to use the Daemon API or the VM Service protocol directly.
+   *
+   * The VM Service protocol must be used when paused at a breakpoint as the
+   * Daemon API calls won't execute until after the current frame is done
+   * rendering.
+   */
+  private boolean useDaemonApi() {
+    return !app.isFlutterIsolateSuspended();
   }
 
   public boolean isDetailsSummaryViewSupported() {
@@ -226,7 +226,7 @@ public class InspectorService implements Disposable {
    * new frames will be triggered to draw unless something changes in the UI.
    */
   public CompletableFuture<Boolean> isWidgetTreeReady() {
-    if (isDaemonApiSupported) {
+    if (useDaemonApi()) {
       return invokeServiceMethodDaemonNoGroup("isWidgetTreeReady", new HashMap<>())
         .thenApplyAsync((JsonElement element) -> element.getAsBoolean() == true);
     }
@@ -245,15 +245,7 @@ public class InspectorService implements Disposable {
   }
 
   private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
-    // TODO(jacobr): remove call to hasServiceMethod("setPubRootDirectories") after
-    // the `setPubRootDirectories` method has been in two revs of the Flutter Alpha
-    // channel. The feature is expected to have landed in the Flutter dev
-    // chanel on March 2, 2018.
-    if (!hasServiceMethod("setPubRootDirectories")) {
-      return CompletableFuture.completedFuture(null);
-    }
-
-    if (isDaemonApiSupported) {
+    if (useDaemonApi()) {
       return invokeServiceMethodDaemonNoGroup("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
     }
     else {
@@ -650,7 +642,7 @@ public class InspectorService implements Disposable {
     private CompletableFuture<ArrayList<DiagnosticsNode>> getListHelper(
       InspectorInstanceRef instanceRef, String methodName, DiagnosticsNode parent) {
       return nullIfDisposed(() -> {
-        if (isDaemonApiSupported) {
+        if (useDaemonApi()) {
           return parseDiagnosticsNodesDaemon(invokeServiceMethodDaemon(methodName, instanceRef), parent);
         }
         else {
@@ -661,7 +653,7 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName) {
       return nullIfDisposed(() -> {
-        if (isDaemonApiSupported) {
+        if (useDaemonApi()) {
           return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName));
         }
         else {
@@ -672,7 +664,7 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName, InspectorInstanceRef ref) {
       return nullIfDisposed(() -> {
-        if (isDaemonApiSupported) {
+        if (useDaemonApi()) {
           return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName, ref));
         }
         else {
@@ -683,7 +675,7 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, String arg1) {
       return nullIfDisposed(() -> {
-        if (isDaemonApiSupported) {
+        if (useDaemonApi()) {
           return invokeServiceMethodDaemon(methodName, arg1).thenApply((ignored) -> null);
         }
         else {
@@ -694,7 +686,7 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, InspectorInstanceRef ref) {
       return nullIfDisposed(() -> {
-        if (isDaemonApiSupported) {
+        if (useDaemonApi()) {
           return invokeServiceMethodDaemon(methodName, ref).thenApply((ignored) -> null);
         }
         else {
@@ -719,7 +711,7 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<ArrayList<DiagnosticsPathNode>> getParentChain(DiagnosticsNode target) {
       return nullIfDisposed(() -> {
-        if (isDaemonApiSupported) {
+        if (useDaemonApi()) {
           return parseDiagnosticsPathDaemon(invokeServiceMethodDaemon("getParentChain", target.getValueRef()));
         }
         else {
@@ -781,7 +773,7 @@ public class InspectorService implements Disposable {
       if (disposed) {
         return;
       }
-      if (isDaemonApiSupported) {
+      if (useDaemonApi()) {
         handleSetSelectionDaemon(invokeServiceMethodDaemon("setSelectionById", selection), uiAlreadyUpdated);
       }
       else {

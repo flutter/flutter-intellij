@@ -63,7 +63,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private final Project project;
   private boolean trackRebuildWidgets = trackRebuildWidgetsDefault;
   private boolean trackRepaintWidgets = trackRepaintWidgetsDefault;
-  private boolean debugIsActive = false;
+  private boolean debugIsActive;
 
   /**
    * File editors visible to the user that might contain widgets.
@@ -186,7 +186,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private void debugActive(Project project, FlutterViewMessages.FlutterDebugEvent event) {
     debugIsActive = true;
 
-    assert (app != null);
+    if (app == null) {
+      return;
+    }
+
     app.addStateListener(this);
     syncBooleanServiceExtension(TRACK_REBUILD_WIDGETS, () -> trackRebuildWidgets);
     syncBooleanServiceExtension(TRACK_REPAINT_WIDGETS, () -> trackRepaintWidgets);

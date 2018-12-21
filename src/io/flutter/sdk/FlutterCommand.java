@@ -10,7 +10,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -171,7 +170,8 @@ public class FlutterCommand {
    * <p>
    * Returns the handler if successfully started.
    */
-  @Nullable public OSProcessHandler startProcess(boolean sendAnalytics) {
+  @Nullable
+  public OSProcessHandler startProcess(boolean sendAnalytics) {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(null);
       LOG.info(commandLine.toString());
@@ -241,7 +241,7 @@ public class FlutterCommand {
    * Returns the handler if successfully started, or null if there was a problem.
    */
   @Nullable
-  public OSProcessHandler startProcessOrShowError(@Nullable Project project)  {
+  public OSProcessHandler startProcessOrShowError(@Nullable Project project) {
     final FlutterCommandStartResult result = startProcess(project);
     if (result.status == FlutterCommandStartResultStatus.EXCEPTION && result.exception != null) {
       FlutterMessages.showError(
@@ -270,10 +270,16 @@ public class FlutterCommand {
 
     line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
     line.setWorkDirectory(workDir.getPath());
-    line.addParameter("--no-color");
+    if (!isDoctorCommand()) {
+      line.addParameter("--no-color");
+    }
     line.addParameters(type.subCommand);
     line.addParameters(args);
     return line;
+  }
+
+  private boolean isDoctorCommand() {
+    return type == Type.DOCTOR;
   }
 
   enum Type {
@@ -282,7 +288,7 @@ public class FlutterCommand {
     CLEAN("Flutter clean", "clean"),
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
-    DOCTOR("Flutter doctor", "doctor"),
+    DOCTOR("Flutter doctor", "doctor", "--verbose"),
     MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),

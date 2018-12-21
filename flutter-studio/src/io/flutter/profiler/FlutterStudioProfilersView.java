@@ -19,6 +19,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.ui.JBMenuItem;
+import com.intellij.openapi.ui.JBPopupMenu;
 import com.intellij.openapi.ui.ThreeComponentsSplitter;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.IconLoader;
@@ -26,9 +28,14 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBEmptyBorder;
+import icons.FlutterIcons;
 import icons.StudioIcons;
 import io.flutter.utils.AsyncUtils;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -50,6 +57,9 @@ import static com.android.tools.adtui.common.AdtUiUtils.DEFAULT_BOTTOM_BORDER;
 import static com.android.tools.profilers.ProfilerFonts.H4_FONT;
 import static com.android.tools.profilers.ProfilerLayout.TOOLBAR_HEIGHT;
 import static io.flutter.profiler.FilterLibraryDialog.ALL_DART_LIBRARIES;
+import static io.flutter.profiler.FilterLibraryDialog.ALL_FLUTTER_LIBRARIES;
+import static io.flutter.profiler.FlutterStudioMonitorStageView.PREFIX_LIBRARY_NAME_HIDDEN;
+import static io.flutter.view.ToolbarComboBoxAction.getArrowIcon;
 import static java.awt.event.InputEvent.CTRL_DOWN_MASK;
 import static java.awt.event.InputEvent.META_DOWN_MASK;
 
@@ -67,6 +77,22 @@ public class FlutterStudioProfilersView
   @NotNull public static final String DETACH_LIVE = "Detach live";
   @NotNull public static final String ZOOM_IN = "Zoom in";
   @NotNull public static final String ZOOM_OUT = "Zoom out";
+
+  private final String MORE_ACTIONS_MENU = "More Actions";
+  private final String VIEW_RSS_STATISTICS_MENU_ITEM = "View Resident Set Size Statistics";
+
+  // Flutter Profiler setting icon.
+  private static Icon load(String path) {
+    return IconLoader.getIcon(path);
+  }
+
+  public static final Icon ProfilerCheckMark = load("/icons/profiler/checkmark_laficon.png");
+
+  // TODO(terry): RSS (resident set size) might be too much information for first-time users.
+  //              By default don't show. Check with asiva on why this is so important.  There
+  //              are a number of set sizes e.g., Resident Set Size, Virtual Set Size,
+  //              Proportional Set Size, and Unique Set Size in the Dalvik heap.
+  public Boolean displayRSSInformation = false;
 
   private final FlutterStudioProfilers profiler;
   private final ViewBinder<FlutterStudioProfilersView, FlutterStage,
@@ -99,7 +125,8 @@ public class FlutterStudioProfilersView
   private ProfilerAction frameSelectionAction;
   private CommonButton snapshot;                    // Snapshot the VM memory.
   private CommonButton filterLibrary;               // Filter libraries
-  private CommonButton resetSnapshotStatistics;     // Compact the GC
+  private CommonButton resetSnapshotStatistics;     // Reset Memory Statistics
+  private CommonButton manualGC;                    // Mnaula GC
   private Set<String> selectedLibraries;
 
   public FlutterStudioProfilersView(@NotNull FlutterStudioProfilers theProfiler) {
@@ -235,9 +262,10 @@ public class FlutterStudioProfilersView
     leftToolbar.add(commonToolbar);
     toolbar.add(leftToolbar, BorderLayout.WEST);
 
-    snapshot = new CommonButton("Snapshot");
+    snapshot = new CommonButton(FlutterIcons.Snapshot);
     snapshot.addActionListener(event -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+      view.getStage().recordSnapshot();
       view.displaySnapshot(view, false);
       view.updateClassesStatus("Snapshoting...");
       snapshot.setEnabled(false);
@@ -246,12 +274,30 @@ public class FlutterStudioProfilersView
     snapshot.setToolTipText("Snapshot of VM's memory");
     leftToolbar.add(snapshot);
 
+    // Reset button.
+    resetSnapshotStatistics = new CommonButton(FlutterIcons.ResetMemoryStats);
+    resetSnapshotStatistics.addActionListener(event -> {
+      FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
 
-    filterLibrary = new CommonButton("Filter");
+      view.displaySnapshot(view, true);
+      view.getStage().recordReset();
+
+      view.updateClassesStatus("Reset Snapshot...");
+
+      snapshot.setEnabled(false);
+      resetSnapshotStatistics.setEnabled(false);
+    });
+    resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
+    leftToolbar.add(resetSnapshotStatistics);
+
+    // Filter
+    filterLibrary = new CommonButton(StudioIcons.Common.FILTER);
     filterLibrary.addActionListener(filterEvent -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
 
       Set<String> libraryKeys = view.allLibraries.keySet();
+
+      libraryKeys.removeIf((String libraryName) -> libraryName.startsWith(PREFIX_LIBRARY_NAME_HIDDEN));
       List<String> libraryNames = Arrays.asList(libraryKeys.toArray(new String[libraryKeys.size()]));
       Collections.sort((libraryNames));
 
@@ -277,19 +323,54 @@ public class FlutterStudioProfilersView
     filterLibrary.setToolTipText("Filter Dart Libraries");
     leftToolbar.add(filterLibrary);
 
-    resetSnapshotStatistics = new CommonButton("Reset Stats");
-    resetSnapshotStatistics.addActionListener(event -> {
+    // GC button.
+    manualGC = new CommonButton(StudioIcons.Profiler.Events.GARBAGE_EVENT);
+    manualGC.addActionListener(event -> {
       FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
 
-      view.displaySnapshot(view, true);
+      view.gcNow(view);
 
-      view.updateClassesStatus("Reset Snapshot...");
-
-      snapshot.setEnabled(false);
-      resetSnapshotStatistics.setEnabled(false);
+      view.updateClassesStatus("Manual GC...");
     });
-    resetSnapshotStatistics.setToolTipText("Reset Snapshot Statistics");
-    leftToolbar.add(resetSnapshotStatistics);
+    manualGC.setToolTipText("Manual Garbage Collect");
+    leftToolbar.add(manualGC);
+
+    // TODO(terry): Re-use the same frame menu as Flutter Outline window not the below popup menu.
+    // Memory Profiler setting button.
+    JBPopupMenu menuBar = new JBPopupMenu();
+
+    // TODO(terry): When LafIconLookup in all IDE builds use LafIconLookup.getIcon("checkmark")
+    Icon enabledCheckmark = ProfilerCheckMark;
+    Icon checkMarkSpacer = new EmptyIcon(enabledCheckmark.getIconWidth(), enabledCheckmark.getIconHeight());
+
+    JBMenuItem rssEnabledMenu = new JBMenuItem(VIEW_RSS_STATISTICS_MENU_ITEM, checkMarkSpacer);
+    rssEnabledMenu.addActionListener(event -> {
+      FlutterStudioMonitorStageView view = (FlutterStudioMonitorStageView)(this.getStageView());
+      displayRSSInformation = !displayRSSInformation;   // Toggle the state.
+      rssEnabledMenu.setIcon(displayRSSInformation ? enabledCheckmark : checkMarkSpacer);
+      view.buildCharting();
+    });
+
+    menuBar.add(rssEnabledMenu);
+
+    CommonButton profilerActions = new CommonButton(MORE_ACTIONS_MENU, getArrowIcon(true));
+
+    // Place the arrow to the right of the text.
+    profilerActions.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    profilerActions.setHorizontalAlignment(SwingConstants.RIGHT);
+    profilerActions.setHorizontalTextPosition(SwingConstants.LEFT);
+
+    profilerActions.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent event) {
+        super.mouseClicked(event);
+        Component component = event.getComponent();
+        menuBar.show(component, 0, component.getHeight() - 2);
+      }
+    });
+    leftToolbar.add(profilerActions);
+
+    leftToolbar.add(menuBar);
 
     JBPanel rightToolbar = new JBPanel(ProfilerLayout.createToolbarLayout());
     toolbar.add(rightToolbar, BorderLayout.EAST);
@@ -300,7 +381,6 @@ public class FlutterStudioProfilersView
     zoomOut.setDisabledIcon(IconLoader.getDisabledIcon(StudioIcons.Common.ZOOM_OUT));
     zoomOut.addActionListener(event -> {
       timeline.zoomOut();
-      //profiler.getIdeServices().getFeatureTracker().trackZoomOut();
     });
     ProfilerAction zoomOutAction =
       new ProfilerAction.Builder(ZOOM_OUT)
@@ -317,7 +397,6 @@ public class FlutterStudioProfilersView
     zoomIn.setDisabledIcon(IconLoader.getDisabledIcon(StudioIcons.Common.ZOOM_IN));
     zoomIn.addActionListener(event -> {
       timeline.zoomIn();
-      //profiler.getIdeServices().getFeatureTracker().trackZoomIn();
     });
     ProfilerAction zoomInAction =
       new ProfilerAction.Builder(ZOOM_IN).setContainerComponent(stageComponent)
@@ -333,7 +412,6 @@ public class FlutterStudioProfilersView
     resetZoom.setDisabledIcon(IconLoader.getDisabledIcon(StudioIcons.Common.RESET_ZOOM));
     resetZoom.addActionListener(event -> {
       timeline.resetZoom();
-      //profiler.getIdeServices().getFeatureTracker().trackResetZoom();
     });
     ProfilerAction resetZoomAction =
       new ProfilerAction.Builder("Reset zoom").setContainerComponent(stageComponent)
@@ -392,13 +470,13 @@ public class FlutterStudioProfilersView
     goLive.setToolTipText(detachAction.getDefaultToolTipText());
     goLive.addActionListener(event -> {
       timeline.toggleStreaming();
-      //profiler.getIdeServices().getFeatureTracker().trackToggleStreaming();
     });
     goLive.addChangeListener(e -> {
       boolean isSelected = goLive.isSelected();
       goLive.setIcon(isSelected ? StudioIcons.Profiler.Toolbar.PAUSE_LIVE : StudioIcons.Profiler.Toolbar.GOTO_LIVE);
       goLive.setToolTipText(isSelected ? detachAction.getDefaultToolTipText() : attachAction.getDefaultToolTipText());
     });
+
     timeline.addDependency(this).onChange(ProfilerTimeline.Aspect.STREAMING, this::updateStreaming);
     goLiveToolbar.add(goLive);
     rightToolbar.add(goLiveToolbar);
@@ -422,7 +500,7 @@ public class FlutterStudioProfilersView
     selectedLibraries.forEach((String libraryName) -> {
       LibraryRef libraryRef = view.allLibraries.get(libraryName);
       if (libraryRef == null) {
-        if (libraryName == ALL_DART_LIBRARIES) {
+        if (libraryName.equals(ALL_DART_LIBRARIES)) {
           // Filter all dart libraries.
           view.dartLibraries.forEach((String key, LibraryRef dartLibraryRef) -> {
             String dartLibraryId = dartLibraryRef.getId();
@@ -432,7 +510,19 @@ public class FlutterStudioProfilersView
             }
           });
         }
-        LOG.warn("Library not found " + libraryName);
+        else if (libraryName.equals(ALL_FLUTTER_LIBRARIES)) {
+          // Filter all dart libraries.
+          view.flutterLibraries.forEach((String key, LibraryRef flutterLibraryRef) -> {
+            String flutterLibraryId = flutterLibraryRef.getId();
+            view.filteredLibraries.add(flutterLibraryId);
+            if (processTheLibrary) {
+              processLibrary(view, flutterLibraryId);
+            }
+          });
+        }
+        else {
+          LOG.warn("Library not found " + libraryName);
+        }
       }
       else {
         String libraryId = libraryRef.getId();

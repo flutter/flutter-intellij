@@ -1,3 +1,31 @@
+## 31.3
+- fix NPE in sdk installation (#2965)
+- fix NPE caused by internal inconsistency (#2963)
+
+## 31.2
+- show memory profiler legend with proper line chart color or line style
+- prevent the (IntelliJ) New Project wizard from completing when there is no Flutter SDK
+- fix a race condition causing unexpected conditions in attach
+- added control of RSS display to memory profiler
+- when running the flutter doctor command, use the -v flag
+- make attach use selected device
+
+## 31.1
+- perf table polish and fix links to tip docs
+- fix Split Mode resize issue
+- rebuild stats wording tweaks
+
+## 31.0
+- change FPS display to "Frame Rendering Time" and improve UI
+- reorganize inspector tools
+- better error reporting for Flutter runtime issues
+- fewer Flutter runtime issues
+- updated icons for Material and Cupertino
+- searchable preferences/settings
+- added refactoring to outline view: extract widget
+- new menu item to run 'flutter make-host-app-editable'
+- code cleanup and bug fixes
+
 ## 30.0
 - performance inspector changes
 - log view tweaks
