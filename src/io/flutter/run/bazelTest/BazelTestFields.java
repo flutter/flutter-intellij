@@ -58,17 +58,6 @@ public class BazelTestFields {
     this(template.testName, template.entryFile, template.bazelTarget);
   }
 
-  /**
-   * Create non-template from template.
-   */
-  private BazelTestFields(@NotNull final BazelTestFields template, @NotNull final Workspace workspace) {
-    this(
-      template.testName,
-      template.entryFile,
-      template.bazelTarget
-    );
-  }
-
   private static String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
     String testScript = workspace.getTestScript();
     // Fall back on the regular launch script if the test script is not available.
@@ -141,7 +130,7 @@ public class BazelTestFields {
   BazelTestFields copyTemplateToNonTemplate(@NotNull final Project project) {
     final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
     if (workspace == null) return new BazelTestFields(this);
-    return new BazelTestFields(this, workspace);
+    return new BazelTestFields(this);
   }
 
   /**

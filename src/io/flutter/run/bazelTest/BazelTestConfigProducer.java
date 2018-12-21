@@ -13,6 +13,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterRunConfigurationProducer;
@@ -48,7 +49,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
       return setupForTarget(config, context, ((PsiDirectory)elt).getVirtualFile().getPath());
     }
 
-    final DartFile file = FlutterRunConfigurationProducer.getDartFile(context);
+    final DartFile file = FlutterUtils.getDartFile(elt);
     if (file == null) {
       return false;
     }
@@ -71,7 +72,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
 
     config.setFields(BazelTestFields.forTestName(testName, testFile.getPath(), Workspace.load(context.getProject())));
     config.setGeneratedName();
-
+    config.setName(file.getName() + " (" + testName + ")");
     return true;
   }
 
@@ -80,7 +81,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     if (testFile == null) return false;
 
     config.setFields(BazelTestFields.forFile(testFile.getPath(), Workspace.load(context.getProject())));
-    config.setGeneratedName();
+    config.setName(file.getName());
 
     return true;
   }

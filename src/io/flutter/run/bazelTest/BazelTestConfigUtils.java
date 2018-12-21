@@ -38,10 +38,13 @@ public class BazelTestConfigUtils {
 
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
+    if (!isBazelFlutterCode(FlutterUtils.getDartFile(element))) return null;
+
+    // Check if the test call is a named test or group.
     final TestType namedTestCall = findNamedTestCall(element);
     if (namedTestCall != null) return namedTestCall;
 
-    // Main.
+    // Check if the test call is a test main method.
     if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
 
     return null;
