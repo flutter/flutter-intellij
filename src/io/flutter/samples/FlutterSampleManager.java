@@ -5,11 +5,12 @@
  */
 package io.flutter.samples;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.intellij.openapi.diagnostic.Logger;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jettison.json.JSONArray;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -38,18 +39,17 @@ public class FlutterSampleManager {
       // TODO(pq): replace w/ index read from repo (https://github.com/flutter/flutter/pull/25515).
       final URL url = FlutterSampleManager.class.getResource("index.json");
       final String contents = IOUtils.toString(url.toURI(), "UTF-8");
-      final JSONArray jsonArray = new JSONArray(contents);
-
-      for (int i = 0; i < jsonArray.length(); i++) {
-        final JSONObject sample = jsonArray.getJSONObject(i);
-        samples.add(new FlutterSample(sample.getString("element"),
-                                      sample.getString("library"),
-                                      sample.getString("id"),
-                                      sample.getString("file"),
-                                      sample.getString("description")));
+      final JsonArray jsonArray = new JsonParser().parse(contents).getAsJsonArray();
+      for (JsonElement element : jsonArray) {
+        final JsonObject sample = element.getAsJsonObject();
+        samples.add(new FlutterSample(sample.getAsJsonPrimitive("element").getAsString(),
+                                      sample.getAsJsonPrimitive("library").getAsString(),
+                                      sample.getAsJsonPrimitive("id").getAsString(),
+                                      sample.getAsJsonPrimitive("file").getAsString(),
+                                      sample.getAsJsonPrimitive("description").getAsString()));
       }
     }
-    catch (URISyntaxException | IOException | JSONException e) {
+    catch (URISyntaxException | IOException e) {
       LOG.warn(e);
     }
 
