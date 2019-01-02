@@ -99,9 +99,6 @@ public class ProjectType {
   }
 
   private class FlutterSampleCellRenderer extends ColoredListCellRenderer<FlutterSample> {
-
-
-
     @Override
     protected void customizeCellRenderer(@NotNull JList<? extends FlutterSample> list,
                                          FlutterSample sample,
@@ -143,7 +140,7 @@ public class ProjectType {
     snippetSelectorCombo.setEnabled(false);
 
     generateSampleContentCheckBox = new JCheckBox();
-    generateSampleContentCheckBox.setText("generate sample content:");
+    generateSampleContentCheckBox.setText(FlutterBundle.message("flutter.module.create.settings.sample.text"));
     generateSampleContentCheckBox.addItemListener(e -> snippetSelectorCombo.setEnabled(e.getStateChange() == ItemEvent.SELECTED));
 
   }
