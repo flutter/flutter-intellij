@@ -425,8 +425,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         // First selection.
         final String data = nodes.get(0).entry.getData();
         if (JsonUtils.hasJsonData(data)) {
-          @SuppressWarnings("ConstantConditions")
-          final JsonElement jsonElement = new JsonParser().parse(data);
+          @SuppressWarnings("ConstantConditions") final JsonElement jsonElement = new JsonParser().parse(data);
           text = gsonHelper.toJson(jsonElement);
         }
       }
@@ -734,6 +733,10 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
     logTree.append(entry);
+    if (entry.getKind() == FlutterLogEntry.Kind.WIDGET_ERROR_START) {
+      // Stop auto-scroll on a widget error.
+      scrollToEndAction.disableIfNeeded();
+    }
   }
 
   @Override

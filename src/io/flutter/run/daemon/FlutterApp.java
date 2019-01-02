@@ -93,7 +93,7 @@ public class FlutterApp {
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final EventDispatcher<FlutterAppListener> listenersDispatcher = EventDispatcher.create(FlutterAppListener.class);
 
-  private @NotNull final FlutterLog myFlutterLog = new FlutterLog();
+  private @NotNull final FlutterLog myFlutterLog;
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
@@ -120,6 +120,7 @@ public class FlutterApp {
              @NotNull GeneralCommandLine command) {
     myProject = project;
     myModule = module;
+    myFlutterLog = new FlutterLog(project, module);
     myMode = mode;
     myDevice = device;
     myProcessHandler = processHandler;

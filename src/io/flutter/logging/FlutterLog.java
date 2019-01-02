@@ -13,6 +13,8 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
 import io.flutter.run.FlutterDebugProcess;
@@ -76,13 +78,17 @@ public class FlutterLog {
   private final EventDispatcher<Listener>
     dispatcher = EventDispatcher.create(Listener.class);
 
-  private final FlutterLogEntryParser logEntryParser = new FlutterLogEntryParser();
+  private final FlutterLogEntryParser logEntryParser;
 
   // TODO(pq): consider limiting size.
   private final List<FlutterLogEntry> entries = new ArrayList<>();
 
   public static boolean isLoggingEnabled() {
     return FlutterSettings.getInstance().useFlutterLogView();
+  }
+
+  public FlutterLog(@NotNull Project project, @Nullable Module module) {
+    logEntryParser = new FlutterLogEntryParser(project, module);
   }
 
   public void addConsoleEntry(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
