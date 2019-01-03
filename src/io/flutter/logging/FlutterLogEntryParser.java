@@ -167,6 +167,7 @@ public class FlutterLogEntryParser {
       if (message.equals("Performing hot restart...") || message.equals("Initializing hot restart...")) {
         return Kind.RESTART;
       }
+      // TODO(pq): remove string matching in favor of some kind of tag coming from the framework.
       if (message.startsWith("══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY")) {
         return Kind.WIDGET_ERROR_START;
       }
