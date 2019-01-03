@@ -6,16 +6,19 @@
 package io.flutter.logging;
 
 import com.intellij.openapi.util.text.StringUtil;
+import io.flutter.logging.util.LineInfo;
+import io.flutter.logging.util.StyledText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static io.flutter.logging.FlutterLogEntryParser.TOOLS_CATEGORY;
+import java.util.List;
 
 public class FlutterLogEntry {
 
   public enum Kind {
     RELOAD,
     RESTART,
+    WIDGET_ERROR_START,
     UNSPECIFIED
   }
 
@@ -34,30 +37,24 @@ public class FlutterLogEntry {
 
   @NotNull
   private final Kind kind;
+  @NotNull private final List<StyledText> styledText;
 
-  public FlutterLogEntry(long timestamp, @NotNull String category, int level, @Nullable String message) {
+  public FlutterLogEntry(long timestamp,
+                         @NotNull String category,
+                         int level,
+                         @Nullable String message,
+                         @NotNull Kind kind,
+                         @NotNull List<StyledText> styledText) {
     this.timestamp = timestamp;
     this.category = category;
     this.level = level;
     this.message = StringUtil.notNullize(message);
-    this.kind = parseKind(category, this.message);
+    this.kind = kind;
+    this.styledText = styledText;
   }
 
-  private static Kind parseKind(@NotNull String category, @NotNull String message) {
-    if (category.equals(TOOLS_CATEGORY)) {
-      message = message.trim();
-      if (message.equals("Performing hot reload...") || message.equals("Initializing hot reload...")) {
-        return Kind.RELOAD;
-      }
-      if (message.equals("Performing hot restart...") || message.equals("Initializing hot restart...")) {
-        return Kind.RESTART;
-      }
-    }
-    return Kind.UNSPECIFIED;
-  }
-
-  public FlutterLogEntry(long timestamp, @NotNull String category, @Nullable String message) {
-    this(timestamp, category, UNDEFINED_LEVEL.value, message);
+  public FlutterLogEntry(long timestamp, @NotNull LineInfo info, int level) {
+    this(timestamp, info.getCategory(), level, info.getLine(), info.getKind(), info.getStyledText());
   }
 
   @Nullable
@@ -95,6 +92,11 @@ public class FlutterLogEntry {
   @NotNull
   public String getMessage() {
     return message;
+  }
+
+  @NotNull
+  public List<StyledText> getStyledText() {
+    return styledText;
   }
 
   /**
