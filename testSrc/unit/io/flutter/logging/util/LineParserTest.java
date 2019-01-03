@@ -18,7 +18,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings("UseJBColor")
 public class LineParserTest {
   static final SimpleTextAttributes PLAIN_RED = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.RED);
   static final SimpleTextAttributes BOLD_RED = new SimpleTextAttributes(SimpleTextAttributes.STYLE_BOLD, Color.RED);
