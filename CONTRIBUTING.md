@@ -13,17 +13,17 @@ file.
 ## Flutter plugin development
 
 * Download and install the latest stable version of IntelliJ
-  - https://www.jetbrains.com/idea/download/
+  - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
   - either the community edition (free) or Ultimate will work. We are currently using 2018.1.
 * Start IntelliJ
-* In the Project Structure dialog (`File > Project Structure`), configure an IntelliJ platform SDK
-  - point it to the `Contents` directory in your just downloaded copy of IntelliJ Community Edition (e.g, `IntelliJ IDEA CE.app/Contents`)
-  - name it `IntelliJ IDEA Community Edition`
-* Open flutter-intellij project in IntelliJ. Build it using `Build` > `Make Project`
+* In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
+  - point it to the directory of your downloaded IntelliJ Community Edition installation (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
+  - change the name to `IntelliJ IDEA Community Edition`
+* One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.  `Configure | Plugins` and install the Dart plugin, then restart the IDE
+* Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). Build it using `Build` | `Make Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
-* If the Flutter Plugin doesn't load, check to see if the Dart Plugin is installed in your runtime workbench; if it's not, install it (`Preferences > Plugins`) and re-launch.
-* Install Flutter from [github](https://github.com/flutter/flutter) and set it up according
-  to its instructions.
+* If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
+* Install Flutter SDK from [Flutter SDK download](https://flutter.io/docs/get-started/install) or [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
   - Connect an android device with USB debugging.
   - `cd <flutter>/examples/hello_world`
