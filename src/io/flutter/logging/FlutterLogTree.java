@@ -53,6 +53,22 @@ public class FlutterLogTree extends TreeTable {
   private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
   private static final Logger LOG = Logger.getInstance(FlutterLogTree.class);
 
+  @NotNull
+  private static final Map<FlutterLog.Level, String> LOG_LEVEL_FILTER;
+
+  static {
+    LOG_LEVEL_FILTER = new HashMap<>();
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.NONE, "NONE|FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINEST, "FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINER, "FINER|FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.FINE, "FINE|CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.CONFIG, "CONFIG|INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.INFO, "INFO|WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.WARNING, "WARNING|SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.SEVERE, "SEVERE|SHOUT");
+    LOG_LEVEL_FILTER.put(FlutterLog.Level.SHOUT, "SHOUT");
+  }
+
   private static class ColumnModel {
 
     private abstract class EntryCellRenderer extends ColoredTableCellRenderer {
@@ -642,19 +658,24 @@ public class FlutterLogTree extends TreeTable {
   }
 
   private RowFilter<TableModel, Object> getRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
+    // TODO(pq): regexps are heavyweight for level filtering; simplify to use an ordinal.
+    final RowFilter<TableModel, Object> logLevelFilter =
+      RowFilter.regexFilter(LOG_LEVEL_FILTER.get(filter.getLogLevel()), FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index);
+    final RowFilter<TableModel, Object> expressionFilter = getExpressionFilter(filter);
+    return expressionFilter != null ? RowFilter.andFilter(Arrays.asList(logLevelFilter, expressionFilter)) : logLevelFilter;
+  }
+  
+  private RowFilter<TableModel, Object> getExpressionFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
     final String nonNullExpression = filter.getExpression() == null ? "" : filter.getExpression();
     if (!nonNullExpression.isEmpty() || filter.isMatchCase() || filter.isRegex()) {
       final String quoteRegex = filter.isRegex() ? nonNullExpression : Pattern.quote(nonNullExpression);
       final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
       final String standardRegex = matchCaseRegex + "(?s).*" + quoteRegex + ".*";
-      final RowFilter<TableModel, Object> logMessageFilter;
-      final RowFilter<TableModel, Object> logLevelFilter;
       try {
         return RowFilter.regexFilter(
           standardRegex,
           FlutterTreeTableModel.ColumnIndex.MESSAGE.index,
-          FlutterTreeTableModel.ColumnIndex.CATEGORY.index,
-          FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index
+          FlutterTreeTableModel.ColumnIndex.CATEGORY.index
         );
       }
       catch (PatternSyntaxException e) {
@@ -662,7 +683,7 @@ public class FlutterLogTree extends TreeTable {
       }
     }
 
-    return EMPTY_FILTER;
+    return null;
   }
 
   void append(@NotNull FlutterLogEntry entry) {
