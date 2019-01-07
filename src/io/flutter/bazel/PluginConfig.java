@@ -5,6 +5,7 @@
  */
 package io.flutter.bazel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -24,7 +25,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * An in-memory snapshot of the flutter.json file from a Bazel workspace.
  */
-class PluginConfig {
+public class PluginConfig {
   private final @NotNull Fields fields;
 
   private PluginConfig(@NotNull Fields fields) {
@@ -93,6 +94,21 @@ class PluginConfig {
     };
 
     return ApplicationManager.getApplication().runReadAction(readAction);
+  }
+
+  @VisibleForTesting
+  public static PluginConfig forTest(
+    @Nullable String daemonScript,
+    @Nullable String doctorScript,
+    @Nullable String launchScript,
+    @Nullable String testScript
+  ) {
+    final Fields fields = new Fields();
+    fields.daemonScript = daemonScript;
+    fields.doctorScript = doctorScript;
+    fields.launchScript = launchScript;
+    fields.testScript = testScript;
+    return new PluginConfig(fields);
   }
 
   /**

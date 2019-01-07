@@ -5,6 +5,7 @@
  */
 package io.flutter.bazel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
@@ -191,6 +192,17 @@ public class Workspace {
     return new Workspace(root, config, daemonScript, doctorScript, testScript);
   }
 
+  @VisibleForTesting
+  public static Workspace forTest(VirtualFile workspaceRoot, PluginConfig pluginConfig) {
+    return new Workspace(
+      workspaceRoot,
+      pluginConfig,
+      pluginConfig.getDaemonScript(),
+      pluginConfig.getDoctorScript(),
+      pluginConfig.getTestScript()
+    );
+  }
+
   /**
    * Attempts to find a script inside of the workspace.
    * @param root the workspace root.
@@ -198,7 +210,7 @@ public class Workspace {
    * @param relativeScriptPath the relative path to the desired script inside of the workspace.
    * @return the script's path relative to the workspace, or null if it was not found.
    */
-  private static String getScriptFromPath(VirtualFile root, String readonlyPath, @Nullable String relativeScriptPath) {
+  private static String getScriptFromPath(@NotNull VirtualFile root, @NotNull String readonlyPath, @Nullable String relativeScriptPath) {
     if (relativeScriptPath == null) {
       return null;
     }

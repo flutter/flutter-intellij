@@ -58,7 +58,7 @@ public class BazelTestFields {
     this(template.testName, template.entryFile, template.bazelTarget);
   }
 
-  private static String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
+  private String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
     String testScript = workspace.getTestScript();
     // Fall back on the regular launch script if the test script is not available.
     if (testScript == null) {
@@ -74,21 +74,21 @@ public class BazelTestFields {
    * Creates settings for running tests with the given name within a Dart file.
    */
   @NotNull
-  public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path, @NotNull final Workspace workspace) {
+  public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path) {
     return new BazelTestFields(testName, path, null);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
-  public static BazelTestFields forFile(@NotNull String path, @NotNull final Workspace workspace) {
+  public static BazelTestFields forFile(@NotNull String path) {
     return new BazelTestFields(null, path, null);
   }
 
   /**
    * Creates settings for running all the tests in a Bazel target
    */
-  public static BazelTestFields forTarget(@NotNull String target, @NotNull final Workspace workspace) {
+  public static BazelTestFields forTarget(@NotNull String target) {
     return new BazelTestFields(null, null, target);
   }
 
@@ -182,6 +182,13 @@ public class BazelTestFields {
   }
 
   /**
+   * Returns the app directory that corresponds to the entryFile and the given project.
+   */
+  protected VirtualFile getAppDir(@NotNull Project project) {
+    return MainFile.verify(entryFile, project).get().getAppDir();
+  }
+
+  /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
   @NotNull
@@ -195,17 +202,18 @@ public class BazelTestFields {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile appDir = MainFile.verify(entryFile, project).get().getAppDir();
-
-    final Workspace workspace = Workspace.load(project);
+    final VirtualFile appDir = getAppDir(project);
+    final Workspace workspace = getWorkspace(project);
 
     final String launchingScript = getTestScriptFromWorkspace(workspace);
     assert launchingScript != null; // already checked
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
-    commandLine.setExePath(FileUtil.toSystemDependentName(workspace.getTestScript()));
-    String relativeEntryFilePath = FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
+    commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+    final String relativeEntryFilePath = entryFile == null
+        ? null
+        : FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
     commandLine.addParameter("--no-color");
     switch (getScope()) {
       case NAME:
@@ -224,6 +232,11 @@ public class BazelTestFields {
       commandLine.addParameters("--", "--enable-debugging", "--machine");
     }
     return commandLine;
+  }
+
+  @Nullable
+  protected Workspace getWorkspace(@NotNull Project project) {
+    return Workspace.load(project);
   }
 
 

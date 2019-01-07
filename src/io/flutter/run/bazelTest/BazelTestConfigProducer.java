@@ -70,7 +70,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(BazelTestFields.forTestName(testName, testFile.getPath(), Workspace.load(context.getProject())));
+    config.setFields(BazelTestFields.forTestName(testName, testFile.getPath()));
     config.setGeneratedName();
     config.setName(file.getName() + " (" + testName + ")");
     return true;
@@ -80,7 +80,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(BazelTestFields.forFile(testFile.getPath(), Workspace.load(context.getProject())));
+    config.setFields(BazelTestFields.forFile(testFile.getPath()));
     config.setName(file.getName());
 
     return true;
@@ -94,7 +94,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   }
 
   private boolean setupForTarget(BazelTestConfig config, ConfigurationContext context, String target) {
-    config.setFields(BazelTestFields.forTarget(target, Workspace.load(context.getProject())));
+    config.setFields(BazelTestFields.forTarget(target));
     config.setGeneratedName();
     return true;
   }
@@ -113,6 +113,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     }
 
     if (!FlutterRunConfigurationProducer.hasDartFile(context, file.getPath())) return false;
+    if (config.getType() != context.findExisting().getType()) return false;
 
     final String testName = BazelTestConfigUtils.findTestName(context.getPsiLocation());
     if (config.getFields().getTestName() != null) {
