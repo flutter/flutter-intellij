@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import java.awt.event.ItemListener;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -99,13 +100,14 @@ public class FlutterLogFilterPanel {
 
   public FlutterLogFilterPanel(@NotNull OnFilterListener onFilterListener) {
     this.onFilterListener = onFilterListener;
-    matchCaseCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
-    regexCheckBox.addItemListener(e -> onFilterListener.onFilter(getCurrentFilterParam()));
+    final ItemListener listener = e -> doFilter();
+    matchCaseCheckBox.addItemListener(listener);
+    regexCheckBox.addItemListener(listener);
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
     logLevelComboBox.setSelectedItem(FlutterLog.Level.NONE);
-    logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
+    logLevelComboBox.addActionListener(event -> doFilter());
     logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
       @Override
       protected void customizeCellRenderer(@NotNull JList<? extends FlutterLog.Level> list,
@@ -113,9 +115,15 @@ public class FlutterLogFilterPanel {
                                            int index,
                                            boolean selected,
                                            boolean hasFocus) {
-        append(value.toDisplayString());
+        // When NONE is selected, show an empty string in the combo selector.
+        final String label = index == -1 && value == FlutterLog.Level.NONE ? "" : value.toDisplayString();
+        append(label);
       }
     });
+  }
+
+  private void doFilter() {
+    onFilterListener.onFilter(getCurrentFilterParam());
   }
 
   @NotNull
@@ -160,7 +168,7 @@ public class FlutterLogFilterPanel {
   @NotNull
   private SearchTextField createSearchTextField() {
     final LogFilterTextField logFilterTextField = new LogFilterTextField();
-    logFilterTextField.setOnFilterListener(() -> onFilterListener.onFilter(getCurrentFilterParam()));
+    logFilterTextField.setOnFilterListener(this::doFilter);
     return logFilterTextField;
   }
 }
