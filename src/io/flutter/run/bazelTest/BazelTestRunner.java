@@ -80,6 +80,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
     final PositionMapper.Analyzer analyzer = PositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
+
     final BazelPositionMapper mapper =
       new BazelPositionMapper(env.getProject(), env.getProject().getBaseDir()/*this is different, incorrect?*/, resolver, analyzer,
                               connector);

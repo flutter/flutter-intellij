@@ -81,6 +81,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/launch.sh");
+    expectedCommandLine.add("--no-color");
     expectedCommandLine.add("foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }

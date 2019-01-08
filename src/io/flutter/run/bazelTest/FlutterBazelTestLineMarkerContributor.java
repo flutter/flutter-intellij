@@ -19,6 +19,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,6 +35,11 @@ public class FlutterBazelTestLineMarkerContributor extends RunLineMarkerContribu
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
+    final FlutterSettings settings = FlutterSettings.getInstance();
+    // Only the new bazel test runner supports running tests inside of a file or for a specific test name.
+    if (!settings.useNewBazelTestRunner()) {
+      return null;
+    }
     final BazelTestConfigUtils.TestType testCall = BazelTestConfigUtils.asTestCall(element);
     if (testCall != null) {
       final Icon icon = getTestStateIcon(element, testCall.getIcon());

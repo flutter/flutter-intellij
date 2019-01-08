@@ -25,6 +25,10 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSettingsConfigurable;
+import io.flutter.settings.FlutterSettings;
+import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -59,9 +63,12 @@ public class BazelTestFields {
   }
 
   private String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
+    final FlutterSettings settings = FlutterSettings.getInstance();
+
     String testScript = workspace.getTestScript();
     // Fall back on the regular launch script if the test script is not available.
-    if (testScript == null) {
+    // Also fall back on the regular launch script if the user has opted out of the new bazel test script.
+    if (testScript == null || !settings.useNewBazelTestRunner()) {
       testScript = workspace.getLaunchScript();
     }
     if (testScript != null && !testScript.startsWith("/")) {
@@ -151,6 +158,8 @@ public class BazelTestFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
+    final FlutterSettings settings = FlutterSettings.getInstance();
+
     switch (getScope()) {
       case TARGET_PATTERN:
         // check that bazel target is not empty
@@ -164,7 +173,10 @@ public class BazelTestFields {
         break;
       case FILE:
       case NAME:
-
+        if (!settings.useNewBazelTestRunner()) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.mustUseNewBazelTestRunner"),
+                                              () -> FlutterSettingsConfigurable.openFlutterSettings(project));
+        }
         final MainFile.Result main = MainFile.verify(entryFile, project);
         if (!main.canLaunch()) {
           throw new RuntimeConfigurationError(main.getError());
@@ -229,7 +241,7 @@ public class BazelTestFields {
     }
 
     if (mode == RunMode.DEBUG) {
-      commandLine.addParameters("--", "--enable-debugging", "--machine");
+      commandLine.addParameters("--", "--enable-debugging");
     }
     return commandLine;
   }

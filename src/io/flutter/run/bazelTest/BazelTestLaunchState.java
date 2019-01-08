@@ -11,11 +11,13 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The Bazel version of the {@link io.flutter.run.test.TestLaunchState}.
@@ -27,10 +29,12 @@ public class BazelTestLaunchState extends CommandLineState {
   @NotNull
   private final VirtualFile testFile;
 
-  protected BazelTestLaunchState(ExecutionEnvironment env, @NotNull BazelTestConfig config, @NotNull VirtualFile testFile) {
+  protected BazelTestLaunchState(ExecutionEnvironment env, @NotNull BazelTestConfig config, @Nullable VirtualFile testFile) {
     super(env);
     this.fields = config.getFields();
-    this.testFile = testFile;
+    this.testFile = testFile == null
+        ? Workspace.load(env.getProject()).getRoot()
+        : testFile;
   }
 
   @NotNull
@@ -55,7 +59,6 @@ public class BazelTestLaunchState extends CommandLineState {
     }
 
     final VirtualFile virtualFile = fields.getFile();
-    assert (virtualFile != null);
 
     final BazelTestLaunchState launcher = new BazelTestLaunchState(env, config, virtualFile);
     final Workspace workspace = FlutterModuleUtils.getFlutterBazelWorkspace(env.getProject());

@@ -31,6 +31,8 @@ public class FlutterSettings {
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
+  private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
+  private static final boolean newBazelTestRunnerDefaultValue = false;
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -87,6 +89,9 @@ public class FlutterSettings {
     }
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
+    }
+    if (useNewBazelTestRunner()) {
+      analytics.sendEvent("settings", afterLastPeriod(newBazelTestRunnerKey));
     }
   }
 
@@ -235,6 +240,21 @@ public class FlutterSettings {
 
   public void setMemoryProfilerDisabled(boolean value) {
     getPropertiesComponent().setValue(memoryProfilerKey, value, false);
+
+    fireEvent();
+  }
+
+  /**
+   * Whether or not to use the legacy bazel-run script or the new bazel-test script to run tests.
+   *
+   * Defaults to true.
+   */
+  public boolean useNewBazelTestRunner() {
+    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, newBazelTestRunnerDefaultValue);
+  }
+
+  public void setUseNewBazelTestRunner(boolean value) {
+    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, newBazelTestRunnerDefaultValue);
 
     fireEvent();
   }
