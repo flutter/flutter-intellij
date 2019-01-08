@@ -50,5 +50,6 @@
     <orderEntry type="library" exported="" name="Dart Packages" level="project" />
     <orderEntry type="library" name="miglayout-swing" level="project" />
     <orderEntry type="library" name="netty-codec-http" level="project" />
+    <orderEntry type="library" name="commons-io" level="project" />
   </component>
 </module>
