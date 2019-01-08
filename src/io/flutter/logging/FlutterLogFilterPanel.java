@@ -104,7 +104,7 @@ public class FlutterLogFilterPanel {
     final List<FlutterLog.Level> logLevels = Arrays.stream(FlutterLog.Level.values())
       .collect(Collectors.toList());
     logLevelComboBox.setModel(new CollectionComboBoxModel<>(logLevels));
-    logLevelComboBox.setSelectedItem(FlutterLog.Level.CONFIG);
+    logLevelComboBox.setSelectedItem(FlutterLog.Level.NONE);
     logLevelComboBox.addActionListener(event -> onFilterListener.onFilter(getCurrentFilterParam()));
     logLevelComboBox.setRenderer(new ColoredListCellRenderer<FlutterLog.Level>() {
       @Override
