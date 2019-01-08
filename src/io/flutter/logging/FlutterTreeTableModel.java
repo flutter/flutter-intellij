@@ -50,7 +50,7 @@ class FlutterTreeTableModel implements TableModel {
     final ColumnIndex index = ColumnIndex.forIndex(columnIndex);
 
     if (index != ColumnIndex.INVALID && obj instanceof FlutterLogEntry) {
-      return index.toLogString((FlutterLogEntry)obj);
+      return index.toValue((FlutterLogEntry)obj);
     }
     return obj;
   }
@@ -73,26 +73,26 @@ class FlutterTreeTableModel implements TableModel {
   public enum ColumnIndex {
     INVALID(-1) {
       @Override
-      public String toLogString(@NotNull FlutterLogEntry entry) {
-        throw new IllegalStateException("Can't get log string for `INVALID`");
+      public Object toValue(@NotNull FlutterLogEntry entry) {
+        throw new IllegalStateException("Can't get value for `INVALID`");
       }
     },
     MESSAGE(0) {
       @Override
-      public String toLogString(@NotNull FlutterLogEntry entry) {
+      public Object toValue(@NotNull FlutterLogEntry entry) {
         return entry.getMessage();
       }
     },
     CATEGORY(1) {
       @Override
-      public String toLogString(@NotNull FlutterLogEntry entry) {
+      public Object toValue(@NotNull FlutterLogEntry entry) {
         return entry.getCategory();
       }
     },
     LOG_LEVEL(2) {
       @Override
-      public String toLogString(@NotNull FlutterLogEntry entry) {
-        return FlutterLog.Level.forValue(entry.getLevel()).name();
+      public Object toValue(@NotNull FlutterLogEntry entry) {
+        return entry.getLevel();
       }
     };
 
@@ -102,7 +102,7 @@ class FlutterTreeTableModel implements TableModel {
       this.index = index;
     }
 
-    public abstract String toLogString(@NotNull FlutterLogEntry entry);
+    public abstract Object toValue(@NotNull FlutterLogEntry entry);
 
     @NotNull
     public static ColumnIndex forIndex(int index) {

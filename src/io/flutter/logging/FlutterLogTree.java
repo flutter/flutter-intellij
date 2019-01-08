@@ -642,19 +642,23 @@ public class FlutterLogTree extends TreeTable {
   }
 
   private RowFilter<TableModel, Object> getRowFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
+    final RowFilter<TableModel, Object> logLevelFilter = RowFilter
+      .numberFilter(RowFilter.ComparisonType.AFTER, filter.getLogLevel().value - 1, FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index);
+    final RowFilter<TableModel, Object> expressionFilter = getExpressionFilter(filter);
+    return expressionFilter != null ? RowFilter.andFilter(Arrays.asList(logLevelFilter, expressionFilter)) : logLevelFilter;
+  }
+
+  private RowFilter<TableModel, Object> getExpressionFilter(@NotNull FlutterLogFilterPanel.FilterParam filter) {
     final String nonNullExpression = filter.getExpression() == null ? "" : filter.getExpression();
     if (!nonNullExpression.isEmpty() || filter.isMatchCase() || filter.isRegex()) {
       final String quoteRegex = filter.isRegex() ? nonNullExpression : Pattern.quote(nonNullExpression);
       final String matchCaseRegex = filter.isMatchCase() ? "" : "(?i)";
       final String standardRegex = matchCaseRegex + "(?s).*" + quoteRegex + ".*";
-      final RowFilter<TableModel, Object> logMessageFilter;
-      final RowFilter<TableModel, Object> logLevelFilter;
       try {
         return RowFilter.regexFilter(
           standardRegex,
           FlutterTreeTableModel.ColumnIndex.MESSAGE.index,
-          FlutterTreeTableModel.ColumnIndex.CATEGORY.index,
-          FlutterTreeTableModel.ColumnIndex.LOG_LEVEL.index
+          FlutterTreeTableModel.ColumnIndex.CATEGORY.index
         );
       }
       catch (PatternSyntaxException e) {
@@ -662,7 +666,7 @@ public class FlutterLogTree extends TreeTable {
       }
     }
 
-    return EMPTY_FILTER;
+    return null;
   }
 
   void append(@NotNull FlutterLogEntry entry) {
