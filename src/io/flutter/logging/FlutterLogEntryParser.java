@@ -13,9 +13,12 @@ import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.logging.util.LineInfo;
@@ -58,12 +61,34 @@ public class FlutterLogEntryParser {
     df1.setMaximumFractionDigits(1);
   }
 
+  private final EventDispatcher<FlutterLogEntry.ContentListener>
+    contentChangedDispatcher = EventDispatcher.create(FlutterLogEntry.ContentListener.class);
+
+  public void addListener(@NotNull FlutterLogEntry.ContentListener listener, @NotNull Disposable parent) {
+    contentChangedDispatcher.addListener(listener, parent);
+  }
+
+  static abstract class GetObjectAdapter implements GetObjectConsumer {
+    @Override
+    public abstract void received(Obj response);
+
+    @Override
+    public void received(Sentinel response) {
+      // No-op.
+    }
+
+    @Override
+    public void onError(RPCError error) {
+      // No-op.
+    }
+  }
+
   private FlutterDebugProcess debugProcess;
 
   private final LineHandler lineHandler;
 
   public FlutterLogEntryParser(@NotNull Project project, @Nullable Module module) {
-    lineHandler = new LineHandler(project, module);
+    lineHandler = new LineHandler(createMessageFilters(project, module), null);
   }
 
   public void setDebugProcess(FlutterDebugProcess debugProcess) {
@@ -101,15 +126,20 @@ public class FlutterLogEntryParser {
       }
     }
 
-    // TODO(pq): If message.getValueAsStringIsTruncated() is true, we'll need to retrieve the full string
-    // value and update this entry after creation.
-    String messageStr = message.getValueAsString();
-    if (message.getValueAsStringIsTruncated()) {
-      messageStr += "...";
-    }
+    final String messageStr = message.getValueAsString();
+    final FlutterLogEntry entry = lineHandler.parseEntry(messageStr, category, level);
 
-    final LineInfo lineInfo = parseLine(messageStr, category);
-    final FlutterLogEntry entry =  new FlutterLogEntry(timestamp(), lineInfo, level);
+    if (message.getValueAsStringIsTruncated()) {
+      entry.setMessage(messageStr + "...");
+      final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
+      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectAdapter() {
+        @Override
+        public void received(Obj response) {
+          entry.setMessage(((Instance)response).getValueAsString());
+          contentChangedDispatcher.getMulticaster().onContentUpdate();
+        }
+      });
+    }
 
     final Instance data = new Instance(logRecord.getAsJsonObject().get("error").getAsJsonObject());
     if (!data.getValueAsStringIsTruncated()) {
@@ -117,20 +147,17 @@ public class FlutterLogEntryParser {
     }
     else {
       final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectConsumer() {
+      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectAdapter() {
         @Override
         public void received(Obj response) {
           entry.setData(((Instance)response).getValueAsString());
+          contentChangedDispatcher.getMulticaster().onContentUpdate();
         }
 
         @Override
         public void received(Sentinel response) {
           entry.setData(null);
-        }
-
-        @Override
-        public void onError(RPCError error) {
-          // TODO(pq): log?
+          contentChangedDispatcher.getMulticaster().onContentUpdate();
         }
       });
     }
@@ -152,10 +179,16 @@ public class FlutterLogEntryParser {
     final long timeMs = Math.round(time * 1000);
     final double usedMB = used / (1024.0 * 1024.0);
     final double maxMB = maxHeap / (1024.0 * 1024.0);
-    final String message = "collection time " + nf.format(timeMs) + "ms • " +  df1.format(usedMB) + "MB used of " + df1.format(maxMB) + "MB • " + isolateRef.getId();
+    final String message = "collection time " +
+                           nf.format(timeMs) +
+                           "ms • " +
+                           df1.format(usedMB) +
+                           "MB used of " +
+                           df1.format(maxMB) +
+                           "MB • " +
+                           isolateRef.getId();
 
-    final LineInfo lineInfo = parseLine(message, GC_CATEGORY);
-    return new FlutterLogEntry(timestamp(), lineInfo, UNDEFINED_LEVEL.value);
+    return lineHandler.parseEntry(message, GC_CATEGORY, UNDEFINED_LEVEL.value);
   }
 
   private static Kind parseKind(@NotNull String message, @NotNull String category) {
@@ -215,8 +248,9 @@ public class FlutterLogEntryParser {
   static class LineHandler extends LineParser {
     final List<StyledText> parsed = new ArrayList<>();
 
-    LineHandler(@NotNull Project project, @Nullable Module module) {
-      super(createMessageFilters(project, module));
+    LineHandler(@NotNull List<Filter> filters, @Nullable SimpleTextAttributes initialStyle) {
+      super(filters);
+      this.style = initialStyle;
     }
 
     @Override
@@ -224,7 +258,7 @@ public class FlutterLogEntryParser {
       parsed.add(styledText);
     }
 
-    List<StyledText> parseLine(@NotNull String line) {
+    private List<StyledText> parseLineStyle(@NotNull String line) {
       parse(line);
       // Copy results and clear.
       final ArrayList<StyledText> results = new ArrayList<>(parsed);
@@ -232,20 +266,39 @@ public class FlutterLogEntryParser {
       return results;
     }
 
-    @NotNull
-    static List<Filter> createMessageFilters(@NotNull Project project, @Nullable Module module) {
-      final List<Filter> filters = new ArrayList<>();
-      if (module != null) {
-        filters.add(new FlutterConsoleFilter(module));
+    LineInfo parseLineInfo(@NotNull String line, @NotNull String category) {
+      // Any carried over style info needs to be stored so it can be used by lines that need to be re-rendered.
+      // (For example, if they are truncated on arrival and need to be reconstituted with full content.)
+      final SimpleTextAttributes carriedOverStyle = style;
+
+      final Kind kind = parseKind(line, category);
+      // On reloads / restarts, clear cached styles in case we're in the middle of an unterminated style block.
+      if (kind == FlutterLogEntry.Kind.RELOAD || kind == FlutterLogEntry.Kind.RESTART) {
+        clear();
       }
-      filters.addAll(Arrays.asList(
-        new DartConsoleFilter(project, project.getBaseDir()),
-        new UrlFilter()
-      ));
-      return filters;
+
+      final List<StyledText> styledText = parseLineStyle(line);
+      return new LineInfo(line, styledText, kind, category, filters, carriedOverStyle);
+    }
+
+    FlutterLogEntry parseEntry(@NotNull String line, @NotNull String category, int level) {
+      final LineInfo lineInfo = parseLineInfo(line, category);
+      return new FlutterLogEntry(timestamp(), lineInfo, level);
     }
   }
 
+  @NotNull
+  static List<Filter> createMessageFilters(@NotNull Project project, @Nullable Module module) {
+    final List<Filter> filters = new ArrayList<>();
+    if (module != null) {
+      filters.add(new FlutterConsoleFilter(module));
+    }
+    filters.addAll(Arrays.asList(
+      new DartConsoleFilter(project, project.getBaseDir()),
+      new UrlFilter()
+    ));
+    return filters;
+  }
 
   @VisibleForTesting
   @Nullable
@@ -265,25 +318,11 @@ public class FlutterLogEntryParser {
         }
         // Fix unicode escape codes.
         line = line.replaceAll("\\\\\\^\\[", "\u001b");
-
-        final LineInfo lineInfo = parseLine(line, TOOLS_CATEGORY);
-        return new FlutterLogEntry(timestamp(), lineInfo, UNDEFINED_LEVEL.value);
+        return lineHandler.parseEntry(line, TOOLS_CATEGORY, UNDEFINED_LEVEL.value);
       }
     }
 
     return null;
-  }
-
-
-  LineInfo parseLine(@NotNull String line, @NotNull String category) {
-    final Kind kind = parseKind(line, category);
-    // On reloads / restarts, clear cached styles in case we're in the middle of an unterminated style block.
-    if (kind == FlutterLogEntry.Kind.RELOAD || kind == FlutterLogEntry.Kind.RESTART) {
-      lineHandler.clear();
-    }
-
-    final List<StyledText> styledText = lineHandler.parseLine(line);
-    return new LineInfo(line, styledText, kind, category);
   }
 
   public FlutterLogEntry parseConsoleEvent(String text, ConsoleViewContentType type) {

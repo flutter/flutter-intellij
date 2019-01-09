@@ -22,7 +22,7 @@ import java.util.List;
 public abstract class LineParser {
 
   private final StringBuilder buffer = new StringBuilder();
-  private final List<Filter> filters;
+  protected final List<Filter> filters;
   @VisibleForTesting
   protected SimpleTextAttributes style;
   private String str;

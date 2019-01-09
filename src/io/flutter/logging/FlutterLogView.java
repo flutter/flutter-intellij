@@ -740,6 +740,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   @Override
+  public void onEntryContentChange() {
+    logModel.uiExec(logModel::update, 10);
+  }
+
+  @Override
   public void print(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
     getFlutterLog().addConsoleEntry(text, contentType);
   }

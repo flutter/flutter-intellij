@@ -5,15 +5,22 @@
  */
 package io.flutter.logging;
 
+import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.SimpleTextAttributes;
 import io.flutter.logging.util.LineInfo;
 import io.flutter.logging.util.StyledText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.EventListener;
 import java.util.List;
 
 public class FlutterLogEntry {
+
+  interface ContentListener extends EventListener {
+    void onContentUpdate();
+  }
 
   public enum Kind {
     RELOAD,
@@ -29,7 +36,7 @@ public class FlutterLogEntry {
   private final String category;
   private final int level;
   @NotNull
-  private final String message;
+  private String message;
   // TODO(pq): consider making data an Instance or JsonElement
   @Nullable
   private String data;
@@ -37,24 +44,37 @@ public class FlutterLogEntry {
 
   @NotNull
   private final Kind kind;
-  @NotNull private final List<StyledText> styledText;
+  private List<StyledText> styledText;
+
+  @NotNull private final List<Filter> filters;
+
+  /**
+   * Describes any style info that was inherited from previously parsed lines.
+   */
+  @Nullable
+  private final SimpleTextAttributes inheritedStyle;
 
   public FlutterLogEntry(long timestamp,
                          @NotNull String category,
                          int level,
                          @Nullable String message,
                          @NotNull Kind kind,
-                         @NotNull List<StyledText> styledText) {
+                         @NotNull List<StyledText> styledText,
+                         @NotNull List<Filter> filters,
+                         @Nullable SimpleTextAttributes inheritedStyle) {
     this.timestamp = timestamp;
     this.category = category;
     this.level = level;
     this.message = StringUtil.notNullize(message);
     this.kind = kind;
     this.styledText = styledText;
+    this.filters = filters;
+    this.inheritedStyle = inheritedStyle;
   }
 
   public FlutterLogEntry(long timestamp, @NotNull LineInfo info, int level) {
-    this(timestamp, info.getCategory(), level, info.getLine(), info.getKind(), info.getStyledText());
+    this(timestamp, info.getCategory(), level, info.getLine(), info.getKind(), info.getStyledText(), info.getFilters(),
+         info.getInheritedStyle());
   }
 
   @Nullable
@@ -94,10 +114,25 @@ public class FlutterLogEntry {
     return message;
   }
 
+  public void setMessage(@NotNull String message) {
+    this.message = message;
+    this.styledText = null;
+  }
+
   @NotNull
   public List<StyledText> getStyledText() {
+    if (styledText == null) {
+      styledText = calculateStyledText();
+    }
     return styledText;
   }
+
+  private List<StyledText> calculateStyledText() {
+    final FlutterLogEntryParser.LineHandler lineHandler = new FlutterLogEntryParser.LineHandler(filters, inheritedStyle);
+    final LineInfo lineInfo = lineHandler.parseLineInfo(getMessage(), getCategory());
+    return lineInfo.getStyledText();
+  }
+
 
   /**
    * Return a sequence number, or -1 if unset.
