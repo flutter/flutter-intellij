@@ -44,7 +44,7 @@ public class FlutterBazelTestLineMarkerContributor extends RunLineMarkerContribu
     if (testCall != null) {
       final Icon icon = getTestStateIcon(element, testCall.getIcon());
       final Function<PsiElement, String> tooltipProvider =
-        psiElement -> testCall.getTooltip(element);
+        psiElement -> testCall.getTooltip(psiElement);
       return new Info(icon, tooltipProvider, ExecutorAction.getActions());
     }
 
