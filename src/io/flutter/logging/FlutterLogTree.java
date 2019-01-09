@@ -371,6 +371,10 @@ public class FlutterLogTree extends TreeTable {
       }
     }
 
+    void uiExec(@NotNull Runnable runnable, int delayMillis) {
+      uiThreadAlarm.addRequest(runnable, delayMillis);
+    }
+
     void update() {
       columns.update();
 

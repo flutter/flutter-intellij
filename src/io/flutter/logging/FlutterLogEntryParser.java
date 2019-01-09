@@ -13,10 +13,12 @@ import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.logging.util.LineInfo;
@@ -57,6 +59,28 @@ public class FlutterLogEntryParser {
   static {
     df1.setMinimumFractionDigits(1);
     df1.setMaximumFractionDigits(1);
+  }
+
+  private final EventDispatcher<FlutterLogEntry.ContentListener>
+    contentChangedDispatcher = EventDispatcher.create(FlutterLogEntry.ContentListener.class);
+
+  public void addListener(@NotNull FlutterLogEntry.ContentListener listener, @NotNull Disposable parent) {
+    contentChangedDispatcher.addListener(listener, parent);
+  }
+
+  static abstract class GetObjectAdapter implements GetObjectConsumer {
+    @Override
+    public abstract void received(Obj response);
+
+    @Override
+    public void received(Sentinel response) {
+      // No-op.
+    }
+
+    @Override
+    public void onError(RPCError error) {
+      // No-op.
+    }
   }
 
   private FlutterDebugProcess debugProcess;
@@ -108,20 +132,11 @@ public class FlutterLogEntryParser {
     if (message.getValueAsStringIsTruncated()) {
       entry.setMessage(messageStr + "...");
       final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectConsumer() {
+      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectAdapter() {
         @Override
         public void received(Obj response) {
           entry.setMessage(((Instance)response).getValueAsString());
-        }
-
-        @Override
-        public void received(Sentinel response) {
-          // TODO(pq): handle?
-        }
-
-        @Override
-        public void onError(RPCError error) {
-          // TODO(pq): log?
+          contentChangedDispatcher.getMulticaster().onContentUpdate();
         }
       });
     }
@@ -132,20 +147,17 @@ public class FlutterLogEntryParser {
     }
     else {
       final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectConsumer() {
+      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectAdapter() {
         @Override
         public void received(Obj response) {
           entry.setData(((Instance)response).getValueAsString());
+          contentChangedDispatcher.getMulticaster().onContentUpdate();
         }
 
         @Override
         public void received(Sentinel response) {
           entry.setData(null);
-        }
-
-        @Override
-        public void onError(RPCError error) {
-          // TODO(pq): log?
+          contentChangedDispatcher.getMulticaster().onContentUpdate();
         }
       });
     }
