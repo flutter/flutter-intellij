@@ -27,6 +27,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -105,6 +106,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
+
+    // Disable the bazel test runner experiment if no new bazel test script is available.
+    if (Workspace.load(myProject).getTestScript() == null) {
+      myUseNewBazelTestRunner.setEnabled(false);
+    }
   }
 
   private void createUIComponents() {
@@ -189,7 +195,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.useNewBazelTestRunner() != myUseNewBazelTestRunner.isSelected()) {
+    if (settings.useNewBazelTestRunner(myProject) != myUseNewBazelTestRunner.isSelected()) {
       return true;
     }
 
@@ -256,7 +262,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
     myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
-    myUseNewBazelTestRunner.setSelected(settings.useNewBazelTestRunner());
+    myUseNewBazelTestRunner.setSelected(settings.useNewBazelTestRunner(myProject));
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }

@@ -12,11 +12,15 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
+import io.flutter.bazel.Workspace;
 import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
+
+import static com.intellij.openapi.util.text.StringUtil.notNullize;
 
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
@@ -90,7 +94,7 @@ public class FlutterSettings {
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
-    if (useNewBazelTestRunner()) {
+    if (shouldUseNewBazelTestRunner()) {
       analytics.sendEvent("settings", afterLastPeriod(newBazelTestRunnerKey));
     }
   }
@@ -249,13 +253,23 @@ public class FlutterSettings {
    *
    * Defaults to true.
    */
-  public boolean useNewBazelTestRunner() {
+  public boolean useNewBazelTestRunner(Project project) {
+    // Check that the new test runner is available.
+    final Workspace workspace = Workspace.load(project);
+    @Nullable String testScript = workspace.getTestScript();
+    if (testScript == null) {
+      // The test script was not found, so it can't be used.
+      return false;
+    }
+    return shouldUseNewBazelTestRunner();
+  }
+
+  private boolean shouldUseNewBazelTestRunner() {
     return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, newBazelTestRunnerDefaultValue);
   }
 
   public void setUseNewBazelTestRunner(boolean value) {
     getPropertiesComponent().setValue(newBazelTestRunnerKey, value, newBazelTestRunnerDefaultValue);
-
     fireEvent();
   }
 

@@ -5,6 +5,7 @@
  */
 package io.flutter.run.bazelTest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
@@ -25,17 +26,17 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.RunMode;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSettingsConfigurable;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.settings.FlutterUIConfig;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.HashMap;
 import java.util.Map;
+
+import static com.intellij.openapi.util.text.StringUtil.notNullize;
+import static com.intellij.openapi.util.text.StringUtil.nullize;
 
 /**
  * The fields in a Bazel test run configuration.
@@ -62,16 +63,33 @@ public class BazelTestFields {
     this(template.testName, template.entryFile, template.bazelTarget);
   }
 
-  private String getTestScriptFromWorkspace(@NotNull final Workspace workspace) {
+  /**
+   * Returns whether the new test bazel runner is enabled, and if it's available.
+   */
+  private boolean useNewBazelTestRunner(Project project) {
+    // Check that the new test runner is available.
+    final Workspace workspace = getWorkspace(project);
     final FlutterSettings settings = FlutterSettings.getInstance();
+    return settings == null ? useNewBazelTestRunnerOverride : settings.useNewBazelTestRunner(project);
+  }
 
+  // The value to use for the bazel test runner setting if no FlutterSettings are available.
+  // TODO: set up a FlutterSettings implementation that we can use in tests.
+  // In the meanwhile, we'll assume that if settings is null, this code is running in a test.
+  // In the tests, we want to cover the new behavior by default, and provide coverage of the old
+  // behavior in cases where the new test script is not available.
+  @VisibleForTesting
+  boolean useNewBazelTestRunnerOverride = true;
+
+  private String getTestScriptFromWorkspace(@NotNull final Project project) {
+    final Workspace workspace = getWorkspace(project);
     String testScript = workspace.getTestScript();
     // Fall back on the regular launch script if the test script is not available.
     // Also fall back on the regular launch script if the user has opted out of the new bazel test script.
-    if (testScript == null || !settings.useNewBazelTestRunner()) {
+    if (testScript == null || !useNewBazelTestRunner(project)) {
       testScript = workspace.getLaunchScript();
     }
-    if (testScript != null && !testScript.startsWith("/")) {
+    if (testScript != null) {
       testScript = workspace.getRoot().getPath() + "/" + testScript;
     }
     return testScript;
@@ -158,31 +176,7 @@ public class BazelTestFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
-    final FlutterSettings settings = FlutterSettings.getInstance();
-
-    switch (getScope()) {
-      case TARGET_PATTERN:
-        // check that bazel target is not empty
-        if (StringUtil.isEmptyOrSpaces(bazelTarget)) {
-          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
-        }
-        // check that the bazel target starts with "//"
-        if (!bazelTarget.startsWith("//")) {
-          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
-        }
-        break;
-      case FILE:
-      case NAME:
-        if (!settings.useNewBazelTestRunner()) {
-          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.mustUseNewBazelTestRunner"),
-                                              () -> FlutterSettingsConfigurable.openFlutterSettings(project));
-        }
-        final MainFile.Result main = MainFile.verify(entryFile, project);
-        if (!main.canLaunch()) {
-          throw new RuntimeConfigurationError(main.getError());
-        }
-        break;
-    }
+    getScope(project).checkRunnable(this, project);
   }
 
   /**
@@ -191,13 +185,6 @@ public class BazelTestFields {
   @NotNull
   ProcessHandler run(@NotNull final Project project, @NotNull final RunMode mode) throws ExecutionException {
     return new OSProcessHandler(getLaunchCommand(project, mode));
-  }
-
-  /**
-   * Returns the app directory that corresponds to the entryFile and the given project.
-   */
-  protected VirtualFile getAppDir(@NotNull Project project) {
-    return MainFile.verify(entryFile, project).get().getAppDir();
   }
 
   /**
@@ -214,30 +201,36 @@ public class BazelTestFields {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile appDir = getAppDir(project);
     final Workspace workspace = getWorkspace(project);
 
-    final String launchingScript = getTestScriptFromWorkspace(workspace);
+    final String launchingScript = getTestScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
 
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
-    final String relativeEntryFilePath = entryFile == null
-        ? null
-        : FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
-    commandLine.addParameter("--no-color");
-    switch (getScope()) {
-      case NAME:
-        commandLine.addParameters("--name", testName);
-        commandLine.addParameter(relativeEntryFilePath);
-        break;
-      case FILE:
-        commandLine.addParameter(relativeEntryFilePath);
-        break;
-      case TARGET_PATTERN:
-        commandLine.addParameter(bazelTarget);
-        break;
+    // If we use the normal bazel launch script, then we want to use only flags for that mode.
+    // This will be invoked if FlutterSettings.useNewBazelTestRunner is false, or if the
+    // new bazel test script is not available.
+    if (!useNewBazelTestRunner(project)) {
+      commandLine.addParameter(bazelTarget);
+    } else {
+      commandLine.addParameter("--no-color");
+      final String relativeEntryFilePath = entryFile == null
+          ? null
+          : FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
+      switch (getScope(project)) {
+        case NAME:
+          commandLine.addParameters("--name", testName);
+          commandLine.addParameter(relativeEntryFilePath);
+          break;
+        case FILE:
+          commandLine.addParameter(relativeEntryFilePath);
+          break;
+        case TARGET_PATTERN:
+          commandLine.addParameter(bazelTarget);
+          break;
+      }
     }
 
     if (mode == RunMode.DEBUG) {
@@ -249,6 +242,13 @@ public class BazelTestFields {
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
     return Workspace.load(project);
+  }
+
+  protected void verifyMainFile(Project project) throws RuntimeConfigurationError {
+    final MainFile.Result main = MainFile.verify(entryFile, project);
+    if (!main.canLaunch()) {
+      throw new RuntimeConfigurationError(main.getError());
+    }
   }
 
 
@@ -268,16 +268,17 @@ public class BazelTestFields {
    *
    */
   @NotNull
-  public Scope getScope() {
+  public Scope getScope(Project project) {
+    if (!useNewBazelTestRunner(project)) {
+      return Scope.TARGET_PATTERN;
+    }
     if (testName != null && entryFile != null) {
       return Scope.NAME;
     }
-    else if (entryFile != null) {
+    if (entryFile != null) {
       return Scope.FILE;
     }
-    else {
-      return Scope.TARGET_PATTERN;
-    }
+    return Scope.TARGET_PATTERN;
   }
 
   public void writeTo(Element element) {
@@ -311,16 +312,34 @@ public class BazelTestFields {
     FILE("All tests in a file") {
       @Override
       public void checkRunnable(@NotNull BazelTestFields fields, @NotNull Project project) throws RuntimeConfigurationError {
-        final MainFile.Result main = MainFile.verify(fields.entryFile, project);
-        if (!main.canLaunch()) {
-          throw new RuntimeConfigurationError(main.getError());
+        // The new bazel test runner could not be found.
+        final Workspace workspace = fields.getWorkspace(project);
+        if (workspace == null ||  workspace.getTestScript() == null) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.newBazelTestRunnerUnavailable"),
+                                              () -> FlutterSettingsConfigurable.openFlutterSettings(project));
         }
+        // The new bazel test runner was not turned on.
+        if (!fields.useNewBazelTestRunner(project)) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.mustUseNewBazelTestRunner"),
+                                              () -> FlutterSettingsConfigurable.openFlutterSettings(project));
+        }
+
+        fields.verifyMainFile(project);
       }
     },
 
     TARGET_PATTERN("All tests in a bazel target or matching a bazel target pattern") {
       @Override
-      public void checkRunnable(@NotNull BazelTestFields fields, @NotNull Project project) {}
+      public void checkRunnable(@NotNull BazelTestFields fields, @NotNull Project project) throws RuntimeConfigurationError {
+        // check that bazel target is not empty
+        if (StringUtil.isEmptyOrSpaces(fields.getBazelTarget())) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noTargetSet"));
+        }
+        // check that the bazel target starts with "//"
+        if (!fields.getBazelTarget().startsWith("//")) {
+          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.startWithSlashSlash"));
+        }
+      }
     };
 
     private final String displayName;

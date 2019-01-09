@@ -7,9 +7,9 @@ package io.flutter.run.bazelTest;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.bazel.PluginConfig;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.daemon.RunMode;
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 
 public class LaunchCommandsTest {
@@ -32,15 +33,30 @@ public class LaunchCommandsTest {
 
   @Test
   public void producesCorrectCommandLineForBazelTarget() throws ExecutionException {
-    final BazelTestFields fields = forTarget("foo:test");
+    final BazelTestFields fields = forTarget("//foo:test");
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
-    expectedCommandLine.add("foo:test");
+    expectedCommandLine.add("//foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
+
+  @Test
+  public void producesCorrectCommandLineForBazelTargetInDebugMode() throws ExecutionException {
+    final BazelTestFields fields = forTarget("//foo:test");
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("//foo:test");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--enable-debugging");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
 
   @Test
   public void producesCorrectCommandLineForFile() throws ExecutionException {
@@ -51,6 +67,20 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("foo/test/foo_test.dart");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+  @Test
+  public void producesCorrectCommandLineForFileInDebugMode() throws ExecutionException {
+    final BazelTestFields fields = forFile("/workspace/foo/test/foo_test.dart");
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("foo/test/foo_test.dart");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--enable-debugging");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
@@ -69,9 +99,26 @@ public class LaunchCommandsTest {
   }
 
   @Test
+  public void producesCorrectCommandLineForTestNameInDebugMode() throws ExecutionException {
+    final BazelTestFields fields = forTestName("first test", "/workspace/foo/test/foo_test.dart");
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--no-color");
+    expectedCommandLine.add("--name");
+    expectedCommandLine.add("first test");
+    expectedCommandLine.add("foo/test/foo_test.dart");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--enable-debugging");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+
+  @Test
   public void producesCorrectCommandLineForBazelTargetWithoutTestScript() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("foo:test"),
+      BazelTestFields.forTarget("//foo:test"),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
@@ -81,8 +128,106 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/launch.sh");
+    expectedCommandLine.add("//foo:test");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+  @Test
+  public void producesCorrectCommandLineForBazelTargetWithoutTestScriptInDebugMode() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      BazelTestFields.forTarget("//foo:test"),
+      "scripts/daemon.sh",
+      "scripts/doctor.sh",
+      "scripts/launch.sh",
+      null
+    );
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/launch.sh");
+    expectedCommandLine.add("//foo:test");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--enable-debugging");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+  @Test
+  public void failsForFileWithoutTestScript() {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      BazelTestFields.forFile("/workspace/foo/test/foo_test.dart"),
+      "scripts/daemon.sh",
+      "scripts/doctor.sh",
+      "scripts/launch.sh",
+      null
+    );
+    boolean didThrow = false;
+    try {
+      final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+    } catch (ExecutionException e) {
+      didThrow = true;
+    }
+    assertTrue("This test method expected to throw an exception, but did not.", didThrow);
+  }
+
+  @Test
+  public void failsForFileWithoutNewTestRunner() {
+    final BazelTestFields fields = forFile("/workspace/foo/test/foo_test.dart");
+    fields.useNewBazelTestRunnerOverride = false;
+    boolean didThrow = false;
+    try {
+      final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+    } catch (ExecutionException e) {
+      didThrow = true;
+    }
+    assertTrue("This test method expected to throw an exception, but did not.", didThrow);
+  }
+
+  @Test
+  public void failsForTestNameWithoutTestScript() {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart"),
+      "scripts/daemon.sh",
+      "scripts/doctor.sh",
+      "scripts/launch.sh",
+      null
+    );
+    boolean didThrow = false;
+    try {
+      final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+    } catch (ExecutionException e) {
+      didThrow = true;
+    }
+    assertTrue("This test method expected to throw an exception, but did not.", didThrow);
+  }
+
+  @Test
+  public void runsInFileModeWhenBothFileAndBazelTargetAreProvided() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test")
+    );
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
     expectedCommandLine.add("--no-color");
-    expectedCommandLine.add("foo:test");
+    expectedCommandLine.add("foo/test/foo_test.dart");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+  @Test
+  public void runsInBazelTargetModeWhenBothFileAndBazelTargetAreProvidedWithoutTestScript() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test"),
+      "scripts/daemon.sh",
+      "scripts/doctor.sh",
+      "scripts/launch.sh",
+      null
+    );
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+
+    final List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/launch.sh");
+    expectedCommandLine.add("//foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
@@ -125,6 +270,10 @@ public class LaunchCommandsTest {
       if (testScript!= null) {
         fs.file("/workspace/" + testScript, "");
       }
+      if (testScript == null) {
+        // When the test script is null, Flutter Settings will report the new Bazel test script as disabled.
+        useNewBazelTestRunnerOverride = false;
+      }
       fakeWorkspace = Workspace.forTest(
         fs.findFileByPath("/workspace/"),
         PluginConfig.forTest(
@@ -148,7 +297,10 @@ public class LaunchCommandsTest {
     }
 
     @Override
-    void checkRunnable(@NotNull Project project) {}
+    void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {
+      // Skip the Dart VM check in test code.
+      getScope(project).checkRunnable(this, project);
+    }
 
     @Nullable
     @Override
@@ -157,15 +309,8 @@ public class LaunchCommandsTest {
     }
 
     @Override
-    @Nullable
-    protected VirtualFile getAppDir(@NotNull Project project) {
-      if (getEntryFile() == null)
-        return null;
-      @NotNull
-      final String entryFile = getEntryFile();
-
-      // With the default entryFile from setupBazelFields, the application directory is the container of lib/main.dart.
-      return fs.refreshAndFindFileByPath(entryFile.replace("lib/main.dart", ""));
+    protected void verifyMainFile(Project project) throws RuntimeConfigurationError {
+      // We don't have access to the filesystem in tests, so don't verify anything.
     }
   }
 }
