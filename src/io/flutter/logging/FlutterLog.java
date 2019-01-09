@@ -29,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class FlutterLog {
+public class FlutterLog implements FlutterLogEntry.ContentListener {
 
   private static final Logger LOG = Logger.getInstance(FlutterLog.class);
 
@@ -37,6 +37,8 @@ public class FlutterLog {
 
   public interface Listener extends EventListener {
     void onEvent(@NotNull FlutterLogEntry entry);
+
+    void onEntryContentChange();
   }
 
   // derived from: https://github.com/dart-lang/logging
@@ -89,6 +91,7 @@ public class FlutterLog {
 
   public FlutterLog(@NotNull Project project, @Nullable Module module) {
     logEntryParser = new FlutterLogEntryParser(project, module);
+    logEntryParser.addListener(this, project);
   }
 
   public void addConsoleEntry(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
@@ -195,5 +198,10 @@ public class FlutterLog {
 
   public void setFlutterDebugProcess(FlutterDebugProcess process) {
     logEntryParser.setDebugProcess(process);
+  }
+
+  @Override
+  public void onContentUpdate() {
+    dispatcher.getMulticaster().onEntryContentChange();
   }
 }
