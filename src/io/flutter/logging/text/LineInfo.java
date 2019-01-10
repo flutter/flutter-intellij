@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.logging.util;
+package io.flutter.logging.text;
 
 import com.intellij.execution.filters.Filter;
 import com.intellij.ui.SimpleTextAttributes;
