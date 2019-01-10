@@ -8,8 +8,8 @@ package io.flutter.logging;
 import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.SimpleTextAttributes;
-import io.flutter.logging.util.LineInfo;
-import io.flutter.logging.util.StyledText;
+import io.flutter.logging.text.LineInfo;
+import io.flutter.logging.text.StyledText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

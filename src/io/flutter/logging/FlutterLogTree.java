@@ -5,14 +5,10 @@
  */
 package io.flutter.logging;
 
-import com.intellij.icons.AllIcons;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.ui.ColoredTableCellRenderer;
-import com.intellij.ui.JBColor;
-import com.intellij.ui.SimpleColoredRenderer;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.treeStructure.treetable.ListTreeTableModelOnColumns;
 import com.intellij.ui.treeStructure.treetable.TreeTable;
@@ -20,17 +16,13 @@ import com.intellij.ui.treeStructure.treetable.TreeTableTree;
 import com.intellij.util.Alarm;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.ui.ColumnInfo;
-import com.intellij.util.ui.JBUI;
-import io.flutter.logging.util.StyledText;
+import io.flutter.logging.tree.*;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.JsonUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.border.CompoundBorder;
 import javax.swing.table.*;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.MutableTreeNode;
@@ -38,7 +30,6 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -46,60 +37,14 @@ import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
 import static io.flutter.logging.FlutterLogConstants.LogColumns.*;
+import static io.flutter.logging.tree.TimeCellRenderer.TIMESTAMP_FORMAT;
 
 public class FlutterLogTree extends TreeTable {
-  private static final SimpleDateFormat TIMESTAMP_FORMAT = new SimpleDateFormat("HH:mm:ss.SSS");
+
   private static final Logger LOG = Logger.getInstance(FlutterLogTree.class);
 
   private static class ColumnModel {
-
-    private abstract class EntryCellRenderer extends ColoredTableCellRenderer {
-
-      private final Border RELOAD_LINE =
-        new CompoundBorder(BorderFactory.createEmptyBorder(0, -1, -1, -1), BorderFactory.createDashedBorder(
-          JBColor.ORANGE, 5, 5));
-      private final Border RESTART_LINE =
-        new CompoundBorder(BorderFactory.createEmptyBorder(0, -1, -1, -1), BorderFactory.createDashedBorder(JBColor.GREEN, 5, 5));
-
-      @Override
-      protected final void customizeCellRenderer(JTable table,
-                                                 @Nullable Object value,
-                                                 boolean selected,
-                                                 boolean hasFocus,
-                                                 int row,
-                                                 int column) {
-        if (value instanceof FlutterLogEntry) {
-          final FlutterLogEntry entry = (FlutterLogEntry)value;
-          render(entry);
-          if (row > 0) {
-            if (entry.getKind() == FlutterLogEntry.Kind.RELOAD) {
-              setBorder(RELOAD_LINE);
-            }
-            else if (entry.getKind() == FlutterLogEntry.Kind.RESTART) {
-              setBorder(RESTART_LINE);
-            }
-          }
-        }
-      }
-
-      @Override
-      public void acquireState(JTable table, boolean isSelected, boolean hasFocus, int row, int column) {
-        // Prevent cell borders on selected cells.
-        super.acquireState(table, isSelected, false, row, column);
-      }
-
-      void appendStyled(FlutterLogEntry entry, String text) {
-        final SimpleTextAttributes style = entryModel.style(entry, STYLE_PLAIN);
-        if (style.getBgColor() != null) {
-          setBackground(style.getBgColor());
-        }
-        append(text, style);
-      }
-
-      abstract void render(FlutterLogEntry entry);
-    }
 
     class Column extends ColumnInfo<DefaultMutableTreeNode, FlutterLogEntry> {
       boolean show = true;
@@ -130,99 +75,9 @@ public class FlutterLogTree extends TreeTable {
       }
     }
 
-    private class TimeCellRenderer extends EntryCellRenderer {
-      @Override
-      void render(FlutterLogEntry entry) {
-        appendStyled(entry, TIMESTAMP_FORMAT.format(entry.getTimestamp()));
-      }
-    }
-
-    private class SequenceCellRenderer extends EntryCellRenderer {
-      @Override
-      void render(FlutterLogEntry entry) {
-        appendStyled(entry, Integer.toString(entry.getSequenceNumber()));
-      }
-    }
-
-    private class LevelCellRenderer extends EntryCellRenderer {
-      @Override
-      void render(FlutterLogEntry entry) {
-        final FlutterLog.Level level = FlutterLog.Level.forValue(entry.getLevel());
-        final String value = level.toDisplayString();
-        appendStyled(entry, value);
-      }
-    }
-
-    private class CategoryCellRenderer extends SimpleColoredRenderer implements TableCellRenderer {
-
-      @Override
-      public final Component getTableCellRendererComponent(JTable table, @Nullable Object value,
-                                                           boolean isSelected, boolean hasFocus, int row, int col) {
-        final JPanel panel = new JPanel();
-        panel.setLayout(new BoxLayout(panel, BoxLayout.X_AXIS));
-
-        if (value instanceof FlutterLogEntry) {
-          final String category = ((FlutterLogEntry)value).getCategory();
-          final JLabel label = new JLabel(" " + category + " ");
-
-          label.setBackground(FlutterLogColors.forCategory(category));
-          label.setForeground(JBColor.background());
-          label.setOpaque(true);
-          panel.add(Box.createHorizontalGlue());
-          panel.add(label);
-          panel.add(Box.createHorizontalStrut(8));
-        }
-
-        clear();
-        setPaintFocusBorder(hasFocus && table.getCellSelectionEnabled());
-        acquireState(table, isSelected, hasFocus, row, col);
-        getCellState().updateRenderer(this);
-
-        if (isSelected) {
-          panel.setBackground(table.getSelectionBackground());
-        }
-
-        return panel;
-      }
-    }
-
-    private class MessageCellRenderer extends EntryCellRenderer {
-      @NotNull
-      private final FlutterApp app;
-
-      MessageCellRenderer(@NotNull FlutterApp app) {
-        this.app = app;
-        setIconTextGap(JBUI.scale(5));
-        setIconOnTheRight(true);
-        setIconOpaque(false);
-        setTransparentIconBackground(true);
-      }
-
-      @Override
-      void render(FlutterLogEntry entry) {
-        final SimpleTextAttributes style = entryModel.style(entry, STYLE_PLAIN);
-        if (style.getBgColor() != null) {
-          setBackground(style.getBgColor());
-        }
-
-        // TODO(pq): SpeedSearchUtil.applySpeedSearchHighlighting
-        // TODO(pq): setTooltipText
-
-        for (StyledText styledText : entry.getStyledText()) {
-          append(styledText.getText(), styledText.getStyle() != null ? styledText.getStyle() : style, styledText.getTag());
-        }
-
-        // Append data badge
-        if (JsonUtils.hasJsonData(entry.getData())) {
-          setIcon(AllIcons.General.Information);
-        }
-      }
-    }
-
     private final List<Column> columns = new ArrayList<>();
 
     private final FlutterApp app;
-    @NotNull private final EntryModel entryModel;
     boolean updateVisibility;
     private List<Column> visible;
     private ArrayList<TableColumn> tableColumns;
@@ -232,13 +87,12 @@ public class FlutterLogTree extends TreeTable {
 
     ColumnModel(@NotNull FlutterApp app, @NotNull EntryModel entryModel) {
       this.app = app;
-      this.entryModel = entryModel;
       columns.addAll(Arrays.asList(
-        new Column(TIME, new TimeCellRenderer()),
-        new Column(SEQUENCE, new SequenceCellRenderer()),
-        new Column(LEVEL, new LevelCellRenderer()),
+        new Column(TIME, new TimeCellRenderer(entryModel)),
+        new Column(SEQUENCE, new SequenceCellRenderer(entryModel)),
+        new Column(LEVEL, new LevelCellRenderer(entryModel)),
         new Column(CATEGORY, new CategoryCellRenderer()),
-        new Column(MESSAGE, new MessageCellRenderer(app))
+        new Column(MESSAGE, new MessageCellRenderer(app, entryModel))
       ));
       // Cache for quick access.
       visible = columns.stream().filter(c -> c.show).collect(Collectors.toList());
