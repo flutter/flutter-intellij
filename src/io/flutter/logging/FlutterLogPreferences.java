@@ -7,12 +7,8 @@ package io.flutter.logging;
 
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.project.Project;
-import com.intellij.util.EventDispatcher;
 import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 @State(name = "FlutterLogPreferences", storages = @Storage(StoragePathMacros.WORKSPACE_FILE))
 public class FlutterLogPreferences implements PersistentStateComponent<FlutterLogPreferences> {
@@ -27,10 +23,6 @@ public class FlutterLogPreferences implements PersistentStateComponent<FlutterLo
   private int toolWindowLogLevel = FlutterLog.Level.NONE.value;
   private boolean toolWindowMatchCase = false;
   private boolean toolWindowRegex = false;
-
-  private float splitterProportion;
-
-  private final EventDispatcher<ChangeListener> viewStateDispatcher = EventDispatcher.create(ChangeListener.class);
 
   public static FlutterLogPreferences getInstance(Project project) {
     return ServiceManager.getService(project, FlutterLogPreferences.class);
@@ -124,24 +116,5 @@ public class FlutterLogPreferences implements PersistentStateComponent<FlutterLo
 
   public void setToolWindowRegex(boolean toolWindowRegex) {
     this.toolWindowRegex = toolWindowRegex;
-  }
-
-  // View state
-
-  public float getSplitterProportion() {
-    return splitterProportion <= 0.0f ? 0.75f : splitterProportion;
-  }
-
-  public void setSplitterProportion(float value) {
-    splitterProportion = value;
-    viewStateDispatcher.getMulticaster().stateChanged(new ChangeEvent(this));
-  }
-
-  public void addViewStateListener(@NotNull ChangeListener listener) {
-    viewStateDispatcher.addListener(listener);
-  }
-
-  public void removeViewStateListener(@NotNull ChangeListener listener) {
-    viewStateDispatcher.removeListener(listener);
   }
 }
