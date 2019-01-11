@@ -704,7 +704,7 @@ class ForceRefreshAction extends FlutterViewAction {
 
 class HideDebugModeBannerAction extends FlutterViewToggleableAction {
   HideDebugModeBannerAction(@NotNull FlutterApp app) {
-    super(app, "Hide Debug Mode Banner");
+    super(app, "Hide Debug Mode Banner", "Hide Debug Mode Banner", FlutterIcons.DebugBanner);
 
     setExtensionCommand("ext.flutter.debugAllowBanner");
     setEnabledStateValue(false);

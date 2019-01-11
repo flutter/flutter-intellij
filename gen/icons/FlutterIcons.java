@@ -34,6 +34,9 @@ public class FlutterIcons {
   public static final Icon HotReloadRun = load("/icons/reload_run.png");
   public static final Icon HotReloadDebug = load("/icons/reload_debug.png");
 
+  public static final Icon DebugBanner = load("/icons/debugBanner.png");
+  public static final Icon DebugPaint = load("/icons/debugPaint.png");
+
   public static final Icon BazelRun = load("/icons/bazel_run.png");
 
   public static final Icon CustomClass = load("/icons/custom/class.png");
