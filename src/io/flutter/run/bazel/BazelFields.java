@@ -61,18 +61,6 @@ public class BazelFields {
   }
 
   /**
-   * The file containing the main function that starts the Flutter app.
-   */
-  @Nullable
-  public String getEntryFile() {
-    return entryFile;
-  }
-
-  public void setEntryFile(final @Nullable String entryFile) {
-    this.entryFile = entryFile;
-  }
-
-  /**
    * Present only for deserializing old run configs.
    */
   @SuppressWarnings("SameReturnValue")
@@ -171,13 +159,6 @@ public class BazelFields {
   }
 
   /**
-   * Returns the app directory that corresponds to the entryFile and the given project.
-   */
-  protected VirtualFile getAppDir(@NotNull Project project) {
-    return MainFile.verify(entryFile, project).get().getAppDir();
-  }
-
-  /**
    * Returns the command to use to launch the Flutter app. (Via running the Bazel target.)
    */
   GeneralCommandLine getLaunchCommand(@NotNull Project project,
@@ -191,7 +172,7 @@ public class BazelFields {
       throw new ExecutionException(e);
     }
 
-    final VirtualFile appDir = getAppDir(project);
+    final Workspace workspace = getWorkspace(project);
 
     final String launchingScript = getLaunchScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
@@ -201,7 +182,7 @@ public class BazelFields {
 
     final String additionalArgs = getAdditionalArgs();
 
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(appDir.getPath());
+    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
@@ -226,9 +207,9 @@ public class BazelFields {
     }
 
     // User specified additional bazel arguments.
-    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(bazelArgs));
-    while (argumentsTokenizer.hasMoreTokens()) {
-      commandLine.addParameter(argumentsTokenizer.nextToken());
+    final CommandLineTokenizer bazelArgsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(bazelArgs));
+    while (bazelArgsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(bazelArgsTokenizer.nextToken());
     }
     // (the implicit else here is the debug case)
 
@@ -281,9 +262,9 @@ public class BazelFields {
     }
 
     // User specified additional target arguments.
-    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
-    while (argumentsTokenizer.hasMoreTokens()) {
-      commandLine.addParameter(argumentsTokenizer.nextToken());
+    final CommandLineTokenizer additionalArgsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
+    while (additionalArgsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(additionalArgsTokenizer.nextToken());
     }
 
     // Send in the deviceId.
