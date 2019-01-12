@@ -101,7 +101,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   @Override
   protected void applyEditorTo(@NotNull final BazelTestConfig configuration) {
     final String testName = getTextValue(myTestName);
-    final String entryFile = getTextValue(myEntryFile);
+    final String entryFile = getFilePathFromTextValue(myEntryFile);
     final String bazelTarget = getTextValue(myBuildTarget);
     final BazelTestFields fields = new BazelTestFields(
       testName,
@@ -126,7 +126,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     if (next == Scope.TARGET_PATTERN && displayedScope != Scope.TARGET_PATTERN) {
     }
     else if (next != Scope.TARGET_PATTERN) {
-      if (getTextValue(myEntryFile) == null) {
+      if (getFilePathFromTextValue(myEntryFile) == null) {
         myEntryFile.setText(myBuildTarget.getText().replace("//", ""));
       }
     }
@@ -206,7 +206,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   }
 
   @Nullable
-  private String getTextValue(TextFieldWithBrowseButton textField) {
-    return getTextValue(textField.getText());
+  private String getFilePathFromTextValue(TextFieldWithBrowseButton textField) {
+    return getTextValue(FileUtil.toSystemIndependentName(textField.getText()));
   }
 }
