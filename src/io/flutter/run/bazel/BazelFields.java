@@ -93,9 +93,10 @@ public class BazelFields {
     return new BazelFields(this);
   }
 
+  @Nullable
   private String getLaunchScriptFromWorkspace(@NotNull final Project project) {
     final Workspace workspace = getWorkspace(project);
-    String launchScript = workspace.getLaunchScript();
+    String launchScript = workspace == null ? null : workspace.getLaunchScript();
     if (launchScript != null) {
       launchScript = workspace.getRoot().getPath() + "/" + launchScript;
     }

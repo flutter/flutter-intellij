@@ -15,6 +15,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
@@ -41,16 +42,19 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   @Override
   protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
     final BazelFields fields = configuration.getFields();
-    myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
     myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
-    myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getLaunchingScript())));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
 
   @Override
   protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
-    final BazelFields fields = new BazelFields(args);
+    final BazelFields fields = new BazelFields(
+      getTextValue(myBuildTarget),
+      getTextValue(myAdditionalArgs),
+      getTextValue(myAdditionalArgs),
+      myEnableReleaseModeCheckBox.isSelected()
+    );
     fields.setEntryFile(StringUtil.nullize(FileUtil.toSystemIndependentName(myEntryFile.getText().trim()), true));
     fields.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
     fields.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
@@ -63,5 +67,20 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   @Override
   protected JComponent createEditor() {
     return myMainPanel;
+  }
+
+  @Nullable
+  private String getTextValue(@NotNull String textFieldContents) {
+    return StringUtil.nullize(textFieldContents.trim(), true);
+  }
+
+  @Nullable
+  private String getTextValue(JTextField textField) {
+    return getTextValue(textField.getText());
+  }
+
+  @Nullable
+  private String getTextValue(TextFieldWithBrowseButton textField) {
+    return getTextValue(FileUtil.toSystemIndependentName(textField.getText()));
   }
 }
