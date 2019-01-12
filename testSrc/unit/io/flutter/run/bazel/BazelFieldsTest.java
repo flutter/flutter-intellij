@@ -30,7 +30,7 @@ public class BazelFieldsTest {
     addOption(elt, "enableReleaseMode", "true");
     addOption(elt, "additionalArgs", "--android_cpu=x86");
 
-    final BazelFields fields = new BazelFields();
+    final BazelFields fields = new BazelFields(args);
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
     assertEquals("path/to/bazel-run.sh", fields.getLaunchingScript());
@@ -47,7 +47,7 @@ public class BazelFieldsTest {
     addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
     addOption(elt, "additionalArgs", "--android_cpu=x86");
 
-    final BazelFields fields = new BazelFields();
+    final BazelFields fields = new BazelFields(args);
     XmlSerializer.deserializeInto(fields, elt);
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
     assertEquals("path/to/bazel-run.sh", fields.getLaunchingScript());
@@ -57,7 +57,7 @@ public class BazelFieldsTest {
 
   @Test
   public void roundTripShouldPreserveFields() {
-    final BazelFields before = new BazelFields();
+    final BazelFields before = new BazelFields(args);
     before.setEntryFile("/tmp/foo/lib/main.dart");
     before.setLaunchingScript("launch");
     before.setBazelTarget("target");
@@ -72,7 +72,7 @@ public class BazelFieldsTest {
       new String[]{"additionalArgs", "bazelTarget", "enableReleaseMode", "entryFile", "launchingScript"},
       getOptionNames(elt).toArray());
 
-    final BazelFields after = new BazelFields();
+    final BazelFields after = new BazelFields(args);
     XmlSerializer.deserializeInto(after, elt);
 
     assertEquals("/tmp/foo/lib/main.dart", after.getEntryFile());

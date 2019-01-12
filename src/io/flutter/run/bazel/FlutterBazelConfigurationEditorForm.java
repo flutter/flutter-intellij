@@ -26,6 +26,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
 
   private JLabel myLaunchingScriptLabel;
   private TextFieldWithBrowseButton myLaunchingScript;
+  private JTextField myBazelArgs;
   private JTextField myAdditionalArgs;
   private JTextField myBuildTarget;
   private JCheckBox myEnableReleaseModeCheckBox;
@@ -49,7 +50,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
 
   @Override
   protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
-    final BazelFields fields = new BazelFields();
+    final BazelFields fields = new BazelFields(args);
     fields.setEntryFile(StringUtil.nullize(FileUtil.toSystemIndependentName(myEntryFile.getText().trim()), true));
     fields.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
     fields.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));

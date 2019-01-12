@@ -243,6 +243,10 @@ public class LaunchCommandsTest {
   private static class FakeBazelTestFields extends BazelFields {
     MockVirtualFileSystem fs = new MockVirtualFileSystem();
 
+    private FakeBazelTestFields() {
+      super(args);
+    }
+
     @Override
     void checkRunnable(@NotNull Project project) {}
 

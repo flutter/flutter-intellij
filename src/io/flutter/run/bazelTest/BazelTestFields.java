@@ -176,6 +176,16 @@ public class BazelTestFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
+    final String testScript = getTestScriptFromWorkspace(project);
+    if (testScript == null) {
+      throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
+    }
+    final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(testScript);
+    if (scriptFile == null) {
+      throw new RuntimeConfigurationError(
+        FlutterBundle.message("flutter.run.bazel.launchingScriptNotFound", FileUtil.toSystemDependentName(testScript)));
+    }
+
     getScope(project).checkRunnable(this, project);
   }
 

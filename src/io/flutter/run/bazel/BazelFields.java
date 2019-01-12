@@ -19,7 +19,6 @@ import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
-import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterDevice;
@@ -34,37 +33,31 @@ import static io.flutter.run.daemon.RunMode.*;
  */
 public class BazelFields {
 
-  private @Nullable String entryFile;
-  private @Nullable String launchScript;
-  private @Nullable String bazelTarget;
-  private boolean enableReleaseMode = false;
-  private @Nullable String additionalArgs;
+  @Nullable
+  private final String bazelTarget;
 
-  BazelFields() {
+  private final boolean enableReleaseMode;
+
+  @Nullable
+  private final String bazelArgs;
+  @Nullable
+  private final String additionalArgs;
+
+  BazelFields(@Nullable String bazelTarget, @Nullable String bazelArgs, @Nullable String additionalArgs, boolean enableReleaseMode) {
+    this.bazelTarget = bazelTarget;
+    this.bazelArgs = bazelArgs;
+    this.additionalArgs = additionalArgs;
+    this.enableReleaseMode = enableReleaseMode;
   }
 
   /**
    * Copy constructor
    */
   private BazelFields(@NotNull BazelFields original) {
-    entryFile = original.entryFile;
-    launchScript = original.launchScript;
     bazelTarget = original.bazelTarget;
     enableReleaseMode = original.enableReleaseMode;
+    bazelArgs = original.bazelArgs;
     additionalArgs = original.additionalArgs;
-  }
-
-  /**
-   * Create non-template from template.
-   */
-  private BazelFields(@NotNull BazelFields template, Workspace w) {
-    this(template);
-    if (StringUtil.isEmptyOrSpaces(launchScript)) {
-      launchScript = w.getLaunchScript();
-      if (launchScript != null && !launchScript.startsWith("/")) {
-        launchScript = w.getRoot().getPath() + "/" + launchScript;
-      }
-    }
   }
 
   /**
@@ -88,23 +81,9 @@ public class BazelFields {
     return null;
   }
 
-  /**
-   * Used only for deserializing old run configs.
-   */
-  @Deprecated
-  public void setWorkingDirectory(final @Nullable String workDir) {
-    if (entryFile == null && workDir != null) {
-      entryFile = workDir + "/lib/main.dart";
-    }
-  }
-
   @Nullable
-  public String getLaunchingScript() {
-    return launchScript;
-  }
-
-  public void setLaunchingScript(@Nullable String launchScript) {
-    this.launchScript = launchScript;
+  public String getBazelArgs() {
+    return bazelArgs;
   }
 
   @Nullable
@@ -112,36 +91,32 @@ public class BazelFields {
     return additionalArgs;
   }
 
-  public void setAdditionalArgs(@Nullable String additionalArgs) {
-    this.additionalArgs = additionalArgs;
-  }
 
   @Nullable
   public String getBazelTarget() {
     return bazelTarget;
   }
 
-  public void setBazelTarget(@Nullable String bazelTarget) {
-    this.bazelTarget = bazelTarget;
-  }
-
   public boolean getEnableReleaseMode() {
     return enableReleaseMode;
-  }
-
-  public void setEnableReleaseMode(boolean enableReleaseMode) {
-    this.enableReleaseMode = enableReleaseMode;
   }
 
   BazelFields copy() {
     return new BazelFields(this);
   }
 
-  @NotNull
-  BazelFields copyTemplateToNonTemplate(@NotNull final Project project) {
-    final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
-    if (workspace == null) return new BazelFields(this);
-    return new BazelFields(this, workspace);
+  private String getLaunchScriptFromWorkspace(@NotNull final Project project) {
+    final Workspace workspace = getWorkspace(project);
+    String launchScript = workspace.getLaunchScript();
+    if (launchScript != null) {
+      launchScript = workspace.getRoot().getPath() + "/" + launchScript;
+    }
+    return launchScript;
+  }
+
+  @Nullable
+  protected Workspace getWorkspace(@NotNull Project project) {
+    return Workspace.load(project);
   }
 
   /**
@@ -153,7 +128,8 @@ public class BazelFields {
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
-    checkRunnable(project, getEntryFile(), getLaunchingScript(), getBazelTarget());
+    final String launchScript = getLaunchScriptFromWorkspace(project);
+    checkRunnable(project, launchScript, getBazelTarget());
   }
 
   /**
@@ -164,7 +140,7 @@ public class BazelFields {
    *
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
-  public static void checkRunnable(@NotNull final Project project, @Nullable final String entryFile, @Nullable final String launchScript,
+  public static void checkRunnable(@NotNull final Project project, @Nullable String launchScript,
                                    @Nullable final String bazelTarget) throws RuntimeConfigurationError {
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
@@ -175,16 +151,9 @@ public class BazelFields {
                                           () -> DartConfigurable.openDartSettings(project));
     }
 
-    final MainFile.Result main = MainFile.verify(entryFile, project);
-    if (!main.canLaunch()) {
-      throw new RuntimeConfigurationError(main.getError());
-    }
-
-    // check launcher script
-    if (StringUtil.isEmptyOrSpaces(launchScript)) {
+    if (launchScript == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
     }
-
     final VirtualFile scriptFile = LocalFileSystem.getInstance().findFileByPath(launchScript);
     if (scriptFile == null) {
       throw new RuntimeConfigurationError(
@@ -224,7 +193,7 @@ public class BazelFields {
 
     final VirtualFile appDir = getAppDir(project);
 
-    final String launchingScript = getLaunchingScript();
+    final String launchingScript = getLaunchScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
 
     final String target = getBazelTarget();
@@ -254,6 +223,12 @@ public class BazelFields {
           commandLine.addParameters("--define", "flutter_build_mode=debug");
           break;
       }
+    }
+
+    // User specified additional bazel arguments.
+    final CommandLineTokenizer argumentsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(bazelArgs));
+    while (argumentsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(argumentsTokenizer.nextToken());
     }
     // (the implicit else here is the debug case)
 
