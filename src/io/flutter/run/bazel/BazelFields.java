@@ -10,6 +10,7 @@ import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
@@ -17,14 +18,20 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
+import io.flutter.run.bazelTest.BazelTestFields;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.utils.ElementIO;
+import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.Map;
 
 import static io.flutter.run.daemon.RunMode.*;
 
@@ -53,7 +60,7 @@ public class BazelFields {
   /**
    * Copy constructor
    */
-  private BazelFields(@NotNull BazelFields original) {
+  BazelFields(@NotNull BazelFields original) {
     bazelTarget = original.bazelTarget;
     enableReleaseMode = original.enableReleaseMode;
     bazelArgs = original.bazelArgs;
@@ -275,5 +282,28 @@ public class BazelFields {
     }
 
     return commandLine;
+  }
+
+
+  public void writeTo(Element element) {
+    ElementIO.addOption(element, "bazelTarget", bazelTarget);
+    ElementIO.addOption(element, "bazelArgs", bazelArgs);
+    ElementIO.addOption(element, "additionalArgs", additionalArgs);
+    ElementIO.addOption(element, "enableReleaseMode", Boolean.toString(enableReleaseMode));
+  }
+
+  public static BazelFields readFrom(Element element) {
+    final Map<String, String> options = ElementIO.readOptions(element);
+
+    final String bazelTarget = options.get("bazelTarget");
+    final String bazelArgs = options.get("bazelArgs");
+    final String additionalArgs = options.get("additionalArgs");
+    final String enableReleaseMode = options.get("enableReleaseMode");
+
+    try {
+      return new BazelFields(bazelTarget, bazelArgs, additionalArgs, Boolean.valueOf(enableReleaseMode));
+    } catch (IllegalArgumentException e) {
+      throw new InvalidDataException(e.getMessage());
+    }
   }
 }

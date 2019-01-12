@@ -22,27 +22,19 @@ import javax.swing.*;
 public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRunConfig> {
   private JPanel myMainPanel;
 
-  private JLabel myEntryFileLabel;
-  private TextFieldWithBrowseButton myEntryFile;
-
-  private JLabel myLaunchingScriptLabel;
-  private TextFieldWithBrowseButton myLaunchingScript;
+  private JTextField myBazelTarget;
   private JTextField myBazelArgs;
   private JTextField myAdditionalArgs;
-  private JTextField myBuildTarget;
   private JCheckBox myEnableReleaseModeCheckBox;
 
   public FlutterBazelConfigurationEditorForm(final Project project) {
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-    myLaunchingScript.addBrowseFolderListener("Select Launching Script", "Choose launching script", project, descriptor);
-
-    DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse(project, myEntryFile);
   }
 
   @Override
   protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
     final BazelFields fields = configuration.getFields();
-    myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
+    myBazelTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
@@ -50,16 +42,11 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   @Override
   protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
     final BazelFields fields = new BazelFields(
-      getTextValue(myBuildTarget),
-      getTextValue(myAdditionalArgs),
+      getTextValue(myBazelTarget),
+      getTextValue(myBazelArgs),
       getTextValue(myAdditionalArgs),
       myEnableReleaseModeCheckBox.isSelected()
     );
-    fields.setEntryFile(StringUtil.nullize(FileUtil.toSystemIndependentName(myEntryFile.getText().trim()), true));
-    fields.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
-    fields.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
-    fields.setEnableReleaseMode(myEnableReleaseModeCheckBox.isSelected());
-    fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgs.getText().trim(), true));
     configuration.setFields(fields);
   }
 
@@ -77,10 +64,5 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   @Nullable
   private String getTextValue(JTextField textField) {
     return getTextValue(textField.getText());
-  }
-
-  @Nullable
-  private String getTextValue(TextFieldWithBrowseButton textField) {
-    return getTextValue(FileUtil.toSystemIndependentName(textField.getText()));
   }
 }
