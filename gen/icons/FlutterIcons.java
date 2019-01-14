@@ -36,6 +36,7 @@ public class FlutterIcons {
 
   public static final Icon DebugBanner = load("/icons/debugBanner.png");
   public static final Icon DebugPaint = load("/icons/debugPaint.png");
+  public static final Icon RepaintRainbow = load("/icons/repaintRainbow.png");
 
   public static final Icon BazelRun = load("/icons/bazel_run.png");
 
