@@ -12,10 +12,14 @@ import org.jetbrains.annotations.NotNull;
 
 class DebugPaintAction extends FlutterViewToggleableAction {
   DebugPaintAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
-          FlutterIcons.DebugPaint);
+    super(
+      app,
+      FlutterBundle.message("flutter.view.debugPaint.text"),
+      "Hide Debug Paint",
+      "Show Debug Paint",
+      FlutterBundle.message("flutter.view.debugPaint.description"),
+      FlutterIcons.DebugPaint);
+
     setExtensionCommand("ext.flutter.debugPaint");
-    setEnabledText("Hide Debug Paint");
-    setDisabledText("Show Debug Paint");
   }
 }

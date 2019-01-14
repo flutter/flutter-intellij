@@ -15,9 +15,14 @@ class PerformanceOverlayAction extends FlutterViewToggleableAction {
   public static final String SHOW_PERFORMANCE_OVERLAY = "ext.flutter.showPerformanceOverlay";
 
   PerformanceOverlayAction(@NotNull FlutterApp app) {
-    super(app, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
+    super(
+      app,
+      "Toggle Performance Overlay",
+      "Hide Performance Overlay",
+      "Show Performance Overlay",
+      "Toggle Performance Overlay",
+      AllIcons.Modules.Library);
+
     setExtensionCommand(SHOW_PERFORMANCE_OVERLAY);
-    setEnabledText("Hide Performance Overlay");
-    setDisabledText("Show Performance Overlay");
   }
 }

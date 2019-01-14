@@ -25,19 +25,21 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
   private String disabledText;
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
-  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
+  FlutterViewToggleableAction(
+    @NotNull FlutterApp app, @Nullable String text, @Nullable String enabledText, @Nullable String disabledText) {
     super(app, text);
-    setDefaultTextValues(text);
+    setActionTextValues(text, enabledText, disabledText);
   }
 
-  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
+  FlutterViewToggleableAction(
+    @NotNull FlutterApp app, @Nullable String text, @Nullable String enabledText, @Nullable String disabledText, @Nullable String description, @Nullable Icon icon) {
     super(app, text, description, icon);
-    setDefaultTextValues(text);
+    setActionTextValues(text, enabledText, disabledText);
   }
 
-  private void setDefaultTextValues(String text) {
-    enabledText = text;
-    disabledText = text;
+  private void setActionTextValues(String text, String enabledText, String disabledText) {
+    this.enabledText = enabledText != null ? enabledText : text;
+    this.disabledText = disabledText != null ? disabledText : text;
   }
 
   protected void setExtensionCommand(String extensionCommand) {
