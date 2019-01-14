@@ -43,6 +43,9 @@ public class Element {
    */
   List<List<Integer>> getListListInt(String memberName) {
     JsonArray array = json.getAsJsonArray(memberName);
+    if (array == null) {
+      return null;
+    }
     int size = array.size();
     List<List<Integer>> result = new ArrayList<List<Integer>>();
     for (int index = 0; index < size; ++index) {
