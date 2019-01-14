@@ -12,7 +12,8 @@ import org.jetbrains.annotations.NotNull;
 class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   ShowPaintBaselinesAction(@NotNull FlutterApp app, boolean showIcon) {
     super(app, "Show Paint Baselines", null, showIcon ? FlutterIcons.Painting : null);
-
     setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
+    setEnabledText("Hide Paint Baselines");
+    setDisabledText("Show Paint Baselines");
   }
 }

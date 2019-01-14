@@ -33,6 +33,10 @@ class TogglePlatformAction extends FlutterViewAction {
       return;
     }
 
+    app.togglePlatform().thenAccept(isAndroid -> {
+      e.getPresentation().setText(isAndroid ? "Toggle Platform to iOS" : "Toggle Platform to Android");
+    });
+
     app.hasServiceExtension(PLATFORM_OVERRIDE, (enabled) -> {
       e.getPresentation().setEnabled(app.isSessionActive() && enabled);
     });

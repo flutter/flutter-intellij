@@ -14,7 +14,8 @@ class DebugPaintAction extends FlutterViewToggleableAction {
   DebugPaintAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
           FlutterIcons.DebugPaint);
-
     setExtensionCommand("ext.flutter.debugPaint");
+    setEnabledText("Hide Debug Paint");
+    setDisabledText("Show Debug Paint");
   }
 }

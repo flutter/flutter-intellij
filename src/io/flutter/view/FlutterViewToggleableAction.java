@@ -21,18 +21,35 @@ import javax.swing.*;
 abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
   private String extensionCommand;
   private Object enabledStateValue = true;
+  private String enabledText;
+  private String disabledText;
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
   FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
     super(app, text);
+    setDefaultTextValues(text);
   }
 
   FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
     super(app, text, description, icon);
+    setDefaultTextValues(text);
+  }
+
+  private void setDefaultTextValues(String text) {
+    enabledText = text;
+    disabledText = text;
   }
 
   protected void setExtensionCommand(String extensionCommand) {
     this.extensionCommand = extensionCommand;
+  }
+
+  protected void setEnabledText(String enabledText) {
+    this.enabledText = enabledText;
+  }
+
+  protected void setDisabledText(String disabledText) {
+    this.disabledText = disabledText;
   }
 
   // Overrides the default enabledStateValue for Actions whose enabled value is not a boolean.
@@ -61,6 +78,8 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
           }
         }, true);
     }
+
+    presentation.setText(isSelected() ? enabledText : disabledText);
 
     app.hasServiceExtension(extensionCommand, (enabled) -> {
         e.getPresentation().setEnabled(app.isSessionActive() && enabled);

@@ -632,16 +632,18 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
 
   RepaintRainbowAction(@NotNull FlutterApp app) {
     super(app, "Show Repaint Rainbow", "Show Repaint Rainbow", FlutterIcons.RepaintRainbow);
-
     setExtensionCommand(SHOW_REPAINT_RAINBOW);
+    setEnabledText("Hide Repaint Rainbow");
+    setDisabledText("Show Repaint Rainbow");
   }
 }
 
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
     super(app, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
-
     setExtensionCommand("ext.flutter.inspector.show");
+    setEnabledText("Disable Select Widget Mode");
+    setDisabledText("Enable Select Widget Mode");
   }
 
   @Override
@@ -705,9 +707,10 @@ class ForceRefreshAction extends FlutterViewAction {
 class HideDebugModeBannerAction extends FlutterViewToggleableAction {
   HideDebugModeBannerAction(@NotNull FlutterApp app) {
     super(app, "Hide Debug Mode Banner", "Hide Debug Mode Banner", FlutterIcons.DebugBanner);
-
     setExtensionCommand("ext.flutter.debugAllowBanner");
     setEnabledStateValue(false);
+    setEnabledText("Show Debug Mode Banner");
+    setDisabledText("Hide Debug Mode Banner");
   }
 
   @Override

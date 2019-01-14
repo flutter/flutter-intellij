@@ -17,9 +17,10 @@ import java.util.Map;
 class TimeDilationAction extends FlutterViewToggleableAction {
   TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
     super(app, "Enable Slow Animations", null, showIcon ? AllIcons.Vcs.History : null);
-
     setExtensionCommand("ext.flutter.timeDilation");
     setEnabledStateValue(5.0);
+    setEnabledText("Disable Slow Animations");
+    setDisabledText("Enable Slow Animations");
   }
 
   @Override
