@@ -631,7 +631,7 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
   public static final String SHOW_REPAINT_RAINBOW = "ext.flutter.repaintRainbow";
 
   RepaintRainbowAction(@NotNull FlutterApp app) {
-    super(app, "Show Repaint Rainbow");
+    super(app, "Show Repaint Rainbow", "Show Repaint Rainbow", FlutterIcons.RepaintRainbow);
 
     setExtensionCommand(SHOW_REPAINT_RAINBOW);
   }
