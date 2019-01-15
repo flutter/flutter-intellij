@@ -740,7 +740,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       _doPaint(g);
     }
     catch (RuntimeException e) {
-      LOG.error(logSwingPath(), e);
+      LOG.warn(logSwingPath(), e);
       throw e;
     }
   }

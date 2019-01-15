@@ -390,7 +390,7 @@ public class LaunchState extends CommandLineState {
                 app.shutdownAsync().get();
               }
               catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                LOG.error(e);
+                LOG.warn(e);
               }
               return launchState.launch(env);
             }

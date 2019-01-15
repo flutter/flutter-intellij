@@ -103,7 +103,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
           Files.delete(file);
         }
         catch (IOException e) {
-          LOG.error(e);
+          LOG.warn(e);
           // TODO(jacobr): consider aborting.
         }
       }
@@ -119,7 +119,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     @Override
     public FileVisitResult visitFileFailed(Path file,
                                            IOException exc) {
-      LOG.error(exc);
+      LOG.warn(exc);
       return CONTINUE;
     }
   }
@@ -187,7 +187,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
             Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
           }
           catch (IOException e) {
-            LOG.error(e);
+            LOG.warn(e);
           }
         }
       }

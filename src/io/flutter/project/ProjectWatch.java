@@ -80,7 +80,7 @@ public class ProjectWatch implements Closeable {
     try {
       callback.run();
     } catch (Exception e) {
-      LOG.error("Uncaught exception in ProjectWatch callback", e);
+      LOG.warn("Uncaught exception in ProjectWatch callback", e);
       close(); // avoid further errors
     }
   }

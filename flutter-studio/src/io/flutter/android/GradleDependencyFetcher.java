@@ -62,7 +62,7 @@ public class GradleDependencyFetcher {
   private void runIn(@NotNull File base) {
     File gradlew = new File(base, isWindows() ? FN_GRADLE_WRAPPER_WIN : FN_GRADLE_WRAPPER_UNIX);
     if (!gradlew.exists() || !gradlew.canExecute()) {
-      LOG.error("Cannot run gradle");
+      LOG.warn("Cannot run gradle");
       return;
     }
     File pwd = base.getAbsoluteFile();
@@ -81,7 +81,7 @@ public class GradleDependencyFetcher {
       cmdLine.withEnvironment("ANDROID_SDK_HOME", AndroidLocation.getFolder());
     }
     catch (AndroidLocation.AndroidLocationException e) {
-      LOG.error("No Android SDK", e);
+      LOG.warn("No Android SDK", e);
       return;
     }
     String result = "NO OUTPUT";
@@ -90,20 +90,20 @@ public class GradleDependencyFetcher {
       int timeoutInMilliseconds = 2 * 60 * 1000;
       ProcessOutput processOutput = process.runProcess(timeoutInMilliseconds, true);
       if (processOutput.isTimeout()) {
-        LOG.error("Dependency processing time-out");
+        LOG.warn("Dependency processing time-out");
         return;
       }
       String errors = processOutput.getStderr();
       String output = processOutput.getStdout();
       int exitCode = processOutput.getExitCode();
       if (exitCode != 0) {
-        LOG.error("Error " + String.valueOf(exitCode) + " during dependency analysis: " + errors);
+        LOG.warn("Error " + String.valueOf(exitCode) + " during dependency analysis: " + errors);
         return;
       }
       result = output;
     }
     catch (ExecutionException e) {
-      LOG.error("Dependency process exception", e);
+      LOG.warn("Dependency process exception", e);
     }
     parseDependencies(result);
   }
@@ -114,7 +114,7 @@ public class GradleDependencyFetcher {
       reader.lines().forEach(this::parseLine);
     }
     catch (IOException ex) {
-      LOG.error(ex);
+      LOG.warn(ex);
     }
   }
 

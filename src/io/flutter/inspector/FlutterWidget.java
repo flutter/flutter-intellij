@@ -175,7 +175,7 @@ public class FlutterWidget {
         });
       }
       catch (IOException e) {
-        LOG.error(e);
+        LOG.warn(e);
       }
     }
 

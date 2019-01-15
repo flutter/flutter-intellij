@@ -127,7 +127,7 @@ public class FileWatch {
     try {
       callback.run();
     } catch (Exception e) {
-      LOG.error("Uncaught exception in FileWatch callback", e);
+      LOG.warn("Uncaught exception in FileWatch callback", e);
       unsubscribe(); // avoid further errors
     }
   }

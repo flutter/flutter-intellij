@@ -139,13 +139,11 @@ public class EvalOnDartLibrary implements Disposable {
           new EvaluateConsumer() {
             @Override
             public void onError(RPCError error) {
-              LOG.error(error);
-              future.completeExceptionally(new RuntimeException(error.toString()));
+              future.completeExceptionally(new RuntimeException(error.getMessage()));
             }
 
             @Override
             public void received(ErrorRef response) {
-              LOG.error("Error evaluating expression:\n" + expression + "\nResponse:" + response.getMessage());
               future.completeExceptionally(new RuntimeException(response.toString()));
             }
 

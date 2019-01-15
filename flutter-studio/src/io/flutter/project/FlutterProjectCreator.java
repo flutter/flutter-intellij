@@ -147,7 +147,7 @@ public class FlutterProjectCreator {
     final VirtualFile baseDir = ApplicationManager.getApplication().runWriteAction(
       (Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(baseFile));
     if (baseDir == null) {
-      LOG.error("Couldn't find '" + location + "' in VFS");
+      LOG.warn("Couldn't find '" + location + "' in VFS");
       return;
     }
     // TODO(messick): Remove the project converter when it is no longer needed (probably by the AS 3.2 release).
@@ -237,7 +237,7 @@ public class FlutterProjectCreator {
         }
       }
       catch (Exception e) {
-        LOG.error(String.format("Exception thrown when creating target project location: %1$s", projectLocation), e);
+        LOG.warn(String.format("Exception thrown when creating target project location: %1$s", projectLocation), e);
       }
       return false;
     });

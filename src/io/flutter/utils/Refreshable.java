@@ -509,7 +509,7 @@ public class Refreshable<T> implements Closeable {
       try {
         SwingUtilities.invokeAndWait(() -> doSetState(newState));
       } catch (Exception e) {
-        LOG.error("Unable to change state of Refreshable", e);
+        LOG.warn("Unable to change state of Refreshable", e);
       }
     }
 

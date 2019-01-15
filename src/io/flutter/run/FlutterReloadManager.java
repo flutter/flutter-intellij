@@ -148,7 +148,7 @@ public class FlutterReloadManager {
           handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
-          LOG.error(t);
+          LOG.warn(t);
         }
       }
     }, project);

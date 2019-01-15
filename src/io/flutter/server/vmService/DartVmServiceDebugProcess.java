@@ -567,7 +567,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
         @Override
         public void onError(RPCError error) {
-          LOG.error(error.toString());
+          LOG.warn(error.toString());
         }
       });
     }

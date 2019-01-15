@@ -149,7 +149,7 @@ public class DeviceService {
           listener.run();
         }
         catch (Exception e) {
-          LOG.error("DeviceDaemon listener threw an exception", e);
+          LOG.warn("DeviceDaemon listener threw an exception", e);
         }
       }
     });

@@ -165,7 +165,7 @@ public class DebugTestRunner extends GenericProgramRunner {
         obj = elem.getAsJsonObject();
       }
       catch (JsonSyntaxException e) {
-        LOG.error("Unable to parse JSON from Flutter test", e);
+        LOG.warn("Unable to parse JSON from Flutter test", e);
         return;
       }
 
@@ -178,19 +178,19 @@ public class DebugTestRunner extends GenericProgramRunner {
 
       final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
       if (primEvent == null) {
-        LOG.error("Missing event field in JSON from Flutter test: " + obj);
+        LOG.warn("Missing event field in JSON from Flutter test: " + obj);
         return;
       }
 
       final String eventName = primEvent.getAsString();
       if (eventName == null) {
-        LOG.error("Unexpected event field in JSON from Flutter test: " + obj);
+        LOG.warn("Unexpected event field in JSON from Flutter test: " + obj);
         return;
       }
 
       final JsonObject params = obj.getAsJsonObject("params");
       if (params == null) {
-        LOG.error("Missing parameters in event from Flutter test: " + obj);
+        LOG.warn("Missing parameters in event from Flutter test: " + obj);
         return;
       }
 

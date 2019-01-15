@@ -156,7 +156,7 @@ class InspectorTreeMouseListener extends MouseAdapter {
               tooltip = "Loading dart docs...";
               diagnostic.getInspectorService().safeWhenComplete(propertyDoc, (String tip, Throwable th) -> {
                 if (th != null) {
-                  LOG.error(th);
+                  LOG.warn(th);
                 }
                 if (lastHover == node) {
                   // We are still hovering of the same node so show the user the tooltip.

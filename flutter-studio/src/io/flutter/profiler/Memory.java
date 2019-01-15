@@ -126,7 +126,7 @@ class Memory {
         case ACCUMULATED_INSTNACE_COUNT_COLUMN_INDEX:
           return classNode.getAccumulatedInstancesCount();
         default:
-          Log.error("Unexpected columnIndex: " + columnIndex);
+          Log.warn("Unexpected columnIndex: " + columnIndex);
           return "";
       }
     }

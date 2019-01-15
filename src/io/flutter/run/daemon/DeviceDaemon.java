@@ -229,7 +229,7 @@ class DeviceDaemon {
           }
           catch (java.util.concurrent.ExecutionException e) {
             // This is not a user facing crash - we log (and no devices will be discovered).
-            LOG.error(e.getCause());
+            LOG.warn(e.getCause());
           }
         }
       }
