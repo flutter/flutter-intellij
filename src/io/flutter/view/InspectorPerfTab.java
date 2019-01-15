@@ -74,18 +74,8 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
 
-    showPerfOverlay =
-      new BoolServiceExtensionCheckbox(
-        app,
-        ServiceExtensions.performanceOverlay.getExtension(),
-        ServiceExtensions.performanceOverlay.getDisabledText(),
-        "");
-    showRepaintRainbow =
-      new BoolServiceExtensionCheckbox(
-        app,
-        ServiceExtensions.repaintRainbow.getExtension(),
-        ServiceExtensions.repaintRainbow.getDisabledText(),
-        "");
+    showPerfOverlay = new BoolServiceExtensionCheckbox(app, ServiceExtensions.performanceOverlay, "");
+    showRepaintRainbow = new BoolServiceExtensionCheckbox(app, ServiceExtensions.repaintRainbow, "");
 
     buildUI();
 
