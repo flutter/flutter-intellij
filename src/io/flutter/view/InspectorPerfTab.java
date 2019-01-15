@@ -121,7 +121,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
   boolean getShowPerfTable() {
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
-    return widgetPerfManager.isTrackRebuildWidgets() || widgetPerfManager.isTrackRebuildWidgets();
+    return widgetPerfManager.isTrackRebuildWidgets() || widgetPerfManager.isTrackRepaintWidgets();
   }
 
   private void buildUI() {
@@ -132,7 +132,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     // Otherwise, this tab will require the majority of the IntelliJ window
     // width largely due to the long warning message about running in debug
     // mode.
-    setMinimumSize(new Dimension(0,0));
+    setMinimumSize(new Dimension(0, 0));
 
     // Header
     final JPanel footer = new JPanel(new VerticalLayout(0));
@@ -140,7 +140,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel labels = new JPanel(new BorderLayout(6, 0));
     labels.setBorder(JBUI.Borders.empty(0, 8));
 
-    final JLabel runModeLabel = new JBLabel("Running in " + app.getLaunchMode() + " mode");
+    final JLabel runModeLabel = new JBLabel("Run mode: " + app.getLaunchMode());
     runModeLabel.setVerticalAlignment(SwingConstants.TOP);
     labels.add(
       runModeLabel,
@@ -149,7 +149,8 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     footer.add(labels);
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      final JBLabel label = new JBLabel("<html><body>(note: frame rendering times are not indicative of release mode performance unless run in profile mode)</body></html>");
+      final JBLabel label =
+        new JBLabel("<html><body>(note: debug mode frame rendering times are not indicative of release mode performance)</body></html>");
       label.setForeground(JBColor.RED);
       labels.add(label, BorderLayout.CENTER);
     }
