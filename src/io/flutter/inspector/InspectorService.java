@@ -11,6 +11,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.xdebugger.XSourcePosition;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VmServiceConsumers;
 import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.pub.PubRoot;
@@ -102,7 +103,7 @@ public class InspectorService implements Disposable {
 
     assert (app.getVMServiceManager() != null);
     setPubRootDirectoriesSubscription =
-      app.getVMServiceManager().hasServiceExtension("ext.flutter.inspector.setPubRootDirectories", (Boolean available) -> {
+      app.getVMServiceManager().hasServiceExtension(ServiceExtensions.setPubRootDirectories, (Boolean available) -> {
         if (!available) {
           return;
         }
@@ -268,13 +269,14 @@ public class InspectorService implements Disposable {
   }
 
   CompletableFuture<JsonElement> invokeServiceMethodDaemonNoGroup(String methodName, Map<String, Object> params) {
-    return getApp().callServiceExtension("ext.flutter.inspector." + methodName, params).thenApply((JsonObject json) -> {
-      if (json.has("errorMessage")) {
-        String message = json.get("errorMessage").getAsString();
-        throw new RuntimeException(methodName + " -- " + message);
-      }
-      return json.get("result");
-    });
+    return getApp().callServiceExtension(ServiceExtensions.inspectorPrefix + methodName, params)
+      .thenApply((JsonObject json) -> {
+        if (json.has("errorMessage")) {
+          String message = json.get("errorMessage").getAsString();
+          throw new RuntimeException(methodName + " -- " + message);
+        }
+        return json.get("result");
+      });
   }
 
   /**
@@ -435,14 +437,16 @@ public class InspectorService implements Disposable {
 
     // All calls to invokeServiceMethodDaemon bottom out to this call.
     CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, Map<String, Object> params) {
-      return getInspectorLibrary().addRequest(this, () -> getApp().callServiceExtension("ext.flutter.inspector." + methodName, params)
-        .thenApply((JsonObject json) -> nullValueIfDisposed(() -> {
-          if (json.has("errorMessage")) {
-            String message = json.get("errorMessage").getAsString();
-            throw new RuntimeException(methodName + " -- " + message);
-          }
-          return json.get("result");
-        })));
+      return getInspectorLibrary().addRequest(
+        this,
+        () -> getApp().callServiceExtension(ServiceExtensions.inspectorPrefix + methodName, params)
+          .thenApply((JsonObject json) -> nullValueIfDisposed(() -> {
+            if (json.has("errorMessage")) {
+              String message = json.get("errorMessage").getAsString();
+              throw new RuntimeException(methodName + " -- " + message);
+            }
+            return json.get("result");
+          })));
     }
 
     CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, InspectorInstanceRef arg) {
