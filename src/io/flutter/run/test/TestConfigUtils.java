@@ -14,6 +14,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
+import groovy.json.StringEscapeUtils;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartSyntax;
 import org.apache.commons.lang.StringUtils;
@@ -89,7 +90,10 @@ public class TestConfigUtils {
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
     if (lit == null) return null;
 
-    return DartSyntax.unquote(lit);
+    final String name = DartSyntax.unquote(lit);
+    if (name == null) return null;
+
+    return StringEscapeUtils.unescapeJava(name);
   }
 
   enum TestType {
