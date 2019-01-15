@@ -12,6 +12,7 @@ import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.ServiceExtensionState;
+import io.flutter.server.vmService.ToggleableServiceExtensionDescription;
 import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,25 +20,28 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 
 abstract class FlutterViewToggleableAction extends FlutterViewAction implements Toggleable, Disposable {
-  private String extensionCommand;
-  private Object enabledStateValue = true;
+  private final ToggleableServiceExtensionDescription extensionDescription;
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
-  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text) {
-    super(app, text);
+  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable Icon icon, ToggleableServiceExtensionDescription extensionDescription) {
+    // Assume the button is not enabled by default and pass disabledText here.
+    super(app, extensionDescription.getDisabledText(), null, icon);
+    this.extensionDescription = extensionDescription;
   }
 
-  FlutterViewToggleableAction(@NotNull FlutterApp app, @Nullable String text, @Nullable String description, @Nullable Icon icon) {
-    super(app, text, description, icon);
-  }
-
-  protected void setExtensionCommand(String extensionCommand) {
-    this.extensionCommand = extensionCommand;
-  }
-
-  // Overrides the default enabledStateValue for Actions whose enabled value is not a boolean.
-  protected void setEnabledStateValue(Object enabledStateValue) {
-    this.enabledStateValue = enabledStateValue;
+  // TODO(kenzie): remove this constructor once service extension states are restored from device.
+  //  This is currently only needed for HideDebugModeBannerAction.
+  FlutterViewToggleableAction(
+    @NotNull FlutterApp app,
+    @Nullable Icon icon,
+    ToggleableServiceExtensionDescription extensionDescription,
+    boolean actionEnabledByDefault) {
+    super(
+      app,
+      actionEnabledByDefault ? extensionDescription.getEnabledText() : extensionDescription.getDisabledText(),
+      null,
+      icon);
+    this.extensionDescription = extensionDescription;
   }
 
   @Override
@@ -55,16 +59,21 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
 
     if (currentValueSubscription == null) {
       currentValueSubscription =
-        app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
-          if (presentation.getClientProperty("selected") != (Boolean) state.isEnabled()) {
+        app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
+          if (presentation.getClientProperty("selected") != (Boolean)state.isEnabled()) {
             presentation.putClientProperty("selected", state.isEnabled());
           }
         }, true);
     }
 
-    app.hasServiceExtension(extensionCommand, (enabled) -> {
-        e.getPresentation().setEnabled(app.isSessionActive() && enabled);
-      });
+    presentation.setText(
+      isSelected()
+      ? extensionDescription.getEnabledText()
+      : extensionDescription.getDisabledText());
+
+    app.hasServiceExtension(extensionDescription.getExtension(), (enabled) -> {
+      e.getPresentation().setEnabled(app.isSessionActive() && enabled);
+    });
   }
 
   @Override
@@ -78,7 +87,7 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
   @Override
   protected void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.callBooleanExtension(extensionCommand, isSelected());
+      app.callBooleanExtension(extensionDescription.getExtension(), isSelected());
     }
   }
 
@@ -89,14 +98,14 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
   }
 
   public boolean isSelected() {
-    return app.getVMServiceManager().getServiceExtensionState(extensionCommand).getValue().isEnabled();
+    return app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).getValue().isEnabled();
   }
 
   public void setSelected(@Nullable AnActionEvent event, boolean selected) {
     app.getVMServiceManager().setServiceExtensionState(
-      extensionCommand,
+      extensionDescription.getExtension(),
       selected,
-      selected ? enabledStateValue : null);
+      selected ? extensionDescription.getEnabledValue() : extensionDescription.getDisabledValue());
 
     if (event != null) {
       ApplicationManager.getApplication().invokeLater(() -> this.update(event));

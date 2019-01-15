@@ -24,6 +24,7 @@ import io.flutter.perf.PerfReportKind;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.FlutterFramesMonitor;
+import io.flutter.server.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -32,9 +33,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import static io.flutter.view.PerformanceOverlayAction.SHOW_PERFORMANCE_OVERLAY;
-import static io.flutter.view.RepaintRainbowAction.SHOW_REPAINT_RAINBOW;
 
 public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   /**
@@ -76,8 +74,8 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
 
-    showPerfOverlay = new BoolServiceExtensionCheckbox(app, SHOW_PERFORMANCE_OVERLAY, "Show performance overlay", "");
-    showRepaintRainbow = new BoolServiceExtensionCheckbox(app, SHOW_REPAINT_RAINBOW, "Show repaint rainbow", "");
+    showPerfOverlay = new BoolServiceExtensionCheckbox(app, ServiceExtensions.performanceOverlay, "");
+    showRepaintRainbow = new BoolServiceExtensionCheckbox(app, ServiceExtensions.repaintRainbow, "");
 
     buildUI();
 
@@ -86,9 +84,10 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
       trackRepaintsCheckbox.setSelected(widgetPerfManager.isTrackRepaintWidgets());
     }
 
-    app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REBUILD_WIDGETS, trackRebuildsCheckbox::setEnabled, parentDisposable);
+    app.hasServiceExtension(ServiceExtensions.trackRebuildWidgets.getExtension(), trackRebuildsCheckbox::setEnabled, parentDisposable);
+
     if (ENABLE_TRACK_REPAINTS) {
-      app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REPAINT_WIDGETS, trackRepaintsCheckbox::setEnabled, parentDisposable);
+      app.hasServiceExtension(ServiceExtensions.trackRepaintWidgets.getExtension(), trackRepaintsCheckbox::setEnabled, parentDisposable);
     }
 
     trackRebuildsCheckbox.addChangeListener((l) -> {

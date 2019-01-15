@@ -10,19 +10,19 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.server.vmService.ToggleableServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;
 
 class TogglePlatformAction extends FlutterViewAction {
-  private static final String PLATFORM_OVERRIDE = "ext.flutter.platformOverride";
+  private static final ToggleableServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
   private Boolean isCurrentlyAndroid;
   CompletableFuture<Boolean> cachedHasExtensionFuture;
 
   TogglePlatformAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.togglePlatform.text"),
-          FlutterBundle.message("flutter.view.togglePlatform.description"),
-          AllIcons.RunConfigurations.Application);
+    super(app, extensionDescription.getDisabledText(), null, AllIcons.RunConfigurations.Application);
   }
 
   @Override
@@ -33,7 +33,7 @@ class TogglePlatformAction extends FlutterViewAction {
       return;
     }
 
-    app.hasServiceExtension(PLATFORM_OVERRIDE, (enabled) -> {
+    app.hasServiceExtension(extensionDescription.getExtension(), (enabled) -> {
       e.getPresentation().setEnabled(app.isSessionActive() && enabled);
     });
   }
@@ -56,9 +56,11 @@ class TogglePlatformAction extends FlutterViewAction {
               ConsoleViewContentType.SYSTEM_OUTPUT);
 
             app.getVMServiceManager().setServiceExtensionState(
-              PLATFORM_OVERRIDE,
+              extensionDescription.getExtension(),
               true,
-              isNowAndroid ? "android" : "iOS");
+              isNowAndroid
+              ? extensionDescription.getDisabledValue()
+              : extensionDescription.getEnabledValue());
           }
         });
       });

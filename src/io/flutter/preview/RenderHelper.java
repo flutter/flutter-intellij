@@ -23,6 +23,7 @@ import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.server.vmService.ServiceExtensions;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -397,7 +398,7 @@ class RenderThread extends Thread {
       // Ask to render the widget.
       final CountDownLatch responseReceivedLatch = new CountDownLatch(1);
       final AtomicReference<JsonObject> responseRef = new AtomicReference<>();
-      myApp.callServiceExtension("ext.flutter.designer.render").thenAccept((response) -> {
+      myApp.callServiceExtension(ServiceExtensions.designerRender).thenAccept((response) -> {
         responseRef.set(response);
         responseReceivedLatch.countDown();
       });

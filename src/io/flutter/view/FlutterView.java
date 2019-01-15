@@ -53,6 +53,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
@@ -627,21 +628,14 @@ class OpenTimelineViewAction extends FlutterViewAction {
 }
 
 class RepaintRainbowAction extends FlutterViewToggleableAction {
-
-  public static final String SHOW_REPAINT_RAINBOW = "ext.flutter.repaintRainbow";
-
   RepaintRainbowAction(@NotNull FlutterApp app) {
-    super(app, "Show Repaint Rainbow", "Show Repaint Rainbow", FlutterIcons.RepaintRainbow);
-
-    setExtensionCommand(SHOW_REPAINT_RAINBOW);
+    super(app, FlutterIcons.RepaintRainbow, ServiceExtensions.repaintRainbow);
   }
 }
 
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
-    super(app, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
-
-    setExtensionCommand("ext.flutter.inspector.show");
+    super(app, AllIcons.General.LocateHover, ServiceExtensions.toggleSelectWidgetMode);
   }
 
   @Override
@@ -704,16 +698,14 @@ class ForceRefreshAction extends FlutterViewAction {
 
 class HideDebugModeBannerAction extends FlutterViewToggleableAction {
   HideDebugModeBannerAction(@NotNull FlutterApp app) {
-    super(app, "Hide Debug Mode Banner", "Hide Debug Mode Banner", FlutterIcons.DebugBanner);
-
-    setExtensionCommand("ext.flutter.debugAllowBanner");
-    setEnabledStateValue(false);
+    super(app, FlutterIcons.DebugBanner, ServiceExtensions.debugAllowBanner, true);
   }
 
+  // TODO(kenzie): remove this override once service extension states are restored from device.
   @Override
   protected void perform(@Nullable AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
+      app.callBooleanExtension(ServiceExtensions.debugAllowBanner.getExtension(), !isSelected());
     }
   }
 }

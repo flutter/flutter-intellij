@@ -9,6 +9,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.ui.components.JBCheckBox;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.ServiceExtensionState;
+import io.flutter.server.vmService.ToggleableServiceExtensionDescription;
 import io.flutter.utils.StreamSubscription;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,29 +26,33 @@ public class BoolServiceExtensionCheckbox implements Disposable {
   private final JCheckBox checkbox;
   private StreamSubscription<ServiceExtensionState> currentValueSubscription;
 
-  BoolServiceExtensionCheckbox(FlutterApp app, @NotNull String extensionCommand, String label, String tooltip) {
-    checkbox = new JBCheckBox(label);
+  BoolServiceExtensionCheckbox(
+    FlutterApp app,
+    @NotNull ToggleableServiceExtensionDescription extensionDescription,
+    String tooltip) {
+    checkbox = new JBCheckBox(extensionDescription.getDisabledText());
     checkbox.setHorizontalAlignment(JLabel.LEFT);
     checkbox.setToolTipText(tooltip);
     assert(app.getVMServiceManager() != null);
-    app.hasServiceExtension(extensionCommand, checkbox::setEnabled, this);
+    app.hasServiceExtension(extensionDescription.getExtension(), checkbox::setEnabled, this);
 
     checkbox.addActionListener((l) -> {
       final boolean newValue = checkbox.isSelected();
       app.getVMServiceManager().setServiceExtensionState(
-        extensionCommand,
+        extensionDescription.getExtension(),
         newValue,
         newValue);
       if (app.isSessionActive()) {
-        app.callBooleanExtension(extensionCommand, newValue);
+        app.callBooleanExtension(extensionDescription.getExtension(), newValue);
       }
     });
 
-    currentValueSubscription = app.getVMServiceManager().getServiceExtensionState(extensionCommand).listen((state) -> {
-      if (checkbox.isSelected() != state.isEnabled()) {
-        checkbox.setSelected(state.isEnabled());
-      }
-    }, true);
+    currentValueSubscription = app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen(
+      (state) -> {
+        if (checkbox.isSelected() != state.isEnabled()) {
+          checkbox.setSelected(state.isEnabled());
+        }
+      }, true);
   }
 
   JCheckBox getComponent() {

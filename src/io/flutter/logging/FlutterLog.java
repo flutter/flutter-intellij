@@ -18,6 +18,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VmServiceConsumers;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -114,7 +115,7 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
   public CompletableFuture<List<LoggingChannel>> getLoggingChannels() {
     final FlutterDebugProcess debugProcess = getDebugProcess();
     if (debugProcess != null) {
-      return debugProcess.getApp().callServiceExtension("ext.flutter.logs.loggingChannels").thenApply((response) -> {
+      return debugProcess.getApp().callServiceExtension(ServiceExtensions.loggingChannels).thenApply((response) -> {
         final JsonObject value = response.getAsJsonObject("value");
         final List<LoggingChannel> channels = new ArrayList<>();
         for (String channel : value.keySet()) {
@@ -135,7 +136,7 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
       final Map<String, Object> params = new HashMap<>();
       params.put("channel", channel.name);
       params.put("enabled", subscribe);
-      debugProcess.getApp().callServiceExtension("ext.flutter.logs.enable", params);
+      debugProcess.getApp().callServiceExtension(ServiceExtensions.enableLogs, params);
     }
   }
 

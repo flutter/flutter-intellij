@@ -97,7 +97,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
               if (flutterIsolateRefStream.getValue() == null) {
                 if (isolate.getExtensionRPCs() != null) {
                   for (String extensionName : isolate.getExtensionRPCs()) {
-                    if (extensionName.startsWith("ext.flutter.")) {
+                    if (extensionName.startsWith(ServiceExtensions.flutterPrefix)) {
                       setFlutterIsolate(isolateRef);
                       break;
                     }
@@ -250,7 +250,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       if (event.getKind() == EventKind.ServiceExtensionAdded) {
         final String extensionName = event.getExtensionRPC();
 
-        if (extensionName.startsWith("ext.flutter.")) {
+        if (extensionName.startsWith(ServiceExtensions.flutterPrefix)) {
           setFlutterIsolate(event.getIsolate());
         }
       }
@@ -315,7 +315,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   private void restoreServiceExtensionState(String name) {
     if (app.isSessionActive()) {
-      if (StringUtil.equals(name, "ext.flutter.inspector.show")) {
+      if (StringUtil.equals(name, ServiceExtensions.toggleSelectWidgetMode.getExtension())) {
         // Do not call the service extension for this extension. We do not want to persist showing the
         // inspector on app restart.
         return;

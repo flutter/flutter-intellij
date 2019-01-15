@@ -32,6 +32,7 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
 import io.flutter.logging.FlutterLog;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -384,7 +385,7 @@ public class FlutterApp {
       return CompletableFuture.completedFuture(null);
     }
 
-    final CompletableFuture<JsonObject> result = callServiceExtension("ext.flutter.platformOverride");
+    final CompletableFuture<JsonObject> result = callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension());
     return result.thenApply(obj -> {
       //noinspection CodeBlock2Expr
       return obj != null && "android".equals(obj.get("value").getAsString());
@@ -399,10 +400,11 @@ public class FlutterApp {
 
     final Map<String, Object> params = new HashMap<>();
     params.put("value", showAndroid ? "android" : "iOS");
-    return callServiceExtension("ext.flutter.platformOverride", params).thenApply(obj -> {
-      //noinspection CodeBlock2Expr
-      return obj != null && "android".equals(obj.get("value").getAsString());
-    });
+    return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params)
+      .thenApply(obj -> {
+        //noinspection CodeBlock2Expr
+        return obj != null && "android".equals(obj.get("value").getAsString());
+      });
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
