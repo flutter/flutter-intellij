@@ -1,45 +1,17 @@
 [
     {
+        "sourcePath": "lib/src/material/icon_button.dart",
+        "sourceLine": 69,
         "package": "flutter",
         "library": "material",
-        "element": "Scaffold",
-        "id": "material.Scaffold",
-        "file": "material.Scaffold.dart",
-        "description": "This example shows a [Scaffold] with an [AppBar], a [BottomAppBar] and a\n[FloatingActionButton]. The [body] is a [Text] placed in a [Center] in order\nto center the text within the [Scaffold] and the [FloatingActionButton] is\ncentered and docked within the [BottomAppBar] using\n[FloatingActionButtonLocation.centerDocked]. The [FloatingActionButton] is\nconnected to a callback that increments a counter."
-    },
-    {
-        "package": "flutter",
-        "library": "scaffold",
-        "element": "Scaffold",
-        "id": "scaffold.Scaffold",
-        "file": "scaffold.Scaffold.dart",
-        "description": "This example shows a [Scaffold] with an [AppBar], a [BottomAppBar] and a\n[FloatingActionButton]. The [body] is a [Text] placed in a [Center] in order\nto center the text within the [Scaffold] and the [FloatingActionButton] is\ncentered and docked within the [BottomAppBar] using\n[FloatingActionButtonLocation.centerDocked]. The [FloatingActionButton] is\nconnected to a callback that increments a counter."
-    },
-    {
-        "package": "flutter",
-        "library": "material",
-        "element": "DeletableChipAttributes.onDeleted",
-        "id": "material.DeletableChipAttributes.onDeleted",
-        "file": "material.DeletableChipAttributes.onDeleted.dart",
-        "description": "This sample shows how to use [onDeleted] to remove an entry when the\ndelete button is tapped."
-    },
-    {
-        "package": "flutter",
-        "library": "chip",
-        "element": "DeletableChipAttributes.onDeleted",
-        "id": "chip.DeletableChipAttributes.onDeleted",
-        "file": "chip.DeletableChipAttributes.onDeleted.dart",
-        "description": "This sample shows how to use [onDeleted] to remove an entry when the\ndelete button is tapped."
-    },
-    {
-        "package": "flutter",
-        "library": "icon_button",
         "element": "IconButton",
-        "id": "icon_button.IconButton",
-        "file": "icon_button.IconButton.dart",
+        "id": "material.IconButton",
+        "file": "material.IconButton.dart",
         "description": "This sample shows an `IconButton` that uses the Material icon \"volume_up\" to\nincrease the volume."
     },
     {
+        "sourcePath": "lib/src/material/card.dart",
+        "sourceLine": 65,
         "package": "flutter",
         "library": "material",
         "element": "Card",
@@ -48,22 +20,18 @@
         "description": "This sample shows creation of a [Card] widget that shows album information\nand two actions."
     },
     {
+        "sourcePath": "lib/src/material/chip.dart",
+        "sourceLine": 206,
         "package": "flutter",
-        "library": "app_bar",
-        "element": "AppBar.actions",
-        "id": "app_bar.AppBar.actions",
-        "file": "app_bar.AppBar.actions.dart",
-        "description": "This sample shows adding an action to an [AppBar] that opens a shopping cart."
+        "library": "material",
+        "element": "DeletableChipAttributes.onDeleted",
+        "id": "material.DeletableChipAttributes.onDeleted",
+        "file": "material.DeletableChipAttributes.onDeleted.dart",
+        "description": "This sample shows how to use [onDeleted] to remove an entry when the\ndelete button is tapped."
     },
     {
-        "package": "flutter",
-        "library": "card",
-        "element": "Card",
-        "id": "card.Card",
-        "file": "card.Card.dart",
-        "description": "This sample shows creation of a [Card] widget that shows album information\nand two actions."
-    },
-    {
+        "sourcePath": "lib/src/material/app_bar.dart",
+        "sourceLine": 246,
         "package": "flutter",
         "library": "material",
         "element": "AppBar.actions",
@@ -72,11 +40,14 @@
         "description": "This sample shows adding an action to an [AppBar] that opens a shopping cart."
     },
     {
+        "sourcePath": "lib/src/material/scaffold.dart",
+        "sourceLine": 781,
         "package": "flutter",
         "library": "material",
-        "element": "IconButton",
-        "id": "material.IconButton",
-        "file": "material.IconButton.dart",
-        "description": "This sample shows an `IconButton` that uses the Material icon \"volume_up\" to\nincrease the volume."
+        "element": "Scaffold",
+        "id": "material.Scaffold",
+        "file": "material.Scaffold.dart",
+        "description": "This example shows a [Scaffold] with an [AppBar], a [BottomAppBar] and a\n[FloatingActionButton]. The [body] is a [Text] placed in a [Center] in order\nto center the text within the [Scaffold] and the [FloatingActionButton] is\ncentered and docked within the [BottomAppBar] using\n[FloatingActionButtonLocation.centerDocked]. The [FloatingActionButton] is\nconnected to a callback that increments a counter."
     }
 ]
+
