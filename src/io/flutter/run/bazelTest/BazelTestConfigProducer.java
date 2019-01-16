@@ -9,10 +9,12 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
@@ -46,9 +48,6 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     if (!isFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();
-    if (elt instanceof PsiDirectory) {
-      return setupForTarget(config, context, ((PsiDirectory)elt).getVirtualFile().getPath());
-    }
 
     final DartFile file = FlutterUtils.getDartFile(elt);
     if (file == null) {
@@ -84,17 +83,12 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     return true;
   }
 
+  @Nullable
   private VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file) {
       final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
     return file.getVirtualFile().getPath().contains("/test/") ?  candidate : null;
-  }
-
-  private boolean setupForTarget(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull String target) {
-    config.setFields(BazelTestFields.forTarget(target));
-    config.setGeneratedName();
-    return true;
   }
 
   /**
