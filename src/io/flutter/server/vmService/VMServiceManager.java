@@ -5,6 +5,7 @@
  */
 package io.flutter.server.vmService;
 
+import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
@@ -234,10 +235,26 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
 
     final String kind = event.getExtensionKind();
-    // Track whether we have received the first frame event and add pending service extensions if we have.
-    if (event.getKind() == EventKind.Extension && (
-      Objects.equals(kind, "Flutter.FirstFrame") || Objects.equals(kind, "Flutter.Frame"))) {
-      onFrameEventReceived();
+
+    if (event.getKind() == EventKind.Extension) {
+      switch(kind) {
+        case "Flutter.FirstFrame":
+        case "Flutter.Frame":
+          // Track whether we have received the first frame event and add pending service extensions if we have.
+          onFrameEventReceived();
+          break;
+        case "Flutter.ServiceExtensionStateChanged":
+          final JsonObject extensionData = event.getExtensionData().getJson();
+          final String name = extensionData.get("extension").getAsString();
+          final String valueFromJson = extensionData.get("value").getAsString();
+
+          final ToggleableServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsWhitelist.get(name);
+          if (extension != null) {
+            final Object value = getExtensionValueFromEventJson(name, valueFromJson);
+            final boolean enabled = value.equals(extension.getEnabledValue());
+            setServiceExtensionState(name, enabled, value);
+          }
+      }
     }
 
     if (event.getKind() == EventKind.ServiceExtensionAdded) {
@@ -266,6 +283,19 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
 
       heapMonitor.handleGCEvent(isolateRef, newHeapSpace, oldHeapSpace);
+    }
+  }
+
+  private Object getExtensionValueFromEventJson(String name, String valueFromJson) {
+    final Object enabledValue =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
+
+    if (enabledValue instanceof Boolean) {
+      return valueFromJson.equals("true");
+    } else if (enabledValue instanceof Double) {
+      return Double.valueOf(valueFromJson);
+    } else {
+      return valueFromJson;
     }
   }
 
