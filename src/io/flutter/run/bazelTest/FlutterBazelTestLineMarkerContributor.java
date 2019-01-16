@@ -19,6 +19,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
+import io.flutter.run.common.CommonTestConfigUtils;
+import io.flutter.run.common.TestType;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -27,8 +29,11 @@ import javax.swing.*;
 import java.util.Date;
 import java.util.Map;
 
+import static io.flutter.run.common.CommonTestConfigUtils.*;
+
 
 public class FlutterBazelTestLineMarkerContributor extends RunLineMarkerContributor {
+  private final BazelTestConfigUtils bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
 
   private static final int SCANNED_TEST_RESULT_LIMIT = 1024;
 
@@ -40,11 +45,11 @@ public class FlutterBazelTestLineMarkerContributor extends RunLineMarkerContribu
     if (!settings.useNewBazelTestRunner(element.getProject())) {
       return null;
     }
-    final BazelTestConfigUtils.TestType testCall = BazelTestConfigUtils.asTestCall(element);
+    final TestType testCall = bazelTestConfigUtils.asTestCall(element);
     if (testCall != null) {
       final Icon icon = getTestStateIcon(element, testCall.getIcon());
       final Function<PsiElement, String> tooltipProvider =
-        psiElement -> testCall.getTooltip(psiElement);
+        psiElement -> testCall.getTooltip(psiElement, bazelTestConfigUtils);
       return new Info(icon, tooltipProvider, ExecutorAction.getActions());
     }
 
