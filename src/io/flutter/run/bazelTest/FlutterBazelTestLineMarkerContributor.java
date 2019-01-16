@@ -11,7 +11,6 @@ import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-
 /**
  * Annotates bazel Flutter tests with line markers.
  */
