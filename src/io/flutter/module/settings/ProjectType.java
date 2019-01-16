@@ -106,11 +106,7 @@ public class ProjectType {
                                          boolean selected,
                                          boolean hasFocus) {
       final SimpleTextAttributes style = snippetSelectorCombo.isEnabled() ? SimpleTextAttributes.REGULAR_ATTRIBUTES : SimpleTextAttributes.GRAY_ATTRIBUTES;
-      append(sample.getElement(), style);
-      // Add details when enabled.
-      if (snippetSelectorCombo.isEnabled()) {
-        append("  (" + sample.getLibrary() + ")", SimpleTextAttributes.GRAY_ATTRIBUTES);
-      }
+      append(sample.getDisplayLabel(), style);
     }
   }
 

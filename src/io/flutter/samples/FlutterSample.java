@@ -17,22 +17,31 @@ public class FlutterSample {
   @NotNull
   private final String file;
   @NotNull
+  private final String sourcePath;
+  @NotNull
   private final String description;
 
-  private String relativePath;
-
   FlutterSample(@NotNull String element, @NotNull String library, @NotNull String id, @NotNull String file,
-                @NotNull String description) {
+                @NotNull String sourcePath, @NotNull String description) {
     this.element = element;
     this.library = library;
     this.id = id;
     this.file = file;
+    this.sourcePath = sourcePath;
     this.description = description;
   }
 
   @Override
   public String toString() {
-    return getElement() + " (" + getLibrary() + ")";
+    return getDisplayLabel();
+  }
+
+  /**
+   * Get a label suitable for display in a chooser (e.g., combobox).
+   */
+  public String getDisplayLabel() {
+    // TODO(pq): add disambiguation once it's needed.
+    return getElement();
   }
 
   @NotNull
@@ -60,15 +69,8 @@ public class FlutterSample {
     return file;
   }
 
-  public String getRelativePath() {
-    if (relativePath == null) {
-      // Chomp .dart suffix
-      relativePath = file.substring(file.length() - 5);
-      // material.sample => material/sample
-      relativePath = relativePath.replaceAll("\\.", "/");
-      // Re-add suffix.
-      relativePath += ".dart";
-    }
-    return relativePath;
+  @NotNull
+  public String getSourcePath() {
+    return sourcePath;
   }
 }

@@ -37,6 +37,10 @@ public class FlutterSampleManager {
     final List<FlutterSample> samples = new ArrayList<>();
     try {
       // TODO(pq): replace w/ index read from repo (https://github.com/flutter/flutter/pull/25515).
+
+      //https://docs.flutter.io/snippets/index.json
+      //https://master-docs-flutter-io.firebaseapp.com/snippets/index.json
+
       final URL url = FlutterSampleManager.class.getResource("index.json");
       final String contents = IOUtils.toString(url.toURI(), "UTF-8");
       final JsonArray jsonArray = new JsonParser().parse(contents).getAsJsonArray();
@@ -46,6 +50,7 @@ public class FlutterSampleManager {
                                       sample.getAsJsonPrimitive("library").getAsString(),
                                       sample.getAsJsonPrimitive("id").getAsString(),
                                       sample.getAsJsonPrimitive("file").getAsString(),
+                                      sample.getAsJsonPrimitive("sourcePath").getAsString(),
                                       sample.getAsJsonPrimitive("description").getAsString()));
       }
     }
@@ -53,8 +58,8 @@ public class FlutterSampleManager {
       LOG.warn(e);
     }
 
-    // Sort by name and library.
-    samples.sort(Comparator.comparing(s -> (s.getElement() + s.getLibrary())));
+    // Sort by display label.
+    samples.sort(Comparator.comparing(FlutterSample::getDisplayLabel));
     return samples;
   }
 }
