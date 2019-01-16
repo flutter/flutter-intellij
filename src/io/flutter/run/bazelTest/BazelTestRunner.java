@@ -80,7 +80,6 @@ public class BazelTestRunner extends GenericProgramRunner {
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
     final PositionMapper.Analyzer analyzer = PositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
-
     final BazelPositionMapper mapper =
       new BazelPositionMapper(env.getProject(), env.getProject().getBaseDir()/*this is different, incorrect?*/, resolver, analyzer,
                               connector);
@@ -128,10 +127,10 @@ public class BazelTestRunner extends GenericProgramRunner {
           stdoutParser.appendOutput(text);
 
           for (String line : stdoutParser.getAvailableLines()) {
-            if (line.startsWith("{")) {
+            if (line.startsWith("[{")) {
               line = line.trim();
 
-              final String json = line;
+              final String json = line.substring(1, line.length() - 1);
               dispatchJson(json);
             }
           }
@@ -203,7 +202,7 @@ public class BazelTestRunner extends GenericProgramRunner {
         return;
       }
 
-      final JsonPrimitive primEvent = obj.getAsJsonPrimitive("type");
+      final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
       if (primEvent == null) {
         LOG.error("Missing event field in JSON from Flutter test: " + obj);
         return;
