@@ -250,7 +250,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
           final ToggleableServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsWhitelist.get(name);
           if (extension != null) {
-            final Object value = getExtensionValueFromJson(name, valueFromJson);
+            final Object value = getExtensionValueFromEventJson(name, valueFromJson);
             final boolean enabled = value.equals(extension.getEnabledValue());
             setServiceExtensionState(name, enabled, value);
           }
@@ -286,7 +286,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
   }
 
-  private Object getExtensionValueFromJson(String name, String valueFromJson) {
+  private Object getExtensionValueFromEventJson(String name, String valueFromJson) {
     final Object enabledValue =
       ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
 
