@@ -9,6 +9,7 @@ import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
 import io.flutter.run.common.CommonTestConfigUtils;
+import io.flutter.run.common.TestType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

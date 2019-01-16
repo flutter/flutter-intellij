@@ -19,6 +19,7 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.PsiInvalidElementAccessException;
 import com.intellij.util.Function;
 import com.intellij.util.Time;
+import io.flutter.run.common.TestType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,14 +32,16 @@ public class FlutterTestLineMarkerContributor extends RunLineMarkerContributor {
 
   private static final int SCANNED_TEST_RESULT_LIMIT = 1024;
 
+  private final TestConfigUtils testConfigUtils = TestConfigUtils.getInstance();
+
   @Nullable
   @Override
   public Info getInfo(@NotNull PsiElement element) {
-    final TestConfigUtils.TestType testCall = TestConfigUtils.asTestCall(element);
+    final TestType testCall = testConfigUtils.asTestCall(element);
     if (testCall != null) {
       final Icon icon = getTestStateIcon(element, testCall.getIcon());
       final Function<PsiElement, String> tooltipProvider =
-        psiElement -> testCall.getTooltip(element);
+        psiElement -> testCall.getTooltip(element, testConfigUtils);
       return new Info(icon, tooltipProvider, ExecutorAction.getActions());
     }
 

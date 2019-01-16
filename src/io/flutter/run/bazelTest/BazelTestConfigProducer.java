@@ -25,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
  * Determines when we can run a Flutter test using "bazel test".
  */
 public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestConfig> {
+  private final BazelTestConfigUtils bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
 
   protected BazelTestConfigProducer() {
     super(FlutterBazelTestConfigurationType.getInstance());
@@ -41,7 +42,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
    * Returns true if successfully set up.
    */
   @Override
-  protected boolean setupConfigurationFromContext(BazelTestConfig config, ConfigurationContext context, Ref<PsiElement> sourceElement) {
+  protected boolean setupConfigurationFromContext(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull Ref<PsiElement> sourceElement) {
     if (!isFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();
@@ -54,7 +55,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
       return false;
     }
 
-    final String testName = BazelTestConfigUtils.findTestName(elt);
+    final String testName = bazelTestConfigUtils.findTestName(elt);
     if (testName != null) {
       return setupForSingleTest(config, context, file, testName);
     }
@@ -62,11 +63,8 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     return setupForDartFile(config, context, file);
   }
 
-  private boolean supportsFiltering(@Nullable FlutterSdk sdk) {
-    return sdk != null && sdk.getVersion().flutterTestSupportsFiltering();
-  }
-
-  private boolean setupForSingleTest(BazelTestConfig config, ConfigurationContext context, DartFile file, String testName) {
+  private boolean setupForSingleTest(
+      @NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file, @NotNull String testName) {
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
@@ -76,7 +74,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     return true;
   }
 
-  private boolean setupForDartFile(BazelTestConfig config, ConfigurationContext context, DartFile file) {
+  private boolean setupForDartFile(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file) {
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
@@ -86,14 +84,14 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     return true;
   }
 
-  private VirtualFile verifyFlutterTestFile(BazelTestConfig config, ConfigurationContext context, DartFile file) {
+  private VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file) {
       final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
     return file.getVirtualFile().getPath().contains("/test/") ?  candidate : null;
   }
 
-  private boolean setupForTarget(BazelTestConfig config, ConfigurationContext context, String target) {
+  private boolean setupForTarget(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull String target) {
     config.setFields(BazelTestFields.forTarget(target));
     config.setGeneratedName();
     return true;
@@ -103,7 +101,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
    * Returns true if a run config was already created for this file. If so we will reuse it.
    */
   @Override
-  public boolean isConfigurationFromContext(BazelTestConfig config, ConfigurationContext context) {
+  public boolean isConfigurationFromContext(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context) {
     final VirtualFile file = config.getFields().getFile();
     if (file == null) return false;
 
@@ -114,7 +112,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
 
     if (!FlutterRunConfigurationProducer.hasDartFile(context, file.getPath())) return false;
 
-    final String testName = BazelTestConfigUtils.findTestName(context.getPsiLocation());
+    final String testName = bazelTestConfigUtils.findTestName(context.getPsiLocation());
     if (config.getFields().getTestName() != null) {
       return testName != null && testName.equals(config.getFields().getTestName());
     }

@@ -27,7 +27,7 @@ public class BazelTestConfigUtils extends CommonTestConfigUtils {
   }
 
 
-  public static boolean isBazelFlutterCode(@Nullable DartFile file) {
+  private boolean isBazelFlutterCode(@Nullable DartFile file) {
     return file != null && Workspace.load(file.getProject()) != null;
   }
 

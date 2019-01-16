@@ -103,11 +103,12 @@ public class PluginConfig {
     @Nullable String launchScript,
     @Nullable String testScript
   ) {
-    final Fields fields = new Fields();
-    fields.daemonScript = daemonScript;
-    fields.doctorScript = doctorScript;
-    fields.launchScript = launchScript;
-    fields.testScript = testScript;
+    final Fields fields = new Fields(
+      daemonScript,
+      doctorScript,
+      launchScript,
+      testScript
+    );
     return new PluginConfig(fields);
   }
 
@@ -143,6 +144,16 @@ public class PluginConfig {
     Fields() {
     }
 
+    /**
+     * Convenience constructor that takes all
+     */
+    Fields(String daemonScript, String doctorScript, String launchScript, String testScript) {
+      this.daemonScript = daemonScript;
+      this.doctorScript = doctorScript;
+      this.launchScript = launchScript;
+      this.testScript = testScript;
+    }
+
     @Override
     public boolean equals(Object obj) {
       if (!(obj instanceof Fields)) return false;
@@ -155,7 +166,7 @@ public class PluginConfig {
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, launchScript);
+      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript);
     }
   }
 
