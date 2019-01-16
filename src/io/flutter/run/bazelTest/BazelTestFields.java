@@ -170,10 +170,6 @@ public class BazelTestFields {
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
 
-    if (useNewBazelTestRunner(project)) {
-
-    }
-
     final DartSdk sdk = DartPlugin.getDartSdk(project);
     if (sdk == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
