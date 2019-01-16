@@ -170,6 +170,10 @@ public class BazelTestFields {
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
 
+    if (useNewBazelTestRunner(project)) {
+
+    }
+
     final DartSdk sdk = DartPlugin.getDartSdk(project);
     if (sdk == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
@@ -212,9 +216,7 @@ public class BazelTestFields {
     // If we use the normal bazel launch script, then we want to use only flags for that mode.
     // This will be invoked if FlutterSettings.useNewBazelTestRunner is false, or if the
     // new bazel test script is not available.
-    if (!useNewBazelTestRunner(project)) {
-      commandLine.addParameter(bazelTarget);
-    } else {
+    if (useNewBazelTestRunner(project)) {
       commandLine.addParameter("--no-color");
       final String relativeEntryFilePath = entryFile == null
           ? null
@@ -231,6 +233,9 @@ public class BazelTestFields {
           commandLine.addParameter(bazelTarget);
           break;
       }
+    } else {
+      // If the new bazel test runner is disabled, we will simply run the bazel target.
+      commandLine.addParameter(bazelTarget);
     }
 
     if (mode == RunMode.DEBUG) {

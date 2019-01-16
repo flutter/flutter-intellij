@@ -110,6 +110,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // Disable the bazel test runner experiment if no new bazel test script is available.
     if (Workspace.load(myProject).getTestScript() == null) {
       myUseNewBazelTestRunner.setEnabled(false);
+      myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner") + " "
+                                      + FlutterBundle.message("settings.enable.bazel.test.runner.mustSyncClientWarning"));
+    } else {
+      myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner"));
+      myUseNewBazelTestRunner.setEnabled(true);
     }
   }
 
