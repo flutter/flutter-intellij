@@ -45,7 +45,17 @@ public class InspectorService implements Disposable {
 
   private final StreamSubscription<Boolean> setPubRootDirectoriesSubscription;
 
-  public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
+  /**
+   * Convenience ObjectGroup constructor for users who need to use
+   * DiagnosticsNode objects before the InspectorService is available.
+   */
+  public static CompletableFuture<InspectorService.ObjectGroup> createGroup(
+    @NotNull FlutterApp app, @NotNull FlutterDebugProcess debugProcess,
+    @NotNull VmService vmService, String groupName) {
+    return create(app, debugProcess, vmService).thenApplyAsync((service) -> service.createObjectGroup(groupName));
+  }
+
+    public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
                                                            @NotNull FlutterDebugProcess debugProcess,
                                                            @NotNull VmService vmService) {
     assert app.getVMServiceManager() != null;
