@@ -102,7 +102,7 @@ public class DiagnosticsNode {
   public boolean isDisposed() {
     try {
       final InspectorService.ObjectGroup service = inspectorService.getNow(null);
-      // If the service isn't yet been create it can't have been disposed.
+      // If the service isn't created yet it can't have been disposed.
       return service != null && service.isDisposed();
     } catch (Exception e) {
       // If the service can't be acquired then it is disposed.
