@@ -17,6 +17,7 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
+import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VmServiceConsumers;
@@ -123,7 +124,7 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
         }
         return channels;
       }).exceptionally(e -> {
-        LOG.warn(e);
+        FlutterUtils.warn(LOG, e);
         return Collections.emptyList();
       });
     }

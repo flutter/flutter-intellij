@@ -43,6 +43,7 @@ import com.jetbrains.lang.dart.analyzer.DartServerData;
 import com.jetbrains.lang.dart.ide.errorTreeView.DartProblemsView;
 import icons.FlutterIcons;
 import io.flutter.FlutterConstants;
+import io.flutter.FlutterUtils;
 import io.flutter.actions.FlutterAppAction;
 import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
@@ -148,7 +149,7 @@ public class FlutterReloadManager {
           handleSaveAllNotification(eventEditor);
         }
         catch (Throwable t) {
-          LOG.error(t);
+          FlutterUtils.warn(LOG, t);
         }
       }
     }, project);

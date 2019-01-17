@@ -65,7 +65,7 @@ public class FlutterSmallIDEProjectGenerator extends WebProjectTemplate<String> 
       TransactionGuard.getInstance().submitTransactionAndWait(runnable);
     }
     catch (ProcessCanceledException e) {
-      LOG.error(e);
+      FlutterUtils.warn(LOG, e);
     }
   }
 

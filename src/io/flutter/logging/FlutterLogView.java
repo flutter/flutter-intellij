@@ -38,6 +38,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.FlutterUtils;
 import io.flutter.logging.FlutterLog.Level;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.JsonUtils;
@@ -700,7 +701,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
       catch (Exception e) {
         // Should never go here.
-        LOG.warn("Error when get text attributes by log level", e);
+        FlutterUtils.warn(LOG, "Error when get text attributes by log level", e);
       }
     }
   }

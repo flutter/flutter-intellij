@@ -31,13 +31,14 @@ import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.logging.FlutterLog;
-import io.flutter.server.vmService.ServiceExtensions;
-import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
+import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
@@ -309,7 +310,7 @@ public class FlutterApp {
    */
   public CompletableFuture<DaemonApi.RestartResult> performRestartApp(@NotNull String reason) {
     if (myAppId == null) {
-      LOG.warn("cannot restart Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot restart Flutter app because app id is not set");
 
       final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
       result.completeExceptionally(new IllegalStateException("cannot restart Flutter app because app id is not set"));
@@ -345,7 +346,7 @@ public class FlutterApp {
   }
 
   /**
-   ** @return whether the latest of the version of the file is running.
+   * * @return whether the latest of the version of the file is running.
    */
   public boolean isLatestVersionRunning(VirtualFile file) {
     return file != null && file.getTimeStamp() <= maxFileTimestamp;
@@ -356,7 +357,7 @@ public class FlutterApp {
    */
   public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart, @NotNull String reason) {
     if (myAppId == null) {
-      LOG.warn("cannot reload Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot reload Flutter app because app id is not set");
 
       final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
       result.completeExceptionally(new IllegalStateException("cannot reload Flutter app because app id is not set"));
@@ -381,7 +382,7 @@ public class FlutterApp {
 
   public CompletableFuture<Boolean> togglePlatform() {
     if (myAppId == null) {
-      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
 
@@ -394,7 +395,7 @@ public class FlutterApp {
 
   public CompletableFuture<Boolean> togglePlatform(boolean showAndroid) {
     if (myAppId == null) {
-      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
 
@@ -413,14 +414,15 @@ public class FlutterApp {
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName, Map<String, Object> params) {
     if (myAppId == null) {
-      LOG.warn("cannot invoke " + methodName + " on Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot invoke " + methodName + " on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
     if (isFlutterIsolateSuspended()) {
       return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
-        myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
+                                                            myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
       );
-    } else {
+    }
+    else {
       return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
     }
   }
@@ -438,7 +440,7 @@ public class FlutterApp {
   /**
    * Call a boolean service extension only if it is already present, skipping
    * otherwise.
-   *
+   * <p>
    * Only use this method if you are confident there will not be a race
    * condition where the service extension is registered shortly after
    * this method is called.
@@ -521,7 +523,7 @@ public class FlutterApp {
           // continue
         }
         catch (Exception e) {
-          LOG.warn(e);
+          FlutterUtils.warn(LOG, e);
           break;
         }
       }
@@ -683,7 +685,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
       app.shutdownAsync().get();
     }
     catch (Exception e) {
-      LOG.warn("exception while shutting down Flutter App", e);
+      FlutterUtils.warn(LOG, "exception while shutting down Flutter App", e);
     }
   }
 

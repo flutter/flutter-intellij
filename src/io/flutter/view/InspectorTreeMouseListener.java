@@ -7,6 +7,7 @@ package io.flutter.view;
 
 import com.google.common.base.Joiner;
 import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.FlutterUtils;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.TreeUtils;
 
@@ -156,7 +157,7 @@ class InspectorTreeMouseListener extends MouseAdapter {
               tooltip = "Loading dart docs...";
               diagnostic.safeWhenComplete(propertyDoc, (String tip, Throwable th) -> {
                 if (th != null) {
-                  LOG.error(th);
+                  FlutterUtils.warn(LOG, th);
                 }
                 if (lastHover == node) {
                   // We are still hovering of the same node so show the user the tooltip.

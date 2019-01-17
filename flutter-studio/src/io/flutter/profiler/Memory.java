@@ -27,6 +27,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import io.flutter.FlutterUtils;
 import org.dartlang.vm.service.element.AllocationProfile;
 import org.dartlang.vm.service.element.ClassHeapStats;
 import org.dartlang.vm.service.element.ClassObj;
@@ -126,7 +127,7 @@ class Memory {
         case ACCUMULATED_INSTNACE_COUNT_COLUMN_INDEX:
           return classNode.getAccumulatedInstancesCount();
         default:
-          Log.error("Unexpected columnIndex: " + columnIndex);
+          FlutterUtils.warn(LOG, "Unexpected columnIndex: " + columnIndex);
           return "";
       }
     }

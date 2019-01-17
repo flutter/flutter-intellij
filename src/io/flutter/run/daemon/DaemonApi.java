@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
@@ -195,7 +196,7 @@ public class DaemonApi {
       cmd = pending.remove(id);
     }
     if (cmd == null) {
-      LOG.warn("received a response for a request that wasn't sent: " + id);
+      FlutterUtils.warn(LOG, "received a response for a request that wasn't sent: " + id);
       return null;
     }
     return cmd;
@@ -281,7 +282,7 @@ public class DaemonApi {
   private static void sendCommand(String json, ProcessHandler handler) {
     final PrintWriter stdin = getStdin(handler);
     if (stdin == null) {
-      LOG.warn("can't write command to Flutter process: " + json);
+      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
       return;
     }
     stdin.write('[');
@@ -293,7 +294,7 @@ public class DaemonApi {
     }
 
     if (stdin.checkError()) {
-      LOG.warn("can't write command to Flutter process: " + json);
+      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
     }
   }
 
@@ -370,7 +371,7 @@ public class DaemonApi {
         done.complete(parseResult.apply(result));
       }
       catch (Exception e) {
-        LOG.warn("Unable to parse response from Flutter daemon. Command was: " + this, e);
+        FlutterUtils.warn(LOG, "Unable to parse response from Flutter daemon. Command was: " + this, e);
         done.completeExceptionally(e);
       }
     }

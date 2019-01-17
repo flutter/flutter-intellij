@@ -10,6 +10,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.FlutterUtils;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class FlutterSampleManager {
       }
     }
     catch (URISyntaxException | IOException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
     }
 
     // Sort by display label.

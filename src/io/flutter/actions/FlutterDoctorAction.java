@@ -13,6 +13,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
@@ -39,7 +40,7 @@ public class FlutterDoctorAction extends FlutterSdkAction {
     if (doctorScript != null) {
       runWorkspaceFlutterDoctorScript(project, workspace.getRoot().getPath(), doctorScript);
     } else {
-      LOG.error("No \"doctorScript\" script in the flutter.json file.");
+      FlutterUtils.warn(LOG, "No \"doctorScript\" script in the flutter.json file.");
     }
   }
 

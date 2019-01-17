@@ -13,6 +13,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.intellij.openapi.diagnostic.Logger;
 import icons.FlutterIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -175,7 +176,7 @@ public class FlutterWidget {
         });
       }
       catch (IOException e) {
-        LOG.error(e);
+        FlutterUtils.warn(LOG, e);
       }
     }
 

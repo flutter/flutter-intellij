@@ -11,6 +11,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -67,8 +68,8 @@ public class Refreshable<T> implements Closeable {
   /**
    * Creates a refreshable variable that reports when it stops using a value that it created.
    *
-   * @param unpublish  will be called when the value is no longer in use. Can be called even though
-   *                   the value was never published. It will run on the Swing dispatch thread.
+   * @param unpublish will be called when the value is no longer in use. Can be called even though
+   *                  the value was never published. It will run on the Swing dispatch thread.
    */
   public Refreshable(Consumer<T> unpublish) {
     this.publisher = new Publisher(unpublish);
@@ -82,7 +83,8 @@ public class Refreshable<T> implements Closeable {
    *
    * <p>Calling getNow() twice during the same Swing event handler will return the same result.
    */
-  public @Nullable T getNow() {
+  public @Nullable
+  T getNow() {
     return publisher.get();
   }
 
@@ -101,7 +103,8 @@ public class Refreshable<T> implements Closeable {
    *
    * @throws IllegalStateException if called on the Swing dispatch thread.
    */
-  public @Nullable T getWhenReady() {
+  public @Nullable
+  T getWhenReady() {
     if (SwingUtilities.isEventDispatchThread()) {
       throw new IllegalStateException("getWhenReady shouldn't be called from Swing dispatch thread");
     }
@@ -115,8 +118,9 @@ public class Refreshable<T> implements Closeable {
 
     try {
       refreshDone.get();
-    } catch (Exception e) {
-      LOG.warn("Unexpected exception waiting for refresh task to finish", e);
+    }
+    catch (Exception e) {
+      FlutterUtils.warn(LOG, "Unexpected exception waiting for refresh task to finish", e);
     }
     return getNow();
   }
@@ -161,7 +165,7 @@ public class Refreshable<T> implements Closeable {
    */
   public void refresh(@NotNull Callback<T> callback) {
     if (publisher.isClosing()) {
-      LOG.warn("attempted to update closed Refreshable");
+      FlutterUtils.warn(LOG, "attempted to update closed Refreshable");
       return;
     }
     schedule.reschedule(new Request<>(this, callback));
@@ -216,13 +220,16 @@ public class Refreshable<T> implements Closeable {
         try {
           final T value = request.callback.call(request);
           publisher.reschedule(value);
-        } catch (CancellationException e) {
+        }
+        catch (CancellationException e) {
           // This is normal.
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           if (!Objects.equal(e.getMessage(), "expected failure in test")) {
-            LOG.warn("Callback threw an exception while updating a Refreshable", e);
+            FlutterUtils.warn(LOG, "Callback threw an exception while updating a Refreshable", e);
           }
-        } finally {
+        }
+        finally {
           schedule.done(request);
         }
 
@@ -236,11 +243,13 @@ public class Refreshable<T> implements Closeable {
               }
             }
           });
-        } catch (Exception e) {
-          LOG.warn("Unable to publish a value while updating a Refreshable", e);
+        }
+        catch (Exception e) {
+          FlutterUtils.warn(LOG, "Unable to publish a value while updating a Refreshable", e);
         }
       }
-    } finally {
+    }
+    finally {
       publisher.setState(State.IDLE);
       backgroundTask.set(null); // Allow restart on exit.
     }
@@ -251,7 +260,7 @@ public class Refreshable<T> implements Closeable {
   /**
    * A value indicating whether the Refreshable is being updated or not.
    */
-  public enum State { BUSY, IDLE, CLOSED }
+  public enum State {BUSY, IDLE, CLOSED}
 
   /**
    * A function that produces the next value of a Refreshable.
@@ -341,8 +350,9 @@ public class Refreshable<T> implements Closeable {
     /**
      * Returns the next task to run, or null if nothing is scheduled.
      */
-    synchronized @Nullable Request<T> next() {
-      assert(running == null);
+    synchronized @Nullable
+    Request<T> next() {
+      assert (running == null);
       running = scheduled;
       scheduled = null;
       return running;
@@ -352,7 +362,7 @@ public class Refreshable<T> implements Closeable {
      * Indicates that we finished creating a value.
      */
     synchronized void done(@NotNull Request<T> request) {
-      assert(running != null);
+      assert (running != null);
       running = null;
       cancelled = null;
     }
@@ -382,7 +392,10 @@ public class Refreshable<T> implements Closeable {
     private boolean closing;
 
     Publisher(@Nullable Consumer<T> unpublish) {
-      if (unpublish == null) unpublish = (x) -> {};
+      if (unpublish == null) {
+        unpublish = (x) -> {
+        };
+      }
       this.unpublishCallback = unpublish;
     }
 
@@ -434,7 +447,8 @@ public class Refreshable<T> implements Closeable {
     private synchronized T getPrevious() {
       if (needToPublish) {
         return scheduled;
-      } else {
+      }
+      else {
         return published;
       }
     }
@@ -472,7 +486,7 @@ public class Refreshable<T> implements Closeable {
      * Returns true if the value was published.
      */
     boolean publish() {
-      assert(SwingUtilities.isEventDispatchThread());
+      assert (SwingUtilities.isEventDispatchThread());
 
       final T discarded;
       synchronized (this) {
@@ -491,12 +505,13 @@ public class Refreshable<T> implements Closeable {
     }
 
     void unpublish(@Nullable T discarded) {
-      assert(SwingUtilities.isEventDispatchThread());
+      assert (SwingUtilities.isEventDispatchThread());
       if (discarded == null) return;
       try {
         unpublishCallback.accept(discarded);
-      } catch (Exception e) {
-        LOG.warn("An unpublish callback threw an exception while updating a Refreshable", e);
+      }
+      catch (Exception e) {
+        FlutterUtils.warn(LOG, "An unpublish callback threw an exception while updating a Refreshable", e);
       }
     }
 
@@ -508,8 +523,9 @@ public class Refreshable<T> implements Closeable {
 
       try {
         SwingUtilities.invokeAndWait(() -> doSetState(newState));
-      } catch (Exception e) {
-        LOG.error("Unable to change state of Refreshable", e);
+      }
+      catch (Exception e) {
+        FlutterUtils.warn(LOG, "Unable to change state of Refreshable", e);
       }
     }
 
@@ -524,9 +540,10 @@ public class Refreshable<T> implements Closeable {
       for (Runnable sub : getSubscribers()) {
         try {
           sub.run();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
           if (!Objects.equal(e.getMessage(), "expected failure in test")) {
-            LOG.warn("A subscriber to a Refreshable threw an exception", e);
+            FlutterUtils.warn(LOG, "A subscriber to a Refreshable threw an exception", e);
           }
         }
       }
@@ -541,8 +558,9 @@ public class Refreshable<T> implements Closeable {
     void waitForFirstValue() {
       try {
         initialized.get();
-      } catch (Exception e) {
-        LOG.warn("Unexpected exception waiting for Refreshable to initialize", e);
+      }
+      catch (Exception e) {
+        FlutterUtils.warn(LOG, "Unexpected exception waiting for Refreshable to initialize", e);
       }
     }
 

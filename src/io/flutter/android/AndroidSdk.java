@@ -17,6 +17,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -124,7 +125,7 @@ public class AndroidSdk {
       return emulators;
     }
     catch (ExecutionException | RuntimeException e) {
-      LOG.warn("Error listing android emulators", e);
+      FlutterUtils.warn(LOG, "Error listing android emulators", e);
       return Collections.emptyList();
     }
   }
