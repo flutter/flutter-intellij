@@ -13,6 +13,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,15 +75,15 @@ class PluginConfig {
         return null;
       }
       catch (IOException e) {
-        LOG.warn("Flutter plugin failed to load config file at " + file.getPath(), e);
+        FlutterUtils.warn(LOG, "Flutter plugin failed to load config file at " + file.getPath(), e);
         return null;
       }
       catch (JsonSyntaxException e) {
-        LOG.warn("Flutter plugin failed to parse JSON in config file at " + file.getPath());
+        FlutterUtils.warn(LOG, "Flutter plugin failed to parse JSON in config file at " + file.getPath());
         return null;
       }
       catch (PatternSyntaxException e) {
-        LOG.warn("Flutter plugin failed to parse directory pattern (" + e.getPattern() + ") in config file at " + file.getPath());
+        FlutterUtils.warn(LOG, "Flutter plugin failed to parse directory pattern (" + e.getPattern() + ") in config file at " + file.getPath());
         return null;
       }
     };

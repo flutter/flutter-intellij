@@ -50,7 +50,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Override
   public void buildProject() {
     // flutter build ?
-    LOG.warn("FlutterProjectSystem.buildProject() called but not (properly) implemented.");
+    FlutterUtils.warn(LOG, "FlutterProjectSystem.buildProject() called but not (properly) implemented.");
   }
 
   @Override
@@ -90,7 +90,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     // TODO(messick): Delete the remainder of this method and use the previous line once AS 3.1 is no longer supported.
     Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getAvailableDependency");
     if (finders == null) {
-      LOG.warn("No method found: GradleProjectSystem.getAvailableDependency()");
+      FlutterUtils.warn(LOG, "No method found: GradleProjectSystem.getAvailableDependency()");
       return null;
     }
     try {
@@ -108,7 +108,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   public Collection<PsiElementFinder> getPsiElementFinders() {
     Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getPsiElementFinders");
     if (finders == null) {
-      LOG.warn("No method found: GradleProjectSystem.getPsiElementFinders()");
+      FlutterUtils.warn(LOG, "No method found: GradleProjectSystem.getPsiElementFinders()");
       return Collections.emptyList();
     }
     try {

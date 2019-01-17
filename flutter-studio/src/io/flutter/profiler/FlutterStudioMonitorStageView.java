@@ -520,7 +520,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     return profilers.getApp().callServiceExtension("_getInstances", params)
       .thenApply((response) -> response)
       .exceptionally(err -> {
-        LOG.warn(err);
+        FlutterUtils.warn(LOG, err);
         return null;
       });
   }
@@ -573,7 +573,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     vmService.getAllocationProfile(isolateId, null, reset ? true : null, new AllocationProfileConsumer() {
       @Override
       public void onError(RPCError error) {
-        LOG.warn("Allocation Profile - " + error.getDetails());
+        FlutterUtils.warn(LOG, "Allocation Profile - " + error.getDetails());
         future.completeExceptionally(new RuntimeException(error.toString()));
       }
 
@@ -597,7 +597,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
     vmService.getAllocationProfile(isolateId, "full", null, new AllocationProfileConsumer() {
       @Override
       public void onError(RPCError error) {
-        LOG.warn("Allocation Profile during gcNow - " + error.getDetails());
+        FlutterUtils.warn(LOG, "Allocation Profile during gcNow - " + error.getDetails());
         future.completeExceptionally(new RuntimeException(error.toString()));
       }
 
@@ -958,7 +958,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
                 addNode(parent, fieldName, " = " + fieldValue);
               }
               catch (Exception e) {
-                LOG.warn("Error getting value " + valueRef.getKind(), e);
+                FlutterUtils.warn(LOG, "Error getting value " + valueRef.getKind(), e);
               }
               break;
 
@@ -967,7 +967,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
               // Pointing to a nested class.
               if (valueRef == null) {
                 // TODO(terry): This shouldn't happen.
-                LOG.warn("ValueRef is NULL");
+                FlutterUtils.warn(LOG, "ValueRef is NULL");
               }
               final String nestedObjectRef1 = valueRef.getId();    // Pull the object/Class we're pointing too.
               final DefaultMutableTreeNode node1 = addNode(parent, fieldName, " [" + nestedObjectRef1 + "]");
@@ -1000,7 +1000,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
               // Pointing to a nested class.
               if (valueRef == null) {
                 // TODO(terry): This shouldn't happen.
-                LOG.warn("ValueRef is NULL for nnnnnList");
+                FlutterUtils.warn(LOG, "ValueRef is NULL for nnnnnList");
               }
               break;
 
@@ -1008,7 +1008,7 @@ public class FlutterStudioMonitorStageView extends FlutterStageView<FlutterStudi
               // Pointing to a nested class.
               if (valueRef == null) {
                 // TODO(terry): This shouldn't happen.
-                LOG.warn("ValueRef is NULL");
+                FlutterUtils.warn(LOG, "ValueRef is NULL");
               }
               final String nestedObjectRef = valueRef.getId();    // Pull the object/Class we're pointing too.
               final DefaultMutableTreeNode node = addNode(parent, fieldName, " [" + nestedObjectRef + "]");

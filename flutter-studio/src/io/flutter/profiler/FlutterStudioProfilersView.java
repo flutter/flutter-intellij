@@ -521,7 +521,7 @@ public class FlutterStudioProfilersView
           });
         }
         else {
-          LOG.warn("Library not found " + libraryName);
+          FlutterUtils.warn(LOG, "Library not found " + libraryName);
         }
       }
       else {

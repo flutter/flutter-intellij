@@ -147,7 +147,7 @@ public class FlutterProjectCreator {
     final VirtualFile baseDir = ApplicationManager.getApplication().runWriteAction(
       (Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(baseFile));
     if (baseDir == null) {
-      LOG.warn("Couldn't find '" + location + "' in VFS");
+      FlutterUtils.warn(LOG, "Couldn't find '" + location + "' in VFS");
       return;
     }
     // TODO(messick): Remove the project converter when it is no longer needed (probably by the AS 3.2 release).

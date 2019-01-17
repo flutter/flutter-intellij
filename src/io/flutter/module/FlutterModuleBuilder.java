@@ -177,7 +177,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       }
     }
     catch (ModuleWithNameAlreadyExists | IOException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
     }
   }
 

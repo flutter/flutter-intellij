@@ -14,6 +14,7 @@ import de.roderick.weberknecht.WebSocket;
 import de.roderick.weberknecht.WebSocketEventHandler;
 import de.roderick.weberknecht.WebSocketException;
 import de.roderick.weberknecht.WebSocketMessage;
+import io.flutter.FlutterUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -72,7 +73,7 @@ public class VmOpenSourceLocationListener {
           webSocket.send(message.toString());
         }
         catch (WebSocketException e) {
-          LOG.warn(e);
+          FlutterUtils.warn(LOG, e);
         }
       }
 
@@ -82,7 +83,7 @@ public class VmOpenSourceLocationListener {
           webSocket.close();
         }
         catch (WebSocketException e) {
-          LOG.warn(e);
+          FlutterUtils.warn(LOG, e);
         }
       }
     });
@@ -185,7 +186,7 @@ public class VmOpenSourceLocationListener {
       dispatcher.getMulticaster().onRequest(isolateId, scriptId, tokenPos);
 
     } catch (Exception e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
     }
 
     if (id != null) {

@@ -7,6 +7,7 @@ package io.flutter.editor;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
+import io.flutter.FlutterUtils;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class FlutterCupertinoIcons {
       icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/cupertino_icons.properties"));
     }
     catch (IOException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
     }
   }
 
