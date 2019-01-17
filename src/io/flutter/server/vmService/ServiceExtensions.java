@@ -12,15 +12,13 @@ import java.util.stream.Collectors;
 
 // Each service extension needs to be manually added to [toggleableExtensionDescriptions].
 public class ServiceExtensions {
-  // TODO(kenzie): Alter these values to match other extensions once service extension states are restored from device.
-  // These values are currently configured differently because we invert the value of this service extension state.
   public static final ToggleableServiceExtensionDescription<Boolean> debugAllowBanner =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.debugAllowBanner",
-      false,
       true,
-      "Show Debug Mode Banner",
-      "Hide Debug Mode Banner");
+      false,
+      "Hide Debug Mode Banner",
+      "Show Debug Mode Banner");
 
   public static final ToggleableServiceExtensionDescription<Boolean> debugPaint =
     new ToggleableServiceExtensionDescription<>(

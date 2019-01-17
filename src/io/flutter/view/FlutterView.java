@@ -696,17 +696,9 @@ class ForceRefreshAction extends FlutterViewAction {
   }
 }
 
-class HideDebugModeBannerAction extends FlutterViewToggleableAction {
-  HideDebugModeBannerAction(@NotNull FlutterApp app) {
-    super(app, FlutterIcons.DebugBanner, ServiceExtensions.debugAllowBanner, true);
-  }
-
-  // TODO(kenzie): remove this override once service extension states are restored from device.
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension(ServiceExtensions.debugAllowBanner.getExtension(), !isSelected());
-    }
+class ShowDebugBannerAction extends FlutterViewToggleableAction {
+  ShowDebugBannerAction(@NotNull FlutterApp app) {
+    super(app, FlutterIcons.DebugBanner, ServiceExtensions.debugAllowBanner);
   }
 }
 
@@ -750,7 +742,7 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
 
     group.add(view.registerAction(new RepaintRainbowAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new HideDebugModeBannerAction(app)));
+    group.add(view.registerAction(new ShowDebugBannerAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
