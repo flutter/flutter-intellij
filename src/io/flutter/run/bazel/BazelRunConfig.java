@@ -107,12 +107,12 @@ public class BazelRunConfig extends RunConfigurationBase
   @Override
   public void writeExternal(@NotNull final Element element) throws WriteExternalException {
     super.writeExternal(element);
-    XmlSerializer.serializeInto(fields, element, new SkipDefaultValuesSerializationFilters());
+    fields.writeTo(element);
   }
 
   @Override
   public void readExternal(@NotNull final Element element) throws InvalidDataException {
     super.readExternal(element);
-    XmlSerializer.deserializeInto(fields, element);
+    fields = BazelFields.readFrom(element);
   }
 }
