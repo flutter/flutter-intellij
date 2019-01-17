@@ -273,6 +273,8 @@ public class LaunchCommandsTest {
       if (testScript == null) {
         // When the test script is null, Flutter Settings will report the new Bazel test script as disabled.
         useNewBazelTestRunnerOverride = false;
+      } else {
+        useNewBazelTestRunnerOverride = true;
       }
       fakeWorkspace = Workspace.forTest(
         fs.findFileByPath("/workspace/"),

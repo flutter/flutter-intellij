@@ -255,6 +255,11 @@ public class FlutterSettings {
   public boolean useNewBazelTestRunner(Project project) {
     // Check that the new test runner is available.
     final Workspace workspace = Workspace.load(project);
+    // If the workspace can't be found, we'll return false. This normally happens during tests. Test code that covers this setting
+    // has an override for this setting built-in.
+    if (workspace == null) {
+      return false;
+    }
     @Nullable String testScript = workspace.getTestScript();
     if (testScript == null) {
       // The test script was not found, so it can't be used.

@@ -67,10 +67,13 @@ public class BazelTestFields {
    * Returns whether the new test bazel runner is enabled, and if it's available.
    */
   private boolean useNewBazelTestRunner(@NotNull Project project) {
+    if (useNewBazelTestRunnerOverride != null) {
+      return useNewBazelTestRunnerOverride;
+    }
     // Check that the new test runner is available.
     final Workspace workspace = getWorkspace(project);
     final FlutterSettings settings = FlutterSettings.getInstance();
-    return settings == null ? useNewBazelTestRunnerOverride : settings.useNewBazelTestRunner(project);
+    return settings != null && settings.useNewBazelTestRunner(project);
   }
 
   // The value to use for the bazel test runner setting if no FlutterSettings are available.
@@ -79,7 +82,7 @@ public class BazelTestFields {
   // In the tests, we want to cover the new behavior by default, and provide coverage of the old
   // behavior in cases where the new test script is not available.
   @VisibleForTesting
-  boolean useNewBazelTestRunnerOverride = true;
+  Boolean useNewBazelTestRunnerOverride = null;
 
   private String getTestScriptFromWorkspace(@NotNull Project project) {
     final Workspace workspace = getWorkspace(project);
