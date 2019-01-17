@@ -7,7 +7,6 @@ package io.flutter.run.test;
 
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.common.TestLineMarkerContributor;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Annotates conventional Flutter tests with line markers.

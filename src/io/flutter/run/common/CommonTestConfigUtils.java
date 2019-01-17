@@ -11,6 +11,7 @@ import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
+import groovy.json.StringEscapeUtils;
 import io.flutter.dart.DartSyntax;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -72,6 +73,9 @@ public abstract class CommonTestConfigUtils {
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
     if (lit == null) return null;
 
-    return DartSyntax.unquote(lit);
+    final String name = DartSyntax.unquote(lit);
+    if (name == null) return null;
+
+    return StringEscapeUtils.unescapeJava(name);
   }
 }

@@ -23,6 +23,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.tree.TreeUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.editor.FlutterMaterialIcons;
 import io.flutter.inspector.*;
 import io.flutter.pub.PubRoot;
@@ -48,8 +49,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class InspectorPanel extends JPanel implements Disposable, InspectorService.InspectorServiceClient, InspectorTabPanel {
@@ -123,7 +124,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   private DefaultMutableTreeNode selectedNode;
   private DefaultMutableTreeNode lastExpanded;
   private boolean isActive = false;
-  private Map<InspectorInstanceRef, DefaultMutableTreeNode> valueToTreeNode = new HashMap<>();
+  private final Map<InspectorInstanceRef, DefaultMutableTreeNode> valueToTreeNode = new HashMap<>();
 
   /**
    * When visibleToUser is false we should dispose all allocated objects and
@@ -141,7 +142,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                         boolean legacyMode,
                         @NotNull EventStream<Boolean> shouldAutoHorizontalScroll,
                         @NotNull EventStream<Boolean> highlightNodesShownInBothTrees
-                        ) {
+  ) {
     this(flutterView, flutterApp, inspectorService, isApplicable, treeType, false, null, isSummaryTree, legacyMode,
          shouldAutoHorizontalScroll, highlightNodesShownInBothTrees);
   }
@@ -572,7 +573,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
                                           ? treeGroups.getNext().getDetailsSubtree(subtreeRoot)
                                           : treeGroups.getNext().getRoot(treeType), (final DiagnosticsNode n, Throwable error) -> {
       if (error != null) {
-        LOG.error(error.toString());
+        FlutterUtils.warn(LOG, error);
         treeGroups.cancelNext();
         return;
       }
@@ -853,7 +854,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       isSummaryTree ? CompletableFuture.allOf(pendingDetailsFuture, pendingSelectionFuture) : pendingSelectionFuture;
     selectionGroups.getNext().safeWhenComplete(selectionsReady, (ignored, error) -> {
       if (error != null) {
-        LOG.error(error);
+        FlutterUtils.warn(LOG, error);
         selectionGroups.cancelNext();
         return;
       }
@@ -884,7 +885,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         treeGroups.getCurrent()
           .safeWhenComplete(treeGroups.getCurrent().getParentChain(newSelection), (ArrayList<DiagnosticsPathNode> path, Throwable ex) -> {
             if (ex != null) {
-              LOG.error(ex);
+              FlutterUtils.warn(LOG, ex);
               return;
             }
             DefaultMutableTreeNode treeNode = getRootNode();
@@ -1008,7 +1009,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       if (diagnostic.hasChildren() && treeNode.getChildCount() == 0) {
         diagnostic.safeWhenComplete(diagnostic.getChildren(), (ArrayList<DiagnosticsNode> children, Throwable throwable) -> {
           if (throwable != null) {
-            LOG.error(throwable);
+            FlutterUtils.warn(LOG, throwable);
             return;
           }
           if (treeNode.getChildCount() == 0) {
@@ -1120,7 +1121,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           // assuming the first parent is a regular node.
           toSelect = getDiagnosticNode((DefaultMutableTreeNode)path.getPathComponent(path.getPathCount() - 2));
         }
-        toSelect.getInspectorService().setSelection(toSelect.getValueRef(), true);
+        toSelect.setSelection(toSelect.getValueRef(), true);
       }
     }
 
@@ -1130,7 +1131,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     else if (diagnostic != null) {
       // We can't rely on the details tree to update the selection on the server in this case.
       DiagnosticsNode selection = detailsSelection != null ? detailsSelection : diagnostic;
-      selection.getInspectorService().setSelection(selection.getValueRef(), true);
+      selection.setSelection(selection.getValueRef(), true);
     }
   }
 
@@ -1278,7 +1279,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         node.safeWhenComplete(propertyDoc, (String tooltip, Throwable th) -> {
           // TODO(jacobr): make sure we still care about seeing this tooltip.
           if (th != null) {
-            LOG.error(th);
+            FlutterUtils.warn(LOG, th);
           }
           setToolTipText(tooltip);
         });
@@ -1419,7 +1420,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     public void showProperties(DiagnosticsNode diagnostic) {
       this.diagnostic = diagnostic;
-      if (diagnostic == null || diagnostic.getInspectorService().isDisposed()) {
+      if (diagnostic == null || diagnostic.isDisposed()) {
         shutdownTree(false);
         return;
       }
@@ -1430,7 +1431,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           if (throwable != null) {
             getTreeModel().setRoot(new DefaultMutableTreeNode());
             getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_properties"));
-            LOG.error(throwable);
+            FlutterUtils.warn(LOG, throwable);
             groups.cancelNext();
             return;
           }
@@ -1449,10 +1450,9 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       }
       groups.getNext().safeWhenComplete(loadPropertyMetadata(properties), (Void ignored, Throwable errorGettingInstances) -> {
         if (errorGettingInstances != null) {
-          // TODO(jacobr): show error message explaining properties could not
-          // be loaded.
+          // TODO(jacobr): show error message explaining properties could not be loaded.
           getTreeModel().setRoot(new DefaultMutableTreeNode());
-          LOG.error(errorGettingInstances);
+          FlutterUtils.warn(LOG, errorGettingInstances);
           getEmptyText().setText(FlutterBundle.message("app.inspector.error_loading_property_details"));
           groups.cancelNext();
           return;
@@ -1496,7 +1496,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // until we have tested whether the properties are identical.
 
       groups.cancelNext(); // Cancel any existing pending next state.
-      if (diagnostic.getInspectorService().isDisposed()) {
+      if (diagnostic.isDisposed()) {
         // We are getting properties for a stale object. Wait until the next frame when we will have new properties.
         return;
       }

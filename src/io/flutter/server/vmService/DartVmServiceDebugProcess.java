@@ -39,6 +39,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
@@ -567,7 +568,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
         @Override
         public void onError(RPCError error) {
-          LOG.error(error.toString());
+          FlutterUtils.warn(LOG, error.toString());
         }
       });
     }

@@ -46,6 +46,8 @@ public class Script extends Obj {
 
   /**
    * A table encoding a mapping from token position to line and column.
+   *
+   * Can return <code>null</code>.
    */
   public List<List<Integer>> getTokenPosTable() {
     return getListListInt("tokenPosTable");

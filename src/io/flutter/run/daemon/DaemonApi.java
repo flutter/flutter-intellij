@@ -6,36 +6,31 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Charsets;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSyntaxException;
+import com.google.gson.*;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Sends JSON commands to a flutter daemon process, assigning a new id to each one.
@@ -76,7 +71,6 @@ public class DaemonApi {
     this((String json) -> sendCommand(json, process));
   }
 
-
   CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
     return send("app.restart", new AppRestart(appId, fullRestart, pause, reason));
   }
@@ -86,15 +80,10 @@ public class DaemonApi {
   }
 
   void cancelPending() {
-    final List<Command> commands;
-
+    // We used to complete the commands with exceptions here (completeExceptionally), but that generally was surfaced
+    // to the user as an exception in the tool. We now choose to not complete the command at all.
     synchronized (pending) {
-      commands = new ArrayList<>(pending.values());
       pending.clear();
-    }
-
-    for (Command command : commands) {
-      command.completeExceptionally(new IOException("Application terminated"));
     }
   }
 
@@ -207,7 +196,7 @@ public class DaemonApi {
       cmd = pending.remove(id);
     }
     if (cmd == null) {
-      LOG.warn("received a response for a request that wasn't sent: " + id);
+      FlutterUtils.warn(LOG, "received a response for a request that wasn't sent: " + id);
       return null;
     }
     return cmd;
@@ -232,7 +221,7 @@ public class DaemonApi {
    * Returns the last lines written to stderr.
    */
   public String getStderrTail() {
-    final String[] lines = stderr.toArray(new String[]{});
+    final String[] lines = stderr.toArray(new String[]{ });
     return String.join("", lines);
   }
 
@@ -293,7 +282,7 @@ public class DaemonApi {
   private static void sendCommand(String json, ProcessHandler handler) {
     final PrintWriter stdin = getStdin(handler);
     if (stdin == null) {
-      LOG.warn("can't write command to Flutter process: " + json);
+      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
       return;
     }
     stdin.write('[');
@@ -305,7 +294,7 @@ public class DaemonApi {
     }
 
     if (stdin.checkError()) {
-      LOG.warn("can't write command to Flutter process: " + json);
+      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
     }
   }
 
@@ -382,7 +371,7 @@ public class DaemonApi {
         done.complete(parseResult.apply(result));
       }
       catch (Exception e) {
-        LOG.warn("Unable to parse response from Flutter daemon. Command was: " + this, e);
+        FlutterUtils.warn(LOG, "Unable to parse response from Flutter daemon. Command was: " + this, e);
         done.completeExceptionally(e);
       }
     }

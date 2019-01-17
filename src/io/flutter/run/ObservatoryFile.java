@@ -35,7 +35,7 @@ class ObservatoryFile {
   /**
    * Maps an observatory token id to its line and column.
    */
-  @NotNull
+  @Nullable
   private final TIntObjectHashMap<Position> positionMap;
 
   /**
@@ -50,8 +50,14 @@ class ObservatoryFile {
   private final LightVirtualFile snapshot;
 
   ObservatoryFile(@NotNull Script script, boolean wantSnapshot) {
-    positionMap = createPositionMap(script.getTokenPosTable());
-    snapshot = !wantSnapshot ? null : createSnapshot(script);
+    final @Nullable List<List<Integer>> tokenPosTable = script.getTokenPosTable();
+    if (tokenPosTable != null) {
+      positionMap = createPositionMap(tokenPosTable);
+    }
+    else {
+      positionMap = null;
+    }
+    snapshot = wantSnapshot ? createSnapshot(script) : null;
   }
 
   boolean hasSnapshot() {
@@ -68,6 +74,10 @@ class ObservatoryFile {
   XSourcePosition createPosition(@Nullable VirtualFile local, int tokenPos) {
     final VirtualFile fileToUse = local == null ? snapshot : local;
     if (fileToUse == null) return null;
+
+    if (positionMap == null) {
+      return null;
+    }
 
     final Position pos = positionMap.get(tokenPos);
     if (pos == null) {

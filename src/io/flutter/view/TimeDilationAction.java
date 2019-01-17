@@ -8,6 +8,7 @@ package io.flutter.view;
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -16,18 +17,19 @@ import java.util.Map;
 
 class TimeDilationAction extends FlutterViewToggleableAction {
   TimeDilationAction(@NotNull FlutterApp app, boolean showIcon) {
-    super(app, "Enable Slow Animations", null, showIcon ? AllIcons.Vcs.History : null);
-
-    setExtensionCommand("ext.flutter.timeDilation");
-    setEnabledStateValue(5.0);
+    super(app, showIcon ? AllIcons.Vcs.History : null, ServiceExtensions.slowAnimations);
   }
 
   @Override
   protected void perform(@Nullable AnActionEvent event) {
     final Map<String, Object> params = new HashMap<>();
-    params.put("timeDilation", isSelected() ? 5.0 : 1.0);
+    params.put(
+      "timeDilation",
+      isSelected()
+      ? ServiceExtensions.slowAnimations.getEnabledValue()
+      : ServiceExtensions.slowAnimations.getDisabledValue());
     if (app.isSessionActive()) {
-      app.callServiceExtension("ext.flutter.timeDilation", params);
+      app.callServiceExtension(ServiceExtensions.slowAnimations.getExtension(), params);
     }
   }
 }

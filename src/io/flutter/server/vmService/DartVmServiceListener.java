@@ -157,7 +157,7 @@ public class DartVmServiceListener implements VmServiceListener {
     else {
       if (vmBreakpoints.size() > 1) {
         // Shouldn't happen. IDE doesn't allow to set 2 breakpoints on one line.
-        LOG.error(vmBreakpoints.size() + " breakpoints hit in one shot.");
+        LOG.warn(vmBreakpoints.size() + " breakpoints hit in one shot.");
       }
 
       // Remove any temporary (run to cursor) breakpoints.

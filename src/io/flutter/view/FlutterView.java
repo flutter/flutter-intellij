@@ -53,6 +53,7 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkVersion;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
@@ -391,7 +392,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
         InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService()),
         (InspectorService inspectorService, Throwable throwable) -> {
           if (throwable != null) {
-            LOG.warn(throwable);
+            FlutterUtils.warn(LOG, throwable);
             return;
           }
           debugActiveHelper(app, inspectorService);
@@ -627,21 +628,14 @@ class OpenTimelineViewAction extends FlutterViewAction {
 }
 
 class RepaintRainbowAction extends FlutterViewToggleableAction {
-
-  public static final String SHOW_REPAINT_RAINBOW = "ext.flutter.repaintRainbow";
-
   RepaintRainbowAction(@NotNull FlutterApp app) {
-    super(app, "Show Repaint Rainbow");
-
-    setExtensionCommand(SHOW_REPAINT_RAINBOW);
+    super(app, FlutterIcons.RepaintRainbow, ServiceExtensions.repaintRainbow);
   }
 }
 
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
-    super(app, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
-
-    setExtensionCommand("ext.flutter.inspector.show");
+    super(app, AllIcons.General.LocateHover, ServiceExtensions.toggleSelectWidgetMode);
   }
 
   @Override
@@ -702,19 +696,9 @@ class ForceRefreshAction extends FlutterViewAction {
   }
 }
 
-class HideDebugModeBannerAction extends FlutterViewToggleableAction {
-  HideDebugModeBannerAction(@NotNull FlutterApp app) {
-    super(app, "Hide Debug Mode Banner");
-
-    setExtensionCommand("ext.flutter.debugAllowBanner");
-    setEnabledStateValue(false);
-  }
-
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
-    }
+class ShowDebugBannerAction extends FlutterViewToggleableAction {
+  ShowDebugBannerAction(@NotNull FlutterApp app) {
+    super(app, FlutterIcons.DebugBanner, ServiceExtensions.debugAllowBanner);
   }
 }
 
@@ -758,7 +742,7 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
 
     group.add(view.registerAction(new RepaintRainbowAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new HideDebugModeBannerAction(app)));
+    group.add(view.registerAction(new ShowDebugBannerAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));

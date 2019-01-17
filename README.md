@@ -51,18 +51,9 @@ for Flutter IntelliJ issues.
 
 Please note the following known issues:
 
-- When using IntelliJ 2018.2 with Android support, you'll likely hit an issue with
-  constant re-indexing. This is an issue with the IntelliJ 2018.2 platform - you can
-  work around it by using 2018.1, or by using the EAP version of 2018.2. The fix for this
-  is in the EAP version, and should be available in the stable version shortly.
-  More details are available at [#2511](https://github.com/flutter/flutter-intellij/issues/2511).
 - If you are building Flutter plugins using Swift, be sure you have at least`cocoapods 1.5.0` 
   installed; an issue tracking a corresponding update to `flutter doctor` is:
   [flutter/#16930](https://github.com/flutter/flutter/issues/16930).
-- In Android Studio 3.1, after an application starts up, the Inspector will often still say
-  "No running applications". The application is running; in order to see the Inspector contents
-  for it, you need to click on the named device tab in the Inspector window. This issue is not
-  present in IntelliJ IDEA or in later versions of Android Studio.
 - [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will
   read the PATH variable just once on startup. Thus, if you change PATH later to
   include the Flutter SDK path, this will not have an affect in IntelliJ until you

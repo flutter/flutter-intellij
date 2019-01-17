@@ -47,7 +47,7 @@ public class FlutterColors {
       colors.load(FlutterUtils.class.getResourceAsStream("/flutter/colors.properties"));
     }
     catch (IOException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
     }
   }
 

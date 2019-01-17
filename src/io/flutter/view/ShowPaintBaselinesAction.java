@@ -7,12 +7,11 @@ package io.flutter.view;
 
 import icons.FlutterIcons;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
 class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   ShowPaintBaselinesAction(@NotNull FlutterApp app, boolean showIcon) {
-    super(app, "Show Paint Baselines", null, showIcon ? FlutterIcons.Painting : null);
-
-    setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
+    super(app, showIcon ? FlutterIcons.Painting : null, ServiceExtensions.debugPaintBaselines);
   }
 }

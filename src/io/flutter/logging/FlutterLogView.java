@@ -38,6 +38,7 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.FlutterUtils;
 import io.flutter.logging.FlutterLog.Level;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.JsonUtils;
@@ -68,6 +69,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @NotNull
   private static final Logger LOG = Logger.getInstance(FlutterLogView.class);
+
+  private static final float DATA_PANEL_SPLITTER_PROPORTION_DEFAULT = 0.75f;
 
   @NotNull
   private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
@@ -414,6 +417,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   }
 
   class DataPanel extends JEditorPane {
+    float lastSplitProportion = DATA_PANEL_SPLITTER_PROPORTION_DEFAULT;
+
     DataPanel() {
       setEditable(false);
     }
@@ -425,9 +430,23 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         // First selection.
         final String data = nodes.get(0).entry.getData();
         if (JsonUtils.hasJsonData(data)) {
-          @SuppressWarnings("ConstantConditions")
-          final JsonElement jsonElement = new JsonParser().parse(data);
+          @SuppressWarnings("ConstantConditions") final JsonElement jsonElement = new JsonParser().parse(data);
           text = gsonHelper.toJson(jsonElement);
+          dataPane.setVisible(true);
+
+          if (treeSplitter.getProportion() != lastSplitProportion) {
+            treeSplitter.setProportion(lastSplitProportion);
+            treeSplitter.revalidate();
+            treeSplitter.repaint();
+          }
+        }
+        else {
+          final float proportion = treeSplitter.getProportion();
+          if (proportion != 1.0f) {
+            lastSplitProportion = proportion;
+          }
+          dataPane.setVisible(false);
+          treeSplitter.setProportion(1.0f);
         }
       }
       setText(text);
@@ -526,6 +545,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final ClearLogAction clearLogAction = new ClearLogAction();
   @NotNull
   private final DataPanel dataPanel;
+  private JScrollPane dataPane;
+  private Splitter treeSplitter;
 
   private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
 
@@ -636,21 +657,17 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     });
     logModel.setScrollPane(treePane);
 
-    final JScrollPane dataPane = ScrollPaneFactory.createScrollPane(
+    dataPane = ScrollPaneFactory.createScrollPane(
       dataPanel,
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
-    // TODO(pq): consider an affordance to hide/show data pane.
-    final Splitter treeSplitter = new Splitter(false);
-    treeSplitter.setProportion(flutterLogPreferences.getSplitterProportion());
-    flutterLogPreferences.addViewStateListener(e -> {
-      final float newProportion = flutterLogPreferences.getSplitterProportion();
-      if (treeSplitter.getProportion() != newProportion) {
-        treeSplitter.setProportion(newProportion);
-      }
-    });
-    treeSplitter.addPropertyChangeListener("proportion", e -> flutterLogPreferences.setSplitterProportion(treeSplitter.getProportion()));
+    treeSplitter = new Splitter(false);
+    treeSplitter.setProportion(DATA_PANEL_SPLITTER_PROPORTION_DEFAULT);
+    // Data and splitter revealed on demand.
+    dataPane.setVisible(false);
+    treeSplitter.setVisible(false);
+
     treeSplitter.setFirstComponent(treePane);
     treeSplitter.setSecondComponent(dataPane);
     toolWindowPanel.setContent(treeSplitter);
@@ -684,7 +701,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
       catch (Exception e) {
         // Should never go here.
-        LOG.warn("Error when get text attributes by log level", e);
+        FlutterUtils.warn(LOG, "Error when get text attributes by log level", e);
       }
     }
   }
@@ -734,6 +751,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
     logTree.append(entry);
+    if (entry.getKind() == FlutterLogEntry.Kind.WIDGET_ERROR_START) {
+      // Stop auto-scroll on a widget error.
+      scrollToEndAction.disableIfNeeded();
+    }
+  }
+
+  @Override
+  public void onEntryContentChange() {
+    logModel.uiExec(logModel::update, 10);
   }
 
   @Override

@@ -7,6 +7,7 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.util.text.StringUtil;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.samples.FlutterSample;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -27,6 +28,8 @@ public class FlutterCreateAdditionalSettings {
   private Boolean kotlin;
   @Nullable
   private Boolean offlineMode;
+  @Nullable
+  private FlutterSample sampleContent;
 
   public FlutterCreateAdditionalSettings() {
     type = FlutterProjectType.APP;
@@ -40,6 +43,7 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable String org,
                                           @Nullable Boolean swift,
                                           @Nullable Boolean kotlin,
+                                          @Nullable FlutterSample sampleContent,
                                           @Nullable Boolean offlineMode) {
     this.includeDriverTest = includeDriverTest;
     this.type = type;
@@ -47,6 +51,7 @@ public class FlutterCreateAdditionalSettings {
     this.org = org;
     this.swift = swift;
     this.kotlin = kotlin;
+    this.sampleContent = sampleContent;
     this.offlineMode = offlineMode;
   }
 
@@ -69,6 +74,10 @@ public class FlutterCreateAdditionalSettings {
 
   public void setKotlin(boolean value) {
     kotlin = value;
+  }
+
+  public void setSampleContent(@Nullable FlutterSample sampleContent) {
+    this.sampleContent = sampleContent;
   }
 
   public List<String> getArgs() {
@@ -105,6 +114,13 @@ public class FlutterCreateAdditionalSettings {
     if (Boolean.TRUE.equals(kotlin)) {
       args.add("--android-language");
       args.add("kotlin");
+    }
+
+    if (sampleContent != null) {
+      args.add("--sample");
+      args.add(sampleContent.getId());
+      // Samples need to overwrite default IDEA project content.
+      args.add("--overwrite");
     }
 
     return args;
@@ -144,6 +160,8 @@ public class FlutterCreateAdditionalSettings {
     private Boolean kotlin;
     @Nullable
     private Boolean offlineMode;
+    @Nullable
+    private FlutterSample sampleContent;
 
     public Builder() {
     }
@@ -183,8 +201,13 @@ public class FlutterCreateAdditionalSettings {
       return this;
     }
 
+    public Builder setSampleContent(@Nullable FlutterSample sampleContent) {
+      this.sampleContent = sampleContent;
+      return this;
+    }
+
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, sampleContent, offlineMode);
     }
   }
 }

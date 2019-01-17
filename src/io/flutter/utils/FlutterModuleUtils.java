@@ -5,17 +5,11 @@
  */
 package io.flutter.utils;
 
-import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
-
 import com.intellij.execution.RunManager;
 import com.intellij.execution.RunnerAndConfigurationSettings;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.fileEditor.FileEditorManager;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleManager;
-import com.intellij.openapi.module.ModuleType;
-import com.intellij.openapi.module.ModuleTypeManager;
-import com.intellij.openapi.module.ModuleUtilCore;
+import com.intellij.openapi.module.*;
 import com.intellij.openapi.project.DumbService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -35,9 +29,12 @@ import io.flutter.run.SdkFields;
 import io.flutter.run.SdkRunConfig;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
+
+import static io.flutter.sdk.FlutterSdk.DART_SDK_SUFFIX;
 
 public class FlutterModuleUtils {
   public static final String DEPRECATED_FLUTTER_MODULE_TYPE_ID = "WEB_MODULE";
@@ -179,6 +176,9 @@ public class FlutterModuleUtils {
    * Check if any module in this project {@link #declaresFlutter(Module)}.
    */
   public static boolean declaresFlutter(@NotNull Project project) {
+    if (project.isDisposed()) {
+      return false;
+    }
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::declaresFlutter);
   }
 

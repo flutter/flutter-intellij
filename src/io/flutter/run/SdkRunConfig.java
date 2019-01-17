@@ -34,6 +34,7 @@ import com.intellij.util.PathUtil;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -103,7 +104,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
           Files.delete(file);
         }
         catch (IOException e) {
-          LOG.error(e);
+          FlutterUtils.warn(LOG, e);
           // TODO(jacobr): consider aborting.
         }
       }
@@ -119,7 +120,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     @Override
     public FileVisitResult visitFileFailed(Path file,
                                            IOException exc) {
-      LOG.error(exc);
+      FlutterUtils.warn(LOG, exc);
       return CONTINUE;
     }
   }
@@ -166,7 +167,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
             existingJson = new String(Files.readAllBytes(cachedParametersPath), StandardCharsets.UTF_8);
           }
           catch (IOException e) {
-            LOG.warn("Unable to get existing json from " + cachedParametersPath);
+            FlutterUtils.warn(LOG, "Unable to get existing json from " + cachedParametersPath);
           }
         }
         if (!StringUtil.equals(json, existingJson)) {
@@ -181,13 +182,14 @@ public class SdkRunConfig extends LocatableConfigurationBase
               if (Files.isDirectory(buildPath)) {
                 Files.walkFileTree(buildPath, new RecursiveDeleter("*.{fingerprint,dill}"));
               }
-            } else {
+            }
+            else {
               Files.createDirectory(buildPath);
             }
             Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
           }
           catch (IOException e) {
-            LOG.error(e);
+            FlutterUtils.warn(LOG, e);
           }
         }
       }

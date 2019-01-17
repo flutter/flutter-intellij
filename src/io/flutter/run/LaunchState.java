@@ -40,6 +40,7 @@ import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
@@ -191,8 +192,8 @@ public class LaunchState extends CommandLineState {
 
   @NotNull
   protected XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
-                                           @NotNull final FlutterApp app,
-                                           @NotNull final ExecutionResult executionResult)
+                                             @NotNull final FlutterApp app,
+                                             @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
@@ -384,13 +385,12 @@ public class LaunchState extends CommandLineState {
             if (!identicalCommands(app.getCommand(), launchState.runConfig.getCommand(env, app.device()))) {
               // To be safe, relaunch as the arguments to launch have changed.
               try {
-                // TODO(jacobr): ideally we shouldn't be synchronously waiting
-                // for futures like this but I don't see a better option.
-                // In practice this seems fine.
+                // TODO(jacobr): ideally we shouldn't be synchronously waiting for futures like this
+                // but I don't see a better option. In practice this seems fine.
                 app.shutdownAsync().get();
               }
               catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                LOG.error(e);
+                FlutterUtils.warn(LOG, e);
               }
               return launchState.launch(env);
             }

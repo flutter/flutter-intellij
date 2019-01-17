@@ -24,6 +24,7 @@ import io.flutter.perf.PerfReportKind;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.FlutterFramesMonitor;
+import io.flutter.server.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -32,9 +33,6 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import static io.flutter.view.PerformanceOverlayAction.SHOW_PERFORMANCE_OVERLAY;
-import static io.flutter.view.RepaintRainbowAction.SHOW_REPAINT_RAINBOW;
 
 public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
   /**
@@ -76,8 +74,8 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
 
-    showPerfOverlay = new BoolServiceExtensionCheckbox(app, SHOW_PERFORMANCE_OVERLAY, "Show performance overlay", "");
-    showRepaintRainbow = new BoolServiceExtensionCheckbox(app, SHOW_REPAINT_RAINBOW, "Show repaint rainbow", "");
+    showPerfOverlay = new BoolServiceExtensionCheckbox(app, ServiceExtensions.performanceOverlay, "");
+    showRepaintRainbow = new BoolServiceExtensionCheckbox(app, ServiceExtensions.repaintRainbow, "");
 
     buildUI();
 
@@ -86,9 +84,10 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
       trackRepaintsCheckbox.setSelected(widgetPerfManager.isTrackRepaintWidgets());
     }
 
-    app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REBUILD_WIDGETS, trackRebuildsCheckbox::setEnabled, parentDisposable);
+    app.hasServiceExtension(ServiceExtensions.trackRebuildWidgets.getExtension(), trackRebuildsCheckbox::setEnabled, parentDisposable);
+
     if (ENABLE_TRACK_REPAINTS) {
-      app.hasServiceExtension(FlutterWidgetPerfManager.TRACK_REPAINT_WIDGETS, trackRepaintsCheckbox::setEnabled, parentDisposable);
+      app.hasServiceExtension(ServiceExtensions.trackRepaintWidgets.getExtension(), trackRepaintsCheckbox::setEnabled, parentDisposable);
     }
 
     trackRebuildsCheckbox.addChangeListener((l) -> {
@@ -122,7 +121,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
   boolean getShowPerfTable() {
     final FlutterWidgetPerfManager widgetPerfManager = FlutterWidgetPerfManager.getInstance(app.getProject());
-    return widgetPerfManager.isTrackRebuildWidgets() || widgetPerfManager.isTrackRebuildWidgets();
+    return widgetPerfManager.isTrackRebuildWidgets() || widgetPerfManager.isTrackRepaintWidgets();
   }
 
   private void buildUI() {
@@ -133,7 +132,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     // Otherwise, this tab will require the majority of the IntelliJ window
     // width largely due to the long warning message about running in debug
     // mode.
-    setMinimumSize(new Dimension(0,0));
+    setMinimumSize(new Dimension(0, 0));
 
     // Header
     final JPanel footer = new JPanel(new VerticalLayout(0));
@@ -141,7 +140,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     final JPanel labels = new JPanel(new BorderLayout(6, 0));
     labels.setBorder(JBUI.Borders.empty(0, 8));
 
-    final JLabel runModeLabel = new JBLabel("Running in " + app.getLaunchMode() + " mode");
+    final JLabel runModeLabel = new JBLabel("Run mode: " + app.getLaunchMode());
     runModeLabel.setVerticalAlignment(SwingConstants.TOP);
     labels.add(
       runModeLabel,
@@ -150,7 +149,8 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     footer.add(labels);
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
-      final JBLabel label = new JBLabel("<html><body>(note: frame rendering times are not indicative of release mode performance unless run in profile mode)</body></html>");
+      final JBLabel label =
+        new JBLabel("<html><body>(note: debug mode frame rendering times are not indicative of release mode performance)</body></html>");
       label.setForeground(JBColor.RED);
       labels.add(label, BorderLayout.CENTER);
     }

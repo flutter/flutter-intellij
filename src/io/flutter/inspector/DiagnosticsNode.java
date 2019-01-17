@@ -50,6 +50,7 @@ import java.util.function.BiConsumer;
  */
 public class DiagnosticsNode {
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
+  private final FlutterApp app;
 
   private InspectorSourceLocation location;
   private DiagnosticsNode parent;
@@ -63,8 +64,20 @@ public class DiagnosticsNode {
                          boolean isProperty,
                          DiagnosticsNode parent) {
     this.json = json;
+    this.inspectorService = CompletableFuture.completedFuture(inspectorService);
+    this.isProperty = isProperty;
+    this.app = inspectorService.getApp();
+  }
+
+  public DiagnosticsNode(JsonObject json,
+                         CompletableFuture<InspectorService.ObjectGroup> inspectorService,
+                         FlutterApp app,
+                         boolean isProperty,
+                         DiagnosticsNode parent) {
+    this.json = json;
     this.inspectorService = inspectorService;
     this.isProperty = isProperty;
+    this.app = app;
   }
 
   @Override
@@ -84,6 +97,17 @@ public class DiagnosticsNode {
     }
 
     return name + getSeparator() + ' ' + getDescription();
+  }
+
+  public boolean isDisposed() {
+    try {
+      final InspectorService.ObjectGroup service = inspectorService.getNow(null);
+      // If the service isn't created yet it can't have been disposed.
+      return service != null && service.isDisposed();
+    } catch (Exception e) {
+      // If the service can't be acquired then it is disposed.
+      return false;
+    }
   }
 
   /**
@@ -452,7 +476,7 @@ public class DiagnosticsNode {
    * Service used to retrieve more detailed information about the value of
    * the property and its children and properties.
    */
-  private final InspectorService.ObjectGroup inspectorService;
+  private final CompletableFuture<InspectorService.ObjectGroup> inspectorService;
 
   /**
    * JSON describing the diagnostic node.
@@ -538,7 +562,12 @@ public class DiagnosticsNode {
       }
       if (isEnumProperty()) {
         // Populate all the enum property values.
-        valueProperties = inspectorService.getEnumPropertyValues(getValueRef());
+        valueProperties = inspectorService.thenComposeAsync((service) -> {
+          if (service == null) {
+            return null;
+          }
+          return service.getEnumPropertyValues(getValueRef());
+        });
         return valueProperties;
       }
 
@@ -556,7 +585,12 @@ public class DiagnosticsNode {
           valueProperties = CompletableFuture.completedFuture(null);
           return valueProperties;
       }
-      valueProperties = inspectorService.getDartObjectProperties(getValueRef(), propertyNames);
+      valueProperties = inspectorService.thenComposeAsync((service) -> {
+        if (service == null) {
+          return null;
+        }
+        return service.getDartObjectProperties(getValueRef(), propertyNames);
+      });
     }
     return valueProperties;
   }
@@ -604,13 +638,18 @@ public class DiagnosticsNode {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, false, parent);
+          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService,  app,false, parent);
           child.setParent(this);
           nodes.add(child);
         }
         children = CompletableFuture.completedFuture(nodes);
       } else  if (hasChildren()) {
-        children = inspectorService.getChildren(getDartDiagnosticRef(), isSummaryTree(), this);
+        children = inspectorService.thenComposeAsync((service) -> {
+          if (service == null) {
+            return null;
+          }
+          return service.getChildren(getDartDiagnosticRef(), isSummaryTree(), this);
+        });
       }
       else {
         // Known to have no children so we can provide the children immediately.
@@ -637,7 +676,7 @@ public class DiagnosticsNode {
       if (json.has("properties")) {
         final JsonArray jsonArray = json.get("properties").getAsJsonArray();
         for (JsonElement element : jsonArray) {
-          cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, true, parent));
+          cachedProperties.add(new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, true, parent));
         }
         trackPropertiesMatchingParameters(cachedProperties);
       }
@@ -689,12 +728,12 @@ public class DiagnosticsNode {
   private CompletableFuture<String> createPropertyDocFurure() {
     final DiagnosticsNode parent = getParent();
     if (parent != null) {
-      return inspectorService.toDartVmServiceValueForSourceLocation(parent.getValueRef())
+      return inspectorService.thenComposeAsync((service) -> service.toDartVmServiceValueForSourceLocation(parent.getValueRef())
         .thenComposeAsync((DartVmServiceValue vmValue) -> {
           if (vmValue == null) {
             return CompletableFuture.completedFuture(null);
           }
-          return inspectorService.getPropertyLocation(vmValue.getInstanceRef(), getName())
+          return inspectorService.getNow(null).getPropertyLocation(vmValue.getInstanceRef(), getName())
           .thenApplyAsync((XSourcePosition sourcePosition) -> {
             if (sourcePosition != null) {
               final VirtualFile file = sourcePosition.getFile();
@@ -711,7 +750,7 @@ public class DiagnosticsNode {
             }
             return "Unable to find property source";
           });
-        });
+        }));
     }
 
     return CompletableFuture.completedFuture("Unable to find property source");
@@ -719,7 +758,6 @@ public class DiagnosticsNode {
 
   @Nullable
   private Project getProject(@NotNull VirtualFile file) {
-    final FlutterApp app = inspectorService.getApp();
     return app != null ? app.getProject() : ProjectUtil.guessProjectForFile(file);
   }
 
@@ -727,7 +765,7 @@ public class DiagnosticsNode {
     this.location = location;
   }
 
-  public InspectorService.ObjectGroup getInspectorService() {
+  public CompletableFuture<InspectorService.ObjectGroup> getInspectorService() {
     return inspectorService;
   }
 
@@ -784,6 +822,29 @@ public class DiagnosticsNode {
    * InspectorService group is still alive when the Future completes.
    */
   public <T> void safeWhenComplete(CompletableFuture<T> future, BiConsumer<? super T, ? super Throwable> action) {
-    inspectorService.safeWhenComplete(future, action);
+    try {
+      final InspectorService.ObjectGroup service = inspectorService.getNow(null);
+      if (service != null) {
+        service.safeWhenComplete(future, action);
+        return;
+      }
+      inspectorService.whenCompleteAsync((group, t) -> {
+        if (group == null || t != null) {
+          return;
+        }
+        group.safeWhenComplete(future, action);
+      });
+    } catch (Exception e) {
+      // Nothing to do if the service can't be acquired.
+    }
+  }
+
+  public void setSelection(InspectorInstanceRef ref, boolean uiAlreadyUpdated) {
+    inspectorService.thenAcceptAsync((service) -> {
+      if (service == null) {
+        return;
+      }
+      service.setSelection(ref, uiAlreadyUpdated);
+    });
   }
 }

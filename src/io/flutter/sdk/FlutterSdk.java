@@ -22,6 +22,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
@@ -334,7 +335,7 @@ public class FlutterSdk {
       return flutterBin.findFileByRelativePath("cache/dart-sdk") != null;
     }
     catch (InterruptedException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
       return false;
     }
   }
@@ -368,7 +369,7 @@ public class FlutterSdk {
       }
     }
     catch (InterruptedException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
       return null;
     }
 
@@ -501,7 +502,7 @@ public class FlutterSdk {
           final JsonParser jp = new JsonParser();
           final JsonElement elem = jp.parse(stdout.toString());
           if (elem.isJsonNull()) {
-            LOG.warn("Invalid Json from flutter config");
+            FlutterUtils.warn(LOG, "Invalid Json from flutter config");
             return null;
           }
 

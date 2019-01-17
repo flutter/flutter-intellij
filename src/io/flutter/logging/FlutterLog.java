@@ -13,9 +13,13 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
+import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VmServiceConsumers;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -27,7 +31,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-public class FlutterLog {
+public class FlutterLog implements FlutterLogEntry.ContentListener {
 
   private static final Logger LOG = Logger.getInstance(FlutterLog.class);
 
@@ -35,6 +39,8 @@ public class FlutterLog {
 
   public interface Listener extends EventListener {
     void onEvent(@NotNull FlutterLogEntry entry);
+
+    void onEntryContentChange();
   }
 
   // derived from: https://github.com/dart-lang/logging
@@ -76,13 +82,18 @@ public class FlutterLog {
   private final EventDispatcher<Listener>
     dispatcher = EventDispatcher.create(Listener.class);
 
-  private final FlutterLogEntryParser logEntryParser = new FlutterLogEntryParser();
+  private final FlutterLogEntryParser logEntryParser;
 
   // TODO(pq): consider limiting size.
   private final List<FlutterLogEntry> entries = new ArrayList<>();
 
   public static boolean isLoggingEnabled() {
     return FlutterSettings.getInstance().useFlutterLogView();
+  }
+
+  public FlutterLog(@NotNull Project project, @Nullable Module module) {
+    logEntryParser = new FlutterLogEntryParser(project, module);
+    logEntryParser.addListener(this, project);
   }
 
   public void addConsoleEntry(@NotNull String text, @NotNull ConsoleViewContentType contentType) {
@@ -105,7 +116,7 @@ public class FlutterLog {
   public CompletableFuture<List<LoggingChannel>> getLoggingChannels() {
     final FlutterDebugProcess debugProcess = getDebugProcess();
     if (debugProcess != null) {
-      return debugProcess.getApp().callServiceExtension("ext.flutter.logs.loggingChannels").thenApply((response) -> {
+      return debugProcess.getApp().callServiceExtension(ServiceExtensions.loggingChannels).thenApply((response) -> {
         final JsonObject value = response.getAsJsonObject("value");
         final List<LoggingChannel> channels = new ArrayList<>();
         for (String channel : value.keySet()) {
@@ -113,7 +124,7 @@ public class FlutterLog {
         }
         return channels;
       }).exceptionally(e -> {
-        LOG.warn(e);
+        FlutterUtils.warn(LOG, e);
         return Collections.emptyList();
       });
     }
@@ -126,7 +137,7 @@ public class FlutterLog {
       final Map<String, Object> params = new HashMap<>();
       params.put("channel", channel.name);
       params.put("enabled", subscribe);
-      debugProcess.getApp().callServiceExtension("ext.flutter.logs.enable", params);
+      debugProcess.getApp().callServiceExtension(ServiceExtensions.enableLogs, params);
     }
   }
 
@@ -189,5 +200,10 @@ public class FlutterLog {
 
   public void setFlutterDebugProcess(FlutterDebugProcess process) {
     logEntryParser.setDebugProcess(process);
+  }
+
+  @Override
+  public void onContentUpdate() {
+    dispatcher.getMulticaster().onEntryContentChange();
   }
 }
