@@ -1120,7 +1120,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
           // assuming the first parent is a regular node.
           toSelect = getDiagnosticNode((DefaultMutableTreeNode)path.getPathComponent(path.getPathCount() - 2));
         }
-        toSelect.getInspectorService().setSelection(toSelect.getValueRef(), true);
+        toSelect.setSelection(toSelect.getValueRef(), true);
       }
     }
 
@@ -1130,7 +1130,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     else if (diagnostic != null) {
       // We can't rely on the details tree to update the selection on the server in this case.
       DiagnosticsNode selection = detailsSelection != null ? detailsSelection : diagnostic;
-      selection.getInspectorService().setSelection(selection.getValueRef(), true);
+      selection.setSelection(selection.getValueRef(), true);
     }
   }
 
@@ -1419,7 +1419,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
 
     public void showProperties(DiagnosticsNode diagnostic) {
       this.diagnostic = diagnostic;
-      if (diagnostic == null || diagnostic.getInspectorService().isDisposed()) {
+      if (diagnostic == null || diagnostic.isDisposed()) {
         shutdownTree(false);
         return;
       }
@@ -1496,7 +1496,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       // until we have tested whether the properties are identical.
 
       groups.cancelNext(); // Cancel any existing pending next state.
-      if (diagnostic.getInspectorService().isDisposed()) {
+      if (diagnostic.isDisposed()) {
         // We are getting properties for a stale object. Wait until the next frame when we will have new properties.
         return;
       }
