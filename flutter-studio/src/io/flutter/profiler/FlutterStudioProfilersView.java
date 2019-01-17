@@ -32,6 +32,7 @@ import com.intellij.util.ui.EmptyIcon;
 import com.intellij.util.ui.JBEmptyBorder;
 import icons.FlutterIcons;
 import icons.StudioIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.utils.AsyncUtils;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;

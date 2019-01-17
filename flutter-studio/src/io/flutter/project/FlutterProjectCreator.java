@@ -39,6 +39,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.platform.PlatformProjectOpenProcessor;
+import io.flutter.FlutterUtils;
 import io.flutter.FlutterMessages;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;

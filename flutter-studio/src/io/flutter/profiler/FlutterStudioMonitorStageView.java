@@ -33,6 +33,7 @@ import com.intellij.ui.table.JBTable;
 import com.intellij.ui.treeStructure.Tree;
 import icons.FlutterIcons;
 import icons.StudioIcons;
+import io.flutter.FlutterUtils;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.StreamSubscription;

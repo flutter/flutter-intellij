@@ -18,6 +18,7 @@ import com.intellij.execution.process.ProcessOutput;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.containers.hash.HashMap;
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
