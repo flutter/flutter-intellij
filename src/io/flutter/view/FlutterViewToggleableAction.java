@@ -29,21 +29,6 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
     this.extensionDescription = extensionDescription;
   }
 
-  // TODO(kenzie): remove this constructor once service extension states are restored from device.
-  //  This is currently only needed for HideDebugModeBannerAction.
-  FlutterViewToggleableAction(
-    @NotNull FlutterApp app,
-    @Nullable Icon icon,
-    ToggleableServiceExtensionDescription extensionDescription,
-    boolean actionEnabledByDefault) {
-    super(
-      app,
-      actionEnabledByDefault ? extensionDescription.getEnabledText() : extensionDescription.getDisabledText(),
-      null,
-      icon);
-    this.extensionDescription = extensionDescription;
-  }
-
   @Override
   public final void update(@NotNull AnActionEvent e) {
     // selected

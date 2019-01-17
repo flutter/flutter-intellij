@@ -23,6 +23,7 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener {
@@ -31,8 +32,6 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
 
-  // TODO(jacobr): on attach to a running Flutter isolate query the VM for the
-  // current state of each of the boolean service extensions we care about.
   /**
    * Boolean value applicable only for boolean service extensions indicating
    * whether the service extension is enabled or disabled.
@@ -336,10 +335,49 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
         stream.setValue(true);
       }
 
+      // Set any extensions that are already enabled on the device. This will
+      // enable extension states for default-enabled extensions and extensions
+      // enabled before attaching.
+      restoreExtensionFromDevice(name);
+
       // Restore any previously true states by calling their service extensions.
       if (getServiceExtensionState(name).getValue().isEnabled()) {
         restoreServiceExtensionState(name);
       }
+    }
+  }
+
+  private void restoreExtensionFromDevice(String name) {
+    if (!ServiceExtensions.toggleableExtensionsWhitelist.containsKey(name)) {
+      return;
+    }
+    final Object enabledValue =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
+
+    final CompletableFuture<JsonObject> response = app.callServiceExtension(name);
+    response.thenApply(obj -> {
+      Object value = null;
+      if (obj != null) {
+        if (enabledValue instanceof Boolean) {
+          value = obj.get("enabled").getAsString().equals("true");
+          maybeRestoreExtension(name, value);
+        }
+        else if (enabledValue instanceof String) {
+          value = obj.get("value").getAsString();
+          maybeRestoreExtension(name, value);
+        }
+        else if (enabledValue instanceof Double) {
+          value = Double.parseDouble(obj.get("value").getAsString());
+          maybeRestoreExtension(name, value);
+        }
+      }
+      return value;
+    });
+  }
+
+  private void maybeRestoreExtension(String name, Object value)  {
+    if (value.equals(ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue())) {
+      setServiceExtensionState(name, true, value);
     }
   }
 
