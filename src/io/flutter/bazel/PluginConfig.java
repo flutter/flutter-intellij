@@ -5,6 +5,7 @@
  */
 package io.flutter.bazel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Objects;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
@@ -25,7 +26,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * An in-memory snapshot of the flutter.json file from a Bazel workspace.
  */
-class PluginConfig {
+public class PluginConfig {
   private final @NotNull Fields fields;
 
   private PluginConfig(@NotNull Fields fields) {
@@ -45,6 +46,11 @@ class PluginConfig {
   @Nullable
   String getLaunchScript() {
     return fields.launchScript;
+  }
+
+  @Nullable
+  String getTestScript() {
+    return fields.testScript;
   }
 
   @Override
@@ -91,6 +97,22 @@ class PluginConfig {
     return ApplicationManager.getApplication().runReadAction(readAction);
   }
 
+  @VisibleForTesting
+  public static PluginConfig forTest(
+    @Nullable String daemonScript,
+    @Nullable String doctorScript,
+    @Nullable String launchScript,
+    @Nullable String testScript
+  ) {
+    final Fields fields = new Fields(
+      daemonScript,
+      doctorScript,
+      launchScript,
+      testScript
+    );
+    return new PluginConfig(fields);
+  }
+
   /**
    * The JSON fields in a PluginConfig, as loaded from disk.
    */
@@ -109,12 +131,28 @@ class PluginConfig {
     private String doctorScript;
 
     /**
-     *
+     * The script to run to start 'bazel'
      */
     @SerializedName("launchScript")
     private String launchScript;
 
+    /**
+     * The script to run to start 'flutter test'
+     */
+    @SerializedName("testScript")
+    private String testScript;
+
     Fields() {
+    }
+
+    /**
+     * Convenience constructor that takes all
+     */
+    Fields(String daemonScript, String doctorScript, String launchScript, String testScript) {
+      this.daemonScript = daemonScript;
+      this.doctorScript = doctorScript;
+      this.launchScript = launchScript;
+      this.testScript = testScript;
     }
 
     @Override
@@ -123,12 +161,13 @@ class PluginConfig {
       final Fields other = (Fields)obj;
       return Objects.equal(daemonScript, other.daemonScript)
              && Objects.equal(doctorScript, other.doctorScript)
-             && Objects.equal(launchScript, other.launchScript);
+             && Objects.equal(launchScript, other.launchScript)
+             && Objects.equal(testScript, other.testScript);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, launchScript);
+      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript);
     }
   }
 

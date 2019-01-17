@@ -6,6 +6,7 @@
 package io.flutter.sdk;
 
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -26,6 +27,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -62,6 +64,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myDisableMemoryProfilerCheckBox;
+  private JCheckBox myUseNewBazelTestRunner;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -103,6 +106,16 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
+
+    // Disable the bazel test runner experiment if no new bazel test script is available.
+    if (Workspace.load(myProject).getTestScript() == null) {
+      myUseNewBazelTestRunner.setEnabled(false);
+      myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner") + " "
+                                      + FlutterBundle.message("settings.enable.bazel.test.runner.mustSyncClientWarning"));
+    } else {
+      myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner"));
+      myUseNewBazelTestRunner.setEnabled(true);
+    }
   }
 
   private void createUIComponents() {
@@ -187,6 +200,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.useNewBazelTestRunner(myProject) != myUseNewBazelTestRunner.isSelected()) {
+      return true;
+    }
+
     return false;
   }
 
@@ -219,6 +236,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
+    settings.setUseNewBazelTestRunner(myUseNewBazelTestRunner.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -249,6 +267,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
     myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
+    myUseNewBazelTestRunner.setSelected(settings.useNewBazelTestRunner(myProject));
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
@@ -307,5 +326,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @NotNull
   private String getSdkPathText() {
     return FileUtilRt.toSystemIndependentName(mySdkCombo.getComboBox().getEditor().getItem().toString().trim());
+  }
+
+  public static void openFlutterSettings(@NotNull final Project project) {
+    ShowSettingsUtilImpl.showSettingsDialog(project, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID, "");
   }
 }

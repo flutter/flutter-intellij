@@ -15,6 +15,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
+import io.flutter.bazel.Workspace;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,10 +23,12 @@ import org.jetbrains.annotations.NotNull;
  * The Bazel version of the {@link io.flutter.run.test.TestConfig}.
  */
 public class BazelTestConfig extends LocatableConfigurationBase {
-  @NotNull private BazelTestFields fields = new BazelTestFields();
+  @NotNull private BazelTestFields fields;
 
   BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
+    final Workspace workspace = Workspace.load(project);
+    fields = new BazelTestFields(null, null, null);
   }
 
   @NotNull
@@ -72,12 +75,12 @@ public class BazelTestConfig extends LocatableConfigurationBase {
   @Override
   public void writeExternal(@NotNull final Element element) throws WriteExternalException {
     super.writeExternal(element);
-    XmlSerializer.serializeInto(fields, element, new SkipDefaultValuesSerializationFilters());
+    fields.writeTo(element);
   }
 
   @Override
   public void readExternal(@NotNull final Element element) throws InvalidDataException {
     super.readExternal(element);
-    XmlSerializer.deserializeInto(fields, element);
+    fields = BazelTestFields.readFrom(element);
   }
 }
