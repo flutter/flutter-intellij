@@ -108,7 +108,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
 
     // Disable the bazel test runner experiment if no new bazel test script is available.
-    if (Workspace.load(myProject).getTestScript() == null) {
+    final Workspace workspace = Workspace.load(myProject);
+    if (workspace == null || workspace.getTestScript() == null) {
       myUseNewBazelTestRunner.setEnabled(false);
       myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner") + " "
                                       + FlutterBundle.message("settings.enable.bazel.test.runner.mustSyncClientWarning"));
