@@ -164,7 +164,7 @@
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.bazel.test.runner"/>
-              <toolTipText value="Uses a new bazel test runner that can filter tests by name, or invoke all tests in a file, in addition to invoking a bazel target directly."/>
+              <toolTipText value="Uses a new Bazel test runner that can filter tests by name, or invoke all tests in a file, in addition to invoking a Bazel target directly."/>
             </properties>
           </component>
         </children>

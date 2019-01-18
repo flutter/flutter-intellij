@@ -36,7 +36,6 @@ public class FlutterSettings {
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
   private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
-  private static final boolean newBazelTestRunnerDefaultValue = false;
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -249,13 +248,18 @@ public class FlutterSettings {
   }
 
   /**
-   * Whether or not to use the legacy bazel-run script or the new bazel-test script to run tests.
+   * Whether to use the new bazel-test script instead of the old bazel-run script to run tests.
    *
-   * Defaults to true.
+   * Defaults to false.
    */
   public boolean useNewBazelTestRunner(Project project) {
     // Check that the new test runner is available.
     final Workspace workspace = Workspace.load(project);
+    // If the workspace can't be found, we'll return false. This normally happens during tests. Test code that covers this setting
+    // has an override for this setting built-in.
+    if (workspace == null) {
+      return false;
+    }
     @Nullable String testScript = workspace.getTestScript();
     if (testScript == null) {
       // The test script was not found, so it can't be used.
@@ -265,11 +269,11 @@ public class FlutterSettings {
   }
 
   private boolean shouldUseNewBazelTestRunner() {
-    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, newBazelTestRunnerDefaultValue);
+    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, false);
   }
 
   public void setUseNewBazelTestRunner(boolean value) {
-    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, newBazelTestRunnerDefaultValue);
+    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, false);
     fireEvent();
   }
 

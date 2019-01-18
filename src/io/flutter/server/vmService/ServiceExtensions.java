@@ -81,16 +81,16 @@ public class ServiceExtensions {
       "ext.flutter.inspector.trackRebuildDirtyWidgets",
       true,
       false,
-      "Track Widget Rebuilds",
-      "Do Not Track Widget Rebuilds");
+      "Do Not Track Widget Rebuilds",
+      "Track Widget Rebuilds");
 
   public static final ToggleableServiceExtensionDescription<Boolean> trackRepaintWidgets =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.inspector.trackRepaintWidgets",
       true,
       false,
-      "Track Widget Repaints",
-      "Do Not Track Widget Repaints");
+      "Do Not Track Widget Repaints",
+      "Track Widget Repaints");
 
   // This extension should never be displayed as a button so does not need to be a
   // ToggleableServiceExtensionDescription object.
