@@ -720,7 +720,9 @@
     <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
 
     <configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>
+    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelTestConfigProducer"/>
     <programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>
+    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <configurationType implementation="io.flutter.run.test.TestConfigType"/>
     <runConfigurationProducer implementation="io.flutter.run.test.TestConfigProducer"/>

@@ -27,6 +27,7 @@ public class FlutterSearchableOptionContributor extends SearchableOptionContribu
     add(processor, FlutterBundle.message("settings.open.inspector.on.launch"));
     add(processor, FlutterBundle.message("settings.hot.reload.on.save"));
     add(processor, FlutterBundle.message("settings.disable.tracking.widget.creation"));
+    add(processor, FlutterBundle.message("settings.enable.bazel.test.runner"));
   }
 
   private static void add(@NotNull SearchableOptionProcessor processor, @NotNull String key) {

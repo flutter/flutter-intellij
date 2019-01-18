@@ -1,9 +1,9 @@
 /*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.run.test;
+package io.flutter.run.bazelTest;
 
 
 import com.google.common.annotations.VisibleForTesting;
@@ -14,8 +14,8 @@ import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
-import groovy.json.StringEscapeUtils;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartSyntax;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
@@ -25,24 +25,27 @@ import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
 
-public class TestConfigUtils {
+public class BazelTestConfigUtils {
 
   /**
    * Widget test function as defined in package:flutter_test/src/widget_tester.dart.
    */
   public static final String WIDGET_TEST_FUNCTION = "testWidgets";
 
+  public static boolean isBazelFlutterCode(DartFile file) {
+    return Workspace.load(file.getProject()) != null;
+  }
+
   @Nullable
   public static TestType asTestCall(@NotNull PsiElement element) {
-    final DartFile file = FlutterUtils.getDartFile(element);
-    if (FlutterUtils.isInTestDir(file) && FlutterUtils.isInFlutterProject(element)) {
-      // Named tests.
-      final TestType namedTestCall = findNamedTestCall(element);
-      if (namedTestCall != null) return namedTestCall;
+    if (!isBazelFlutterCode(FlutterUtils.getDartFile(element))) return null;
 
-      // Main.
-      if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
-    }
+    // Check if the test call is a named test or group.
+    final TestType namedTestCall = findNamedTestCall(element);
+    if (namedTestCall != null) return namedTestCall;
+
+    // Check if the test call is a test main method.
+    if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
 
     return null;
   }
@@ -90,10 +93,7 @@ public class TestConfigUtils {
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);
     if (lit == null) return null;
 
-    final String name = DartSyntax.unquote(lit);
-    if (name == null) return null;
-
-    return StringEscapeUtils.unescapeJava(name);
+    return DartSyntax.unquote(lit);
   }
 
   public enum TestType {
