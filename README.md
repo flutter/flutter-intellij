@@ -58,4 +58,4 @@ Please note the following known issues:
 - If you require network access to go through proxy settings, you will need to set the 
   `https_proxy` variable in your environment as as described in the 
   [pub docs](https://www.dartlang.org/tools/pub/troubleshoot#pub-get-fails-from-behind-a-corporate-firewall).
-  (See also: #2914.)
+  (See also: [#2914](https://github.com/flutter/flutter-intellij/issues/2914).)
