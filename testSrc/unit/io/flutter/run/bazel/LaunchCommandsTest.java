@@ -359,7 +359,7 @@ public class LaunchCommandsTest {
     @Nullable String additionalArgs,
     boolean enableReleaseMode) {
     return new FakeBazelFields(new BazelFields(
-      "bazel_target",
+      bazelTarget,
       bazelArgs,
       additionalArgs,
       enableReleaseMode
