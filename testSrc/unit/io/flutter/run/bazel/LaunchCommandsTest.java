@@ -68,7 +68,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
@@ -92,13 +92,80 @@ public class LaunchCommandsTest {
     );
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
     expectedCommandLine.add("--define");
     expectedCommandLine.add("flutter_build_mode=debug");
     expectedCommandLine.add("--define=bazel_args");
+    expectedCommandLine.add("bazel_target");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--machine");
+    expectedCommandLine.add("-d");
+    expectedCommandLine.add("flutter-tester");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+  }
+
+  @Test
+  public void overridesRunModeFromBazelArgs() throws ExecutionException {
+    BazelFields fields = setupBazelFields(
+      "bazel_target",
+      "--define=flutter_build_mode=release",
+      null,
+      false
+    );
+
+    final FlutterDevice device = FlutterDevice.getTester();
+    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+
+    List<String> expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
+    expectedCommandLine.add("--define=flutter_build_mode=release");
+    expectedCommandLine.add("bazel_target");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--machine");
+    expectedCommandLine.add("-d");
+    expectedCommandLine.add("flutter-tester");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+
+    // With a space instead of an =
+    fields = setupBazelFields(
+      "bazel_target",
+      "--define flutter_build_mode=profile",
+      null,
+      false
+    );
+
+    launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+
+    expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
+    expectedCommandLine.add("--define");
+    expectedCommandLine.add("flutter_build_mode=profile");
+    expectedCommandLine.add("bazel_target");
+    expectedCommandLine.add("--");
+    expectedCommandLine.add("--machine");
+    expectedCommandLine.add("-d");
+    expectedCommandLine.add("flutter-tester");
+    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
+
+    // With multiple params
+    fields = setupBazelFields(
+      "bazel_target",
+      "--define param1=2 --define=param2=2 --define=flutter_build_mode=profile",
+      null,
+      false
+    );
+
+    launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+
+    expectedCommandLine = new ArrayList<>();
+    expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
+    expectedCommandLine.add("--define");
+    expectedCommandLine.add("param1=2");
+    expectedCommandLine.add("--define=param2=2");
+    expectedCommandLine.add("--define=flutter_build_mode=profile");
     expectedCommandLine.add("bazel_target");
     expectedCommandLine.add("--");
     expectedCommandLine.add("--machine");
@@ -117,7 +184,7 @@ public class LaunchCommandsTest {
     );
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
@@ -136,23 +203,27 @@ public class LaunchCommandsTest {
   public void producesCorrectCommandLineWithBazelAndAdditionalArgs() throws ExecutionException {
     final BazelFields fields = setupBazelFields(
       "bazel_target",
-      "--define=bazel_args",
-      "additional_args",
+      "--define=bazel_args0 --define bazel_args1=value",
+      "--additional_args1 --additional_args2 value_of_arg2",
       false
     );
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
     expectedCommandLine.add("--define");
     expectedCommandLine.add("flutter_build_mode=debug");
-    expectedCommandLine.add("--define=bazel_args");
+    expectedCommandLine.add("--define=bazel_args0");
+    expectedCommandLine.add("--define");
+    expectedCommandLine.add("bazel_args1=value");
     expectedCommandLine.add("bazel_target");
     expectedCommandLine.add("--");
     expectedCommandLine.add("--machine");
-    expectedCommandLine.add("additional_args");
+    expectedCommandLine.add("--additional_args1");
+    expectedCommandLine.add("--additional_args2");
+    expectedCommandLine.add("value_of_arg2");
     expectedCommandLine.add("-d");
     expectedCommandLine.add("flutter-tester");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
@@ -163,7 +234,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand =
+    final GeneralCommandLine launchCommand =
       fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.DEBUG);
 
     final List<String> expectedCommandLine = new ArrayList<>();
@@ -184,7 +255,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = FlutterDevice.getTester();
-    GeneralCommandLine launchCommand =
+    final GeneralCommandLine launchCommand =
       fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.PROFILE);
 
     final List<String> expectedCommandLine = new ArrayList<>();
@@ -204,7 +275,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = new FlutterDevice("android-tester", "android device", "android", false);
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
@@ -224,7 +295,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = new FlutterDevice("android-tester", "android device", "android", true);
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
@@ -243,7 +314,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = new FlutterDevice("ios-tester", "ios device", "ios", false);
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");
@@ -263,7 +334,7 @@ public class LaunchCommandsTest {
     final BazelFields fields = setupBazelFields();
 
     final FlutterDevice device = new FlutterDevice("ios-tester", "ios device", "ios", true);
-    GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
+    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), device, RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/bazel-run.sh");

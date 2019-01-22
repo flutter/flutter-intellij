@@ -103,7 +103,7 @@
         </constraints>
         <properties>
           <enabled value="false"/>
-          <text value="Additional arguments to pass to the bazel runtime (e.g. --define=release_channel=beta3)"/>
+          <text value="Additional arguments to pass to the Bazel runtime (e.g. --define=release_channel=beta3)"/>
         </properties>
       </component>
       <component id="9e12e" class="javax.swing.JTextField" binding="myBazelArgs">

@@ -36,6 +36,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
     final BazelFields fields = configuration.getFields();
     myBazelTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
+    myBazelArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
 
@@ -57,12 +58,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   }
 
   @Nullable
-  private String getTextValue(@NotNull String textFieldContents) {
-    return StringUtil.nullize(textFieldContents.trim(), true);
-  }
-
-  @Nullable
-  private String getTextValue(JTextField textField) {
-    return getTextValue(textField.getText());
+  private String getTextValue(@NotNull JTextField textField) {
+    return StringUtil.nullize(textField.getText().trim(), true);
   }
 }

@@ -40,13 +40,37 @@ import static io.flutter.run.daemon.RunMode.*;
  */
 public class BazelFields {
 
+  /**
+   * The Bazel target to invoke.
+   */
   @Nullable
   private final String bazelTarget;
 
+  /**
+   * Whether or not to run the app with --define flutter_build_mode=release.
+   *
+   * <p>
+   * If this is not set, then the flutter_build_mode will depend on which button
+   * the user pressed to run the app.
+   * <ul>
+   *   <li>If the user pressed 'run' or 'debug', then flutter_build_mode=debug.</li>
+   *   <li>If the user pressed 'profile', then flutter_build_mode=profile.</li>
+   * </ul>
+   *
+   * <p>
+   * If the user overrides --define flutter_build_mode in {@link bazelArgs}, then this field will be ignored.
+   */
   private final boolean enableReleaseMode;
 
+  /**
+   * Parameters to pass to Bazel, such as --define release_channel=beta3.
+   */
   @Nullable
   private final String bazelArgs;
+
+  /**
+   * Parameters to pass to Flutter, such as --start-paused.
+   */
   @Nullable
   private final String additionalArgs;
 
@@ -125,19 +149,7 @@ public class BazelFields {
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
     final String launchScript = getLaunchScriptFromWorkspace(project);
-    checkRunnable(project, launchScript, getBazelTarget());
-  }
 
-  /**
-   * Reports an error in the run config that the user should correct.
-   * <p>
-   * This will be called while the user is typing into a non-template run config.
-   * (See RunConfiguration.checkConfiguration.)
-   *
-   * @throws RuntimeConfigurationError for an error that that the user must correct before running.
-   */
-  public static void checkRunnable(@NotNull final Project project, @Nullable String launchScript,
-                                   @Nullable final String bazelTarget) throws RuntimeConfigurationError {
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
 
@@ -184,38 +196,45 @@ public class BazelFields {
 
     final String launchingScript = getLaunchScriptFromWorkspace(project);
     assert launchingScript != null; // already checked
+    assert workspace != null; // if the workspace is null, then so is the launching script, therefore this was already checked.
 
     final String target = getBazelTarget();
     assert target != null; // already checked
 
     final String additionalArgs = getAdditionalArgs();
 
-    final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
+    final GeneralCommandLine commandLine = new GeneralCommandLine()
+      .withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
 
-    // Set the mode. This section needs to match the bazel versions of the flutter_build_mode parameters.
-    if (enableReleaseMode) {
-      commandLine.addParameters("--define", "flutter_build_mode=release");
-    }
-    else {
-      switch (mode) {
-        case PROFILE:
-          commandLine.addParameters("--define", "flutter_build_mode=profile");
-          break;
-        case RUN:
-        case DEBUG:
-        default:
-          // The default mode of a flutter app is debug mode. This is the mode that supports hot reloading.
-          // So far as flutter is concerned, there is no difference between debug mode and run mode;
-          // the only difference is that a debug mode app will --start-paused.
-          commandLine.addParameters("--define", "flutter_build_mode=debug");
-          break;
+    // If the user hasn't overridden the flutter_build_mode, then
+    if (!StringUtil.notNullize(bazelArgs).matches(".*--define[ =]flutter_build_mode.*")) {
+
+      // Set the mode. This section needs to match the bazel versions of the flutter_build_mode parameters.
+      if (enableReleaseMode) {
+        commandLine.addParameters("--define", "flutter_build_mode=release");
+      }
+      else {
+        switch (mode) {
+          case PROFILE:
+            commandLine.addParameters("--define", "flutter_build_mode=profile");
+            break;
+          case RUN:
+          case DEBUG:
+          default:
+            // The default mode of a flutter app is debug mode. This is the mode that supports hot reloading.
+            // So far as flutter is concerned, there is no difference between debug mode and run mode;
+            // the only difference is that a debug mode app will --start-paused.
+            commandLine.addParameters("--define", "flutter_build_mode=debug");
+            break;
+        }
       }
     }
 
     // User specified additional bazel arguments.
-    final CommandLineTokenizer bazelArgsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(bazelArgs));
+    final CommandLineTokenizer bazelArgsTokenizer = new CommandLineTokenizer(
+      StringUtil.notNullize(bazelArgs));
     while (bazelArgsTokenizer.hasMoreTokens()) {
       commandLine.addParameter(bazelArgsTokenizer.nextToken());
     }
@@ -270,7 +289,8 @@ public class BazelFields {
     }
 
     // User specified additional target arguments.
-    final CommandLineTokenizer additionalArgsTokenizer = new CommandLineTokenizer(StringUtil.notNullize(additionalArgs));
+    final CommandLineTokenizer additionalArgsTokenizer = new CommandLineTokenizer(
+      StringUtil.notNullize(additionalArgs));
     while (additionalArgsTokenizer.hasMoreTokens()) {
       commandLine.addParameter(additionalArgsTokenizer.nextToken());
     }
