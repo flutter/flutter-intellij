@@ -51,9 +51,6 @@ for Flutter IntelliJ issues.
 
 Please note the following known issues:
 
-- If you are building Flutter plugins using Swift, be sure you have at least`cocoapods 1.5.0` 
-  installed; an issue tracking a corresponding update to `flutter doctor` is:
-  [flutter/#16930](https://github.com/flutter/flutter/issues/16930).
 - [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will
   read the PATH variable just once on startup. Thus, if you change PATH later to
   include the Flutter SDK path, this will not have an affect in IntelliJ until you
