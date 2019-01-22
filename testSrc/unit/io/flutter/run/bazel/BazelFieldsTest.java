@@ -58,8 +58,8 @@ public class BazelFieldsTest {
   public void roundTripShouldPreserveFields() {
     final BazelFields before = new BazelFields(
       "bazel_target",
-      "bazel_args",
-      "additional_args",
+      "bazel_args --1 -2=3",
+      "additional_args --1 --2=3",
       true
     );
 
@@ -74,8 +74,8 @@ public class BazelFieldsTest {
     final BazelFields after = BazelFields.readFrom(elt);
 
     assertEquals("bazel_target", after.getBazelTarget());
-    assertEquals("bazel_args", after.getBazelArgs());
-    assertEquals("additional_args", after.getAdditionalArgs());
+    assertEquals("bazel_args --1 -2=3", after.getBazelArgs());
+    assertEquals("additional_args --1 --2=3", after.getAdditionalArgs());
     assertEquals(true, after.getEnableReleaseMode());
   }
 
