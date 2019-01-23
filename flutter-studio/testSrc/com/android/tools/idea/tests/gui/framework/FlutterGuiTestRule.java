@@ -12,8 +12,7 @@ import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.IdeFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.IdeaFrameFixture;
-import com.android.tools.idea.tests.gui.framework.guitestprojectsystem.GuiTestProjectSystem;
-import com.android.tools.idea.tests.gui.framework.guitestsystem.CurrentGuiTestProjectSystem;
+import com.android.tools.idea.projectsystem.TestProjectSystem;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.collect.ImmutableList;
 import com.intellij.openapi.application.ApplicationManager;
@@ -90,7 +89,6 @@ public class FlutterGuiTestRule implements TestRule {
 
   private final RobotTestRule myRobotTestRule = new RobotTestRule();
   private final LeakCheck myLeakCheck = new LeakCheck();
-  private final CurrentGuiTestProjectSystem myCurrentProjectSystem = new CurrentGuiTestProjectSystem();
 
   private Timeout myTimeout = new Timeout(5, TimeUnit.MINUTES);
 
@@ -116,11 +114,11 @@ public class FlutterGuiTestRule implements TestRule {
   @NotNull
   @Override
   public Statement apply(final Statement base, final Description description) {
+    // TODO(messick) Update this.
     RuleChain chain = RuleChain.emptyRuleChain()
       .around(new LogStartAndStop())
       .around(new BlockReloading())
       .around(new BazelUndeclaredOutputs())
-      .around(myCurrentProjectSystem)
       .around(myRobotTestRule)
       .around(myLeakCheck)
       .around(new IdeHandling())
@@ -305,7 +303,7 @@ public class FlutterGuiTestRule implements TestRule {
 
   public FlutterFrameFixture importProjectAndWaitForProjectSyncToFinish(@NotNull String projectDirName, @Nullable String buildFilePath) throws IOException {
     importProject(projectDirName, buildFilePath);
-    testSystem().waitForProjectSyncToFinish(baseIdeFrame());
+    //testSystem().waitForProjectSyncToFinish(baseIdeFrame());
     return ideFrame();
   }
 
@@ -315,7 +313,7 @@ public class FlutterGuiTestRule implements TestRule {
 
   public FlutterFrameFixture importProject(@NotNull String projectDirName, @Nullable String buildFilePath) throws IOException {
     File testProjectDir = setUpProject(projectDirName);
-    testSystem().importProject(testProjectDir, robot(), buildFilePath);
+    //testSystem().importProject(testProjectDir, robot(), buildFilePath);
     return ideFrame();
   }
 
@@ -415,10 +413,6 @@ public class FlutterGuiTestRule implements TestRule {
     return myRobotTestRule.getRobot();
   }
 
-  public GuiTestProjectSystem testSystem() {
-    return myCurrentProjectSystem.getTestProjectSystem();
-  }
-
   @NotNull
   public File getProjectPath() {
     return ideFrame().getProjectPath();
@@ -441,7 +435,6 @@ public class FlutterGuiTestRule implements TestRule {
       // and registers it with GradleSyncState. This keeps adding more and more listeners, and the new recent listeners are only updated
       // with gradle State when that State changes. This means the listeners may have outdated info.
       myIdeFrameFixture = FlutterFrameFixture.find(robot());
-      myIdeFrameFixture.setTestProjectSystem(myCurrentProjectSystem.getTestProjectSystem());
       myIdeFrameFixture.requestFocusIfLost();
     }
     return myIdeFrameFixture;
@@ -454,7 +447,6 @@ public class FlutterGuiTestRule implements TestRule {
       // and registers it with GradleSyncState. This keeps adding more and more listeners, and the new recent listeners are only updated
       // with gradle State when that State changes. This means the listeners may have outdated info.
       myOldIdeFrameFixture = IdeFrameFixture.find(robot());
-      myOldIdeFrameFixture.setTestProjectSystem(myCurrentProjectSystem.getTestProjectSystem());
       myOldIdeFrameFixture.requestFocusIfLost();
     }
     return myOldIdeFrameFixture;

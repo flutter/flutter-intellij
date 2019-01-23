@@ -1,43 +1,33 @@
 {
   "list": [
     {
-      "comments": "AS 3.2 and IntelliJ 2018.1",
+      "comments": "AS 3.3 and IntelliJ 2018.2.5",
       "name": "IntelliJ",
-      "version": "2018.1",
+      "version": "3.3",
       "ideaProduct": "android-studio",
-      "ideaVersion": "181.4847800",
-      "dartPluginVersion": "181.4892.1",
-      "sinceBuild": "181.0",
-      "untilBuild": "181.*"
-    },
-    {
-      "comments": "IntelliJ 2018.2",
-      "name": "IntelliJ",
-      "version": "2018.2.2",
-      "ideaProduct": "ideaIU",
-      "ideaVersion": "2018.2.2",
-      "dartPluginVersion": "182.4129.13",
-      "sinceBuild": "182.0",
-      "untilBuild": "182.4505"
-    },
-    {
-      "comments": "AS 3.3 Beta and IntelliJ 2018.4",
-      "name": "IntelliJ",
-      "version": "2018.2.4",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "182.5073496",
-      "dartPluginVersion": "182.4999",
-      "sinceBuild": "182.4505",
+      "ideaVersion": "182.5199772",
+      "dartPluginVersion": "182.5124",
+      "sinceBuild": "182.5107.7",
       "untilBuild": "182.*"
     },
     {
-      "comments": "IntelliJ 2018.3",
-      "name": "IntelliJ",
+      "comments": "AS 3.4 beta",
+      "name": "Android Studio",
+      "version": "3.4",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "183.5217543",
+      "dartPluginVersion": "183.4886.3",
+      "sinceBuild": "183.0",
+      "untilBuild": "183.4886.37.34.*"
+    },
+    {
+      "comments": "IntelliJ 2018.3, AS 3.5 canary",
+      "name": "Android Studio",
       "version": "2018.3",
       "ideaProduct": "android-studio",
-      "ideaVersion": "183.5081642",
-      "dartPluginVersion": "183.2153.10",
-      "sinceBuild": "183.0",
+      "ideaVersion": "183.5215047",
+      "dartPluginVersion": "183.4886.3",
+      "sinceBuild": "183.4886.37.35",
       "untilBuild": "183.*"
     }
   ]
