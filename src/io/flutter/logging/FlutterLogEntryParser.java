@@ -14,18 +14,23 @@ import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
+import io.flutter.inspector.DiagnosticsNode;
+import io.flutter.inspector.InspectorService;
 import io.flutter.logging.text.LineInfo;
 import io.flutter.logging.text.LineParser;
 import io.flutter.logging.text.StyledText;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.HeapMonitor;
 import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
@@ -36,9 +41,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
 import static io.flutter.logging.FlutterLogEntry.Kind;
@@ -46,6 +50,7 @@ import static io.flutter.logging.FlutterLogEntry.UNDEFINED_LEVEL;
 
 public class FlutterLogEntryParser {
   // Known entry categories.
+  public static final String ERROR_CATEGORY = "flutter.error";
   public static final String GC_CATEGORY = "runtime.gc";
   public static final String LOG_CATEGORY = "flutter.log";
   public static final String TOOLS_CATEGORY = "flutter.tools";
@@ -61,8 +66,11 @@ public class FlutterLogEntryParser {
     df1.setMaximumFractionDigits(1);
   }
 
+  private static final Logger LOG = Logger.getInstance(FlutterLogEntryParser.class);
+
   private final EventDispatcher<FlutterLogEntry.ContentListener>
     contentChangedDispatcher = EventDispatcher.create(FlutterLogEntry.ContentListener.class);
+  private FlutterApp app;
 
   public void addListener(@NotNull FlutterLogEntry.ContentListener listener, @NotNull Disposable parent) {
     contentChangedDispatcher.addListener(listener, parent);
@@ -83,25 +91,37 @@ public class FlutterLogEntryParser {
     }
   }
 
-  private FlutterDebugProcess debugProcess;
+  static class InspectorHelper {
+    @NotNull
+    private final InspectorService inspectorService;
+    @NotNull
+    private final InspectorService.ObjectGroup consoleGroup;
 
+    InspectorHelper(@NotNull InspectorService inspectorService) {
+      this.inspectorService = inspectorService;
+      this.consoleGroup = inspectorService.createObjectGroup("console-group");
+    }
+
+    public DiagnosticsNode createDiagnosticsNode(JsonObject json) {
+      return new DiagnosticsNode(json, consoleGroup, false, null);
+    }
+  }
+
+  private InspectorHelper inspector;
   private final LineHandler lineHandler;
+  private CompletableFuture<InspectorService.ObjectGroup> inspectorObjectGroup;
 
   public FlutterLogEntryParser(@NotNull Project project, @Nullable Module module) {
     lineHandler = new LineHandler(createMessageFilters(project, module), null);
   }
 
-  public void setDebugProcess(FlutterDebugProcess debugProcess) {
-    this.debugProcess = debugProcess;
-  }
-
   public FlutterDebugProcess getDebugProcess() {
-    return debugProcess;
+    return app != null ? app.getFlutterDebugProcess() : null;
   }
 
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
-  private FlutterLogEntry parseLoggingEvent(@NotNull Event event) {
+  private List<FlutterLogEntry> parseLoggingEvent(@NotNull Event event) {
     // TODO(pq): parse more robustly; consider more properties (error, stackTrace)
     final JsonObject json = event.getJson();
     final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
@@ -126,19 +146,23 @@ public class FlutterLogEntryParser {
       }
     }
 
+    final FlutterDebugProcess debugProcess = getDebugProcess();
+
     final String messageStr = message.getValueAsString();
     final FlutterLogEntry entry = lineHandler.parseEntry(messageStr, category, level);
 
     if (message.getValueAsStringIsTruncated()) {
       entry.setMessage(messageStr + "...");
-      final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectAdapter() {
-        @Override
-        public void received(Obj response) {
-          entry.setMessage(((Instance)response).getValueAsString());
-          contentChangedDispatcher.getMulticaster().onContentUpdate();
-        }
-      });
+      if (debugProcess != null) {
+        final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
+        debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectAdapter() {
+          @Override
+          public void received(Obj response) {
+            entry.setMessage(((Instance)response).getValueAsString());
+            contentChangedDispatcher.getMulticaster().onContentUpdate();
+          }
+        });
+      }
     }
 
     final Instance data = new Instance(logRecord.getAsJsonObject().get("error").getAsJsonObject());
@@ -146,27 +170,29 @@ public class FlutterLogEntryParser {
       entry.setData(data.getValueAsString());
     }
     else {
-      final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-      debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectAdapter() {
-        @Override
-        public void received(Obj response) {
-          entry.setData(((Instance)response).getValueAsString());
-          contentChangedDispatcher.getMulticaster().onContentUpdate();
-        }
+      if (debugProcess != null) {
+        final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
+        debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectAdapter() {
+          @Override
+          public void received(Obj response) {
+            entry.setData(((Instance)response).getValueAsString());
+            contentChangedDispatcher.getMulticaster().onContentUpdate();
+          }
 
-        @Override
-        public void received(Sentinel response) {
-          entry.setData(null);
-          contentChangedDispatcher.getMulticaster().onContentUpdate();
-        }
-      });
+          @Override
+          public void received(Sentinel response) {
+            entry.setData(null);
+            contentChangedDispatcher.getMulticaster().onContentUpdate();
+          }
+        });
+      }
     }
 
-    return entry;
+    return Collections.singletonList(entry);
   }
 
   @NotNull
-  private FlutterLogEntry parseGCEvent(@NotNull Event event) {
+  private List<FlutterLogEntry> parseGCEvent(@NotNull Event event) {
     final IsolateRef isolateRef = event.getIsolate();
     final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
     final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
@@ -188,7 +214,7 @@ public class FlutterLogEntryParser {
                            "MB • " +
                            isolateRef.getId();
 
-    return lineHandler.parseEntry(message, GC_CATEGORY, UNDEFINED_LEVEL.value);
+    return Collections.singletonList(lineHandler.parseEntry(message, GC_CATEGORY, UNDEFINED_LEVEL.value));
   }
 
   private static Kind parseKind(@NotNull String message, @NotNull String category) {
@@ -223,17 +249,55 @@ public class FlutterLogEntryParser {
   }
 
   @Nullable
-  public FlutterLogEntry parse(@Nullable String id, @Nullable Event event) {
+  public List<FlutterLogEntry> parse(@Nullable String id, @Nullable Event event) {
     if (id != null && event != null) {
       switch (id) {
         case LOGGING_STREAM_ID:
           return parseLoggingEvent(event);
         case VmService.GC_STREAM_ID:
           return parseGCEvent(event);
+        case VmService.EXTENSION_STREAM_ID:
+          return parseExtensionEvent(event);
       }
     }
 
     return null;
+  }
+
+  private List<FlutterLogEntry> parseExtensionEvent(@NotNull Event event) {
+    final JsonPrimitive extensionKind = event.getJson().getAsJsonPrimitive("extensionKind");
+    if (Objects.equals(extensionKind.getAsString(), "Flutter.Error")) {
+      return parseFlutterError(event.getJson());
+    }
+    return null;
+  }
+
+  private List<FlutterLogEntry> parseFlutterError(@NotNull JsonObject json) {
+    final List<FlutterLogEntry> entries = new ArrayList<>();
+
+    final JsonElement extensionData = json.get("extensionData");
+    final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
+    if (diagnosticsNode != null) {
+      final String description = diagnosticsNode.toString();
+      final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
+      // TODO(pq): process children: diagnosticsNode.getChildren().getNow(null) and set data to something structured.
+      entry.setData(json.toString());
+      entries.add(entry);
+    }
+    return entries;
+  }
+
+  @Nullable
+  private DiagnosticsNode parseDiagnosticsNode(@NotNull JsonObject json) {
+    if (inspectorObjectGroup == null) {
+      FlutterUtils.warn(LOG, "Attempt to create a diagnostics node before the object group is set.");
+      return null;
+    }
+    if (app == null) {
+      FlutterUtils.warn(LOG, "Attempt to create a diagnostics node before the app is set.");
+      return null;
+    }
+    return new DiagnosticsNode(json, inspectorObjectGroup, app, false, null);
   }
 
   @Nullable
@@ -331,5 +395,10 @@ public class FlutterLogEntryParser {
     }
     // TODO(pq): handle else (errors, etc).
     return null;
+  }
+
+  public void setupInspector(@NotNull FlutterApp app, @NotNull VmService vmService) {
+    this.app = app;
+    inspectorObjectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), vmService, "console-group");
   }
 }
