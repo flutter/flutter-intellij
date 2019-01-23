@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import io.flutter.bazel.Workspace;
@@ -69,8 +70,9 @@ public class BazelRunConfig extends RunConfigurationBase
     }
 
     final Workspace workspace = fields.getWorkspace(getProject());
+    final VirtualFile workspaceRoot = workspace.getRoot();
     final RunMode mode = RunMode.fromEnv(env);
-    final Module module = ModuleUtil.findModuleForFile(workspace.getRoot(), env.getProject());
+    final Module module = ModuleUtil.findModuleForFile(workspaceRoot, env.getProject());
 
     final LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
@@ -80,7 +82,7 @@ public class BazelRunConfig extends RunConfigurationBase
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
-    return new LaunchState(env, workspace.getRoot(), workspace.getRoot(), this, createAppCallback);
+    return new LaunchState(env, workspaceRoot, workspaceRoot, this, createAppCallback);
   }
 
   @NotNull

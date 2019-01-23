@@ -37,6 +37,8 @@ import static io.flutter.run.daemon.RunMode.*;
 
 /**
  * The fields in a Bazel run configuration.
+ *
+ * This class is immutable.
  */
 public class BazelFields {
 
@@ -91,15 +93,6 @@ public class BazelFields {
     additionalArgs = original.additionalArgs;
   }
 
-  /**
-   * Present only for deserializing old run configs.
-   */
-  @SuppressWarnings("SameReturnValue")
-  @Deprecated
-  public String getWorkingDirectory() {
-    return null;
-  }
-
   @Nullable
   public String getBazelArgs() {
     return bazelArgs;
@@ -134,6 +127,7 @@ public class BazelFields {
     return launchScript;
   }
 
+  // TODO(djshuckerow): this is dependency injection; switch this to a framework as we need more DI.
   @Nullable
   protected Workspace getWorkspace(@NotNull Project project) {
     return Workspace.load(project);
@@ -148,7 +142,6 @@ public class BazelFields {
    * @throws RuntimeConfigurationError for an error that that the user must correct before running.
    */
   void checkRunnable(@NotNull final Project project) throws RuntimeConfigurationError {
-    final String launchScript = getLaunchScriptFromWorkspace(project);
 
     // The UI only shows one error message at a time.
     // The order we do the checks here determines priority.
@@ -158,6 +151,8 @@ public class BazelFields {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
                                           () -> DartConfigurable.openDartSettings(project));
     }
+
+    final String launchScript = getLaunchScriptFromWorkspace(project);
 
     if (launchScript == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.noLaunchingScript"));
