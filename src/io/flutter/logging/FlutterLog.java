@@ -173,8 +173,6 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
     // No-op if disabled.
     if (!isLoggingEnabled()) return;
 
-    System.out.println("FlutterLog.listenToVm");
-
     logEntryParser.setupInspector(app, vmService);
 
     // TODO(pq): consider moving into VMServiceManager to consolidate vm service listeners.
@@ -196,8 +194,6 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
   }
 
   private void onVmServiceReceived(String id, Event event) {
-    System.out.println("FlutterLog.onVmServiceReceived");
-    System.out.println("  id = [" + id + "], event = [" + event + "]");
     final List<FlutterLogEntry> entries = logEntryParser.parse(id, event);
     if (entries != null) {
       entries.forEach(this::onEntry);
