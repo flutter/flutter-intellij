@@ -7,6 +7,7 @@ package io.flutter.android;
 
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_KIND;
 import static io.flutter.android.AndroidModuleLibraryType.LIBRARY_NAME;
+import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;
 
 import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
@@ -233,7 +234,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       }
     };
 
-    GradleSyncInvoker.Request request = GradleSyncInvoker.Request.projectModified();
+    GradleSyncInvoker.Request request = new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED);
     request.runInBackground = true;
     GradleSyncInvoker gradleSyncInvoker = ServiceManager.getService(GradleSyncInvoker.class);
     gradleSyncInvoker.requestProjectSync(androidProject, request, listener);

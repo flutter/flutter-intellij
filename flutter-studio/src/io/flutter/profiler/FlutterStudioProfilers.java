@@ -170,7 +170,7 @@ public class FlutterStudioProfilers
 
     // These need to be fired every time the process list changes so that
     // the device/process dropdown always reflects the latest.
-    changed(ProfilerAspect.DEVICES);
+    //changed(ProfilerAspect.DEVICES);
     changed(ProfilerAspect.PROCESSES);
   }
 

@@ -26,7 +26,7 @@ import com.android.tools.idea.tests.gui.framework.fixture.avdmanager.AvdManagerD
 import com.android.tools.idea.tests.gui.framework.fixture.gradle.GradleBuildModelFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.gradle.GradleProjectEventListener;
 import com.android.tools.idea.tests.gui.framework.fixture.gradle.GradleToolWindowFixture;
-import com.android.tools.idea.tests.gui.framework.guitestprojectsystem.GuiTestProjectSystem;
+import com.android.tools.idea.projectsystem.TestProjectSystem;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.android.tools.idea.ui.GuiTestingService;
 import com.google.common.collect.Lists;
@@ -92,7 +92,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   @NotNull private final Modules myModules;
   @NotNull private final IdeFrameFixture myIdeFrameFixture; // Replaces 'this' when creating component fixtures.
 
-  private GuiTestProjectSystem myTestProjectSystem;
+  private TestProjectSystem myTestProjectSystem;
   private EditorFixture myEditor;
   private boolean myIsClosed;
 
@@ -363,14 +363,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     //noinspection Contract
     assertFalse("Should use '/' in test relative paths, not File.separator", relativePath.contains("\\"));
 
-    VirtualFile projectRootDir;
-    if (myTestProjectSystem != null) {
-      projectRootDir = myTestProjectSystem.getProjectRootDirectory(getProject());
-    }
-    else {
-      projectRootDir = getProject().getBaseDir();
-    }
-
+    VirtualFile projectRootDir = getProject().getBaseDir();
     projectRootDir.refresh(false, true);
     VirtualFile file = projectRootDir.findFileByRelativePath(relativePath);
     if (requireExists) {
@@ -380,7 +373,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     return file;
   }
 
-  public void setTestProjectSystem(GuiTestProjectSystem testProjectSystem) {
+  public void setTestProjectSystem(TestProjectSystem testProjectSystem) {
     myTestProjectSystem = testProjectSystem;
   }
 
@@ -495,11 +488,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   @NotNull
   public BuildVariantsToolWindowFixture getBuildVariantsWindow() {
     return new BuildVariantsToolWindowFixture(myIdeFrameFixture);
-  }
-
-  @NotNull
-  public MessagesToolWindowFixture getMessagesToolWindow() {
-    return new MessagesToolWindowFixture(getProject(), robot());
   }
 
   @NotNull

@@ -11,7 +11,7 @@
 
   <category>Custom Languages</category>
   
-  <idea-version since-build="181.0" until-build="183.*"/>
+  <idea-version since-build="182.5107.7" until-build="183.*"/>
 
   <depends>Dart</depends>
 
@@ -27,6 +27,31 @@
 
   <change-notes>
     <![CDATA[
+<h2>32.0</h2>
+<ul>
+  <li>address an NPE in FlutterWidgetPerfManager.java</li>
+  <li>added overlay renderered for GC, snapshot and memory reset events</li>
+  <li>consolidated all adt-ui API changes in FlutterStudioMonitorStageView</li>
+  <li>support for creating projects w/ sample content from the IDEA New Project Wizard</li>
+  <li>basic ansi color support for entries in the Flutter Logging View</li>
+  <li>restore log level combo to the Logging View</li>
+  <li>support to fill in truncated log entries</li>
+  <li>add keyboard shortcut for widget extraction</li>
+  <li>add debugPaint and debugAllowBanner icons</li>
+  <li>add repaint rainbow icon</li>
+  <li>handle cases where script.tokenPosTable is null</li>
+  <li>auto-hide details pane</li>
+  <li>guard against disposed when querying project type</li>
+  <li>fix an issue with escaped test names</li>
+  <li>refactor service extensions and set button text based on extension state</li>
+  <li>shorten message for debug mode perf disclaimer</li>
+  <li>listen for ServiceExtensionStateChanged events</li>
+  <li>restore service extension states from device on start and attach</li>
+  <li>don't use LOG.error()</li>
+  <li>refactor the Bazel Test configuration to support running tests on a single file or a single test</li>
+  <li>fix enabled/disabled text for service extensions</li>
+  <li>fix NPE in bazel config</li>
+</ul>
 <h2>31.3</h2>
 <ul>
   <li>fix NPE in sdk installation (#2965)</li>
