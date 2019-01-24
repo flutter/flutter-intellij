@@ -21,7 +21,6 @@ import com.intellij.openapi.util.Key;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
-import io.flutter.FlutterUtils;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.InspectorService;
@@ -91,23 +90,6 @@ public class FlutterLogEntryParser {
     }
   }
 
-  static class InspectorHelper {
-    @NotNull
-    private final InspectorService inspectorService;
-    @NotNull
-    private final InspectorService.ObjectGroup consoleGroup;
-
-    InspectorHelper(@NotNull InspectorService inspectorService) {
-      this.inspectorService = inspectorService;
-      this.consoleGroup = inspectorService.createObjectGroup("console-group");
-    }
-
-    public DiagnosticsNode createDiagnosticsNode(JsonObject json) {
-      return new DiagnosticsNode(json, consoleGroup, false, null);
-    }
-  }
-
-  private InspectorHelper inspector;
   private final LineHandler lineHandler;
   private CompletableFuture<InspectorService.ObjectGroup> inspectorObjectGroup;
 
@@ -289,14 +271,8 @@ public class FlutterLogEntryParser {
 
   @Nullable
   private DiagnosticsNode parseDiagnosticsNode(@NotNull JsonObject json) {
-    if (inspectorObjectGroup == null) {
-      FlutterUtils.warn(LOG, "Attempt to create a diagnostics node before the object group is set.");
-      return null;
-    }
-    if (app == null) {
-      FlutterUtils.warn(LOG, "Attempt to create a diagnostics node before the app is set.");
-      return null;
-    }
+    assert(inspectorObjectGroup != null);
+    assert(app != null);
     return new DiagnosticsNode(json, inspectorObjectGroup, app, false, null);
   }
 
@@ -397,7 +373,7 @@ public class FlutterLogEntryParser {
     return null;
   }
 
-  public void setupInspector(@NotNull FlutterApp app, @NotNull VmService vmService) {
+  public void setVmServices(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
     inspectorObjectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), vmService, "console-group");
   }
