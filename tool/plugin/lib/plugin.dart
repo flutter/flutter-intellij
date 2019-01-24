@@ -544,6 +544,14 @@ class BuildCommand extends ProductCommand {
           files[processedFile] = source;
           source = source.replaceAll('List<? extends File>', 'List<File>');
           processedFile.writeAsStringSync(source);
+
+          processedFile = File(
+              'flutter-studio/src/io/flutter/profiler/FlutterStudioProfilers.java');
+          source = processedFile.readAsStringSync();
+          files[processedFile] = source;
+          source = source.replaceAll('//changed(ProfilerAspect.DEVICES);',
+              'changed(ProfilerAspect.DEVICES);');
+          processedFile.writeAsStringSync(source);
         }
 
         processedFile = File(
