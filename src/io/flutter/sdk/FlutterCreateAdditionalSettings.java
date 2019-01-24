@@ -76,6 +76,11 @@ public class FlutterCreateAdditionalSettings {
     kotlin = value;
   }
 
+  @Nullable
+  public FlutterSample getSampleContent() {
+    return sampleContent;
+  }
+
   public void setSampleContent(@Nullable FlutterSample sampleContent) {
     this.sampleContent = sampleContent;
   }
@@ -119,8 +124,6 @@ public class FlutterCreateAdditionalSettings {
     if (sampleContent != null) {
       args.add("--sample");
       args.add(sampleContent.getId());
-      // Samples need to overwrite default IDEA project content.
-      args.add("--overwrite");
     }
 
     return args;
