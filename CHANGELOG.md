@@ -1,38 +1,26 @@
 ## 32.0
 - address an NPE in FlutterWidgetPerfManager.java
-- update IDE versions
 - added overlay renderered for GC, snapshot and memory reset events
 - consolidated all adt-ui API changes in FlutterStudioMonitorStageView
-- support for creating projects w/ sample content
-- log entry ansi color support (and styling re-work)
-- add code of conduct
-- add org.apache.commons.io.IOUtils to the classpath for the source build
-- restore log level combo
-- fill in truncated log entries
-- tweak presentation for no level filter
+- support for creating projects w/ sample content from the IDEA New Project Wizard
+- basic ansi color support for entries in the Flutter Logging View
+- restore log level combo to the Logging View
+- support to fill in truncated log entries
 - add keyboard shortcut for widget extraction
-- update README.md
-- log tree class refactor
 - add debugPaint and debugAllowBanner icons
 - add repaint rainbow icon
-- don't use completeExceptionally
 - handle cases where script.tokenPosTable is null
 - auto-hide details pane
 - guard against disposed when querying project type
 - fix an issue with escaped test names
-- update CONTRIBUTING.md
 - refactor service extensions and set button text based on extension state
 - shorten message for debug mode perf disclaimer
-- update sample json format
 - listen for ServiceExtensionStateChanged events
-- refactor DiagnosticsNode to accept a Future<ObjectGroup>
 - restore service extension states from device on start and attach
 - don't use LOG.error()
 - refactor the Bazel Test configuration to support running tests on a single file or a single test
 - fix enabled/disabled text for service extensions
 - fix NPE in bazel config
-- remove stale cocoapods known issue
-- add proxy issue link
 
 ## 31.3
 - fix NPE in sdk installation (#2965)
