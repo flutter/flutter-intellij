@@ -8,15 +8,14 @@ package io.flutter.logging.text;
 import com.intellij.execution.filters.BrowserHyperlinkInfo;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.util.ReflectionUtil;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.awt.*;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import static io.flutter.logging.text.StyledTextTestUtils.*;
 
 public class LineParserTest {
   static final SimpleTextAttributes PLAIN_RED = new SimpleTextAttributes(SimpleTextAttributes.STYLE_PLAIN, Color.RED);
@@ -55,10 +54,6 @@ public class LineParserTest {
     expectParsesTo("\u001b[9;31mHello", text("Hello", STRIKEOUT_RED));
     expectParsesTo("\u001b[31;1mHello\u001b[0m\u001b[34;1m World\u001b[0m",
                    text("Hello", BOLD_RED), text(" World", BOLD_BLUE));
-  }
-
-  static StyledText text(String string, SimpleTextAttributes style) {
-    return new StyledText(string, style);
   }
 
   @Test
@@ -102,55 +97,9 @@ public class LineParserTest {
     assertEquals(arrayOf(text("Hello", BOLD_RED), text(" World", BOLD_RED), text("!", null)), parser.parsed);
   }
 
-  private static StyledText[] arrayOf(StyledText... texts) {
-    return texts;
-  }
-
   private static void expectParsesTo(String str, StyledText... results) {
     final TestParser parser = new TestParser();
     parser.parse(str);
     assertEquals(results, parser.parsed);
-  }
-
-  private static void assertEquals(StyledText[] expected, List<StyledText> actual) {
-    for (int i = 0; i < expected.length; ++i) {
-      assertEquals(expected[i], actual.get(i));
-    }
-  }
-
-  private static void assertEquals(StyledText expected, StyledText actual) {
-    Assert.assertEquals(expected.getText(), actual.getText());
-    assertEquals(expected.getStyle(), actual.getStyle());
-    final String expectedUrl = getUrl(expected.getTag());
-    // If a tag is specified, check it.
-    if (expectedUrl != null) {
-      Assert.assertEquals(expectedUrl, getUrl(actual.getTag()));
-    }
-  }
-
-  private static String getUrl(Object tag) {
-    if (tag instanceof BrowserHyperlinkInfo) {
-      final Field field = ReflectionUtil.getDeclaredField(tag.getClass(), "myUrl");
-      if (field != null) {
-        try {
-          return (String)field.get(tag);
-        }
-        catch (Throwable ignored) {
-        }
-      }
-    }
-    return null;
-  }
-
-  private static void assertEquals(SimpleTextAttributes expected, SimpleTextAttributes actual) {
-    if (expected == null) {
-      Assert.assertNull(actual);
-    }
-    else {
-      Assert.assertNotNull(actual);
-      Assert.assertEquals(expected.getStyle(), actual.getStyle());
-      Assert.assertEquals(expected.getFontStyle(), actual.getFontStyle());
-      Assert.assertEquals(expected.getFgColor(), actual.getFgColor());
-    }
   }
 }

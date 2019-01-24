@@ -565,7 +565,7 @@ public class FlutterApp {
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
     myFlutterDebugProcess = flutterDebugProcess;
-    myFlutterLog.setFlutterDebugProcess(flutterDebugProcess);
+    myFlutterLog.setFlutterApp(this);
   }
 
   public FlutterDebugProcess getFlutterDebugProcess() {

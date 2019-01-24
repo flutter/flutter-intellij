@@ -19,6 +19,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.util.EventDispatcher;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDebugProcess;
+import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VmServiceConsumers;
 import io.flutter.settings.FlutterSettings;
@@ -86,6 +87,7 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
 
   // TODO(pq): consider limiting size.
   private final List<FlutterLogEntry> entries = new ArrayList<>();
+  private FlutterApp app;
 
   public static boolean isLoggingEnabled() {
     return FlutterSettings.getInstance().useFlutterLogView();
@@ -171,6 +173,8 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
     // No-op if disabled.
     if (!isLoggingEnabled()) return;
 
+    logEntryParser.setVmServices(app, vmService);
+
     // TODO(pq): consider moving into VMServiceManager to consolidate vm service listeners.
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -190,7 +194,10 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
   }
 
   private void onVmServiceReceived(String id, Event event) {
-    onEntry(logEntryParser.parse(id, event));
+    final List<FlutterLogEntry> entries = logEntryParser.parse(id, event);
+    if (entries != null) {
+      entries.forEach(this::onEntry);
+    }
   }
 
   @SuppressWarnings("EmptyMethod")
@@ -198,8 +205,8 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
     // TODO(pq): handle VM connection closed.
   }
 
-  public void setFlutterDebugProcess(FlutterDebugProcess process) {
-    logEntryParser.setDebugProcess(process);
+  public void setFlutterApp(FlutterApp app) {
+    this.app = app;
   }
 
   @Override

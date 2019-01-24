@@ -450,6 +450,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         }
       }
       setText(text);
+
+      // Scroll to start.
+      setCaretPosition(0);
     }
   }
 
