@@ -120,7 +120,7 @@ In the newly created app:
 * open the inspector
 * change the display by clicking `Render Tree` and the refresh button
 * open the performance view
-* (in Android Studio): verify that the memory view is active and the performance view is not
+* (in Android Studio): verify that the performance view is active and the memory view is not
 * hit resume in the debugger
 
 ## Hot Reload
