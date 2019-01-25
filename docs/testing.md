@@ -143,7 +143,7 @@ Keybindings:
 ## Hot Restart
 
 * change the text and counter line back
-* hit the `Full Application Restart` button (or hit the Debug button again, or cmd-shift-s / ctrl-shift-s)
+* hit the `Flutter Hot Restart` button (or hit the Debug button again, or cmd-shift-s / ctrl-shift-s)
 * validate that the text and state resets, and the count increases
 
 ## Debugging Sessions
