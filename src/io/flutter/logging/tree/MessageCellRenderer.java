@@ -46,7 +46,7 @@ public class MessageCellRenderer extends AbstractEntryCellRender {
 
     // Append data badge
     if (JsonUtils.hasJsonData(entry.getData())) {
-      setIcon(AllIcons.General.Information);
+      setIcon(AllIcons.Actions.AllRight);
     }
   }
 }
