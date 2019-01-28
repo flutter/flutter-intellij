@@ -22,6 +22,8 @@ import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
 import com.android.tools.idea.ui.wizard.WizardUtils;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import io.flutter.FlutterBundle;
+import io.flutter.module.FlutterProjectType;
+import io.flutter.module.settings.ProjectType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -43,6 +45,8 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
   private JLabel myLanguageLabel;
+  private JPanel mySamplePanel;
+  private ProjectType myProjectTypeForm;
   private boolean hasEntered = false;
 
   public FlutterSettingsStep(FlutterProjectModel model, String title, Icon icon) {
@@ -117,6 +121,16 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
       myBindings.bindTwoWay(new SelectedProperty(myKotlinCheckBox), getModel().useKotlin());
       myBindings.bindTwoWay(new SelectedProperty(mySwiftCheckBox), getModel().useSwift());
     }
+    //noinspection OptionalGetWithoutIsPresent
+    FlutterProjectType projectType = getModel().projectType().get().get();
+    mySamplePanel.setVisible(projectType == FlutterProjectType.APP);
+    myProjectTypeForm.getProjectTypeCombo().setSelectedItem(projectType);
+    myProjectTypeForm.getProjectTypeCombo().setVisible(false);
     hasEntered = true;
+  }
+
+  @Override
+  protected void onProceeding() {
+    getModel().setSample(myProjectTypeForm.getSample());
   }
 }
