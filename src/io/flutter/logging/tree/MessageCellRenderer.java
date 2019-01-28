@@ -46,7 +46,7 @@ public class MessageCellRenderer extends AbstractEntryCellRender {
 
     // Append data badge
     if (JsonUtils.hasJsonData(entry.getData())) {
-      // TODO(pq): change to AllRight when we're no longer supporting 3.3.
+      // TODO(pq): change to ArrowRight when we're no longer supporting 3.3.
       setIcon(AllIcons.General.ComboArrowRight);
     }
   }
