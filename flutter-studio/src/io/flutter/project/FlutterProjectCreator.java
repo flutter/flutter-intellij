@@ -210,6 +210,7 @@ public class FlutterProjectCreator {
       .setKotlin(isNotModule() && myModel.useKotlin().get() ? true : null)
       .setSwift(isNotModule() && myModel.useSwift().get() ? true : null)
       .setOffline(myModel.isOfflineSelected().get())
+      .setSampleContent(myModel.getSample())
       .build();
   }
 

@@ -123,7 +123,7 @@ public class ProjectType {
     projectTypeCombo.addItemListener(e -> {
       final boolean appType = getType() == FlutterProjectType.APP;
       if (!appType) {
-        // Make sure sample generattion is de-selected in non-app contexts.
+        // Make sure sample generation is de-selected in non-app contexts.
         generateSampleContentCheckBox.setSelected(false);
       }
       generateSampleContentCheckBox.setEnabled(appType);
@@ -154,6 +154,9 @@ public class ProjectType {
     return generateSampleContentCheckBox.isVisible() && generateSampleContentCheckBox.isSelected() ? (FlutterSample)snippetSelectorCombo.getSelectedItem() : null;
   }
 
+  public ComboBox getProjectTypeCombo() {
+    return projectTypeCombo;
+  }
 
   public void addListener(ItemListener listener) {
     projectTypeCombo.addItemListener(listener);
