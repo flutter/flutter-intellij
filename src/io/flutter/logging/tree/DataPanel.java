@@ -28,8 +28,11 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EventListener;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static io.flutter.utils.HtmlBuilder.*;
 
@@ -210,7 +213,7 @@ public class DataPanel extends JPanel {
         contents += node.getName();
       }
 
-      final ArrayList<DiagnosticsNode> children = getChildren(node);
+      final List<DiagnosticsNode> children = getChildren(node);
       if (!children.isEmpty() || node.getDescription() != null) {
         if (!contents.isEmpty()) {
           contents += ": ";
@@ -273,12 +276,8 @@ public class DataPanel extends JPanel {
     return editorPane;
   }
 
-  private static ArrayList<DiagnosticsNode> getChildren(DiagnosticsNode node) {
+  private static List<DiagnosticsNode> getChildren(DiagnosticsNode node) {
     final ArrayList<DiagnosticsNode> children = node.getChildren().getNow(new ArrayList<>());
-    if (!children.isEmpty()) {
-      return children;
-    }
-
-    return node.getInlineProperties();
+    return Stream.of(children, node.getInlineProperties()).flatMap(Collection::stream).collect(Collectors.toList());
   }
 }
