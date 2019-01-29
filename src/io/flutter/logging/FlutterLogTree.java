@@ -91,7 +91,7 @@ public class FlutterLogTree extends TreeTable {
         new Column(TIME, new TimeCellRenderer(entryModel)),
         new Column(SEQUENCE, new SequenceCellRenderer(entryModel)),
         new Column(LEVEL, new LevelCellRenderer(entryModel)),
-        new Column(CATEGORY, new CategoryCellRenderer()),
+        new Column(CATEGORY, new CategoryCellRenderer(entryModel)),
         new Column(MESSAGE, new MessageCellRenderer(app, entryModel))
       ));
       // Cache for quick access.
