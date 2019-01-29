@@ -5,6 +5,8 @@
  */
 package io.flutter.samples;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.petebevin.markdown.MarkdownProcessor;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterSample {
@@ -43,6 +45,44 @@ public class FlutterSample {
     // TODO(pq): add disambiguation once it's needed.
     return getElement();
   }
+
+  public String getShortHtmlDescription() {
+    return "<html>" + parseShortHtmlDescription(description) + "</html>";
+  }
+
+  @VisibleForTesting
+  public static String parseShortHtmlDescription(@NotNull String description) {
+    // Trim to first sentence.
+    int sentenceBreakIndex = description.indexOf(". ");
+    if (sentenceBreakIndex == -1) {
+      sentenceBreakIndex = description.indexOf(".\n");
+    }
+    if (sentenceBreakIndex != -1) {
+      description = description.substring(0, sentenceBreakIndex + 1);
+    }
+
+    return parseHtmlDescription(description);
+  }
+
+  @VisibleForTesting
+  public static String parseHtmlDescription(@NotNull String description) {
+    // Remove newlines.
+    description = description.replace('\n', ' ');
+
+    // Remove links: [Card] => **Card**
+    final StringBuilder builder = new StringBuilder();
+    for (int i=0; i < description.length(); ++i) {
+      final char c = description.charAt(i);
+      if ((c == '[' || c == ']') && (i == 0 || description.charAt(i-1) != '\\')) {
+        builder.append("**");
+      } else {
+        builder.append(c);
+      }
+    }
+
+    return new MarkdownProcessor().markdown(builder.toString()).trim();
+  }
+
 
   @NotNull
   public String getLibrary() {

@@ -282,11 +282,11 @@ public class FlutterModuleBuilder extends ModuleBuilder {
    * Returns the PubRoot if successful.
    */
   @Nullable
-  private static PubRoot runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
-                                                      @NotNull FlutterSdk sdk,
-                                                      @NotNull Project project,
-                                                      @Nullable ProcessListener processListener,
-                                                      @Nullable FlutterCreateAdditionalSettings additionalSettings) {
+  public static PubRoot runFlutterCreateWithProgress(@NotNull VirtualFile baseDir,
+                                                     @NotNull FlutterSdk sdk,
+                                                     @NotNull Project project,
+                                                     @Nullable ProcessListener processListener,
+                                                     @Nullable FlutterCreateAdditionalSettings additionalSettings) {
     final ProgressManager progress = ProgressManager.getInstance();
     final AtomicReference<PubRoot> result = new AtomicReference<>(null);
 
