@@ -116,7 +116,7 @@ public class FlutterSampleActionsPanel extends JPanel {
     // PLACEHOLDER (to force reflow on resize)
     add(BorderLayout.EAST, new NonOpaquePanel(new BorderLayout()));
 
-    setBorder(JBUI.Borders.empty(10, 10));
+    setBorder(JBUI.Borders.empty(10, 10, 5,  10));
   }
 
   @Override
