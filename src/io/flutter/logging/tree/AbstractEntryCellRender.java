@@ -21,10 +21,10 @@ import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
 
 public abstract class AbstractEntryCellRender extends ColoredTableCellRenderer {
 
-  private final Border RELOAD_LINE =
+  private static final Border RELOAD_LINE =
     new CompoundBorder(BorderFactory.createEmptyBorder(0, -1, -1, -1), BorderFactory.createDashedBorder(
       JBColor.ORANGE, 5, 5));
-  private final Border RESTART_LINE =
+  private static final Border RESTART_LINE =
     new CompoundBorder(BorderFactory.createEmptyBorder(0, -1, -1, -1), BorderFactory.createDashedBorder(JBColor.GREEN, 5, 5));
 
   @NotNull
@@ -44,14 +44,7 @@ public abstract class AbstractEntryCellRender extends ColoredTableCellRenderer {
     if (value instanceof FlutterLogEntry) {
       final FlutterLogEntry entry = (FlutterLogEntry)value;
       render(entry);
-      if (row > 0) {
-        if (entry.getKind() == FlutterLogEntry.Kind.RELOAD) {
-          setBorder(RELOAD_LINE);
-        }
-        else if (entry.getKind() == FlutterLogEntry.Kind.RESTART) {
-          setBorder(RESTART_LINE);
-        }
-      }
+      updateEntryBorder(this, entry, row);
     }
   }
 
@@ -70,4 +63,15 @@ public abstract class AbstractEntryCellRender extends ColoredTableCellRenderer {
   }
 
   abstract void render(FlutterLogEntry entry);
+
+  public static void updateEntryBorder(@NotNull JComponent component, @NotNull FlutterLogEntry entry, int row) {
+    if (row > 0) {
+      if (entry.getKind() == FlutterLogEntry.Kind.RELOAD) {
+        component.setBorder(RELOAD_LINE);
+      }
+      else if (entry.getKind() == FlutterLogEntry.Kind.RESTART) {
+        component.setBorder(RESTART_LINE);
+      }
+    }
+  }
 }
