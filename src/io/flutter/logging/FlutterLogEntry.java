@@ -39,7 +39,7 @@ public class FlutterLogEntry {
   private String message;
   // TODO(pq): consider making data an Instance or JsonElement
   @Nullable
-  private String data;
+  private Object data;
   private int sequenceNumber = -1;
 
   @NotNull
@@ -78,11 +78,11 @@ public class FlutterLogEntry {
   }
 
   @Nullable
-  public String getData() {
+  public Object getData() {
     return data;
   }
 
-  public void setData(@Nullable String data) {
+  public void setData(@Nullable Object data) {
     this.data = data;
   }
 
@@ -132,7 +132,6 @@ public class FlutterLogEntry {
     final LineInfo lineInfo = lineHandler.parseLineInfo(getMessage(), getCategory());
     return lineInfo.getStyledText();
   }
-
 
   /**
    * Return a sequence number, or -1 if unset.

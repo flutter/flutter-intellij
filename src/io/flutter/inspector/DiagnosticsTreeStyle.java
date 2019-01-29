@@ -18,6 +18,22 @@ package io.flutter.inspector;
  */
 public enum DiagnosticsTreeStyle {
   /**
+   * Render the tree on a single line without showing children acting like the
+   * line is a header.
+   */
+  headerLine,
+
+  /**
+   * Render the tree without indenting children at all.
+   */
+  flat,
+
+  /**
+   * Style for displaying content describing an error.
+   */
+  error,
+
+  /**
    * Sparse style for displaying trees.
    */
   sparse,
@@ -54,4 +70,20 @@ public enum DiagnosticsTreeStyle {
    * Render the tree on a single line without showing children.
    */
   singleLine,
+
+  /**
+   * Render the tree on a single line with the name and value on separate
+   * lines.
+   */
+  indentedSingleLine,
+
+  /**
+   *
+   */
+  shallow,
+
+  /**
+   * Render only the immediate properties of a node instead of the full tree.
+   */
+  truncateChildren,
 }

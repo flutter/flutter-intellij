@@ -8,6 +8,7 @@ package io.flutter.logging.tree;
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.ui.JBUI;
+import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.logging.FlutterLogEntry;
 import io.flutter.logging.FlutterLogTree;
 import io.flutter.logging.text.StyledText;
@@ -18,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
 
 public class MessageCellRenderer extends AbstractEntryCellRender {
+  // TODO(pq): use app for link resolution.
   @NotNull
   private final FlutterApp app;
 
@@ -45,7 +47,9 @@ public class MessageCellRenderer extends AbstractEntryCellRender {
     }
 
     // Append data badge
-    if (JsonUtils.hasJsonData(entry.getData())) {
+    final Object data = entry.getData();
+    // TODO(pq): should make this a simple null check.
+    if (data instanceof DiagnosticsNode || (data instanceof String && JsonUtils.hasJsonData((String)data))) {
       // TODO(pq): change to ArrowRight when we're no longer supporting 3.3.
       setIcon(AllIcons.General.ComboArrowRight);
     }

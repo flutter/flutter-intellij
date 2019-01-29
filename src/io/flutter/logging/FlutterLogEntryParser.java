@@ -256,23 +256,19 @@ public class FlutterLogEntryParser {
 
   private List<FlutterLogEntry> parseFlutterError(@NotNull JsonObject json) {
     final List<FlutterLogEntry> entries = new ArrayList<>();
-
     final JsonElement extensionData = json.get("extensionData");
     final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
-    if (diagnosticsNode != null) {
-      final String description = diagnosticsNode.toString();
-      final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
-      // TODO(pq): process children: diagnosticsNode.getChildren().getNow(null) and set data to something structured.
-      entry.setData(json.toString());
-      entries.add(entry);
-    }
+    final String description = diagnosticsNode.toString();
+    final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
+    entry.setData(diagnosticsNode);
+    entries.add(entry);
     return entries;
   }
 
-  @Nullable
+  @NotNull
   private DiagnosticsNode parseDiagnosticsNode(@NotNull JsonObject json) {
-    assert(inspectorObjectGroup != null);
-    assert(app != null);
+    assert (inspectorObjectGroup != null);
+    assert (app != null);
     return new DiagnosticsNode(json, inspectorObjectGroup, app, false, null);
   }
 

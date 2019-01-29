@@ -32,6 +32,29 @@ public enum DiagnosticLevel {
   hidden,
 
   /**
+   * Diagnostics that provide a hint about best practices.
+   * For example, a diagnostic providing a hint on  on how to fix an overflow error.
+   */
+  hint,
+
+  /**
+   * Diagnostics that provide a hint for how to fix a problem.
+   * <p>
+   * For example, a diagnostic providing advice for how to fix an overflow error.
+   */
+  fix,
+
+  /**
+   * Diagnostics that describe a contract.
+   * <p>
+   * For example, a diagnostic describing the constraints applying to layout or
+   * invariants that must remain true to correctly compose objects.
+   */
+  contract,
+
+  violation,
+
+  /**
    * A diagnostic that is likely to be low value but where the diagnostic
    * display is just as high quality as a diagnostic with a higher level.
    * <p>
