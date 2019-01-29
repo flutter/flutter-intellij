@@ -324,7 +324,7 @@ public class FlutterLogTree extends TreeTable {
 
   }
 
-  static class FlutterEventNode extends DefaultMutableTreeNode {
+  public static class FlutterEventNode extends DefaultMutableTreeNode {
     final FlutterLogEntry entry;
 
     FlutterEventNode(FlutterLogEntry entry) {

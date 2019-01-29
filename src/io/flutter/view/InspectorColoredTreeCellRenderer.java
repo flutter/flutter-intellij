@@ -16,7 +16,7 @@ import javax.swing.*;
 import javax.swing.tree.TreeCellRenderer;
 import java.awt.*;
 
-abstract class InspectorColoredTreeCellRenderer extends MultiIconSimpleColoredComponent implements TreeCellRenderer {
+public abstract class InspectorColoredTreeCellRenderer extends MultiIconSimpleColoredComponent implements TreeCellRenderer {
   /**
    * Defines whether the tree has focus or not
    */

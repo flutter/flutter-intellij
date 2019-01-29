@@ -37,16 +37,20 @@ public class FlutterLogEntry {
   private final int level;
   @NotNull
   private String message;
-  // TODO(pq): consider making data an Instance or JsonElement
+
+  /**
+   * Associated data; may be a JSON string value or DiagnosticsNode instance.
+   */
   @Nullable
-  private String data;
+  private Object data;
   private int sequenceNumber = -1;
 
   @NotNull
   private final Kind kind;
   private List<StyledText> styledText;
 
-  @NotNull private final List<Filter> filters;
+  @NotNull
+  private final List<Filter> filters;
 
   /**
    * Describes any style info that was inherited from previously parsed lines.
@@ -78,11 +82,11 @@ public class FlutterLogEntry {
   }
 
   @Nullable
-  public String getData() {
+  public Object getData() {
     return data;
   }
 
-  public void setData(@Nullable String data) {
+  public void setData(@Nullable Object data) {
     this.data = data;
   }
 
@@ -132,7 +136,6 @@ public class FlutterLogEntry {
     final LineInfo lineInfo = lineHandler.parseLineInfo(getMessage(), getCategory());
     return lineInfo.getStyledText();
   }
-
 
   /**
    * Return a sequence number, or -1 if unset.

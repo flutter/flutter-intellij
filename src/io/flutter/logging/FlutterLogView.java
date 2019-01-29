@@ -7,8 +7,6 @@ package io.flutter.logging;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.process.ProcessHandler;
@@ -40,8 +38,8 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.logging.FlutterLog.Level;
+import io.flutter.logging.tree.DataPanel;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.JsonUtils;
 import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,7 +68,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @NotNull
   private static final Logger LOG = Logger.getInstance(FlutterLogView.class);
 
-  private static final float DATA_PANEL_SPLITTER_PROPORTION_DEFAULT = 0.75f;
+  private static final float DATA_PANEL_SPLITTER_PROPORTION_DEFAULT = 0.60f;
 
   @NotNull
   private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
@@ -416,45 +414,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
   }
 
-  class DataPanel extends JEditorPane {
-    float lastSplitProportion = DATA_PANEL_SPLITTER_PROPORTION_DEFAULT;
-
-    DataPanel() {
-      setEditable(false);
-    }
-
-    public void update() {
-      String text = "";
-      final List<FlutterLogTree.FlutterEventNode> nodes = logTree.getSelectedNodes();
-      if (!nodes.isEmpty()) {
-        // First selection.
-        final String data = nodes.get(0).entry.getData();
-        if (JsonUtils.hasJsonData(data)) {
-          @SuppressWarnings("ConstantConditions") final JsonElement jsonElement = new JsonParser().parse(data);
-          text = gsonHelper.toJson(jsonElement);
-          dataPane.setVisible(true);
-
-          if (treeSplitter.getProportion() != lastSplitProportion) {
-            treeSplitter.setProportion(lastSplitProportion);
-            treeSplitter.revalidate();
-            treeSplitter.repaint();
-          }
-        }
-        else {
-          final float proportion = treeSplitter.getProportion();
-          if (proportion != 1.0f) {
-            lastSplitProportion = proportion;
-          }
-          dataPane.setVisible(false);
-          treeSplitter.setProportion(1.0f);
-        }
-      }
-      setText(text);
-
-      // Scroll to start.
-      setCaretPosition(0);
-    }
-  }
+  float lastSplitProportion = DATA_PANEL_SPLITTER_PROPORTION_DEFAULT;
 
   private class FilterStatusLabel extends AnAction
     implements CustomComponentAction, RightAlignedToolbarAction, FlutterLogTree.EventCountListener {
@@ -636,10 +596,18 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     fixColumnWidth(logTree.getColumn(CATEGORY), 110);
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
-    dataPanel = new DataPanel();
-    logTree.addSelectionListener(dataPanel::update);
+    dataPanel = DataPanel.create();
+
+    logTree.addSelectionListener(this::updateDataPanel);
 
     setupLogTreeScrollPane();
+  }
+
+  private void updateDataPanel() {
+    final List<FlutterLogTree.FlutterEventNode> selectedNodes = logTree.getSelectedNodes();
+    if (!selectedNodes.isEmpty()) {
+      dataPanel.update(selectedNodes.get(0).entry.getData());
+    }
   }
 
   private void setupLogTreeScrollPane() {
@@ -663,7 +631,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     dataPane = ScrollPaneFactory.createScrollPane(
       dataPanel,
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
     treeSplitter = new Splitter(false);
     treeSplitter.setProportion(DATA_PANEL_SPLITTER_PROPORTION_DEFAULT);
@@ -674,6 +642,25 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     treeSplitter.setFirstComponent(treePane);
     treeSplitter.setSecondComponent(dataPane);
     toolWindowPanel.setContent(treeSplitter);
+
+    dataPanel.onUpdate(hasContent -> {
+      dataPane.setVisible(hasContent);
+
+      if (hasContent) {
+        if (treeSplitter.getProportion() != lastSplitProportion) {
+          treeSplitter.setProportion(lastSplitProportion);
+          treeSplitter.revalidate();
+          treeSplitter.repaint();
+        }
+      }
+      else {
+        final float proportion = treeSplitter.getProportion();
+        if (proportion != 1.0f) {
+          lastSplitProportion = proportion;
+        }
+        treeSplitter.setProportion(1.0f);
+      }
+    });
   }
 
   private void computeTextAttributesByLogLevelCache() {
