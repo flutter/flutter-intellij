@@ -9,7 +9,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
-import com.intellij.ui.ColoredTreeCellRenderer;
 import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.ui.tree.BaseTreeModel;
 import com.intellij.util.EventDispatcher;
@@ -18,6 +17,7 @@ import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.utils.JsonUtils;
+import io.flutter.view.InspectorColoredTreeCellRenderer;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -50,7 +50,7 @@ public class DataPanel extends JPanel {
    */
   private static class CssStyle {
     static String forNode(DiagnosticsNode node) {
-      return attrs("style", forLevel(node.getLevel()) + forStyle(node.getStyle()));
+      return attr("style", forLevel(node.getLevel()) + forStyle(node.getStyle()));
     }
 
     static String forLevel(DiagnosticLevel level) {
@@ -76,7 +76,7 @@ public class DataPanel extends JPanel {
     }
   }
 
-  class NodeRenderer extends ColoredTreeCellRenderer {
+  class NodeRenderer extends InspectorColoredTreeCellRenderer {
     @Override
     public void customizeCellRenderer(@NotNull JTree tree,
                                       Object value,
@@ -101,6 +101,7 @@ public class DataPanel extends JPanel {
     }
   }
 
+  // TODO(pq): consider a model shared w/ the inspector tree.
   class NodeModel extends BaseTreeModel<Object> {
     private final DiagnosticsNode node;
     private final String rootContent;
@@ -203,6 +204,7 @@ public class DataPanel extends JPanel {
     // Body.
     final List<DiagnosticsNode> properties = data.getInlineProperties();
     for (DiagnosticsNode node : properties) {
+      // TODO(pq): refactor to handle edge cases and consider parsing into a list of StyledTexts.
       String contents = "";
       if (node.getName() != null) {
         contents += node.getName();

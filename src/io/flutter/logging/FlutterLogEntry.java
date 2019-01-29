@@ -37,7 +37,10 @@ public class FlutterLogEntry {
   private final int level;
   @NotNull
   private String message;
-  // TODO(pq): consider making data an Instance or JsonElement
+
+  /**
+   * Associated data; may be a JSON string value or diagnostic node.
+   */
   @Nullable
   private Object data;
   private int sequenceNumber = -1;
@@ -46,7 +49,8 @@ public class FlutterLogEntry {
   private final Kind kind;
   private List<StyledText> styledText;
 
-  @NotNull private final List<Filter> filters;
+  @NotNull
+  private final List<Filter> filters;
 
   /**
    * Describes any style info that was inherited from previously parsed lines.

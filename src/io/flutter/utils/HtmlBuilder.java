@@ -15,7 +15,7 @@ public class HtmlBuilder {
     return tag("span", contents);
   }
 
-  public static String attrs(String attribute, String value) {
+  public static String attr(String attribute, String value) {
     return attribute + " = \"" + value + "\"";
   }
 
@@ -35,7 +35,7 @@ public class HtmlBuilder {
     final StringBuilder sb = new StringBuilder();
     for (String c : contents) {
       sb.append(c);
-      sb.append(java.lang.System.lineSeparator());
+      sb.append('\n');
     }
     return sb.toString();
   }
@@ -49,6 +49,6 @@ public class HtmlBuilder {
   }
 
   public static String cls(String value) {
-    return attrs("class", value);
+    return attr("class", value);
   }
 }
