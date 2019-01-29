@@ -134,6 +134,10 @@ public class BazelTestRunner extends GenericProgramRunner {
               final String json = line.substring(1, line.length() - 1);
               dispatchJson(json);
             }
+            if (line.startsWith("Observatory port: ")) {
+              line = line.trim();
+              observatoryUri = "http://127.0.0.1:" + line.substring("Observatory port: ".length()) + "/";
+            }
           }
         }
 

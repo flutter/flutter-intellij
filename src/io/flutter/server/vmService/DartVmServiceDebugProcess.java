@@ -276,20 +276,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     });
   }
 
-  private void connect(@NotNull final String url) throws IOException {
-    final VmService vmService = VmService.connect(url);
-    final DartVmServiceListener vmServiceListener =
-      new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
-
-    vmService.addVmServiceListener(vmServiceListener);
-
-    myVmServiceWrapper =
-      new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
-    myVmServiceWrapper.handleDebuggerConnected();
-
-    myVmConnected = true;
-  }
-
   @NotNull
   @Deprecated // returns incorrect URL for Dart SDK 1.22+ because returned URL doesn't contain auth token
   private String getObservatoryUrl(@NotNull final String scheme, @Nullable final String path) {
