@@ -39,7 +39,7 @@ public class FlutterLogEntry {
   private String message;
 
   /**
-   * Associated data; may be a JSON string value or diagnostic node.
+   * Associated data; may be a JSON string value or DiagnosticsNode instance.
    */
   @Nullable
   private Object data;
