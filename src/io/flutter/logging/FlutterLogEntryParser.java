@@ -208,9 +208,9 @@ public class FlutterLogEntryParser {
       if (message.equals("Performing hot restart...") || message.equals("Initializing hot restart...")) {
         return Kind.RESTART;
       }
-      // TODO(pq): remove string matching in favor of some kind of tag coming from the framework.
+      // TODO(pq): remove string matching once all widget errors are coming as "Flutter.Error" exension events.
       if (message.startsWith("══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY")) {
-        return Kind.WIDGET_ERROR_START;
+        return Kind.FLUTTER_ERROR;
       }
     }
     return Kind.UNSPECIFIED;
@@ -260,6 +260,7 @@ public class FlutterLogEntryParser {
     final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
     final String description = diagnosticsNode.toString();
     final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
+    entry.setKind(Kind.FLUTTER_ERROR);
     entry.setData(diagnosticsNode);
     entries.add(entry);
     return entries;

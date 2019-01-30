@@ -229,13 +229,17 @@ public class FlutterLogTree extends TreeTable {
       uiThreadAlarm.addRequest(runnable, delayMillis);
     }
 
-    void update() {
+    void update(@Nullable int[] selectedRows) {
       columns.update();
 
       reload(getRoot());
       treeTable.updateUI();
-      // Preserve / restore selection state.
-      treeTable.getTree().setSelectionRows(treeTable.getSelectedRows());
+
+      // Preserve / restore selection state if unspecified.
+      if (selectedRows == null) {
+        selectedRows = treeTable.getSelectedRows();
+      }
+      treeTable.getTree().setSelectionRows(selectedRows);
 
       if (updateCallback != null) {
         updateCallback.updated();
@@ -244,6 +248,10 @@ public class FlutterLogTree extends TreeTable {
       if (autoScrollToEnd) {
         uiThreadAlarm.addRequest(this::scrollToEnd, 100);
       }
+    }
+
+    void update() {
+      update(null);
     }
 
     @Override
@@ -268,15 +276,16 @@ public class FlutterLogTree extends TreeTable {
       update();
     }
 
-    public void appendNodes(List<FlutterLogEntry> entries) {
+    public void appendNode(FlutterLogEntry entry, boolean selectNode) {
       if (treeTable == null || uiThreadAlarm.isDisposed()) {
         return;
       }
 
       uiThreadAlarm.addRequest(() -> {
         final MutableTreeNode root = getRoot();
-        entries.forEach(entry -> insertNodeInto(new FlutterEventNode(entry), root, root.getChildCount()));
-        update();
+        final int nodeIndex = root.getChildCount();
+        insertNodeInto(new FlutterEventNode(entry), root, nodeIndex);
+        update(selectNode ? new int[]{nodeIndex} : null);
       }, 10);
     }
 
@@ -527,13 +536,13 @@ public class FlutterLogTree extends TreeTable {
     return null;
   }
 
-  void append(@NotNull FlutterLogEntry entry) {
+  void append(@NotNull FlutterLogEntry entry, boolean selectNode) {
     if (entry.getKind() == FlutterLogEntry.Kind.RELOAD && model.getLogPreferences().isClearOnReload() ||
         entry.getKind() == FlutterLogEntry.Kind.RESTART && model.getLogPreferences().isClearOnRestart()
     ) {
       clearEntries();
     }
-    model.appendNodes(Collections.singletonList(entry));
+    model.appendNode(entry, selectNode);
   }
 
   private void updateCounter() {
