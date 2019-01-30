@@ -8,12 +8,11 @@ package io.flutter.run;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
-import com.intellij.openapi.roots.ProjectRootManager;
+import com.intellij.openapi.roots.ProjectFileIndex;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.util.PsiTreeUtil;
-import com.jetbrains.lang.dart.ide.DartWritingAccessProvider;
 import com.jetbrains.lang.dart.psi.DartFile;
 import com.jetbrains.lang.dart.psi.DartImportStatement;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
@@ -112,11 +111,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
     final VirtualFile virtual = DartResolveUtil.getRealVirtualFile(dart);
     if (virtual == null) return null;
 
-    if (!ProjectRootManager.getInstance(dart.getProject()).getFileIndex().isInContent(virtual)) {
-      return null;
-    }
-
-    if (DartWritingAccessProvider.isInDartSdkOrDartPackagesFolder(dart.getProject(), virtual)) {
+    if (!ProjectFileIndex.getInstance(dart.getProject()).isInContent(virtual)) {
       return null;
     }
 
