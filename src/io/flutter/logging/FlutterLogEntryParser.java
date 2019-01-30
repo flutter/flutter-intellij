@@ -281,10 +281,10 @@ public class FlutterLogEntryParser {
     return parseDaemonEvent(text);
   }
 
-  static class LineHandler extends LineParser {
+  public static class LineHandler extends LineParser {
     final List<StyledText> parsed = new ArrayList<>();
 
-    LineHandler(@NotNull List<Filter> filters, @Nullable SimpleTextAttributes initialStyle) {
+    public LineHandler(@NotNull List<Filter> filters, @Nullable SimpleTextAttributes initialStyle) {
       super(filters);
       this.style = initialStyle;
     }
@@ -294,7 +294,7 @@ public class FlutterLogEntryParser {
       parsed.add(styledText);
     }
 
-    private List<StyledText> parseLineStyle(@NotNull String line) {
+    public List<StyledText> parseLineStyle(@NotNull String line) {
       parse(line);
       // Copy results and clear.
       final ArrayList<StyledText> results = new ArrayList<>(parsed);

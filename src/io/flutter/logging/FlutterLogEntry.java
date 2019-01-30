@@ -124,6 +124,11 @@ public class FlutterLogEntry {
   }
 
   @NotNull
+  public List<Filter> getFilters() {
+    return filters;
+  }
+
+  @NotNull
   public List<StyledText> getStyledText() {
     if (styledText == null) {
       styledText = calculateStyledText();

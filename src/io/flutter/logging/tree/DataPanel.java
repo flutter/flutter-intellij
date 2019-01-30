@@ -9,6 +9,9 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.filters.HyperlinkInfo;
+import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.panels.NonOpaquePanel;
 import com.intellij.ui.tree.BaseTreeModel;
 import com.intellij.util.EventDispatcher;
@@ -16,6 +19,9 @@ import com.intellij.util.ui.JBUI;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
+import io.flutter.logging.FlutterLogEntry;
+import io.flutter.logging.FlutterLogEntryParser.LineHandler;
+import io.flutter.logging.text.StyledText;
 import io.flutter.utils.JsonUtils;
 import io.flutter.view.InspectorColoredTreeCellRenderer;
 import org.jetbrains.annotations.NotNull;
@@ -23,9 +29,10 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreePath;
 import java.awt.*;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
+import java.awt.event.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,6 +41,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.intellij.ui.SimpleTextAttributes.REGULAR_ATTRIBUTES;
 import static io.flutter.utils.HtmlBuilder.*;
 
 @SuppressWarnings("ALL")
@@ -80,6 +88,13 @@ public class DataPanel extends JPanel {
   }
 
   class NodeRenderer extends InspectorColoredTreeCellRenderer {
+    private final List<Filter> filters;
+
+    public NodeRenderer(List<Filter> filters) {
+      super();
+      this.filters = filters;
+    }
+
     @Override
     public void customizeCellRenderer(@NotNull JTree tree,
                                       Object value,
@@ -89,17 +104,26 @@ public class DataPanel extends JPanel {
                                       int row,
                                       boolean hasFocus) {
       if (value instanceof String) {
-        append(value.toString());
+        appendStyledText(value.toString());
       }
       else if (value instanceof DiagnosticsNode) {
         final DiagnosticsNode node = (DiagnosticsNode)value;
-        append(value.toString());
         if (!node.isProperty()) {
           final Icon icon = node.getIcon();
           if (icon != null) {
             setIcon(icon);
           }
         }
+
+        appendStyledText(value.toString());
+      }
+    }
+
+    void appendStyledText(@NotNull String line) {
+      final LineHandler lineHandler = new LineHandler(filters, null);
+      final List<StyledText> styledTexts = lineHandler.parseLineStyle(line);
+      for (StyledText styledText : styledTexts) {
+        append(styledText.getText(), styledText.getStyle() != null ? styledText.getStyle() : REGULAR_ATTRIBUTES, styledText.getTag());
       }
     }
   }
@@ -131,19 +155,65 @@ public class DataPanel extends JPanel {
     }
   }
 
+  static class MouseHandler extends MouseAdapter implements MouseMotionListener {
+    @NotNull
+    private final JTree tree;
+    @NotNull
+    private final Project project;
+
+    MouseHandler(@NotNull JTree tree, @NotNull Project project) {
+      this.tree = tree;
+      this.project = project;
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+      final Cursor cursor = getTagForPosition(e) instanceof HyperlinkInfo
+                            ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                            : Cursor.getDefaultCursor();
+      tree.setCursor(cursor);
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+      final Object tag = getTagForPosition(e);
+      if (tag instanceof HyperlinkInfo) {
+        ((HyperlinkInfo)tag).navigate(project);
+      }
+    }
+
+    private Object getTagForPosition(MouseEvent e) {
+      final JTree tree = (JTree)e.getSource();
+      final TreeCellRenderer cellRenderer = tree.getCellRenderer();
+      if (cellRenderer instanceof InspectorColoredTreeCellRenderer) {
+        final InspectorColoredTreeCellRenderer renderer = (InspectorColoredTreeCellRenderer)cellRenderer;
+        final TreePath treePath = tree.getPathForLocation(e.getX(), e.getY());
+        final Rectangle pathBounds = tree.getPathBounds(treePath);
+        if (pathBounds != null) {
+          final int x = e.getX() - pathBounds.x;
+          return renderer.getFragmentTagAt(x);
+        }
+      }
+      return null;
+    }
+  }
+
   private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
   private final HTMLEditorKit editorKit;
 
   private final EventDispatcher<ContentListener>
     dispatcher = EventDispatcher.create(ContentListener.class);
+  private final Project project;
+  private FlutterLogEntry entry;
 
-  private DataPanel() {
+  private DataPanel(Project project) {
+    this.project = project;
     setBorder(JBUI.Borders.empty());
     editorKit = new HTMLEditorKit();
   }
 
-  public static DataPanel create() {
-    final DataPanel panel = new DataPanel();
+  public static DataPanel create(@NotNull Project project) {
+    final DataPanel panel = new DataPanel(project);
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
     return panel;
   }
@@ -156,7 +226,10 @@ public class DataPanel extends JPanel {
     // TODO(pq): handle links
   }
 
-  public void update(Object data) {
+  public void update(@NotNull FlutterLogEntry entry) {
+    this.entry = entry;
+    final Object data = entry.getData();
+
     // Remove stale content.
     for (Component c : getComponents()) {
       remove(c);
@@ -246,7 +319,7 @@ public class DataPanel extends JPanel {
   private void addTree(String rootLabel, DiagnosticsNode node) {
     final JTree tree = new JTree();
     tree.setModel(new NodeModel(node, rootLabel));
-    tree.setCellRenderer(new NodeRenderer());
+    tree.setCellRenderer(new NodeRenderer(entry.getFilters()));
     tree.setShowsRootHandles(true);
     tree.collapseRow(0);
 
@@ -256,6 +329,10 @@ public class DataPanel extends JPanel {
         tree.clearSelection();
       }
     });
+
+    final MouseHandler mouseHandler = new MouseHandler(tree, project);
+    tree.addMouseListener(mouseHandler);
+    tree.addMouseMotionListener(mouseHandler);
 
     final NonOpaquePanel panel = new NonOpaquePanel();
     panel.add(tree);
