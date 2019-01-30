@@ -596,7 +596,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     fixColumnWidth(logTree.getColumn(CATEGORY), 110);
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
-    dataPanel = DataPanel.create();
+    dataPanel = DataPanel.create(app.getProject());
 
     logTree.addSelectionListener(this::updateDataPanel);
 
@@ -606,7 +606,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private void updateDataPanel() {
     final List<FlutterLogTree.FlutterEventNode> selectedNodes = logTree.getSelectedNodes();
     if (!selectedNodes.isEmpty()) {
-      dataPanel.update(selectedNodes.get(0).entry.getData());
+      dataPanel.update(selectedNodes.get(0).entry);
     }
   }
 
