@@ -517,7 +517,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
   boolean isPinned;
-  boolean prePinAutoScroll;
+  // Auto-scroll defautls to on.
+  boolean prePinAutoScroll = true;
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
@@ -749,7 +750,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final boolean isError = entry.getKind() == FlutterLogEntry.Kind.FLUTTER_ERROR;
     logTree.append(entry, isError && !isPinned);
 
-    if (isError) {
+    if (isError & !isPinned) {
       prePinAutoScroll = logModel.autoScrollToEnd;
       scrollToEndAction.disableIfNeeded();
       isPinned = true;
@@ -769,13 +770,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   @Override
   public void clear() {
     // Unpin
-    if (prePinAutoScroll) {
-      scrollToEndAction.enableIfNeeded();
+    if (isPinned) {
+      if (prePinAutoScroll) {
+        scrollToEndAction.enableIfNeeded();
+      }
+      else {
+        scrollToEndAction.disableIfNeeded();
+      }
+      isPinned = false;
     }
-    else {
-      scrollToEndAction.disableIfNeeded();
-    }
-    isPinned = false;
     dataPane.setVisible(false);
   }
 
