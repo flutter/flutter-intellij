@@ -25,7 +25,7 @@ public class FlutterLogEntry {
   public enum Kind {
     RELOAD,
     RESTART,
-    WIDGET_ERROR_START,
+    FLUTTER_ERROR,
     UNSPECIFIED
   }
 
@@ -46,7 +46,7 @@ public class FlutterLogEntry {
   private int sequenceNumber = -1;
 
   @NotNull
-  private final Kind kind;
+  private Kind kind;
   private List<StyledText> styledText;
 
   @NotNull
@@ -93,6 +93,10 @@ public class FlutterLogEntry {
   @NotNull
   public Kind getKind() {
     return kind;
+  }
+
+  public void setKind(@NotNull Kind kind) {
+    this.kind = kind;
   }
 
   public long getTimestamp() {

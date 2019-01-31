@@ -357,7 +357,11 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-      ApplicationManager.getApplication().invokeLater(logTree::clearEntries);
+      ApplicationManager.getApplication().invokeLater(() -> {
+        logTree.clearEntries();
+        // Flush state.
+        clear();
+      });
     }
 
     @Override
@@ -512,6 +516,9 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private Splitter treeSplitter;
 
   private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
+  boolean isPinned;
+  // Auto-scroll defautls to on.
+  boolean prePinAutoScroll = true;
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
@@ -740,10 +747,13 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    logTree.append(entry);
-    if (entry.getKind() == FlutterLogEntry.Kind.WIDGET_ERROR_START) {
-      // Stop auto-scroll on a widget error.
+    final boolean isError = entry.getKind() == FlutterLogEntry.Kind.FLUTTER_ERROR;
+    logTree.append(entry, isError && !isPinned);
+
+    if (isError & !isPinned) {
+      prePinAutoScroll = logModel.autoScrollToEnd;
       scrollToEndAction.disableIfNeeded();
+      isPinned = true;
     }
   }
 
@@ -759,7 +769,17 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void clear() {
-    // TODO(pq): called on restart; should (optionally) clear _or_ set a visible marker.
+    // Unpin
+    if (isPinned) {
+      if (prePinAutoScroll) {
+        scrollToEndAction.enableIfNeeded();
+      }
+      else {
+        scrollToEndAction.disableIfNeeded();
+      }
+      isPinned = false;
+    }
+    dataPane.setVisible(false);
   }
 
   @Override
