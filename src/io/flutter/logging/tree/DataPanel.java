@@ -28,6 +28,8 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
@@ -223,10 +225,15 @@ public class DataPanel extends JPanel {
   }
 
   private void linkSelected(URL url) {
-    // TODO(pq): handle links
+    // TODO(pq): handle html links
   }
 
   public void update(@NotNull FlutterLogEntry entry) {
+    // Avoid unneeded updates.
+    if (entry == this.entry) {
+      return;
+    }
+
     this.entry = entry;
     final Object data = entry.getData();
 
@@ -329,6 +336,12 @@ public class DataPanel extends JPanel {
         tree.clearSelection();
       }
     });
+    tree.addTreeSelectionListener(new TreeSelectionListener() {
+      @Override
+      public void valueChanged(TreeSelectionEvent e) {
+        selectionChanged(tree);
+      }
+    });
 
     final MouseHandler mouseHandler = new MouseHandler(tree, project);
     tree.addMouseListener(mouseHandler);
@@ -337,6 +350,14 @@ public class DataPanel extends JPanel {
     final NonOpaquePanel panel = new NonOpaquePanel();
     panel.add(tree);
     add(panel);
+  }
+
+  private void selectionChanged(@NotNull JTree tree) {
+    final Object pathComponent = tree.getLastSelectedPathComponent();
+    if (pathComponent instanceof DiagnosticsNode) {
+      final DiagnosticsNode diagnostics = (DiagnosticsNode)pathComponent;
+      diagnostics.setSelection(diagnostics.getValueRef(), false);
+    }
   }
 
   private JEditorPane createEditorPane() {
