@@ -134,10 +134,10 @@ public class BazelTestRunner extends GenericProgramRunner {
               final String json = line.substring(1, line.length() - 1);
               dispatchJson(json);
             }
-            if (line.startsWith("Observatory port: ")) {
-              line = line.trim();
-              observatoryUri = "http://127.0.0.1:" + line.substring("Observatory port: ".length()) + "/";
-            }
+            //if (line.startsWith("Observatory port: ")) {
+            //  line = line.trim();
+            //  observatoryUri = "http://127.0.0.1:" + line.substring("Observatory port: ".length()) + "/";
+            //}
           }
         }
 
@@ -270,7 +270,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
       if (workspaceEndOffset != -1) {
         workspaceEndOffset += workspaceDirName.length();
-        results.add(workspaceDirName + ":" + filePath.substring(workspaceEndOffset, filePath.length()));
+        results.add(workspaceDirName + "://" + filePath.substring(workspaceEndOffset, filePath.length()));
       }
       return results;
     }

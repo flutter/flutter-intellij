@@ -247,7 +247,10 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       String url = myConnector.getWebSocketUrl();
 
       while (url == null) {
-        if (getSession().isStopped()) return;
+        if (getSession().isStopped()) {
+          System.out.println("bad stuff");
+          return;
+        }
 
         TimeoutUtil.sleep(100);
 
