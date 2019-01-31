@@ -36,7 +36,7 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
     final BazelFields fields = configuration.getFields();
     myBazelTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
-    myBazelArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
+    myBazelArgs.setText(StringUtil.notNullize(fields.getBazelArgs()));
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
 
