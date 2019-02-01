@@ -247,10 +247,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       String url = myConnector.getWebSocketUrl();
 
       while (url == null) {
-        if (getSession().isStopped()) {
-          System.out.println("bad stuff");
-          return;
-        }
+        if (getSession().isStopped()) return;
 
         TimeoutUtil.sleep(100);
 
@@ -277,6 +274,20 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       }
       onConnectSucceeded(vmService, vmOpenSourceLocationListener);
     });
+  }
+
+  private void connect(@NotNull final String url) throws IOException {
+    final VmService vmService = VmService.connect(url);
+    final DartVmServiceListener vmServiceListener =
+      new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+
+    vmService.addVmServiceListener(vmServiceListener);
+
+    myVmServiceWrapper =
+      new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
+    myVmServiceWrapper.handleDebuggerConnected();
+
+    myVmConnected = true;
   }
 
   @NotNull
