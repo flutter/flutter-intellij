@@ -267,7 +267,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
       if (workspaceEndOffset != -1) {
         workspaceEndOffset += workspaceDirName.length();
-        results.add(workspaceDirName + ":" + filePath.substring(workspaceEndOffset, filePath.length()));
+        results.add(workspaceDirName + "://" + filePath.substring(workspaceEndOffset, filePath.length()));
       }
       return results;
     }
