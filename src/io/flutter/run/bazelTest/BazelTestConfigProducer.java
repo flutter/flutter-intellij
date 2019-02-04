@@ -9,17 +9,13 @@ import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
 import com.intellij.openapi.util.Ref;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterRunConfigurationProducer;
-import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -45,7 +41,9 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
    * Returns true if successfully set up.
    */
   @Override
-  protected boolean setupConfigurationFromContext(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull Ref<PsiElement> sourceElement) {
+  protected boolean setupConfigurationFromContext(@NotNull BazelTestConfig config,
+                                                  @NotNull ConfigurationContext context,
+                                                  @NotNull Ref<PsiElement> sourceElement) {
     if (!isFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();
@@ -64,7 +62,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   }
 
   private boolean setupForSingleTest(
-      @NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file, @NotNull String testName) {
+    @NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file, @NotNull String testName) {
 
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
@@ -86,11 +84,13 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   }
 
   @Nullable
-  private VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file) {
-      final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
+  private VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config,
+                                            @NotNull ConfigurationContext context,
+                                            @NotNull DartFile file) {
+    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
-    return file.getVirtualFile().getPath().contains("/test/") ?  candidate : null;
+    return file.getVirtualFile().getPath().contains("/test/") ? candidate : null;
   }
 
   /**

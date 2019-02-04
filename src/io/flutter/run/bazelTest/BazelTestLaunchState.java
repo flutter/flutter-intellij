@@ -11,7 +11,6 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
@@ -33,8 +32,8 @@ public class BazelTestLaunchState extends CommandLineState {
     super(env);
     this.fields = config.getFields();
     this.testFile = testFile == null
-        ? Workspace.load(env.getProject()).getRoot()
-        : testFile;
+                    ? Workspace.load(env.getProject()).getRoot()
+                    : testFile;
   }
 
   @NotNull

@@ -18,12 +18,9 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
-import io.flutter.run.MainFile;
-import io.flutter.run.bazelTest.BazelTestFields;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.utils.ElementIO;
@@ -33,11 +30,11 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-import static io.flutter.run.daemon.RunMode.*;
+import static io.flutter.run.daemon.RunMode.DEBUG;
 
 /**
  * The fields in a Bazel run configuration.
- *
+ * <p>
  * This class is immutable.
  */
 public class BazelFields {
@@ -55,8 +52,8 @@ public class BazelFields {
    * If this is not set, then the flutter_build_mode will depend on which button
    * the user pressed to run the app.
    * <ul>
-   *   <li>If the user pressed 'run' or 'debug', then flutter_build_mode=debug.</li>
-   *   <li>If the user pressed 'profile', then flutter_build_mode=profile.</li>
+   * <li>If the user pressed 'run' or 'debug', then flutter_build_mode=debug.</li>
+   * <li>If the user pressed 'profile', then flutter_build_mode=profile.</li>
    * </ul>
    *
    * <p>
@@ -317,7 +314,8 @@ public class BazelFields {
 
     try {
       return new BazelFields(bazelTarget, bazelArgs, additionalArgs, Boolean.valueOf(enableReleaseMode));
-    } catch (IllegalArgumentException e) {
+    }
+    catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());
     }
   }

@@ -35,9 +35,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-import static com.intellij.openapi.util.text.StringUtil.notNullize;
-import static com.intellij.openapi.util.text.StringUtil.nullize;
-
 /**
  * The fields in a Bazel test run configuration.
  */

@@ -10,10 +10,10 @@ import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.run.FlutterPopFrameAction;
 import io.flutter.run.OpenObservatoryAction;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import org.jetbrains.annotations.NotNull;
 
 /**

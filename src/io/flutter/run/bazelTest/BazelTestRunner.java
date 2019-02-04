@@ -272,7 +272,6 @@ public class BazelTestRunner extends GenericProgramRunner {
       return results;
     }
 
-
     /**
      * Attempt to find a local Dart file corresponding to a script in Observatory.
      */
