@@ -17,8 +17,10 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
+import io.flutter.bazel.Workspace;
 import io.flutter.run.LaunchState;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.FlutterApp;
@@ -29,10 +31,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class BazelRunConfig extends RunConfigurationBase
   implements RunConfigurationWithSuppressedDefaultRunAction, LaunchState.RunConfig {
-  @NotNull private BazelFields fields = new BazelFields();
+  @NotNull private BazelFields fields;
 
   BazelRunConfig(final @NotNull Project project, final @NotNull ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
+    fields = new BazelFields(null, null, null, false);
   }
 
   @NotNull
@@ -66,9 +69,10 @@ public class BazelRunConfig extends RunConfigurationBase
       throw new ExecutionException(e);
     }
 
-    final MainFile main = MainFile.verify(launchFields.getEntryFile(), env.getProject()).get();
+    final Workspace workspace = fields.getWorkspace(getProject());
+    final VirtualFile workspaceRoot = workspace.getRoot();
     final RunMode mode = RunMode.fromEnv(env);
-    final Module module = ModuleUtil.findModuleForFile(main.getFile(), env.getProject());
+    final Module module = ModuleUtil.findModuleForFile(workspaceRoot, env.getProject());
 
     final LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
@@ -78,7 +82,7 @@ public class BazelRunConfig extends RunConfigurationBase
                               StringUtil.capitalize(mode.mode()) + "BazelApp", "StopBazelApp");
     };
 
-    return new LaunchState(env, main.getAppDir(), main.getFile(), this, createAppCallback);
+    return new LaunchState(env, workspaceRoot, workspaceRoot, this, createAppCallback);
   }
 
   @NotNull
@@ -98,19 +102,19 @@ public class BazelRunConfig extends RunConfigurationBase
   RunConfiguration copyTemplateToNonTemplate(String name) {
     final BazelRunConfig copy = (BazelRunConfig)super.clone();
     copy.setName(name);
-    copy.fields = fields.copyTemplateToNonTemplate(getProject());
+    copy.fields = fields.copy();
     return copy;
   }
 
   @Override
   public void writeExternal(@NotNull final Element element) throws WriteExternalException {
     super.writeExternal(element);
-    XmlSerializer.serializeInto(fields, element, new SkipDefaultValuesSerializationFilters());
+    fields.writeTo(element);
   }
 
   @Override
   public void readExternal(@NotNull final Element element) throws InvalidDataException {
     super.readExternal(element);
-    XmlSerializer.deserializeInto(fields, element);
+    fields = BazelFields.readFrom(element);
   }
 }

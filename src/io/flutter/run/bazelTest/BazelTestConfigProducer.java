@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
  * Determines when we can run a Flutter test using "bazel test".
  */
 public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestConfig> {
+
   private final BazelTestConfigUtils bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
 
   protected BazelTestConfigProducer() {
@@ -64,6 +65,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
 
   private boolean setupForSingleTest(
       @NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file, @NotNull String testName) {
+
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 

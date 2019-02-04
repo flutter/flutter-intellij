@@ -15,46 +15,39 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
 public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRunConfig> {
   private JPanel myMainPanel;
 
-  private JLabel myEntryFileLabel;
-  private TextFieldWithBrowseButton myEntryFile;
-
-  private JLabel myLaunchingScriptLabel;
-  private TextFieldWithBrowseButton myLaunchingScript;
+  private JTextField myBazelTarget;
+  private JTextField myBazelArgs;
   private JTextField myAdditionalArgs;
-  private JTextField myBuildTarget;
   private JCheckBox myEnableReleaseModeCheckBox;
 
   public FlutterBazelConfigurationEditorForm(final Project project) {
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
-    myLaunchingScript.addBrowseFolderListener("Select Launching Script", "Choose launching script", project, descriptor);
-
-    DartCommandLineConfigurationEditorForm.initDartFileTextWithBrowse(project, myEntryFile);
   }
 
   @Override
   protected void resetEditorFrom(@NotNull final BazelRunConfig configuration) {
     final BazelFields fields = configuration.getFields();
-    myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
-    myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
-    myLaunchingScript.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getLaunchingScript())));
+    myBazelTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
     myEnableReleaseModeCheckBox.setSelected(fields.getEnableReleaseMode());
+    myBazelArgs.setText(StringUtil.notNullize(fields.getBazelArgs()));
     myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
   }
 
   @Override
   protected void applyEditorTo(@NotNull final BazelRunConfig configuration) throws ConfigurationException {
-    final BazelFields fields = new BazelFields();
-    fields.setEntryFile(StringUtil.nullize(FileUtil.toSystemIndependentName(myEntryFile.getText().trim()), true));
-    fields.setBazelTarget(StringUtil.nullize(myBuildTarget.getText().trim(), true));
-    fields.setLaunchingScript(StringUtil.nullize(FileUtil.toSystemIndependentName(myLaunchingScript.getText().trim()), true));
-    fields.setEnableReleaseMode(myEnableReleaseModeCheckBox.isSelected());
-    fields.setAdditionalArgs(StringUtil.nullize(myAdditionalArgs.getText().trim(), true));
+    final BazelFields fields = new BazelFields(
+      getTextValue(myBazelTarget),
+      getTextValue(myBazelArgs),
+      getTextValue(myAdditionalArgs),
+      myEnableReleaseModeCheckBox.isSelected()
+    );
     configuration.setFields(fields);
   }
 
@@ -62,5 +55,10 @@ public class FlutterBazelConfigurationEditorForm extends SettingsEditor<BazelRun
   @Override
   protected JComponent createEditor() {
     return myMainPanel;
+  }
+
+  @Nullable
+  private String getTextValue(@NotNull JTextField textField) {
+    return StringUtil.nullize(textField.getText().trim(), true);
   }
 }
