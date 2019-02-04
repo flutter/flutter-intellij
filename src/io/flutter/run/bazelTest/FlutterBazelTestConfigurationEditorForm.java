@@ -13,7 +13,6 @@ import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ListCellRendererWrapper;
-import com.intellij.ui.TextAccessor;
 import com.jetbrains.lang.dart.ide.runner.server.ui.DartCommandLineConfigurationEditorForm;
 import io.flutter.run.bazelTest.BazelTestFields.Scope;
 import io.flutter.settings.FlutterSettings;
@@ -21,12 +20,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-
 import java.awt.event.ActionEvent;
 
-import static io.flutter.run.bazelTest.BazelTestFields.Scope.FILE;
-import static io.flutter.run.bazelTest.BazelTestFields.Scope.NAME;
-import static io.flutter.run.bazelTest.BazelTestFields.Scope.TARGET_PATTERN;
+import static io.flutter.run.bazelTest.BazelTestFields.Scope.*;
 
 public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<BazelTestConfig> {
   private JPanel myMainPanel;

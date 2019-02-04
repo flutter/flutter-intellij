@@ -14,7 +14,6 @@ import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
-import io.flutter.run.test.TestConfigType;
 import org.jetbrains.annotations.NotNull;
 
 /**
