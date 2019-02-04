@@ -3,15 +3,17 @@
 <idea-plugin>
   <id>io.flutter</id>
   <name>Flutter</name>
-  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
-    cross-platform, high-performance mobile apps on both Android and iOS.
+  <description>
+    Support for developing Flutter applications. Flutter gives developers an easy and productive
+    way to build and deploy cross-platform, high-performance mobile apps for both Android and iOS.
+    Installing this plugin will also install the Dart plugin.
   </description>
   <!--suppress PluginXmlValidity -->
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
   
-  <idea-version since-build="182.5107.7" until-build="183.*"/>
+  <idea-version since-build="182.5107.7" until-build="191.*"/>
 
   <depends>Dart</depends>
 
