@@ -14,7 +14,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class OpenTimelineViewAction extends DumbAwareAction {
   private final @NotNull ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;

@@ -19,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.InputEvent;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class ReloadFlutterApp extends FlutterAppAction {
   public static final String ID = "Flutter.ReloadFlutterApp"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.reload.action.text");

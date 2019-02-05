@@ -7,13 +7,12 @@ package io.flutter.view;
 
 import com.intellij.ui.JBColor;
 import com.intellij.ui.table.JBTable;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Font;
-import java.awt.event.MouseEvent;
+
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import java.awt.*;
+import java.awt.event.MouseEvent;
 
 /**
  * JBTable custom selection and hover renderer for a table view.

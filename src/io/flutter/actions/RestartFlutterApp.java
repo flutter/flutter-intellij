@@ -17,7 +17,6 @@ import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class RestartFlutterApp extends FlutterAppAction {
   public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.restart.action.text");

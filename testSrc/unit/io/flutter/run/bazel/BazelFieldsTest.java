@@ -5,7 +5,6 @@
  */
 package io.flutter.run.bazel;
 
-import com.intellij.util.xmlb.SkipDefaultValuesSerializationFilters;
 import com.intellij.util.xmlb.XmlSerializer;
 import org.jdom.Element;
 import org.junit.Test;

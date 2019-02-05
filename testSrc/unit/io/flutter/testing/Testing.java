@@ -18,7 +18,6 @@ import com.intellij.testFramework.fixtures.TestFixtureBuilder;
 
 import javax.swing.*;
 import java.lang.reflect.InvocationTargetException;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**

@@ -20,8 +20,6 @@ import java.util.ArrayList;
 import java.util.EventListener;
 import java.util.List;
 
-import static com.intellij.openapi.util.text.StringUtil.notNullize;
-
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";

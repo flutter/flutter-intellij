@@ -10,7 +10,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.sdk.XcodeUtils;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class OpenSimulatorAction extends AnAction {
   final boolean enabled;
 

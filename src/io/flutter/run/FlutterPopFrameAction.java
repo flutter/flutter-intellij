@@ -20,7 +20,6 @@ import io.flutter.FlutterBundle;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class FlutterPopFrameAction extends AnAction implements DumbAware {
   public FlutterPopFrameAction() {
     final Presentation presentation = getTemplatePresentation();
