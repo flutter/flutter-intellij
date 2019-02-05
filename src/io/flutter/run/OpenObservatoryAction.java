@@ -15,7 +15,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class OpenObservatoryAction extends DumbAwareAction {
   private final @NotNull ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;

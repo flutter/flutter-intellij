@@ -25,16 +25,18 @@ import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.view.FlutterPerfView;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.view.FlutterPerfView;
 import io.flutter.view.InspectorPerfTab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class is a view model managing display of performance statistics for

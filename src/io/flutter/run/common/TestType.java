@@ -9,7 +9,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import io.flutter.dart.DartSyntax;
-import io.flutter.run.test.TestConfigUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

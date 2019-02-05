@@ -10,7 +10,6 @@ import com.intellij.openapi.wm.ToolWindowId;
 import io.flutter.FlutterBundle;
 import io.flutter.run.FlutterLaunchMode;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class RunProfileFlutterApp extends RunFlutterAction {
   public static final String TEXT = FlutterBundle.message("app.profile.action.text");
   public static final String DESCRIPTION = FlutterBundle.message("app.profile.action.description");
