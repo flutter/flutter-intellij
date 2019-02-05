@@ -28,7 +28,7 @@ public class WizardUtils {
 
   public static void createNewProject(@NotNull FlutterGuiTestRule guiTest, @NotNull FlutterProjectType type,
                                       String name, String description, String domain, Boolean isKotlin, Boolean isSwift) {
-    String sdkPath = System.getProperty("flutter.home");
+    String sdkPath = "/Users/messick/src/flutter/flutter";// TODO: System.getenv("flutter.home");
     if (sdkPath == null) {
       // Fail fast if the Flutter SDK is not given.
       System.out.println("Add -Dflutter.home=/path/to/flutter/sdk to the VM options");
