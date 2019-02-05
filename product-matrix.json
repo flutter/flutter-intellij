@@ -29,6 +29,16 @@
       "dartPluginVersion": "183.4886.3",
       "sinceBuild": "183.4886.37.35",
       "untilBuild": "183.*"
+    },
+    {
+      "comments": "IntelliJ 2019.1 EAP",
+      "name": "IntelliJ 2019.1 EAP",
+      "version": "2019.1",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "191.4738.6",
+      "dartPluginVersion": "191.4899",
+      "sinceBuild": "191.0",
+      "untilBuild": "191.*"
     }
   ]
 }

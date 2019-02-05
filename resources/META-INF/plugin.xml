@@ -13,7 +13,7 @@
 
   <category>Custom Languages</category>
   
-  <idea-version since-build="182.5107.7" until-build="183.*"/>
+  <idea-version since-build="182.5107.7" until-build="191.*"/>
 
   <depends>Dart</depends>
 
