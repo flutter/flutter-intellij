@@ -196,14 +196,6 @@ public class FlutterReloadManager {
         return;
       }
 
-      if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
-        handlingSave.set(false);
-
-        showAnalysisNotification("Reload not performed", "Analysis issues found", true);
-
-        return;
-      }
-
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
