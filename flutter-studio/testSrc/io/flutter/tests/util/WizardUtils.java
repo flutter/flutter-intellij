@@ -8,6 +8,7 @@ package io.flutter.tests.util;
 import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterProjectWizardFixture;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
 
 public class WizardUtils {
@@ -28,11 +29,11 @@ public class WizardUtils {
 
   public static void createNewProject(@NotNull FlutterGuiTestRule guiTest, @NotNull FlutterProjectType type,
                                       String name, String description, String domain, Boolean isKotlin, Boolean isSwift) {
-    String sdkPath = System.getProperty("flutter.home");
+    String sdkPath =  FlutterSdkUtil.locateSdkFromPath();
     if (sdkPath == null) {
-      // Fail fast if the Flutter SDK is not given.
-      System.out.println("Add -Dflutter.home=/path/to/flutter/sdk to the VM options");
-      throw new IllegalStateException("flutter.home not set");
+      // Fail fast if the Flutter SDK is not found.
+      System.out.println("Ensure the 'flutter' tool is on your PATH. 'which flutter' is used to find the SDK");
+      throw new IllegalStateException("flutter not installed properly");
     }
     String projectType;
     switch (type) {

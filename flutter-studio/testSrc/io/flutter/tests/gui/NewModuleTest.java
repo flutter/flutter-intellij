@@ -25,18 +25,18 @@ import java.io.IOException;
 
 import static com.google.common.truth.Truth.assertThat;
 
-@RunWith(NewModuleTest.CustomRunner.class)
+@RunWith(NewModuleTest.GuiTestRemoteRunner.class)
 public class NewModuleTest {
 
   /**
-   * CustomRunner sets a custom path to the GUI tests.
+   * This custom runner sets a custom path to the GUI tests.
    * This needs to be done by the test runner because the test framework
    * initializes the path before the test class is loaded.
    */
-  public static class CustomRunner extends GuiTestSuiteRunner {
+  public static class GuiTestRemoteRunner extends com.intellij.testGuiFramework.framework.GuiTestRemoteRunner {
 
-    public CustomRunner(Class<?> suiteClass, RunnerBuilder builder) throws InitializationError, IOException {
-      super(suiteClass, builder);
+    public GuiTestRemoteRunner(Class<?> suiteClass) {
+      super(suiteClass);
       System.setProperty("gui.tests.root.dir.path", "somewhere");
     }
 
