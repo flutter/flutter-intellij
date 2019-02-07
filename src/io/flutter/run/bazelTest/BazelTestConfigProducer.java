@@ -5,9 +5,11 @@
  */
 package io.flutter.run.bazelTest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
@@ -25,16 +27,28 @@ import org.jetbrains.annotations.Nullable;
  */
 public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestConfig> {
 
-  private final BazelTestConfigUtils bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
+  private final BazelTestConfigUtils bazelTestConfigUtils;
 
   protected BazelTestConfigProducer() {
     super(FlutterBazelTestConfigurationType.getInstance());
+    bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
   }
 
-  private static boolean isBazelFlutterContext(@NotNull ConfigurationContext context) {
+  @VisibleForTesting
+  BazelTestConfigProducer(BazelTestConfigUtils bazelTestConfigUtils) {
+    super(FlutterBazelTestConfigurationType.getInstance());
+    this.bazelTestConfigUtils = bazelTestConfigUtils;
+  }
+
+  private boolean isBazelFlutterContext(@NotNull ConfigurationContext context) {
     final PsiElement location = context.getPsiLocation();
-    final Workspace workspace = Workspace.load(context.getProject());
-    return location != null && workspace != null;
+    return location != null && getWorkspace(context.getProject()) != null;
+  }
+
+  @VisibleForTesting
+  @Nullable
+  protected Workspace getWorkspace(@NotNull Project project) {
+    return Workspace.load(project);
   }
 
   /**
@@ -86,9 +100,10 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   }
 
   @Nullable
-  private VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config,
-                                            @NotNull ConfigurationContext context,
-                                            @NotNull DartFile file) {
+  @VisibleForTesting
+  VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config,
+                                    @NotNull ConfigurationContext context,
+                                    @NotNull DartFile file) {
     final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 

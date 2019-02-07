@@ -13,7 +13,6 @@ import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
-import io.flutter.bazel.Workspace;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 
@@ -25,7 +24,6 @@ public class BazelTestConfig extends LocatableConfigurationBase {
 
   BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
-    final Workspace workspace = Workspace.load(project);
     fields = new BazelTestFields(null, null, null);
   }
 
