@@ -14,6 +14,7 @@ import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import org.jetbrains.annotations.NotNull;
@@ -30,9 +31,10 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     super(FlutterBazelTestConfigurationType.getInstance());
   }
 
-  private static boolean isFlutterContext(@NotNull ConfigurationContext context) {
+  private static boolean isBazelFlutterContext(@NotNull ConfigurationContext context) {
     final PsiElement location = context.getPsiLocation();
-    return location != null;
+    final Workspace workspace = Workspace.load(context.getProject());
+    return location != null && workspace != null;
   }
 
   /**
@@ -44,7 +46,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   protected boolean setupConfigurationFromContext(@NotNull BazelTestConfig config,
                                                   @NotNull ConfigurationContext context,
                                                   @NotNull Ref<PsiElement> sourceElement) {
-    if (!isFlutterContext(context)) return false;
+    if (!isBazelFlutterContext(context)) return false;
 
     final PsiElement elt = context.getPsiLocation();
 
