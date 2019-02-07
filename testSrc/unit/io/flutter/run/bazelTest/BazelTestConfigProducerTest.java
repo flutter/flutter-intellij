@@ -176,4 +176,3 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
     }
   }
 }
-
