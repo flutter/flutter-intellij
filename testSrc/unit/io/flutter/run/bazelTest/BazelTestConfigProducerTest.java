@@ -7,7 +7,6 @@ package io.flutter.run.bazelTest;
 
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationType;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.project.Project;
@@ -36,33 +35,12 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
                                              "  test('test 1', () {});\n" +
                                              "}";
 
-  private ConfigurationContext getMainContext() {
-    // Set up fake source code.
-    final PsiElement mainIdentifier = setUpDartElement("workspace/foo/bar.dart", fileContents, "main", LeafPsiElement.class);
-    final PsiElement main =
-      PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
-    assertThat(main, not(equalTo(null)));
-
-    return new ConfigurationContext(main);
-  }
-
-  private ConfigurationContext getTest1Context() {
-    // Set up fake source code.
-    final PsiElement testIdentifier = setUpDartElement("workspace/foo/bar.dart", fileContents, "test 1", LeafPsiElement.class);
-    final PsiElement test =
-      PsiTreeUtil.findFirstParent(testIdentifier, element -> element instanceof DartStringLiteralExpression);
-    assertThat(test, not(equalTo(null)));
-    return new ConfigurationContext(test);
-  }
-
   @Test
   public void producesFileConfigurationInsideABazelWorkspace() throws Exception {
     run(() -> {
-      // Set up the configuration producers.
+      // Set up the configuration producer.
       final ConfigurationContext context = getMainContext();
-      final BazelTestConfig config =
-        new BazelTestConfig(fixture.getProject(), new TestConfigurationFactory(FlutterBazelTestConfigurationType.getInstance()),
-                            "Test config");
+      final BazelTestConfig config = getEmptyBazelTestConfig();
       final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, true);
 
       // Produce and check a run configuration.
@@ -77,12 +55,10 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   @Test
   public void producesTestNameConfigurationInsideABazelWorkspace() throws Exception {
     run(() -> {
-      // Set up the configuration producers.
+      // Set up the configuration producer.
       final ConfigurationContext context = getTest1Context();
+      final BazelTestConfig config = getEmptyBazelTestConfig();
       final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, true);
-      final BazelTestConfig config =
-        new BazelTestConfig(fixture.getProject(), new TestConfigurationFactory(FlutterBazelTestConfigurationType.getInstance()),
-                            "Test config");
 
       // Produce and check a run configuration.
       final boolean result = testConfigProducer.setupConfigurationFromContext(config, context, new Ref<>());
@@ -97,11 +73,9 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   @Test
   public void producesNoConfigurationOutsideABazelWorkspace() throws Exception {
     run(() -> {
-      // Set up the configuration producers.
+      // Set up the configuration producer.
       final ConfigurationContext context = getTest1Context();
-      final BazelTestConfig config =
-        new BazelTestConfig(fixture.getProject(), new TestConfigurationFactory(FlutterBazelTestConfigurationType.getInstance()),
-                            "Test config");
+      final BazelTestConfig config = getEmptyBazelTestConfig();
       final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(false, true);
 
       // Produce and check a run configuration.
@@ -116,11 +90,9 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   @Test
   public void producesNoConfigurationWithAnInvalidTestFile() throws Exception {
     run(() -> {
-      // Set up the configuration producers.
+      // Set up the configuration producer.
       final ConfigurationContext context = getTest1Context();
-      final BazelTestConfig config =
-        new BazelTestConfig(fixture.getProject(), new TestConfigurationFactory(FlutterBazelTestConfigurationType.getInstance()),
-                            "Test config");
+      final BazelTestConfig config = getEmptyBazelTestConfig();
       final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, false);
 
       // Produce and check a run configuration.
@@ -132,14 +104,39 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
     });
   }
 
+  private ConfigurationContext getMainContext() {
+    // Set up fake source code.
+    final PsiElement mainIdentifier = setUpDartElement(
+      "workspace/foo/bar.dart", fileContents, "main", LeafPsiElement.class);
+    final PsiElement main = PsiTreeUtil.findFirstParent(
+      mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
+    assertThat(main, not(equalTo(null)));
+
+    return new ConfigurationContext(main);
+  }
+
+  private ConfigurationContext getTest1Context() {
+    // Set up fake source code.
+    final PsiElement testIdentifier = setUpDartElement(
+      "workspace/foo/bar.dart", fileContents, "test 1", LeafPsiElement.class);
+    final PsiElement test =
+      PsiTreeUtil.findFirstParent(testIdentifier, element -> element instanceof DartStringLiteralExpression);
+    assertThat(test, not(equalTo(null)));
+    return new ConfigurationContext(test);
+  }
+
+  private BazelTestConfig getEmptyBazelTestConfig() {
+    return new BazelTestConfig(fixture.getProject(), new TestConfigurationFactory(), "Test config");
+  }
+
   private static class TestBazelConfigProducer extends BazelTestConfigProducer {
     final MockVirtualFileSystem fs;
     final Workspace fakeWorkspace;
     final boolean hasWorkspace;
-    final boolean testFileValid;
+    final boolean hasValidTestFile;
 
     TestBazelConfigProducer(boolean hasWorkspace,
-                            boolean testFileValid) {
+                            boolean hasValidTestFile) {
       super(BazelTestConfigUtils.getInstance());
       fs = new MockVirtualFileSystem();
       fs.file("/workspace/WORKSPACE", "");
@@ -148,7 +145,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
         PluginConfig.forTest("", "", "", "")
       );
       this.hasWorkspace = hasWorkspace;
-      this.testFileValid = testFileValid;
+      this.hasValidTestFile = hasValidTestFile;
     }
 
     @Nullable
@@ -160,7 +157,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
     @Nullable
     @Override
     VirtualFile verifyFlutterTestFile(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context, @NotNull DartFile file) {
-      return testFileValid ? file.getVirtualFile() : null;
+      return hasValidTestFile ? file.getVirtualFile() : null;
     }
   }
 
@@ -168,8 +165,8 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
     RunConfiguration runConfiguration;
 
 
-    protected TestConfigurationFactory(@NotNull ConfigurationType type) {
-      super(type);
+    protected TestConfigurationFactory() {
+      super(FlutterBazelTestConfigurationType.getInstance());
     }
 
     @NotNull
