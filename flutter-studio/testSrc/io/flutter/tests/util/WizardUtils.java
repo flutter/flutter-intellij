@@ -29,7 +29,7 @@ public class WizardUtils {
 
   public static void createNewProject(@NotNull FlutterGuiTestRule guiTest, @NotNull FlutterProjectType type,
                                       String name, String description, String domain, Boolean isKotlin, Boolean isSwift) {
-    String sdkPath =  FlutterSdkUtil.locateSdkFromPath();
+    String sdkPath = FlutterSdkUtil.locateSdkFromPath();
     if (sdkPath == null) {
       // Fail fast if the Flutter SDK is not found.
       System.out.println("Ensure the 'flutter' tool is on your PATH. 'which flutter' is used to find the SDK");

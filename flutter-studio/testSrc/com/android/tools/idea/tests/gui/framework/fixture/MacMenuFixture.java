@@ -5,6 +5,9 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture;
 
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.truth.Truth.assertWithMessage;
+
 import com.android.tools.idea.tests.gui.framework.GuiTests;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.google.common.base.Joiner;
@@ -12,17 +15,14 @@ import com.google.common.collect.Lists;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
+import java.awt.Container;
+import java.util.Arrays;
+import java.util.List;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
 import org.fest.swing.core.Robot;
 import org.fest.swing.timing.Wait;
 import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import java.awt.*;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.google.common.truth.Truth.assertThat;
-import static com.google.common.truth.Truth.assertWithMessage;
 
 // Use the MenuItemFixture from fest to control Mac menus.
 public class MacMenuFixture extends MenuFixture {

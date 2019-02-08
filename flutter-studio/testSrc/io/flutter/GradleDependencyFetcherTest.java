@@ -5,6 +5,11 @@
  */
 package io.flutter;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import com.intellij.mock.MockApplication;
 import com.intellij.mock.MockProject;
 import com.intellij.openapi.Disposable;
@@ -13,13 +18,10 @@ import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.android.GradleDependencyFetcher;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.util.List;
 import java.util.Map;
-
-import static org.junit.Assert.*;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class GradleDependencyFetcherTest {
 

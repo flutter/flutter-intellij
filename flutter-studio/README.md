@@ -40,35 +40,54 @@ the Android Studio dev team. Currently that is 2018.2.
 
 To run the tests create a Junit Run Configuration for class
 `io.flutter.tests.gui.NewProjectTest`. Set its working directory
-to the `bin` directory of the Android Studio sources. For
-example: `/Volumes/android/studio-master-dev/tools/idea/bin`
+to the root directory of the Android Studio sources. For
+example: `/Volumes/android/studio-master-dev/tools/idea`
 Set it to use the classpath of module `flutter-studio`.
 It needs to run with Java 8 or later.
 
 The VM options are a bit complex. Here's mine (formatted with 
 newlines in place of spaces):
 ```bash 
--ea 
--Xbootclasspath/p:../out/classes/production/boot 
--Xms512m 
--Xmx1024m 
--Didea.is.internal=true 
--Didea.platform.prefix=AndroidStudio 
--Dandroid.extra_templates.path=../../../sdk/templates 
--Dapple.laf.useScreenMenuBar=true 
--Dcom.apple.mrj.application.apple.menu.about.name=AndroidStudio 
--Dsun.awt.disablegrab=true 
--Dawt.useSystemAAFontSettings=lcd 
--Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine 
--Dmrj.version=mac 
--Dcom.apple.macos.useScreenMenuBar=true 
--Dapple.laf.useScreenMenuBar=true 
--Dflutter.home=/path/to/flutter
+-Xms512m
+-Xmx4096m
+-ea
+-XX:ReservedCodeCacheSize=240m
+-XX:+UseConcMarkSweepGC
+-XX:SoftRefLRUPolicyMSPerMB=50
+-XX:MaxJavaStackTraceDepth=10000
+-Didea.is.internal=true
+-Didea.platform.prefix=AndroidStudio
+-Dandroid.extra_templates.path=../../../sdk/templates
+-Dmrj.version=mac
+-Dcom.apple.macos.useScreenMenuBar=true
+-Dapple.laf.useScreenMenuBar=true
+-Dcom.apple.mrj.application.apple.menu.about.name=AndroidStudio
+-Dsun.awt.disablegrab=true
+-Dawt.useSystemAAFontSettings=lcd
+-Dsun.io.useCanonCaches=false
+-Djava.net.preferIPv4Stack=true
+-Didea.jre.check=true
+-Didea.debug.mode=true
+-Dflutter.home=/Users/messick/src/flutter/flutter
+-Dsun.java2d.renderer=sun.java2d.marlin.MarlinRenderingEngine
+-Dplugin.path=/Volumes/android/studio-master-dev/prebuilts/tools/common/kotlin-plugin/Kotlin
+-Didea.config.path=/tmp/idea-test/config
+-Didea.system.path=/tmp/idea-test/system
+-Didea.plugins.path=/tmp/idea-test/plugins
+-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
 ```
-Don't forget to adjust the path to your Flutter SDK in the last one.
-
 If you're not using a Mac then delete these:
  - mrj.version
  - com.apple.macos.useScreenMenuBar
  - apple.laf.useScreenMenuBar
 
+The last line causes the test to be forked in a remote JVM
+that's waiting for a debug connection. Make a 'Remote' run
+config and launch it after launching the Flutter test run
+config to get it running.
+
+Got past React native issue by defining custom JDK that includes
+Javascript and CSS lib dir contents from IntelliJ plugins.
+Also disabled JS plugins, not sure that helped.
+The custom JDK causes the Javascript plugin to be loaded
+twice, so there's a hack in the test runner to compensate.
