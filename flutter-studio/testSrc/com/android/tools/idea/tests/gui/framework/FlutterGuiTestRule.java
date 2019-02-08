@@ -263,6 +263,7 @@ public class FlutterGuiTestRule implements TestRule {
     ApplicationManager.getApplication().invokeAndWait(() -> wrangler.openProject(toSelect));
 
     Wait.seconds(5).expecting("Project to be open").until(() -> ProjectManager.getInstance().getOpenProjects().length != 0);
+    // TODO(messick) Find a way to start the IDE without the tip-of-the-day showing -- this is flaky, fails if dialog has focus.
     ideFrame().dismissTipDialog();
     // After the project is opened there will be an indexing and an analysis phase, and these can happen in any order.
     // Waiting for indexing to finish, makes sure analysis will start next or all analysis was done already.
