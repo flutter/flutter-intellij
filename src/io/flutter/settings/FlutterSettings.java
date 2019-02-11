@@ -280,7 +280,6 @@ public class FlutterSettings {
 
   /**
    * Whether to detach the debugger from an app when exiting or to completely stop it.
-   *
    * <p>
    * If false, completely stop the app. If true, only detach from the app.
    * Defaults to false.
