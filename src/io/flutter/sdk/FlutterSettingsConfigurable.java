@@ -65,6 +65,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myDisableMemoryProfilerCheckBox;
   private JCheckBox myUseNewBazelTestRunner;
+  private JCheckBox myDetachAppOnExit;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -205,6 +206,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isDetachOnExit() != myDetachAppOnExit.isSelected()) {
+      return true;
+    }
     return false;
   }
 
@@ -238,6 +242,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
     settings.setUseNewBazelTestRunner(myUseNewBazelTestRunner.isSelected());
+    settings.setDetachOnExit(myDetachAppOnExit.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -269,6 +274,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
     myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
     myUseNewBazelTestRunner.setSelected(settings.useNewBazelTestRunner(myProject));
+    myDetachAppOnExit.setSelected(settings.isDetachOnExit());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
@@ -301,8 +307,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null) {
       myVersionLabel.setText("");
-    }
-    else {
+    } else {
       myVersionLabel.setText(value);
     }
   }

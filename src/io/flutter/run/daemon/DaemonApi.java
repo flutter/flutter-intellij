@@ -79,6 +79,10 @@ public class DaemonApi {
     return send("app.stop", new AppStop(appId));
   }
 
+  CompletableFuture<Boolean> detachApp(@NotNull String appId) {
+    return send("app.detach", new AppDetach(appId));
+  }
+
   void cancelPending() {
     // We used to complete the commands with exceptions here (completeExceptionally), but that generally was surfaced
     // to the user as an exception in the tool. We now choose to not complete the command at all.
@@ -416,6 +420,20 @@ public class DaemonApi {
     @NotNull final String appId;
 
     AppStop(@NotNull String appId) {
+      this.appId = appId;
+    }
+
+    @Override
+    Boolean parseResult(JsonElement result) {
+      return GSON.fromJson(result, Boolean.class);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static class AppDetach extends Params<Boolean> {
+    @NotNull final String appId;
+
+    AppDetach(@NotNull String appId) {
       this.appId = appId;
     }
 

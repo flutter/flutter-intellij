@@ -51,7 +51,7 @@
           </component>
         </children>
       </grid>
-      <grid id="e885c" layout-manager="GridLayoutManager" row-count="6" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e885c" layout-manager="GridLayoutManager" row-count="7" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -113,6 +113,15 @@
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.organize.imports.on.save"/>
               <toolTipText value="On save, organize imports for changed Dart files."/>
+            </properties>
+          </component>
+          <component id="8258b" class="javax.swing.JCheckBox" binding="myDetachAppOnExit">
+            <constraints>
+              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text resource-bundle="io/flutter/FlutterBundle" key="settings.detach.app.on.exit"/>
+              <toolTipText value="Detaches the debugger, leaving the app running, instead of killing the app when the 'stop app' button is pressed."/>
             </properties>
           </component>
         </children>

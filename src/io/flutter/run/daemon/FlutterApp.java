@@ -512,7 +512,13 @@ public class FlutterApp {
     // Do the rest in the background to avoid freezing the Swing dispatch thread.
     AppExecutorUtil.getAppExecutorService().submit(() -> {
       // Try to shut down gracefully (need to wait for a response).
-      final Future stopDone = myDaemonApi.stopApp(appId);
+      final Future stopDone;
+      if (FlutterSettings.getInstance().isDetachOnExit()) {
+        stopDone = myDaemonApi.detachApp(appId);
+      }
+      else {
+        stopDone = myDaemonApi.stopApp(appId);
+      }
       final Stopwatch watch = Stopwatch.createStarted();
       while (watch.elapsed(TimeUnit.SECONDS) < 10 && getState() == State.TERMINATING) {
         try {
