@@ -14,10 +14,11 @@ import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
+import io.flutter.run.test.FlutterTestConfigType;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The Bazel version of the {@link io.flutter.run.test.TestConfigType} configuration.
+ * The Bazel version of the {@link FlutterTestConfigType} configuration.
  */
 public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 

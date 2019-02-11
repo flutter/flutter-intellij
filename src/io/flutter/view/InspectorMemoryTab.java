@@ -22,7 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
-  private static final Logger LOG = Logger.getInstance(FlutterView.class);
+  private static final Logger LOG = Logger.getInstance(InspectorMemoryTab.class);
   private @NotNull final FlutterApp app;
 
   InspectorMemoryTab(Disposable parentDisposable, @NotNull FlutterApp app) {

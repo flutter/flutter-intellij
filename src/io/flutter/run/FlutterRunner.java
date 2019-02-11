@@ -17,8 +17,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Runner for non-Bazel run configurations (using the Flutter SDK).
  */
-public class SdkRunner extends LaunchState.Runner<SdkRunConfig> {
-  public SdkRunner() {
+public class FlutterRunner extends LaunchState.Runner<SdkRunConfig> {
+  public FlutterRunner() {
     super(SdkRunConfig.class);
   }
 
