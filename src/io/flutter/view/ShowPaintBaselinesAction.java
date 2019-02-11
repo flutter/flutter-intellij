@@ -12,6 +12,6 @@ import org.jetbrains.annotations.NotNull;
 
 class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
   ShowPaintBaselinesAction(@NotNull FlutterApp app, boolean showIcon) {
-    super(app, showIcon ? FlutterIcons.Painting : null, ServiceExtensions.debugPaintBaselines);
+    super(app, showIcon ? FlutterIcons.Text : null, ServiceExtensions.debugPaintBaselines);
   }
 }
