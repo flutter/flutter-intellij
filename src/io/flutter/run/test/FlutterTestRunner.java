@@ -34,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Runs a Flutter test configuration in the debugger.
  */
-public class DebugTestRunner extends GenericProgramRunner {
+public class FlutterTestRunner extends GenericProgramRunner {
   @NotNull
   @Override
   public String getRunnerId() {
@@ -204,5 +204,5 @@ public class DebugTestRunner extends GenericProgramRunner {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(DebugTestRunner.class);
+  private static final Logger LOG = Logger.getInstance(FlutterTestRunner.class);
 }

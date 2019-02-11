@@ -11,7 +11,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 public class StdoutJsonParserTest {
   @Test
-  public void simple() throws Exception {
+  public void simple() {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
@@ -26,7 +26,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void appendsWithoutLineBreaks() throws Exception {
+  public void appendsWithoutLineBreaks() {
     StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\nnow\n");
     parser.appendOutput("there");
@@ -50,7 +50,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void splitJson() throws Exception {
+  public void splitJson() {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
@@ -66,7 +66,7 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void deepNestedJson() throws Exception {
+  public void deepNestedJson() {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
@@ -82,17 +82,31 @@ public class StdoutJsonParserTest {
   }
 
   @Test
-  public void unterminatedJson() throws Exception {
+  public void unterminatedJson() {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
     parser.appendOutput("[{'foo':");
     parser.appendOutput("[{'bar':'baz'}]");
-    // The JSON has not yet terminated with a \n.
+    // The JSON has not yet terminated with an \n.
 
     assertArrayEquals(
       "validating parser results",
       new String[]{"hello\n", "there\n"},
+      parser.getAvailableLines().toArray()
+    );
+  }
+
+  @Test
+  public void outputConcatenatedJson() {
+    final StdoutJsonParser parser = new StdoutJsonParser();
+    parser.appendOutput(
+      "[{\"event\":\"app.progress\",\"params\":{\"appId\":\"363879f2-74d7-46e5-bfa9-1654a8c69923\",\"id\":\"12\",\"progressId\":\"hot.restart\",\"message\":\"Performing hot restart...\"}}]Performing hot restart…");
+    assertArrayEquals(
+      "validating parser results",
+      new String[]{
+        "[{\"event\":\"app.progress\",\"params\":{\"appId\":\"363879f2-74d7-46e5-bfa9-1654a8c69923\",\"id\":\"12\",\"progressId\":\"hot.restart\",\"message\":\"Performing hot restart...\"}}]",
+        "Performing hot restart…"},
       parser.getAvailableLines().toArray()
     );
   }
