@@ -18,4 +18,5 @@ public interface WidgetPerfListener {
   void onNavigation();
 
   void addPerfListener(PerfModel listener);
+  void removePerfListener(PerfModel listener);
 }

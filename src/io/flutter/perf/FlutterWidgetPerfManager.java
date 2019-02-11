@@ -62,6 +62,8 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private boolean trackRepaintWidgets = trackRepaintWidgetsDefault;
   private boolean debugIsActive;
 
+  private final Set<PerfModel> listeners = new HashSet<>();
+
   /**
    * File editors visible to the user that might contain widgets.
    */
@@ -197,6 +199,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
       (TextEditor textEditor) -> new EditorPerfDecorations(textEditor, app),
       path -> new DocumentFileLocationMapper(path, app.getProject())
     );
+
+    for (PerfModel listener : listeners) {
+      currentStats.addPerfListener(listener);
+    }
   }
 
   public void stateChanged(FlutterApp.State newState) {
@@ -318,6 +324,21 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     if (currentStats != null) {
       currentStats.dispose();
       currentStats = null;
+      listeners.clear();
+    }
+  }
+
+  public void addPerfListener(PerfModel listener) {
+    listeners.add(listener);
+    if (currentStats != null) {
+      currentStats.addPerfListener(listener);
+    }
+  }
+
+  public void removePerfListener(PerfModel listener) {
+    listeners.remove(listener);
+    if (currentStats != null) {
+      currentStats.removePerfListener(listener);
     }
   }
 }

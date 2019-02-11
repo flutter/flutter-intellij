@@ -19,7 +19,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 
-class WidgetPerfSummaryView extends JPanel {
+class WidgetPerfSummaryView extends JPanel implements Disposable {
   private static final int REFRESH_TABLE_DELAY = 100;
   private final FlutterApp app;
   private final FlutterWidgetPerfManager perfManager;
@@ -45,14 +45,19 @@ class WidgetPerfSummaryView extends JPanel {
 
     table = new WidgetPerfTable(app, parentDisposable, metric);
 
-    perfManager.getCurrentStats().addPerfListener(table);
+    Disposer.register(parentDisposable, this);
+
+    perfManager.addPerfListener(table);
 
     add(ScrollPaneFactory.createScrollPane(table), BorderLayout.CENTER);
 
     // Perf info and tips
     myWidgetPerfTipsPanel = new WidgetPerfTipsPanel(parentDisposable, app);
+  }
 
-    Disposer.register(parentDisposable, refreshTableTimer::stop);
+  public void dispose() {
+    perfManager.removePerfListener(table);
+    refreshTableTimer.stop();
   }
 
   public WidgetPerfTipsPanel getWidgetPerfTipsPanel() {
