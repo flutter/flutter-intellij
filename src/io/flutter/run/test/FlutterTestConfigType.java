@@ -17,19 +17,19 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The type of configs that run tests using "flutter test".
  */
-public class TestConfigType extends ConfigurationTypeBase {
-  protected TestConfigType() {
+public class FlutterTestConfigType extends ConfigurationTypeBase {
+  protected FlutterTestConfigType() {
     super("FlutterTestConfigType", "Flutter Test",
           "description", FlutterIcons.Flutter_test);
     addFactory(new Factory(this));
   }
 
-  public static TestConfigType getInstance() {
-    return Extensions.findExtension(CONFIGURATION_TYPE_EP, TestConfigType.class);
+  public static FlutterTestConfigType getInstance() {
+    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterTestConfigType.class);
   }
 
   private static class Factory extends ConfigurationFactory {
-    public Factory(TestConfigType type) {
+    public Factory(FlutterTestConfigType type) {
       super(type);
     }
 
