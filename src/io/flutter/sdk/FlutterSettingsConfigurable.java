@@ -201,6 +201,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.useNewBazelTestRunner(myProject) != myUseNewBazelTestRunner.isSelected()) {
       return true;
     }
+
     return false;
   }
 
