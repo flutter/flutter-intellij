@@ -5,20 +5,22 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.fest.swing.edt.GuiActionRunner.execute;
+
 import com.android.tools.adtui.LabelWithEditButton;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import io.flutter.FlutterBundle;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JRootPane;
+import javax.swing.text.JTextComponent;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.fixture.JCheckBoxFixture;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.fest.swing.edt.GuiActionRunner.execute;
-
+@SuppressWarnings({"UnusedReturnValue", "unused"})
 public class FlutterSettingsStepFixture<W extends AbstractWizardFixture>
   extends AbstractWizardStepFixture<FlutterSettingsStepFixture, W> {
   protected FlutterSettingsStepFixture(@NotNull W wizard, @NotNull JRootPane target) {
@@ -56,7 +58,7 @@ public class FlutterSettingsStepFixture<W extends AbstractWizardFixture>
     final LabelWithEditButton locationField = robot().finder().findByType(target(), LabelWithEditButton.class);
     return execute(new GuiQuery<String>() {
       @Override
-      protected String executeInEDT() throws Throwable {
+      protected String executeInEDT() {
         String location = locationField.getText();
         assertThat(location).isNotEmpty();
         return location;

@@ -5,6 +5,19 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture;
 
+import static com.android.tools.idea.gradle.util.BuildMode.ASSEMBLE;
+import static com.android.tools.idea.gradle.util.BuildMode.SOURCE_GEN;
+import static com.android.tools.idea.gradle.util.GradleUtil.getGradleBuildFile;
+import static com.android.tools.idea.ui.GuiTestingService.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY;
+import static java.awt.event.InputEvent.CTRL_MASK;
+import static java.awt.event.InputEvent.META_MASK;
+import static org.fest.swing.edt.GuiActionRunner.execute;
+import static org.jetbrains.plugins.gradle.settings.DistributionType.LOCAL;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import com.android.ide.common.repository.GradleVersion;
 import com.android.tools.idea.gradle.dsl.api.GradleBuildModel;
 import com.android.tools.idea.gradle.plugin.AndroidPluginVersionUpdater;
@@ -26,9 +39,7 @@ import com.android.tools.idea.tests.gui.framework.fixture.avdmanager.AvdManagerD
 import com.android.tools.idea.tests.gui.framework.fixture.gradle.GradleBuildModelFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.gradle.GradleProjectEventListener;
 import com.android.tools.idea.tests.gui.framework.fixture.gradle.GradleToolWindowFixture;
-import com.android.tools.idea.projectsystem.TestProjectSystem;
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
-import com.android.tools.idea.ui.GuiTestingService;
 import com.google.common.collect.Lists;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.openapi.Disposable;
@@ -46,6 +57,21 @@ import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import com.intellij.util.ThreeState;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.KeyboardFocusManager;
+import java.awt.Point;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import javax.swing.JComponent;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
 import org.fest.swing.core.GenericTypeMatcher;
 import org.fest.swing.core.Robot;
 import org.fest.swing.edt.GuiQuery;
@@ -60,39 +86,13 @@ import org.jetbrains.annotations.Nullable;
 import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
 import org.jetbrains.plugins.gradle.settings.GradleSettings;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.android.tools.idea.gradle.util.BuildMode.ASSEMBLE;
-import static com.android.tools.idea.gradle.util.BuildMode.SOURCE_GEN;
-import static com.android.tools.idea.gradle.util.GradleUtil.getGradleBuildFile;
-import static com.android.tools.idea.ui.GuiTestingService.EXECUTE_BEFORE_PROJECT_BUILD_IN_GUI_TEST_KEY;
-import static java.awt.event.InputEvent.CTRL_MASK;
-import static java.awt.event.InputEvent.META_MASK;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.fail;
-import static org.fest.swing.edt.GuiActionRunner.execute;
-import static org.jetbrains.plugins.gradle.settings.DistributionType.LOCAL;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-@SuppressWarnings("Duplicates") // Adapted from IdeFrameFixture in uitest-framework module, due to private constructor.
+@SuppressWarnings({"Duplicates", "unused", "UnusedReturnValue", "RedundantSuppression", "SameParameterValue", "deprecation"})
+// Adapted from IdeFrameFixture in uitest-framework module, due to private constructor.
 public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFrameImpl> {
   @NotNull private final GradleProjectEventListener myGradleProjectEventListener;
   @NotNull private final Modules myModules;
   @NotNull private final IdeFrameFixture myIdeFrameFixture; // Replaces 'this' when creating component fixtures.
 
-  private TestProjectSystem myTestProjectSystem;
   private EditorFixture myEditor;
   private boolean myIsClosed;
 
@@ -109,11 +109,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
     GradleSyncState.subscribe(project, myGradleProjectEventListener);
     GradleBuildState.subscribe(project, myGradleProjectEventListener);
-  }
-
-  @NotNull
-  public static IdeaFrameFixture find(@NotNull final Robot robot) {
-    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
   }
 
   @NotNull
@@ -189,7 +184,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
 
     Wait.seconds(10)
       .expecting("Listeners to be notified of build-finished event")
-      .until(()-> resultRef.get() != null);
+      .until(() -> resultRef.get() != null);
     return resultRef.get();
   }
 
@@ -353,7 +348,7 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
    * Returns the virtual file corresponding to the given path. The path must be relative to the project root directory
    * (the top-level directory containing all source files associated with the project).
    *
-   * @param relativePath a file path relative to the project root directory
+   * @param relativePath  a file path relative to the project root directory
    * @param requireExists if true, this method asserts that the given path corresponds to an existing file
    * @return the virtual file corresponding to the given path, or null if requireExists is false and the file does not exist
    */
@@ -371,10 +366,6 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
       assertNotNull("Unable to find file with relative path '" + relativePath + "'", file);
     }
     return file;
-  }
-
-  public void setTestProjectSystem(TestProjectSystem testProjectSystem) {
-    myTestProjectSystem = testProjectSystem;
   }
 
   @NotNull
@@ -608,13 +599,13 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   }
 
   @NotNull
-  public IdeaFrameFixture updateGradleWrapperVersion(@NotNull String version) throws IOException {
+  public IdeaFrameFixture updateGradleWrapperVersion(@NotNull String version) {
     GradleWrapper.find(getProject()).updateDistributionUrlAndDisplayFailure(version);
     return this;
   }
 
   @NotNull
-  public IdeaFrameFixture updateAndroidGradlePluginVersion(@NotNull String version) throws IOException {
+  public IdeaFrameFixture updateAndroidGradlePluginVersion(@NotNull String version) {
     ApplicationManager.getApplication().invokeAndWait(
       () -> {
         AndroidPluginVersionUpdater versionUpdater = AndroidPluginVersionUpdater.getInstance(getProject());
@@ -631,17 +622,11 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
     Ref<GradleBuildModel> buildModelRef = new Ref<>();
     new ReadAction() {
       @Override
-      protected void run(@NotNull Result result) throws Throwable {
+      protected void run(@NotNull Result result) {
         buildModelRef.set(GradleBuildModel.parseBuildFile(buildFile, getProject()));
       }
     }.execute();
     return new GradleBuildModelFixture(buildModelRef.get());
-  }
-
-  private static class NoOpDisposable implements Disposable {
-    @Override
-    public void dispose() {
-    }
   }
 
   public void selectApp(@NotNull String appName) {
@@ -696,5 +681,16 @@ public class IdeaFrameFixture extends ComponentFixture<IdeaFrameFixture, IdeFram
   public IdeaFrameFixture setIdeFrameSize(@NotNull Dimension size) {
     target().setSize(size);
     return this;
+  }
+
+  @NotNull
+  public static IdeaFrameFixture find(@NotNull final Robot robot) {
+    return new IdeaFrameFixture(robot, GuiTests.waitUntilShowing(robot, Matchers.byType(IdeFrameImpl.class)));
+  }
+
+  private static class NoOpDisposable implements Disposable {
+    @Override
+    public void dispose() {
+    }
   }
 }

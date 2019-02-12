@@ -5,58 +5,37 @@
  */
 package io.flutter.tests.gui;
 
+import static com.google.common.truth.Truth.assertThat;
+
 import com.android.tools.idea.tests.gui.framework.FlutterGuiTestRule;
-import com.android.tools.idea.tests.gui.framework.GuiTestSuiteRunner;
 import com.android.tools.idea.tests.gui.framework.fixture.EditorFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterProjectStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.FlutterSettingsStepFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFlutterModuleWizardFixture;
-import com.intellij.openapi.application.PathManager;
 import io.flutter.module.FlutterProjectType;
-import io.flutter.tests.util.WizardUtils;
+import java.io.IOException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.RunnerBuilder;
-
-import java.io.IOException;
-
-import static com.google.common.truth.Truth.assertThat;
 
 @RunWith(NewModuleTest.GuiTestRemoteRunner.class)
 public class NewModuleTest {
 
-  /**
-   * This custom runner sets a custom path to the GUI tests.
-   * This needs to be done by the test runner because the test framework
-   * initializes the path before the test class is loaded.
-   */
-  public static class GuiTestRemoteRunner extends com.intellij.testGuiFramework.framework.GuiTestRemoteRunner {
-
-    public GuiTestRemoteRunner(Class<?> suiteClass) {
-      super(suiteClass);
-      System.setProperty("gui.tests.root.dir.path", "somewhere");
-    }
-
-  }
   @Rule public final FlutterGuiTestRule myGuiTest = new FlutterGuiTestRule();
 
   @Test
-  public void createNewAppModule() {
-    PathManager.getHomePath();
-    WizardUtils.createNewApplication(myGuiTest);
-    FlutterFrameFixture ideFrame = myGuiTest.ideFrame();
+  public void createNewAppModule() throws IOException {
+    FlutterFrameFixture ideFrame = myGuiTest.importSimpleApplication();
     EditorFixture editor = ideFrame.getEditor();
     editor.waitUntilErrorAnalysisFinishes();
 
     NewFlutterModuleWizardFixture wizardFixture =
       ideFrame.openFromMenu(NewFlutterModuleWizardFixture::find, "File", "New", "New Module...");
-    wizardFixture.chooseModuleType("Flutter Application").clickNext();
+    wizardFixture.chooseModuleType("Flutter Package").clickNext();
     NewFlutterModuleWizardFixture wizard = ideFrame.findNewModuleWizard();
 
-    FlutterProjectStepFixture projectStep = wizard.getFlutterProjectStep(FlutterProjectType.APP);
+    FlutterProjectStepFixture projectStep = wizard.getFlutterProjectStep(FlutterProjectType.PACKAGE);
     assertThat(projectStep.isConfiguredForModules()).isTrue();
 
     // Check error messages.
@@ -73,22 +52,32 @@ public class NewModuleTest {
     assertThat(projectStep.getErrorMessage()).contains("less than");
 
     projectStep.enterProjectName("module");
-    String path = projectStep.getSdkPath();
-    projectStep.enterSdkPath("");
-    // This does not work. The message comes back as " ". It does work in manual testing.
-    //assertThat(projectStep.getErrorMessage()).endsWith(("not given."));
-    projectStep.enterSdkPath("x");
-    assertThat(projectStep.getErrorMessage()).endsWith(("not exist."));
-    projectStep.enterSdkPath("/tmp");
-    assertThat(projectStep.getErrorMessage()).endsWith(("location."));
-    projectStep.enterSdkPath(path);
-    wizard.clickNext();
-
-    FlutterSettingsStepFixture settingsStep = wizard.getFlutterSettingsStep();
-    settingsStep.enterCompanyDomain("flutter.io");
+    // TODO(messick) Fix SDK path tests
+    //String path = projectStep.getSdkPath();
+    //projectStep.enterSdkPath("");
+    //// This does not work. The message comes back as " ". It does work in manual testing.
+    ////assertThat(projectStep.getErrorMessage()).endsWith(("not given."));
+    //projectStep.enterSdkPath("x");
+    //assertThat(projectStep.getErrorMessage()).endsWith(("not exist."));
+    //projectStep.enterSdkPath("/tmp");
+    //assertThat(projectStep.getErrorMessage()).endsWith(("location."));
+    //projectStep.enterSdkPath(path);
 
     wizard.clickFinish();
     myGuiTest.waitForBackgroundTasks();
     myGuiTest.ideFrame().waitForProjectSyncToFinish();
+  }
+
+  /**
+   * This custom runner sets a custom path to the GUI tests.
+   * This needs to be done by the test runner because the test framework
+   * initializes the path before the test class is loaded.
+   */
+  public static class GuiTestRemoteRunner extends com.intellij.testGuiFramework.framework.GuiTestRemoteRunner {
+
+    public GuiTestRemoteRunner(Class<?> suiteClass) {
+      super(suiteClass);
+      System.setProperty("gui.tests.root.dir.path", "somewhere");
+    }
   }
 }

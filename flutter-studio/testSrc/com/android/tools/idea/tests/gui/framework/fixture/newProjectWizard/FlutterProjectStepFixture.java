@@ -5,26 +5,28 @@
  */
 package com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.fest.swing.edt.GuiActionRunner.execute;
+
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.wizard.AbstractWizardStepFixture;
 import com.intellij.openapi.ui.TextFieldWithBrowseButton;
 import com.intellij.ui.components.JBLabel;
 import io.flutter.project.FlutterProjectStep;
+import java.awt.Component;
+import java.io.File;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JRootPane;
+import javax.swing.text.JTextComponent;
 import org.fest.swing.edt.GuiQuery;
 import org.fest.swing.exception.ComponentLookupException;
 import org.fest.swing.fixture.JComboBoxFixture;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
-import java.io.File;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.fest.swing.edt.GuiActionRunner.execute;
-
 // TODO(messick): Browse button for SDK; "Install SDK" button
+@SuppressWarnings({"UnusedReturnValue", "unused"})
 public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends AbstractWizardStepFixture<FlutterProjectStepFixture, W> {
   protected FlutterProjectStepFixture(@NotNull W wizard, @NotNull JRootPane target) {
     super(FlutterProjectStepFixture.class, wizard, target);
@@ -84,7 +86,7 @@ public class FlutterProjectStepFixture<W extends AbstractWizardFixture> extends 
     final TextFieldWithBrowseButton locationField = getLocationField();
     return execute(new GuiQuery<File>() {
       @Override
-      protected File executeInEDT() throws Throwable {
+      protected File executeInEDT() {
         String location = locationField.getText();
         assertThat(location).isNotEmpty();
         return new File(location);
