@@ -34,7 +34,6 @@ public class FlutterSettings {
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
   private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
-  private static final String detachOnExitKey = "io.flutter.detachOnExit";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -95,9 +94,6 @@ public class FlutterSettings {
     if (shouldUseNewBazelTestRunner()) {
       analytics.sendEvent("settings", afterLastPeriod(newBazelTestRunnerKey));
     }
-    if (isDetachOnExit()) {
-      analytics.sendEvent("settings", afterLastPeriod(detachOnExitKey));
-    }
   }
 
   public void addListener(Listener listener) {
@@ -127,7 +123,8 @@ public class FlutterSettings {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
       return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
-    } else {
+    }
+    else {
       return isLegacyTrackWidgetCreation();
     }
   }
@@ -250,7 +247,7 @@ public class FlutterSettings {
 
   /**
    * Whether to use the new bazel-test script instead of the old bazel-run script to run tests.
-   * <p>
+   *
    * Defaults to false.
    */
   public boolean useNewBazelTestRunner(Project project) {
@@ -276,20 +273,6 @@ public class FlutterSettings {
   public void setUseNewBazelTestRunner(boolean value) {
     getPropertiesComponent().setValue(newBazelTestRunnerKey, value, false);
     fireEvent();
-  }
-
-  /**
-   * Whether to detach the debugger from an app when exiting or to completely stop it.
-   * <p>
-   * If false, completely stop the app. If true, only detach from the app.
-   * Defaults to false.
-   */
-  public boolean isDetachOnExit() {
-    return getPropertiesComponent().getBoolean(detachOnExitKey, false);
-  }
-
-  public void setDetachOnExit(boolean value) {
-    getPropertiesComponent().setValue(detachOnExitKey, value, false);
   }
 
   protected void fireEvent() {
