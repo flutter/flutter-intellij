@@ -20,7 +20,6 @@ import com.intellij.execution.Executor;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
-import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtilCore;
@@ -30,11 +29,9 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.refactoring.listeners.RefactoringElementListener;
-import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
-import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterApp;
@@ -102,15 +99,7 @@ public class SdkAttachConfig extends SdkRunConfig {
     };
 
     LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
-
-    // Set up additional console filters.
-    TextConsoleBuilder builder = launcher.getConsoleBuilder();
-    builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
-
-    if (module != null) {
-      builder.addFilter(new FlutterConsoleFilter(module));
-    }
-
+    addConsoleFilters(launcher, env, mainFile, module);
     return launcher;
   }
 

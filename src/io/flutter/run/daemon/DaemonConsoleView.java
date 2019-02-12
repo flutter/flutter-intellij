@@ -9,7 +9,6 @@ import com.intellij.execution.configurations.CommandLineState;
 import com.intellij.execution.configurations.SearchScopeProvider;
 import com.intellij.execution.filters.TextConsoleBuilder;
 import com.intellij.execution.filters.TextConsoleBuilderImpl;
-import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.impl.ConsoleViewImpl;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.ui.ConsoleView;
@@ -47,7 +46,6 @@ public class DaemonConsoleView extends ConsoleViewImpl {
 
     // Set up basic console filters. (More may be added later.)
     builder.addFilter(new DartRelativePathsConsoleFilter(env.getProject(), workDir.getPath()));
-    builder.addFilter(new UrlFilter());
     launcher.setConsoleBuilder(builder);
   }
 

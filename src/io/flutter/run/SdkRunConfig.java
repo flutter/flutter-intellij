@@ -5,18 +5,28 @@
  */
 package io.flutter.run;
 
+import static java.nio.file.FileVisitResult.CONTINUE;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonPrimitive;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.Executor;
-import com.intellij.execution.configurations.*;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.configurations.LocatableConfigurationBase;
+import com.intellij.execution.configurations.RefactoringListenerProvider;
+import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.RuntimeConfigurationError;
+import com.intellij.execution.configurations.RuntimeConfigurationException;
 import com.intellij.execution.filters.TextConsoleBuilder;
+import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.runners.ExecutionEnvironment;
 import com.intellij.execution.runners.RunConfigurationWithSuppressedDefaultRunAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.options.SettingsEditor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
@@ -40,16 +50,18 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSdkManager;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.FileSystems;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-
-import static java.nio.file.FileVisitResult.CONTINUE;
 
 /**
  * Run configuration used for launching a Flutter app using the Flutter SDK.
@@ -139,7 +151,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final MainFile mainFile = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
-    final Module module = ModuleUtil.findModuleForFile(mainFile.getFile(), env.getProject());
+    final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
     final LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
 
@@ -212,7 +224,14 @@ public class SdkRunConfig extends LocatableConfigurationBase
     };
 
     final LaunchState launcher = new LaunchState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
+    addConsoleFilters(launcher, env, mainFile, module);
+    return launcher;
+  }
 
+  protected void addConsoleFilters(@NotNull LaunchState launcher,
+                                   @NotNull ExecutionEnvironment env,
+                                   @NotNull MainFile mainFile,
+                                   @Nullable Module module) {
     // Set up additional console filters.
     final TextConsoleBuilder builder = launcher.getConsoleBuilder();
     builder.addFilter(new DartConsoleFilter(env.getProject(), mainFile.getFile()));
@@ -220,8 +239,7 @@ public class SdkRunConfig extends LocatableConfigurationBase
     if (module != null) {
       builder.addFilter(new FlutterConsoleFilter(module));
     }
-
-    return launcher;
+    builder.addFilter(new UrlFilter());
   }
 
   @NotNull
@@ -233,12 +251,14 @@ public class SdkRunConfig extends LocatableConfigurationBase
     return fields.createFlutterSdkRunCommand(project, mode, FlutterLaunchMode.fromEnv(env), device);
   }
 
+  @Override
   @Nullable
   public String suggestedName() {
     final String filePath = fields.getFilePath();
     return filePath == null ? null : PathUtil.getFileName(filePath);
   }
 
+  @Override
   public SdkRunConfig clone() {
     final SdkRunConfig clone = (SdkRunConfig)super.clone();
     clone.fields = fields.copy();
