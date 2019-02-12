@@ -111,11 +111,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final Workspace workspace = Workspace.load(myProject);
     if (workspace == null || workspace.getTestScript() == null) {
       myUseNewBazelTestRunner.setEnabled(false);
-      myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner") + " "
-                                      + FlutterBundle.message("settings.enable.bazel.test.runner.mustSyncClientWarning"));
-    }
-    else {
-      myUseNewBazelTestRunner.setText(FlutterBundle.message("settings.enable.bazel.test.runner"));
+    } else {
       myUseNewBazelTestRunner.setEnabled(true);
     }
   }
@@ -301,8 +297,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null) {
       myVersionLabel.setText("");
-    }
-    else {
+    } else {
       myVersionLabel.setText(value);
     }
   }
