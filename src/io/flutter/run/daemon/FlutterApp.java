@@ -433,8 +433,7 @@ public class FlutterApp {
       return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
                                                             myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
       );
-    }
-    else {
+    } else {
       return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
     }
   }
@@ -525,10 +524,9 @@ public class FlutterApp {
     AppExecutorUtil.getAppExecutorService().submit(() -> {
       // Try to shut down gracefully (need to wait for a response).
       final Future stopDone;
-      if ("attach".equals(myLaunchMode)) {
+      if (DaemonEvent.AppStarting.LAUNCH_MODE_ATTACH.equals(myLaunchMode)) {
         stopDone = myDaemonApi.detachApp(appId);
-      }
-      else {
+      } else {
         stopDone = myDaemonApi.stopApp(appId);
       }
       final Stopwatch watch = Stopwatch.createStarted();

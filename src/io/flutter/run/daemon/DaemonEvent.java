@@ -176,6 +176,9 @@ abstract class DaemonEvent {
 
   @SuppressWarnings("unused")
   static class AppStarting extends DaemonEvent {
+    public static final String LAUNCH_MODE_RUN = "run";
+    public static final String LAUNCH_MODE_ATTACH = "attach";
+
     // "event":"app.start"
     String appId;
     String deviceId;
@@ -258,8 +261,7 @@ abstract class DaemonEvent {
     void accept(Listener listener) {
       if (isStarting()) {
         listener.onAppProgressStarting(this);
-      }
-      else {
+      } else {
         listener.onAppProgressFinished(this);
       }
     }
