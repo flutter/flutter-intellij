@@ -79,6 +79,14 @@ public class FlutterApp {
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
 
+  /**
+   * The command with which the app was launched.
+   * <p>
+   * Should be "run" if the app was `flutter run` and "attach" if the app was `flutter attach`.
+   */
+  private @Nullable String myLaunchMode;
+
+
   private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
@@ -305,6 +313,10 @@ public class FlutterApp {
     myBaseUri = uri;
   }
 
+  void setLaunchMode(@NotNull String launchMode) {
+    myLaunchMode = launchMode;
+  }
+
   /**
    * Perform a hot restart of the the app.
    */
@@ -421,8 +433,7 @@ public class FlutterApp {
       return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
                                                             myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
       );
-    }
-    else {
+    } else {
       return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
     }
   }
@@ -512,7 +523,12 @@ public class FlutterApp {
     // Do the rest in the background to avoid freezing the Swing dispatch thread.
     AppExecutorUtil.getAppExecutorService().submit(() -> {
       // Try to shut down gracefully (need to wait for a response).
-      final Future stopDone = myDaemonApi.stopApp(appId);
+      final Future stopDone;
+      if (DaemonEvent.AppStarting.LAUNCH_MODE_ATTACH.equals(myLaunchMode)) {
+        stopDone = myDaemonApi.detachApp(appId);
+      } else {
+        stopDone = myDaemonApi.stopApp(appId);
+      }
       final Stopwatch watch = Stopwatch.createStarted();
       while (watch.elapsed(TimeUnit.SECONDS) < 10 && getState() == State.TERMINATING) {
         try {
@@ -707,6 +723,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   @Override
   public void onAppStarting(DaemonEvent.AppStarting event) {
     app.setAppId(event.appId);
+    app.setLaunchMode(event.launchMode);
   }
 
   @Override
