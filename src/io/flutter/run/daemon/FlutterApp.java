@@ -525,7 +525,7 @@ public class FlutterApp {
     AppExecutorUtil.getAppExecutorService().submit(() -> {
       // Try to shut down gracefully (need to wait for a response).
       final Future stopDone;
-      if (FlutterSettings.getInstance().isDetachOnExit()) {
+      if ("attach".equals(myLaunchMode)) {
         stopDone = myDaemonApi.detachApp(appId);
       }
       else {
