@@ -180,6 +180,7 @@ abstract class DaemonEvent {
     String appId;
     String deviceId;
     String directory;
+    String launchMode;
     boolean supportsRestart;
 
     void accept(Listener listener) {

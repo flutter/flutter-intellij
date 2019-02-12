@@ -79,6 +79,14 @@ public class FlutterApp {
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
 
+  /**
+   * The command with which the app was launched.
+   * <p>
+   * Should be "run" if the app was `flutter run` and "attach" if the app was `flutter attach`.
+   */
+  private @Nullable String myLaunchMode;
+
+
   private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
@@ -303,6 +311,10 @@ public class FlutterApp {
 
   void setBaseUri(@NotNull String uri) {
     myBaseUri = uri;
+  }
+
+  void setLaunchMode(@NotNull String launchMode) {
+    myLaunchMode = launchMode;
   }
 
   /**
@@ -713,6 +725,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   @Override
   public void onAppStarting(DaemonEvent.AppStarting event) {
     app.setAppId(event.appId);
+    app.setLaunchMode(event.launchMode);
   }
 
   @Override
