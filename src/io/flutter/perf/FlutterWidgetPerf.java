@@ -63,7 +63,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   private boolean requestInProgress = false;
   private long lastRequestTime;
 
-  private final List<PerfModel> perfListeners = new ArrayList<>();
+  private final Set<PerfModel> perfListeners = new HashSet<>();
 
   private final Map<TextEditor, EditorPerfModel> editorDecorations = new HashMap<>();
   private final TIntObjectHashMap<Location> knownLocationIds = new TIntObjectHashMap<>();
@@ -244,6 +244,11 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   @Override
   public void addPerfListener(PerfModel listener) {
     perfListeners.add(listener);
+  }
+
+  @Override
+  public void removePerfListener(PerfModel listener) {
+    perfListeners.remove(listener);
   }
 
   private StatsForReportKind getStatsForKind(PerfReportKind kind) {
