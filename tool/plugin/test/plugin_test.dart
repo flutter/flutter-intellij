@@ -38,6 +38,7 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
+              'android-studio',
               'ideaIC',
             ]));
       });
@@ -54,6 +55,7 @@ void main() {
               'android-studio',
               'android-studio',
               'android-studio',
+              'android-studio',
               'ideaIC',
             ]));
       });
@@ -67,6 +69,7 @@ void main() {
         expect(
             specs.map((spec) => spec.ideaProduct).toList(),
             orderedEquals([
+              'android-studio',
               'android-studio',
               'android-studio',
               'android-studio',
@@ -147,7 +150,8 @@ void main() {
       expect(
           cmd.paths.map((p) => p.substring(p.indexOf('releases'))),
           orderedEquals([
-            'releases/release_19/3.3/flutter-intellij.zip',
+            'releases/release_19/2018.2.5/flutter-intellij.zip',
+            'releases/release_19/3.3.1/flutter-intellij.zip',
             'releases/release_19/3.4/flutter-intellij.zip',
             'releases/release_19/2018.3/flutter-intellij.zip',
             'releases/release_19/2019.1/flutter-intellij.zip',
