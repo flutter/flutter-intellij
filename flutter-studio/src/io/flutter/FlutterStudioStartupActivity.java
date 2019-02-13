@@ -5,7 +5,6 @@
  */
 package io.flutter;
 
-import com.android.tools.idea.flags.StudioFlags;
 import com.intellij.openapi.actionSystem.ActionManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.project.Project;
@@ -21,7 +20,6 @@ import org.jetbrains.annotations.NotNull;
 public class FlutterStudioStartupActivity implements StartupActivity {
   @Override
   public void runActivity(@NotNull Project project) {
-    StudioFlags.SELECT_DEVICE_SNAPSHOT_COMBO_BOX_VISIBLE.override(Boolean.TRUE);
     if (!FlutterModuleUtils.hasFlutterModule(project)) {
       return;
     }
@@ -38,7 +36,6 @@ public class FlutterStudioStartupActivity implements StartupActivity {
       // TODO(messick): Remove the flag once this sync mechanism is stable.
       AndroidModuleLibraryManager.startWatching(project);
     }
-    StudioFlags.SELECT_DEVICE_SNAPSHOT_COMBO_BOX_VISIBLE.override(Boolean.FALSE);
   }
 
   public static void replaceAction(@NotNull String actionId, @NotNull AnAction newAction) {
