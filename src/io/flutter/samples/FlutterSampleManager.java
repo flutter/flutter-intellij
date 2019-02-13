@@ -39,6 +39,8 @@ import java.util.List;
 
 public class FlutterSampleManager {
 
+  private static final String SNIPPETS_REMOTE_INDEX_URL = "https://docs.flutter.io/snippets/index.json";
+
   private static final Logger LOG = Logger.getInstance(FlutterSampleManager.class);
 
   private static List<FlutterSample> SAMPLES;
@@ -51,27 +53,38 @@ public class FlutterSampleManager {
     return SAMPLES;
   }
 
-  private static List<FlutterSample> loadSamples() {
-    final List<FlutterSample> samples = new ArrayList<>();
-    try {
-      // TODO(pq): replace w/ index read from repo (https://github.com/flutter/flutter/pull/25515).
-      //https://docs.flutter.io/snippets/index.json
+  private static JsonArray readSampleIndex(final URL sampleUrl) throws IOException, URISyntaxException {
+    final String contents = IOUtils.toString(sampleUrl.toURI(), "UTF-8");
+    return new JsonParser().parse(contents).getAsJsonArray();
+  }
 
-      final URL url = FlutterSampleManager.class.getResource("index.json");
-      final String contents = IOUtils.toString(url.toURI(), "UTF-8");
-      final JsonArray jsonArray = new JsonParser().parse(contents).getAsJsonArray();
-      for (JsonElement element : jsonArray) {
-        final JsonObject sample = element.getAsJsonObject();
-        samples.add(new FlutterSample(sample.getAsJsonPrimitive("element").getAsString(),
-                                      sample.getAsJsonPrimitive("library").getAsString(),
-                                      sample.getAsJsonPrimitive("id").getAsString(),
-                                      sample.getAsJsonPrimitive("file").getAsString(),
-                                      sample.getAsJsonPrimitive("sourcePath").getAsString(),
-                                      sample.getAsJsonPrimitive("description").getAsString()));
+  private static JsonArray readSampleIndex() {
+    // Try fetching snippets index remotely, and fall back to local cache.
+    try {
+      return readSampleIndex(new URL(SNIPPETS_REMOTE_INDEX_URL));
+    }
+    catch (URISyntaxException | IOException ignored) {
+      try {
+        return readSampleIndex(FlutterSampleManager.class.getResource("index.json"));
+      }
+      catch (URISyntaxException | IOException e) {
+        FlutterUtils.warn(LOG, e);
       }
     }
-    catch (URISyntaxException | IOException e) {
-      FlutterUtils.warn(LOG, e);
+    return new JsonArray();
+  }
+
+  private static List<FlutterSample> loadSamples() {
+    final List<FlutterSample> samples = new ArrayList<>();
+    final JsonArray jsonArray = readSampleIndex();
+    for (JsonElement element : jsonArray) {
+      final JsonObject sample = element.getAsJsonObject();
+      samples.add(new FlutterSample(sample.getAsJsonPrimitive("element").getAsString(),
+                                    sample.getAsJsonPrimitive("library").getAsString(),
+                                    sample.getAsJsonPrimitive("id").getAsString(),
+                                    sample.getAsJsonPrimitive("file").getAsString(),
+                                    sample.getAsJsonPrimitive("sourcePath").getAsString(),
+                                    sample.getAsJsonPrimitive("description").getAsString()));
     }
 
     // Sort by display label.
@@ -96,7 +109,7 @@ public class FlutterSampleManager {
 
     final VirtualFile baseDir = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(dir);
     if (baseDir == null) {
-      return "unable to find project root (" + dir.getPath() +") on refresh";
+      return "unable to find project root (" + dir.getPath() + ") on refresh";
     }
 
     final OutputListener outputListener = new OutputListener() {
