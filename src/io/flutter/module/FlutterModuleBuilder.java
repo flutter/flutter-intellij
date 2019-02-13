@@ -12,6 +12,7 @@ import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.util.projectWizard.SettingsStep;
 import com.intellij.ide.util.projectWizard.WizardContext;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.WriteAction;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.*;
@@ -296,6 +297,15 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       progress.getProgressIndicator().setIndeterminate(true);
       result.set(sdk.createFiles(baseDir, null, processListener, additionalSettings));
     }, "Creating Flutter Project", false, project);
+
+    // We clobber sample project metadata when generating sample content so we need to re-set SDK configs.
+    // See: https://github.com/flutter/flutter-intellij/issues/3187
+    if (additionalSettings != null && additionalSettings.getSampleContent() != null) {
+      ApplicationManager.getApplication().runWriteAction(() -> {
+        FlutterSdkUtil.setFlutterSdkPath(project, sdk.getHomePath());
+        FlutterSdkUtil.enableDartSdk(project);
+      });
+    }
 
     return result.get();
   }
