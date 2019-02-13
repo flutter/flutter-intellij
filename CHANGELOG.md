@@ -1,3 +1,21 @@
+## 33.0
+- update build for Android Studio 3.3.1
+- reorder console filters so links work
+- more intelligently enable support for detaching from Flutter apps on exit
+- change the icon used for paint baselines
+- prevent bazel test run configurations from generating in a non-bazel workspace
+- support 2019.1 eap
+- mention 'Dart' in the plugin description
+- correct the bazel output for debugging bazel tests
+- simplify the bazel parameters we pass to Bazel Run configurations
+- pin flutter error events in the log
+- propagate node selections to inspector
+- link support for log data entries
+- fix category cell rendering
+- add sample creation banner
+- add sample apps to Android Studio New Project Wizard
+- update log entry data badge
+
 ## 32.0
 - address an NPE in FlutterWidgetPerfManager.java
 - added overlay renderered for GC, snapshot and memory reset events
