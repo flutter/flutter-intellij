@@ -21,23 +21,13 @@
       "untilBuild": "182.*"
     },
     {
-      "comments": "IntelliJ 2018.3, AS 3.4 beta",
-      "name": "Android Studio",
-      "version": "3.4",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "183.5304277",
-      "dartPluginVersion": "183.5901",
-      "sinceBuild": "183.0",
-      "untilBuild": "183.5429.30.34.*"
-    },
-    {
-      "comments": "AS 3.5 canary",
+      "comments": "IntelliJ 2018.3, AS 3.4 beta, AS 3.5 canary",
       "name": "IntelliJ",
       "version": "2018.3",
       "ideaProduct": "android-studio",
       "ideaVersion": "183.5290690",
       "dartPluginVersion": "183.5901",
-      "sinceBuild": "183.5429.30.35",
+      "sinceBuild": "183.5429",
       "untilBuild": "183.*"
     },
     {
