@@ -27,7 +27,7 @@ import java.util.List;
 
 public class FlutterSampleActionsPanel extends JPanel {
 
-  protected final JLabel myLabel = new JLabel();
+  protected final JBLabel myLabel = new JBLabel();
   protected final JBLabel goLink;
 
   @NotNull private final List<FlutterSample> samples;
@@ -51,16 +51,8 @@ public class FlutterSampleActionsPanel extends JPanel {
     myLabel.setText("Open sample project:");
     myLabel.setBorder(JBUI.Borders.emptyRight(5));
 
-    goLink = new JBLabel("<html><a href=\"\">Go...</a></html>");
-    goLink.setBorder(JBUI.Borders.emptyLeft(8));
-    goLink.setCursor(new Cursor(Cursor.HAND_CURSOR));
-    goLink.addMouseListener(new MouseAdapter() {
-      @Override
-      public void mouseClicked(MouseEvent e) {
-        doCreate();
-      }
-    });
-
+    goLink = createLinkLabel("Go...", this::doCreate);
+    goLink.setBorder(JBUI.Borders.empty(1, 8, 0, 0));
 
     sampleSelector = setupSelectorComponent();
 
@@ -80,6 +72,20 @@ public class FlutterSampleActionsPanel extends JPanel {
     setupPanel();
   }
 
+  private static JBLabel createLinkLabel(@NotNull String text, @NotNull Runnable onClick) {
+    // Standard hyperlinks were rendering oddly on 2018.3, so we create our own.
+    // See: https://github.com/flutter/flutter-intellij/issues/3197
+    final JBLabel label  = new JBLabel(text);
+    label.setForeground(JBColor.blue);
+    label.setCursor(new Cursor(Cursor.HAND_CURSOR));
+    label.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        onClick.run();
+      }
+    });
+    return label;
+  }
 
   JComponent setupSelectorComponent() {
     if (samples.size() == 1) {
