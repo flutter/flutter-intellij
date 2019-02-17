@@ -535,16 +535,16 @@ class BuildCommand extends ProductCommand {
       // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
       var files = <File, String>{};
       var processedFile, source;
-      if ((spec.version == '2018.2.5') || (spec.version == '3.3.1')) {
+      if ((spec.version == '2018.2.5') || spec.version == '3.3.1') {
         log('spec.version: ${spec.version}');
-        if (spec.version == '2018.2.5' || spec.version == "3.3.1") {
-          processedFile = File(
-              'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
-          source = processedFile.readAsStringSync();
-          files[processedFile] = source;
-          source = source.replaceAll('List<? extends File>', 'List<File>');
-          processedFile.writeAsStringSync(source);
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('List<? extends File>', 'List<File>');
+        processedFile.writeAsStringSync(source);
 
+        if (spec.version == '2018.2.5') {
           processedFile = File(
               'flutter-studio/src/io/flutter/profiler/FlutterStudioProfilers.java');
           source = processedFile.readAsStringSync();
@@ -552,9 +552,7 @@ class BuildCommand extends ProductCommand {
           source = source.replaceAll('//changed(ProfilerAspect.DEVICES);',
               'changed(ProfilerAspect.DEVICES);');
           processedFile.writeAsStringSync(source);
-        }
 
-        if (spec.version == "2018.2.5") {
           processedFile = File(
               'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
           source = processedFile.readAsStringSync();
