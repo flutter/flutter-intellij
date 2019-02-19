@@ -6,5 +6,5 @@
 package io.flutter.sdk;
 
 public enum FlutterCommandStartResultStatus {
-  OK, ANOTHER_RUNNING, EXCEPTION
+  OK, EXCEPTION
 }

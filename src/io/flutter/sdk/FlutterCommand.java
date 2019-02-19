@@ -25,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -40,7 +39,7 @@ public class FlutterCommand {
   @NotNull
   private final FlutterSdk sdk;
 
-  @NotNull
+  @Nullable
   private final VirtualFile workDir;
 
   @NotNull
@@ -52,7 +51,7 @@ public class FlutterCommand {
   /**
    * @see FlutterSdk for methods to create specific commands.
    */
-  FlutterCommand(@NotNull FlutterSdk sdk, @NotNull VirtualFile workDir, @NotNull Type type, String... args) {
+  FlutterCommand(@NotNull FlutterSdk sdk, @Nullable VirtualFile workDir, @NotNull Type type, String... args) {
     this.sdk = sdk;
     this.workDir = workDir;
     this.type = type;
@@ -159,13 +158,6 @@ public class FlutterCommand {
   }
 
   /**
-   * The currently running command.
-   * <p>
-   * We only allow one command to run at a time across all IDEA projects.
-   */
-  private static final AtomicReference<FlutterCommand> inProgress = new AtomicReference<>(null);
-
-  /**
    * Starts a process that runs a flutter command, unless one is already running.
    * <p>
    * Returns the handler if successfully started.
@@ -198,11 +190,6 @@ public class FlutterCommand {
    */
   @NotNull
   public FlutterCommandStartResult startProcess(@Nullable Project project) {
-    // TODO(devoncarew): Many flutter commands can legitimately be run in parallel.
-    if (!inProgress.compareAndSet(null, this)) {
-      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING);
-    }
-
     if (isPubRelatedCommand()) {
       DartPlugin.setPubActionInProgress(true);
     }
@@ -215,7 +202,6 @@ public class FlutterCommand {
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
-          inProgress.compareAndSet(FlutterCommand.this, null);
           if (isPubRelatedCommand()) {
             DartPlugin.setPubActionInProgress(false);
           }
@@ -225,7 +211,6 @@ public class FlutterCommand {
       return new FlutterCommandStartResult(handler);
     }
     catch (ExecutionException e) {
-      inProgress.compareAndSet(this, null);
       if (isPubRelatedCommand()) {
         DartPlugin.setPubActionInProgress(false);
       }
@@ -269,7 +254,9 @@ public class FlutterCommand {
     }
 
     line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
-    line.setWorkDirectory(workDir.getPath());
+    if (workDir != null) {
+      line.setWorkDirectory(workDir.getPath());
+    }
     if (!isDoctorCommand()) {
       line.addParameter("--no-color");
     }
@@ -292,6 +279,7 @@ public class FlutterCommand {
     MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    PACKAGES_PUB("Flutter packages pub", "packages", "pub"),
     RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),
