@@ -13,8 +13,6 @@ import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
-import com.intellij.openapi.actionSystem.impl.ActionButton;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
@@ -48,6 +46,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
@@ -57,7 +56,6 @@ import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
-import io.flutter.utils.UIUtils;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
@@ -66,6 +64,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -594,6 +594,42 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 }
 
+class FlutterViewDevToolsAction extends FlutterViewAction {
+  FlutterViewDevToolsAction(@NotNull FlutterApp app) {
+    super(app, "Open DevTools", "Open Dart DevTools", FlutterIcons.Dart_16);
+  }
+
+  @Override
+  public void perform(AnActionEvent event) {
+    if (app.isSessionActive()) {
+      final String urlString = app.getConnector().getBrowserUrl();
+      if (urlString == null) {
+        return;
+      }
+
+      final URL url;
+      try {
+        url = new URL(urlString);
+      }
+      catch (MalformedURLException e) {
+        return;
+      }
+
+      final int port = url.getPort();
+
+      final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
+
+      if (devToolsManager.hasInstalledDevTools()) {
+        devToolsManager.openBrowserAndConnect(port);
+      }
+      else {
+        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(port));
+      }
+    }
+  }
+}
+
 class OpenObservatoryAction extends FlutterViewAction {
   OpenObservatoryAction(@NotNull FlutterApp app) {
     super(app, FlutterBundle.message("open.observatory.action.text"), FlutterBundle.message("open.observatory.action.description"),
@@ -635,7 +671,7 @@ class RepaintRainbowAction extends FlutterViewToggleableAction {
 
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
-    super(app, AllIcons.General.LocateHover, ServiceExtensions.toggleSelectWidgetMode);
+    super(app, AllIcons.General.Locate, ServiceExtensions.toggleSelectWidgetMode);
   }
 
   @Override
@@ -643,8 +679,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
     super.perform(event);
 
     if (app.isSessionActive()) {
-      // If toggling inspect mode on, bring all devices to the foreground.
-      // TODO(jacobr): consider only bringing the device for the currently open inspector TAB.
+      // If toggling inspect mode on, bring the app's device to the foreground.
       if (isSelected()) {
         final FlutterDevice device = app.device();
         if (device != null) {
@@ -747,59 +782,11 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
     group.addSeparator();
+    group.add(view.registerAction(new FlutterViewDevToolsAction(app)));
+    group.addSeparator();
     group.add(view.registerAction(new OpenTimelineViewAction(app)));
     group.add(view.registerAction(new OpenObservatoryAction(app)));
 
-    return group;
-  }
-}
-
-class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
-  private final @NotNull FlutterApp app;
-  private final DefaultActionGroup myActionGroup;
-
-  public ObservatoryActionGroup(@NotNull FlutterView view, @NotNull FlutterApp app) {
-    super("Observatory actions", null, FlutterIcons.OpenObservatoryGroup);
-
-    this.app = app;
-
-    myActionGroup = createPopupActionGroup(view, app);
-  }
-
-  @Override
-  public final void update(AnActionEvent e) {
-    e.getPresentation().setEnabled(app.isSessionActive());
-  }
-
-  @Override
-  public void actionPerformed(@NotNull AnActionEvent e) {
-    final JComponent button = UIUtils.getComponentOfActionEvent(e);
-    if (button == null) {
-      return;
-    }
-    final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
-      ActionPlaces.UNKNOWN,
-      myActionGroup);
-    popupMenu.getComponent().show(button, button.getWidth(), 0);
-  }
-
-  @NotNull
-  @Override
-  public JComponent createCustomComponent(@NotNull Presentation presentation) {
-    final ActionButton button = new ActionButton(
-      this,
-      presentation,
-      ActionPlaces.UNKNOWN,
-      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    );
-    presentation.putClientProperty("button", button);
-    return button;
-  }
-
-  private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
-    final DefaultActionGroup group = new DefaultActionGroup();
-    group.add(view.registerAction(new OpenTimelineViewAction(app)));
-    group.add(view.registerAction(new OpenObservatoryAction(app)));
     return group;
   }
 }

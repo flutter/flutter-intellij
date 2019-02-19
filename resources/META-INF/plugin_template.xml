@@ -176,6 +176,10 @@
     <action id="io.flutter.RestartDaemon" class="io.flutter.actions.RestartFlutterDaemonAction"
             text="Restart Flutter Daemon" description="Restart Flutter Daemon" icon="FlutterIcons.Flutter">
     </action>
+
+    <action id="io.flutter.OpenDevToolsAction" class="io.flutter.run.OpenDevToolsAction"
+            text="Open DevTools" description="Open Dart DevTools" icon="FlutterIcons.Dart_16">
+    </action>
   </actions>
 
   <extensions defaultExtensionNs="com.intellij">
@@ -269,6 +273,10 @@
                     overrides="false"/>
     <projectService serviceInterface="io.flutter.perf.FlutterWidgetPerfManager"
                     serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager"
+                    overrides="false"/>
+
+    <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
+                    serviceImplementation="io.flutter.devtools.DevToolsManager"
                     overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>

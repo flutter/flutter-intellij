@@ -24,7 +24,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import io.flutter.view.FlutterViewMessages;
-import io.flutter.view.OpenFlutterViewAction;
 import io.flutter.view.ToolbarComboBoxAction;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
@@ -104,7 +103,7 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     // Add actions common to the run and debug windows.
     final Computable<Boolean> isSessionActive = () -> app.isStarted() && getVmConnected() && !getSession().isStopped();
     final Computable<Boolean> canReload = () -> app.getLaunchMode().supportsReload() && isSessionActive.compute() && !app.isReloading();
-    final Computable<Boolean> observatoryAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
+    final Computable<Boolean> debugUrlAvailable = () -> isSessionActive.compute() && app.getConnector().getBrowserUrl() != null;
 
     if (app.getMode() == RunMode.DEBUG) {
       topToolbar.addSeparator();
@@ -115,8 +114,9 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
-    topToolbar.addAction(new OpenFlutterViewAction(isSessionActive));
-    topToolbar.addAction(new OverflowAction(app, observatoryAvailable));
+    topToolbar.addAction(new OpenDevToolsAction(app.getConnector(), debugUrlAvailable));
+    topToolbar.addSeparator();
+    topToolbar.addAction(new OverflowAction(app, debugUrlAvailable));
 
     // Don't call super since we have our own observatory action.
   }

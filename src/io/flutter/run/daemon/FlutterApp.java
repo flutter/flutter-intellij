@@ -334,8 +334,7 @@ public class FlutterApp {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter hot restart");
 
-    final long reloadTimestamp = System.currentTimeMillis();
-    maxFileTimestamp = reloadTimestamp;
+    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -358,7 +357,7 @@ public class FlutterApp {
   }
 
   /**
-   * * @return whether the latest of the version of the file is running.
+   * @return whether the latest of the version of the file is running.
    */
   public boolean isLatestVersionRunning(VirtualFile file) {
     return file != null && file.getTimeStamp() <= maxFileTimestamp;
@@ -381,8 +380,7 @@ public class FlutterApp {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
-    final long reloadTimestamp = System.currentTimeMillis();
-    maxFileTimestamp = reloadTimestamp;
+    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
@@ -433,7 +431,8 @@ public class FlutterApp {
       return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
                                                             myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
       );
-    } else {
+    }
+    else {
       return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
     }
   }
@@ -526,7 +525,8 @@ public class FlutterApp {
       final Future stopDone;
       if (DaemonEvent.AppStarting.LAUNCH_MODE_ATTACH.equals(myLaunchMode)) {
         stopDone = myDaemonApi.detachApp(appId);
-      } else {
+      }
+      else {
         stopDone = myDaemonApi.stopApp(appId);
       }
       final Stopwatch watch = Stopwatch.createStarted();
