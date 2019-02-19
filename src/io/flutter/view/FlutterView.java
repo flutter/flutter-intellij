@@ -594,8 +594,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 }
 
-class OpenDevToolsAction extends FlutterViewAction {
-  OpenDevToolsAction(@NotNull FlutterApp app) {
+class FlutterViewDevToolsAction extends FlutterViewAction {
+  FlutterViewDevToolsAction(@NotNull FlutterApp app) {
     super(app, "Open DevTools", "Open Dart DevTools", FlutterIcons.Dart_16);
   }
 
@@ -782,7 +782,7 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
     group.addSeparator();
-    group.add(view.registerAction(new OpenDevToolsAction(app)));
+    group.add(view.registerAction(new FlutterViewDevToolsAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new OpenTimelineViewAction(app)));
     group.add(view.registerAction(new OpenObservatoryAction(app)));

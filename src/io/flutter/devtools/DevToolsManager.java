@@ -41,12 +41,11 @@ public class DevToolsManager {
 
   private boolean installedDevTools = false;
 
-  DevToolsInstance devToolsInstance;
+  private DevToolsInstance devToolsInstance;
 
   private DevToolsManager(@NotNull Project project) {
     this.project = project;
   }
-
 
   public boolean hasInstalledDevTools() {
     return installedDevTools;
@@ -55,16 +54,12 @@ public class DevToolsManager {
   public CompletableFuture<Boolean> installDevTools() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
-      final CompletableFuture<Boolean> result = new CompletableFuture<>();
-      result.complete(false);
-      return result;
+      return createCompletedFuture(false);
     }
 
     final List<PubRoot> pubRoots = PubRoots.forProject(project);
     if (pubRoots.isEmpty()) {
-      final CompletableFuture<Boolean> result = new CompletableFuture<>();
-      result.complete(false);
-      return result;
+      return createCompletedFuture(false);
     }
 
     final CompletableFuture<Boolean> result = new CompletableFuture<>();
@@ -88,7 +83,9 @@ public class DevToolsManager {
           result.complete(value);
         }
         catch (RuntimeException re) {
-          result.complete(false);
+          if (!result.isDone()) {
+            result.complete(false);
+          }
         }
 
         processHandler = null;
@@ -98,6 +95,9 @@ public class DevToolsManager {
       public void onCancel() {
         if (processHandler != null && !processHandler.isProcessTerminated()) {
           processHandler.destroyProcess();
+          if (!result.isDone()) {
+            result.complete(false);
+          }
         }
       }
     });
@@ -121,15 +121,11 @@ public class DevToolsManager {
 
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
-      final CompletableFuture<Boolean> result = new CompletableFuture<>();
-      result.complete(false);
       return;
     }
 
     final List<PubRoot> pubRoots = PubRoots.forProject(project);
     if (pubRoots.isEmpty()) {
-      final CompletableFuture<Boolean> result = new CompletableFuture<>();
-      result.complete(false);
       return;
     }
 
@@ -142,6 +138,12 @@ public class DevToolsManager {
       // Listen for closing, null out the devToolsInstance.
       devToolsInstance = null;
     });
+  }
+
+  private CompletableFuture<Boolean> createCompletedFuture(boolean value) {
+    final CompletableFuture<Boolean> result = new CompletableFuture<>();
+    result.complete(value);
+    return result;
   }
 }
 
