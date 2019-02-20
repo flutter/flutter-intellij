@@ -1,3 +1,8 @@
+## 33.1
+- add menu and toolbar button to open Flutter DevTools
+- fix Gradle sync issue for Android Studio 3.3.1
+- fix highlighting of the Go link in sample banner
+
 ## 33.0
 - update build for Android Studio 3.3.1
 - reorder console filters so links work
