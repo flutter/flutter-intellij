@@ -1,16 +1,6 @@
 {
   "list": [
     {
-      "comments": "IntelliJ 2018.2.5",
-      "name": "IntelliJ",
-      "version": "2018.2.5",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "182.5199772",
-      "dartPluginVersion": "182.5124",
-      "sinceBuild": "182.5107.7",
-      "untilBuild": "182.*"
-    },
-    {
       "comments": "AS 3.3.1",
       "name": "Android Studio",
       "version": "3.3.1",
