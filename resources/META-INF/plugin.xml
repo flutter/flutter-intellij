@@ -29,6 +29,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>33.2</h2>
+<ul>
+  <li>Support IntelliJ 2018.3.3</li>
+</ul>
 <h2>33.1</h2>
 <ul>
   <li>add menu and toolbar button to open Flutter DevTools</li>
