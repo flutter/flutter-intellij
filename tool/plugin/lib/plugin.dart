@@ -141,7 +141,8 @@ void genTravisYml(List<BuildSpec> specs) {
   var file = new File(p.join(rootPath, '.travis.yml'));
   var env = '';
   for (var spec in specs) {
-    env += '  - IDEA_VERSION=${spec.version}\n';
+    if (!spec.untilBuild.contains('SNAPSHOT'))
+      env += '  - IDEA_VERSION=${spec.version}\n';
   }
 
   var templateFile = new File(p.join(rootPath, '.travis_template.yml'));
