@@ -1,3 +1,6 @@
+## 33.2
+- Support IntelliJ 2018.3.3
+
 ## 33.1
 - add menu and toolbar button to open Flutter DevTools
 - fix Gradle sync issue for Android Studio 3.3.1
