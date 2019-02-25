@@ -27,4 +27,4 @@ $ gsutil cp <path-to-archive> gs://flutter_infra/flutter/intellij/
 ## The plugin tool
 
 Building is done by the `plugin` tool.
-See tool/plugin/README.md for details.
+See [tool/plugin/README.md](../tool/plugin/README.md) for details.
