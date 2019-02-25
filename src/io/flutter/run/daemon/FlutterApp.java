@@ -86,7 +86,6 @@ public class FlutterApp {
    */
   private @Nullable String myLaunchMode;
 
-
   private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
@@ -313,7 +312,7 @@ public class FlutterApp {
     myBaseUri = uri;
   }
 
-  void setLaunchMode(@NotNull String launchMode) {
+  void setLaunchMode(@Nullable String launchMode) {
     myLaunchMode = launchMode;
   }
 
