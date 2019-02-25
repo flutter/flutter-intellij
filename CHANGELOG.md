@@ -1,3 +1,6 @@
+## 33.3
+- Fix an issue with an IllegalArgumentException when running Flutter apps
+
 ## 33.2
 - Support IntelliJ 2018.3.3
 
