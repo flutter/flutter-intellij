@@ -29,6 +29,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import static java.util.Arrays.asList;
+
 /**
  * Manages all communication between inspector code running on the DartVM and
  * inspector code running in the IDE.
@@ -253,6 +255,80 @@ public class InspectorService implements Disposable {
       params.put("arg" + i, args.get(i));
     }
     return invokeServiceMethodDaemonNoGroup(methodName, params);
+  }
+
+  /*
+   * We make a best guess for the pub directory based on the the root directory
+   * of the first non artifical widget in the tree.
+  */
+  public CompletableFuture<String> inferPubRootDirectoryIfNeeded(){
+    ObjectGroup group = createObjectGroup("temp");
+    DiagnosticsNode root = group.getRoot(FlutterTreeType.widget).join();
+
+    if (root == null) {
+      // No need to do anything as there isn't a valid tree (yet?).
+      group.dispose();
+      return null;
+    }
+
+    ArrayList<DiagnosticsNode> children = root.getChildren().join();
+
+    if (children != null && children.isEmpty() == false) {
+      // There are already widgets identified as being from the summary tree so
+      // no need to guess the pub root directory.
+      return null;
+    }
+
+    ArrayList<DiagnosticsNode> allChildren =
+      group.getChildren(root.getDartDiagnosticRef(), false, null).join();
+
+    if (allChildren == null || allChildren.isEmpty() == true){
+      return  null;
+    }
+
+    InspectorSourceLocation location = allChildren.get(0).getCreationLocation();
+    if (location == null) {
+      return null;
+    }
+    String path = location.getPath();
+    if (path == null) {
+      group.dispose();
+      return null;
+    }
+    // TODO(jacobr): it would be nice to use Isolate.rootLib similar to how
+    // debugger.dart does but we are currently blocked by the
+    // --track-widget-creation transformer generating absolute paths instead of
+    // package:paths.
+    // Once https://github.com/flutter/flutter/issues/26615 is fixed we will be
+    // able to use package: paths. Temporarily all tools tracking widget
+    // locations will need to support both path formats.
+    // TODO(jacobr): use the list of loaded scripts to determine the appropriate
+    // package root directory given that the root script of this project is in
+    // this directory rather than guessing based on url structure.
+    ArrayList<String> parts = new ArrayList<String>(Arrays.asList(path.split("/")));
+    String pubRootDirectory = null;
+    for (int i = parts.size() - 1; i >= 0; i--) {
+      String part = parts.get(i);
+      if (part == "lib" || part == "web") {
+        pubRootDirectory = String.join("/", parts.subList(0, i ));
+        break;
+      }
+
+      if (part == "packages") {
+        pubRootDirectory = String.join("/", parts.subList(0, i + 1));
+        break;
+      }
+    }
+    if (pubRootDirectory == null) {
+      parts.remove( parts.size() - 1 );
+      pubRootDirectory = String.join("/", parts);
+    }
+
+    setPubRootDirectories(new ArrayList<String>(Arrays.asList(pubRootDirectory))).join();
+    group.dispose();
+    String roorDir = pubRootDirectory;
+    return CompletableFuture.supplyAsync(()-> roorDir);
+
   }
 
   private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
