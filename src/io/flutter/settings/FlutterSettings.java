@@ -267,11 +267,11 @@ public class FlutterSettings {
   }
 
   private boolean shouldUseNewBazelTestRunner() {
-    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, false);
+    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, true);
   }
 
   public void setUseNewBazelTestRunner(boolean value) {
-    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, false);
+    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, true);
     fireEvent();
   }
 
