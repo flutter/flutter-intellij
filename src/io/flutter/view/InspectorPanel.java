@@ -546,7 +546,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (flutterAppFrameReady) {
       // We need to start by quering the inspector service to find out the
       // current state of the UI.
-      inspectorService.inferPubRootDirectoryIfNeeded();
+      inspectorService.inferPubRootDirectoryIfNeeded().join();
       updateSelectionFromService();
     }
     else {
