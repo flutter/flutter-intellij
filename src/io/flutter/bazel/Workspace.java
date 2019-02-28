@@ -5,6 +5,7 @@
  */
 package io.flutter.bazel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
@@ -35,15 +36,18 @@ public class Workspace {
   @Nullable private final PluginConfig config;
   @Nullable private final String daemonScript;
   @Nullable private final String doctorScript;
+  @Nullable private final String testScript;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
                     @Nullable String daemonScript,
-                    @Nullable String doctorScript) {
+                    @Nullable String doctorScript,
+                    @Nullable String testScript) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
     this.doctorScript = doctorScript;
+    this.testScript = testScript;
   }
 
   /**
@@ -120,6 +124,14 @@ public class Workspace {
   }
 
   /**
+   * Returns the script that starts 'flutter test', or null if not configured.
+   */
+  @Nullable
+  public String getTestScript() {
+    return testScript;
+  }
+
+  /**
    * Returns true if the plugin config was loaded.
    */
   public boolean hasPluginConfig() {
@@ -171,44 +183,47 @@ public class Workspace {
     }
     final PluginConfig config = configFile == null ? null : PluginConfig.load(configFile);
 
-    final String daemonScript;
-    if (config == null || config.getDaemonScript() == null) {
-      daemonScript = null;
-    }
-    else {
-      final String script = config.getDaemonScript();
-      final String readonlyScript = readonlyPath + "/" + script;
-      if (root.findFileByRelativePath(script) != null) {
-        daemonScript = script;
-      }
-      else if (root.findFileByRelativePath(readonlyScript) != null) {
-        daemonScript = readonlyScript;
-      }
-      else {
-        daemonScript = null;
-      }
-    }
+    final String daemonScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDaemonScript());
 
-    final String doctorScript;
-    if (config == null || config.getDoctorScript() == null) {
-      doctorScript = null;
-    }
-    else {
-      final String script = config.getDoctorScript();
-      final String readonlyScript = readonlyPath + "/" + script;
-      if (root.findFileByRelativePath(script) != null) {
-        doctorScript = script;
-      }
-      else if (root.findFileByRelativePath(readonlyScript) != null) {
-        doctorScript = readonlyScript;
-      }
-      else {
-        doctorScript = null;
-      }
-    }
+    final String doctorScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getDoctorScript());
 
-    return new Workspace(root, config, daemonScript, doctorScript);
+    final String testScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getTestScript());
+
+    return new Workspace(root, config, daemonScript, doctorScript, testScript);
   }
+
+  @VisibleForTesting
+  public static Workspace forTest(VirtualFile workspaceRoot, PluginConfig pluginConfig) {
+    return new Workspace(
+      workspaceRoot,
+      pluginConfig,
+      pluginConfig.getDaemonScript(),
+      pluginConfig.getDoctorScript(),
+      pluginConfig.getTestScript()
+    );
+  }
+
+  /**
+   * Attempts to find a script inside of the workspace.
+   * @param root the workspace root.
+   * @param readonlyPath the relative path to the readonly contents of the workspace.
+   * @param relativeScriptPath the relative path to the desired script inside of the workspace.
+   * @return the script's path relative to the workspace, or null if it was not found.
+   */
+  private static String getScriptFromPath(@NotNull VirtualFile root, @NotNull String readonlyPath, @Nullable String relativeScriptPath) {
+    if (relativeScriptPath == null) {
+      return null;
+    }
+    final String readonlyScriptPath = readonlyPath + "/" + relativeScriptPath;
+    if (root.findFileByRelativePath(relativeScriptPath) != null) {
+      return relativeScriptPath;
+    }
+    if (root.findFileByRelativePath(readonlyScriptPath) != null) {
+      return readonlyScriptPath;
+    }
+    return null;
+  }
+
 
   /**
    * Returns the Bazel WORKSPACE file for a Project, or null if not using Bazel.

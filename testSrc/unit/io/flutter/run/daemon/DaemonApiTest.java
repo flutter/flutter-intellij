@@ -37,9 +37,9 @@ public class DaemonApiTest {
 
   @Test
   public void canRestartApp() throws Exception {
-    final Future<DaemonApi.RestartResult> result = api.restartApp("foo", true, false);
+    final Future<DaemonApi.RestartResult> result = api.restartApp("foo", true, false, "manual");
     checkSent(result, "app.restart",
-              curly("appId:\"foo\"", "fullRestart:true", "pause:false"));
+              curly("appId:\"foo\"", "fullRestart:true", "pause:false", "reason:\"manual\""));
 
     replyWithResult(result, curly("code:42", "message:\"sorry\""));
     assertFalse(result.get().ok());

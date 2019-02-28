@@ -43,6 +43,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
   </path>
 
   <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="javac2.classpath"/>
+  <typedef name="prefixedpath" classname="com.intellij.ant.PrefixedPath" classpathref="javac2.classpath"/>
 
   <target name="paths">
     <path id="idea.jars">
@@ -73,7 +74,6 @@ Include -D arguments to define these properties: idea.product, idea.version.
       </dirset>
     </path>
 
-
     <path id="studioSrc.sourcepath">
       <dirset dir="flutter-studio">
         <include name="src"/>
@@ -93,6 +93,13 @@ Include -D arguments to define these properties: idea.product, idea.version.
         <path location="build/classes"/>
       </classpath>
       <src refid="studioSrc.sourcepath"/>
+      <nestedformdirs>
+        <prefixedpath>
+          <dirset dir=".">
+            <include name="src"/>
+          </dirset>
+        </prefixedpath>
+      </nestedformdirs>
       <patternset refid="ignored.files"/>
     </javac2>
   </target>

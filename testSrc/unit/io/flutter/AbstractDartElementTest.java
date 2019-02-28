@@ -24,17 +24,19 @@ public class AbstractDartElementTest {
   }
 
   /**
-   * Creates the syntax tree for a Dart file and returns the innermost element with the given text.
+   * Creates the syntax tree for a Dart file at a specific path and returns the innermost element with the given text.
    */
   @NotNull
-  protected <E extends PsiElement> E setUpDartElement(String fileText, String elementText, Class<E> expectedClass) {
+  protected <E extends PsiElement> E setUpDartElement(String filePath, String fileText, String elementText, Class<E> expectedClass) {
     final int offset = fileText.indexOf(elementText);
     if (offset < 0) {
       throw new IllegalArgumentException("'" + elementText + "' not found in '" + fileText + "'");
     }
 
-    final PsiFile file = PsiFileFactory.getInstance(fixture.getProject())
-      .createFileFromText(DartLanguage.INSTANCE, fileText);
+    final PsiFileFactory factory = PsiFileFactory.getInstance(fixture.getProject());
+    final PsiFile file = filePath != null
+                         ? factory.createFileFromText(filePath, DartLanguage.INSTANCE, fileText)
+                         : factory.createFileFromText(DartLanguage.INSTANCE, fileText);
 
     PsiElement elt = file.findElementAt(offset);
     while (elt != null) {
@@ -45,5 +47,13 @@ public class AbstractDartElementTest {
     }
 
     throw new RuntimeException("unable to find element with text: " + elementText);
+  }
+
+  /**
+   * Creates the syntax tree for a Dart file and returns the innermost element with the given text.
+   */
+  @NotNull
+  protected <E extends PsiElement> E setUpDartElement(String fileText, String elementText, Class<E> expectedClass) {
+    return setUpDartElement(null, fileText, elementText, expectedClass);
   }
 }

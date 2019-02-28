@@ -5,12 +5,18 @@
  */
 package io.flutter.project;
 
-import com.android.tools.idea.observable.core.*;
+import com.android.tools.idea.observable.core.BoolValueProperty;
+import com.android.tools.idea.observable.core.OptionalProperty;
+import com.android.tools.idea.observable.core.OptionalValueProperty;
+import com.android.tools.idea.observable.core.StringProperty;
+import com.android.tools.idea.observable.core.StringValueProperty;
 import com.android.tools.idea.wizard.model.WizardModel;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.project.Project;
 import io.flutter.module.FlutterProjectType;
+import io.flutter.samples.FlutterSample;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Note that a single instance of this class is shared among all the steps in the wizard.
@@ -36,6 +42,8 @@ public class FlutterProjectModel extends WizardModel {
   @NotNull final private BoolValueProperty myKotlin = new BoolValueProperty();
   @NotNull final private BoolValueProperty mySwift = new BoolValueProperty();
   @NotNull final private OptionalProperty<Project> myProject = new OptionalValueProperty<>();
+  @NotNull final private BoolValueProperty myIsOfflineSelected = new BoolValueProperty();
+  private FlutterSample mySelectedSample;
 
   public FlutterProjectModel(@NotNull FlutterProjectType type) {
     myProjectType.set(new OptionalValueProperty<>(type));
@@ -55,6 +63,15 @@ public class FlutterProjectModel extends WizardModel {
 
     mySwift.set(getInitialSwiftSupport());
     mySwift.addListener(sender -> setInitialSwiftSupport(mySwift.get()));
+  }
+
+  public void setSample(@Nullable FlutterSample sample) {
+    mySelectedSample = sample;
+  }
+
+  @Nullable
+  public FlutterSample getSample() {
+    return mySelectedSample;
   }
 
   @NotNull
@@ -131,6 +148,10 @@ public class FlutterProjectModel extends WizardModel {
       return;
     }
     new FlutterProjectCreator(this).createProject();
+  }
+
+  public BoolValueProperty isOfflineSelected() {
+    return myIsOfflineSelected;
   }
 
   @NotNull

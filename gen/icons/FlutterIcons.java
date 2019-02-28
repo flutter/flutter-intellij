@@ -25,6 +25,7 @@ public class FlutterIcons {
 
   public static final Icon OpenObservatory = load("/icons/observatory.png");
   public static final Icon OpenObservatoryGroup = load("/icons/observatory_overflow.png");
+  public static final Icon Dart_16 = load("/icons/dart_16.svg");
 
   public static final Icon OpenTimeline = load("/icons/timeline.png");
 
@@ -33,6 +34,10 @@ public class FlutterIcons {
 
   public static final Icon HotReloadRun = load("/icons/reload_run.png");
   public static final Icon HotReloadDebug = load("/icons/reload_debug.png");
+
+  public static final Icon DebugBanner = load("/icons/debugBanner.png");
+  public static final Icon DebugPaint = load("/icons/debugPaint.png");
+  public static final Icon RepaintRainbow = load("/icons/repaintRainbow.png");
 
   public static final Icon BazelRun = load("/icons/bazel_run.png");
 
@@ -45,9 +50,10 @@ public class FlutterIcons {
   public static final Icon CustomProperty = load("/icons/custom/property.png");
   public static final Icon CustomInfo = load("/icons/custom/info.png");
 
-  public static final Icon AndroidStudioNewModule = load("/icons/template_new_project.png");
+  public static final Icon AndroidStudioNewProject = load("/icons/template_new_project.png");
   public static final Icon AndroidStudioNewPackage = load("/icons/template_new_package.png");
   public static final Icon AndroidStudioNewPlugin = load("/icons/template_new_plugin.png");
+  public static final Icon AndroidStudioNewModule = load("/icons/template_new_module.png");
 
   public static final Icon AttachDebugger = load("/icons/attachDebugger.png");
 
@@ -78,6 +84,10 @@ public class FlutterIcons {
   public static final Icon Down = load("/icons/preview/down.png");
   public static final Icon ExtractMethod = load("/icons/preview/extract_method.png");
 
+  // Flutter profiler
+  public static final Icon Snapshot = load("/icons/profiler/snapshot_color_1x_24dp.png");
+  public static final Icon ResetMemoryStats = load("/icons/profiler/reset_icon.png");
+
   public static class State {
     public static final Icon RedProgr = load("/icons/perf/RedProgr.png"); // 16x16
     public static final Icon RedProgr_1 = load("/icons/perf/RedProgr_1.png"); // 16x16
@@ -88,5 +98,15 @@ public class FlutterIcons {
     public static final Icon RedProgr_6 = load("/icons/perf/RedProgr_6.png"); // 16x16
     public static final Icon RedProgr_7 = load("/icons/perf/RedProgr_7.png"); // 16x16
     public static final Icon RedProgr_8 = load("/icons/perf/RedProgr_8.png"); // 16x16
+
+    public static final Icon YellowProgr = load("/icons/perf/YellowProgr.png"); // 16x16
+    public static final Icon YellowProgr_1 = load("/icons/perf/YellowProgr_1.png"); // 16x16
+    public static final Icon YellowProgr_2 = load("/icons/perf/YellowProgr_2.png"); // 16x16
+    public static final Icon YellowProgr_3 = load("/icons/perf/YellowProgr_3.png"); // 16x16
+    public static final Icon YellowProgr_4 = load("/icons/perf/YellowProgr_4.png"); // 16x16
+    public static final Icon YellowProgr_5 = load("/icons/perf/YellowProgr_5.png"); // 16x16
+    public static final Icon YellowProgr_6 = load("/icons/perf/YellowProgr_6.png"); // 16x16
+    public static final Icon YellowProgr_7 = load("/icons/perf/YellowProgr_7.png"); // 16x16
+    public static final Icon YellowProgr_8 = load("/icons/perf/YellowProgr_8.png"); // 16x16
   }
 }

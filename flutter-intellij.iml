@@ -17,6 +17,7 @@
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/material-design-icons" />
+      <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
@@ -32,7 +33,7 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/173.4700/Dart.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/181.4892.1/Dart.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -41,7 +42,7 @@
     <orderEntry type="module-library" scope="PROVIDED">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/dart-plugin/173.4700/resources_en.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/dart-plugin/181.4892.1/resources_en.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
@@ -58,5 +59,6 @@
     </orderEntry>
     <orderEntry type="library" name="Dart SDK" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="netty-codec-http" level="project" />
   </component>
 </module>

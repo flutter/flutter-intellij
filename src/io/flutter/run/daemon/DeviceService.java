@@ -16,6 +16,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ex.ProjectRootManagerEx;
 import com.intellij.openapi.util.Disposer;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.utils.Refreshable;
@@ -149,7 +150,7 @@ public class DeviceService {
           listener.run();
         }
         catch (Exception e) {
-          LOG.error("DeviceDaemon listener threw an exception", e);
+          FlutterUtils.warn(LOG, "DeviceDaemon listener threw an exception", e);
         }
       }
     });

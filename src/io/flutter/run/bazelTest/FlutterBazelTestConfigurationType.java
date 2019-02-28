@@ -9,21 +9,27 @@ import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
 import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
+import io.flutter.run.test.FlutterTestConfigType;
 import org.jetbrains.annotations.NotNull;
 
 /**
- * The Bazel version of the {@link io.flutter.run.test.TestConfigType} configuration.
+ * The Bazel version of the {@link FlutterTestConfigType} configuration.
  */
 public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
-  public FlutterBazelTestConfigurationType() {
+  protected FlutterBazelTestConfigurationType() {
     super("FlutterBazelTestConfigurationType", FlutterBundle.message("runner.flutter.bazel.test.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
     addFactory(new Factory(this));
+  }
+
+  public static FlutterBazelTestConfigurationType getInstance() {
+    return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterBazelTestConfigurationType.class);
   }
 
   private static class Factory extends ConfigurationFactory {

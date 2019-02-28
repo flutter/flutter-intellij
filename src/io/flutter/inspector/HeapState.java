@@ -40,6 +40,8 @@ public class HeapState implements HeapMonitor.HeapListener {
   private int heapMaxInBytes;
 
   private final HeapSamples samples;
+
+  // Contains new and old heaps
   private final Map<String, List<HeapMonitor.HeapSpace>> isolateHeaps = new HashMap<>();
 
   public HeapState(int maxSampleSizeMs) {
@@ -54,7 +56,8 @@ public class HeapState implements HeapMonitor.HeapListener {
     return samples.samples;
   }
 
-  public int getMaxHeapInBytes() {
+  // Allocated heap size.
+  public int getCapacity() {
     int max = heapMaxInBytes;
 
     for (HeapMonitor.HeapSample sample : samples.samples) {
@@ -92,6 +95,7 @@ public class HeapState implements HeapMonitor.HeapListener {
   public void handleIsolatesInfo(VM vm, List<HeapMonitor.IsolateObject> isolates) {
     int current = 0;
     int total = 0;
+    int external = 0;
 
     isolateHeaps.clear();
 
@@ -99,29 +103,32 @@ public class HeapState implements HeapMonitor.HeapListener {
       isolateHeaps.put(isolate.getId(), isolate.getHeaps());
 
       for (HeapMonitor.HeapSpace heap : isolate.getHeaps()) {
-        current += heap.getUsed() + heap.getExternal();
-        total += heap.getCapacity() + heap.getExternal();
+        current += heap.getUsed();
+        total += heap.getCapacity();
+        external += heap.getExternal();
       }
     }
 
     rssBytes = vm.getJson().get("_currentRSS").getAsInt();
     heapMaxInBytes = total;
 
-    addSample(new HeapMonitor.HeapSample(current, false));
+    addSample(new HeapMonitor.HeapSample(current, external,false));
   }
 
   @Override
   public void handleGCEvent(IsolateRef isolateRef, HeapMonitor.HeapSpace newHeapSpace, HeapMonitor.HeapSpace oldHeapSpace) {
     int current = 0;
+    int external = 0;
 
     isolateHeaps.put(isolateRef.getId(), new ArrayList<>(Arrays.asList(newHeapSpace, oldHeapSpace)));
 
     for (List<HeapMonitor.HeapSpace> heaps : isolateHeaps.values()) {
       for (HeapMonitor.HeapSpace heap : heaps) {
-        current += heap.getUsed() + heap.getExternal();
+        current += heap.getUsed();
+        external += heap.getExternal();
       }
     }
 
-    addSample(new HeapMonitor.HeapSample(current, true));
+    addSample(new HeapMonitor.HeapSample(current, external,true));
   }
 }

@@ -11,12 +11,12 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Computable;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class RestartFlutterApp extends FlutterAppAction {
   public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
   public static final String TEXT = FlutterBundle.message("app.restart.action.text");
@@ -29,7 +29,7 @@ public class RestartFlutterApp extends FlutterAppAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
     final Project project = getEventProject(e);
     if (project == null) {
       return;
@@ -37,6 +37,6 @@ public class RestartFlutterApp extends FlutterAppAction {
 
     FlutterInitializer.sendAnalyticsAction(this);
 
-    FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp());
+    FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
   }
 }

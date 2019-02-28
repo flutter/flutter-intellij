@@ -5,6 +5,8 @@
  */
 package io.flutter.logging;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.HyperlinkInfo;
 import com.intellij.execution.process.ProcessHandler;
@@ -21,6 +23,7 @@ import com.intellij.openapi.editor.colors.TextAttributesKey;
 import com.intellij.openapi.editor.markup.EffectType;
 import com.intellij.openapi.editor.markup.TextAttributes;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
+import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.ui.popup.JBPopupFactory;
 import com.intellij.ui.ColoredTableCellRenderer;
 import com.intellij.ui.PopupHandler;
@@ -33,8 +36,11 @@ import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.FlutterUtils;
 import io.flutter.logging.FlutterLog.Level;
+import io.flutter.logging.tree.DataPanel;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.UIUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,8 +53,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.intellij.openapi.editor.markup.EffectType.*;
@@ -61,6 +67,8 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @NotNull
   private static final Logger LOG = Logger.getInstance(FlutterLogView.class);
+
+  private static final float DATA_PANEL_SPLITTER_PROPORTION_DEFAULT = 0.60f;
 
   @NotNull
   private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
@@ -123,7 +131,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     private final DefaultActionGroup actionGroup;
 
     public ConfigureAction() {
-      super("Configure", null, AllIcons.General.Gear);
+      super("Configure", null, AllIcons.General.Gear /* to be removed in IDEA 2020: migrate to: GearPlain */);
 
       actionGroup = createPopupActionGroup();
     }
@@ -138,11 +146,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
     @NotNull
     private Optional<JComponent> getComponentOfActionEvent(@NotNull AnActionEvent e) {
-      final Presentation presentation = e.getPresentation();
-      JComponent component = (JComponent)presentation.getClientProperty("button");
-      if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
-        component = (JComponent)e.getInputEvent().getSource();
-      }
+      final JComponent component = UIUtils.getComponentOfActionEvent(e);
       return Optional.ofNullable(component);
     }
 
@@ -173,12 +177,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isShowTimestamp();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setShowTimestamp(state);
       logModel.setShowTimestamps(state);
       logModel.update();
@@ -192,12 +196,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isShowSequenceNumbers();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setShowSequenceNumbers(state);
       logModel.setShowSequenceNumbers(state);
       logModel.update();
@@ -211,12 +215,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isShowLogCategory();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setShowLogCategory(state);
       logModel.setShowCategories(state);
       logModel.update();
@@ -230,12 +234,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isShowLogLevel();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setShowLogLevel(state);
       logModel.setShowLogLevels(state);
       logModel.update();
@@ -249,12 +253,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isClearOnReload();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setClearOnReload(state);
     }
   }
@@ -266,12 +270,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isClearOnRestart();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setClearOnRestart(state);
     }
   }
@@ -283,12 +287,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return flutterLogPreferences.isShowColor();
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       flutterLogPreferences.setShowColor(state);
       entryModel.showColors = state;
       logModel.update();
@@ -326,7 +330,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       app.getFlutterLog().getLoggingChannels().thenAccept(channels -> ApplicationManager.getApplication().invokeAndWait(() -> {
         final ChannelPanel panel = new ChannelPanel(channels);
         final Rectangle visibleRect = logTree.getVisibleRect();
@@ -352,12 +356,16 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
-      ApplicationManager.getApplication().invokeLater(logTree::clearEntries);
+    public void actionPerformed(@NotNull AnActionEvent e) {
+      ApplicationManager.getApplication().invokeLater(() -> {
+        logTree.clearEntries();
+        // Flush state.
+        clear();
+      });
     }
 
     @Override
-    public void update(AnActionEvent e) {
+    public void update(@NotNull AnActionEvent e) {
       e.getPresentation().setEnabled(logModel.getRoot().getChildCount() > 0);
     }
   }
@@ -372,12 +380,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public boolean isSelected(AnActionEvent e) {
+    public boolean isSelected(@NotNull AnActionEvent e) {
       return logModel.autoScrollToEnd;
     }
 
     @Override
-    public void setSelected(AnActionEvent e, boolean state) {
+    public void setSelected(@NotNull AnActionEvent e, boolean state) {
       ApplicationManager.getApplication().invokeLater(() -> {
         logModel.autoScrollToEnd = state;
         if (state) {
@@ -405,10 +413,12 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       logTree.sendSelectedLogsToClipboard();
     }
   }
+
+  float lastSplitProportion = DATA_PANEL_SPLITTER_PROPORTION_DEFAULT;
 
   private class FilterStatusLabel extends AnAction
     implements CustomComponentAction, RightAlignedToolbarAction, FlutterLogTree.EventCountListener {
@@ -417,7 +427,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     JPanel panel;
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       // None.  Just an info display.
     }
 
@@ -500,6 +510,15 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private final ScrollToEndAction scrollToEndAction = new ScrollToEndAction();
   @NotNull
   private final ClearLogAction clearLogAction = new ClearLogAction();
+  @NotNull
+  private final DataPanel dataPanel;
+  private JScrollPane dataPane;
+  private Splitter treeSplitter;
+
+  private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
+  boolean isPinned;
+  // Auto-scroll defautls to on.
+  boolean prePinAutoScroll = true;
 
   public FlutterLogView(@NotNull FlutterApp app) {
     this.app = app;
@@ -584,15 +603,26 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     fixColumnWidth(logTree.getColumn(CATEGORY), 110);
     logTree.getColumn(MESSAGE).setMinWidth(100);
 
+    dataPanel = DataPanel.create(app.getProject());
+
+    logTree.addSelectionListener(this::updateDataPanel);
+
     setupLogTreeScrollPane();
   }
 
+  private void updateDataPanel() {
+    final List<FlutterLogTree.FlutterEventNode> selectedNodes = logTree.getSelectedNodes();
+    if (!selectedNodes.isEmpty()) {
+      dataPanel.update(selectedNodes.get(0).entry);
+    }
+  }
+
   private void setupLogTreeScrollPane() {
-    final JScrollPane pane = ScrollPaneFactory.createScrollPane(
+    final JScrollPane treePane = ScrollPaneFactory.createScrollPane(
       logTree,
       ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
       ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    pane.getVerticalScrollBar().getModel().addChangeListener(new LogVerticalScrollChangeListener() {
+    treePane.getVerticalScrollBar().getModel().addChangeListener(new LogVerticalScrollChangeListener() {
       @Override
       protected void onScrollUp() {
         scrollToEndAction.disableIfNeeded();
@@ -603,8 +633,41 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
         scrollToEndAction.enableIfNeeded();
       }
     });
-    logModel.setScrollPane(pane);
-    toolWindowPanel.setContent(pane);
+    logModel.setScrollPane(treePane);
+
+    dataPane = ScrollPaneFactory.createScrollPane(
+      dataPanel,
+      ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+      ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+    treeSplitter = new Splitter(false);
+    treeSplitter.setProportion(DATA_PANEL_SPLITTER_PROPORTION_DEFAULT);
+    // Data and splitter revealed on demand.
+    dataPane.setVisible(false);
+    treeSplitter.setVisible(false);
+
+    treeSplitter.setFirstComponent(treePane);
+    treeSplitter.setSecondComponent(dataPane);
+    toolWindowPanel.setContent(treeSplitter);
+
+    dataPanel.onUpdate(hasContent -> {
+      dataPane.setVisible(hasContent);
+
+      if (hasContent) {
+        if (treeSplitter.getProportion() != lastSplitProportion) {
+          treeSplitter.setProportion(lastSplitProportion);
+          treeSplitter.revalidate();
+          treeSplitter.repaint();
+        }
+      }
+      else {
+        final float proportion = treeSplitter.getProportion();
+        if (proportion != 1.0f) {
+          lastSplitProportion = proportion;
+        }
+        treeSplitter.setProportion(1.0f);
+      }
+    });
   }
 
   private void computeTextAttributesByLogLevelCache() {
@@ -624,7 +687,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
           fontType = fontType | textStyle;
         }
 
-        final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
+        @SuppressWarnings("MagicConstant") final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
           attributes.getBackgroundColor(),
           attributes.getForegroundColor(),
           effectColor,
@@ -635,7 +698,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
       }
       catch (Exception e) {
         // Should never go here.
-        LOG.warn("Error when get text attributes by log level", e);
+        FlutterUtils.warn(LOG, "Error when get text attributes by log level", e);
       }
     }
   }
@@ -684,7 +747,19 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEvent(@NotNull FlutterLogEntry entry) {
-    logTree.append(entry);
+    final boolean isError = entry.getKind() == FlutterLogEntry.Kind.FLUTTER_ERROR;
+    logTree.append(entry, isError && !isPinned);
+
+    if (isError & !isPinned) {
+      prePinAutoScroll = logModel.autoScrollToEnd;
+      scrollToEndAction.disableIfNeeded();
+      isPinned = true;
+    }
+  }
+
+  @Override
+  public void onEntryContentChange() {
+    logModel.uiExec(logModel::update, 10);
   }
 
   @Override
@@ -694,7 +769,17 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void clear() {
-    // TODO(pq): called on restart; should (optionally) clear _or_ set a visible marker.
+    // Unpin
+    if (isPinned) {
+      if (prePinAutoScroll) {
+        scrollToEndAction.enableIfNeeded();
+      }
+      else {
+        scrollToEndAction.disableIfNeeded();
+      }
+      isPinned = false;
+    }
+    dataPane.setVisible(false);
   }
 
   @Override
@@ -773,7 +858,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Nullable
   @Override
-  public Object getData(String dataId) {
+  public Object getData(@NotNull String dataId) {
     return null;
   }
 

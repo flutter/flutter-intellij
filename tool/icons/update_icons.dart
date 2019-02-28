@@ -1,105 +1,120 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Regenerates the material icons file.
-// See https://github.com/flutter/flutter/wiki/Updating-Material-Design-Fonts
-
-import 'dart:convert' show LineSplitter;
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:args/args.dart';
-import 'package:path/path.dart' as path;
+void main() async {
+  // download material/icons.dart and cupertino/icons.dart
+  String materialData =
+      await downloadUrl('https://raw.githubusercontent.com/flutter/flutter/'
+          'master/packages/flutter/lib/src/material/icons.dart');
+  String cupertinoData =
+      await downloadUrl('https://raw.githubusercontent.com/flutter/flutter/'
+          'master/packages/flutter/lib/src/cupertino/icons.dart');
 
-const String kOptionCodepointsPath = 'codepoints';
-const String kOptionIconsPath = 'icons';
-const String kOptionDryRun = 'dry-run';
+  // parse into metadata
+  List<Icon> materialIcons = parseIconData(materialData);
+  List<Icon> cupertinoIcons = parseIconData(cupertinoData);
 
-const String kDefaultCodepointsPath =
-    'bin/cache/artifacts/material_fonts/codepoints';
-const String kDefaultIconsPath = 'packages/flutter/lib/src/material/icons.dart';
+  // generate .properties files
+  generateProperties(
+      materialIcons, 'resources/flutter/material_icons.properties', 'material');
+  generateProperties(cupertinoIcons,
+      'resources/flutter/cupertino_icons.properties', 'cupertino');
 
-const String kBeginGeneratedMark = '// BEGIN GENERATED';
-const String kEndGeneratedMark = '// END GENERATED';
+  // generate dart code
+  generateDart(materialIcons, 'tool/icon_generator/lib/material.dart', 'Icons',
+      'material');
+  generateDart(cupertinoIcons, 'tool/icon_generator/lib/cupertino.dart',
+      'CupertinoIcons', 'cupertino');
 
-const Map<String, String> kIdentifierRewrites = const <String, String>{
-  '360': 'threesixty',
-  '3d_rotation': 'threed_rotation',
-  '4k': 'four_k',
-  'class': 'class_',
-};
-
-void main(List<String> args) {
-  // If we're run from the `tools` dir, set the cwd to the repo root.
-  if (path.basename(Directory.current.path) == 'tools')
-    Directory.current = Directory.current.parent.parent;
-
-  final ArgParser argParser = new ArgParser();
-  argParser.addOption(kOptionCodepointsPath,
-      defaultsTo: kDefaultCodepointsPath);
-  argParser.addOption(kOptionIconsPath, defaultsTo: kDefaultIconsPath);
-  argParser.addFlag(kOptionDryRun, defaultsTo: false);
-  final ArgResults argResults = argParser.parse(args);
-
-  final File iconFile = new File(path.absolute(argResults[kOptionIconsPath]));
-  if (!iconFile.existsSync()) {
-    stderr.writeln('Icons file not found: ${iconFile.path}');
-    exit(1);
-  }
-  final File codepointsFile =
-      new File(path.absolute(argResults[kOptionCodepointsPath]));
-  if (!codepointsFile.existsSync()) {
-    stderr.writeln('Codepoints file not found: ${codepointsFile.path}');
-    exit(1);
-  }
-
-  final String iconData = iconFile.readAsStringSync();
-  final String codepointData = codepointsFile.readAsStringSync();
-  final String newIconData = regenerateIconsFile(iconData, codepointData);
-
-  if (argResults[kOptionDryRun])
-    stdout.writeln(newIconData);
-  else
-    iconFile.writeAsStringSync(newIconData);
+  // tell the user how to generate the icons
+  print('');
+  print("In order to re-generate the icons, open the iOS Simulator, and "
+      "'flutter run' from the tool/icon_generator/ directory.");
 }
 
-String regenerateIconsFile(String iconData, String codepointData) {
-  final StringBuffer buf = new StringBuffer();
-  bool generating = false;
-  for (String line in LineSplitter.split(iconData)) {
-    if (!generating) buf.writeln(line);
-    if (line.contains(kBeginGeneratedMark)) {
-      generating = true;
-      final String iconDeclarations = generateIconDeclarations(codepointData);
-      buf.write(iconDeclarations);
-    } else if (line.contains(kEndGeneratedMark)) {
-      generating = false;
-      buf.writeln(line);
+Future<String> downloadUrl(String url) async {
+  HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(url));
+  HttpClientResponse response = await request.close();
+  List<String> data = await response.transform(utf8.decoder).toList();
+  return data.join('');
+}
+
+// The pattern below is meant to match lines like:
+//   'static const IconData threesixty = IconData(0xe577,'
+final RegExp regexp =
+    new RegExp(r'static const IconData (\S+) = IconData\(0x(\S+),');
+
+List<Icon> parseIconData(String data) {
+  return regexp.allMatches(data).map((Match match) {
+    return Icon(match.group(1), int.parse(match.group(2), radix: 16));
+  }).toList();
+}
+
+void generateProperties(List<Icon> icons, String filename, String pathSegment) {
+  StringBuffer buf = StringBuffer();
+  buf.writeln('# Generated file - do not edit.');
+  buf.writeln();
+  buf.writeln('# suppress inspection "UnusedProperty" for whole file');
+
+  Set<int> set = new Set();
+
+  for (Icon icon in icons) {
+    buf.writeln();
+
+    if (set.contains(icon.codepoint)) {
+      buf.write('# ');
     }
+
+    buf.writeln('${icon.codepoint.toRadixString(16)}.codepoint=${icon.name}');
+    buf.writeln('${icon.name}=/flutter/$pathSegment/${icon.name}.png');
+
+    set.add(icon.codepoint);
   }
-  return buf.toString();
+
+  new File(filename).writeAsStringSync(buf.toString());
+
+  print('wrote $filename');
 }
 
-String generateIconDeclarations(String codepointData) {
-  return LineSplitter
-      .split(codepointData)
-      .map((String l) => l.trim())
-      .where((String l) => l.isNotEmpty)
-      .map(getIconDeclaration)
-      .join();
+void generateDart(
+    List<Icon> icons, String filename, String prefix, String import) {
+  StringBuffer buf = StringBuffer();
+  buf.writeln('''
+// Generated file - do not edit.
+
+import 'package:flutter/$import.dart';
+
+class IconTuple {
+  final IconData data;
+  final String name;
+  final Key smallKey = new UniqueKey();
+  final Key largeKey = new UniqueKey();
+
+  IconTuple(this.data, this.name);
 }
 
-String getIconDeclaration(String line) {
-  final List<String> tokens = line.split(' ');
-  if (tokens.length != 2)
-    throw new FormatException('Unexpected codepoint data: $line');
-  final String name = tokens[0];
-  final String codepoint = tokens[1];
-  final String identifier = kIdentifierRewrites[name] ?? name;
-  final String description = name.replaceAll('_', ' ');
-  return '''
+final List<IconTuple> icons = [''');
 
-  /// <p><i class="material-icons md-36">$name</i> &#x2014; material icon named "$description".</p>
-  static const IconData $identifier = const IconData(0x$codepoint, fontFamily: 'MaterialIcons');
-''';
+  for (Icon icon in icons) {
+    buf.writeln('  new IconTuple($prefix.${icon.name}, \'${icon.name}\'),');
+  }
+
+  buf.writeln('];');
+
+  new File(filename).writeAsStringSync(buf.toString());
+
+  print('wrote $filename');
+}
+
+class Icon {
+  final String name;
+  final int codepoint;
+
+  Icon(this.name, this.codepoint);
+
+  String toString() => '$name 0x${codepoint.toRadixString(16)}';
 }

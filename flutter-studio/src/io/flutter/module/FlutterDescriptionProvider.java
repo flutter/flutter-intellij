@@ -114,7 +114,7 @@ public class FlutterDescriptionProvider implements ModuleDescriptionProvider {
     @Nullable
     @Override
     public Image getIcon() {
-      return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);
+      return IconUtil.toImage(FlutterIcons.AndroidStudioNewProject);
     }
 
     @NotNull

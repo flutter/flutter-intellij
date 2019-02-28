@@ -7,6 +7,7 @@ package io.flutter.logging;
 
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.SearchTextField;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.event.DocumentEvent;
@@ -20,7 +21,7 @@ public class LogFilterTextField extends SearchTextField {
     super(true);
     addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(DocumentEvent e) {
+      protected void textChanged(@NotNull DocumentEvent e) {
         doFilterIfNeeded();
       }
     });

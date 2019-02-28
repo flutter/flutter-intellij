@@ -88,7 +88,7 @@ public class FlutterModuleUtils {
   }
 
   public static boolean isInFlutterModule(@NotNull PsiElement element) {
-    return isFlutterModule(ModuleUtil.findModuleForPsiElement(element));
+    return isFlutterModule(ModuleUtilCore.findModuleForPsiElement(element));
   }
 
   /**
@@ -133,10 +133,15 @@ public class FlutterModuleUtils {
     // Look for XCode metadata in `example/ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile exampleDir = root.getExampleDir();
-      final VirtualFile iosDir = exampleDir == null ? null : exampleDir.findChild("ios");
-      final VirtualFile file = findPreferedXcodeMetadataFile(iosDir);
-      if (file != null) {
-        return file;
+      if (exampleDir != null) {
+        VirtualFile iosDir = exampleDir.findChild("ios");
+        if (iosDir == null) {
+          iosDir = exampleDir.findChild(".ios");
+        }
+        final VirtualFile file = findPreferedXcodeMetadataFile(iosDir);
+        if (file != null) {
+          return file;
+        }
       }
     }
 
@@ -171,6 +176,9 @@ public class FlutterModuleUtils {
    * Check if any module in this project {@link #declaresFlutter(Module)}.
    */
   public static boolean declaresFlutter(@NotNull Project project) {
+    if (project.isDisposed()) {
+      return false;
+    }
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::declaresFlutter);
   }
 
@@ -345,7 +353,7 @@ public class FlutterModuleUtils {
       }
       final String dartSdkPath = flutterSdk.getDartSdkPath();
       if (dartSdkPath == null) {
-        return; // Not cached. TODO(skybrian) call flutterSdk.sync() here?
+        return; // Not cached. TODO call flutterSdk.sync() here?
       }
       ApplicationManager.getApplication().runWriteAction(() -> {
         DartPlugin.ensureDartSdkConfigured(module.getProject(), dartSdkPath);

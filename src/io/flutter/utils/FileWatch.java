@@ -20,6 +20,7 @@ import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.openapi.vfs.newvfs.BulkFileListener;
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent;
 import com.intellij.util.messages.MessageBusConnection;
+import io.flutter.FlutterUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -127,7 +128,7 @@ public class FileWatch {
     try {
       callback.run();
     } catch (Exception e) {
-      LOG.error("Uncaught exception in FileWatch callback", e);
+      FlutterUtils.warn(LOG, "Uncaught exception in FileWatch callback", e);
       unsubscribe(); // avoid further errors
     }
   }

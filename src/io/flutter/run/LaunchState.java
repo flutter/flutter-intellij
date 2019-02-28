@@ -38,14 +38,15 @@ import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.DartExecutionHelper;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
 import io.flutter.logging.FlutterLogView;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.daemon.*;
-import io.flutter.view.OpenFlutterViewAction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -190,8 +191,8 @@ public class LaunchState extends CommandLineState {
 
   @NotNull
   protected XDebugSession createDebugSession(@NotNull final ExecutionEnvironment env,
-                                           @NotNull final FlutterApp app,
-                                           @NotNull final ExecutionResult executionResult)
+                                             @NotNull final FlutterApp app,
+                                             @NotNull final ExecutionResult executionResult)
     throws ExecutionException {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), sourceLocation);
@@ -249,10 +250,10 @@ public class LaunchState extends CommandLineState {
     final List<AnAction> actions = new ArrayList<>(Arrays.asList(
       super.createActions(console, app.getProcessHandler(), getEnvironment().getExecutor())));
     actions.add(new Separator());
+    actions.add(new OpenDevToolsAction(app.getConnector(), observatoryAvailable));
+    actions.add(new Separator());
     actions.add(new OpenObservatoryAction(app.getConnector(), observatoryAvailable));
     actions.add(new OpenTimelineViewAction(app.getConnector(), observatoryAvailable));
-    actions.add(new Separator());
-    actions.add(new OpenFlutterViewAction(() -> !app.getProcessHandler().isProcessTerminated()));
 
     return new DefaultExecutionResult(console, app.getProcessHandler(), actions.toArray(new AnAction[0]));
   }
@@ -383,13 +384,12 @@ public class LaunchState extends CommandLineState {
             if (!identicalCommands(app.getCommand(), launchState.runConfig.getCommand(env, app.device()))) {
               // To be safe, relaunch as the arguments to launch have changed.
               try {
-                // TODO(jacobr): ideally we shouldn't be synchronously waiting
-                // for futures like this but I don't see a better option.
-                // In practice this seems fine.
+                // TODO(jacobr): ideally we shouldn't be synchronously waiting for futures like this
+                // but I don't see a better option. In practice this seems fine.
                 app.shutdownAsync().get();
               }
               catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                LOG.error(e);
+                FlutterUtils.warn(LOG, e);
               }
               return launchState.launch(env);
             }
@@ -399,7 +399,7 @@ public class LaunchState extends CommandLineState {
               // Map a re-run action to a flutter hot restart.
               FileDocumentManager.getInstance().saveAllDocuments();
               FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-              app.performRestartApp();
+              app.performRestartApp(FlutterConstants.RELOAD_REASON_SAVE);
             }
           }
 

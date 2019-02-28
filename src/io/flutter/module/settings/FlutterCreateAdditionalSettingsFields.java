@@ -37,13 +37,14 @@ public class FlutterCreateAdditionalSettingsFields {
     projectTypeForm = new ProjectType();
     projectTypeForm.addListener(e -> {
       settings.setType(projectTypeForm.getType());
+      settings.setSampleContent(projectTypeForm.getSample());
       changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
     });
 
     orgField = new JTextField();
     orgField.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(DocumentEvent e) {
+      protected void textChanged(@NotNull DocumentEvent e) {
         settings.setOrg(orgField.getText());
       }
     });
@@ -53,7 +54,7 @@ public class FlutterCreateAdditionalSettingsFields {
     descriptionField = new JTextField();
     descriptionField.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(DocumentEvent e) {
+      protected void textChanged(@NotNull DocumentEvent e) {
         settings.setDescription(descriptionField.getText());
       }
     });
@@ -113,6 +114,7 @@ public class FlutterCreateAdditionalSettingsFields {
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
+      .setSampleContent(projectTypeForm.getSample())
       .setOffline(createParams.isOfflineSelected())
       .build();
   }

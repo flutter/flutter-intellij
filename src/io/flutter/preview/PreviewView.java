@@ -105,6 +105,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   final QuickAssistAction actionMoveDown;
   final QuickAssistAction actionRemove;
   final ExtractMethodAction actionExtractMethod;
+  final ExtractWidgetAction actionExtractWidget;
 
   private SimpleToolWindowPanel windowPanel;
   private ActionToolbar windowToolbar;
@@ -283,6 +284,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
     actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget");
     actionExtractMethod = new ExtractMethodAction();
+    actionExtractWidget = new ExtractWidgetAction();
   }
 
   @Override
@@ -487,6 +489,10 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         if (actionExtractMethod.isEnabled()) {
           hasAction = true;
           group.add(new TextOnlyActionWrapper(actionExtractMethod));
+        }
+        if (actionExtractWidget.isEnabled()) {
+          hasAction = true;
+          group.add(new TextOnlyActionWrapper(actionExtractWidget));
         }
         group.addSeparator();
         if (actionMoveUp.isEnabled()) {
@@ -1058,6 +1064,49 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
             action.actionPerformed(editorEvent);
           });
         }
+      }
+    }
+
+    @Override
+    public void update(AnActionEvent e) {
+      final boolean isEnabled = isEnabled();
+      e.getPresentation().setEnabled(isEnabled);
+    }
+
+    boolean isEnabled() {
+      return getWidgetOutline() != null;
+    }
+
+    private FlutterOutline getWidgetOutline() {
+      final List<FlutterOutline> outlines = getOutlinesSelectedInTree();
+      if (outlines.size() == 1) {
+        final FlutterOutline outline = outlines.get(0);
+        if (outline.getDartElement() == null) {
+          return outline;
+        }
+      }
+      return null;
+    }
+  }
+
+  private class ExtractWidgetAction extends AnAction {
+    private final String id = "dart.assist.flutter.extractwidget";
+
+    ExtractWidgetAction() {
+      super("Extract widget...");
+    }
+
+    @Override
+    public void actionPerformed(AnActionEvent e) {
+      final AnAction action = ActionManager.getInstance().getAction("Flutter.ExtractWidget");
+      if (action != null) {
+        TransactionGuard.submitTransaction(project, () -> {
+          final JComponent editorComponent = currentEditor.getComponent();
+          final DataContext editorContext = DataManager.getInstance().getDataContext(editorComponent);
+          final AnActionEvent editorEvent = AnActionEvent.createFromDataContext(ActionPlaces.UNKNOWN, null, editorContext);
+
+          action.actionPerformed(editorEvent);
+        });
       }
     }
 

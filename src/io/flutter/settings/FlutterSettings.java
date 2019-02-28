@@ -7,10 +7,14 @@ package io.flutter.settings;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
+import io.flutter.bazel.Workspace;
+import io.flutter.sdk.FlutterSdk;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -25,9 +29,11 @@ public class FlutterSettings {
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
-  private static final String trackWidgetCreationKey = "io.flutter.trackWidgetCreation";
+  private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
+  private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
+  private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -56,6 +62,9 @@ public class FlutterSettings {
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
     }
+    if (isOpenInspectorOnAppLaunch()) {
+      analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
+    }
     if (isFormatCodeOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(formatCodeOnSaveKey));
 
@@ -63,14 +72,27 @@ public class FlutterSettings {
         analytics.sendEvent("settings", afterLastPeriod(organizeImportsOnSaveKey));
       }
     }
-    if (isOpenInspectorOnAppLaunch()) {
-      analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
-    }
     if (isShowOnlyWidgets()) {
       analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
     }
     if (isShowPreviewArea()) {
       analytics.sendEvent("settings", afterLastPeriod(showPreviewAreaKey));
+    }
+
+    if (isSyncingAndroidLibraries()) {
+      analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
+    }
+    if (isLegacyTrackWidgetCreation()) {
+      analytics.sendEvent("settings", afterLastPeriod(legacyTrackWidgetCreationKey));
+    }
+    if (isDisableTrackWidgetCreation()) {
+      analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
+    }
+    if (useFlutterLogView()) {
+      analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
+    }
+    if (shouldUseNewBazelTestRunner()) {
+      analytics.sendEvent("settings", afterLastPeriod(newBazelTestRunnerKey));
     }
   }
 
@@ -86,13 +108,33 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
-  public boolean isTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(trackWidgetCreationKey, false);
+  // TODO(jacobr): remove after 0.10.2 is the default.
+  public boolean isLegacyTrackWidgetCreation() {
+    return getPropertiesComponent().getBoolean(legacyTrackWidgetCreationKey, false);
   }
 
-  public void setTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(trackWidgetCreationKey, value, false);
+  public void setLegacyTrackWidgetCreation(boolean value) {
+    getPropertiesComponent().setValue(legacyTrackWidgetCreationKey, value, false);
 
+    fireEvent();
+  }
+
+  public boolean isTrackWidgetCreationEnabled(Project project) {
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+    if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
+      return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
+    }
+    else {
+      return isLegacyTrackWidgetCreation();
+    }
+  }
+
+  public boolean isDisableTrackWidgetCreation() {
+    return getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
+  }
+
+  public void setDisableTrackWidgetCreation(boolean value) {
+    getPropertiesComponent().setValue(disableTrackWidgetCreationKey, value, false);
     fireEvent();
   }
 
@@ -123,11 +165,11 @@ public class FlutterSettings {
   }
 
   public boolean isShowOnlyWidgets() {
-    return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, true);
+    return getPropertiesComponent().getBoolean(showOnlyWidgetsKey, false);
   }
 
   public void setShowOnlyWidgets(boolean value) {
-    getPropertiesComponent().setValue(showOnlyWidgetsKey, value, true);
+    getPropertiesComponent().setValue(showOnlyWidgetsKey, value, false);
 
     fireEvent();
   }
@@ -172,7 +214,7 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  // TODO(devoncarew): Remove this after M26 ships.
+  // TODO(devoncarew): Remove this after M31 ships.
   private void updateAnalysisServerArgs() {
     final String serverRegistryKey = "dart.server.additional.arguments";
     final String previewDart2FlagSuffix = "preview-dart-2";
@@ -193,13 +235,43 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isMemoryProfilerEnabled() {
+  public boolean isMemoryProfilerDisabled() {
     return getPropertiesComponent().getBoolean(memoryProfilerKey, false);
   }
 
-  public void setMemoryProfilerEnabled(boolean value) {
+  public void setMemoryProfilerDisabled(boolean value) {
     getPropertiesComponent().setValue(memoryProfilerKey, value, false);
 
+    fireEvent();
+  }
+
+  /**
+   * Whether to use the new bazel-test script instead of the old bazel-run script to run tests.
+   *
+   * Defaults to false.
+   */
+  public boolean useNewBazelTestRunner(Project project) {
+    // Check that the new test runner is available.
+    final Workspace workspace = Workspace.load(project);
+    // If the workspace can't be found, we'll return false. This normally happens during tests. Test code that covers this setting
+    // has an override for this setting built-in.
+    if (workspace == null) {
+      return false;
+    }
+    @Nullable String testScript = workspace.getTestScript();
+    if (testScript == null) {
+      // The test script was not found, so it can't be used.
+      return false;
+    }
+    return shouldUseNewBazelTestRunner();
+  }
+
+  private boolean shouldUseNewBazelTestRunner() {
+    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, false);
+  }
+
+  public void setUseNewBazelTestRunner(boolean value) {
+    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, false);
     fireEvent();
   }
 

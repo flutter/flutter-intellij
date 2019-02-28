@@ -7,6 +7,7 @@ package io.flutter.view;
 
 import com.google.common.base.Joiner;
 import com.intellij.openapi.diagnostic.Logger;
+import io.flutter.FlutterUtils;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.TreeUtils;
 
@@ -154,9 +155,9 @@ class InspectorTreeMouseListener extends MouseAdapter {
             }
             else {
               tooltip = "Loading dart docs...";
-              diagnostic.getInspectorService().safeWhenComplete(propertyDoc, (String tip, Throwable th) -> {
+              diagnostic.safeWhenComplete(propertyDoc, (String tip, Throwable th) -> {
                 if (th != null) {
-                  LOG.error(th);
+                  FlutterUtils.warn(LOG, th);
                 }
                 if (lastHover == node) {
                   // We are still hovering of the same node so show the user the tooltip.
@@ -169,7 +170,7 @@ class InspectorTreeMouseListener extends MouseAdapter {
             if (diagnostic.isEnumProperty()) {
               // We can display a better tooltip as we have access to introspection
               // via the observatory service.
-              diagnostic.getInspectorService().safeWhenComplete(diagnostic.getValueProperties(), (properties, th) -> {
+              diagnostic.safeWhenComplete(diagnostic.getValueProperties(), (properties, th) -> {
                 if (properties == null || lastHover != node) {
                   return;
                 }

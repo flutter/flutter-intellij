@@ -6,17 +6,17 @@
 package io.flutter.view;
 
 import com.intellij.execution.runners.ExecutionUtil;
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.execution.ui.layout.impl.JBRunnerTabs;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.BrowserUtil;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.ide.plugins.PluginManager;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
-import com.intellij.openapi.actionSystem.ex.CustomComponentAction;
-import com.intellij.openapi.actionSystem.impl.ActionButton;
+import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.components.PersistentStateComponent;
+import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.components.Storage;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
@@ -33,22 +33,29 @@ import com.intellij.ui.IdeBorderFactory;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.content.ContentManagerAdapter;
 import com.intellij.ui.content.ContentManagerEvent;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.util.PlatformUtils;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
+import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkVersion;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.utils.EventStream;
-import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
@@ -57,8 +64,10 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.utils.AsyncUtils.whenCompleteUiThread;
@@ -79,12 +88,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     boolean sendRestartNotificationOnNextFrame = false;
   }
 
+  private Content emptyContent;
+
   public static final String TOOL_WINDOW_ID = "Flutter Inspector";
 
   public static final String WIDGET_TAB_LABEL = "Widgets";
   public static final String RENDER_TAB_LABEL = "Render Tree";
   public static final String PERFORMANCE_TAB_LABEL = "Performance";
-  public static final String MEMORY_TAB_LABEL = "Memory";
 
   protected final EventStream<Boolean> shouldAutoHorizontalScroll = new EventStream<>(FlutterViewState.AUTO_SCROLL_DEFAULT);
   protected final EventStream<Boolean> highlightNodesShownInBothTrees =
@@ -137,8 +147,26 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     if (window instanceof ToolWindowEx) {
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
         @Override
-        public void actionPerformed(AnActionEvent event) {
-          BrowserUtil.browse("https://goo.gl/WrMB43");
+        public void actionPerformed(@NotNull AnActionEvent event) {
+          FlutterSdkVersion flutterSdkVersion = FlutterSdk.getFlutterSdk(myProject).getVersion();
+          String pluginVersion = PluginManager.getPlugin(FlutterUtils.getPluginId()).getVersion();
+          String ideVersion = ApplicationInfo.getInstance().getStrictVersion();
+          String platformPrefix = PlatformUtils.getPlatformPrefix();
+
+          String flutterSdkVersionEntryId = "entry.1740350095";
+          String pluginVersionEntryId = "entry.1082356620";
+          String ideVersionEntryId = "entry.1842668120";
+
+          BrowserUtil.browse(
+            String.format(
+              "https://docs.google.com/forms/d/e/1FAIpQLSe5Fu-AFb2Wmxtr7UWgxZt6Z76B4z9fE0vf-eu4pdKxqJ8DQg/viewform?%s=%s&%s=%s&%s=%s+%s",
+              flutterSdkVersionEntryId,
+              flutterSdkVersion,
+              pluginVersionEntryId,
+              pluginVersion,
+              ideVersionEntryId,
+              platformPrefix,
+              ideVersion));
         }
       };
 
@@ -159,12 +187,13 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       toolbarGroup.add(registerAction(new ForceRefreshAction(app, inspectorService)));
     }
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new DebugDrawAction(app)));
-    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
+    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new OpenTimelineViewAction(app)));
-    toolbarGroup.add(registerAction(new OpenObservatoryAction(app)));
+    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
+    toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
 
     return toolbarGroup;
   }
@@ -182,7 +211,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return perAppViewState.computeIfAbsent(app, k -> new PerAppState());
   }
 
-  private void addInspector(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
+  private void addInspectorViewContent(FlutterApp app, @Nullable InspectorService inspectorService, ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
@@ -198,6 +227,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
     content.setIcon(FlutterIcons.Phone);
     contentManager.addContent(content);
+
+    if (emptyContent != null) {
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
+    contentManager.setSelectedContent(content);
+
     final PerAppState state = getOrCreateStateForApp(app);
     assert (state.content == null);
     state.content = content;
@@ -216,7 +253,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
     final boolean hasInspectorService = inspectorService != null;
 
-    // If the inspector is available (non-profile mode), then show it.
+    // If the inspector is available (non-release mode), then show it.
     if (debugConnectionAvailable) {
       if (hasInspectorService) {
         final boolean detailsSummaryViewSupported = inspectorService.isDetailsSummaryViewSupported();
@@ -228,16 +265,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       }
       else {
         // If in profile mode, add disabled tabs for the inspector.
-        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, app, toolbarGroup);
-        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, app, toolbarGroup);
+        addDisabledTab(WIDGET_TAB_LABEL, runnerTabs, toolbarGroup);
+        addDisabledTab(RENDER_TAB_LABEL, runnerTabs, toolbarGroup);
       }
 
-      addPerformanceTab(runnerTabs, app, !hasInspectorService);
-
-      // Only show the Memory tab if the "Memory Profiler" experiment is enabled.
-      if (FlutterSettings.getInstance().isMemoryProfilerEnabled()) {
-        addMemoryTab(runnerTabs, app, !hasInspectorService);
-      }
+      addPerformancePlaceholderTab(runnerTabs, app, false);
     }
     else {
       // Add a message about the inspector not being available in release mode.
@@ -269,24 +301,11 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     return doChangeSelection.run();
   }
 
-  public void switchToRenderTree(FlutterApp app) {
-    final PerAppState state = perAppViewState.get(app);
-    for (TabInfo tabInfo : state.tabs.getTabs()) {
-      if (tabInfo.getComponent() instanceof InspectorPanel) {
-        final InspectorPanel panel = (InspectorPanel)tabInfo.getComponent();
-        if (panel.getTreeType() == InspectorService.FlutterTreeType.renderObject) {
-          state.tabs.select(tabInfo, true);
-          return;
-        }
-      }
-    }
-  }
-
   private void addInspectorPanel(String displayName,
                                  JBRunnerTabs tabs,
                                  PerAppState state,
                                  InspectorService.FlutterTreeType treeType,
-                                 FlutterApp flutterApp,
+                                 FlutterApp app,
                                  InspectorService inspectorService,
                                  @NotNull ToolWindow toolWindow,
                                  DefaultActionGroup toolbarGroup,
@@ -294,9 +313,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                  boolean useSummaryTree) {
     final InspectorPanel inspectorPanel = new InspectorPanel(
       this,
-      flutterApp,
+      app,
       inspectorService,
-      flutterApp::isSessionActive,
+      app::isSessionActive,
       treeType,
       useSummaryTree,
       // TODO(jacobr): support the summary tree view for the RenderObject
@@ -316,7 +335,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private void addDisabledTab(String displayName,
                               JBRunnerTabs runnerTabs,
-                              FlutterApp app,
                               DefaultActionGroup toolbarGroup) {
     final JPanel panel = new JPanel(new BorderLayout());
     final JBLabel label = new JBLabel("Widget info not available in profile mode", SwingConstants.CENTER);
@@ -328,11 +346,19 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     runnerTabs.addTab(tabInfo);
   }
 
-  private void addPerformanceTab(JBRunnerTabs runnerTabs,
-                                 FlutterApp app,
-                                 boolean selectedTab) {
-    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app);
-    final TabInfo tabInfo = new TabInfo(perfTab)
+  private void addPerformancePlaceholderTab(JBRunnerTabs runnerTabs,
+                                            FlutterApp app,
+                                            boolean selectedTab) {
+    final LinkLabel<String> linkLabel = new LinkLabel<>("See Flutter Performance window", null);
+    linkLabel.setListener((aSource, aLinkData) -> showFlutterPerformanceWindow(app), null);
+    linkLabel.setBorder(JBUI.Borders.empty(3, 10));
+    linkLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    // Remove underline to avoid LinkLabel bug where underline is left aligned
+    // even though text is center aligned.
+    // TODO(kenzieschmoll): remove this if this bug is fixed in IntelliJ.
+    linkLabel.setPaintUnderline(false);
+
+    final TabInfo tabInfo = new TabInfo(linkLabel)
       .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
     if (selectedTab) {
@@ -340,16 +366,16 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  private void addMemoryTab(JBRunnerTabs runnerTabs,
-                                 FlutterApp app,
-                                 boolean selectedTab) {
-    final InspectorMemoryTab perfTab = new InspectorMemoryTab(runnerTabs, app);
-    final TabInfo tabInfo = new TabInfo(perfTab)
-      .append(MEMORY_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
-    runnerTabs.addTab(tabInfo);
-    if (selectedTab) {
-      runnerTabs.select(tabInfo, false);
+  private void showFlutterPerformanceWindow(FlutterApp app) {
+    final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(myProject);
+    final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
+    final FlutterPerfView flutterPerfView = ServiceManager.getService(myProject, FlutterPerfView.class);
+    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(app);
+    if (flutterPerfToolWindow.isVisible()) {
+      inspectorPerfTab.setVisibleToUser(true);
+      return;
     }
+    flutterPerfToolWindow.show(() -> inspectorPerfTab.setVisibleToUser(true));
   }
 
   /**
@@ -359,16 +385,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final FlutterApp app = event.app;
 
     if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        debugActiveHelper(app, null);
-      });
+      ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
     }
     else {
       whenCompleteUiThread(
         InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService()),
         (InspectorService inspectorService, Throwable throwable) -> {
           if (throwable != null) {
-            LOG.warn(throwable);
+            FlutterUtils.warn(LOG, throwable);
             return;
           }
           debugActiveHelper(app, inspectorService);
@@ -376,25 +400,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  public InspectorPerfTab showPerfTab(@NotNull FlutterApp app) {
-    PerAppState appState = perAppViewState.get(app);
-    if (appState != null) {
-      final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
-
-      toolWindow.getContentManager().setSelectedContent(appState.content);
-      for(TabInfo tabInfo : appState.tabs.getTabs()) {
-        if (tabInfo.getComponent() instanceof InspectorPerfTab) {
-          appState.tabs.select(tabInfo, true);
-          return (InspectorPerfTab)tabInfo.getComponent();
-        }
-      }
-    }
-    return null;
-  }
-
-  private void debugActiveHelper(@NotNull FlutterApp app, @Nullable InspectorService inspectorService) {
+  private void debugActiveHelper(FlutterApp app, @Nullable InspectorService inspectorService) {
     if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
-      autoActivateToolWindow();
+      activateToolWindow();
     }
 
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
@@ -407,11 +415,17 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
       return;
     }
 
+    if (emptyContent != null) {
+      final ContentManager contentManager = toolWindow.getContentManager();
+      contentManager.removeContent(emptyContent, true);
+      emptyContent = null;
+    }
+
     toolWindow.setIcon(ExecutionUtil.getLiveIndicator(FlutterIcons.Flutter_13));
 
     listenForRenderTreeActivations(toolWindow);
 
-    addInspector(app, inspectorService, toolWindow);
+    addInspectorViewContent(app, inspectorService, toolWindow);
 
     app.getVmService().addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -450,12 +464,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
     app.addStateListener(new FlutterApp.FlutterAppListener() {
       public void notifyAppRestarted() {
-        // When we get a restart finishes, queue up a notification to the flutter view
+        // When we get a restart finished event, queue up a notification to the flutter view
         // actions. We don't notify right away because the new isolate can take a little
         // while to start up. We wait until we get the first frame event, which is
         // enough of an indication that the isolate and flutter framework are initialized
-        // enough to receive service calls (for example, calls to restore various framework
-        // debugging settings).
+        // to where they can receive service calls (for example, calls to restore various
+        // framework debugging settings).
         final PerAppState state = getStateForApp(app);
         if (state != null) {
           state.sendRestartNotificationOnNextFrame = true;
@@ -471,13 +485,22 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
 
     toolWindow.setIcon(FlutterIcons.Flutter_13);
+
+    // Display a 'No running applications' message.
+    final ContentManager contentManager = toolWindow.getContentManager();
+    final JPanel panel = new JPanel(new BorderLayout());
+    final JBLabel label = new JBLabel("No running applications", SwingConstants.CENTER);
+    label.setForeground(UIUtil.getLabelDisabledForeground());
+    panel.add(label, BorderLayout.CENTER);
+    emptyContent = contentManager.getFactory().createContent(panel, null, false);
+    contentManager.addContent(emptyContent);
   }
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {
     final ContentManager contentManager = toolWindow.getContentManager();
     contentManager.addContentManagerListener(new ContentManagerAdapter() {
       @Override
-      public void selectionChanged(ContentManagerEvent event) {
+      public void selectionChanged(@NotNull ContentManagerEvent event) {
         final ContentManagerEvent.ContentOperation operation = event.getOperation();
         if (operation == ContentManagerEvent.ContentOperation.add) {
           final String name = event.getContent().getTabName();
@@ -554,9 +577,9 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   /**
-   * Activate the tool window; on app termination, restore any previously active tool window.
+   * Activate the tool window.
    */
-  private void autoActivateToolWindow() {
+  private void activateToolWindow() {
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
@@ -571,51 +594,38 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 }
 
-class DebugDrawAction extends FlutterViewToggleableAction {
-  DebugDrawAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.debugPaint.text"), FlutterBundle.message("flutter.view.debugPaint.description"),
-          AllIcons.General.TbShown);
-
-    setExtensionCommand("ext.flutter.debugPaint");
+class FlutterViewDevToolsAction extends FlutterViewAction {
+  FlutterViewDevToolsAction(@NotNull FlutterApp app) {
+    super(app, "Open DevTools", "Open Dart DevTools", FlutterIcons.Dart_16);
   }
 
-  protected void perform(AnActionEvent event) {
+  @Override
+  public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugPaint", isSelected());
-    }
-  }
+      final String urlString = app.getConnector().getBrowserUrl();
+      if (urlString == null) {
+        return;
+      }
 
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
+      final URL url;
+      try {
+        url = new URL(urlString);
+      }
+      catch (MalformedURLException e) {
+        return;
+      }
 
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
-}
+      final int port = url.getPort();
 
-class PerformanceOverlayAction extends FlutterViewToggleableAction {
-  PerformanceOverlayAction(@NotNull FlutterApp app) {
-    super(app, "Toggle Performance Overlay", "Toggle Performance Overlay", AllIcons.Modules.Library);
+      final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
-    setExtensionCommand("ext.flutter.showPerformanceOverlay");
-  }
-
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.showPerformanceOverlay", isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
+      if (devToolsManager.hasInstalledDevTools()) {
+        devToolsManager.openBrowserAndConnect(port);
+      }
+      else {
+        final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(port));
+      }
     }
   }
 }
@@ -647,130 +657,29 @@ class OpenTimelineViewAction extends FlutterViewAction {
     if (app.isSessionActive()) {
       final String url = app.getConnector().getBrowserUrl();
       if (url != null) {
-        BrowserLauncher.getInstance().browse(url + "/#/timeline-dashboard", null);
+        BrowserLauncher.getInstance().browse(url + "/#/timeline", null);
       }
-    }
-  }
-}
-
-class TogglePlatformAction extends FlutterViewAction {
-  private Boolean isCurrentlyAndroid;
-  CompletableFuture<Boolean> cachedHasExtensionFuture;
-  private StreamSubscription<Boolean> subscription;
-
-  TogglePlatformAction(@NotNull FlutterApp app) {
-    super(app, FlutterBundle.message("flutter.view.togglePlatform.text"),
-          FlutterBundle.message("flutter.view.togglePlatform.description"),
-          AllIcons.RunConfigurations.Application);
-  }
-
-  @Override
-  @SuppressWarnings("Duplicates")
-  public void update(@NotNull AnActionEvent e) {
-    if (!app.isSessionActive()) {
-      if (subscription != null) {
-        subscription.dispose();
-        subscription = null;
-      }
-      e.getPresentation().setEnabled(false);
-      return;
-    }
-
-    if (subscription == null) {
-      subscription = app.hasServiceExtension("ext.flutter.platformOverride", (enabled) -> {
-        e.getPresentation().setEnabled(app.isSessionActive() && enabled);
-      });
-    }
-  }
-
-  @Override
-  public void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.togglePlatform().thenAccept(isAndroid -> {
-        if (isAndroid == null) {
-          return;
-        }
-
-        app.togglePlatform(!isAndroid).thenAccept(isNowAndroid -> {
-          if (app.getConsole() != null && isNowAndroid != null) {
-            isCurrentlyAndroid = isNowAndroid;
-
-            app.getConsole().print(
-              FlutterBundle.message("flutter.view.togglePlatform.output",
-                                    isNowAndroid ? "Android" : "iOS"),
-              ConsoleViewContentType.SYSTEM_OUTPUT);
-          }
-        });
-      });
-    }
-  }
-
-  public void handleAppRestarted() {
-    if (isCurrentlyAndroid != null) {
-      app.togglePlatform(isCurrentlyAndroid);
     }
   }
 }
 
 class RepaintRainbowAction extends FlutterViewToggleableAction {
   RepaintRainbowAction(@NotNull FlutterApp app) {
-    super(app, "Enable Repaint Rainbow");
-
-    setExtensionCommand("ext.flutter.repaintRainbow");
-  }
-
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.repaintRainbow", isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
-}
-
-class TimeDilationAction extends FlutterViewToggleableAction {
-  TimeDilationAction(@NotNull FlutterApp app) {
-    super(app, "Enable Slow Animations");
-
-    setExtensionCommand("ext.flutter.timeDilation");
-  }
-
-  protected void perform(@Nullable AnActionEvent event) {
-    final Map<String, Object> params = new HashMap<>();
-    params.put("timeDilation", isSelected() ? 5.0 : 1.0);
-    if (app.isSessionActive()) {
-      app.callServiceExtension("ext.flutter.timeDilation", params);
-    }
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
+    super(app, FlutterIcons.RepaintRainbow, ServiceExtensions.repaintRainbow);
   }
 }
 
 class ToggleInspectModeAction extends FlutterViewToggleableAction {
   ToggleInspectModeAction(@NotNull FlutterApp app) {
-    super(app, "Toggle Select Widget Mode", "Toggle Select Widget Mode", AllIcons.General.LocateHover);
-
-    setExtensionCommand("ext.flutter.debugWidgetInspector");
+    super(app, AllIcons.General.Locate, ServiceExtensions.toggleSelectWidgetMode);
   }
 
+  @Override
   protected void perform(AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugWidgetInspector", isSelected());
+    super.perform(event);
 
-      // If toggling inspect mode on, bring all devices to the foreground.
-      // TODO(jacobr): consider only bringing the device for the currently open inspector TAB.
+    if (app.isSessionActive()) {
+      // If toggling inspect mode on, bring the app's device to the foreground.
       if (isSelected()) {
         final FlutterDevice device = app.device();
         if (device != null) {
@@ -780,6 +689,7 @@ class ToggleInspectModeAction extends FlutterViewToggleableAction {
     }
   }
 
+  @Override
   public void handleAppRestarted() {
     if (isSelected()) {
       setSelected(null, false);
@@ -804,15 +714,14 @@ class ForceRefreshAction extends FlutterViewAction {
     update(event);
   }
 
+  @Override
   protected void perform(final AnActionEvent event) {
     if (app.isSessionActive()) {
       setEnabled(event, false);
 
       final CompletableFuture<?> future = inspectorService.forceRefresh();
 
-      AsyncUtils.whenCompleteUiThread(future, (o, throwable) -> {
-        setEnabled(event, true);
-      });
+      AsyncUtils.whenCompleteUiThread(future, (o, throwable) -> setEnabled(event, true));
     }
   }
 
@@ -822,28 +731,9 @@ class ForceRefreshAction extends FlutterViewAction {
   }
 }
 
-class HideSlowBannerAction extends FlutterViewToggleableAction {
-  HideSlowBannerAction(@NotNull FlutterApp app) {
-    super(app, "Hide Debug Mode Banner");
-
-    setExtensionCommand("ext.flutter.debugAllowBanner");
-  }
-
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugAllowBanner", !isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
+class ShowDebugBannerAction extends FlutterViewToggleableAction {
+  ShowDebugBannerAction(@NotNull FlutterApp app) {
+    super(app, FlutterIcons.DebugBanner, ServiceExtensions.debugAllowBanner);
   }
 }
 
@@ -859,140 +749,44 @@ class HighlightNodesShownInBothTrees extends FlutterViewLocalToggleableAction {
   }
 }
 
-class ShowPaintBaselinesAction extends FlutterViewToggleableAction {
-  ShowPaintBaselinesAction(@NotNull FlutterApp app) {
-    super(app, "Show Paint Baselines");
-
-    setExtensionCommand("ext.flutter.debugPaintBaselinesEnabled");
-  }
-
-  @Override
-  protected void perform(@Nullable AnActionEvent event) {
-    if (app.isSessionActive()) {
-      app.callBooleanExtension("ext.flutter.debugPaintBaselinesEnabled", isSelected());
-    }
-  }
-
-  public void handleAppStarted() {
-    handleAppRestarted();
-  }
-
-  public void handleAppRestarted() {
-    if (isSelected()) {
-      perform(null);
-    }
-  }
-}
-
-class OverflowAction extends AnAction implements RightAlignedToolbarAction {
+class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolbarAction {
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
   public OverflowAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
-    super("Additional actions", null, AllIcons.General.Gear);
+    super();
 
     this.app = app;
-
     myActionGroup = createPopupActionGroup(view, app);
   }
 
-  ActionButton getActionButton() {
-    final Presentation presentation = getTemplatePresentation().clone();
-    final ActionButton actionButton = new ActionButton(
-      this,
-      presentation,
-      ActionPlaces.UNKNOWN,
-      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    );
-    presentation.putClientProperty("button", actionButton);
-    return actionButton;
+  @NotNull
+  @Override
+  protected DefaultActionGroup createPopupActionGroup(JComponent button) {
+    return myActionGroup;
   }
 
   @Override
   public final void update(AnActionEvent e) {
+    e.getPresentation().setText("More Actions");
     e.getPresentation().setEnabled(app.isSessionActive());
-  }
-
-  @Override
-  @SuppressWarnings("Duplicates")
-  public void actionPerformed(AnActionEvent e) {
-    final Presentation presentation = e.getPresentation();
-    JComponent component = (JComponent)presentation.getClientProperty("button");
-    if (component == null && e.getInputEvent().getSource() instanceof JComponent) {
-      component = (JComponent)e.getInputEvent().getSource();
-    }
-    if (component == null) {
-      return;
-    }
-    final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
-      ActionPlaces.UNKNOWN,
-      myActionGroup);
-    popupMenu.getComponent().show(component, component.getWidth(), 0);
   }
 
   private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
     final DefaultActionGroup group = new DefaultActionGroup();
 
-    group.add(view.registerAction(new ShowPaintBaselinesAction(app)));
-    group.addSeparator();
     group.add(view.registerAction(new RepaintRainbowAction(app)));
-    group.add(view.registerAction(new TimeDilationAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new HideSlowBannerAction(app)));
+    group.add(view.registerAction(new ShowDebugBannerAction(app)));
     group.addSeparator();
     group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
     group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
-
-    return group;
-  }
-}
-
-class ObservatoryActionGroup extends AnAction implements CustomComponentAction {
-  private final @NotNull FlutterApp app;
-  private final DefaultActionGroup myActionGroup;
-
-  public ObservatoryActionGroup(@NotNull FlutterView view, @NotNull FlutterApp app) {
-    super("Observatory actions", null, FlutterIcons.OpenObservatoryGroup);
-
-    this.app = app;
-
-    myActionGroup = createPopupActionGroup(view, app);
-  }
-
-  @Override
-  public final void update(AnActionEvent e) {
-    e.getPresentation().setEnabled(app.isSessionActive());
-  }
-
-  @Override
-  public void actionPerformed(AnActionEvent e) {
-    final Presentation presentation = e.getPresentation();
-    final JComponent button = (JComponent)presentation.getClientProperty("button");
-    if (button == null) {
-      return;
-    }
-    final ActionPopupMenu popupMenu = ActionManager.getInstance().createActionPopupMenu(
-      ActionPlaces.UNKNOWN,
-      myActionGroup);
-    popupMenu.getComponent().show(button, button.getWidth(), 0);
-  }
-
-  @Override
-  public JComponent createCustomComponent(Presentation presentation) {
-    final ActionButton button = new ActionButton(
-      this,
-      presentation,
-      ActionPlaces.UNKNOWN,
-      ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    );
-    presentation.putClientProperty("button", button);
-    return button;
-  }
-
-  private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
-    final DefaultActionGroup group = new DefaultActionGroup();
+    group.addSeparator();
+    group.add(view.registerAction(new FlutterViewDevToolsAction(app)));
+    group.addSeparator();
     group.add(view.registerAction(new OpenTimelineViewAction(app)));
     group.add(view.registerAction(new OpenObservatoryAction(app)));
+
     return group;
   }
 }

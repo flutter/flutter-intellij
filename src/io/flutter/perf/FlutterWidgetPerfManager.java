@@ -15,9 +15,11 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.messages.MessageBusConnection;
+import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
@@ -44,21 +46,23 @@ import java.util.Set;
  */
 public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterAppListener {
 
-  // Service extensions used by the perf manager.
-  public static final String TRACK_REBUILD_WIDGETS = "ext.flutter.inspector.trackRebuildDirtyWidgets";
-  public static final String TRACK_REPAINT_WIDGETS = "ext.flutter.inspector.trackRepaintWidgets";
-
   // Whether each of the performance metrics tracked should be tracked by
   // default when starting a new application.
   public static boolean trackRebuildWidgetsDefault = false;
   public static boolean trackRepaintWidgetsDefault = false;
+
+  public FlutterWidgetPerf getCurrentStats() {
+    return currentStats;
+  }
 
   private FlutterWidgetPerf currentStats;
   private FlutterApp app;
   private final Project project;
   private boolean trackRebuildWidgets = trackRebuildWidgetsDefault;
   private boolean trackRepaintWidgets = trackRepaintWidgetsDefault;
-  private boolean debugIsActive = false;
+  private boolean debugIsActive;
+
+  private final Set<PerfModel> listeners = new HashSet<>();
 
   /**
    * File editors visible to the user that might contain widgets.
@@ -66,6 +70,12 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private Set<TextEditor> lastSelectedEditors = new HashSet<>();
 
   private final List<StreamSubscription<Boolean>> streamSubscriptions = new ArrayList<>();
+
+
+  @NotNull
+  public Set<TextEditor> getSelectedEditors() {
+    return lastSelectedEditors;
+  }
 
   private FlutterWidgetPerfManager(@NotNull Project project) {
     this.project = project;
@@ -137,6 +147,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     if (debugIsActive && app != null && app.isSessionActive()) {
       updateTrackWidgetRebuilds();
     }
+    // Send analytics.
+    if (trackRebuildWidgets) {
+      FlutterInitializer.getAnalytics().sendEvent("intellij", "TrackWidgetRebuilds");
+    }
   }
 
   public boolean isTrackRepaintWidgets() {
@@ -151,6 +165,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     onProfilingFlagsChanged();
     if (debugIsActive && app != null && app.isSessionActive()) {
       updateTrackWidgetRepaints();
+    }
+    // Send analytics.
+    if (trackRepaintWidgets) {
+      FlutterInitializer.getAnalytics().sendEvent("intellij", "TrackRepaintWidgets");
     }
   }
 
@@ -167,24 +185,33 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   private void debugActive(Project project, FlutterViewMessages.FlutterDebugEvent event) {
     debugIsActive = true;
 
-    assert (app != null);
+    if (app == null) {
+      return;
+    }
+
     app.addStateListener(this);
-    syncBooleanServiceExtension(TRACK_REBUILD_WIDGETS, () -> trackRebuildWidgets);
-    syncBooleanServiceExtension(TRACK_REPAINT_WIDGETS, () -> trackRepaintWidgets);
+    syncBooleanServiceExtension(ServiceExtensions.trackRebuildWidgets.getExtension(), () -> trackRebuildWidgets);
+    syncBooleanServiceExtension(ServiceExtensions.trackRepaintWidgets.getExtension(), () -> trackRepaintWidgets);
 
     currentStats = new FlutterWidgetPerf(
       isProfilingEnabled(),
       new VmServiceWidgetPerfProvider(app),
       (TextEditor textEditor) -> new EditorPerfDecorations(textEditor, app),
-      (TextEditor textEditor) -> new TextEditorFileLocationMapper(textEditor, app.getProject())
+      path -> new DocumentFileLocationMapper(path, app.getProject())
     );
+
+    for (PerfModel listener : listeners) {
+      currentStats.addPerfListener(listener);
+    }
   }
 
   public void stateChanged(FlutterApp.State newState) {
     switch (newState) {
       case RELOADING:
-      case RESTARTING:
         currentStats.clear();
+        break;
+      case RESTARTING:
+        currentStats.onRestart();
         break;
       case STARTED:
         notifyPerf();
@@ -201,15 +228,17 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   }
 
   private void updateTrackWidgetRebuilds() {
-    app.maybeCallBooleanExtension(TRACK_REBUILD_WIDGETS, trackRebuildWidgets).whenCompleteAsync((v, e) -> {
-      notifyPerf();
-    });
+    app.maybeCallBooleanExtension(ServiceExtensions.trackRebuildWidgets.getExtension(), trackRebuildWidgets)
+      .whenCompleteAsync((v, e) -> {
+        notifyPerf();
+      });
   }
 
   private void updateTrackWidgetRepaints() {
-    app.maybeCallBooleanExtension(TRACK_REPAINT_WIDGETS, trackRepaintWidgets).whenCompleteAsync((v, e) -> {
-      notifyPerf();
-    });
+    app.maybeCallBooleanExtension(ServiceExtensions.trackRepaintWidgets.getExtension(), trackRepaintWidgets)
+      .whenCompleteAsync((v, e) -> {
+        notifyPerf();
+      });
   }
 
   private void syncBooleanServiceExtension(String serviceExtension, Computable<Boolean> valueProvider) {
@@ -259,6 +288,11 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   }
 
   private void notifyPerf() {
+    if (!trackRepaintWidgets && !trackRebuildWidgets && currentStats != null) {
+      // TODO(jacobr): consider just marking as idle.
+      currentStats.clear();
+    }
+
     if (currentStats == null) {
       return;
     }
@@ -290,6 +324,21 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     if (currentStats != null) {
       currentStats.dispose();
       currentStats = null;
+      listeners.clear();
+    }
+  }
+
+  public void addPerfListener(PerfModel listener) {
+    listeners.add(listener);
+    if (currentStats != null) {
+      currentStats.addPerfListener(listener);
+    }
+  }
+
+  public void removePerfListener(PerfModel listener) {
+    listeners.remove(listener);
+    if (currentStats != null) {
+      currentStats.removePerfListener(listener);
     }
   }
 }

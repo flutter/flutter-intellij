@@ -26,15 +26,16 @@ import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.components.labels.LinkLabel;
+import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdkUtil;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.io.File;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class InstallSdkAction extends DumbAwareAction {
 
   private static final String GIT_EXECUTABLE = "git";
@@ -58,7 +59,7 @@ public class InstallSdkAction extends DumbAwareAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@Nullable /* null when called from AS */ AnActionEvent e) {
     myInstallAction.perform();
   }
 
@@ -168,7 +169,7 @@ public class InstallSdkAction extends DumbAwareAction {
     @Override
     void perform() {
       FlutterInitializer.sendAnalyticsAction(ANALYTICS_KEY);
-      BrowserUtil.browse("https://flutter.io/setup/");
+      BrowserUtil.browse(FlutterConstants.URL_GETTING_STARTED);
     }
 
     @Override
@@ -193,7 +194,7 @@ public class InstallSdkAction extends DumbAwareAction {
     @Override
     void perform() {
       // Defaults to ~/flutter
-      @SuppressWarnings("DialogTitleCapitalization") final FileChooserDescriptor descriptor =
+      final FileChooserDescriptor descriptor =
         new FileChooserDescriptor(FileChooserDescriptorFactory.createSingleFolderDescriptor()) {
           @Override
           public void validateSelectedFiles(VirtualFile[] files) {

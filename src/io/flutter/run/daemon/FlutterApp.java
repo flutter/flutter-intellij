@@ -31,12 +31,14 @@ import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
+import io.flutter.FlutterUtils;
 import io.flutter.logging.FlutterLog;
-import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
+import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
@@ -77,6 +79,13 @@ public class FlutterApp {
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
 
+  /**
+   * The command with which the app was launched.
+   * <p>
+   * Should be "run" if the app was `flutter run` and "attach" if the app was `flutter attach`.
+   */
+  private @Nullable String myLaunchMode;
+
   private @Nullable List<PubRoot> myPubRoots;
 
   private int reloadCount;
@@ -93,7 +102,7 @@ public class FlutterApp {
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final EventDispatcher<FlutterAppListener> listenersDispatcher = EventDispatcher.create(FlutterAppListener.class);
 
-  private @NotNull final FlutterLog myFlutterLog = new FlutterLog();
+  private @NotNull final FlutterLog myFlutterLog;
   private final ObservatoryConnector myConnector;
   private FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
@@ -120,6 +129,7 @@ public class FlutterApp {
              @NotNull GeneralCommandLine command) {
     myProject = project;
     myModule = module;
+    myFlutterLog = new FlutterLog(project, module);
     myMode = mode;
     myDevice = device;
     myProcessHandler = processHandler;
@@ -302,12 +312,16 @@ public class FlutterApp {
     myBaseUri = uri;
   }
 
+  void setLaunchMode(@Nullable String launchMode) {
+    myLaunchMode = launchMode;
+  }
+
   /**
    * Perform a hot restart of the the app.
    */
-  public CompletableFuture<DaemonApi.RestartResult> performRestartApp() {
+  public CompletableFuture<DaemonApi.RestartResult> performRestartApp(@NotNull String reason) {
     if (myAppId == null) {
-      LOG.warn("cannot restart Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot restart Flutter app because app id is not set");
 
       final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
       result.completeExceptionally(new IllegalStateException("cannot restart Flutter app because app id is not set"));
@@ -319,12 +333,11 @@ public class FlutterApp {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "Flutter hot restart");
 
-    final long reloadTimestamp = System.currentTimeMillis();
-    maxFileTimestamp = reloadTimestamp;
+    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RESTARTING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
-      myDaemonApi.restartApp(myAppId, true, false);
+      myDaemonApi.restartApp(myAppId, true, false, reason);
     future.thenAccept(result -> changeState(State.STARTED));
     future.thenRun(this::notifyAppRestarted);
     return future;
@@ -343,7 +356,7 @@ public class FlutterApp {
   }
 
   /**
-   ** @return whether the latest of the version of the file is running.
+   * @return whether the latest of the version of the file is running.
    */
   public boolean isLatestVersionRunning(VirtualFile file) {
     return file != null && file.getTimeStamp() <= maxFileTimestamp;
@@ -352,9 +365,9 @@ public class FlutterApp {
   /**
    * Perform a hot reload of the app.
    */
-  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart) {
+  public CompletableFuture<DaemonApi.RestartResult> performHotReload(boolean pauseAfterRestart, @NotNull String reason) {
     if (myAppId == null) {
-      LOG.warn("cannot reload Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot reload Flutter app because app id is not set");
 
       final CompletableFuture<DaemonApi.RestartResult> result = new CompletableFuture<>();
       result.completeExceptionally(new IllegalStateException("cannot reload Flutter app because app id is not set"));
@@ -366,12 +379,11 @@ public class FlutterApp {
 
     LocalHistory.getInstance().putSystemLabel(getProject(), "hot reload #" + userReloadCount);
 
-    final long reloadTimestamp = System.currentTimeMillis();
-    maxFileTimestamp = reloadTimestamp;
+    maxFileTimestamp = System.currentTimeMillis();
     changeState(State.RELOADING);
 
     final CompletableFuture<DaemonApi.RestartResult> future =
-      myDaemonApi.restartApp(myAppId, false, pauseAfterRestart);
+      myDaemonApi.restartApp(myAppId, false, pauseAfterRestart, reason);
     future.thenAccept(result -> changeState(State.STARTED));
     future.thenRun(this::notifyAppReloaded);
     return future;
@@ -379,11 +391,11 @@ public class FlutterApp {
 
   public CompletableFuture<Boolean> togglePlatform() {
     if (myAppId == null) {
-      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
 
-    final CompletableFuture<JsonObject> result = callServiceExtension("ext.flutter.platformOverride");
+    final CompletableFuture<JsonObject> result = callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension());
     return result.thenApply(obj -> {
       //noinspection CodeBlock2Expr
       return obj != null && "android".equals(obj.get("value").getAsString());
@@ -392,16 +404,17 @@ public class FlutterApp {
 
   public CompletableFuture<Boolean> togglePlatform(boolean showAndroid) {
     if (myAppId == null) {
-      LOG.warn("cannot invoke togglePlatform on Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
 
     final Map<String, Object> params = new HashMap<>();
     params.put("value", showAndroid ? "android" : "iOS");
-    return callServiceExtension("ext.flutter.platformOverride", params).thenApply(obj -> {
-      //noinspection CodeBlock2Expr
-      return obj != null && "android".equals(obj.get("value").getAsString());
-    });
+    return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params)
+      .thenApply(obj -> {
+        //noinspection CodeBlock2Expr
+        return obj != null && "android".equals(obj.get("value").getAsString());
+      });
   }
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName) {
@@ -410,10 +423,17 @@ public class FlutterApp {
 
   public CompletableFuture<JsonObject> callServiceExtension(String methodName, Map<String, Object> params) {
     if (myAppId == null) {
-      LOG.warn("cannot invoke " + methodName + " on Flutter app because app id is not set");
+      FlutterUtils.warn(LOG, "cannot invoke " + methodName + " on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
-    return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
+    if (isFlutterIsolateSuspended()) {
+      return whenFlutterIsolateResumed().thenComposeAsync((ignored) ->
+                                                            myDaemonApi.callAppServiceExtension(myAppId, methodName, params)
+      );
+    }
+    else {
+      return myDaemonApi.callAppServiceExtension(myAppId, methodName, params);
+    }
   }
 
   @SuppressWarnings("UnusedReturnValue")
@@ -429,7 +449,7 @@ public class FlutterApp {
   /**
    * Call a boolean service extension only if it is already present, skipping
    * otherwise.
-   *
+   * <p>
    * Only use this method if you are confident there will not be a race
    * condition where the service extension is registered shortly after
    * this method is called.
@@ -501,7 +521,13 @@ public class FlutterApp {
     // Do the rest in the background to avoid freezing the Swing dispatch thread.
     AppExecutorUtil.getAppExecutorService().submit(() -> {
       // Try to shut down gracefully (need to wait for a response).
-      final Future stopDone = myDaemonApi.stopApp(appId);
+      final Future stopDone;
+      if (DaemonEvent.AppStarting.LAUNCH_MODE_ATTACH.equals(myLaunchMode)) {
+        stopDone = myDaemonApi.detachApp(appId);
+      }
+      else {
+        stopDone = myDaemonApi.stopApp(appId);
+      }
       final Stopwatch watch = Stopwatch.createStarted();
       while (watch.elapsed(TimeUnit.SECONDS) < 10 && getState() == State.TERMINATING) {
         try {
@@ -512,7 +538,7 @@ public class FlutterApp {
           // continue
         }
         catch (Exception e) {
-          LOG.warn(e);
+          FlutterUtils.warn(LOG, e);
           break;
         }
       }
@@ -554,7 +580,7 @@ public class FlutterApp {
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
     myFlutterDebugProcess = flutterDebugProcess;
-    myFlutterLog.setFlutterDebugProcess(flutterDebugProcess);
+    myFlutterLog.setFlutterApp(this);
   }
 
   public FlutterDebugProcess getFlutterDebugProcess() {
@@ -612,6 +638,21 @@ public class FlutterApp {
     return myExecutionEnvironment.toString() + ":" + deviceId();
   }
 
+  public boolean isFlutterIsolateSuspended() {
+    if (!isSessionActive() || myVMServiceManager.getCurrentFlutterIsolateRaw() == null) {
+      // The isolate cannot be suspended if it isn't running yet.
+      return false;
+    }
+    return getFlutterDebugProcess().isIsolateSuspended(myVMServiceManager.getCurrentFlutterIsolateRaw().getId());
+  }
+
+  private CompletableFuture<?> whenFlutterIsolateResumed() {
+    if (!isFlutterIsolateSuspended()) {
+      return CompletableFuture.completedFuture(null);
+    }
+    return getFlutterDebugProcess().whenIsolateResumed(myVMServiceManager.getCurrentFlutterIsolateRaw().getId());
+  }
+
   public interface FlutterAppListener extends EventListener {
     default void stateChanged(State newState) {
     }
@@ -659,7 +700,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
       app.shutdownAsync().get();
     }
     catch (Exception e) {
-      LOG.warn("exception while shutting down Flutter App", e);
+      FlutterUtils.warn(LOG, "exception while shutting down Flutter App", e);
     }
   }
 
@@ -681,6 +722,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   @Override
   public void onAppStarting(DaemonEvent.AppStarting event) {
     app.setAppId(event.appId);
+    app.setLaunchMode(event.launchMode);
   }
 
   @Override

@@ -15,8 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
 import static io.flutter.testing.JsonTesting.curly;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Verifies that we can read events sent using the Flutter daemon protocol.
@@ -46,7 +46,7 @@ public class DaemonEventTest {
 
       @Override
       public void onAppStarting(DaemonEvent.AppStarting event) {
-        logEvent(event, event.appId, event.deviceId, event.directory);
+        logEvent(event, event.appId, event.deviceId, event.directory, event.launchMode);
       }
 
       @Override
@@ -122,8 +122,8 @@ public class DaemonEventTest {
 
   @Test
   public void canReceiveAppStarting() {
-    send("app.start", curly("appId:42", "deviceId:456", "directory:somedir"));
-    checkLog("AppStarting: 42, 456, somedir");
+    send("app.start", curly("appId:42", "deviceId:456", "directory:somedir", "launchMode:run"));
+    checkLog("AppStarting: 42, 456, somedir", "run");
   }
 
   @Test

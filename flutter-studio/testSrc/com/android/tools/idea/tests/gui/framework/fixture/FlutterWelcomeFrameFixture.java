@@ -14,6 +14,7 @@ import org.fest.swing.core.Robot;
 import org.jetbrains.annotations.NotNull;
 
 // Adapted from com.android.tools.idea.tests.gui.framework.fixture.WelcomeFrameFixture
+@SuppressWarnings("SameParameterValue")
 public class FlutterWelcomeFrameFixture extends ComponentFixture<FlutterWelcomeFrameFixture, FlatWelcomeFrame> {
   private static final String NEW_PROJECT_WELCOME_ID = "flutter.NewProject.welcome"; // See META-INF/studio-contribs.xml
 

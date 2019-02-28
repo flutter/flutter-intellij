@@ -14,7 +14,6 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import org.jetbrains.annotations.NotNull;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class OpenTimelineViewAction extends DumbAwareAction {
   private final @NotNull ObservatoryConnector myConnector;
   private final Computable<Boolean> myIsApplicable;
@@ -36,7 +35,7 @@ public class OpenTimelineViewAction extends DumbAwareAction {
 
     final String url = myConnector.getBrowserUrl();
     if (url != null) {
-      BrowserLauncher.getInstance().browse(url + "/#/timeline-dashboard", null);
+      BrowserLauncher.getInstance().browse(url + "/#/timeline", null);
     }
   }
 }

@@ -255,6 +255,10 @@ public class PubRoot {
     return root.findChild(".android") != null;
   }
 
+  public boolean isNonEditableFlutterModule() {
+    return isFlutterModule() && root.findChild("android") == null;
+  }
+
   @Nullable
   public VirtualFile getPackagesFile() {
     return packagesFile;
@@ -328,7 +332,11 @@ public class PubRoot {
    */
   @Nullable
   public VirtualFile getAndroidDir() {
-    return root.findChild("android");
+    VirtualFile dir = root.findChild("android");
+    if (dir == null) {
+      dir = root.findChild(".android");
+    }
+    return dir;
   }
 
   /**
@@ -336,7 +344,11 @@ public class PubRoot {
    */
   @Nullable
   public VirtualFile getiOsDir() {
-    return root.findChild("ios");
+    VirtualFile dir = root.findChild("ios");
+    if (dir == null) {
+      dir = root.findChild(".ios");
+    }
+    return dir;
   }
 
   /**

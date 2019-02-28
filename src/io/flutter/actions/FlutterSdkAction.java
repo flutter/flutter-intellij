@@ -30,7 +30,7 @@ public abstract class FlutterSdkAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(FlutterSdkAction.class);
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void actionPerformed(@NotNull AnActionEvent event) {
     final Project project = DumbAwareAction.getEventProject(event);
 
     if (enableActionInBazelContext()) {

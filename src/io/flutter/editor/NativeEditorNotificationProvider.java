@@ -16,7 +16,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.ui.EditorNotificationPanel;
 import com.intellij.ui.EditorNotifications;
 import icons.FlutterIcons;
-import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -132,18 +131,14 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     }
 
     private DataContext makeContext() {
-      return new DataContext() {
-        @Override
-        @Nullable
-        public Object getData(@NonNls String dataId) {
-          if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
-            return myFile;
-          }
-          if (CommonDataKeys.PROJECT.is(dataId)) {
-            return myProject;
-          }
-          return null;
+      return dataId -> {
+        if (CommonDataKeys.VIRTUAL_FILE.is(dataId)) {
+          return myFile;
         }
+        if (CommonDataKeys.PROJECT.is(dataId)) {
+          return myProject;
+        }
+        return null;
       };
     }
   }

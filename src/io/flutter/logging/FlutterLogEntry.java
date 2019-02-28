@@ -5,17 +5,27 @@
  */
 package io.flutter.logging;
 
+import com.intellij.execution.filters.Filter;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.ui.SimpleTextAttributes;
+import io.flutter.logging.text.LineInfo;
+import io.flutter.logging.text.StyledText;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import static io.flutter.logging.FlutterLogEntryParser.TOOLS_CATEGORY;
+import java.util.EventListener;
+import java.util.List;
 
 public class FlutterLogEntry {
+
+  interface ContentListener extends EventListener {
+    void onContentUpdate();
+  }
 
   public enum Kind {
     RELOAD,
     RESTART,
+    FLUTTER_ERROR,
     UNSPECIFIED
   }
 
@@ -26,40 +36,67 @@ public class FlutterLogEntry {
   private final String category;
   private final int level;
   @NotNull
-  private final String message;
+  private String message;
+
+  /**
+   * Associated data; may be a JSON string value or DiagnosticsNode instance.
+   */
+  @Nullable
+  private Object data;
   private int sequenceNumber = -1;
 
   @NotNull
-  private final Kind kind;
+  private Kind kind;
+  private List<StyledText> styledText;
 
-  public FlutterLogEntry(long timestamp, @NotNull String category, int level, @Nullable String message) {
+  @NotNull
+  private final List<Filter> filters;
+
+  /**
+   * Describes any style info that was inherited from previously parsed lines.
+   */
+  @Nullable
+  private final SimpleTextAttributes inheritedStyle;
+
+  public FlutterLogEntry(long timestamp,
+                         @NotNull String category,
+                         int level,
+                         @Nullable String message,
+                         @NotNull Kind kind,
+                         @NotNull List<StyledText> styledText,
+                         @NotNull List<Filter> filters,
+                         @Nullable SimpleTextAttributes inheritedStyle) {
     this.timestamp = timestamp;
     this.category = category;
     this.level = level;
     this.message = StringUtil.notNullize(message);
-    this.kind = parseKind(category, this.message);
+    this.kind = kind;
+    this.styledText = styledText;
+    this.filters = filters;
+    this.inheritedStyle = inheritedStyle;
   }
 
-  private static Kind parseKind(@NotNull String category, @NotNull String message) {
-    if (category.equals(TOOLS_CATEGORY)) {
-      message = message.trim();
-      if (message.equals("Performing hot reload...") || message.equals("Initializing hot reload...")) {
-        return Kind.RELOAD;
-      }
-      if (message.equals("Performing hot restart...") || message.equals("Initializing hot restart...")) {
-        return Kind.RESTART;
-      }
-    }
-    return Kind.UNSPECIFIED;
+  public FlutterLogEntry(long timestamp, @NotNull LineInfo info, int level) {
+    this(timestamp, info.getCategory(), level, info.getLine(), info.getKind(), info.getStyledText(), info.getFilters(),
+         info.getInheritedStyle());
   }
 
-  public FlutterLogEntry(long timestamp, @NotNull String category, @Nullable String message) {
-    this(timestamp, category, UNDEFINED_LEVEL.value, message);
+  @Nullable
+  public Object getData() {
+    return data;
+  }
+
+  public void setData(@Nullable Object data) {
+    this.data = data;
   }
 
   @NotNull
   public Kind getKind() {
     return kind;
+  }
+
+  public void setKind(@NotNull Kind kind) {
+    this.kind = kind;
   }
 
   public long getTimestamp() {
@@ -83,6 +120,30 @@ public class FlutterLogEntry {
   @NotNull
   public String getMessage() {
     return message;
+  }
+
+  public void setMessage(@NotNull String message) {
+    this.message = message;
+    this.styledText = null;
+  }
+
+  @NotNull
+  public List<Filter> getFilters() {
+    return filters;
+  }
+
+  @NotNull
+  public List<StyledText> getStyledText() {
+    if (styledText == null) {
+      styledText = calculateStyledText();
+    }
+    return styledText;
+  }
+
+  private List<StyledText> calculateStyledText() {
+    final FlutterLogEntryParser.LineHandler lineHandler = new FlutterLogEntryParser.LineHandler(filters, inheritedStyle);
+    final LineInfo lineInfo = lineHandler.parseLineInfo(getMessage(), getCategory());
+    return lineInfo.getStyledText();
   }
 
   /**

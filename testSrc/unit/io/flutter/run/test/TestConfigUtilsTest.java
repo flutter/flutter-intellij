@@ -24,7 +24,7 @@ public class TestConfigUtilsTest extends AbstractDartElementTest {
       final PsiElement main =
         PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
       assert main != null;
-      assertTrue(TestConfigUtils.isMainFunctionDeclarationWithTests(main));
+      assertTrue(TestConfigUtils.getInstance().isMainFunctionDeclarationWithTests(main));
     });
   }
 
@@ -35,7 +35,7 @@ public class TestConfigUtilsTest extends AbstractDartElementTest {
       final PsiElement main =
         PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
       assert main != null;
-      assertFalse(TestConfigUtils.isMainFunctionDeclarationWithTests(main));
+      assertFalse(TestConfigUtils.getInstance().isMainFunctionDeclarationWithTests(main));
     });
   }
 

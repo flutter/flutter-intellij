@@ -5,6 +5,7 @@
  */
 package io.flutter.perf;
 
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.application.ApplicationManager;
@@ -18,25 +19,24 @@ import com.intellij.openapi.editor.ex.RangeHighlighterEx;
 import com.intellij.openapi.editor.markup.*;
 import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.ColorUtil;
 import com.intellij.ui.JBColor;
-import icons.FlutterIcons;
+import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.utils.AnimatedIcon;
-import io.flutter.view.FlutterView;
+import io.flutter.utils.AsyncUtils;
+import io.flutter.view.FlutterPerfView;
 import io.flutter.view.InspectorPerfTab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class is a view model managing display of performance statistics for
@@ -46,6 +46,14 @@ import java.util.List;
  */
 class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private static final int HIGHLIGHTER_LAYER = HighlighterLayer.SELECTION - 1;
+
+  /**
+   * Experimental option to animate highlighted widget names.
+   *
+   * Disabled by default as animating contents of the TextEditor results in
+   * higher than desired memory usage.
+   */
+  public static boolean ANIMATE_WIDGET_NAME_HIGLIGHTS = false;
 
   @NotNull
   private final TextEditor textEditor;
@@ -58,6 +66,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   private boolean hoveredOverLineMarkerArea = false;
 
   private final Map<TextRange, PerfGutterIconRenderer> perfMarkers = new HashMap<>();
+  private boolean alwaysShowLineMarkersOverride = false;
 
   EditorPerfDecorations(@NotNull TextEditor textEditor, @NotNull FlutterApp app) {
     this.textEditor = textEditor;
@@ -67,8 +76,17 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
   }
 
   @Override
-  public boolean isHoveredOverLineMarkerArea() {
-    return hoveredOverLineMarkerArea;
+  public boolean getAlwaysShowLineMarkers() {
+    return hoveredOverLineMarkerArea || alwaysShowLineMarkersOverride;
+  }
+
+  @Override
+  public void setAlwaysShowLineMarkersOverride(boolean show) {
+    boolean lastValue = getAlwaysShowLineMarkers();
+    alwaysShowLineMarkersOverride = show;
+    if (lastValue != getAlwaysShowLineMarkers()) {
+      updateIconUIAnimations();
+    }
   }
 
   @NotNull
@@ -149,14 +167,13 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
       rangeHighlighter
     );
     rangeHighlighter.setGutterIconRenderer(renderer);
-    rangeHighlighter.setThinErrorStripeMark(true);
     assert !perfMarkers.containsKey(textRange);
     perfMarkers.put(textRange, renderer);
   }
 
   @Override
   public boolean isAnimationActive() {
-    return getStats().getCountPastSecond() > 0;
+    return getStats().getTotalValue(PerfMetric.peakRecent) > 0;
   }
 
   @Override
@@ -250,7 +267,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
 /**
  * This class renders the animated gutter icons used to visualize how much
  * widget repaint or rebuild work is happening.
- *
+ * <p>
  * This is a somewhat strange GutterIconRender in that we use it to orchestrate
  * animating the color of the associated RangeHighlighter and changing the icon
  * of the GutterIconRenderer when performance changes without requiring the
@@ -259,13 +276,6 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
  * required.
  */
 class PerfGutterIconRenderer extends GutterIconRenderer {
-  static final AnimatedIcon RED_PROGRESS = new RedProgress();
-  static final AnimatedIcon NORMAL_PROGRESS = new AnimatedIcon.Grey();
-
-  private static final Icon EMPTY_ICON = new EmptyIcon(FlutterIcons.CustomInfo);
-
-  // Threshold for statistics to use red icons.
-  private static final int HIGH_LOAD_THRESHOLD = 100;
 
   // Speed of the animation in radians per second.
   private static final double ANIMATION_SPEED = 4.0;
@@ -285,7 +295,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     this.perfModelForFile = perfModelForFile;
     final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
-    textAttributes.setEffectType(EffectType.ROUNDED_BOX);
+    textAttributes.setEffectType(EffectType.LINE_UNDERSCORE);
 
     updateUI(false);
   }
@@ -298,12 +308,25 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     return perfModelForFile.getApp();
   }
 
-  private int getCountPastSecond() {
-    return perfModelForFile.getStats().getCountPastSecond(range);
+  private int getCurrentValue() {
+    return perfModelForFile.getStats().getCurrentValue(range);
+  }
+
+  private int getDisplayValue() {
+    int value = getCurrentValue();
+    if (value == 0 && perfModelForFile.getAlwaysShowLineMarkers()) {
+      // This is the case where the value was previously non-zero but the app
+      // is idle so the value was reset. For all ui rendering logic we treat
+      // the value as 1 so that consistent coloring is used throughout the
+      // ui. Alternately we could use the original non-zero value but that
+      // could be more confusing to users.
+      return 1;
+    }
+    return value;
   }
 
   private boolean isActive() {
-    return perfModelForFile.isHoveredOverLineMarkerArea() || getCountPastSecond() > 0;
+    return getDisplayValue() > 0;
   }
 
   RangeHighlighter getHighlighter() {
@@ -323,42 +346,34 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
         if (isActive()) {
 
           final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());
-          final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
-          if (flutterToolWindow.isVisible()) {
+          final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
+          if (flutterPerfToolWindow.isVisible()) {
             showPerfViewMessage();
             return;
           }
-          flutterToolWindow.show(() -> showPerfViewMessage());
+          flutterPerfToolWindow.show(() -> showPerfViewMessage());
         }
       }
     };
   }
 
   private void showPerfViewMessage() {
-    final FlutterView flutterView = ServiceManager.getService(getApp().getProject(), FlutterView.class);
-    final InspectorPerfTab inspectorPerfTab = flutterView.showPerfTab(getApp());
-    final StringBuilder sb = new StringBuilder("<html><body>");
-    final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
-    sb.append("<p style='padding-bottom: 10px'><strong>Widget performance stats for ");
-    sb.append(Objects.requireNonNull(perfModelForFile.getTextEditor().getFile()).getName());
-    sb.append(" at ");
-    sb.append(formatter.format(LocalDateTime.now()));
-    sb.append("</p>");
-    for (String line : getTooltipLines()) {
-      sb.append(line);
-      sb.append("<br>");
+    final FlutterPerfView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerfView.class);
+    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(getApp());
+    String message = "<html><body>" +
+                     getTooltipHtmlFragment() +
+                     "</body></html>";
+    final Iterable<SummaryStats> current = perfModelForFile.getStats().getRangeStats(range);
+    if (current.iterator().hasNext()) {
+      final SummaryStats first = current.iterator().next();
+      final XSourcePosition position = first.getLocation().getXSourcePosition();
+      if (position != null) {
+        AsyncUtils.invokeLater(() -> {
+          position.createNavigatable(getApp().getProject()).navigate(true);
+          HintManager.getInstance().showInformationHint(perfModelForFile.getTextEditor().getEditor(), message);
+        });
+      }
     }
-    sb.append("</strong>");
-
-    sb.append("<p style='padding-top: 10px'>");
-    sb.append("<small>Rebuilding widgets is generally very cheap. You should only worry " +
-              "about optimizing code to reduce the the number of widget rebuilds " +
-              "if you notice that the frame rate is bellow 60fps or if widgets " +
-              "that you did not expect to be rebuilt are rebuilt a very large " +
-              "number of times.</small>");
-    sb.append("</p>");
-    sb.append("</body></html>");
-    inspectorPerfTab.getWidgetPerfPanel().setPerfMessage(perfModelForFile.getTextEditor(), range, sb.toString());
   }
 
   @NotNull
@@ -375,44 +390,39 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   }
 
   public Icon getIconInternal() {
-    final int count = getCountPastSecond();
-    if (count == 0) {
-      return perfModelForFile.isHoveredOverLineMarkerArea() ? FlutterIcons.CustomInfo : EMPTY_ICON;
-    }
-    if (count > HIGH_LOAD_THRESHOLD) {
-      return RED_PROGRESS;
-    }
-    return NORMAL_PROGRESS;
+    return Icons.getIconForCount(getCurrentValue(), perfModelForFile.getAlwaysShowLineMarkers());
   }
 
   Color getErrorStripeMarkColor() {
     // TODO(jacobr): tween from green or blue to red depending on the count.
-    final int count = getCountPastSecond();
+    final int count = getDisplayValue();
     if (count == 0) {
       return null;
     }
-    if (count > HIGH_LOAD_THRESHOLD) {
-      return JBColor.RED;
+    if (count >= Icons.HIGH_LOAD_THRESHOLD) {
+      return JBColor.YELLOW;
     }
-    return JBColor.YELLOW; // TODO(jacobr): should we use green here instead?
+    return JBColor.GRAY;
   }
 
   public void updateUI(boolean repaint) {
-    final int count = getCountPastSecond();
+    final int count = getDisplayValue();
     final TextAttributes textAttributes = highlighter.getTextAttributes();
     assert textAttributes != null;
     boolean changed = false;
     if (count > 0) {
-      final Color targetColor = getErrorStripeMarkColor();
-      final double animateTime = (double)(System.currentTimeMillis()) * 0.001;
-      // TODO(jacobr): consider tracking a start time for the individual
-      // animation instead of having all animations running in sync.
-      // 1.0 - Math.cos is used so that balance is 0.0 at the start of the animation
-      // and the value will vary from 0 to 1.0
-      final double balance = (1.0 - Math.cos(animateTime * ANIMATION_SPEED)) * 0.5;
-      final Color effectColor = ColorUtil.mix(JBColor.WHITE, targetColor, balance);
-      if (!effectColor.equals(textAttributes.getEffectColor())) {
-        textAttributes.setEffectColor(effectColor);
+      Color targetColor = getErrorStripeMarkColor();
+      if (EditorPerfDecorations.ANIMATE_WIDGET_NAME_HIGLIGHTS) {
+        final double animateTime = (double)(System.currentTimeMillis()) * 0.001;
+        // TODO(jacobr): consider tracking a start time for the individual
+        // animation instead of having all animations running in sync.
+        // 1.0 - Math.cos is used so that balance is 0.0 at the start of the animation
+        // and the value will vary from 0 to 1.0
+        final double balance = (1.0 - Math.cos(animateTime * ANIMATION_SPEED)) * 0.5;
+        targetColor = ColorUtil.mix(JBColor.WHITE, targetColor, balance);
+      }
+      if (!targetColor.equals(textAttributes.getEffectColor())) {
+        textAttributes.setEffectColor(targetColor);
         changed = true;
       }
     }
@@ -430,40 +440,37 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
     }
   }
 
-  List<String> getTooltipLines() {
-    final List<String> lines = new ArrayList<>();
+  String getTooltipHtmlFragment() {
+    final StringBuilder sb = new StringBuilder();
+    boolean first = true;
     for (SummaryStats stats : perfModelForFile.getStats().getRangeStats(range)) {
+      final String style = first ? "" : "margin-top: 8px";
+      first = false;
+      sb.append("<p style='" + style + "'>");
       if (stats.getKind() == PerfReportKind.rebuild) {
-        lines.add(
-          stats.getDescription() +
-          " was rebuilt " +
-          stats.getPastSecond() +
-          " times in the past second and " +
-          stats.getTotal() +
-          " times overall."
-        );
+        sb.append("Rebuild");
       }
       else if (stats.getKind() == PerfReportKind.repaint) {
-        lines.add(
-          "RenderObjects created by " +
-          stats.getDescription() +
-          " were repainted " +
-          stats.getPastSecond() +
-          " times in the past second and " +
-          stats.getTotal() +
-          " times overall."
-        );
+        sb.append("Repaint");
       }
+      sb.append(" counts for: <strong>" + stats.getDescription());
+      sb.append("</strong></p>");
+      sb.append("<p style='padding-left: 8px'>");
+      sb.append("For last frame: " + stats.getValue(PerfMetric.lastFrame) + "<br>");
+      sb.append("In past second: " + stats.getValue(PerfMetric.pastSecond) + "<br>");
+      sb.append("Since entering the current screen: " + stats.getValue(PerfMetric.totalSinceEnteringCurrentScreen) + "<br>");
+      sb.append("Since last hot reload/restart: " + stats.getValue(PerfMetric.total));
+      sb.append("</p>");
     }
-    if (lines.isEmpty()) {
-      lines.add("No widget rebuilds or repaints detected for line.");
+    if (sb.length() == 0) {
+      sb.append("<p><b>No widget rebuilds detected for line.</b></p>");
     }
-    return lines;
+    return sb.toString();
   }
 
   @Override
   public String getTooltipText() {
-    return "<html><body><b>" + StringUtil.join(getTooltipLines(), "<br>") + " </b></body></html>";
+    return "<html><body>" + getTooltipHtmlFragment() + "</body></html>";
   }
 
   @Override
@@ -472,52 +479,11 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
       return false;
     }
     final PerfGutterIconRenderer other = (PerfGutterIconRenderer)obj;
-    return other.getCountPastSecond() == getCountPastSecond();
+    return other.getCurrentValue() == getCurrentValue();
   }
 
   @Override
   public int hashCode() {
-    return getCountPastSecond();
-  }
-
-  private static class EmptyIcon implements Icon {
-    final Icon iconForSize;
-
-    EmptyIcon(Icon iconForSize) {
-      this.iconForSize = iconForSize;
-    }
-
-    @Override
-    public void paintIcon(Component c, Graphics g, int x, int y) {
-    }
-
-    @Override
-    public int getIconWidth() {
-      return iconForSize.getIconWidth();
-    }
-
-    @Override
-    public int getIconHeight() {
-      return iconForSize.getIconHeight();
-    }
-  }
-
-  // Spinning red progress icon
-  //
-  // TODO(jacobr): it would be nice to tint the icons programatically so that
-  // we could have a wider range of icon colors representing various repaint
-  // rates.
-  static final class RedProgress extends AnimatedIcon {
-    public RedProgress() {
-      super(150,
-            FlutterIcons.State.RedProgr_1,
-            FlutterIcons.State.RedProgr_2,
-            FlutterIcons.State.RedProgr_3,
-            FlutterIcons.State.RedProgr_4,
-            FlutterIcons.State.RedProgr_5,
-            FlutterIcons.State.RedProgr_6,
-            FlutterIcons.State.RedProgr_7,
-            FlutterIcons.State.RedProgr_8);
-    }
+    return getCurrentValue();
   }
 }

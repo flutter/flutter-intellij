@@ -13,6 +13,7 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.process.ProcessOutputTypes;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
 import org.jetbrains.annotations.NotNull;
@@ -22,7 +23,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -38,14 +42,16 @@ import java.util.function.Function;
  * >The Flutter Daemon Mode</a>.
  */
 public class DaemonApi {
-  private static final int STDERR_LINES_TO_KEEP = 100;
+  public static final String FLUTTER_ERROR_PREFIX = "error from";
+  public static final String COMPLETION_EXCEPTION_PREFIX = "java.util.concurrent.CompletionException: java.io.IOException: ";
 
+  private static final int STDERR_LINES_TO_KEEP = 100;
+  private static final Gson GSON = new Gson();
+  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
   @NotNull private final Consumer<String> callback;
   private final AtomicInteger nextId = new AtomicInteger();
   private final Map<Integer, Command> pending = new LinkedHashMap<>();
-
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
-
   /**
    * A ring buffer holding the last few lines that the process sent to stderr.
    */
@@ -65,26 +71,23 @@ public class DaemonApi {
     this((String json) -> sendCommand(json, process));
   }
 
-  // app domain
-
-  CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause) {
-    return send("app.restart", new AppRestart(appId, fullRestart, pause));
+  CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
+    return send("app.restart", new AppRestart(appId, fullRestart, pause, reason));
   }
 
   CompletableFuture<Boolean> stopApp(@NotNull String appId) {
     return send("app.stop", new AppStop(appId));
   }
 
+  CompletableFuture<Boolean> detachApp(@NotNull String appId) {
+    return send("app.detach", new AppDetach(appId));
+  }
+
   void cancelPending() {
-    final List<Command> commands;
-
+    // We used to complete the commands with exceptions here (completeExceptionally), but that generally was surfaced
+    // to the user as an exception in the tool. We now choose to not complete the command at all.
     synchronized (pending) {
-      commands = new ArrayList<>(pending.values());
       pending.clear();
-    }
-
-    for (Command command : commands) {
-      command.completeExceptionally(new IOException("Application terminated"));
     }
   }
 
@@ -96,8 +99,6 @@ public class DaemonApi {
                                                         @NotNull Map<String, Object> params) {
     return send("app.callServiceExtension", new AppServiceExtension(appId, methodName, params));
   }
-
-  // device domain
 
   CompletableFuture enableDeviceEvents() {
     return send("device.enable", null);
@@ -178,7 +179,13 @@ public class DaemonApi {
 
       final JsonElement error = obj.get("error");
       if (error != null) {
-        cmd.completeExceptionally(new IOException("error from " + cmd.method + ": " + error));
+        final JsonElement trace = obj.get("trace");
+        String message = FLUTTER_ERROR_PREFIX + " " + cmd.method + ": " + error;
+        if (trace != null) {
+          message += "\n" + trace;
+        }
+        // Be sure to keep this statement in sync with COMPLETION_EXCEPTION_PREFIX.
+        cmd.completeExceptionally(new IOException(message));
       }
       else {
         cmd.complete(obj.get("result"));
@@ -193,7 +200,7 @@ public class DaemonApi {
       cmd = pending.remove(id);
     }
     if (cmd == null) {
-      LOG.warn("received a response for a request that wasn't sent: " + id);
+      FlutterUtils.warn(LOG, "received a response for a request that wasn't sent: " + id);
       return null;
     }
     return cmd;
@@ -205,12 +212,21 @@ public class DaemonApi {
       final int id = nextId.getAndIncrement();
       final Command<T> command = new Command<>(method, params, id);
       final String json = command.toString();
+      //noinspection NestedSynchronizedStatement
       synchronized (pending) {
         pending.put(id, command);
       }
       callback.accept(json);
       return command.done;
     }
+  }
+
+  /**
+   * Returns the last lines written to stderr.
+   */
+  public String getStderrTail() {
+    final String[] lines = stderr.toArray(new String[]{ });
+    return String.join("", lines);
   }
 
   /**
@@ -258,7 +274,7 @@ public class DaemonApi {
       }
 
       try {
-        final int id = idField.getAsInt();
+        idField.getAsInt();
         return obj;
       }
       catch (NumberFormatException e) {
@@ -270,7 +286,7 @@ public class DaemonApi {
   private static void sendCommand(String json, ProcessHandler handler) {
     final PrintWriter stdin = getStdin(handler);
     if (stdin == null) {
-      LOG.warn("can't write command to Flutter process: " + json);
+      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
       return;
     }
     stdin.write('[');
@@ -282,7 +298,7 @@ public class DaemonApi {
     }
 
     if (stdin.checkError()) {
-      LOG.warn("can't write command to Flutter process: " + json);
+      FlutterUtils.warn(LOG, "can't write command to Flutter process: " + json);
     }
   }
 
@@ -293,14 +309,7 @@ public class DaemonApi {
     return new PrintWriter(new OutputStreamWriter(stdin, Charsets.UTF_8));
   }
 
-  /**
-   * Returns the last lines written to stderr.
-   */
-  public String getStderrTail() {
-    final String[] lines = stderr.toArray(new String[]{});
-    return String.join("", lines);
-  }
-
+  @SuppressWarnings("unused")
   public static class RestartResult {
     private int code;
     private String message;
@@ -366,7 +375,7 @@ public class DaemonApi {
         done.complete(parseResult.apply(result));
       }
       catch (Exception e) {
-        LOG.warn("Unable to parse response from Flutter daemon. Command was: " + this, e);
+        FlutterUtils.warn(LOG, "Unable to parse response from Flutter daemon. Command was: " + this, e);
         done.completeExceptionally(e);
       }
     }
@@ -391,11 +400,13 @@ public class DaemonApi {
     @NotNull final String appId;
     final boolean fullRestart;
     final boolean pause;
+    @NotNull final String reason;
 
-    AppRestart(@NotNull String appId, boolean fullRestart, boolean pause) {
+    AppRestart(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
       this.appId = appId;
       this.fullRestart = fullRestart;
       this.pause = pause;
+      this.reason = reason;
     }
 
     @Override
@@ -409,6 +420,20 @@ public class DaemonApi {
     @NotNull final String appId;
 
     AppStop(@NotNull String appId) {
+      this.appId = appId;
+    }
+
+    @Override
+    Boolean parseResult(JsonElement result) {
+      return GSON.fromJson(result, Boolean.class);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  private static class AppDetach extends Params<Boolean> {
+    @NotNull final String appId;
+
+    AppDetach(@NotNull String appId) {
       this.appId = appId;
     }
 
@@ -441,7 +466,4 @@ public class DaemonApi {
       return obj;
     }
   }
-
-  private static final Gson GSON = new Gson();
-  private static final Logger LOG = Logger.getInstance(DaemonApi.class);
 }

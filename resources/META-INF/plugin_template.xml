@@ -1,8 +1,10 @@
 <idea-plugin>
   <id>@PLUGINID@</id>
   <name>Flutter</name>
-  <description>Support for developing Flutter applications. Flutter gives developers an easy and productive way to build and deploy
-    cross-platform, high-performance mobile apps on both Android and iOS.
+  <description>
+    Support for developing Flutter applications. Flutter gives developers an easy and productive
+    way to build and deploy cross-platform, high-performance mobile apps for both Android and iOS.
+    Installing this plugin will also install the Dart plugin.
   </description>
   <!--suppress PluginXmlValidity -->
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
@@ -78,6 +80,9 @@
       <action id="flutter.clean" class="io.flutter.actions.FlutterCleanAction"
               text="Flutter Clean"
               description="Run 'flutter clean'"/>
+      <action id="flutter.makeHostAppEditable" class="io.flutter.actions.FlutterMakeHostAppEditableAction"
+              text="Make Host App Editable"
+              description="Run 'flutter make-host-app-editable' to use in an Android app"/>
       <separator/>
       <action id="flutter.androidstudio.open" class="io.flutter.actions.OpenInAndroidStudioAction"
               text="Open Android module in Android Studio"
@@ -121,7 +126,7 @@
     <!-- main toolbar run actions -->
     <action id="AttachDebuggerAction"
             class="io.flutter.actions.AttachDebuggerAction"
-            text="Attach debugger to embedded Flutter process"
+            text="Flutter Attach"
             description="Attach debugger to a Flutter process embedded in an Android app"
             icon="FlutterIcons.AttachDebugger">
       <add-to-group group-id="ToolbarRunGroup" anchor="after" relative-to-action="RunnerActions"/>
@@ -143,6 +148,7 @@
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
       </action>
+      <separator/>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"
               description="Flutter Run Profile Mode"
               icon="AllIcons.Actions.Execute">
@@ -151,6 +157,7 @@
               description="Flutter Run Release Mode"
               icon="AllIcons.Actions.Execute">
       </action>
+      <reference ref="AttachDebuggerAction"/>
       <separator/>
       <add-to-group group-id="RunMenu" anchor="after" relative-to-action="Stop"/>
     </group>
@@ -158,6 +165,7 @@
     <!-- refactoring menu -->
     <action class="io.flutter.actions.ExtractWidgetAction" id="Flutter.ExtractWidget" text="Flutter Widget...">
       <add-to-group group-id="IntroduceActionsGroup" anchor="after" relative-to-action="ExtractMethod"/>
+      <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt W"/>
     </action>
 
     <!-- help menu -->
@@ -167,6 +175,10 @@
 
     <action id="io.flutter.RestartDaemon" class="io.flutter.actions.RestartFlutterDaemonAction"
             text="Restart Flutter Daemon" description="Restart Flutter Daemon" icon="FlutterIcons.Flutter">
+    </action>
+
+    <action id="io.flutter.OpenDevToolsAction" class="io.flutter.run.OpenDevToolsAction"
+            text="Open DevTools" description="Open Dart DevTools" icon="FlutterIcons.Dart_16">
     </action>
   </actions>
 
@@ -184,18 +196,20 @@
 
     <configurationType implementation="io.flutter.run.FlutterRunConfigurationType"/>
     <runConfigurationProducer implementation="io.flutter.run.FlutterRunConfigurationProducer"/>
-    <programRunner implementation="io.flutter.run.SdkRunner"/>
+    <programRunner implementation="io.flutter.run.FlutterRunner"/>
+
+    <configurationType implementation="io.flutter.run.test.FlutterTestConfigType"/>
+    <runConfigurationProducer implementation="io.flutter.run.test.FlutterTestConfigProducer"/>
+    <programRunner implementation="io.flutter.run.test.FlutterTestRunner"/>
+    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
 
     <configurationType implementation="io.flutter.run.bazel.FlutterBazelRunConfigurationType"/>
     <programRunner implementation="io.flutter.run.bazel.BazelRunner"/>
 
     <configurationType implementation="io.flutter.run.bazelTest.FlutterBazelTestConfigurationType"/>
+    <runConfigurationProducer implementation="io.flutter.run.bazelTest.BazelTestConfigProducer"/>
     <programRunner implementation="io.flutter.run.bazelTest.BazelTestRunner"/>
-
-    <configurationType implementation="io.flutter.run.test.TestConfigType"/>
-    <runConfigurationProducer implementation="io.flutter.run.test.TestConfigProducer"/>
-    <programRunner implementation="io.flutter.run.test.DebugTestRunner"/>
-    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.test.FlutterTestLineMarkerContributor"/>
+    <runLineMarkerContributor language="Dart" implementationClass="io.flutter.run.bazelTest.FlutterBazelTestLineMarkerContributor"/>
 
     <defaultLiveTemplatesProvider implementation="io.flutter.template.FlutterLiveTemplatesProvider"/>
     <liveTemplateContext implementation="io.flutter.template.DartToplevelTemplateContextType"/>
@@ -231,6 +245,12 @@
                     serviceImplementation="io.flutter.view.FlutterView"
                     overrides="false"/>
 
+    <toolWindow id="Flutter Performance" anchor="bottom" secondary="true" icon="FlutterIcons.Flutter_13"
+                factoryClass="io.flutter.view.FlutterPerfViewFactory"/>
+    <projectService serviceInterface="io.flutter.view.FlutterPerfView"
+                    serviceImplementation="io.flutter.view.FlutterPerfView"
+                    overrides="false"/>
+
     <projectOpenProcessor id="flutter" implementation="io.flutter.project.FlutterProjectOpenProcessor" order="first"/>
 
     <localInspection bundle="io.flutter.FlutterBundle" key="outdated.dependencies.inspection.name"
@@ -240,6 +260,7 @@
     <editorNotificationProvider implementation="io.flutter.editor.FlutterPubspecNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.inspections.SdkConfigurationNotificationProvider"/>
     <editorNotificationProvider implementation="io.flutter.editor.NativeEditorNotificationProvider"/>
+    <editorNotificationProvider implementation="io.flutter.samples.FlutterSampleNotificationProvider"/>
 
     <projectService serviceInterface="io.flutter.run.FlutterReloadManager"
                     serviceImplementation="io.flutter.run.FlutterReloadManager"
@@ -254,6 +275,10 @@
                     serviceImplementation="io.flutter.perf.FlutterWidgetPerfManager"
                     overrides="false"/>
 
+    <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
+                    serviceImplementation="io.flutter.devtools.DevToolsManager"
+                    overrides="false"/>
+
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 
     <library.type implementation="io.flutter.sdk.FlutterPluginLibraryType"/>
@@ -261,6 +286,7 @@
     <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
     <colorSettingsPage implementation="io.flutter.logging.FlutterLogColorPage"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
+    <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
   </extensions>
 
   <!-- Dart Plugin extensions -->

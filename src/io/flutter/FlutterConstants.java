@@ -11,7 +11,7 @@ import java.util.List;
 
 public class FlutterConstants {
 
-  // From: analyzer Token.Keywords
+  // From: https://github.com/dart-lang/sdk/blob/master/pkg/front_end/lib/src/scanner/token.dart
   public static final List<String> DART_KEYWORDS = Arrays.asList(
     "abstract",
     "as",
@@ -46,8 +46,10 @@ public class FlutterConstants {
     "implements",
     "import",
     "in",
+    "interface",
     "is",
     "library",
+    "mixin",
     "native",
     "new",
     "null",
@@ -79,16 +81,24 @@ public class FlutterConstants {
 
   // From: https://github.com/flutter/flutter/blob/master/packages/flutter_tools/lib/src/commands/create.dart
   public final static List<String> FLUTTER_PACKAGE_DEPENDENCIES = Arrays.asList(
+    "analyzer",
     "args",
     "async",
     "collection",
     "convert",
+    "crypto",
     "flutter",
     "flutter_test",
+    "front_end",
     "html",
+    "http",
     "intl",
+    "io",
+    "isolate",
+    "kernel",
     "logging",
     "matcher",
+    "meta",
     "mime",
     "path",
     "plugin",
@@ -98,10 +108,18 @@ public class FlutterConstants {
     "watcher",
     "yaml");
 
+  // Aligned w/ VSCode (https://github.com/flutter/flutter-intellij/issues/2682)
+  public static String RELOAD_REASON_MANUAL = "manual";
+  public static String RELOAD_REASON_SAVE = "save";
+  public static String RELOAD_REASON_TOOL = "tool";
 
   public static final String FLUTTER_SETTINGS_PAGE_ID = "flutter.settings";
   public static final String INDEPENDENT_PATH_SEPARATOR = "/";
   public static final int MAX_MODULE_NAME_LENGTH = 30;
+
+  public static final String URL_GETTING_STARTED = FlutterBundle.message("flutter.io.gettingStarted.url");
+  public static final String URL_GETTING_STARTED_IDE = FlutterBundle.message("flutter.io.gettingStarted.IDE.url");
+  public static final String URL_RUN_AND_DEBUG = FlutterBundle.message("flutter.io.runAndDebug.url");
 
   private FlutterConstants() {
 

@@ -17,6 +17,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
 import io.flutter.FlutterMessages;
+import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
@@ -142,7 +143,7 @@ class DeviceDaemon {
       return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"), androidHome);
     }
     catch (ExecutionException e) {
-      LOG.warn("Unable to calculate command to watch Flutter devices", e);
+      FlutterUtils.warn(LOG, "Unable to calculate command to watch Flutter devices", e);
       return null;
     }
   }
@@ -229,7 +230,7 @@ class DeviceDaemon {
           }
           catch (java.util.concurrent.ExecutionException e) {
             // This is not a user facing crash - we log (and no devices will be discovered).
-            LOG.error(e.getCause());
+            FlutterUtils.warn(LOG, e.getCause());
           }
         }
       }
@@ -334,7 +335,7 @@ class DeviceDaemon {
     public void onDeviceAdded(@NotNull DaemonEvent.DeviceAdded event) {
       if (event.id == null) {
         // We can't start a flutter app on this device if it doesn't have a device id.
-        LOG.warn("Ignored an event from a Flutter process without a device id: " + event);
+        FlutterUtils.warn(LOG, "Ignored an event from a Flutter process without a device id: " + event);
         return;
       }
 

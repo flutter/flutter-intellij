@@ -33,7 +33,9 @@ import com.intellij.xdebugger.XDebuggerManager;
 import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.FlutterUtils;
 import io.flutter.run.PositionMapper;
+import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
 import org.apache.commons.lang.StringUtils;
@@ -43,7 +45,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 
 /**
- * The Bazel version of the {@link io.flutter.run.test.DebugTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
+ * The Bazel version of the {@link FlutterTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
  */
 public class BazelTestRunner extends GenericProgramRunner {
 
@@ -80,6 +82,7 @@ public class BazelTestRunner extends GenericProgramRunner {
     // Set up source file mapping.
     final DartUrlResolver resolver = DartUrlResolver.getInstance(env.getProject(), launcher.getTestFile());
     final PositionMapper.Analyzer analyzer = PositionMapper.Analyzer.create(env.getProject(), launcher.getTestFile());
+
     final BazelPositionMapper mapper =
       new BazelPositionMapper(env.getProject(), env.getProject().getBaseDir()/*this is different, incorrect?*/, resolver, analyzer,
                               connector);
@@ -191,7 +194,7 @@ public class BazelTestRunner extends GenericProgramRunner {
         obj = elem.getAsJsonObject();
       }
       catch (JsonSyntaxException e) {
-        LOG.error("Unable to parse JSON from Flutter test", e);
+        FlutterUtils.warn(LOG, "Unable to parse JSON from Flutter test", e);
         return;
       }
 
@@ -204,19 +207,19 @@ public class BazelTestRunner extends GenericProgramRunner {
 
       final JsonPrimitive primEvent = obj.getAsJsonPrimitive("event");
       if (primEvent == null) {
-        LOG.error("Missing event field in JSON from Flutter test: " + obj);
+        FlutterUtils.warn(LOG, "Missing event field in JSON from Flutter test: " + obj);
         return;
       }
 
       final String eventName = primEvent.getAsString();
       if (eventName == null) {
-        LOG.error("Unexpected event field in JSON from Flutter test: " + obj);
+        FlutterUtils.warn(LOG, "Unexpected event field in JSON from Flutter test: " + obj);
         return;
       }
 
       final JsonObject params = obj.getAsJsonObject("params");
       if (params == null) {
-        LOG.error("Missing parameters in event from Flutter test: " + obj);
+        FlutterUtils.warn(LOG, "Missing parameters in event from Flutter test: " + obj);
         return;
       }
 
@@ -265,11 +268,10 @@ public class BazelTestRunner extends GenericProgramRunner {
       int workspaceEndOffset = filePath.lastIndexOf(workspaceDirName + "/");
       if (workspaceEndOffset != -1) {
         workspaceEndOffset += workspaceDirName.length();
-        results.add(workspaceDirName + ":" + filePath.substring(workspaceEndOffset, filePath.length()));
+        results.add(workspaceDirName + "://" + filePath.substring(workspaceEndOffset, filePath.length()));
       }
       return results;
     }
-
 
     /**
      * Attempt to find a local Dart file corresponding to a script in Observatory.

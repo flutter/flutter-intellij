@@ -6,6 +6,7 @@
 package io.flutter.sdk;
 
 import com.intellij.execution.process.ProcessOutput;
+import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
@@ -26,6 +27,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -42,7 +44,7 @@ import java.net.URISyntaxException;
 public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private static final Logger LOG = Logger.getInstance(FlutterSettingsConfigurable.class);
 
-  private static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
+  public static final String FLUTTER_SETTINGS_PAGE_NAME = FlutterBundle.message("flutter.title");
   private static final String FLUTTER_SETTINGS_HELP_TOPIC = "flutter.settings.help";
 
   private JPanel mainPanel;
@@ -57,10 +59,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowPreviewAreaCheckBox;
   private JCheckBox myShowHeapDisplayCheckBox;
-  private JCheckBox myTrackWidgetCreationCheckBox;
+  private JCheckBox myLegacyTrackWidgetCreationCheckBox;
+  private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
-  private JCheckBox myEnableMemoryProfilerCheckBox;
+  private JCheckBox myDisableMemoryProfilerCheckBox;
+  private JCheckBox myUseNewBazelTestRunner;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -78,8 +82,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
-      protected void textChanged(final DocumentEvent e) {
-        updateVersionText();
+      protected void textChanged(@NotNull final DocumentEvent e) {
+        onVersionChanged();
       }
     });
 
@@ -102,6 +106,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
+
+    // Disable the bazel test runner experiment if no new bazel test script is available.
+    final Workspace workspace = Workspace.load(myProject);
+    if (workspace == null || workspace.getTestScript() == null) {
+      myUseNewBazelTestRunner.setEnabled(false);
+    } else {
+      myUseNewBazelTestRunner.setEnabled(true);
+    }
   }
 
   private void createUIComponents() {
@@ -165,20 +177,28 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isTrackWidgetCreation() != myTrackWidgetCreationCheckBox.isSelected()) {
+    if (settings.isLegacyTrackWidgetCreation() != myLegacyTrackWidgetCreationCheckBox.isSelected()) {
       return true;
     }
 
-    //noinspection RedundantIfStatement
+    if (settings.isDisableTrackWidgetCreation() != myDisableTrackWidgetCreationCheckBox.isSelected()) {
+      return true;
+    }
+
     if (settings.isVerboseLogging() != myEnableVerboseLoggingCheckBox.isSelected()) {
       return true;
     }
 
+    //noinspection RedundantIfStatement
     if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
       return true;
     }
 
-    if (settings.isMemoryProfilerEnabled() != myEnableMemoryProfilerCheckBox.isSelected()) {
+    if (settings.isMemoryProfilerDisabled() != myDisableMemoryProfilerCheckBox.isSelected()) {
+      return true;
+    }
+
+    if (settings.useNewBazelTestRunner(myProject) != myUseNewBazelTestRunner.isSelected()) {
       return true;
     }
 
@@ -209,10 +229,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
-    settings.setTrackWidgetCreation(myTrackWidgetCreationCheckBox.isSelected());
+    settings.setLegacyTrackWidgetCreation(myLegacyTrackWidgetCreationCheckBox.isSelected());
+    settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
-    settings.setMemoryProfilerEnabled(myEnableMemoryProfilerCheckBox.isSelected());
+    settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
+    settings.setUseNewBazelTestRunner(myUseNewBazelTestRunner.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -227,7 +249,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // (This can happen if the user changed the Dart SDK.)
     mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
 
-    updateVersionText();
+    onVersionChanged();
 
     myReportUsageInformationCheckBox.setSelected(FlutterInitializer.getCanReportAnalytics());
 
@@ -238,21 +260,27 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
-    myTrackWidgetCreationCheckBox.setSelected(settings.isTrackWidgetCreation());
+    myLegacyTrackWidgetCreationCheckBox.setSelected(settings.isLegacyTrackWidgetCreation());
+    myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
-    myEnableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerEnabled());
+    myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
+    myUseNewBazelTestRunner.setSelected(settings.useNewBazelTestRunner(myProject));
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
 
-  private void updateVersionText() {
+  private void onVersionChanged() {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
       myVersionLabel.setText("");
       return;
     }
     final ModalityState modalityState = ModalityState.current();
+
+    boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
+    myLegacyTrackWidgetCreationCheckBox.setVisible(!trackWidgetCreationRecommended);
+    myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
     sdk.flutterVersion().start((ProcessOutput output) -> {
       final String stdout = output.getStdout();
@@ -270,8 +298,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null) {
       myVersionLabel.setText("");
-    }
-    else {
+    } else {
       myVersionLabel.setText(value);
     }
   }
@@ -296,5 +323,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   @NotNull
   private String getSdkPathText() {
     return FileUtilRt.toSystemIndependentName(mySdkCombo.getComboBox().getEditor().getItem().toString().trim());
+  }
+
+  public static void openFlutterSettings(@NotNull final Project project) {
+    ShowSettingsUtilImpl.showSettingsDialog(project, FlutterConstants.FLUTTER_SETTINGS_PAGE_ID, "");
   }
 }

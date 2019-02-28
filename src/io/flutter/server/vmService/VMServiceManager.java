@@ -5,11 +5,12 @@
  */
 package io.flutter.server.vmService;
 
+import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
+import io.flutter.inspector.EvalOnDartLibrary;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.utils.EventStream;
@@ -21,26 +22,49 @@ import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Map;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener {
+  @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
   @NotNull private final Map<String, EventStream<Boolean>> serviceExtensions = new THashMap<>();
+
+  /**
+   * Boolean value applicable only for boolean service extensions indicating
+   * whether the service extension is enabled or disabled.
+   */
+  @NotNull private final Map<String, EventStream<ServiceExtensionState>> serviceExtensionState = new THashMap<>();
 
   private final EventStream<IsolateRef> flutterIsolateRefStream;
 
   private boolean isRunning;
   private int polledCount;
 
+  private volatile boolean firstFrameEventReceived = false;
+  private final VmService vmService;
+  /**
+   * Temporarily stores service extensions that we need to add. We should not add extensions until the first frame event
+   * has been received [firstFrameEventReceived].
+   */
+  private List<String> pendingServiceExtensions = new ArrayList<>();
+
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
+    this.app = app;
+    this.vmService = vmService;
     app.addStateListener(this);
+
     this.heapMonitor = new HeapMonitor(vmService, app.getFlutterDebugProcess());
     this.flutterFramesMonitor = new FlutterFramesMonitor(vmService);
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
+
+    // The VM Service depends on events from the Extension event stream to
+    // determine when Flutter.Frame events are fired.
+    // Without the call to listen, events from the stream will not be sent.
+    vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -73,14 +97,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
               if (flutterIsolateRefStream.getValue() == null) {
                 if (isolate.getExtensionRPCs() != null) {
                   for (String extensionName : isolate.getExtensionRPCs()) {
-                    if (extensionName.startsWith("ext.flutter.")) {
+                    if (extensionName.startsWith(ServiceExtensions.flutterPrefix)) {
                       setFlutterIsolate(isolateRef);
                       break;
                     }
                   }
                 }
               }
-              addRegisteredExtensionRPCs(isolate);
+              addRegisteredExtensionRPCs(isolate, false);
             }
 
             @Override
@@ -96,14 +120,32 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     });
   }
 
-  public void addRegisteredExtensionRPCs(Isolate isolate) {
-    ApplicationManager.getApplication().invokeLater(() -> {
-      if (isolate.getExtensionRPCs() != null) {
-        for (String extension : isolate.getExtensionRPCs()) {
-          addServiceExtension(extension);
+  public void addRegisteredExtensionRPCs(Isolate isolate, boolean attach) {
+    // If attach was called, there is a risk we may never receive a
+    // Flutter.Frame or Flutter.FirstFrame event so we need to query the
+    // framework to determine if a frame has already been rendered.
+    // This check would be safe to do outside of attach mode but is not needed.
+    if (attach && isolate.getExtensionRPCs() != null && !firstFrameEventReceived) {
+      final EvalOnDartLibrary flutterLibrary = new EvalOnDartLibrary(
+        "package:flutter/src/widgets/binding.dart",
+        vmService,
+        this
+      );
+      flutterLibrary.eval("WidgetsBinding.instance.debugDidSendFirstFrameEvent", null, null).whenCompleteAsync((v, e) -> {
+        // If there is an error we assume the first frame has been received.
+        boolean didSendFirstFrameEvent = e == null ||
+                                         v == null ||
+                                         Objects.equals(v.getValueAsString(), "true");
+        if (didSendFirstFrameEvent) {
+          onFrameEventReceived();
         }
+      });
+    }
+    if (isolate.getExtensionRPCs() != null) {
+      for (String extension : isolate.getExtensionRPCs()) {
+        addServiceExtension(extension);
       }
-    });
+    }
   }
 
   /**
@@ -169,9 +211,10 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
   }
 
-  private void resetAvailableExtensions() {
+  private void onFlutterIsolateStopped() {
     final Iterable<EventStream<Boolean>> existingExtensions;
     synchronized (serviceExtensions) {
+      firstFrameEventReceived = false;
       existingExtensions = new ArrayList<>(serviceExtensions.values());
     }
     for (EventStream<Boolean> serviceExtension : existingExtensions) {
@@ -186,27 +229,44 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     if (flutterIsolateRef != null) {
       if (event.getKind() == EventKind.IsolateExit && StringUtil.equals(event.getIsolate().getId(), flutterIsolateRef.getId())) {
         setFlutterIsolate(null);
-        resetAvailableExtensions();
+        onFlutterIsolateStopped();
+      }
+    }
+
+    final String kind = event.getExtensionKind();
+
+    if (event.getKind() == EventKind.Extension) {
+      switch(kind) {
+        case "Flutter.FirstFrame":
+        case "Flutter.Frame":
+          // Track whether we have received the first frame event and add pending service extensions if we have.
+          onFrameEventReceived();
+          break;
+        case "Flutter.ServiceExtensionStateChanged":
+          final JsonObject extensionData = event.getExtensionData().getJson();
+          final String name = extensionData.get("extension").getAsString();
+          final String valueFromJson = extensionData.get("value").getAsString();
+
+          final ToggleableServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsWhitelist.get(name);
+          if (extension != null) {
+            final Object value = getExtensionValueFromEventJson(name, valueFromJson);
+            final boolean enabled = value.equals(extension.getEnabledValue());
+            setServiceExtensionState(name, enabled, value);
+          }
       }
     }
 
     if (event.getKind() == EventKind.ServiceExtensionAdded) {
-      addServiceExtension(event.getExtensionRPC());
+      maybeAddServiceExtension(event.getExtensionRPC());
     }
 
     // Check to see if there's a new Flutter isolate.
     if (flutterIsolateRefStream.getValue() == null) {
-      // Check for Flutter frame events.
-      if (event.getKind() == EventKind.Extension && event.getExtensionKind().startsWith("Flutter.")) {
-        // Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame
-        setFlutterIsolate(event.getIsolate());
-      }
-
       // Check for service extension registrations.
       if (event.getKind() == EventKind.ServiceExtensionAdded) {
         final String extensionName = event.getExtensionRPC();
 
-        if (extensionName.startsWith("ext.flutter.")) {
+        if (extensionName.startsWith(ServiceExtensions.flutterPrefix)) {
           setFlutterIsolate(event.getIsolate());
         }
       }
@@ -225,9 +285,46 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     }
   }
 
-  /**
-   * This method must only be called on the UI thread.
-   */
+  private Object getExtensionValueFromEventJson(String name, String valueFromJson) {
+    final Object enabledValue =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
+
+    if (enabledValue instanceof Boolean) {
+      return valueFromJson.equals("true");
+    } else if (enabledValue instanceof Double) {
+      return Double.valueOf(valueFromJson);
+    } else {
+      return valueFromJson;
+    }
+  }
+
+  private void maybeAddServiceExtension(String name) {
+    synchronized (serviceExtensions) {
+      if (firstFrameEventReceived) {
+        addServiceExtension(name);
+        assert (pendingServiceExtensions.isEmpty());
+      }
+      else {
+        pendingServiceExtensions.add(name);
+      }
+    }
+  }
+
+  private void onFrameEventReceived() {
+    synchronized (serviceExtensions) {
+      if (firstFrameEventReceived) {
+        // The first frame event was already received.
+        return;
+      }
+      firstFrameEventReceived = true;
+
+      for (String extensionName : pendingServiceExtensions) {
+        addServiceExtension(extensionName);
+      }
+      pendingServiceExtensions.clear();
+    }
+  }
+
   private void addServiceExtension(String name) {
     synchronized (serviceExtensions) {
       final EventStream<Boolean> stream = serviceExtensions.get(name);
@@ -236,6 +333,78 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       }
       else if (!stream.getValue()) {
         stream.setValue(true);
+      }
+
+      // Set any extensions that are already enabled on the device. This will
+      // enable extension states for default-enabled extensions and extensions
+      // enabled before attaching.
+      restoreExtensionFromDevice(name);
+
+      // Restore any previously true states by calling their service extensions.
+      if (getServiceExtensionState(name).getValue().isEnabled()) {
+        restoreServiceExtensionState(name);
+      }
+    }
+  }
+
+  private void restoreExtensionFromDevice(String name) {
+    if (!ServiceExtensions.toggleableExtensionsWhitelist.containsKey(name)) {
+      return;
+    }
+    final Object enabledValue =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
+
+    final CompletableFuture<JsonObject> response = app.callServiceExtension(name);
+    response.thenApply(obj -> {
+      Object value = null;
+      if (obj != null) {
+        if (enabledValue instanceof Boolean) {
+          value = obj.get("enabled").getAsString().equals("true");
+          maybeRestoreExtension(name, value);
+        }
+        else if (enabledValue instanceof String) {
+          value = obj.get("value").getAsString();
+          maybeRestoreExtension(name, value);
+        }
+        else if (enabledValue instanceof Double) {
+          value = Double.parseDouble(obj.get("value").getAsString());
+          maybeRestoreExtension(name, value);
+        }
+      }
+      return value;
+    });
+  }
+
+  private void maybeRestoreExtension(String name, Object value)  {
+    if (value.equals(ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue())) {
+      setServiceExtensionState(name, true, value);
+    }
+  }
+
+  private void restoreServiceExtensionState(String name) {
+    if (app.isSessionActive()) {
+      if (StringUtil.equals(name, ServiceExtensions.toggleSelectWidgetMode.getExtension())) {
+        // Do not call the service extension for this extension. We do not want to persist showing the
+        // inspector on app restart.
+        return;
+      }
+
+      final Object value = getServiceExtensionState(name).getValue().getValue();
+
+      if (value instanceof Boolean) {
+        app.callBooleanExtension(name, (Boolean)value);
+      }
+      else if (value instanceof String) {
+        final Map<String, Object> params = new HashMap<>();
+        params.put("value", value);
+        app.callServiceExtension(name, params);
+      }
+      else if (value instanceof Double) {
+        final Map<String, Object> params = new HashMap<>();
+        // The param name for a numeric service extension will be the last part of the extension name
+        // (ext.flutter.extensionName => extensionName).
+        params.put(name.substring(name.lastIndexOf(".") + 1), value);
+        app.callServiceExtension(name, params);
       }
     }
   }
@@ -271,15 +440,45 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   public @NotNull
   StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
+    EventStream<Boolean> stream = getStream(name, serviceExtensions);
+    return stream.listen(onData, true);
+  }
+
+  @NotNull
+  private EventStream<Boolean> getStream(String name, Map<String, EventStream<Boolean>> streamMap) {
     EventStream<Boolean> stream;
-    synchronized (serviceExtensions) {
-      stream = serviceExtensions.get(name);
+    synchronized (streamMap) {
+      stream = streamMap.get(name);
       if (stream == null) {
         stream = new EventStream<>(false);
-        serviceExtensions.put(name, stream);
+        streamMap.put(name, stream);
       }
     }
-    return stream.listen(onData, true);
+    return stream;
+  }
+
+  public @NotNull
+  EventStream<ServiceExtensionState> getServiceExtensionState(String name) {
+    return getStateStream(name, serviceExtensionState);
+  }
+
+  @NotNull
+  private EventStream<ServiceExtensionState> getStateStream(
+    String name, Map<String, EventStream<ServiceExtensionState>> streamMap) {
+    EventStream<ServiceExtensionState> stream;
+    synchronized (streamMap) {
+      stream = streamMap.get(name);
+      if (stream == null) {
+        stream = new EventStream<>(new ServiceExtensionState(false, null));
+        streamMap.put(name, stream);
+      }
+    }
+    return stream;
+  }
+
+  public void setServiceExtensionState(String name, boolean enabled, Object value) {
+    EventStream<ServiceExtensionState> stream = getServiceExtensionState(name);
+    stream.setValue(new ServiceExtensionState(enabled, value));
   }
 
   /**
@@ -331,11 +530,11 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   public void stateChanged(FlutterApp.State newState) {
     if (newState == FlutterApp.State.RESTARTING) {
       // The set of service extensions available may be different once the app
-      // restarts and no service extensions will be availabe until the app is
+      // restarts and no service extensions will be available until the app is
       // suitably far along in the restart process. It turns out the
       // IsolateExit event cannot be relied on to track when a restart is
       // occurring for unclear reasons.
-      resetAvailableExtensions();
+      onFlutterIsolateStopped();
     }
   }
 }

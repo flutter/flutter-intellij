@@ -39,6 +39,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.IdeFocusManager;
 import com.intellij.openapi.wm.IdeFrame;
 import com.intellij.platform.PlatformProjectOpenProcessor;
+import io.flutter.FlutterUtils;
 import io.flutter.FlutterMessages;
 import io.flutter.module.FlutterModuleBuilder;
 import io.flutter.pub.PubRoot;
@@ -147,7 +148,7 @@ public class FlutterProjectCreator {
     final VirtualFile baseDir = ApplicationManager.getApplication().runWriteAction(
       (Computable<VirtualFile>)() -> LocalFileSystem.getInstance().refreshAndFindFileByIoFile(baseFile));
     if (baseDir == null) {
-      LOG.error("Couldn't find '" + location + "' in VFS");
+      FlutterUtils.warn(LOG, "Couldn't find '" + location + "' in VFS");
       return;
     }
     // TODO(messick): Remove the project converter when it is no longer needed (probably by the AS 3.2 release).
@@ -208,6 +209,8 @@ public class FlutterProjectCreator {
       .setOrg(myModel.packageName().get().isEmpty() ? null : reversedOrgFromPackage(myModel.packageName().get()))
       .setKotlin(isNotModule() && myModel.useKotlin().get() ? true : null)
       .setSwift(isNotModule() && myModel.useSwift().get() ? true : null)
+      .setOffline(myModel.isOfflineSelected().get())
+      .setSampleContent(myModel.getSample())
       .build();
   }
 
@@ -236,7 +239,7 @@ public class FlutterProjectCreator {
         }
       }
       catch (Exception e) {
-        LOG.error(String.format("Exception thrown when creating target project location: %1$s", projectLocation), e);
+        LOG.warn(String.format("Exception thrown when creating target project location: %1$s", projectLocation), e);
       }
       return false;
     });
@@ -275,8 +278,9 @@ public class FlutterProjectCreator {
     public void error(String message) {
     }
 
-    @Override
-    public void cannotWriteToFiles(List<File> readonlyFiles) {
+    //@Override
+    @SuppressWarnings("override")
+    public void cannotWriteToFiles(List<? extends File> readonlyFiles) {
     }
 
     public boolean isConversionNeeded() {

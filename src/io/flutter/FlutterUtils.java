@@ -14,6 +14,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
@@ -63,7 +64,6 @@ public class FlutterUtils {
       ModalityState.defaultModalityState());
   }
 
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
   public static boolean isFlutteryFile(@NotNull VirtualFile file) {
     return isDartFile(file) || PubRoot.isPubspec(file);
   }
@@ -76,13 +76,43 @@ public class FlutterUtils {
     return StringUtil.equals(PlatformUtils.getPlatformPrefix(), "AndroidStudio");
   }
 
-  public static boolean is2017_3() {
-    final ApplicationInfo appInfo = ApplicationInfo.getInstance();
-    if (appInfo == null) {
-      return false;
-    }
+  public static boolean is2018_3_or_higher() {
+    return getBaselineVersion() >= 183;
+  }
 
-    return appInfo.getBuild().getBaselineVersion() == 173;
+  /**
+   * Write a warning message to the IntelliJ log.
+   * <p>
+   * This is separate from LOG.warn() to allow us to decorate the behavior.
+   */
+  public static void warn(Logger logger, @NotNull Throwable t) {
+    logger.warn(t);
+  }
+
+  /**
+   * Write a warning message to the IntelliJ log.
+   * <p>
+   * This is separate from LOG.warn() to allow us to decorate the behavior.
+   */
+  public static void warn(Logger logger, String message) {
+    logger.warn(message);
+  }
+
+  /**
+   * Write a warning message to the IntelliJ log.
+   * <p>
+   * This is separate from LOG.warn() to allow us to decorate the behavior.
+   */
+  public static void warn(Logger logger, String message, @NotNull Throwable t) {
+    logger.warn(message, t);
+  }
+
+  private static int getBaselineVersion() {
+    final ApplicationInfo appInfo = ApplicationInfo.getInstance();
+    if (appInfo != null) {
+      return appInfo.getBuild().getBaselineVersion();
+    }
+    return -1;
   }
 
   public static void disableGradleProjectMigrationNotification(@NotNull Project project) {

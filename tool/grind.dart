@@ -7,7 +7,32 @@ import 'dart:io';
 
 import 'package:grinder/grinder.dart';
 
+import 'package:http/http.dart' as http;
+
 main(List<String> args) => grind(args);
+
+@Task('Check plugin URLs for liveness')
+checkUrls() async {
+  log('checking URLs in FlutterBundle.properties...');
+  var lines =
+      await new File('src/io/flutter/FlutterBundle.properties').readAsLines();
+  for (var line in lines) {
+    var split = line.split('=');
+    if (split.length == 2) {
+      // flutter.io.gettingStarted.url | flutter.analytics.privacyUrl
+      if (split[0].toLowerCase().endsWith('url')) {
+        var url = split[1];
+        var response = await http.get(url);
+        log('checking: $url...');
+        if (response.statusCode != 200) {
+          fail(
+              '$url GET failed: [${response.statusCode}] ${response.reasonPhrase}');
+        }
+      }
+    }
+  }
+  log('OK!');
+}
 
 @Task()
 @Depends(colors, icons)
@@ -32,8 +57,8 @@ colors() async {
   file.writeAsStringSync(str);
 
   // Run tool/color/colors_main.dart, pipe output to //resources/flutter/color.properties.
-  ProcessResult result = Process
-      .runSync(Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
+  ProcessResult result = Process.runSync(
+      Platform.resolvedExecutable, ['tool/colors/colors_main.dart']);
   if (result.exitCode != 0) {
     fail('${result.stdout}\n${result.stderr}');
   }
@@ -44,18 +69,8 @@ colors() async {
 
 @Task('Generate Flutter icon information')
 icons() async {
-  final String kUrl = 'https://raw.githubusercontent.com/flutter/flutter/'
-      'master/dev/tools/update_icons.dart';
-
-  // Get color file from flutter.
-  HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
-  HttpClientResponse response = await request.close();
-  List<String> data = await response.transform(utf8.decoder).toList();
-  File file = new File('tool/icons/update_icons.dart');
-  file.writeAsStringSync(data.join(''));
-
-  // Run tool/icons/icons_main.dart.
-  await Dart.runAsync('tool/icons/icons_main.dart');
+  // Run tool/icons/update_icons.dart.
+  await Dart.runAsync('tool/icons/update_icons.dart');
 }
 
 @Task('Create Outline view icons from svgs')
@@ -103,8 +118,8 @@ void _createPng(
     ]);
 
     if (result.exitCode != 0) {
-      print('Error resizing image with imagemagick: ${result.stdout}\n${result
-          .stderr}');
+      print(
+          'Error resizing image with imagemagick: ${result.stdout}\n${result.stderr}');
       exit(1);
     }
   } finally {

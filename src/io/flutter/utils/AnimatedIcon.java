@@ -8,10 +8,8 @@ package io.flutter.utils;
 import com.intellij.icons.AllIcons;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.Icon;
-import javax.swing.Timer;
-import java.awt.Component;
-import java.awt.Graphics;
+import javax.swing.*;
+import java.awt.*;
 
 /**
  * @author Sergey.Malenkov

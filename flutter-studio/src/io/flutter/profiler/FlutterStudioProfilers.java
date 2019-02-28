@@ -7,6 +7,7 @@ package io.flutter.profiler;
 
 import com.android.tools.adtui.model.AspectModel;
 import com.android.tools.adtui.model.FpsTimer;
+import com.android.tools.adtui.model.SeriesData;
 import com.android.tools.adtui.model.StopwatchTimer;
 import com.android.tools.adtui.model.axis.AxisComponentModel;
 import com.android.tools.adtui.model.axis.ResizingAxisComponentModel;
@@ -117,15 +118,16 @@ public class FlutterStudioProfilers
 
       @Override
       public void handleGCEvent(IsolateRef iIsolateRef,
-                                HeapMonitor.HeapSpace newHeapSpvace,
-                                HeapMonitor.HeapSpace oldHeapSpace) { }
+                                HeapMonitor.HeapSpace newHeapSpace,
+                                HeapMonitor.HeapSpace oldHeapSpace) {
+      }
 
       private void updateModel(HeapState heapState) {
         if (!isClockSynced[0]) {
           isClockSynced[0] = true;
           long timeUs =
             TimeUnit.MILLISECONDS.toNanos(heapState.getSamples()
-                                                   .get(0).getSampleTime());
+                                            .get(0).getSampleTime());
           timeline.reset(timeUs, timeUs);
         }
       }
@@ -168,7 +170,7 @@ public class FlutterStudioProfilers
 
     // These need to be fired every time the process list changes so that
     // the device/process dropdown always reflects the latest.
-    changed(ProfilerAspect.DEVICES);
+    //changed(ProfilerAspect.DEVICES);
     changed(ProfilerAspect.PROCESSES);
   }
 

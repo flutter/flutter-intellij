@@ -10,8 +10,6 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
-
 /**
  * View model for displaying perf stats for a TextEditor.
  *
@@ -19,7 +17,7 @@ import java.util.List;
  * the text editor along with the actual perf stats accessible via the
  * getStats method.
  */
-public interface EditorPerfModel extends Disposable {
+public interface EditorPerfModel extends PerfModel, Disposable {
   @NotNull
   FilePerfInfo getStats();
 
@@ -28,15 +26,9 @@ public interface EditorPerfModel extends Disposable {
 
   FlutterApp getApp();
 
-  boolean isHoveredOverLineMarkerArea();
+  boolean getAlwaysShowLineMarkers();
 
-  void markAppIdle();
-
-  void clear();
-
-  void onFrame();
+  void setAlwaysShowLineMarkersOverride(boolean show);
 
   void setPerfInfo(FilePerfInfo stats);
-
-  boolean isAnimationActive();
 }

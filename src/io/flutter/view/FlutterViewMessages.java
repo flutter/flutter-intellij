@@ -8,8 +8,8 @@ package io.flutter.view;
 import com.intellij.openapi.project.Project;
 import com.intellij.util.messages.MessageBus;
 import com.intellij.util.messages.Topic;
-import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.jetbrains.annotations.NotNull;
 

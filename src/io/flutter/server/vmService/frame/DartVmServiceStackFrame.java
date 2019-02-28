@@ -75,7 +75,11 @@ public class DartVmServiceStackFrame extends XStackFrame {
 
   @Override
   public void customizePresentation(@NotNull final ColoredTextContainer component) {
-    final String name = StringUtil.trimEnd(myVmFrame.getCode().getName(), "="); // trim setter postfix
+    final String unoptimizedPrefix = "[Unoptimized] ";
+
+    String name = StringUtil.trimEnd(myVmFrame.getCode().getName(), "="); // trim setter postfix
+    name = StringUtil.trimStart(name, unoptimizedPrefix);
+
     final boolean causal = myVmFrame.getKind() == FrameKind.AsyncCausal;
     component.append(name, causal ? SimpleTextAttributes.REGULAR_ITALIC_ATTRIBUTES : SimpleTextAttributes.REGULAR_ATTRIBUTES);
 
@@ -84,7 +88,7 @@ public class DartVmServiceStackFrame extends XStackFrame {
       component.append(text, SimpleTextAttributes.GRAY_ATTRIBUTES);
     }
 
-    component.setIcon(AllIcons.Debugger.StackFrame);
+    component.setIcon(AllIcons.Debugger.Frame);
   }
 
   @NotNull

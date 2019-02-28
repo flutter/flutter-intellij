@@ -1,3 +1,0 @@
-steps:
-- name: 'ubuntu'
-  args: ['bash', './tool/cloudbuild.sh']

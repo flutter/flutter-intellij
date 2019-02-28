@@ -9,27 +9,48 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import com.intellij.execution.filters.Filter;
+import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import io.flutter.server.vmService.HeapMonitor;
+import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.util.EventDispatcher;
+import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
+import io.flutter.console.FlutterConsoleFilter;
+import io.flutter.inspector.DiagnosticsNode;
+import io.flutter.inspector.InspectorService;
+import io.flutter.logging.text.LineInfo;
+import io.flutter.logging.text.LineParser;
+import io.flutter.logging.text.StyledText;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.DaemonApi;
+import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.HeapMonitor;
 import io.flutter.utils.StdoutJsonParser;
 import org.dartlang.vm.service.VmService;
-import org.dartlang.vm.service.element.Event;
-import org.dartlang.vm.service.element.Instance;
-import org.dartlang.vm.service.element.IsolateRef;
+import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
+import static io.flutter.logging.FlutterLogEntry.Kind;
+import static io.flutter.logging.FlutterLogEntry.UNDEFINED_LEVEL;
 
 public class FlutterLogEntryParser {
   // Known entry categories.
+  public static final String ERROR_CATEGORY = "flutter.error";
+  public static final String GC_CATEGORY = "runtime.gc";
   public static final String LOG_CATEGORY = "flutter.log";
   public static final String TOOLS_CATEGORY = "flutter.tools";
   public static final String STDIO_STDOUT_CATEGORY = "stdout";
@@ -44,19 +65,45 @@ public class FlutterLogEntryParser {
     df1.setMaximumFractionDigits(1);
   }
 
-  private FlutterDebugProcess debugProcess;
+  private static final Logger LOG = Logger.getInstance(FlutterLogEntryParser.class);
 
-  public void setDebugProcess(FlutterDebugProcess debugProcess) {
-    this.debugProcess = debugProcess;
+  private final EventDispatcher<FlutterLogEntry.ContentListener>
+    contentChangedDispatcher = EventDispatcher.create(FlutterLogEntry.ContentListener.class);
+  private FlutterApp app;
+
+  public void addListener(@NotNull FlutterLogEntry.ContentListener listener, @NotNull Disposable parent) {
+    contentChangedDispatcher.addListener(listener, parent);
+  }
+
+  static abstract class GetObjectAdapter implements GetObjectConsumer {
+    @Override
+    public abstract void received(Obj response);
+
+    @Override
+    public void received(Sentinel response) {
+      // No-op.
+    }
+
+    @Override
+    public void onError(RPCError error) {
+      // No-op.
+    }
+  }
+
+  private final LineHandler lineHandler;
+  private CompletableFuture<InspectorService.ObjectGroup> inspectorObjectGroup;
+
+  public FlutterLogEntryParser(@NotNull Project project, @Nullable Module module) {
+    lineHandler = new LineHandler(createMessageFilters(project, module), null);
   }
 
   public FlutterDebugProcess getDebugProcess() {
-    return debugProcess;
+    return app != null ? app.getFlutterDebugProcess() : null;
   }
 
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
-  private static FlutterLogEntry parseLoggingEvent(@NotNull Event event) {
+  private List<FlutterLogEntry> parseLoggingEvent(@NotNull Event event) {
     // TODO(pq): parse more robustly; consider more properties (error, stackTrace)
     final JsonObject json = event.getJson();
     final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
@@ -71,7 +118,7 @@ public class FlutterLogEntryParser {
       }
     }
 
-    int level = FlutterLogEntry.UNDEFINED_LEVEL.value;
+    int level = UNDEFINED_LEVEL.value;
     final JsonElement levelElement = logRecord.getAsJsonObject().get("level");
     if (levelElement instanceof JsonPrimitive) {
       final int setLevel = levelElement.getAsInt();
@@ -81,17 +128,53 @@ public class FlutterLogEntryParser {
       }
     }
 
-    // TODO: If message.getValueAsStringIsTruncated() is true, we'll need to retrieve the full string
-    // value and update this entry after creation.
-    String messageStr = message.getValueAsString();
+    final FlutterDebugProcess debugProcess = getDebugProcess();
+
+    final String messageStr = message.getValueAsString();
+    final FlutterLogEntry entry = lineHandler.parseEntry(messageStr, category, level);
+
     if (message.getValueAsStringIsTruncated()) {
-      messageStr += "...";
+      entry.setMessage(messageStr + "...");
+      if (debugProcess != null) {
+        final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
+        debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectAdapter() {
+          @Override
+          public void received(Obj response) {
+            entry.setMessage(((Instance)response).getValueAsString());
+            contentChangedDispatcher.getMulticaster().onContentUpdate();
+          }
+        });
+      }
     }
-    return new FlutterLogEntry(timestamp(event), category, level, messageStr);
+
+    final Instance data = new Instance(logRecord.getAsJsonObject().get("error").getAsJsonObject());
+    if (!data.getValueAsStringIsTruncated()) {
+      entry.setData(data.getValueAsString());
+    }
+    else {
+      if (debugProcess != null) {
+        final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
+        debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectAdapter() {
+          @Override
+          public void received(Obj response) {
+            entry.setData(((Instance)response).getValueAsString());
+            contentChangedDispatcher.getMulticaster().onContentUpdate();
+          }
+
+          @Override
+          public void received(Sentinel response) {
+            entry.setData(null);
+            contentChangedDispatcher.getMulticaster().onContentUpdate();
+          }
+        });
+      }
+    }
+
+    return Collections.singletonList(entry);
   }
 
   @NotNull
-  private static FlutterLogEntry parseGCEvent(@NotNull Event event) {
+  private List<FlutterLogEntry> parseGCEvent(@NotNull Event event) {
     final IsolateRef isolateRef = event.getIsolate();
     final HeapMonitor.HeapSpace newHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("new"));
     final HeapMonitor.HeapSpace oldHeapSpace = new HeapMonitor.HeapSpace(event.getJson().getAsJsonObject("old"));
@@ -104,14 +187,33 @@ public class FlutterLogEntryParser {
     final long timeMs = Math.round(time * 1000);
     final double usedMB = used / (1024.0 * 1024.0);
     final double maxMB = maxHeap / (1024.0 * 1024.0);
+    final String message = "collection time " +
+                           nf.format(timeMs) +
+                           "ms • " +
+                           df1.format(usedMB) +
+                           "MB used of " +
+                           df1.format(maxMB) +
+                           "MB • " +
+                           isolateRef.getId();
 
-    return new FlutterLogEntry(
-      timestamp(event),
-      "runtime.gc", GC_EVENT_LEVEL,
-      "collection time " +
-      nf.format(timeMs) + "ms • " +
-      df1.format(usedMB) + "MB used of " + df1.format(maxMB) + "MB • " +
-      isolateRef.getId());
+    return Collections.singletonList(lineHandler.parseEntry(message, GC_CATEGORY, UNDEFINED_LEVEL.value));
+  }
+
+  private static Kind parseKind(@NotNull String message, @NotNull String category) {
+    if (category.equals(TOOLS_CATEGORY)) {
+      message = message.trim();
+      if (message.equals("Performing hot reload...") || message.equals("Initializing hot reload...")) {
+        return Kind.RELOAD;
+      }
+      if (message.equals("Performing hot restart...") || message.equals("Initializing hot restart...")) {
+        return Kind.RESTART;
+      }
+      // TODO(pq): remove string matching once all widget errors are coming as "Flutter.Error" exension events.
+      if (message.startsWith("══╡ EXCEPTION CAUGHT BY WIDGETS LIBRARY")) {
+        return Kind.FLUTTER_ERROR;
+      }
+    }
+    return Kind.UNSPECIFIED;
   }
 
   private static long timestamp() {
@@ -129,17 +231,46 @@ public class FlutterLogEntryParser {
   }
 
   @Nullable
-  public FlutterLogEntry parse(@Nullable String id, @Nullable Event event) {
+  public List<FlutterLogEntry> parse(@Nullable String id, @Nullable Event event) {
     if (id != null && event != null) {
       switch (id) {
         case LOGGING_STREAM_ID:
           return parseLoggingEvent(event);
         case VmService.GC_STREAM_ID:
           return parseGCEvent(event);
+        case VmService.EXTENSION_STREAM_ID:
+          return parseExtensionEvent(event);
       }
     }
 
     return null;
+  }
+
+  private List<FlutterLogEntry> parseExtensionEvent(@NotNull Event event) {
+    final JsonPrimitive extensionKind = event.getJson().getAsJsonPrimitive("extensionKind");
+    if (Objects.equals(extensionKind.getAsString(), "Flutter.Error")) {
+      return parseFlutterError(event.getJson());
+    }
+    return null;
+  }
+
+  private List<FlutterLogEntry> parseFlutterError(@NotNull JsonObject json) {
+    final List<FlutterLogEntry> entries = new ArrayList<>();
+    final JsonElement extensionData = json.get("extensionData");
+    final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
+    final String description = diagnosticsNode.toString();
+    final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
+    entry.setKind(Kind.FLUTTER_ERROR);
+    entry.setData(diagnosticsNode);
+    entries.add(entry);
+    return entries;
+  }
+
+  @NotNull
+  private DiagnosticsNode parseDiagnosticsNode(@NotNull JsonObject json) {
+    assert (inspectorObjectGroup != null);
+    assert (app != null);
+    return new DiagnosticsNode(json, inspectorObjectGroup, app, false, null);
   }
 
   @Nullable
@@ -149,6 +280,61 @@ public class FlutterLogEntryParser {
     if (text.isEmpty()) return null;
 
     return parseDaemonEvent(text);
+  }
+
+  public static class LineHandler extends LineParser {
+    final List<StyledText> parsed = new ArrayList<>();
+
+    public LineHandler(@NotNull List<Filter> filters, @Nullable SimpleTextAttributes initialStyle) {
+      super(filters);
+      this.style = initialStyle;
+    }
+
+    @Override
+    public void write(@NotNull StyledText styledText) {
+      parsed.add(styledText);
+    }
+
+    public List<StyledText> parseLineStyle(@NotNull String line) {
+      parse(line);
+      // Copy results and clear.
+      final ArrayList<StyledText> results = new ArrayList<>(parsed);
+      parsed.clear();
+      return results;
+    }
+
+    LineInfo parseLineInfo(@NotNull String line, @NotNull String category) {
+      // Any carried over style info needs to be stored so it can be used by lines that need to be re-rendered.
+      // (For example, if they are truncated on arrival and need to be reconstituted with full content.)
+      final SimpleTextAttributes carriedOverStyle = style;
+
+      final Kind kind = parseKind(line, category);
+      // On reloads / restarts, clear cached styles in case we're in the middle of an unterminated style block.
+      if (kind == FlutterLogEntry.Kind.RELOAD || kind == FlutterLogEntry.Kind.RESTART) {
+        clear();
+      }
+
+      final List<StyledText> styledText = parseLineStyle(line);
+      return new LineInfo(line, styledText, kind, category, filters, carriedOverStyle);
+    }
+
+    FlutterLogEntry parseEntry(@NotNull String line, @NotNull String category, int level) {
+      final LineInfo lineInfo = parseLineInfo(line, category);
+      return new FlutterLogEntry(timestamp(), lineInfo, level);
+    }
+  }
+
+  @NotNull
+  static List<Filter> createMessageFilters(@NotNull Project project, @Nullable Module module) {
+    final List<Filter> filters = new ArrayList<>();
+    if (module != null) {
+      filters.add(new FlutterConsoleFilter(module));
+    }
+    filters.addAll(Arrays.asList(
+      new DartConsoleFilter(project, project.getBaseDir()),
+      new UrlFilter()
+    ));
+    return filters;
   }
 
   @VisibleForTesting
@@ -163,7 +349,13 @@ public class FlutterLogEntryParser {
         // Skip.
       }
       else {
-        return new FlutterLogEntry(timestamp(), TOOLS_CATEGORY, line);
+        // Trim "flutter: " prefix (made redundant by category).
+        if (line.startsWith("flutter:")) {
+          line = line.substring(8);
+        }
+        // Fix unicode escape codes.
+        line = line.replaceAll("\\\\\\^\\[", "\u001b");
+        return lineHandler.parseEntry(line, TOOLS_CATEGORY, UNDEFINED_LEVEL.value);
       }
     }
 
@@ -176,5 +368,10 @@ public class FlutterLogEntryParser {
     }
     // TODO(pq): handle else (errors, etc).
     return null;
+  }
+
+  public void setVmServices(@NotNull FlutterApp app, @NotNull VmService vmService) {
+    this.app = app;
+    inspectorObjectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), vmService, "console-group");
   }
 }

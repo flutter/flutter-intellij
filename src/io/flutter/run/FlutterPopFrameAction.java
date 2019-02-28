@@ -15,12 +15,11 @@ import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
 import com.intellij.xdebugger.frame.XStackFrame;
-import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
 import io.flutter.FlutterBundle;
+import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-@SuppressWarnings("ComponentNotRegistered")
 public class FlutterPopFrameAction extends AnAction implements DumbAware {
   public FlutterPopFrameAction() {
     final Presentation presentation = getTemplatePresentation();

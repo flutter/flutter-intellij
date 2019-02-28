@@ -7,6 +7,7 @@ package io.flutter.editor;
 
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.IconLoader;
+import io.flutter.FlutterUtils;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -21,19 +22,19 @@ public class FlutterMaterialIcons {
     icons = new Properties();
 
     try {
-      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/icons.properties"));
+      icons.load(FlutterEditorAnnotator.class.getResourceAsStream("/flutter/material_icons.properties"));
     }
     catch (IOException e) {
-      LOG.warn(e);
+      FlutterUtils.warn(LOG, e);
     }
   }
 
-  public static Icon getMaterialIconForHex(String hexValue) {
+  public static Icon getIconForHex(String hexValue) {
     final String iconName = icons.getProperty(hexValue + ".codepoint");
     return getIcon(iconName);
   }
 
-  public static Icon getMaterialIconForName(String name) {
+  public static Icon getIconForName(String name) {
     return getIcon(name);
   }
 

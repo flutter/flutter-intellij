@@ -1,3 +1,95 @@
+## 33.3
+- Fix an issue with an IllegalArgumentException when running Flutter apps
+
+## 33.2
+- Support IntelliJ 2018.3.3
+
+## 33.1
+- add menu and toolbar button to open Flutter DevTools
+- fix Gradle sync issue for Android Studio 3.3.1
+- fix highlighting of the Go link in sample banner
+
+## 33.0
+- update build for Android Studio 3.3.1
+- reorder console filters so links work
+- more intelligently enable support for detaching from Flutter apps on exit
+- change the icon used for paint baselines
+- prevent bazel test run configurations from generating in a non-bazel workspace
+- support 2019.1 eap
+- mention 'Dart' in the plugin description
+- correct the bazel output for debugging bazel tests
+- simplify the bazel parameters we pass to Bazel Run configurations
+- pin flutter error events in the log
+- propagate node selections to inspector
+- link support for log data entries
+- fix category cell rendering
+- add sample creation banner
+- add sample apps to Android Studio New Project Wizard
+- update log entry data badge
+
+## 32.0
+- address an NPE in FlutterWidgetPerfManager.java
+- added overlay renderered for GC, snapshot and memory reset events
+- consolidated all adt-ui API changes in FlutterStudioMonitorStageView
+- support for creating projects w/ sample content from the IDEA New Project Wizard
+- basic ansi color support for entries in the Flutter Logging View
+- restore log level combo to the Logging View
+- support to fill in truncated log entries
+- add keyboard shortcut for widget extraction
+- add debugPaint and debugAllowBanner icons
+- add repaint rainbow icon
+- handle cases where script.tokenPosTable is null
+- auto-hide details pane
+- guard against disposed when querying project type
+- fix an issue with escaped test names
+- refactor service extensions and set button text based on extension state
+- shorten message for debug mode perf disclaimer
+- listen for ServiceExtensionStateChanged events
+- restore service extension states from device on start and attach
+- don't use LOG.error()
+- refactor the Bazel Test configuration to support running tests on a single file or a single test
+- fix enabled/disabled text for service extensions
+- fix NPE in bazel config
+
+## 31.3
+- fix NPE in sdk installation (#2965)
+- fix NPE caused by internal inconsistency (#2963)
+
+## 31.2
+- show memory profiler legend with proper line chart color or line style
+- prevent the (IntelliJ) New Project wizard from completing when there is no Flutter SDK
+- fix a race condition causing unexpected conditions in attach
+- added control of RSS display to memory profiler
+- when running the flutter doctor command, use the -v flag
+- make attach use selected device
+
+## 31.1
+- perf table polish and fix links to tip docs
+- fix Split Mode resize issue
+- rebuild stats wording tweaks
+
+## 31.0
+- change FPS display to "Frame Rendering Time" and improve UI
+- reorganize inspector tools
+- better error reporting for Flutter runtime issues
+- fewer Flutter runtime issues
+- updated icons for Material and Cupertino
+- searchable preferences/settings
+- added refactoring to outline view: extract widget
+- new menu item to run 'flutter make-host-app-editable'
+- code cleanup and bug fixes
+
+## 30.0
+- performance inspector changes
+- log view tweaks
+- memory profiler updates
+- support 'flutter attach' in the IDE (both IJ and AS)
+- support offline project creation in the AS wizard
+- code cleanup and bug fixes
+
+## 29.1
+- address an issue with an NPE when debugging
+
 ## 29.0
 - add 'Wrap with Container' to preview
 - fix test navigation

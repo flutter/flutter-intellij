@@ -9,49 +9,12 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.intellij.openapi.util.TextRange;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 /**
- * Statistics summarizing how frequently an event as occurred overall and in
- * the past second.
- */
-class SummaryStats {
-  private final PerfReportKind kind;
-  private final int total;
-  private final String description;
-  private int pastSecond = 0;
-
-  SummaryStats(PerfReportKind kind, int total, int pastSecond, String description) {
-    this.kind = kind;
-    this.total = total;
-    this.pastSecond = pastSecond;
-    this.description = description;
-  }
-
-  PerfReportKind getKind() {
-    return kind;
-  }
-
-  int getTotal() {
-    return total;
-  }
-
-  int getPastSecond() {
-    return pastSecond;
-  }
-
-  public void markAppIdle() {
-    pastSecond = 0;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-}
-
-/**
  * Performance stats for a single source file.
- *
+ * <p>
  * Typically the TextRange objects correspond to widget constructor locations.
  * A single constructor location may have multiple SummaryStats objects one for
  * each kind of stats (Widget repaints, rebuilds, etc).
@@ -59,46 +22,38 @@ class SummaryStats {
 class FilePerfInfo {
   private final Multimap<TextRange, SummaryStats> stats = LinkedListMultimap.create();
   long maxTimestamp = -1;
-  private int totalPastSecond = 0;
+  private final int[] totalForMetric = new int[PerfMetric.values().length];
 
   public void clear() {
     stats.clear();
     maxTimestamp = -1;
-    totalPastSecond = 0;
+    Arrays.fill(totalForMetric, 0);
   }
 
   public Iterable<TextRange> getLocations() {
     return stats.keySet();
   }
 
+  public Iterable<SummaryStats> getStats() {
+    return stats.values();
+  }
+
   public boolean hasLocation(TextRange range) {
     return stats.containsKey(range);
   }
 
-  public int getCountPastSecond() {
-    return totalPastSecond;
+  public int getTotalValue(PerfMetric metric) {
+    return totalForMetric[metric.ordinal()];
   }
 
-  public int getCountPastSecond(TextRange range) {
+  public int getValue(TextRange range, PerfMetric metric) {
     final Collection<SummaryStats> entries = stats.get(range);
     if (entries == null) {
       return 0;
     }
     int count = 0;
     for (SummaryStats entry : entries) {
-      count += entry.getPastSecond();
-    }
-    return count;
-  }
-
-  public int getTotalCount(TextRange range) {
-    final Collection<SummaryStats> entries = stats.get(range);
-    if (entries == null) {
-      return 0;
-    }
-    int count = 0;
-    for (SummaryStats entry : entries) {
-      count += entry.getTotal();
+      count += entry.getValue(metric);
     }
     return count;
   }
@@ -113,13 +68,24 @@ class FilePerfInfo {
 
   public void add(TextRange range, SummaryStats entry) {
     stats.put(range, entry);
-    totalPastSecond += entry.getPastSecond();
+    for (PerfMetric metric : PerfMetric.values()) {
+      totalForMetric[metric.ordinal()] += entry.getValue(metric);
+    }
   }
 
   public void markAppIdle() {
-    totalPastSecond = 0;
+    for (PerfMetric metric : PerfMetric.values()) {
+      if (metric.timeIntervalMetric) {
+        totalForMetric[metric.ordinal()] = 0;
+      }
+    }
+
     for (SummaryStats stats : stats.values()) {
       stats.markAppIdle();
     }
+  }
+
+  public int getCurrentValue(TextRange range) {
+    return getValue(range, PerfMetric.peakRecent);
   }
 }

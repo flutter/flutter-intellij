@@ -10,7 +10,6 @@ import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -26,7 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 /**
@@ -41,7 +39,7 @@ public class FlutterCommand {
   @NotNull
   private final FlutterSdk sdk;
 
-  @NotNull
+  @Nullable
   private final VirtualFile workDir;
 
   @NotNull
@@ -53,7 +51,7 @@ public class FlutterCommand {
   /**
    * @see FlutterSdk for methods to create specific commands.
    */
-  FlutterCommand(@NotNull FlutterSdk sdk, @NotNull VirtualFile workDir, @NotNull Type type, String... args) {
+  FlutterCommand(@NotNull FlutterSdk sdk, @Nullable VirtualFile workDir, @NotNull Type type, String... args) {
     this.sdk = sdk;
     this.workDir = workDir;
     this.type = type;
@@ -160,18 +158,12 @@ public class FlutterCommand {
   }
 
   /**
-   * The currently running command.
-   * <p>
-   * We only allow one command to run at a time across all IDEA projects.
-   */
-  private static final AtomicReference<FlutterCommand> inProgress = new AtomicReference<>(null);
-
-  /**
    * Starts a process that runs a flutter command, unless one is already running.
    * <p>
    * Returns the handler if successfully started.
    */
-  @Nullable public OSProcessHandler startProcess(boolean sendAnalytics) {
+  @Nullable
+  public OSProcessHandler startProcess(boolean sendAnalytics) {
     try {
       final GeneralCommandLine commandLine = createGeneralCommandLine(null);
       LOG.info(commandLine.toString());
@@ -198,11 +190,6 @@ public class FlutterCommand {
    */
   @NotNull
   public FlutterCommandStartResult startProcess(@Nullable Project project) {
-    // TODO(devoncarew): Many flutter commands can legitimately be run in parallel.
-    if (!inProgress.compareAndSet(null, this)) {
-      return new FlutterCommandStartResult(FlutterCommandStartResultStatus.ANOTHER_RUNNING);
-    }
-
     if (isPubRelatedCommand()) {
       DartPlugin.setPubActionInProgress(true);
     }
@@ -215,7 +202,6 @@ public class FlutterCommand {
       handler.addProcessListener(new ProcessAdapter() {
         @Override
         public void processTerminated(@NotNull final ProcessEvent event) {
-          inProgress.compareAndSet(FlutterCommand.this, null);
           if (isPubRelatedCommand()) {
             DartPlugin.setPubActionInProgress(false);
           }
@@ -225,7 +211,6 @@ public class FlutterCommand {
       return new FlutterCommandStartResult(handler);
     }
     catch (ExecutionException e) {
-      inProgress.compareAndSet(this, null);
       if (isPubRelatedCommand()) {
         DartPlugin.setPubActionInProgress(false);
       }
@@ -241,7 +226,7 @@ public class FlutterCommand {
    * Returns the handler if successfully started, or null if there was a problem.
    */
   @Nullable
-  public OSProcessHandler startProcessOrShowError(@Nullable Project project)  {
+  public OSProcessHandler startProcessOrShowError(@Nullable Project project) {
     final FlutterCommandStartResult result = startProcess(project);
     if (result.status == FlutterCommandStartResultStatus.EXCEPTION && result.exception != null) {
       FlutterMessages.showError(
@@ -269,11 +254,19 @@ public class FlutterCommand {
     }
 
     line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
-    line.setWorkDirectory(workDir.getPath());
-    line.addParameter("--no-color");
+    if (workDir != null) {
+      line.setWorkDirectory(workDir.getPath());
+    }
+    if (!isDoctorCommand()) {
+      line.addParameter("--no-color");
+    }
     line.addParameters(type.subCommand);
     line.addParameters(args);
     return line;
+  }
+
+  private boolean isDoctorCommand() {
+    return type == Type.DOCTOR;
   }
 
   enum Type {
@@ -282,9 +275,11 @@ public class FlutterCommand {
     CLEAN("Flutter clean", "clean"),
     CONFIG("Flutter config", "config"),
     CREATE("Flutter create", "create"),
-    DOCTOR("Flutter doctor", "doctor"),
+    DOCTOR("Flutter doctor", "doctor", "--verbose"),
+    MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
+    PACKAGES_PUB("Flutter packages pub", "packages", "pub"),
     RUN("Flutter run", "run"),
     UPGRADE("Flutter upgrade", "upgrade"),
     VERSION("Flutter version", "--version"),

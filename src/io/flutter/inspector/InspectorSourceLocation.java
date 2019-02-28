@@ -7,7 +7,6 @@ package io.flutter.inspector;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
@@ -25,8 +24,12 @@ public class InspectorSourceLocation {
     this.parent = parent;
   }
 
+  public String getPath() {
+    return JsonUtils.getStringMember(json, "file");
+  }
+
   public VirtualFile getFile() {
-    String fileName = JsonUtils.getStringMember(json, "file");
+    String fileName = getPath();
     if (fileName == null) {
       return parent != null ? parent.getFile() : null;
     }
@@ -37,10 +40,7 @@ public class InspectorSourceLocation {
     // TODO(jacobr): remove this workaround after the code in package:flutter
     // is fixed to return operating system paths instead of URIs.
     // https://github.com/flutter/flutter-intellij/issues/2217
-    final String filePrefix = SystemInfo.isWindows ? "file:///" : "file://";
-    if (fileName.startsWith(filePrefix)) {
-      fileName = fileName.substring(filePrefix.length());
-    }
+    fileName = InspectorService.fromSourceLocationUri(fileName);
 
     final VirtualFile virtualFile = LocalFileSystem.getInstance().findFileByPath(fileName);
     if (virtualFile != null && !virtualFile.exists()) {

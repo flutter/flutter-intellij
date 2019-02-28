@@ -1,5 +1,7 @@
 ## Contributing code
 
+![GitHub contributors](https://img.shields.io/github/contributors/flutter/flutter-intellij.svg)
+
 We gladly accept contributions via GitHub pull requests!
 
 You must complete the
@@ -11,17 +13,17 @@ file.
 ## Flutter plugin development
 
 * Download and install the latest stable version of IntelliJ
-  - https://www.jetbrains.com/idea/download/
+  - [IntelliJ Downloads](https://www.jetbrains.com/idea/download/)
   - either the community edition (free) or Ultimate will work. We are currently using 2018.1.
 * Start IntelliJ
-* In the project structure dialog, configure an IntelliJ platform SDK
-  - point it to the `Contents` directory in your just downloaded copy of IntelliJ Community Edition (e.g, `IntelliJ IDEA CE.app/Contents`)
-  - name it `IntelliJ IDEA Community Edition`
-* Open flutter-intellij project in IntelliJ. Build it using `Build` > `Make Project`
+* In the Project Structure dialog (`File | Project Structure`), select "Platform Settings > SDKs" click the "+" sign at the top "Add New SDK (Alt+Insert)" to configure an IntelliJ Platform Plugin SDK
+  - point it to the directory of your downloaded IntelliJ Community Edition installation (e.g, `IntelliJ IDEA CE.app/Contents` or `~/idea-IC-183.4886.37`)
+  - change the name to `IntelliJ IDEA Community Edition`
+* One-time Dart plugin install - first-time a new IDE is installed and run you will need to install the Dart plugin.  `Configure | Plugins` and install the Dart plugin, then restart the IDE
+* Open flutter-intellij project in IntelliJ (select and open the directory of the flutter-intellij repository). Build it using `Build` | `Make Project`
 * Try running the plugin; there is an existing launch config for "Flutter IntelliJ".
-* If the Flutter Plugin doesn't load, check to see if the Dart Plugin is installed in your runtime workbench; if it's not, install it (`Preferences > Plugins`) and re-launch.
-* Install Flutter from [github](https://github.com/flutter/flutter) and set it up according
-  to its instructions.
+* If the Flutter Plugin doesn't load (Dart code or files are unknown) see above "One-time Dart plugin install"
+* Install Flutter SDK from [Flutter SDK download](https://flutter.io/docs/get-started/install) or [github](https://github.com/flutter/flutter) and set it up according to its instructions.
 * Verify installation from the command line:
   - Connect an android device with USB debugging.
   - `cd <flutter>/examples/hello_world`
@@ -56,7 +58,7 @@ In order to be able to run a single test class or test method you need to do the
   - In order to have the platform sources handy, clone the IntelliJ IDEA Community Edition repo
 (`git clone https://github.com/JetBrains/intellij-community`)
   - Sync it to the same version of IDEA that you are using (`git checkout idea/171.3780.107`). It will be in 'detached HEAD' mode.
-  - In the `IntelliJ IDEA Community Edition` sdk, go to the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
+  - Open the Project Structure dialog (`File > Project Structure`). In the `IntelliJ IDEA Community Edition` sdk, go to the `Sourcepaths` tab and add the path to `intellij-community`. Accept all the root folders found by the IDE after scanning.
   - Do the same for the intellij-plugins repo to get Dart plugin sources. Sync to the same version as in lib/dart-plugin. (`git checkout webstorm/171.4006`)
 
 ## Working with Android Studio

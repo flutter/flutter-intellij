@@ -55,13 +55,13 @@ public class SdkFields {
     return buildFlavor;
   }
 
+  public void setBuildFlavor(final @Nullable String buildFlavor) {
+    this.buildFlavor = buildFlavor;
+  }
+
   @Nullable
   public String getAdditionalArgs() {
     return additionalArgs;
-  }
-
-  public void setBuildFlavor(final @Nullable String buildFlavor) {
-    this.buildFlavor = buildFlavor;
   }
 
   public void setAdditionalArgs(final @Nullable String additionalArgs) {
@@ -128,15 +128,16 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, args);
+    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);
   }
 
   /**
    * Create a command to run 'flutter attach --machine'.
    */
-  public GeneralCommandLine createFlutterSdkAttachCommand(@NotNull Project project, @NotNull FlutterLaunchMode flutterLaunchMode
-  ) throws ExecutionException {
+  public GeneralCommandLine createFlutterSdkAttachCommand(@NotNull Project project,
+                                                          @NotNull FlutterLaunchMode flutterLaunchMode,
+                                                          @Nullable FlutterDevice device) throws ExecutionException {
     final MainFile main = MainFile.verify(filePath, project).get();
 
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
@@ -153,7 +154,7 @@ public class SdkFields {
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), flutterLaunchMode, args);
+    final FlutterCommand command = flutterSdk.flutterAttach(root, main.getFile(), device, flutterLaunchMode, args);
     return command.createGeneralCommandLine(project);
   }
 

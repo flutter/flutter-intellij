@@ -15,6 +15,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import io.flutter.FlutterConstants;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
@@ -22,6 +23,7 @@ import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.server.vmService.ServiceExtensions;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -333,7 +335,8 @@ class RenderThread extends Thread {
       if (myProcessRequest != null && myApp != null) {
         if (Objects.equals(myProcessRequest.pubRoot.getPath(), packagePath)) {
           try {
-            final DaemonApi.RestartResult restartResult = myApp.performHotReload(false).get(5000, TimeUnit.MILLISECONDS);
+            final DaemonApi.RestartResult restartResult =
+              myApp.performHotReload(false, FlutterConstants.RELOAD_REASON_TOOL).get(5000, TimeUnit.MILLISECONDS);
             if (restartResult.ok()) {
               canRenderWithCurrentProcess = true;
             }
@@ -395,7 +398,7 @@ class RenderThread extends Thread {
       // Ask to render the widget.
       final CountDownLatch responseReceivedLatch = new CountDownLatch(1);
       final AtomicReference<JsonObject> responseRef = new AtomicReference<>();
-      myApp.callServiceExtension("ext.flutter.designer.render").thenAccept((response) -> {
+      myApp.callServiceExtension(ServiceExtensions.designerRender).thenAccept((response) -> {
         responseRef.set(response);
         responseReceivedLatch.countDown();
       });

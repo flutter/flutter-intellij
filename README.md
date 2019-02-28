@@ -9,8 +9,8 @@ app SDK to help developers and designers build modern mobile apps for iOS and An
 ## Documentation
 
 - [flutter.io](https://flutter.io)
-- [Installing Flutter](https://flutter.io/setup/)
-- [Getting Started with IntelliJ](https://flutter.io/intellij-ide/)
+- [Installing Flutter](https://flutter.io/docs/get-started/install)
+- [Getting Started with IntelliJ](https://flutter.io/docs/development/tools/ide)
 
 ## Fast development
 
@@ -22,13 +22,13 @@ simulators, and hardware for iOS and Android.
 
 ## Quick-start
 
-A brief summary of the [getting started guide](https://flutter.io/intellij-ide/):
+A brief summary of the [getting started guide](https://flutter.io/docs/development/tools/ide):
 
-- install the [Flutter SDK](https://flutter.io/setup/)
+- install the [Flutter SDK](https://flutter.io/docs/get-started/install)
 - run `flutter doctor` from the command line to verify your installation
 - ensure you have a supported [IntelliJ development environment](https://www.jetbrains.com/idea/download), either:
-  - IntelliJ 2017.3 or 2018.1, Community or Ultimate Edition, or
-  - Android Studio 3.1 (note: Android Studio Canary versions are generally _not_ supported)
+  - IntelliJ 2018.1 or more recent, Community or Ultimate Edition, or
+  - Android Studio 3.2 (note: Android Studio Canary versions are generally _not_ supported)
 - open the plugin preferences
   - `Preferences > Plugins` on macOS, `File > Settings > Plugins` on Linux, select "Browse repositories…"
 - search for and install the 'Flutter' plugin
@@ -51,19 +51,11 @@ for Flutter IntelliJ issues.
 
 Please note the following known issues:
 
-- When using IntelliJ 2018.2 with Android support, you'll likely hit an issue with
-  constant re-indexing. This is an issue with the IntelliJ 2018.2 platform - you can
-  work around it by using 2018.1, or by using the EAP version of 2018.2. The fix for this
-  is in the EAP version, and should be available in the stable version shortly.
-  More details are available at [#2511](https://github.com/flutter/flutter-intellij/issues/2511).
-- If you are building Flutter plugins using Swift, be sure you have at least`cocoapods 1.5.0` 
-  installed; an issue tracking a corresponding update to `flutter doctor` is:
-  [flutter/#16930](https://github.com/flutter/flutter/issues/16930).
-- In Android Studio 3.1, after an application starts up, the Inspector will often still say
-  "No running applications". The application is running; in order to see the Inspector contents
-  for it, you need to click on the named device tab in the Inspector window. This issue is not
-  present in IntelliJ IDEA or in later versions of Android Studio.
 - [#601](https://github.com/flutter/flutter-intellij/issues/601): IntelliJ will
   read the PATH variable just once on startup. Thus, if you change PATH later to
   include the Flutter SDK path, this will not have an affect in IntelliJ until you
   restart the IDE.
+- If you require network access to go through proxy settings, you will need to set the 
+  `https_proxy` variable in your environment as as described in the 
+  [pub docs](https://www.dartlang.org/tools/pub/troubleshoot#pub-get-fails-from-behind-a-corporate-firewall).
+  (See also: [#2914](https://github.com/flutter/flutter-intellij/issues/2914).)

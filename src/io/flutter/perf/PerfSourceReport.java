@@ -6,18 +6,29 @@
 package io.flutter.perf;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class PerfSourceReport {
   private final PerfReportKind kind;
-  private final JsonArray entries;
 
-  public PerfSourceReport(JsonArray entries, PerfReportKind kind) {
-    this.entries = entries;
+  private static final int ENTRY_LENGTH = 2;
+
+  private final List<Entry> entries;
+  private final long startTime;
+
+  public PerfSourceReport(JsonArray json, PerfReportKind kind, long startTime) {
     this.kind = kind;
+    this.startTime = startTime;
+    assert (json.size() % ENTRY_LENGTH == 0);
+    entries = new ArrayList<>(json.size() / ENTRY_LENGTH);
+    for (int i = 0; i < json.size(); i += ENTRY_LENGTH) {
+      entries.add(new Entry(
+        json.get(i).getAsInt(),
+        json.get(i + 1).getAsInt()
+      ));
+    }
   }
 
   PerfReportKind getKind() {
@@ -25,25 +36,16 @@ public class PerfSourceReport {
   }
 
   List<Entry> getEntries() {
-    final ArrayList<Entry> ret = new ArrayList<>(entries.size());
-    for (JsonElement entryJson : entries) {
-      ret.add(new Entry(entryJson.getAsJsonArray()));
-    }
-    return ret;
+    return entries;
   }
 
   class Entry {
-    public final int line;
-    public final int column;
+    public final int locationId;
     public final int total;
-    public final int pastSecond;
 
-    Entry(JsonArray entry) {
-      assert entry.size() == 4;
-      line = entry.get(0).getAsInt();
-      column = entry.get(1).getAsInt();
-      total = entry.get(2).getAsInt();
-      pastSecond = entry.get(3).getAsInt();
+    Entry(int locationId, int total) {
+      this.locationId = locationId;
+      this.total = total;
     }
   }
 }

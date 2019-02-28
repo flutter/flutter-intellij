@@ -11,8 +11,10 @@ import com.android.tools.idea.tests.gui.framework.fixture.newProjectWizard.NewFl
 import com.android.tools.idea.tests.gui.framework.matcher.Matchers;
 import com.intellij.openapi.wm.impl.IdeFrameImpl;
 import org.fest.swing.core.Robot;
+import org.fest.swing.fixture.DialogFixture;
 import org.jetbrains.annotations.NotNull;
 
+@SuppressWarnings({"MethodOverridesStaticMethodOfSuperclass", "UnusedReturnValue"})
 public class FlutterFrameFixture extends IdeaFrameFixture {
   private FlutterFrameFixture(@NotNull Robot robot, @NotNull IdeFrameImpl target) {
     super(robot, target);
@@ -31,6 +33,14 @@ public class FlutterFrameFixture extends IdeaFrameFixture {
   @NotNull
   public NewFlutterModuleWizardFixture findNewModuleWizard() {
     return NewFlutterModuleWizardFixture.find(this);
+  }
+
+  public FlutterFrameFixture dismissTipDialog() {
+    DialogFixture tipDialog = findDialog("Tip of the Day");
+    if (tipDialog != null) {
+      tipDialog.close();
+    }
+    return this;
   }
 
   public void waitForProjectSyncToFinish() {
