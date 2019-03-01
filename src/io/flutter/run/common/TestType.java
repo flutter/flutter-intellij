@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Different scopes of test that can be run on a Flutter app.
@@ -25,7 +26,7 @@ import java.util.List;
  */
 public enum TestType {
   // Note that mapping elements to their most specific enclosing function call depends on the ordering from most to least specific.
-  SINGLE(AllIcons.RunConfigurations.TestState.Run, "test", CommonTestConfigUtils.WIDGET_TEST_FUNCTION),
+  SINGLE(AllIcons.RunConfigurations.TestState.Run, CommonTestConfigUtils.WIDGET_TEST_REGEX, "test", CommonTestConfigUtils.WIDGET_TEST_FUNCTION),
   GROUP(AllIcons.RunConfigurations.TestState.Run_run, "group"),
   MAIN(AllIcons.RunConfigurations.TestState.Run_run) {
     @NotNull
@@ -37,9 +38,15 @@ public enum TestType {
   @NotNull
   private final Icon myIcon;
   private final List<String> myTestFunctionNames;
+  private final Pattern myTestFunctionRegex;
 
   TestType(@NotNull Icon icon, String... testFunctionNames) {
+    this(icon, null, testFunctionNames);
+  }
+
+  TestType(@NotNull Icon icon, @Nullable Pattern testFunctionRegex, String... testFunctionNames) {
     myIcon = icon;
+    myTestFunctionRegex = testFunctionRegex;
     myTestFunctionNames = Arrays.asList(testFunctionNames);
   }
 
@@ -58,7 +65,11 @@ public enum TestType {
   }
 
   boolean matchesFunction(@NotNull DartCallExpression element) {
-    return myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
+    boolean hasTestFunctionName = myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
+    if (!hasTestFunctionName && myTestFunctionRegex != null) {
+      return myTestFunctionRegex.matcher(element.getName()).matches();
+    }
+    return hasTestFunctionName;
   }
 
   @NotNull

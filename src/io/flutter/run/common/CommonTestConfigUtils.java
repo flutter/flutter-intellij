@@ -16,6 +16,8 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.regex.Pattern;
+
 /**
  * Common utilities for processing Flutter tests.
  *
@@ -26,7 +28,12 @@ public abstract class CommonTestConfigUtils {
   /**
    * Widget test function as defined in package:flutter_test/src/widget_tester.dart.
    */
-  public static final String WIDGET_TEST_FUNCTION = "testWidgets";
+  static final String WIDGET_TEST_FUNCTION = "testWidgets";
+
+  /**
+   * Regex that matches customized versions of the Widget test function from package:flutter_test/src/widget_tester.dart.
+   */
+  static final Pattern WIDGET_TEST_REGEX = Pattern.compile("test[A-Z]?[A-Za-z0-9]Widgets");
 
   public abstract TestType asTestCall(@NotNull PsiElement element);
 
