@@ -26,12 +26,11 @@ import io.flutter.module.FlutterProjectType;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
-import org.apache.commons.io.IOUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -53,9 +52,16 @@ public class FlutterSampleManager {
     return SAMPLES;
   }
 
-  private static JsonArray readSampleIndex(final URL sampleUrl) throws IOException, URISyntaxException {
-    final String contents = IOUtils.toString(sampleUrl.toURI(), "UTF-8");
-    return new JsonParser().parse(contents).getAsJsonArray();
+  private static JsonArray readSampleIndex(final URL sampleUrl) throws IOException {
+    final BufferedInputStream in = new BufferedInputStream(sampleUrl.openStream());
+    final StringBuilder contents = new StringBuilder();
+    final byte[] bytes = new byte[1024];
+    int bytesRead;
+    while((bytesRead = in.read(bytes)) != -1) {
+      contents.append(new String(bytes, 0, bytesRead));
+    }
+
+    return new JsonParser().parse(contents.toString()).getAsJsonArray();
   }
 
   private static JsonArray readSampleIndex() {
@@ -63,11 +69,11 @@ public class FlutterSampleManager {
     try {
       return readSampleIndex(new URL(SNIPPETS_REMOTE_INDEX_URL));
     }
-    catch (URISyntaxException | IOException ignored) {
+    catch (IOException ignored) {
       try {
         return readSampleIndex(FlutterSampleManager.class.getResource("index.json"));
       }
-      catch (URISyntaxException | IOException e) {
+      catch (IOException e) {
         FlutterUtils.warn(LOG, e);
       }
     }
