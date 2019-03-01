@@ -6,7 +6,6 @@
 package io.flutter.run.common;
 
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import io.flutter.dart.DartSyntax;
@@ -66,9 +65,9 @@ public enum TestType {
   }
 
   boolean matchesFunction(@NotNull DartCallExpression element) {
-    boolean hasTestFunctionName = myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
+    final boolean hasTestFunctionName = myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
     if (!hasTestFunctionName && myTestFunctionRegex != null) {
-      return myTestFunctionRegex.matcher(StringUtil.notNullize(element.getName())).matches();
+      return DartSyntax.isCallToFunctionMatching(element, myTestFunctionRegex);
     }
     return hasTestFunctionName;
   }
@@ -91,6 +90,6 @@ public enum TestType {
         return call;
       }
     }
-    return null;
+    return myTestFunctionRegex == null ? null : DartSyntax.findEnclosingFunctionCall(element, myTestFunctionRegex);
   }
 }

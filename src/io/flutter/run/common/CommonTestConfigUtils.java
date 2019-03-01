@@ -32,7 +32,7 @@ public abstract class CommonTestConfigUtils {
    * This will match all test methods with names that start with 'test', optionally
    * have additional text in the middle, and end with 'Widgets'.
    */
-  public static final Pattern WIDGET_TEST_REGEX = Pattern.compile("test[A-Z]?[A-Za-z0-9]*Widgets");
+  public static final Pattern WIDGET_TEST_REGEX = Pattern.compile("test([A-Z][A-Za-z0-9_$]*)?Widgets");
 
   public abstract TestType asTestCall(@NotNull PsiElement element);
 
