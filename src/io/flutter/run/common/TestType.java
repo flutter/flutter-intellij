@@ -6,6 +6,7 @@
 package io.flutter.run.common;
 
 import com.intellij.icons.AllIcons;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import io.flutter.dart.DartSyntax;
@@ -26,7 +27,7 @@ import java.util.regex.Pattern;
  */
 public enum TestType {
   // Note that mapping elements to their most specific enclosing function call depends on the ordering from most to least specific.
-  SINGLE(AllIcons.RunConfigurations.TestState.Run, CommonTestConfigUtils.WIDGET_TEST_REGEX, "test", CommonTestConfigUtils.WIDGET_TEST_FUNCTION),
+  SINGLE(AllIcons.RunConfigurations.TestState.Run, CommonTestConfigUtils.WIDGET_TEST_REGEX, "test"),
   GROUP(AllIcons.RunConfigurations.TestState.Run_run, "group"),
   MAIN(AllIcons.RunConfigurations.TestState.Run_run) {
     @NotNull
@@ -67,7 +68,7 @@ public enum TestType {
   boolean matchesFunction(@NotNull DartCallExpression element) {
     boolean hasTestFunctionName = myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
     if (!hasTestFunctionName && myTestFunctionRegex != null) {
-      return myTestFunctionRegex.matcher(element.getName()).matches();
+      return myTestFunctionRegex.matcher(StringUtil.notNullize(element.getName())).matches();
     }
     return hasTestFunctionName;
   }
