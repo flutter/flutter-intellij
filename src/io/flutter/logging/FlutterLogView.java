@@ -131,7 +131,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     private final DefaultActionGroup actionGroup;
 
     public ConfigureAction() {
-      super("Configure", null, AllIcons.General.Gear /* to be removed in IDEA 2020: migrate to: GearPlain */);
+      super("Configure", null, AllIcons.General.GearPlain);
 
       actionGroup = createPopupActionGroup();
     }
