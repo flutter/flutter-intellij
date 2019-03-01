@@ -20,7 +20,7 @@ import static com.intellij.ui.SimpleTextAttributes.STYLE_PLAIN;
 
 public class MessageCellRenderer extends AbstractEntryCellRender {
   // TODO(pq): use app for link resolution.
-  @NotNull
+  @SuppressWarnings("FieldCanBeLocal") @NotNull
   private final FlutterApp app;
 
   public MessageCellRenderer(@NotNull FlutterApp app, @NotNull FlutterLogTree.EntryModel entryModel) {
