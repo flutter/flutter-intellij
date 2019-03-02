@@ -28,6 +28,10 @@ public enum TestType {
   // Note that mapping elements to their most specific enclosing function call depends on the ordering from most to least specific.
   SINGLE(AllIcons.RunConfigurations.TestState.Run, CommonTestConfigUtils.WIDGET_TEST_REGEX, "test"),
   GROUP(AllIcons.RunConfigurations.TestState.Run_run, "group"),
+  /**
+   * This {@link TestType} doesn't know how to detect main methods.
+   * The logic to detect main methods is in {@link CommonTestConfigUtils}.
+   */
   MAIN(AllIcons.RunConfigurations.TestState.Run_run) {
     @NotNull
     public String getTooltip(@NotNull PsiElement element) {

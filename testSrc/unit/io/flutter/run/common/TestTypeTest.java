@@ -7,9 +7,7 @@ package io.flutter.run.common;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
-import com.jetbrains.lang.dart.psi.DartCallExpression;
 import io.flutter.AbstractDartElementTest;
-import io.flutter.dart.DartSyntax;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Test;
 
@@ -18,7 +16,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 
 /**
- * Verifies run configuration persistence.
+ * Verifies that named test targets can be identified correctly as part of a group or as an individual test target.
  */
 public class TestTypeTest extends AbstractDartElementTest {
 
@@ -39,30 +37,11 @@ public class TestTypeTest extends AbstractDartElementTest {
                                              "}";
 
   @Test
-  public void shouldMatchMain() throws Exception {
-    run(() -> {
-<<<<<<< Updated upstream
-      final DartCallExpression mainCall = getMainCall();
-      assertThat(TestType.MAIN.matchesFunction(mainCall), equalTo(true));
-      assertThat(TestType.GROUP.matchesFunction(mainCall), equalTo(false));
-      assertThat(TestType.SINGLE.matchesFunction(mainCall), equalTo(false));
-=======
-      final PsiElement mainCall = getMainCall();
-      assertThat(TestType.MAIN.findCorrespondingCall(mainCall), equalTo(true));
-      assertThat(TestType.GROUP.findCorrespondingCall(mainCall), equalTo(false));
-      assertThat(TestType.SINGLE.findCorrespondingCall(mainCall), equalTo(false));
->>>>>>> Stashed changes
-    });
-  }
-
-
-  @Test
   public void shouldMatchGroup() throws Exception {
     run(() -> {
-      final DartCallExpression group = getGroupCall();
-      assertThat(TestType.MAIN.matchesFunction(group), equalTo(false));
-      assertThat(TestType.GROUP.matchesFunction(group), equalTo(true));
-      assertThat(TestType.SINGLE.matchesFunction(group), equalTo(false));
+      final PsiElement group0 = getGroupCall();
+      assertThat(TestType.GROUP.findCorrespondingCall(group0), not(equalTo(null)));
+      assertThat(TestType.SINGLE.findCorrespondingCall(group0), equalTo(null));
     });
   }
 
@@ -70,77 +49,67 @@ public class TestTypeTest extends AbstractDartElementTest {
   @Test
   public void shouldMatchTest0() throws Exception {
     run(() -> {
-      final DartCallExpression test0 = getTestCall("test", "test 0");
-      assertThat(TestType.MAIN.matchesFunction(test0), equalTo(false));
-      assertThat(TestType.GROUP.matchesFunction(test0), equalTo(false));
-      assertThat(TestType.SINGLE.matchesFunction(test0), equalTo(true));
+      final PsiElement test0 = getTestCall("test", "test 0");
+      assertThat(TestType.GROUP.findCorrespondingCall(test0), not(equalTo(null)));
+      assertThat(TestType.SINGLE.findCorrespondingCall(test0), not(equalTo(null)));
     });
   }
 
   @Test
   public void shouldMatchTestWidgets0() throws Exception {
     run(() -> {
-      final DartCallExpression testWidgets0 = getTestCall("testWidgets", "test widgets 0");
-      assertThat(TestType.MAIN.matchesFunction(testWidgets0), equalTo(false));
-      assertThat(TestType.GROUP.matchesFunction(testWidgets0), equalTo(false));
-      assertThat(TestType.SINGLE.matchesFunction(testWidgets0), equalTo(true));
+      final PsiElement testWidgets0 = getTestCall("testWidgets", "test widgets 0");
+      assertThat(TestType.GROUP.findCorrespondingCall(testWidgets0), not(equalTo(null)));
+      assertThat(TestType.SINGLE.findCorrespondingCall(testWidgets0), not(equalTo(null)));
     });
   }
 
   @Test
   public void shouldMatchTestFooBarWidgets0() throws Exception {
     run(() -> {
-      final DartCallExpression testFooBarWidgets0 = getTestCall("testFooBarWidgets", "test foobar widgets 0");
-      assertThat(TestType.MAIN.matchesFunction(testFooBarWidgets0), equalTo(false));
-      assertThat(TestType.GROUP.matchesFunction(testFooBarWidgets0), equalTo(false));
-      assertThat(TestType.SINGLE.matchesFunction(testFooBarWidgets0), equalTo(true));
+      final PsiElement testFooBarWidgets0 = getTestCall("testFooBarWidgets", "test foobar widgets 0");
+      assertThat(TestType.GROUP.findCorrespondingCall(testFooBarWidgets0), not(equalTo(null)));
+      assertThat(TestType.SINGLE.findCorrespondingCall(testFooBarWidgets0), not(equalTo(null)));
     });
   }
 
   @Test
   public void shouldMatchTest1() throws Exception {
     run(() -> {
-      final DartCallExpression test1 = getTestCall("test", "test 1");
-      assertThat(TestType.MAIN.matchesFunction(test1), equalTo(false));
-      assertThat(TestType.GROUP.matchesFunction(test1), equalTo(false));
-      assertThat(TestType.SINGLE.matchesFunction(test1), equalTo(true));
+      final PsiElement test1 = getTestCall("test", "test 1");
+      assertThat(TestType.GROUP.findCorrespondingCall(test1), equalTo(null));
+      assertThat(TestType.SINGLE.findCorrespondingCall(test1), not(equalTo(null)));
     });
   }
 
   @Test
   public void shouldNotMatchTestingWidgets() throws Exception {
     run(() -> {
-      final DartCallExpression testingWidgets = getTestCall("testingWidgets", "does not test widgets");
-      assertThat(TestType.MAIN.matchesFunction(testingWidgets), equalTo(false));
-      assertThat(TestType.GROUP.matchesFunction(testingWidgets), equalTo(false));
-      assertThat(TestType.SINGLE.matchesFunction(testingWidgets), equalTo(false));
+      final PsiElement testingWidgets = getTestCall("testingWidgets", "does not test widgets");
+      assertThat(TestType.GROUP.findCorrespondingCall(testingWidgets), equalTo(null));
+      assertThat(TestType.SINGLE.findCorrespondingCall(testingWidgets), equalTo(null));
     });
   }
 
   @NotNull
-  private DartCallExpression getMainCall() {
+  private PsiElement getMainCall() {
     // Set up fake source code.
     final PsiElement mainIdentifier = setUpDartElement(
       fileContents, "main", LeafPsiElement.class);
     assertThat(mainIdentifier, not(equalTo(null)));
 
-    final DartCallExpression main = DartSyntax.findEnclosingFunctionCall(mainIdentifier, "main");
-    assertThat(main, not(equalTo(null)));
-
-    return main;
+    return mainIdentifier;
   }
 
 
   @NotNull
-  private DartCallExpression getGroupCall() {
+  private PsiElement getGroupCall() {
     // Set up fake source code.
     final PsiElement groupIdentifier = setUpDartElement(
       fileContents, "group 0", LeafPsiElement.class);
+    assertThat(groupIdentifier, not(equalTo(null)));
 
-    final DartCallExpression group = DartSyntax.findEnclosingFunctionCall(groupIdentifier, "group");
-    assertThat(group, not(equalTo(null)));
-
-    return group;
+    return groupIdentifier;
   }
 
   /**
@@ -151,15 +120,12 @@ public class TestTypeTest extends AbstractDartElementTest {
    * @return
    */
   @NotNull
-  private DartCallExpression getTestCall(String functionName, String testName) {
+  private PsiElement getTestCall(String functionName, String testName) {
     // Set up fake source code.
     final PsiElement testIdentifier = setUpDartElement(
       fileContents, testName, LeafPsiElement.class);
     assertThat(testIdentifier, not(equalTo(null)));
 
-    final DartCallExpression test = DartSyntax.findEnclosingFunctionCall(testIdentifier, functionName);
-    assertThat(test, not(equalTo(null)));
-
-    return test;
+    return testIdentifier;
   }
 }
