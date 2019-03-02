@@ -92,17 +92,6 @@ public class TestTypeTest extends AbstractDartElementTest {
   }
 
   @NotNull
-  private PsiElement getMainCall() {
-    // Set up fake source code.
-    final PsiElement mainIdentifier = setUpDartElement(
-      fileContents, "main", LeafPsiElement.class);
-    assertThat(mainIdentifier, not(equalTo(null)));
-
-    return mainIdentifier;
-  }
-
-
-  @NotNull
   private PsiElement getGroupCall() {
     // Set up fake source code.
     final PsiElement groupIdentifier = setUpDartElement(
