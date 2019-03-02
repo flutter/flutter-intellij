@@ -70,7 +70,6 @@ public enum TestType {
 
   /**
    * Describes whether the given {@param element} matches one of the names this {@link TestType} is set up to look for.
-   *
    * <p>
    * Does not match the main function.
    */
