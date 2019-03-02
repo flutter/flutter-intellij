@@ -64,6 +64,12 @@ public enum TestType {
     return myIcon;
   }
 
+  /**
+   * Describes whether the given {@param element} matches one of the names this {@link TestType} is set up to look for.
+   *
+   * <p>
+   * Does not match the main function.
+   */
   boolean matchesFunction(@NotNull DartCallExpression element) {
     final boolean hasTestFunctionName = myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
     if (!hasTestFunctionName && myTestFunctionRegex != null) {
@@ -72,6 +78,9 @@ public enum TestType {
     return hasTestFunctionName;
   }
 
+  /**
+   * Describes the tooltip to show on a particular {@param element}.
+   */
   @NotNull
   public String getTooltip(@NotNull PsiElement element, @NotNull CommonTestConfigUtils testConfigUtils) {
     final String testName = testConfigUtils.findTestName(element);
@@ -82,6 +91,9 @@ public enum TestType {
     return "Run Test";
   }
 
+  /**
+   * Finds the closest corresponding test function of this {@link TestType} that encloses the given {@param element}.
+   */
   @Nullable
   public DartCallExpression findCorrespondingCall(@NotNull PsiElement element) {
     for (String name : myTestFunctionNames) {

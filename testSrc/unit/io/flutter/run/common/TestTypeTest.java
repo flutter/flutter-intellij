@@ -41,10 +41,17 @@ public class TestTypeTest extends AbstractDartElementTest {
   @Test
   public void shouldMatchMain() throws Exception {
     run(() -> {
+<<<<<<< Updated upstream
       final DartCallExpression mainCall = getMainCall();
       assertThat(TestType.MAIN.matchesFunction(mainCall), equalTo(true));
       assertThat(TestType.GROUP.matchesFunction(mainCall), equalTo(false));
       assertThat(TestType.SINGLE.matchesFunction(mainCall), equalTo(false));
+=======
+      final PsiElement mainCall = getMainCall();
+      assertThat(TestType.MAIN.findCorrespondingCall(mainCall), equalTo(true));
+      assertThat(TestType.GROUP.findCorrespondingCall(mainCall), equalTo(false));
+      assertThat(TestType.SINGLE.findCorrespondingCall(mainCall), equalTo(false));
+>>>>>>> Stashed changes
     });
   }
 
