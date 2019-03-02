@@ -21,13 +21,11 @@ import java.util.regex.Pattern;
 /**
  * Common utilities for processing Flutter tests.
  * <p>
- * <p>
  * This class is useful for identifying the {@link TestType} of different Dart objects
  */
 public abstract class CommonTestConfigUtils {
   /**
    * Regex that matches customized versions of the Widget test function from package:flutter_test/src/widget_tester.dart.
-   * <p>
    * <p>
    * This will match all test methods with names that start with 'test', optionally
    * have additional text in the middle, and end with 'Widgets'.
