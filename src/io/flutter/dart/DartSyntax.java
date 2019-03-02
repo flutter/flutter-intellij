@@ -36,7 +36,6 @@ public class DartSyntax {
     });
   }
 
-
   /**
    * Finds the enclosing function call where the function being called has a name matching {@param functionRegex}.
    * <p>
@@ -52,9 +51,8 @@ public class DartSyntax {
     });
   }
 
-  private static <T> DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt,
-                                                                  @NotNull T functionDescriptor,
-                                                                  @NotNull Equator<T, String> equator) {
+  private static <T> DartCallExpression findEnclosingFunctionCall(
+    @NotNull PsiElement elt, @NotNull T functionDescriptor, @NotNull Equator<T, String> equator) {
     while (elt != null) {
       if (elt instanceof DartCallExpression) {
         final DartCallExpression call = (DartCallExpression)elt;
