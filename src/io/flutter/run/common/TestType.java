@@ -106,6 +106,9 @@ public enum TestType {
         return call;
       }
     }
-    return myTestFunctionRegex == null ? null : DartSyntax.findEnclosingFunctionCall(element, myTestFunctionRegex);
+    if (myTestFunctionRegex != null) {
+      return DartSyntax.findEnclosingFunctionCall(element, myTestFunctionRegex);
+    }
+    return null;
   }
 }
