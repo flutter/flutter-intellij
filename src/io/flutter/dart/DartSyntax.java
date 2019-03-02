@@ -175,7 +175,6 @@ public class DartSyntax {
 
   /**
    * {@link java.util.Comparator}, but for equality checks.
-   * s
    *
    * @param <T>
    * @param <S>
