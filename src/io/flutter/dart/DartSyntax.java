@@ -118,9 +118,9 @@ public class DartSyntax {
   }
 
   /**
-   * Check if an element is a call to a function with the given name.
+   * Check if an element is a call to a function with the given {@param functionName}.
    *
-   * @return true if the given element is a call to function, false otherwise
+   * @return true if the given element is a call to the function, false otherwise
    */
   public static boolean isCallToFunctionNamed(@NotNull DartCallExpression element, @NotNull String functionName) {
     final String name = getCalledFunctionName(element);
@@ -128,9 +128,9 @@ public class DartSyntax {
   }
 
   /**
-   * Check if an element is a call to a function matching the given name.
+   * Check if an element is a call to a function matching the given {@param functionRegex}.
    *
-   * @return true if the given element is a call to function, false otherwise
+   * @return true if the given element is a call to the function, false otherwise
    */
   public static boolean isCallToFunctionMatching(@NotNull DartCallExpression element, @NotNull Pattern functionRegex) {
     final String name = getCalledFunctionName(element);

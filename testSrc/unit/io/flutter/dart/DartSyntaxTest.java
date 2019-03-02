@@ -15,6 +15,8 @@ import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.AbstractDartElementTest;
 import org.junit.Test;
 
+import java.util.regex.Pattern;
+
 import static org.junit.Assert.*;
 
 public class DartSyntaxTest extends AbstractDartElementTest {
@@ -26,6 +28,16 @@ public class DartSyntaxTest extends AbstractDartElementTest {
       final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(testIdentifier, "test");
       assert call != null;
       assertTrue(DartSyntax.isCallToFunctionNamed(call, "test"));
+    });
+  }
+
+  @Test
+  public void isTestCallPattern() throws Exception {
+    run(() -> {
+      final PsiElement testIdentifier = setUpDartElement("main() { test('my first test', () {} ); }", "test", LeafPsiElement.class);
+      final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(testIdentifier, "test");
+      assert call != null;
+      assertTrue(DartSyntax.isCallToFunctionMatching(call, Pattern.compile("t.*t")));
     });
   }
 
@@ -45,6 +57,26 @@ public class DartSyntaxTest extends AbstractDartElementTest {
       final PsiElement helloElt = setUpDartElement("main() { test(\"hello\"); }", "hello", LeafPsiElement.class);
 
       final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(helloElt, "test");
+      assertNotNull("findEnclosingFunctionCall() didn't find enclosing function call", call);
+    });
+  }
+
+  @Test
+  public void shouldFindEnclosingFunctionCallPattern() throws Exception {
+    run(() -> {
+      final PsiElement helloElt = setUpDartElement("main() { test(\"hello\"); }", "hello", LeafPsiElement.class);
+
+      final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(helloElt, Pattern.compile("t.*t"));
+      assertNotNull("findEnclosingFunctionCall() didn't find enclosing function call", call);
+    });
+  }
+
+  @Test
+  public void shouldNotFindEnclosingFunctionCallPattern() throws Exception {
+    run(() -> {
+      final PsiElement helloElt = setUpDartElement("main() { test(\"hello\"); }", "hello", LeafPsiElement.class);
+
+      final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(helloElt, Pattern.compile("t.*a"));
       assertNotNull("findEnclosingFunctionCall() didn't find enclosing function call", call);
     });
   }
