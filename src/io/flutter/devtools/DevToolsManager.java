@@ -211,11 +211,11 @@ class DevToolsInstance {
 
   public void openBrowserAndConnect(int serviceProtocolPort) {
     if (serviceProtocolPort == -1) {
-      BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/", null);
+      BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
     }
     else {
       BrowserLauncher.getInstance().browse(
-        "http://" + devtoolsHost + ":" + devtoolsPort + "/?port=" + serviceProtocolPort,
+        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&port=" + serviceProtocolPort,
         null
       );
     }
