@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.regex.Pattern;
 
 /**
  * Finds Dart PSI elements in IntelliJ's syntax tree.
@@ -27,11 +28,36 @@ public class DartSyntax {
    */
   @Nullable
   public static DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt, @NotNull String functionName) {
+    return findEnclosingFunctionCall(elt, functionName, new Equator<String, String>() {
+      @Override
+      boolean equate(@NotNull String first, @NotNull String second) {
+        return Objects.equals(first, second);
+      }
+    });
+  }
+
+  /**
+   * Finds the enclosing function call where the function being called has a name matching {@param functionRegex}.
+   * <p>
+   * Returns null if not found.
+   */
+  @Nullable
+  public static DartCallExpression findEnclosingFunctionCall(@NotNull PsiElement elt, @NotNull Pattern functionRegex) {
+    return findEnclosingFunctionCall(elt, functionRegex, new Equator<Pattern, String>() {
+      @Override
+      boolean equate(@NotNull Pattern first, @NotNull String second) {
+        return first.matcher(second).matches();
+      }
+    });
+  }
+
+  private static <T> DartCallExpression findEnclosingFunctionCall(
+    @NotNull PsiElement elt, @NotNull T functionDescriptor, @NotNull Equator<T, String> equator) {
     while (elt != null) {
       if (elt instanceof DartCallExpression) {
         final DartCallExpression call = (DartCallExpression)elt;
         final String name = getCalledFunctionName(call);
-        if (name != null && name.equals(functionName)) {
+        if (name != null && equator.equate(functionDescriptor, name)) {
           return call;
         }
       }
@@ -90,13 +116,23 @@ public class DartSyntax {
   }
 
   /**
-   * Check if an element is a call to a function with the given name.
+   * Check if an element is a call to a function with the given {@param functionName}.
    *
-   * @return true if the given element is a call to function, false otherwise
+   * @return true if the given element is a call to the function, false otherwise
    */
-  public static boolean isCallToFunctionNamed(@NotNull DartCallExpression element, @NotNull String function) {
+  public static boolean isCallToFunctionNamed(@NotNull DartCallExpression element, @NotNull String functionName) {
     final String name = getCalledFunctionName(element);
-    return Objects.equals(name, function);
+    return Objects.equals(name, functionName);
+  }
+
+  /**
+   * Check if an element is a call to a function matching the given {@param functionRegex}.
+   *
+   * @return true if the given element is a call to the function, false otherwise
+   */
+  public static boolean isCallToFunctionMatching(@NotNull DartCallExpression element, @NotNull Pattern functionRegex) {
+    final String name = getCalledFunctionName(element);
+    return functionRegex.matcher(name).matches();
   }
 
   /**
@@ -135,5 +171,15 @@ public class DartSyntax {
   private static String getCalledFunctionName(@NotNull DartCallExpression call) {
     if (!(call.getFirstChild() instanceof DartReference)) return null;
     return call.getFirstChild().getText();
+  }
+
+  /**
+   * {@link java.util.Comparator}, but for equality checks.
+   *
+   * @param <T>
+   * @param <S>
+   */
+  private static abstract class Equator<T, S> {
+    abstract boolean equate(@NotNull T first, @NotNull S second);
   }
 }

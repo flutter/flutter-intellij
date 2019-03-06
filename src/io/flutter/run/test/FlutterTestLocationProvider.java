@@ -16,8 +16,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-import static io.flutter.run.test.TestConfigUtils.WIDGET_TEST_FUNCTION;
-
 public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
   public static final FlutterTestLocationProvider INSTANCE = new FlutterTestLocationProvider();
 
@@ -27,7 +25,8 @@ public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
   protected Location<PsiElement> getLocationByLineAndColumn(@NotNull PsiFile file, int line, int column) {
     try {
       return super.getLocationByLineAndColumn(file, line, column);
-    } catch (IndexOutOfBoundsException e) {
+    }
+    catch (IndexOutOfBoundsException e) {
       // Line and column info can be wrong, in which case we fall-back on test and group name for test discovery.
     }
 
@@ -36,6 +35,6 @@ public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
 
   @Override
   protected boolean isTest(@NotNull DartCallExpression expression) {
-    return super.isTest(expression) || Objects.equals(WIDGET_TEST_FUNCTION, expression.getExpression().getText());
+    return super.isTest(expression) || TestConfigUtils.WIDGET_TEST_REGEX.matcher(expression.getExpression().getText()).matches();
   }
 }
