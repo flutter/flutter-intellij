@@ -16,15 +16,25 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 abstract public class FlutterAppAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(FlutterAppAction.class);
 
+  /**
+   * The {@link FlutterApp} that this action specifically targets.
+   */
   @NotNull private FlutterApp myApp;
   @NotNull private final Computable<Boolean> myIsApplicable;
   @NotNull private final String myActionId;
-  @NotNull Set<FlutterApp> runningApps;
+
+  /**
+   * The set of all running {@link FlutterApp}s that this action could be applied to.
+   *
+   *
+   */
+  @NotNull private Set<FlutterApp> runningApps;
 
   private final FlutterApp.FlutterAppListener myListener = new FlutterApp.FlutterAppListener() {
     @Override
@@ -63,15 +73,17 @@ abstract public class FlutterAppAction extends DumbAwareAction {
       if (registeredAction == this) {
         // if we preserve actions for all connected apps, then remove this app from the running apps list.
         runningApps.remove(myApp);
-        myApp = runningApps.stream().findFirst().get();
-        if (runningApps.isEmpty()) {
+        Optional<FlutterApp> nextRunningApp = runningApps.stream().findFirst();
+        if (!nextRunningApp.isPresent()) {
           ProjectActions.unregisterAction(project, myActionId);
+        } else {
+          myApp = nextRunningApp.get();
         }
       }
     }
     else {
       if (registeredAction != this) {
-        // if we preserve actions for all connected apps, then join the app lists.
+        // if we broadcast actions to all running apps, then join the app lists.
         if (registeredAction != null) {
           runningApps.addAll(registeredAction.runningApps);
         }
