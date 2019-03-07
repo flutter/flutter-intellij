@@ -15,7 +15,8 @@ import java.util.Optional;
 /**
  * An immutable snapshot of the list of connected devices and current selection.
  */
-class DeviceSelection {
+class
+DeviceSelection {
   static final DeviceSelection EMPTY = new DeviceSelection(ImmutableList.of(), null);
 
   @NotNull private final ImmutableList<FlutterDevice> devices;
