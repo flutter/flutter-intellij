@@ -64,7 +64,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -163,18 +162,21 @@ public class FlutterReloadManager {
       return;
     }
 
-    final AnAction reloadAction = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
-    if (reloadAction == null) {
+    if (handlingSave.get()) {
       return;
     }
 
-    final Set<FlutterApp> runningApps = ((FlutterAppAction)reloadAction).getRunningApps();
+    final AnAction reloadAction = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
+    final FlutterApp app = getApp(reloadAction);
+    if (app == null) {
+      return;
+    }
 
-    final List<FlutterApp> toReload = runningApps.stream()
-      .filter(app -> app.isStarted() && !app.isReloading() && app.getLaunchMode().supportsReload())
-      .collect(Collectors.toList());
+    if (!app.isStarted() || app.isReloading()) {
+      return;
+    }
 
-    if (toReload.isEmpty()) {
+    if (!app.getLaunchMode().supportsReload()) {
       return;
     }
 
@@ -183,52 +185,51 @@ public class FlutterReloadManager {
     // edit and immediately hits save.
     final int reloadDelayMs = 125;
 
-    if (handlingSave.get()) {
-      return;
-    }
-
     handlingSave.set(true);
 
     JobScheduler.getScheduler().schedule(() -> {
       clearLastNotification();
 
-      for (FlutterApp app : toReload) {
-        if (app.getState() == FlutterApp.State.TERMINATING || app.getState() == FlutterApp.State.TERMINATED) {
-          continue;
-        }
+      if (app.getState() == FlutterApp.State.TERMINATING || app.getState() == FlutterApp.State.TERMINATED) {
+        handlingSave.set(false);
 
-        if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
-          showAnalysisNotification("Reload not performed", "Analysis issues found", true);
-
-          continue;
-        }
-        final Notification notification = showRunNotification(app, null, "Reloading…", false);
-        final long startTime = System.currentTimeMillis();
-
-        app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
-          if (!result.ok()) {
-            notification.expire();
-            showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
-          }
-          else if (result.isRestartRecommended()) {
-            notification.expire();
-            showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
-          }
-          else {
-            // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
-            final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
-
-            JobScheduler.getScheduler().schedule(() -> UIUtil.invokeLaterIfNeeded(() -> {
-              notification.expire();
-
-              // If the 'Reloading…' notification is still the most recent one, then clear it.
-              if (isLastNotification(notification)) {
-                removeRunNotifications(app);
-              }
-            }), delay, TimeUnit.MILLISECONDS);
-          }
-        }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
+        return;
       }
+
+      if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
+        handlingSave.set(false);
+
+        showAnalysisNotification("Reload not performed", "Analysis issues found", true);
+
+        return;
+      }
+
+      final Notification notification = showRunNotification(app, null, "Reloading…", false);
+      final long startTime = System.currentTimeMillis();
+
+      app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
+        if (!result.ok()) {
+          notification.expire();
+          showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
+        }
+        else if (result.isRestartRecommended()) {
+          notification.expire();
+          showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
+        }
+        else {
+          // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
+          final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
+
+          JobScheduler.getScheduler().schedule(() -> UIUtil.invokeLaterIfNeeded(() -> {
+            notification.expire();
+
+            // If the 'Reloading…' notification is still the most recent one, then clear it.
+            if (isLastNotification(notification)) {
+              removeRunNotifications(app);
+            }
+          }), delay, TimeUnit.MILLISECONDS);
+        }
+      }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 

@@ -5,7 +5,6 @@
  */
 package io.flutter.actions;
 
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAwareAction;
@@ -15,31 +14,18 @@ import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
 
 abstract public class FlutterAppAction extends DumbAwareAction {
   private static final Logger LOG = Logger.getInstance(FlutterAppAction.class);
 
-  /**
-   * The {@link FlutterApp} that this action specifically targets.
-   */
-  @NotNull private FlutterApp myApp;
+  @NotNull private final FlutterApp myApp;
   @NotNull private final Computable<Boolean> myIsApplicable;
   @NotNull private final String myActionId;
-
-  /**
-   * The set of all running {@link FlutterApp}s that this action could be applied to.
-   *
-   *
-   */
-  @NotNull private Set<FlutterApp> runningApps;
 
   private final FlutterApp.FlutterAppListener myListener = new FlutterApp.FlutterAppListener() {
     @Override
     public void stateChanged(FlutterApp.State newState) {
-      getTemplatePresentation().setEnabled(runningApps.stream().anyMatch(FlutterApp::isStarted) && myIsApplicable.compute());
+      getTemplatePresentation().setEnabled(myApp.isStarted() && myIsApplicable.compute());
     }
   };
   private boolean myIsListening = false;
@@ -55,8 +41,6 @@ abstract public class FlutterAppAction extends DumbAwareAction {
     myApp = app;
     myIsApplicable = isApplicable;
     myActionId = actionId;
-    runningApps = new HashSet<>();
-    runningApps.add(myApp);
 
     updateActionRegistration(app.isConnected());
   }
@@ -64,29 +48,14 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   private void updateActionRegistration(boolean isConnected) {
     final Project project = getApp().getProject();
 
-    final FlutterAppAction registeredAction = (FlutterAppAction)ProjectActions.getAction(project, myActionId);
-    if (registeredAction != null) {
-      runningApps.addAll(registeredAction.runningApps);
-    }
     if (!isConnected) {
       // Unregister ourselves if we're the current action.
-      if (registeredAction == this) {
-        // if we preserve actions for all connected apps, then remove this app from the running apps list.
-        runningApps.remove(myApp);
-        Optional<FlutterApp> nextRunningApp = runningApps.stream().findFirst();
-        if (!nextRunningApp.isPresent()) {
-          ProjectActions.unregisterAction(project, myActionId);
-        } else {
-          myApp = nextRunningApp.get();
-        }
+      if (ProjectActions.getAction(project, myActionId) == this) {
+        ProjectActions.unregisterAction(project, myActionId);
       }
     }
     else {
-      if (registeredAction != this) {
-        // if we broadcast actions to all running apps, then join the app lists.
-        if (registeredAction != null) {
-          runningApps.addAll(registeredAction.runningApps);
-        }
+      if (ProjectActions.getAction(project, myActionId) != this) {
         ProjectActions.registerAction(project, myActionId, this);
       }
     }
@@ -102,17 +71,13 @@ abstract public class FlutterAppAction extends DumbAwareAction {
 
     if (isConnected) {
       if (!myIsListening) {
-        for (FlutterApp app : runningApps) {
-          app.addStateListener(myListener);
-        }
+        getApp().addStateListener(myListener);
         myIsListening = true;
       }
     }
     else {
       if (myIsListening) {
-        for (FlutterApp app : runningApps) {
-          app.removeStateListener(myListener);
-        }
+        getApp().removeStateListener(myListener);
         myIsListening = false;
       }
     }
@@ -121,10 +86,5 @@ abstract public class FlutterAppAction extends DumbAwareAction {
   @NotNull
   public FlutterApp getApp() {
     return myApp;
-  }
-
-  @NotNull
-  public Set<FlutterApp> getRunningApps() {
-    return runningApps;
   }
 }

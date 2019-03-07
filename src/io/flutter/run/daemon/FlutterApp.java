@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionManager;
@@ -193,7 +194,7 @@ public class FlutterApp {
   }
 
   @Nullable
-  public static FlutterApp fromProjectProcess(@NotNull Project project) {
+  public static FlutterApp firstFromProjectProcess(@NotNull Project project) {
     final List<RunContentDescriptor> runningProcesses =
       ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
     for (RunContentDescriptor descriptor : runningProcesses) {
@@ -207,6 +208,24 @@ public class FlutterApp {
     }
 
     return null;
+  }
+
+  @NotNull
+  public static ImmutableList<FlutterApp> allFromProjectProcess(@NotNull Project project) {
+    final List<FlutterApp> allRunningApps = new ArrayList<>();
+    final List<RunContentDescriptor> runningProcesses =
+      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+    for (RunContentDescriptor descriptor : runningProcesses) {
+      final ProcessHandler process = descriptor.getProcessHandler();
+      if (process != null) {
+        final FlutterApp app = FlutterApp.fromProcess(process);
+        if (app != null) {
+          allRunningApps.add(app);
+        }
+      }
+    }
+
+    return ImmutableList.copyOf(allRunningApps);
   }
 
   /**
