@@ -48,7 +48,7 @@ public class FlutterRunConfigurationProducer extends RunConfigurationProducer<Sd
     final VirtualFile main = getFlutterEntryFile(context, true, true);
     if (main == null) return false;
 
-    config.setFields(new SdkFields(main, context.getProject()));
+    config.setFields(new SdkFields(main));
     config.setGeneratedName();
 
     final PsiElement elt = sourceElement.get();

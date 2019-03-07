@@ -37,7 +37,7 @@ public class SdkFields {
   /**
    * Creates SDK fields from a Dart file containing a main method.
    */
-  public SdkFields(VirtualFile launchFile, Project project) {
+  public SdkFields(VirtualFile launchFile) {
     filePath = launchFile.getPath();
   }
 
