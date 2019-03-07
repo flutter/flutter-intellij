@@ -87,7 +87,14 @@ class DeviceDaemon {
    * <p>This is calculated based on add and remove events seen since the process started.
    */
   ImmutableList<FlutterDevice> getDevices() {
-    return devices.get();
+    ImmutableList<FlutterDevice> attachedDevices = devices.get();
+    if (attachedDevices.size() > 1) {
+      return new ImmutableList.Builder<FlutterDevice>()
+        .addAll(attachedDevices)
+        .add(FlutterDevice.getAll()).build();
+    } else {
+      return attachedDevices;
+    }
   }
 
   /**

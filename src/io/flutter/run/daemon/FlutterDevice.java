@@ -104,6 +104,9 @@ public class FlutterDevice {
     return new FlutterDevice("flutter-tester", "Flutter test device", null, false);
   }
 
+  /**
+   * Return the "all" device.
+   */
   public static FlutterDevice getAll() {
     return new FlutterDevice("all", "All connected devices", null, false);
   }
