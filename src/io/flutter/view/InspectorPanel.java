@@ -546,7 +546,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     if (flutterAppFrameReady) {
       // We need to start by quering the inspector service to find out the
       // current state of the UI.
-      updateSelectionFromService();
+      AsyncUtils.whenCompleteUiThread(inspectorService.inferPubRootDirectoryIfNeeded(), (String directory, Throwable throwable) -> {
+        // Ignore exceptions, we still want to show the Inspector View.
+        updateSelectionFromService();
+      });
     }
     else {
       AsyncUtils.whenCompleteUiThread(inspectorService.isWidgetTreeReady(), (Boolean ready, Throwable throwable) -> {
