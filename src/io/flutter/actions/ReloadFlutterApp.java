@@ -41,14 +41,16 @@ public class ReloadFlutterApp extends FlutterAppAction {
     // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go to action dialog.
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
 
+    FlutterReloadManager reloadManager = FlutterReloadManager.getInstance(project);
+
     if (shouldRestart) {
       FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-      FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+      reloadManager.saveAllAndRestart(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
     }
     else {
       // Else perform a hot reload.
       FlutterInitializer.sendAnalyticsAction(this);
-      FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+      reloadManager.saveAllAndReload(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }
 }

@@ -5,6 +5,7 @@
  */
 package io.flutter.run;
 
+import com.google.common.collect.ImmutableList;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
@@ -49,10 +50,7 @@ import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
-import io.flutter.run.daemon.DeviceService;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.daemon.*;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.AnalysisErrorSeverity;
 import org.jetbrains.annotations.NotNull;
@@ -64,6 +62,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -167,7 +166,7 @@ public class FlutterReloadManager {
     }
 
     final AnAction reloadAction = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
-    final FlutterApp app = getApp(reloadAction);
+    final FlutterApp app = getApp();
     if (app == null) {
       return;
     }
@@ -207,76 +206,73 @@ public class FlutterReloadManager {
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
-      app.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
-        if (!result.ok()) {
-          notification.expire();
-          showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
-        }
-        else if (result.isRestartRecommended()) {
-          notification.expire();
-          showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
-        }
-        else {
-          // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
-          final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
-
-          JobScheduler.getScheduler().schedule(() -> UIUtil.invokeLaterIfNeeded(() -> {
+      for (FlutterApp flutterApp : FlutterApp.allFromProjectProcess(myProject)) {
+        flutterApp.performHotReload(true, FlutterConstants.RELOAD_REASON_SAVE).thenAccept(result -> {
+          if (!result.ok()) {
             notification.expire();
+            showRunNotification(flutterApp, "Hot Reload Error", result.getMessage(), true);
+          }
+          else if (result.isRestartRecommended()) {
+            notification.expire();
+            showRunNotification(flutterApp, "Reloading…", RESTART_SUGGESTED_TEXT, false);
+          }
+          else {
+            // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
+            final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
 
-            // If the 'Reloading…' notification is still the most recent one, then clear it.
-            if (isLastNotification(notification)) {
-              removeRunNotifications(app);
-            }
-          }), delay, TimeUnit.MILLISECONDS);
-        }
-      }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
+            JobScheduler.getScheduler().schedule(() -> UIUtil.invokeLaterIfNeeded(() -> {
+              notification.expire();
+
+              // If the 'Reloading…' notification is still the most recent one, then clear it.
+              if (isLastNotification(notification)) {
+                removeRunNotifications(flutterApp);
+              }
+            }), delay, TimeUnit.MILLISECONDS);
+          }
+        }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
+      }
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
-  public void saveAllAndReload(@NotNull FlutterApp app, String reason) {
-    if (app.isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
+  public void saveAllAndReload(@NotNull ImmutableList<FlutterApp> appsToReload, String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
 
-      app.performHotReload(true, reason).thenAccept(result -> {
-        if (!result.ok()) {
-          showRunNotification(app, "Hot Reload", result.getMessage(), true);
-        }
-        else if (result.isRestartRecommended()) {
-          showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
-        }
-      }).exceptionally(throwable -> {
-        showRunNotification(app, "Hot Reload", throwable.getMessage(), true);
-        return null;
-      });
-    }
-  }
-
-  public void saveAllAndRestart(@NotNull FlutterApp app, String reason) {
-    if (app.isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
-      app.performRestartApp(reason).thenAccept(result -> {
-        if (!result.ok()) {
-          showRunNotification(app, "Hot Restart", result.getMessage(), true);
-        }
-      }).exceptionally(throwable -> {
-        showRunNotification(app, "Hot Restart", throwable.getMessage(), true);
-        return null;
-      });
-
-      final FlutterDevice device = DeviceService.getInstance(myProject).getSelectedDevice();
-      if (device != null) {
-        device.bringToFront();
+    for (FlutterApp app : appsToReload) {
+      if (app.isStarted()) {
+        app.performHotReload(true, reason).thenAccept(result -> {
+          if (!result.ok()) {
+            showRunNotification(app, "Hot Reload", result.getMessage(), true);
+          }
+          else if (result.isRestartRecommended()) {
+            showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
+          }
+        }).exceptionally(throwable -> {
+          showRunNotification(app, "Hot Reload", throwable.getMessage(), true);
+          return null;
+        });
       }
     }
   }
 
-  @Nullable
-  private FlutterApp getApp(AnAction reloadAction) {
-    if (reloadAction instanceof FlutterAppAction) {
-      return ((FlutterAppAction)reloadAction).getApp();
-    }
-    else {
-      return null;
+  public void saveAllAndRestart(@NotNull ImmutableList<FlutterApp> appsToRestart, String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+
+    for (FlutterApp app : appsToRestart) {
+      if (app.isStarted()) {
+        app.performRestartApp(reason).thenAccept(result -> {
+          if (!result.ok()) {
+            showRunNotification(app, "Hot Restart", result.getMessage(), true);
+          }
+        }).exceptionally(throwable -> {
+          showRunNotification(app, "Hot Restart", throwable.getMessage(), true);
+          return null;
+        });
+
+        final FlutterDevice device = app.device();
+        if (device != null) {
+          device.bringToFront();
+        }
+      }
     }
   }
 
