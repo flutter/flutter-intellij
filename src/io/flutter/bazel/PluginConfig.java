@@ -72,6 +72,8 @@ public class PluginConfig {
   public static PluginConfig load(@NotNull VirtualFile file) {
     final Computable<PluginConfig> readAction = () -> {
       try (
+        // Create the input stream in a try-with-resources statement. This will automatically close the stream
+        // in an implicit finally section; this addresses a file handle leak issue we had on MacOS.
         final InputStreamReader input = new InputStreamReader(file.getInputStream(), "UTF-8")
       ) {
         final Fields fields = GSON.fromJson(input, Fields.class);
