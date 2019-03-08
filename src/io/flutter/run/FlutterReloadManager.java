@@ -50,7 +50,9 @@ import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
-import io.flutter.run.daemon.*;
+import io.flutter.run.daemon.FlutterApp;
+import io.flutter.run.daemon.FlutterDevice;
+import io.flutter.run.daemon.RunMode;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.AnalysisErrorSeverity;
 import org.jetbrains.annotations.NotNull;
@@ -62,7 +64,6 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -229,7 +230,6 @@ public class FlutterReloadManager {
           }), delay, TimeUnit.MILLISECONDS);
         }
       }).whenComplete((aVoid, throwable) -> handlingSave.set(false));
-
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 

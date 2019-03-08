@@ -17,15 +17,20 @@ import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-public class RestartFlutterApp extends FlutterAppAction {
-  public static final String ID = "Flutter.RestartFlutterApp"; //NON-NLS
-  public static final String TEXT = FlutterBundle.message("app.restart.action.text");
-  public static final String DESCRIPTION = FlutterBundle.message("app.restart.action.description");
+import java.awt.event.InputEvent;
 
-  public RestartFlutterApp(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
-    super(app, TEXT, DESCRIPTION, FlutterIcons.HotRestart, isApplicable, ID);
+/**
+ * Action that reloads all running Flutter apps.
+ */
+public class ReloadAllFlutterApps extends FlutterAppAction {
+  public static final String ID = "Flutter.ReloadAllFlutterApps"; //NON-NLS
+  public static final String TEXT = FlutterBundle.message("app.reload.all.action.text");
+  public static final String DESCRIPTION = FlutterBundle.message("app.reload.all.action.description");
+
+  public ReloadAllFlutterApps(@NotNull FlutterApp app, @NotNull Computable<Boolean> isApplicable) {
+    super(app, TEXT, DESCRIPTION, FlutterIcons.HotReload, isApplicable, ID);
     // Shortcut is associated with toolbar action.
-    copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.RestartAction"));
+    copyShortcutFrom(ActionManager.getInstance().getAction("Flutter.Toolbar.ReloadAllAction"));
   }
 
   @Override
@@ -36,6 +41,7 @@ public class RestartFlutterApp extends FlutterAppAction {
     }
 
     FlutterInitializer.sendAnalyticsAction(this);
-    FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
+    FlutterReloadManager.getInstance(project)
+      .saveAllAndReloadAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
   }
 }
