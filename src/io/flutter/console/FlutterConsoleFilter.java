@@ -196,8 +196,7 @@ public class FlutterConsoleFilter implements Filter {
       }
 
       FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-      FlutterReloadManager reloadManager = FlutterReloadManager.getInstance(project);
-      reloadManager.saveAllAndRestart(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
+      FlutterReloadManager.getInstance(project).saveAllAndRestart(app, FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }
 
