@@ -47,7 +47,7 @@ public class FlutterSaveActionsManager {
    * Initialize the save actions manager for the given project.
    */
   public static void init(@NotNull Project project) {
-    // Call getInstance() will init FlutterFormatManager for the given project.
+    // Call getInstance() will init FlutterSaveActionsManager for the given project by calling the private constructor below.
     getInstance(project);
   }
 
