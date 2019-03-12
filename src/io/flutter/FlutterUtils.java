@@ -261,6 +261,43 @@ public class FlutterUtils {
   }
 
   /**
+   * Returns true if passed pubspec declares a flutter or flutter_web dependency.
+   * <p>
+   * This method is provided explicitly instead of calling declaresFlutter(VirtualFile) || declaresFlutterWeb(VirtualFile) so only one read
+   * and parsing of the pubspec is made.
+   */
+  public static boolean declaresFlutterAny(@NotNull final VirtualFile pubspec) {
+    // It uses Flutter if it contains:
+    // dependencies:
+    //   flutter:
+
+    try {
+      final Map<String, Object> yamlMap = readPubspecFileToMap(pubspec);
+      if (yamlMap == null) {
+        return false;
+      }
+
+      // Special case the 'flutter' package itself - this allows us to run their unit tests from IntelliJ.
+      final Object name = yamlMap.get("name");
+      if ("flutter".equals(name)) {
+        return true;
+      }
+
+      // Check for a dependency on the flutter package.
+      final Object dependencies = yamlMap.get("dependencies");
+      //noinspection SimplifiableIfStatement
+      if (dependencies instanceof Map) {
+        return ((Map)dependencies).containsKey("flutter") || ((Map)dependencies).containsKey("flutter_web");
+      }
+
+      return false;
+    }
+    catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
    * Returns true if passed pubspec declares a flutter dependency.
    */
   public static boolean declaresFlutter(@NotNull final VirtualFile pubspec) {
@@ -269,23 +306,50 @@ public class FlutterUtils {
     //   flutter:
 
     try {
-      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
-      final Map<String, Object> yaml = loadPubspecInfo(contents);
-      if (yaml == null) {
+      final Map<String, Object> yamlMap = readPubspecFileToMap(pubspec);
+      if (yamlMap == null) {
         return false;
       }
 
       // Special case the 'flutter' package itself - this allows us to run their unit tests from IntelliJ.
-      final Object name = yaml.get("name");
+      final Object name = yamlMap.get("name");
       if ("flutter".equals(name)) {
         return true;
       }
 
       // Check for a dependency on the flutter package.
-      final Object dependencies = yaml.get("dependencies");
+      final Object dependencies = yamlMap.get("dependencies");
       //noinspection SimplifiableIfStatement
       if (dependencies instanceof Map) {
         return ((Map)dependencies).containsKey("flutter");
+      }
+
+      return false;
+    }
+    catch (IOException e) {
+      return false;
+    }
+  }
+
+  /**
+   * Returns true if passed pubspec declares a flutter_web dependency.
+   */
+  public static boolean declaresFlutterWeb(@NotNull final VirtualFile pubspec) {
+    // It uses Flutter if it contains:
+    //dependencies:
+    //  flutter_web: any
+
+    try {
+      final Map<String, Object> yamlMap = readPubspecFileToMap(pubspec);
+      if (yamlMap == null) {
+        return false;
+      }
+
+      // Check for a dependency on the flutter package.
+      final Object dependencies = yamlMap.get("dependencies");
+      //noinspection SimplifiableIfStatement
+      if (dependencies instanceof Map) {
+        return ((Map)dependencies).containsKey("flutter_web");
       }
 
       return false;
@@ -304,13 +368,12 @@ public class FlutterUtils {
     //   plugin:
 
     try {
-      final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
-      final Map<String, Object> yaml = loadPubspecInfo(contents);
-      if (yaml == null) {
+      final Map<String, Object> yamlMap = readPubspecFileToMap(pubspec);
+      if (yamlMap == null) {
         return false;
       }
 
-      final Object flutterEntry = yaml.get("flutter");
+      final Object flutterEntry = yamlMap.get("flutter");
       //noinspection SimplifiableIfStatement
       if (flutterEntry instanceof Map) {
         return ((Map)flutterEntry).containsKey("plugin");
@@ -337,6 +400,11 @@ public class FlutterUtils {
       }
     }
     return null;
+  }
+
+  private static Map<String, Object> readPubspecFileToMap(@NotNull final VirtualFile pubspec) throws IOException {
+    final String contents = new String(pubspec.contentsToByteArray(true /* cache contents */));
+    return loadPubspecInfo(contents);
   }
 
   private static Map<String, Object> loadPubspecInfo(@NotNull String yamlContents) {
