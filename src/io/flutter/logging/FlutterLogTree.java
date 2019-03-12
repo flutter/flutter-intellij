@@ -22,10 +22,10 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -177,8 +177,11 @@ public class FlutterLogTree extends TreeTable {
     private final FlutterLog log;
     @NotNull
     private final Alarm uiThreadAlarm;
+    @NotNull
+    final Timer updateTimer;
+
     boolean autoScrollToEnd;
-    // Cached for hide and restore (because *sigh* Swing).
+    // Cached for hide and restore.
     private List<TableColumn> tableColumns;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
@@ -207,6 +210,7 @@ public class FlutterLogTree extends TreeTable {
       setShowSequenceNumbers(false);
 
       uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
+      updateTimer = new Timer(100, e -> uiExec(this::update, 0));
     }
 
     public void setUpdateCallback(UpdateCallback updateCallback) {
@@ -226,7 +230,9 @@ public class FlutterLogTree extends TreeTable {
     }
 
     void uiExec(@NotNull Runnable runnable, int delayMillis) {
-      uiThreadAlarm.addRequest(runnable, delayMillis);
+      if (!uiThreadAlarm.isDisposed()) {
+        uiThreadAlarm.addRequest(runnable, delayMillis);
+      }
     }
 
     void update(@Nullable int[] selectedRows) {
@@ -246,7 +252,7 @@ public class FlutterLogTree extends TreeTable {
       }
 
       if (autoScrollToEnd) {
-        uiThreadAlarm.addRequest(this::scrollToEnd, 100);
+        uiExec(this::scrollToEnd, 100);
       }
     }
 
@@ -281,12 +287,13 @@ public class FlutterLogTree extends TreeTable {
         return;
       }
 
-      uiThreadAlarm.addRequest(() -> {
-        final MutableTreeNode root = getRoot();
-        final int nodeIndex = root.getChildCount();
-        insertNodeInto(new FlutterEventNode(entry), root, nodeIndex);
-        update(selectNode ? new int[]{nodeIndex} : null);
-      }, 10);
+      getRoot().add(new FlutterEventNode(entry));
+
+      if (updateTimer.isRunning()) {
+        return;
+      }
+
+      updateTimer.restart();
     }
 
     public boolean shouldShowTimestamps() {
