@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-gui-tests.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-gui-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-gui-tests.main.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-gui-tests.main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/flutter-gui-tests.test.iml" filepath="$PROJECT_DIR$/.idea/modules/flutter-gui-tests.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/flutter-intellij.iml" filepath="$PROJECT_DIR$/flutter-intellij.iml" />
       <module fileurl="file://$PROJECT_DIR$/tool/plugin/plugin.iml" filepath="$PROJECT_DIR$/tool/plugin/plugin.iml" />
     </modules>
