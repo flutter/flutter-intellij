@@ -1,8 +1,8 @@
-# Flutter Plugin Integraiton Testing
+# Flutter Plugin Integration Testing
 
 On the advice of Jetbrains engineers, we have switched the integration testing module to be
 a Gradle-built plugin. This allows the tests to run from anywhere; previously they only ran
-when copied into the GUI testing framework module. Thanks to karashevich@jetbrains.com for
+when copied into the GUI testing framework module. Thanks to karashevich@jetbrains for
 creating the plugin.
 
 ## Usage
@@ -10,7 +10,7 @@ creating the plugin.
 1. Prepare the flutter-intellij plugin. Main menu: Build -> Prepare All Plugin Modules for Deployment.
 Ensure that `flutter-intellij.zip` appears under the root of the project.
 
-2. Check that buildPlugin task works normally. Open the Gradle
+2. Check that the buildPlugin task works normally. Open the Gradle
 tool view: View -> Tool Windows -> Gradle. Expamd `Tasks`, then expand `intellij`.
 Select `buildPliugin`, right-click and choose `Run ...`. This may take a while initially
 as it may have to download some files.
@@ -24,4 +24,4 @@ cd flutter-gui-tests
 ## Editing
 
 Currently, the tests need to be edited in a minimal flutter-intellij project. Open the flutter-intellij
-project in IntelliJ 2019.1 to edit without Dart or IntelliJ sources (see CONTRIBUTING.md).
+project in IntelliJ 2019.1 for stand-alone editing, without Dart or IntelliJ sources (see CONTRIBUTING.md).
