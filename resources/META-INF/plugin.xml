@@ -12,7 +12,6 @@
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
-  <version>33.4.1</version>
   <idea-version since-build="182.5107.16" until-build="191.*"/>
 
   <depends>Dart</depends>
@@ -31,7 +30,7 @@
     <![CDATA[
 <h2>33.4</h2>
 <ul>
-  <li>fix file handlers leaking</li>
+  <li>fix an issue with file handles leaking</li>
 </ul>
 <h2>33.3</h2>
 <ul>

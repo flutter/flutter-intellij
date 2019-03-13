@@ -1,5 +1,5 @@
 ## 33.4
- - fix file handlers leaking
+ - fix an issue with file handles leaking
 
 ## 33.3
 - Fix an issue with an IllegalArgumentException when running Flutter apps
