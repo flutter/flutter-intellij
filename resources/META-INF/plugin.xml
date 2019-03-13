@@ -12,7 +12,6 @@
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
-  
   <idea-version since-build="182.5107.16" until-build="191.*"/>
 
   <depends>Dart</depends>
@@ -29,6 +28,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>33.4</h2>
+<ul>
+  <li>fix an issue with file handles leaking</li>
+</ul>
 <h2>33.3</h2>
 <ul>
   <li>Fix an issue with an IllegalArgumentException when running Flutter apps</li>

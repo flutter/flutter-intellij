@@ -68,11 +68,12 @@ public class PluginConfig {
   /**
    * Reads plugin configuration from a file, if possible.
    */
-  public static @Nullable
-  PluginConfig load(@NotNull VirtualFile file) {
+  @Nullable
+  public static PluginConfig load(@NotNull VirtualFile file) {
     final Computable<PluginConfig> readAction = () -> {
-      try {
-        final InputStreamReader input = new InputStreamReader(file.getInputStream(), "UTF-8");
+      try (
+        final InputStreamReader input = new InputStreamReader(file.getInputStream(), "UTF-8")
+      ) {
         final Fields fields = GSON.fromJson(input, Fields.class);
         return new PluginConfig(fields);
       }
