@@ -29,6 +29,10 @@
 
   <change-notes>
     <![CDATA[
+<h2>33.4</h2>
+<ul>
+  <li>Fix File handles leaking</li>
+</ul>
 <h2>33.3</h2>
 <ul>
   <li>Fix an issue with an IllegalArgumentException when running Flutter apps</li>
