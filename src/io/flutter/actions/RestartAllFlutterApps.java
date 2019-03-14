@@ -17,10 +17,8 @@ import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.event.InputEvent;
-
 /**
- * Action that reloads all running Flutter apps.
+ * Action that restarts all running Flutter apps.
  */
 public class RestartAllFlutterApps extends FlutterAppAction {
   public static final String ID = "Flutter.RestartAllFlutterApps"; //NON-NLS
