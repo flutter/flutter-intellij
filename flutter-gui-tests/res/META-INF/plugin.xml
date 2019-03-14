@@ -1,0 +1,14 @@
+<idea-plugin>
+  <version>1.0-SNAPSHOT</version>
+  <change-notes>Created the plugin. Added UI Tests for the Flutter plugin.</change-notes>
+  <id>io.flutter.tests.gui.flutter-gui-tests</id>
+  <name>Flutter UI Tests</name>
+  <description>
+    Plugin should be used only for the internal purposes.&lt;br&gt;
+    &lt;em&gt;Do not distribute this plugin with Flutter&lt;/em&gt;
+  </description>
+  <depends optional="true">com.intellij.testGuiFramework</depends>
+  <vendor>flutter.io</vendor>
+  <extensions defaultExtensionNs="com.intellij"/>
+  <actions/>
+</idea-plugin>

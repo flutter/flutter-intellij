@@ -13,3 +13,5 @@ pubspec.lock
 .idea/
 .vscode/
 material-design-icons/
+flutter-gui-tests/guitest.log
+flutter-gui-tests/.gradle
