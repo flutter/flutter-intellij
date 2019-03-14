@@ -116,13 +116,12 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addAction(new ReloadFlutterApp(app, canReload));
     topToolbar.addAction(new RestartFlutterApp(app, canReload));
     topToolbar.addSeparator();
-    topToolbar.addAction(new ReloadAllFlutterApps(app, canReload));
-    topToolbar.addAction(new RestartAllFlutterApps(app, canReload));
-    topToolbar.addSeparator();
     topToolbar.addAction(new OpenDevToolsAction(app.getConnector(), debugUrlAvailable));
     topToolbar.addSeparator();
     topToolbar.addAction(new OverflowAction(app, debugUrlAvailable));
 
+    settings.addAction(new ReloadAllFlutterApps(app, canReload));
+    settings.addAction(new RestartAllFlutterApps(app, canReload));
     // Don't call super since we have our own observatory action.
   }
 

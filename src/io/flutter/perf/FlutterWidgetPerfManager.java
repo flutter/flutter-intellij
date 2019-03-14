@@ -208,10 +208,10 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
   public void stateChanged(FlutterApp.State newState) {
     switch (newState) {
       case RELOADING:
-        currentStats.clear();
+        if (currentStats != null) currentStats.clear();
         break;
       case RESTARTING:
-        currentStats.onRestart();
+        if (currentStats != null) currentStats.onRestart();
         break;
       case STARTED:
         notifyPerf();
