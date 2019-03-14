@@ -233,10 +233,8 @@ public class FlutterReloadManager {
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
-  public void saveAllAndReload(@NotNull FlutterApp app, String reason) {
+  private void reloadApp(@NotNull FlutterApp app, @NotNull String reason) {
     if (app.isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
-
       app.performHotReload(true, reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
@@ -251,30 +249,21 @@ public class FlutterReloadManager {
     }
   }
 
-  public void saveAllAndReloadAll(@NotNull ImmutableList<FlutterApp> appsToReload, String reason) {
+  public void saveAllAndReload(@NotNull FlutterApp app, @NotNull String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+    reloadApp(app, reason);
+  }
+
+  public void saveAllAndReloadAll(@NotNull ImmutableList<FlutterApp> appsToReload, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
 
     for (FlutterApp app : appsToReload) {
-      if (app.isStarted()) {
-        app.performHotReload(true, reason).thenAccept(result -> {
-          if (!result.ok()) {
-            showRunNotification(app, "Hot Reload", result.getMessage(), true);
-          }
-          else if (result.isRestartRecommended()) {
-            showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
-          }
-        }).exceptionally(throwable -> {
-          showRunNotification(app, "Hot Reload", throwable.getMessage(), true);
-          return null;
-        });
-      }
+      reloadApp(app, reason);
     }
   }
 
-  public void saveAllAndRestart(@NotNull FlutterApp app, String reason) {
+  private void restartApp(@NotNull FlutterApp app, @NotNull String reason) {
     if (app.isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
-
       app.performRestartApp(reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Restart", result.getMessage(), true);
@@ -291,25 +280,16 @@ public class FlutterReloadManager {
     }
   }
 
-  public void saveAllAndRestartAll(@NotNull ImmutableList<FlutterApp> appsToRestart, String reason) {
+  public void saveAllAndRestart(@NotNull FlutterApp app, @NotNull String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+    restartApp(app, reason);
+  }
+
+  public void saveAllAndRestartAll(@NotNull ImmutableList<FlutterApp> appsToRestart, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
 
     for (FlutterApp app : appsToRestart) {
-      if (app.isStarted()) {
-        app.performRestartApp(reason).thenAccept(result -> {
-          if (!result.ok()) {
-            showRunNotification(app, "Hot Restart", result.getMessage(), true);
-          }
-        }).exceptionally(throwable -> {
-          showRunNotification(app, "Hot Restart", throwable.getMessage(), true);
-          return null;
-        });
-
-        final FlutterDevice device = app.device();
-        if (device != null) {
-          device.bringToFront();
-        }
-      }
+      restartApp(app, reason);
     }
   }
 
