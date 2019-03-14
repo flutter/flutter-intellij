@@ -41,30 +41,14 @@ public class ReloadFlutterApp extends FlutterAppAction {
     // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go to action dialog.
     final boolean shouldRestart = (e.getModifiers() & InputEvent.SHIFT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
 
-    // If the alt/option key is held down, reload all running apps. We check to see if we're being invoked from the
-    // 'GoToAction' dialog. If so, the modifiers are for the command that opened the go to action dialog.
-    final boolean shouldUseAllApps = (e.getModifiers() & InputEvent.ALT_MASK) != 0 && !"GoToAction".equals(e.getPlace());
-
-    FlutterReloadManager reloadManager = FlutterReloadManager.getInstance(project);
-
     if (shouldRestart) {
       FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-      if (shouldUseAllApps) {
-        reloadManager.saveAllAndRestartAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
-      }
-      else {
-        reloadManager.saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
-      }
+      FlutterReloadManager.getInstance(project).saveAllAndRestart(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
     else {
       // Else perform a hot reload.
       FlutterInitializer.sendAnalyticsAction(this);
-      if (shouldUseAllApps) {
-        reloadManager.saveAllAndReloadAll(FlutterApp.allFromProjectProcess(project), FlutterConstants.RELOAD_REASON_MANUAL);
-      }
-      else {
-        reloadManager.saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
-      }
+      FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }
 }
