@@ -97,8 +97,9 @@ List<File> findJars(String path) {
   final dir = new Directory(path);
   return dir
       .listSync(recursive: true, followLinks: false)
-      .where((e) => e.path.endsWith('.jar'))
-      .toList();
+      .where((e) => e is File && e.path.endsWith('.jar'))
+      .toList()
+      .cast<File>();
 }
 
 List<String> findJavaFiles(String path) {
@@ -573,7 +574,7 @@ class BuildCommand extends ProductCommand {
       } finally {
         // Restore sources.
         files.forEach((file, src) {
-          log('Reestoring ${file.path}');
+          log('Restoring ${file.path}');
           file.writeAsStringSync(src);
         });
 
