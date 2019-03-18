@@ -150,7 +150,7 @@ public class DartVmServiceValue extends XNamedValue {
     if (computeMapPresentation(node)) return;
     if (computeListPresentation(node)) return;
 
-    // computeDefaultPresentation is called internally here when no result is got.
+    // computeDefaultPresentation is called internally here when no result is received.
     // The reason for this is that the async method used cannot be properly waited.
     computeDebugPresentation(node);
 
