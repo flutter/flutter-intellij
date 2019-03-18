@@ -25,3 +25,8 @@ cd flutter-gui-tests
 
 Currently, the tests need to be edited in a minimal flutter-intellij project. Open the flutter-intellij
 project in IntelliJ 2019.1 for stand-alone editing, without Dart or IntelliJ sources (see CONTRIBUTING.md).
+
+## Notes
+
+If the buildPlugin task fails, check for a new version of the Gradle plugin with id org.jetbrains.intellij.
+This is likely to be needed if a new version of IntelliJ is downloaded automatically.
