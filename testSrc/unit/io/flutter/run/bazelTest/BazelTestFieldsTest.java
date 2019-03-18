@@ -23,11 +23,13 @@ public class BazelTestFieldsTest {
     addOption(elt, "testName", "Test number one");
     addOption(elt, "entryFile", "/tmp/test/dir/lib/main.dart");
     addOption(elt, "bazelTarget", "//path/to/flutter/app:hello");
+    addOption(elt, "additionalArgs", "--no-watch --some-other-args 75");
 
     final BazelTestFields fields = BazelTestFields.readFrom(elt);
     assertEquals("Test number one", fields.getTestName());
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
+    assertEquals("--no-watch --some-other-args 75", fields.getAdditionalArgs());
   }
 
   @Test
@@ -42,6 +44,7 @@ public class BazelTestFieldsTest {
     assertEquals(null, fields.getTestName());
     assertEquals("/tmp/test/dir/lib/main.dart", fields.getEntryFile());
     assertEquals("//path/to/flutter/app:hello", fields.getBazelTarget());
+    assertEquals(null, fields.getAdditionalArgs());
   }
 
   @Test
@@ -49,7 +52,8 @@ public class BazelTestFieldsTest {
     final BazelTestFields before = new BazelTestFields(
       "Test number two",
       "/tmp/foo/lib/main_two.dart",
-      "//path/to/flutter/app:hello2"
+      "//path/to/flutter/app:hello2",
+      "--no-watch --other-args"
     );
 
     final Element elt = new Element("test");
@@ -57,13 +61,14 @@ public class BazelTestFieldsTest {
 
     // Verify that we no longer write workingDirectory.
     assertArrayEquals(
-      new String[]{"bazelTarget", "entryFile", "testName"},
+      new String[]{"additionalArgs", "bazelTarget", "entryFile", "testName"},
       getOptionNames(elt).toArray());
 
     final BazelTestFields after = BazelTestFields.readFrom(elt);
     assertEquals("Test number two", after.getTestName());
     assertEquals("/tmp/foo/lib/main_two.dart", after.getEntryFile());
     assertEquals("//path/to/flutter/app:hello2", after.getBazelTarget());
+    assertEquals("--no-watch --other-args", after.getAdditionalArgs());
   }
 
   private void addOption(Element elt, String name, String value) {
