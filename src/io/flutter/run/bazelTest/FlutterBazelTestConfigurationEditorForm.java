@@ -184,10 +184,10 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       scopeLabel.setVisible(false);
       scopeLabelHint.setVisible(false);
 
-      // The new bazel test runner doesn't support additional args.
-      myAdditionalArgs.setVisible(true);
-      myAdditionalArgsLabel.setVisible(true);
-      myAdditionalArgsLabel.setVisible(true);
+      // The old bazel test runner doesn't support additional args.
+      myAdditionalArgs.setVisible(false);
+      myAdditionalArgsLabel.setVisible(false);
+      myAdditionalArgsLabel.setVisible(false);
 
       myTestName.setVisible(false);
       myTestNameLabel.setVisible(false);
