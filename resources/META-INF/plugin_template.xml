@@ -149,13 +149,13 @@
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
       </action>
       <action id="Flutter.Toolbar.ReloadAllAction" class="io.flutter.actions.ReloadAllFlutterAppsRetarget"
-              description="Reload All"
+              description="Reload All Devices"
               icon="FlutterIcons.HotReload">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt S"/>
       </action>
       <action id="Flutter.Toolbar.RestartAllAction" class="io.flutter.actions.RestartAllFlutterAppsRetarget"
-              description="Restart All"
+              description="Restart All Devices"
               icon="FlutterIcons.HotRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift S"/>

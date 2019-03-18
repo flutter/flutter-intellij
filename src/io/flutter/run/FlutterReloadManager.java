@@ -5,7 +5,6 @@
  */
 package io.flutter.run;
 
-import com.google.common.collect.ImmutableList;
 import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.codeInsight.hint.HintManagerImpl;
 import com.intellij.codeInsight.hint.HintUtil;
@@ -254,7 +253,7 @@ public class FlutterReloadManager {
     reloadApp(app, reason);
   }
 
-  public void saveAllAndReloadAll(@NotNull ImmutableList<FlutterApp> appsToReload, @NotNull String reason) {
+  public void saveAllAndReloadAll(@NotNull List<FlutterApp> appsToReload, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
 
     for (FlutterApp app : appsToReload) {
@@ -285,7 +284,7 @@ public class FlutterReloadManager {
     restartApp(app, reason);
   }
 
-  public void saveAllAndRestartAll(@NotNull ImmutableList<FlutterApp> appsToRestart, @NotNull String reason) {
+  public void saveAllAndRestartAll(@NotNull List<FlutterApp> appsToRestart, @NotNull String reason) {
     FileDocumentManager.getInstance().saveAllDocuments();
 
     for (FlutterApp app : appsToRestart) {
