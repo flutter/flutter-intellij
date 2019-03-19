@@ -97,7 +97,7 @@
     </group>
 
     <!-- project explorer actions -->
-    <group id="FlutterPackagesExplorerActionGroup" class="io.flutter.actions.FlutterPackagesExplorerActionGroup"> 
+    <group id="FlutterPackagesExplorerActionGroup" class="io.flutter.actions.FlutterPackagesExplorerActionGroup">
       <separator/>
       <group text="Flutter" description="Flutter Tools" icon="FlutterIcons.Flutter" popup="true">
         <separator/>
@@ -147,6 +147,18 @@
               icon="FlutterIcons.HotRestart">
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift BACK_SLASH"/>
         <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift S"/>
+      </action>
+      <action id="Flutter.Toolbar.ReloadAllAction" class="io.flutter.actions.ReloadAllFlutterAppsRetarget"
+              description="Reload All Devices"
+              icon="FlutterIcons.HotReload">
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt BACK_SLASH"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt S"/>
+      </action>
+      <action id="Flutter.Toolbar.RestartAllAction" class="io.flutter.actions.RestartAllFlutterAppsRetarget"
+              description="Restart All Devices"
+              icon="FlutterIcons.HotRestart">
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift BACK_SLASH"/>
+        <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift S"/>
       </action>
       <separator/>
       <action id="Flutter.Menu.RunProfileAction" class="io.flutter.actions.RunProfileFlutterApp"

@@ -193,7 +193,7 @@ public class FlutterApp {
   }
 
   @Nullable
-  public static FlutterApp fromProjectProcess(@NotNull Project project) {
+  public static FlutterApp firstFromProjectProcess(@NotNull Project project) {
     final List<RunContentDescriptor> runningProcesses =
       ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
     for (RunContentDescriptor descriptor : runningProcesses) {
@@ -207,6 +207,24 @@ public class FlutterApp {
     }
 
     return null;
+  }
+
+  @NotNull
+  public static List<FlutterApp> allFromProjectProcess(@NotNull Project project) {
+    final List<FlutterApp> allRunningApps = new ArrayList<>();
+    final List<RunContentDescriptor> runningProcesses =
+      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+    for (RunContentDescriptor descriptor : runningProcesses) {
+      final ProcessHandler process = descriptor.getProcessHandler();
+      if (process != null) {
+        final FlutterApp app = FlutterApp.fromProcess(process);
+        if (app != null) {
+          allRunningApps.add(app);
+        }
+      }
+    }
+
+    return allRunningApps;
   }
 
   /**

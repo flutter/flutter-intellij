@@ -18,7 +18,9 @@ import com.intellij.ui.content.Content;
 import com.intellij.xdebugger.XDebugSession;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
+import io.flutter.actions.ReloadAllFlutterApps;
 import io.flutter.actions.ReloadFlutterApp;
+import io.flutter.actions.RestartAllFlutterApps;
 import io.flutter.actions.RestartFlutterApp;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.RunMode;
@@ -118,6 +120,8 @@ public class FlutterDebugProcess extends DartVmServiceDebugProcess {
     topToolbar.addSeparator();
     topToolbar.addAction(new OverflowAction(app, debugUrlAvailable));
 
+    settings.addAction(new ReloadAllFlutterApps(app, canReload));
+    settings.addAction(new RestartAllFlutterApps(app, canReload));
     // Don't call super since we have our own observatory action.
   }
 
