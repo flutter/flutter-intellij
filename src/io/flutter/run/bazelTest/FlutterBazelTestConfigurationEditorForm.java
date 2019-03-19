@@ -43,20 +43,21 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   private JLabel myTestNameLabel;
   private JLabel myTestNameHintLabel;
 
+  private JTextField myAdditionalArgs;
+  private JLabel myAdditionalArgsLabel;
+  private JLabel myAdditionalArgsLabelHint;
+
   private Scope displayedScope;
 
   private boolean useNewBazelTestRunner;
 
   public FlutterBazelTestConfigurationEditorForm(final Project project) {
     useNewBazelTestRunner = FlutterSettings.getInstance().useNewBazelTestRunner(project);
-    FlutterSettings.getInstance().addListener(new FlutterSettings.Listener() {
-      @Override
-      public void settingsChanged() {
-        useNewBazelTestRunner = FlutterSettings.getInstance().useNewBazelTestRunner(project);
-        final Scope next = getScope();
-        updateFields(next);
-        render(getScope());
-      }
+    FlutterSettings.getInstance().addListener(() -> {
+      useNewBazelTestRunner = FlutterSettings.getInstance().useNewBazelTestRunner(project);
+      final Scope next = getScope();
+      updateFields(next);
+      render(getScope());
     });
     scope.setModel(new DefaultComboBoxModel<>(new Scope[]{TARGET_PATTERN, FILE, NAME}));
     scope.addActionListener((ActionEvent e) -> {
@@ -89,6 +90,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     myTestName.setText(fields.getTestName());
     myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
     myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
+    myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
     final Scope next = fields.getScope(configuration.getProject());
     scope.setSelectedItem(next);
     render(next);
@@ -99,10 +101,12 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     final String testName = getTextValue(myTestName);
     final String entryFile = getFilePathFromTextValue(myEntryFile);
     final String bazelTarget = getTextValue(myBuildTarget);
+    final String additionalArgs = getTextValue(myAdditionalArgs);
     final BazelTestFields fields = new BazelTestFields(
       testName,
       entryFile,
-      bazelTarget
+      bazelTarget,
+      additionalArgs
     );
     configuration.setFields(fields);
   }
@@ -147,6 +151,10 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       scopeLabel.setVisible(true);
       scopeLabelHint.setVisible(true);
 
+      myAdditionalArgs.setVisible(true);
+      myAdditionalArgsLabel.setVisible(true);
+      myAdditionalArgsLabel.setVisible(true);
+
       myTestName.setVisible(next == Scope.NAME);
       myTestNameLabel.setVisible(next == Scope.NAME);
       myTestNameHintLabel.setVisible(next == Scope.NAME);
@@ -168,12 +176,18 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
       else if (next.equals(Scope.FILE)) {
         myTestName.setText("");
       }
-    } else {
+    }
+    else {
       // If the new bazel test runner is disabled, then all scopes are build target-level.
       // We'll preserve the legacy appearance of the form.
       scope.setVisible(false);
       scopeLabel.setVisible(false);
       scopeLabelHint.setVisible(false);
+
+      // The old bazel test runner doesn't support additional args.
+      myAdditionalArgs.setVisible(false);
+      myAdditionalArgsLabel.setVisible(false);
+      myAdditionalArgsLabel.setVisible(false);
 
       myTestName.setVisible(false);
       myTestNameLabel.setVisible(false);

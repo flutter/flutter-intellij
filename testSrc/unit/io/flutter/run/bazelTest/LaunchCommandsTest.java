@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class LaunchCommandsTest {
   @Rule
@@ -163,7 +163,8 @@ public class LaunchCommandsTest {
     boolean didThrow = false;
     try {
       final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    } catch (ExecutionException e) {
+    }
+    catch (ExecutionException e) {
       didThrow = true;
     }
     assertTrue("This test method expected to throw an exception, but did not.", didThrow);
@@ -176,7 +177,8 @@ public class LaunchCommandsTest {
     boolean didThrow = false;
     try {
       final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    } catch (ExecutionException e) {
+    }
+    catch (ExecutionException e) {
       didThrow = true;
     }
     assertTrue("This test method expected to throw an exception, but did not.", didThrow);
@@ -194,7 +196,8 @@ public class LaunchCommandsTest {
     boolean didThrow = false;
     try {
       final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    } catch (ExecutionException e) {
+    }
+    catch (ExecutionException e) {
       didThrow = true;
     }
     assertTrue("This test method expected to throw an exception, but did not.", didThrow);
@@ -203,12 +206,15 @@ public class LaunchCommandsTest {
   @Test
   public void runsInFileModeWhenBothFileAndBazelTargetAreProvided() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test")
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--arg1 --arg2 3")
     );
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--arg1");
+    expectedCommandLine.add("--arg2");
+    expectedCommandLine.add("3");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("foo/test/foo_test.dart");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
@@ -217,7 +223,7 @@ public class LaunchCommandsTest {
   @Test
   public void runsInBazelTargetModeWhenBothFileAndBazelTargetAreProvidedWithoutTestScript() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test"),
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
@@ -267,13 +273,14 @@ public class LaunchCommandsTest {
       if (launchScript != null) {
         fs.file("/workspace/" + launchScript, "");
       }
-      if (testScript!= null) {
+      if (testScript != null) {
         fs.file("/workspace/" + testScript, "");
       }
       if (testScript == null) {
         // When the test script is null, Flutter Settings will report the new Bazel test script as disabled.
         useNewBazelTestRunnerOverride = false;
-      } else {
+      }
+      else {
         useNewBazelTestRunnerOverride = true;
       }
       fakeWorkspace = Workspace.forTest(
@@ -294,8 +301,7 @@ public class LaunchCommandsTest {
         "scripts/flutter-doctor.sh",
         "scripts/bazel-run.sh",
         "scripts/flutter-test.sh"
-        );
-
+      );
     }
 
     @Override

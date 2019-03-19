@@ -24,7 +24,7 @@ public class BazelTestConfig extends LocatableConfigurationBase {
 
   BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
-    fields = new BazelTestFields(null, null, null);
+    fields = new BazelTestFields(null, null, null, null);
   }
 
   @NotNull
