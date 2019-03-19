@@ -14,4 +14,4 @@ pubspec.lock
 .vscode/
 material-design-icons/
 flutter-gui-tests/guitest.log
-flutter-gui-tests/.gradle
+flutter-gui-tests/.gradle/

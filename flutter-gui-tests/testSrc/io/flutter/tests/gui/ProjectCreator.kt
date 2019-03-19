@@ -4,12 +4,14 @@ import com.intellij.ide.fileTemplates.impl.UrlUtil
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.io.StreamUtil
 import com.intellij.platform.templates.github.ZipUtil
+import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.Timeouts
 import com.intellij.testGuiFramework.impl.*
 import com.intellij.testGuiFramework.utils.TestUtilsClass
 import com.intellij.testGuiFramework.utils.TestUtilsClassCompanion
 import com.intellij.util.UriUtil
 import com.intellij.util.io.URLUtil
+import io.flutter.tests.gui.fixtures.FlutterMessagesToolWindowFixture
 import org.fest.swing.exception.WaitTimedOutError
 import java.io.BufferedOutputStream
 import java.io.File
@@ -26,31 +28,26 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private val defaultProjectName = "untitled"
   private val sampleProjectName = "simple_app"
   private val log = Logger.getInstance(this.javaClass)
+  var flutterMessagesFixture : FlutterMessagesToolWindowFixture.FlutterContentFixture? = null
 
   fun importProject(projectName: String = sampleProjectName): File {
     val projectDirFile = extractProject(projectName)
     val projectPath: File = guiTestCase.guiTestRule.importProject(projectDirFile)
     with(guiTestCase) {
-      openMainInProject()
       waitForFirstIndexing()
+      openPubspecInProject()
       ideFrame {
         editor {
-          try {
-            val note = notificationPanel()
-            // Best practice is to avoid reusing strings defined in bundles.
-            if (note?.getLabelText() == "Pubspec has been edited") {
-              log.info("Get dependencies")
-              note.clickLink("Get dependencies")
-              robot().waitForIdle() // TODO(messick) Check Messages view for completion of 'flutter packages get'
-            }
+          val note = notificationPanel()
+          if (note?.getLabelText() == "Flutter commands") {
+            note.clickLink("Packages get")
+            flutterMessagesFixture = flutterMessagesToolWindowFixture().getFlutterContent(projectName)
+            flutterMessagesFixture!!.findMessageContainingText("Process finished")
           }
-          catch (ex: WaitTimedOutError) {
-            // TODO(messick) Check that pubspec is valid.
-            // Sometimes the notification panel does not show up. Open pubspec.yaml and use its link.
-            // This is a work-around for Mac menus currently being broken in GUI tests.
-          }
+          // TODO(messick) Close pubspec.yaml once editor tab fixtures are working.
         }
       }
+      openMainInProject()
     }
     return projectPath
   }
@@ -91,7 +88,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   fun createProject(projectName: String = defaultProjectName, needToOpenMain: Boolean = true) {
     with(guiTestCase) {
       welcomeFrame {
-        actionLink(name = "Create New Project").click()
+        this.actionLink(name = "Create New Project").click()
         GuiTestUtilKt.waitProgressDialogUntilGone(robot = robot(), progressTitle = "Loading Templates",
             timeoutToAppear = Timeouts.seconds02)
         dialog("New Project") {
@@ -128,5 +125,17 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
         if (wait) waitForBackgroundTasksToFinish()
       }
     }
+  }
+
+  private fun GuiTestCase.openPubspecInProject() {
+    ideFrame {
+      projectView {
+        path(project.name, "pubspec.yaml").doubleClick()
+      }
+    }
+  }
+
+  fun IdeFrameFixture.flutterMessagesToolWindowFixture(): FlutterMessagesToolWindowFixture {
+    return FlutterMessagesToolWindowFixture(project, robot())
   }
 }

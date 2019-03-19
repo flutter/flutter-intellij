@@ -7,5 +7,5 @@ import org.junit.runners.Suite
 
 //*  gradle -Dtest.single=TestSuite clean test -Didea.gui.test.alternativeIdePath="<path_to_installed_IDE>"
 @RunWith(GuiTestSuiteRunner::class)
-@Suite.SuiteClasses(SmokeTest::class)
+@Suite.SuiteClasses(SmokeTest::class, InspectorTest::class)
 class TestSuite : GuiTestSuite()
