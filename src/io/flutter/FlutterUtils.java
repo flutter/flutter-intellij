@@ -150,6 +150,10 @@ public class FlutterUtils {
     return relativePath != null && (relativePath.startsWith("test/"));
   }
 
+  public static boolean isIntegrationTestingMode() {
+    return System.getProperty("idea.required.plugins.id", "").equals("io.flutter.tests.gui.flutter-gui-tests");
+  }
+
   @Nullable
   public static VirtualFile getRealVirtualFile(@Nullable PsiFile psiFile) {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
