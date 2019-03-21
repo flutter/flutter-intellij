@@ -23,6 +23,9 @@ class InspectorTest : GuiTestCase() {
 
   @Test
   fun importSimpleProject() {
+    println("DEBUG")
+    try {println(Class.forName("com.intellij.testGuiFramework.remote.client.JUnitClientImpl"))}
+    catch (x:ClassNotFoundException) {println("NOT FOUND")}
     // TODO(messick) killall Simulator
     ProjectCreator.importProject()
     ideFrame {
@@ -62,7 +65,7 @@ class InspectorTest : GuiTestCase() {
     // Need to get focus on the combo box but the ComboBoxActionFixture.click() method is private, so it is inlined here.
     val selector = button("<no devices>")
     val comboBoxButtonFixture = JButtonFixture(robot(), selector.target())
-    GuiTestUtilKt.waitUntil("ComboBoxButton will be enabled", Timeouts.minutes02) {
+    GuiTestUtilKt.waitUntil("ComboBoxButton will be enabled", Timeouts.seconds10) {
       GuiTestUtilKt.computeOnEdt { comboBoxButtonFixture.target().isEnabled } ?: false
     }
     comboBoxButtonFixture.click()
