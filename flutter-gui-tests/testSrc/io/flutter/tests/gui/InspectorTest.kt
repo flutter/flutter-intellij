@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 package io.flutter.tests.gui
 
 import com.intellij.testGuiFramework.fixtures.ActionButtonFixture
@@ -11,28 +17,31 @@ import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import org.fest.swing.edt.GuiActionRunner.execute
 import org.fest.swing.edt.GuiQuery
 import org.fest.swing.fixture.JButtonFixture
-import org.fest.swing.timing.Pause
-import org.fest.swing.util.StringTextMatcher
+import org.fest.swing.timing.Condition
+import org.fest.swing.timing.Pause.pause
+import org.fest.swing.util.PatternTextMatcher
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import java.awt.Container
 import java.awt.event.KeyEvent
+import java.util.regex.Pattern
 
 @RunWithIde(CommunityIde::class)
 class InspectorTest : GuiTestCase() {
 
   @Test
   fun importSimpleProject() {
-    println("DEBUG")
-    try {println(Class.forName("com.intellij.testGuiFramework.remote.client.JUnitClientImpl"))}
-    catch (x:ClassNotFoundException) {println("NOT FOUND")}
-    // TODO(messick) killall Simulator
     ProjectCreator.importProject()
     ideFrame {
-      selectSimulator()
-      Pause.pause(10000) // Give the simulator time to get started
       findRunApplicationButton().click()
-      runToolWindow.findContent("main.dart").waitForOutput(StringTextMatcher(".*Syncing files to device.*"), Timeouts.seconds10)
+      val runner = runToolWindow.findContent("main.dart")
+      pause(object : Condition("Start app") {
+        override fun test(): Boolean {
+          return runner.isExecutionInProgress
+        }
+      }, Timeouts.seconds10)
+      pause(1000)
+      runner.stop()
     }
   }
 

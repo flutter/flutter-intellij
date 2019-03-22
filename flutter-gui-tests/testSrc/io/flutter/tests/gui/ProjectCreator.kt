@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 package io.flutter.tests.gui
 
 import com.intellij.ide.fileTemplates.impl.UrlUtil
@@ -115,6 +121,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
         log.warn("Wait for indexing exceeded $secondsToWait seconds")
       }
       waitForBackgroundTasksToFinish()
+      robot().waitForIdle()
     }
   }
 
@@ -130,7 +137,9 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private fun GuiTestCase.openPubspecInProject() {
     ideFrame {
       projectView {
-        path(project.name, "pubspec.yaml").doubleClick()
+        val selection = path(project.name, "pubspec.yaml")
+        selection.click()
+        selection.doubleClick()
       }
     }
   }
