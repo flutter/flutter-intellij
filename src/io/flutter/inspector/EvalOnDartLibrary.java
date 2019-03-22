@@ -22,6 +22,7 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -32,7 +33,7 @@ public class EvalOnDartLibrary implements Disposable {
   private String isolateId;
   private final VmService vmService;
   @SuppressWarnings("FieldCanBeLocal") private final VMServiceManager vmServiceManager;
-  private final String libraryName;
+  private final Set<String> libraryNames;
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
@@ -102,8 +103,8 @@ public class EvalOnDartLibrary implements Disposable {
     return response;
   }
 
-  public EvalOnDartLibrary(String libraryName, VmService vmService, VMServiceManager vmServiceManager) {
-    this.libraryName = libraryName;
+  public EvalOnDartLibrary(Set<String> libraryNames, VmService vmService, VMServiceManager vmServiceManager) {
+    this.libraryNames = libraryNames;
     this.vmService = vmService;
     this.vmServiceManager = vmServiceManager;
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
@@ -232,12 +233,13 @@ public class EvalOnDartLibrary implements Disposable {
       @Override
       public void received(Isolate response) {
         for (LibraryRef library : response.getLibraries()) {
-          if (library.getUri().equals(libraryName)) {
+
+          if (libraryNames.contains(library.getUri())) {
             libraryRef.complete(library);
             return;
           }
         }
-        libraryRef.completeExceptionally(new RuntimeException("Library " + libraryName + " not found."));
+        libraryRef.completeExceptionally(new RuntimeException("No library matching " + libraryNames + " found."));
       }
 
       @Override

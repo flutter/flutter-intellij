@@ -57,12 +57,15 @@ public class InspectorService implements Disposable {
     return create(app, debugProcess, vmService).thenApplyAsync((service) -> service.createObjectGroup(groupName));
   }
 
-    public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
+  public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
                                                            @NotNull FlutterDebugProcess debugProcess,
                                                            @NotNull VmService vmService) {
     assert app.getVMServiceManager() != null;
+    Set<String> inspectorLibraryNames = new HashSet<>();
+    inspectorLibraryNames.add("package:flutter/src/widgets/widget_inspector.dart");
+    inspectorLibraryNames.add("package:flutter_web/src/widgets/widget_inspector.dart");
     final EvalOnDartLibrary inspectorLibrary = new EvalOnDartLibrary(
-      "package:flutter/src/widgets/widget_inspector.dart",
+      inspectorLibraryNames,
       vmService,
       app.getVMServiceManager()
     );
@@ -136,7 +139,7 @@ public class InspectorService implements Disposable {
 
   /**
    * Returns whether to use the Daemon API or the VM Service protocol directly.
-   *
+   * <p>
    * The VM Service protocol must be used when paused at a breakpoint as the
    * Daemon API calls won't execute until after the current frame is done
    * rendering.
@@ -260,7 +263,7 @@ public class InspectorService implements Disposable {
   /*
    * We make a best guess for the pub directory based on the the root directory
    * of the first non artifical widget in the tree.
-  */
+   */
   public CompletableFuture<String> inferPubRootDirectoryIfNeeded() {
     ObjectGroup group = createObjectGroup("temp");
 
@@ -710,15 +713,20 @@ public class InspectorService implements Disposable {
         }));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture, DiagnosticsNode parent) {
-      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture,
+                                                                                   DiagnosticsNode parent) {
+      return nullIfDisposed(
+        () -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture, DiagnosticsNode parent) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture,
+                                                                              DiagnosticsNode parent) {
       return nullIfDisposed(() -> jsonFuture.thenApplyAsync((json) -> parseDiagnosticsNodesHelper(json, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef, boolean summaryTree, DiagnosticsNode parent) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef,
+                                                              boolean summaryTree,
+                                                              DiagnosticsNode parent) {
       if (isDetailsSummaryViewSupported()) {
         return getListHelper(instanceRef, summaryTree ? "getChildrenSummaryTree" : "getChildrenDetailsSubtree", parent);
       }
