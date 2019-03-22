@@ -269,6 +269,23 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
   }
 
+  public FlutterCommand flutterRunWeb(@NotNull PubRoot root, @NotNull RunMode mode, boolean hotReload) {
+    // flutter packages pub global run webdev serve [--debug] [--hot-reload]
+    final List<String> args = new ArrayList<>();
+    args.add("global");
+    args.add("run");
+    args.add("webdev");
+    args.add("daemon");
+    if (mode == RunMode.DEBUG) {
+      //args.add("--debug");
+      //args.add("--start-paused");
+    }
+    if (hotReload) {
+      args.add("--hot-reload");
+    }
+    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, true, args.toArray(new String[]{ }));
+  }
+
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");

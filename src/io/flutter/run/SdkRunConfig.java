@@ -142,8 +142,6 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
     final LaunchState.CreateAppCallback createAppCallback = (device) -> {
-      if (device == null) return null;
-
       final GeneralCommandLine command = getCommand(env, device);
       {
         // Workaround for https://github.com/flutter/flutter/issues/16766
