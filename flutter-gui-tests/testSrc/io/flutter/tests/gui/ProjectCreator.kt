@@ -121,7 +121,6 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
         log.warn("Wait for indexing exceeded $secondsToWait seconds")
       }
       waitForBackgroundTasksToFinish()
-      robot().waitForIdle()
     }
   }
 
@@ -137,9 +136,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private fun GuiTestCase.openPubspecInProject() {
     ideFrame {
       projectView {
-        val selection = path(project.name, "pubspec.yaml")
-        selection.click()
-        selection.doubleClick()
+        path(project.name, "pubspec.yaml").doubleClick()
       }
     }
   }
