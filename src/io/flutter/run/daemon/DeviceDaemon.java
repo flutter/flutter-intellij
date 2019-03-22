@@ -140,7 +140,13 @@ class DeviceDaemon {
 
     try {
       final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-      return new Command(sdk.getHomePath(), path, ImmutableList.of("daemon"), androidHome);
+      ImmutableList<String> list;
+      if (FlutterUtils.isIntegrationTestingMode()) {
+        list = ImmutableList.of("--show-test-device", "daemon");
+      } else {
+        list = ImmutableList.of("daemon");
+      }
+      return new Command(sdk.getHomePath(), path, list, androidHome);
     }
     catch (ExecutionException e) {
       FlutterUtils.warn(LOG, "Unable to calculate command to watch Flutter devices", e);
