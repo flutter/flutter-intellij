@@ -20,12 +20,10 @@ import org.fest.swing.edt.GuiQuery
 import org.fest.swing.fixture.JButtonFixture
 import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause.pause
-import org.fest.swing.util.PatternTextMatcher
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import java.awt.Container
 import java.awt.event.KeyEvent
-import java.util.regex.Pattern
 
 @RunWithIde(CommunityIde::class)
 class InspectorTest : GuiTestCase() {
@@ -57,7 +55,7 @@ class InspectorTest : GuiTestCase() {
     val actionToolbarContainer = execute<Container>(object : GuiQuery<Container>() {
       @Throws(Throwable::class)
       override fun executeInEDT(): Container? {
-        return runButton.target().getParent()
+        return runButton.target().parent
       }
     })
     assertNotNull(actionToolbarContainer)

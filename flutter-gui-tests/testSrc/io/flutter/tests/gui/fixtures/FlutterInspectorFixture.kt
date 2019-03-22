@@ -10,6 +10,4 @@ import com.intellij.openapi.project.Project
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import org.fest.swing.core.Robot
 
-class FlutterInspectorFixture(project: Project, robot: Robot) : ToolWindowFixture("Flutter Inspector", project, robot) {
-
-}
+class FlutterInspectorFixture(project: Project, robot: Robot) : ToolWindowFixture("Flutter Inspector", project, robot)

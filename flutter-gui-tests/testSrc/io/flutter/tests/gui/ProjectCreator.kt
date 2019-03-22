@@ -34,7 +34,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private val defaultProjectName = "untitled"
   private val sampleProjectName = "simple_app"
   private val log = Logger.getInstance(this.javaClass)
-  var flutterMessagesFixture : FlutterMessagesToolWindowFixture.FlutterContentFixture? = null
+  var flutterMessagesFixture: FlutterMessagesToolWindowFixture.FlutterContentFixture? = null
 
   fun importProject(projectName: String = sampleProjectName): File {
     val projectDirFile = extractProject(projectName)
