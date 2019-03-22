@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 package io.flutter.tests.gui
 
 import com.intellij.ide.fileTemplates.impl.UrlUtil
@@ -28,7 +34,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private val defaultProjectName = "untitled"
   private val sampleProjectName = "simple_app"
   private val log = Logger.getInstance(this.javaClass)
-  var flutterMessagesFixture : FlutterMessagesToolWindowFixture.FlutterContentFixture? = null
+  var flutterMessagesFixture: FlutterMessagesToolWindowFixture.FlutterContentFixture? = null
 
   fun importProject(projectName: String = sampleProjectName): File {
     val projectDirFile = extractProject(projectName)

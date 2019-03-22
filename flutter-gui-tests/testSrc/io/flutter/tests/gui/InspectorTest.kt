@@ -1,3 +1,9 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
 package io.flutter.tests.gui
 
 import com.intellij.testGuiFramework.fixtures.ActionButtonFixture
@@ -8,11 +14,12 @@ import com.intellij.testGuiFramework.impl.GuiTestCase
 import com.intellij.testGuiFramework.impl.GuiTestUtilKt
 import com.intellij.testGuiFramework.impl.button
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
+import io.flutter.tests.gui.fixtures.FlutterInspectorFixture
 import org.fest.swing.edt.GuiActionRunner.execute
 import org.fest.swing.edt.GuiQuery
 import org.fest.swing.fixture.JButtonFixture
-import org.fest.swing.timing.Pause
-import org.fest.swing.util.StringTextMatcher
+import org.fest.swing.timing.Condition
+import org.fest.swing.timing.Pause.pause
 import org.junit.Assert.assertNotNull
 import org.junit.Test
 import java.awt.Container
@@ -23,27 +30,24 @@ class InspectorTest : GuiTestCase() {
 
   @Test
   fun importSimpleProject() {
-    // TODO(messick) killall Simulator
     ProjectCreator.importProject()
     ideFrame {
-      selectSimulator()
-      Pause.pause(10000) // Give the simulator time to get started
       findRunApplicationButton().click()
-      runToolWindow.findContent("main.dart").waitForOutput(StringTextMatcher(".*Syncing files to device.*"), Timeouts.seconds10)
+      val runner = runToolWindow.findContent("main.dart")
+      pause(object : Condition("Start app") {
+        override fun test(): Boolean {
+          return runner.isExecutionInProgress
+        }
+      }, Timeouts.seconds10)
+      val inspector = flutterInspectorFixture()
+      inspector.activate()
+      pause(1000)
+      runner.stop()
     }
   }
 
   fun IdeFrameFixture.selectSimulator() {
-    // TODO(messick) Detect existing iOS Simulator and reuse it.
     selectDevice("Open iOS Simulator")
-    // TODO(messick) Delete this old code once I don't need to refer to it anymore.
-//    navigationBar {
-//      val selector = button("<no devices>")
-//      assert(exists { selector }) { "Button `<no devices>` not found on Navigation bar" }
-//      selector.click()
-//    }
-//    val deviceSelector = combobox("<no devices>", Timeouts.seconds03)
-//    deviceSelector.selectItem("Open iOS Simulator")
   }
 
   fun IdeFrameFixture.selectDevice(devName: String) {
@@ -51,7 +55,7 @@ class InspectorTest : GuiTestCase() {
     val actionToolbarContainer = execute<Container>(object : GuiQuery<Container>() {
       @Throws(Throwable::class)
       override fun executeInEDT(): Container? {
-        return runButton.target().getParent()
+        return runButton.target().parent
       }
     })
     assertNotNull(actionToolbarContainer)
@@ -62,7 +66,7 @@ class InspectorTest : GuiTestCase() {
     // Need to get focus on the combo box but the ComboBoxActionFixture.click() method is private, so it is inlined here.
     val selector = button("<no devices>")
     val comboBoxButtonFixture = JButtonFixture(robot(), selector.target())
-    GuiTestUtilKt.waitUntil("ComboBoxButton will be enabled", Timeouts.minutes02) {
+    GuiTestUtilKt.waitUntil("ComboBoxButton will be enabled", Timeouts.seconds10) {
       GuiTestUtilKt.computeOnEdt { comboBoxButtonFixture.target().isEnabled } ?: false
     }
     comboBoxButtonFixture.click()
@@ -77,6 +81,10 @@ class InspectorTest : GuiTestCase() {
       button = ActionButtonFixture.fixtureByActionId(target(), robot(), actionId)
     }
     return button!!
+  }
+
+  fun IdeFrameFixture.flutterInspectorFixture(): FlutterInspectorFixture {
+    return FlutterInspectorFixture(project, robot())
   }
 
 }
