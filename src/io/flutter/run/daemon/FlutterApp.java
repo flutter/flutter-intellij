@@ -597,6 +597,10 @@ public class FlutterApp {
     return myDevice != null ? myDevice.deviceId() : "";
   }
 
+  public boolean isWebDev() {
+    return myDevice == null;
+  }
+
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
     myFlutterDebugProcess = flutterDebugProcess;
     myFlutterLog.setFlutterApp(this);
