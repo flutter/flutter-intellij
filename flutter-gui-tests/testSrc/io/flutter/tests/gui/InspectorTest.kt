@@ -7,6 +7,7 @@
 package io.flutter.tests.gui
 
 import com.intellij.testGuiFramework.fixtures.ActionButtonFixture
+import com.intellij.testGuiFramework.fixtures.ExecutionToolWindowFixture
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.framework.Timeouts
@@ -32,18 +33,28 @@ class InspectorTest : GuiTestCase() {
   fun importSimpleProject() {
     ProjectCreator.importProject()
     ideFrame {
-      findRunApplicationButton().click()
-      val runner = runToolWindow.findContent("main.dart")
-      pause(object : Condition("Start app") {
-        override fun test(): Boolean {
-          return runner.isExecutionInProgress
-        }
-      }, Timeouts.seconds10)
-      val inspector = flutterInspectorFixture()
-      inspector.activate()
-      pause(1000)
-      runner.stop()
+      launchFlutterApp()
+      val inspector = flutterInspectorFixture(this)
+      inspector.populate()
+      val widgetTree = inspector.widgetTreeFixture()
+      println("DEBUG")
+      println(widgetTree)
+      runner().stop()
     }
+  }
+
+  private fun IdeFrameFixture.runner(): ExecutionToolWindowFixture.ContentFixture {
+    return runToolWindow.findContent("main.dart")
+  }
+
+  fun IdeFrameFixture.launchFlutterApp() {
+    findRunApplicationButton().click()
+    val runner = runner()
+    pause(object : Condition("Start app") {
+      override fun test(): Boolean {
+        return runner.isExecutionInProgress
+      }
+    }, Timeouts.seconds10)
   }
 
   fun IdeFrameFixture.selectSimulator() {
@@ -83,8 +94,8 @@ class InspectorTest : GuiTestCase() {
     return button!!
   }
 
-  fun IdeFrameFixture.flutterInspectorFixture(): FlutterInspectorFixture {
-    return FlutterInspectorFixture(project, robot())
+  fun IdeFrameFixture.flutterInspectorFixture(ideFrame: IdeFrameFixture): FlutterInspectorFixture {
+    return FlutterInspectorFixture(project, robot(), ideFrame)
   }
 
 }

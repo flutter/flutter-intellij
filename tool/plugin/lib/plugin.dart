@@ -275,7 +275,7 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
         return spec.untilBuild;
       case 'VERSION':
         return spec.release == null
-            ? ''
+            ? '<version>SNAPSHOT</version>'
             : '<version>${spec.release}.${++pluginCount}</version>';
       case 'CHANGELOG':
         return spec.changeLog;
