@@ -597,6 +597,7 @@ public class FlutterApp {
     return myDevice != null ? myDevice.deviceId() : "";
   }
 
+  // TODO this should be a temporary hack until there is some mocked out "browser" device
   public boolean isWebDev() {
     return myDevice == null;
   }
