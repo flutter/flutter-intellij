@@ -52,6 +52,8 @@ public class FlutterPerfView implements Disposable {
 
   private static final Logger LOG = Logger.getInstance(FlutterPerfView.class);
 
+  private boolean previouslyVisible = false;
+
   @NotNull
   private final Project myProject;
 
@@ -83,11 +85,28 @@ public class FlutterPerfView implements Disposable {
       //noinspection UnnecessaryReturnStatement
       return;
     }
+
+    if (toolWindow.isAvailable()) {
+      // Store whether the tool window was visible before we decided to close it
+      // because it had no content.
+      previouslyVisible = toolWindow.isVisible();
+      toolWindow.setAvailable(false, null);
+    }
+  }
+
+  private void updateToolWindowVisibility(ToolWindow toolWindow) {
+    if (toolWindow.isVisible()) {
+      return;
+    }
+
+    if (previouslyVisible) {
+      toolWindow.show(null);
+    }
   }
 
   void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
-    final FlutterApp app = event.app;
 
+    final FlutterApp app = event.app;
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
@@ -96,6 +115,15 @@ public class FlutterPerfView implements Disposable {
     final ToolWindow toolWindow = toolWindowManager.getToolWindow(TOOL_WINDOW_ID);
     if (toolWindow == null) {
       return;
+    }
+
+    if (toolWindow.isAvailable()) {
+      updateToolWindowVisibility(toolWindow);
+    }
+    else {
+      toolWindow.setAvailable(true, () -> {
+        updateToolWindowVisibility(toolWindow);
+      });
     }
 
     addPerformanceViewContent(app, toolWindow);

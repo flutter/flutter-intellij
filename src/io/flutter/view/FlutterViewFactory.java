@@ -21,6 +21,11 @@ public class FlutterViewFactory implements ToolWindowFactory, DumbAware {
     );
   }
 
+  @Override
+  public void init(ToolWindow window) {
+    window.setAvailable(false, null);
+  }
+
   private static void initFlutterView(@NotNull Project project, FlutterViewMessages.FlutterDebugEvent event) {
     ApplicationManager.getApplication().invokeLater(() -> {
       final FlutterView flutterView = ServiceManager.getService(project, FlutterView.class);
