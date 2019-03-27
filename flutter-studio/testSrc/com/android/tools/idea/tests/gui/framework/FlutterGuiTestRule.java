@@ -10,9 +10,6 @@ import static com.android.testutils.TestUtils.runningFromBazel;
 import static com.android.tools.idea.tests.gui.framework.GuiTests.setUpDefaultProjectCreationLocationPath;
 import static com.google.common.truth.TruthJUnit.assume;
 import static com.intellij.openapi.util.io.FileUtil.sanitizeFileName;
-import static org.fest.reflect.core.Reflection.field;
-import static org.fest.reflect.core.Reflection.method;
-import static org.fest.reflect.core.Reflection.type;
 
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterFrameFixture;
 import com.android.tools.idea.tests.gui.framework.fixture.FlutterWelcomeFrameFixture;
@@ -219,16 +216,6 @@ public class FlutterGuiTestRule implements TestRule {
       }
     }
     return errors;
-  }
-
-  private void fixMemLeaks() {
-    myIdeFrameFixture = null;
-
-    // Work-around for https://youtrack.jetbrains.com/issue/IDEA-153492
-    Class<?> keyboardManagerType = type("javax.swing.KeyboardManager").load();
-    Object manager = method("getCurrentManager").withReturnType(Object.class).in(keyboardManagerType).invoke();
-    field("componentKeyStrokeMap").ofType(Hashtable.class).in(manager).get().clear();
-    field("containerMap").ofType(Hashtable.class).in(manager).get().clear();
   }
 
   public FlutterFrameFixture importSimpleApplication() throws IOException {

@@ -6,7 +6,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/testSrc/unit" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/resources" type="java-resource" />
-      <sourceFolder url="file://$MODULE_DIR$/testSrc" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/testData" type="java-test-resource" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -29,17 +28,13 @@
     <orderEntry type="module" module-name="intellij.java.impl" />
     <orderEntry type="module" module-name="intellij.gradle" />
     <orderEntry type="module" module-name="android.sdktools.flags" />
-    <orderEntry type="module" module-name="intellij.android.guiTests" scope="TEST" />
-    <orderEntry type="module" module-name="fest-swing" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.android.guiTestFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.android.testFramework" scope="TEST" />
     <orderEntry type="module" module-name="intellij.platform.externalSystem.rt" scope="TEST" />
     <orderEntry type="module" module-name="intellij.android.designer" scope="TEST" />
-    <orderEntry type="module" module-name="android.sdktools.testutils" scope="TEST" />
     <orderEntry type="library" scope="TEST" name="truth" level="project" />
     <orderEntry type="module" module-name="flutter-intellij-community" />
-    <orderEntry type="module" module-name="android-ndk" />
     <orderEntry type="module" module-name="intellij.android.common" />
     <orderEntry type="module" module-name="intellij.android.projectSystem" />
     <orderEntry type="module" module-name="intellij.android.projectSystem.gradle" />
@@ -47,10 +42,14 @@
     <orderEntry type="module" module-name="intellij.android.profilers.ui" />
     <orderEntry type="module" module-name="intellij.javascript.protocolModelGenerator" />
     <orderEntry type="module" module-name="intellij.android.artwork" />
-    <orderEntry type="module" module-name="android.sdktools.common" />
     <orderEntry type="module" module-name="intellij.java" />
-    <orderEntry type="library" name="studio-analytics-proto" level="project" />
     <orderEntry type="library" name="protobuf" level="project" />
     <orderEntry type="module" module-name="intellij.android.projectSystem.tests" />
+    <orderEntry type="library" name="com.android.tools.analytics-library:protos" level="project" />
+    <orderEntry type="library" name="com.android.tools:sdk-common" level="project" />
+    <orderEntry type="library" name="com.android.tools:annotations" level="project" />
+    <orderEntry type="library" name="com.android.tools:common" level="project" />
+    <orderEntry type="library" name="com.android.tools:repository" level="project" />
+    <orderEntry type="library" name="fest-swing" level="project" />
   </component>
 </module>
