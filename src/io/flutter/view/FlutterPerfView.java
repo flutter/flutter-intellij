@@ -52,6 +52,8 @@ public class FlutterPerfView implements Disposable {
 
   private static final Logger LOG = Logger.getInstance(FlutterPerfView.class);
 
+  private boolean previouslyVisible = false;
+
   @NotNull
   private final Project myProject;
 
@@ -85,9 +87,19 @@ public class FlutterPerfView implements Disposable {
     }
   }
 
-  void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
-    final FlutterApp app = event.app;
+  private void updateToolWindowVisibility(ToolWindow toolWindow) {
+    if (toolWindow.isVisible()) {
+      return;
+    }
 
+    if (previouslyVisible) {
+      toolWindow.show(null);
+    }
+  }
+
+  void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
+
+    final FlutterApp app = event.app;
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
@@ -96,6 +108,15 @@ public class FlutterPerfView implements Disposable {
     final ToolWindow toolWindow = toolWindowManager.getToolWindow(TOOL_WINDOW_ID);
     if (toolWindow == null) {
       return;
+    }
+
+    if (toolWindow.isAvailable()) {
+      updateToolWindowVisibility(toolWindow);
+    }
+    else {
+      toolWindow.setAvailable(true, () -> {
+        updateToolWindowVisibility(toolWindow);
+      });
     }
 
     addPerformanceViewContent(app, toolWindow);
@@ -124,6 +145,12 @@ public class FlutterPerfView implements Disposable {
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
             updateForEmptyContent(toolWindow);
+            if (toolWindow.isAvailable()) {
+              // Store whether the tool window was visible before we decided to close it
+              // because it had no content.
+              previouslyVisible = toolWindow.isVisible();
+              toolWindow.setAvailable(false, null);
+            }
           }
         });
       }
