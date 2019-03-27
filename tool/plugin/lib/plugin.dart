@@ -537,7 +537,7 @@ class BuildCommand extends ProductCommand {
       // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
       var files = <File, String>{};
       var processedFile, source;
-      if ((spec.version == '2018.2.5') || spec.version == '3.3.1') {
+      if ((spec.version == '2018.2.5') || spec.version == '3.3.2') {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
