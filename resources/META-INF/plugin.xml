@@ -10,7 +10,7 @@
   </description>
   <!--suppress PluginXmlValidity -->
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
-
+  <version>SNAPSHOT</version>
   <category>Custom Languages</category>
   
   <idea-version since-build="182.5107.16" until-build="192.SNAPSHOT"/>
