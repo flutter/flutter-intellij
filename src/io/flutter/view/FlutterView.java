@@ -462,6 +462,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
             updateForEmptyContent(toolWindow);
+            if (toolWindow.isAvailable()) {
+              // Store whether the tool window was visible before we decided to close it
+              // because it had no content.
+              previouslyVisible = toolWindow.isVisible();
+              toolWindow.setAvailable(false, null);
+            }
           }
         });
       }
@@ -501,13 +507,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     panel.add(label, BorderLayout.CENTER);
     emptyContent = contentManager.getFactory().createContent(panel, null, false);
     contentManager.addContent(emptyContent);
-
-    if (toolWindow.isAvailable()) {
-      // Store whether the tool window was visible before we decided to close it
-      // because it had no content.
-      previouslyVisible = toolWindow.isVisible();
-      toolWindow.setAvailable(false, null);
-    }
   }
 
   private static void listenForRenderTreeActivations(@NotNull ToolWindow toolWindow) {

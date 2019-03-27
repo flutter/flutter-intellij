@@ -85,13 +85,6 @@ public class FlutterPerfView implements Disposable {
       //noinspection UnnecessaryReturnStatement
       return;
     }
-
-    if (toolWindow.isAvailable()) {
-      // Store whether the tool window was visible before we decided to close it
-      // because it had no content.
-      previouslyVisible = toolWindow.isVisible();
-      toolWindow.setAvailable(false, null);
-    }
   }
 
   private void updateToolWindowVisibility(ToolWindow toolWindow) {
@@ -152,6 +145,12 @@ public class FlutterPerfView implements Disposable {
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
             updateForEmptyContent(toolWindow);
+            if (toolWindow.isAvailable()) {
+              // Store whether the tool window was visible before we decided to close it
+              // because it had no content.
+              previouslyVisible = toolWindow.isVisible();
+              toolWindow.setAvailable(false, null);
+            }
           }
         });
       }
