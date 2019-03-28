@@ -269,18 +269,6 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
   }
 
-  public FlutterCommand flutterRunWeb(@NotNull PubRoot root, @NotNull RunMode mode) {
-    // flutter packages pub global run webdev serve [--debug] [--hot-reload]
-    final List<String> args = new ArrayList<>();
-    args.add("global");
-    args.add("run");
-    args.add("webdev");
-    args.add("daemon");
-    // TODO After debug is supported by webdev, this should be modified to check for debug and add any additional needed flags:
-    //  i.e. if (mode == RunMode.DEBUG) { args.add("--debug"); }
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, true, args.toArray(new String[]{ }));
-  }
-
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
     final List<String> args = new ArrayList<>();
     args.add("--machine");
