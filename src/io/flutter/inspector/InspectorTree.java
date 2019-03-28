@@ -93,10 +93,6 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
     super(treemodel);
     setUI(new InspectorTreeUI());
     final BasicTreeUI ui = (BasicTreeUI)getUI();
-    // TODO: Consider making changing the background a user preference, in order to do user testing.
-    if (!detailsSubtree && !legacyMode) {
-      setBackground(VERY_LIGHT_GREY);
-    }
     this.detailsSubtree = detailsSubtree;
 
     setRootVisible(rootVisible);
