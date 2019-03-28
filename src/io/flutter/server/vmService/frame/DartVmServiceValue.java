@@ -149,8 +149,43 @@ public class DartVmServiceValue extends XNamedValue {
     if (computeRegExpPresentation(node)) return;
     if (computeMapPresentation(node)) return;
     if (computeListPresentation(node)) return;
-    computeDefaultPresentation(node);
+
+    // computeDefaultPresentation is called internally here when no result is received.
+    // The reason for this is that the async method used cannot be properly waited.
+    computeDebugPresentation(node);
+
     // todo handle other special kinds: Type, TypeParameter, Pattern, may be some others as well
+  }
+
+  private void computeDebugPresentation(final XValueNode node) {
+    myDebugProcess.getVmServiceWrapper()
+      .evaluateInTargetContext(myIsolateId, myInstanceRef.getId(), "toStringDeep()", new VmServiceConsumers.EvaluateConsumerWrapper() {
+        @Override
+        public void received(final InstanceRef toStringInstanceRef) {
+          // TODO: Get actual DiagnosticsNode object instead of calling toStringDeep here.
+          if (toStringInstanceRef.getKind() == InstanceKind.String) {
+            String content = toStringInstanceRef.getValueAsString();
+            int firstLineBreak = content.indexOf('\n');
+            String summary = firstLineBreak < 0 ? content : content.substring(0, firstLineBreak);
+            node.setPresentation(getIcon(), myInstanceRef.getClassRef().getName(), summary, true);
+            if (toStringInstanceRef.getValueAsStringIsTruncated()) {
+              addFullStringValueEvaluator(node, toStringInstanceRef);
+            }
+            else if (firstLineBreak >= 0) {
+              // Multi-line content. Display a View link to reveal full content.
+              node.setFullValueEvaluator(new ImmediateFullValueEvaluator("...View", content));
+            }
+          }
+          else {
+            noGoodResult();
+          }
+        }
+
+        @Override
+        public void noGoodResult() {
+          computeDefaultPresentation(node);
+        }
+      });
   }
 
   private Icon getIcon() {
