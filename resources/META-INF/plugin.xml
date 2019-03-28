@@ -29,6 +29,35 @@
 
   <change-notes>
     <![CDATA[
+<h2>34.0</h2>
+<ul>
+  <li>Update build for Android Studio 3.3.2 and IntelliJ 2019.1 (#3321)</li>
+  <li>Fix issue preventing plugin from working in AS Canary 8 (#3321)</li>
+  <li>Provides a better display if the variable has a <code>toStringDeep()</code> method defined. (#3291)</li>
+  <li>Don't show a background square in the inspector summary tree. (#3326)</li>
+  <li>Make FlutterModuleUtils consistently robust to disposed projects. (#3323)</li>
+  <li>Fix NPE issue sometimes hit evaluating expressions. (#3324)</li>
+  <li>Fix widget names. (#3322)</li>
+  <li>Make Perf and Inspector views only display when a Flutter app is being debugged. (#3320)</li>
+  <li>Support the inspector for flutter_web libraries. (#3310)</li>
+  <li>Detect when integrations tests are running (#3308)</li>
+  <li>Add in support for reloading and restarting all running apps (#3268)</li>
+  <li>Log tree path selection fixes (#3302)</li>
+  <li>Throttle logger updates (#3280)</li>
+  <li>New method in FlutterUtils: declaresFlutterWeb, this method checks for dependencies: fluttler_web in a pubspec file. (#3275)</li>
+  <li>Update a comment in FlutterSaveActionsManager (#3277)</li>
+  <li>Remove the second parameter (the Project) from SdkFields constructor, it isn't used anymore. (#3261)</li>
+  <li>Add a comment to a recent change (#3267)</li>
+  <li>Fix a file handle leak (#3264)</li>
+  <li>Port inferPubRootDirectoryIfNeeded from devtools (#3242)</li>
+  <li>Add support for matching customized Widget tests. (#3249)</li>
+  <li>Hide DevTools debugger when launching from IntelliJ. (#3252)</li>
+  <li>Migrate to GearPlain (#3248)</li>
+  <li>Minor cleanup (#3247)</li>
+  <li>Inline sample index reading (#3245)</li>
+  <li>Make a newer daemon protocol field optional (#3230)</li>
+  <li>Link to the plugins readme file from the building instructions. (#3222)</li>
+</ul>
 <h2>33.3</h2>
 <ul>
   <li>Fix an issue with an IllegalArgumentException when running Flutter apps</li>
