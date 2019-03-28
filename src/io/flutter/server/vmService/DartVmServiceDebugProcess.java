@@ -41,7 +41,6 @@ import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterLaunchMode;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
 import io.flutter.server.vmService.frame.DartVmServiceSuspendContext;
@@ -263,22 +262,17 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       // because "flutter run" has already connected to it.
       final VmService vmService;
       final VmOpenSourceLocationListener vmOpenSourceLocationListener;
-      // TODO(github.com/flutter/flutter-intellij/issues/3293, github.com/dart-lang/webdev/issues/233) The following check disables the
-      //  WebSocket connection for all FlutterWeb run configurations, for some reason the WebSocket port can't be connected to, see listed
-      //  issue above.
-      if (myConnector instanceof FlutterApp && (!((FlutterApp)myConnector).isWebDev())) {
-        try {
-          vmService = VmService.connect(url);
-          vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
-        }
-        catch (IOException | RuntimeException e) {
-          onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
-                          + e.toString() + "\n" +
-                          formatStackTraces(e));
-          return;
-        }
-        onConnectSucceeded(vmService, vmOpenSourceLocationListener);
+      try {
+        vmService = VmService.connect(url);
+        vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
       }
+      catch (IOException | RuntimeException e) {
+        onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
+                        + e.toString() + "\n" +
+                        formatStackTraces(e));
+        return;
+      }
+      onConnectSucceeded(vmService, vmOpenSourceLocationListener);
     });
   }
 
@@ -397,7 +391,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   public void isolateSuspended(@NotNull final IsolateRef isolateRef) {
     final String id = isolateRef.getId();
-    assert (!mySuspendedIsolateIds.containsKey(id));
+    assert(!mySuspendedIsolateIds.containsKey(id));
     if (!mySuspendedIsolateIds.containsKey(id)) {
       mySuspendedIsolateIds.put(id, new CompletableFuture<>());
     }
@@ -412,10 +406,10 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     if (future == null) {
       // Isolate wasn't actually suspended.
       return CompletableFuture.completedFuture(null);
-    }
-    else {
+    } else {
       return future;
     }
+
   }
 
   public boolean isIsolateAlive(@NotNull final String isolateId) {

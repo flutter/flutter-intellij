@@ -45,7 +45,6 @@ import io.flutter.actions.RestartFlutterApp;
 import io.flutter.dart.DartPlugin;
 import io.flutter.logging.FlutterLog;
 import io.flutter.logging.FlutterLogView;
-import io.flutter.pub.PubRoot;
 import io.flutter.run.bazel.BazelRunConfig;
 import io.flutter.run.daemon.*;
 import org.jetbrains.annotations.NotNull;
@@ -121,21 +120,9 @@ public class LaunchState extends CommandLineState {
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
 
-    // If the device is null and the project is not a flutter web project, show a message that a device is required and return null.
     if (device == null) {
-      boolean isFlutterWeb = false;
-      final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
-      if(filePath != null) {
-        final MainFile main = MainFile.verify(filePath, project).get();
-        final PubRoot root = PubRoot.forDirectory(main.getAppDir());
-        if (root != null) {
-          isFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
-        }
-      }
-      if (!isFlutterWeb) {
-        showNoDeviceConnectedMessage(project);
-        return null;
-      }
+      showNoDeviceConnectedMessage(project);
+      return null;
     }
     final FlutterApp app = myCreateAppCallback.createApp(device);
 
@@ -160,9 +147,7 @@ public class LaunchState extends CommandLineState {
       }
     }
 
-    if (device != null) {
-      device.bringToFront();
-    }
+    device.bringToFront();
 
     // Check for and display any analysis errors when we launch an app.
     if (env.getRunProfile() instanceof SdkRunConfig) {
