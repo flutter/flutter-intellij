@@ -38,7 +38,7 @@ import java.util.List;
 
 public class FlutterSampleManager {
 
-  private static final String SNIPPETS_REMOTE_INDEX_URL = "https://docs.flutter.io/snippets/index.json";
+  private static final String SNIPPETS_REMOTE_INDEX_URL = "BROKEN_https://docs.flutter.io/snippets/index.json";
 
   private static final Logger LOG = Logger.getInstance(FlutterSampleManager.class);
 
