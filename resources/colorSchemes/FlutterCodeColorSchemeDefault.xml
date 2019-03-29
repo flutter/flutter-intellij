@@ -1,0 +1,29 @@
+<?xml version='1.0'?>
+<!--
+  ~ Copyright 2019 The Chromium Authors. All rights reserved.
+  ~ Use of this source code is governed by a BSD-style license that can be
+  ~ found in the LICENSE file.
+  -->
+
+<list>
+  <!--<option name="TEMPLATE_CONFIG_NAME">-->
+  <!--<value>-->
+  <!--<option name="FOREGROUND" value="008000"/>-->
+  <!--<option name="BACKGROUND" value="e3fcff"/>-->
+  <!--<option name="FONT_TYPE" value="1"/>-->
+  <!--</value>-->
+  <!--</option>-->
+
+  <!--
+  Customizations to the regular Dart color scheme to make Flutter UI as code
+  more readable.
+
+  All tweaks added here need to be acceptable for regular Dart code as they
+  will apply to all Dart code not just Flutter code.
+  -->
+  <option name="DART_CONSTRUCTOR">
+    <value>
+      <option name="FOREGROUND" value="#2196f3"/>
+    </value>
+  </option>
+</list>

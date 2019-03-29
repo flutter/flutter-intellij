@@ -298,6 +298,7 @@
     <projectStructureDetector implementation="io.flutter.project.FlutterProjectStructureDetector"/>
     <colorSettingsPage implementation="io.flutter.logging.FlutterLogColorPage"/>
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterLogColorSchemeDefault.xml"/>
+    <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterCodeColorSchemeDefault.xml"/>
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
   </extensions>
 
