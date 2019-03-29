@@ -8,6 +8,7 @@
     &lt;em&gt;Do not distribute this plugin with Flutter&lt;/em&gt;
   </description>
   <depends optional="true">com.intellij.testGuiFramework</depends>
+  <depends>io.flutter</depends>
   <vendor>flutter.io</vendor>
   <extensions defaultExtensionNs="com.intellij"/>
   <actions/>

@@ -10,13 +10,16 @@ repositories {
   mavenLocal()
   mavenCentral()
   jcenter()
+  // unpack flutter-intellij.zip and rename the jar file to io.flutter.jar in this directory
+  flatDir dirs: ['../releases/release_master/2019.1']
 }
 
 dependencies {
   compile "org.jetbrains.kotlin:kotlin-reflect"
   testCompile group: 'junit', name: 'junit', version: '4.12'
+  testCompile fileTree(include: ['*.jar'], dir: '../releases/release_master/2019.1')
+  testImplementation fileTree(include: ['*.jar'], dir: '../releases/release_master/2019.1')
 }
-
 
 sourceSets {
   main {
@@ -32,7 +35,7 @@ sourceSets {
 }
 
 intellij {
-  plugins 'com.intellij.testGuiFramework:0.9.44.1@nightly', 'Dart:191.5849.16'
+  plugins 'com.intellij.testGuiFramework:0.9.44.1@nightly', 'Dart:191.5849.16', 'io.flutter:SNAPSHOT'
   if (System.getProperty("idea.gui.test.alternativeIdePath") != null) {
     alternativeIdePath System.getProperty("idea.gui.test.alternativeIdePath")
   }
@@ -59,20 +62,12 @@ task testsJar(type: Jar, dependsOn: classes) {
 }
 
 prepareSandbox {
-  def zipFile = file("$projectDir/../flutter-intellij.zip")
-  from zipTree(zipFile)
-  into 'flutter-intellij'
-
   from(testsJar) {
     into "$pluginName/lib"
   }
 }
 
 prepareTestingSandbox {
-  def zipFile = file("$projectDir/../flutter-intellij.zip")
-  from zipTree(zipFile)
-  into 'flutter-intellij'
-
   from(testsJar) {
     into "$pluginName/lib"
   }

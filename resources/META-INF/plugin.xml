@@ -12,7 +12,7 @@
   <vendor url="https://github.com/flutter/flutter-intellij">flutter.io</vendor>
 
   <category>Custom Languages</category>
-  
+  <version>SNAPSHOT</version>
   <idea-version since-build="182.5107.16" until-build="192.SNAPSHOT"/>
 
   <depends>Dart</depends>
