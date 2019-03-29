@@ -33,10 +33,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class FlutterSampleManager {
+  // See https://github.com/flutter/flutter-intellij/issues/3330.
+  private static final boolean DISABLE_SAMPLES = true;
 
   private static final String SNIPPETS_REMOTE_INDEX_URL = "https://docs.flutter.io/snippets/index.json";
 
@@ -45,6 +48,10 @@ public class FlutterSampleManager {
   private static List<FlutterSample> SAMPLES;
 
   public static List<FlutterSample> getSamples() {
+    if (DISABLE_SAMPLES) {
+      return Collections.emptyList();
+    }
+
     if (SAMPLES == null) {
       // When we're reading from the repo and the file may be changing, consider a fresh read on each access.
       SAMPLES = loadSamples();
@@ -57,7 +64,7 @@ public class FlutterSampleManager {
     final StringBuilder contents = new StringBuilder();
     final byte[] bytes = new byte[1024];
     int bytesRead;
-    while((bytesRead = in.read(bytes)) != -1) {
+    while ((bytesRead = in.read(bytes)) != -1) {
       contents.append(new String(bytes, 0, bytesRead));
     }
 

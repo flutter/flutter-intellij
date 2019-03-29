@@ -22,9 +22,6 @@ import java.util.Collections;
 import java.util.List;
 
 public class FlutterSampleNotificationProvider extends EditorNotifications.Provider<JPanel> implements DumbAware {
-  // See https://github.com/flutter/flutter-intellij/issues/3330.
-  private static final boolean DISABLE_SAMPLES = true;
-
   private static final Key<JPanel> KEY = Key.create("flutter.sample");
 
   @NotNull private final Project project;
@@ -51,10 +48,6 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
   }
 
   private List<FlutterSample> getSamplesForFile(@NotNull VirtualFile file) {
-    if (DISABLE_SAMPLES) {
-      return Collections.emptyList();
-    }
-
     final FlutterSdk sdk = getSdk();
     if (sdk == null) {
       return Collections.emptyList();
