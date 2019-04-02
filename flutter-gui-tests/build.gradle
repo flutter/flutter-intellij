@@ -10,8 +10,8 @@ repositories {
   mavenLocal()
   mavenCentral()
   jcenter()
-  // unpack flutter-intellij.zip and rename the jar file to io.flutter.jar in this directory
-  flatDir dirs: ['../releases/release_master/2019.1']
+  // this repo contains the test target plugin produced by the plugin tool, io.flutter:SNAPSHOT
+  flatDir dirs: ['../releases/release_master/test_target']
 }
 
 dependencies {

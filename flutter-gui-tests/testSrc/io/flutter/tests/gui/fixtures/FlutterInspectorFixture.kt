@@ -21,8 +21,8 @@ import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import javax.swing.JPanel
 
-class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFrame: IdeFrameFixture) : ToolWindowFixture(
-    "Flutter Inspector", project, robot) {
+class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFrame: IdeFrameFixture)
+  : ToolWindowFixture("Flutter Inspector", project, robot) {
 
   fun populate() {
     activate()
@@ -58,7 +58,8 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   }
 
   private fun findInspectorPanel(type: InspectorService.FlutterTreeType): InspectorPanel? {
-    val panels = ideFrame.robot().finder().findAll(contents[0].component, ClassNameMatcher.forClass("io.flutter.view.InspectorPanel", JPanel::class.java))
+    val panels = ideFrame.robot().finder().findAll(contents[0].component,
+                                                   ClassNameMatcher.forClass("io.flutter.view.InspectorPanel", JPanel::class.java))
     return panels.firstOrNull { (it as InspectorPanel).treeType == type } as InspectorPanel
   }
 

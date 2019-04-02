@@ -37,8 +37,6 @@ class InspectorTest : GuiTestCase() {
       val inspector = flutterInspectorFixture(this)
       inspector.populate()
       val widgetTree = inspector.widgetTreeFixture()
-      println("DEBUG")
-      println(widgetTree)
       runner().stop()
     }
   }
@@ -72,8 +70,8 @@ class InspectorTest : GuiTestCase() {
     assertNotNull(actionToolbarContainer)
 
     // These next two lines look like the right way to select the simulator, but it does not work.
-//    val comboBoxActionFixture = ComboBoxActionFixture.findComboBoxByText(robot(), actionToolbarContainer!!, "<no devices>")
-//    comboBoxActionFixture.selectItem(devName)
+    //    val comboBoxActionFixture = ComboBoxActionFixture.findComboBoxByText(robot(), actionToolbarContainer!!, "<no devices>")
+    //    comboBoxActionFixture.selectItem(devName)
     // Need to get focus on the combo box but the ComboBoxActionFixture.click() method is private, so it is inlined here.
     val selector = button("<no devices>")
     val comboBoxButtonFixture = JButtonFixture(robot(), selector.target())

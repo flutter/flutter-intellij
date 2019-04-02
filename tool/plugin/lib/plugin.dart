@@ -315,11 +315,12 @@ Future<int> zip(String directory, String outFile) async {
   return await exec('zip', args, cwd: p.dirname(directory));
 }
 
-void _copyFile(File file, Directory to) {
+void _copyFile(File file, Directory to, {String filename = ''}) {
   if (!to.existsSync()) {
     to.createSync(recursive: true);
   }
-  final target = new File(p.join(to.path, p.basename(file.path)));
+  if (filename == '') filename = p.basename(file.path);
+  final target = new File(p.join(to.path, filename));
   target.writeAsBytesSync(file.readAsBytesSync());
 }
 
@@ -606,6 +607,11 @@ class BuildCommand extends ProductCommand {
         log('jar failed: ${result.toString()}');
         return new Future(() => result);
       }
+      if (spec.isTestTarget && !isReleaseMode) {
+        _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
+            Directory(testTargetPath(spec)),
+            filename: 'io.flutter.jar');
+      }
       if (spec.isAndroidStudio) {
         result = await jar(
             'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
@@ -706,6 +712,7 @@ class BuildSpec {
   // Build targets
   final String name;
   final String version;
+  final bool isTestTarget;
   final String ideaProduct;
   final String ideaVersion;
   final String dartPluginVersion;
@@ -732,7 +739,8 @@ class BuildSpec {
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
         untilBuild = json['untilBuild'],
-        filesToSkip = json['filesToSkip'] ?? [] {
+        filesToSkip = json['filesToSkip'] ?? [],
+        isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
     createArtifacts();
   }
 
@@ -960,6 +968,12 @@ abstract class ProductCommand extends Command {
     var subDir = isReleaseMode ? 'release_$releaseMajor' : 'release_master';
     var filePath = p.join(
         rootPath, 'releases', subDir, spec.version, 'flutter-intellij.zip');
+    return filePath;
+  }
+
+  String testTargetPath(BuildSpec spec) {
+    var subDir = 'release_master';
+    var filePath = p.join(rootPath, 'releases', subDir, 'test_target');
     return filePath;
   }
 
