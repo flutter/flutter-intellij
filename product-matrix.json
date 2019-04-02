@@ -31,22 +31,13 @@
       "untilBuild": "183.*"
     },
     {
-      "comments": "AS 3.5 canary",
+      "comments": "IntelliJ 2019.1, AS 3.5 canary",
       "name": "Android Studio 3.5",
       "version": "3.5",
+      "isTestTarget": "true",
       "ideaProduct": "android-studio",
       "ideaVersion": "191.5375575",
-      "dartPluginVersion": "191.6014.8",
-      "sinceBuild": "191.0",
-      "untilBuild": "191.*"
-    },
-    {
-      "comments": "IntelliJ 2019.1",
-      "name": "IntelliJ 2019.1",
-      "version": "2019.1",
-      "ideaProduct": "ideaIU",
-      "ideaVersion": "2019.1",
-      "dartPluginVersion": "191.4899",
+      "dartPluginVersion": "191.6183.87",
       "sinceBuild": "191.0",
       "untilBuild": "191.*"
     },
