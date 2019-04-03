@@ -48,8 +48,8 @@ public class FlutterCommand {
   @NotNull
   private final List<String> args;
 
-  // TODO(github.com/flutter/flutter-intellij/issues/3293) This is a temporary "<pub-cache>/bin/webdev" that can be provided to test some
-  //  webdev directly.
+  // TODO(https://github.com/flutter/flutter-intellij/issues/3348) This is a temporary "<pub-cache>/bin/webdev" that can be provided to test
+  //  some webdev directly.
   @Nullable
   private final String localWebDevExe = "webdev";
 
@@ -298,9 +298,6 @@ public class FlutterCommand {
     return line;
   }
 
-  /**
-   * Creates a FlutterWeb command line to run.
-   */
   @NotNull
   public GeneralCommandLine createFlutterWebCommandLine(@Nullable Project project) {
     final GeneralCommandLine line = new GeneralCommandLine();

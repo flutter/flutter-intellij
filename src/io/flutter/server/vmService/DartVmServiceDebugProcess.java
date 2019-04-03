@@ -263,9 +263,8 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       // because "flutter run" has already connected to it.
       final VmService vmService;
       final VmOpenSourceLocationListener vmOpenSourceLocationListener;
-      // TODO(github.com/flutter/flutter-intellij/issues/3293, github.com/dart-lang/webdev/issues/233) The following check disables the
-      //  WebSocket connection for all FlutterWeb run configurations, for some reason the WebSocket port can't be connected to, see listed
-      //  issue above.
+      // TODO(github.com/dart-lang/webdev/issues/233) The following check disables the WebSocket connection for all FlutterWeb run
+      //  configurations, for some reason the WebSocket port can't be connected to, see listed issue above.
       if (this instanceof FlutterDebugProcess && (!((FlutterDebugProcess)this).getApp().isWebDev())) {
         try {
           vmService = VmService.connect(url);

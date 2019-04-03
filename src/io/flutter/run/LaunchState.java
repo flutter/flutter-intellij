@@ -121,7 +121,7 @@ public class LaunchState extends CommandLineState {
     final Project project = getEnvironment().getProject();
     final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
 
-    // If the device is null and the project is not a flutter web project, show a message that a device is required and return null.
+    // Flutter web does not yet support device objects yet, hence the null as the indicator that this might be a flutter web project.
     if (device == null) {
       boolean isFlutterWeb = false;
       final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();

@@ -276,7 +276,8 @@ public class FlutterSdk {
     args.add("run");
     args.add("webdev");
     args.add("daemon");
-    // TODO After debug is supported by webdev, this should be modified to check for debug and add any additional needed flags:
+    // TODO(https://github.com/flutter/flutter-intellij/issues/3349) After debug is supported by webdev, this should be modified to check
+    //  for debug and add any additional needed flags:
     //  i.e. if (mode == RunMode.DEBUG) { args.add("--debug"); }
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, true, args.toArray(new String[]{ }));
   }
