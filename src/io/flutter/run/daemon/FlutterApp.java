@@ -68,7 +68,8 @@ public class FlutterApp {
   private final @NotNull Project myProject;
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
-  private final @NotNull FlutterDevice myDevice;
+  // TODO(github.com/flutter/flutter-intellij/issues/3293) myDevice is not-null for all run configurations except flutter web configurations
+  private final @Nullable FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
@@ -122,7 +123,7 @@ public class FlutterApp {
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
              @NotNull RunMode mode,
-             @NotNull FlutterDevice device,
+             @Nullable FlutterDevice device,
              @NotNull ProcessHandler processHandler,
              @NotNull ExecutionEnvironment executionEnvironment,
              @NotNull DaemonApi daemonApi,
@@ -237,7 +238,7 @@ public class FlutterApp {
                                  @NotNull Project project,
                                  @Nullable Module module,
                                  @NotNull RunMode mode,
-                                 @NotNull FlutterDevice device,
+                                 @Nullable FlutterDevice device,
                                  @NotNull GeneralCommandLine command,
                                  @Nullable String analyticsStart,
                                  @Nullable String analyticsStop)
@@ -593,7 +594,12 @@ public class FlutterApp {
   }
 
   public String deviceId() {
-    return myDevice.deviceId();
+    return myDevice != null ? myDevice.deviceId() : "";
+  }
+
+  // TODO this should be a temporary hack until there is some mocked out "browser" device
+  public boolean isWebDev() {
+    return myDevice == null;
   }
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
