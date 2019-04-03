@@ -24,6 +24,7 @@ import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
@@ -150,10 +151,11 @@ public class BazelTestRunner extends GenericProgramRunner {
     @Nullable
     @Override
     public String getWebSocketUrl() {
-      if (observatoryUri == null || !observatoryUri.startsWith("http:") || !observatoryUri.endsWith("/")) {
+      if (observatoryUri == null || !observatoryUri.startsWith("http:")) {
         return null;
       }
-      return observatoryUri.replace("http:", "ws:") + "ws";
+      final String wsUrl = observatoryUri.replaceFirst("http:", "ws:");
+      return StringUtil.trimTrailing(wsUrl, '/') + "/ws";
     }
 
     @Nullable

@@ -17,6 +17,7 @@ import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -132,10 +133,11 @@ public class FlutterTestRunner extends GenericProgramRunner {
     @Nullable
     @Override
     public String getWebSocketUrl() {
-      if (observatoryUri == null || !observatoryUri.startsWith("http:") || !observatoryUri.endsWith("/")) {
+      if (observatoryUri == null || !observatoryUri.startsWith("http:")) {
         return null;
       }
-      return observatoryUri.replace("http:", "ws:") + "ws";
+      final String wsUrl = observatoryUri.replaceFirst("http:", "ws:");
+      return StringUtil.trimTrailing(wsUrl, '/') + "/ws";
     }
 
     @Nullable
