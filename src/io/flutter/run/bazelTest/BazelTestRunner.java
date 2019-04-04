@@ -35,6 +35,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.run.PositionMapper;
+import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -150,10 +151,10 @@ public class BazelTestRunner extends GenericProgramRunner {
     @Nullable
     @Override
     public String getWebSocketUrl() {
-      if (observatoryUri == null || !observatoryUri.startsWith("http:") || !observatoryUri.endsWith("/")) {
+      if (observatoryUri == null || !observatoryUri.startsWith("http:")) {
         return null;
       }
-      return observatoryUri.replace("http:", "ws:") + "ws";
+      return CommonTestConfigUtils.convertHttpServiceProtocolToWs(observatoryUri);
     }
 
     @Nullable

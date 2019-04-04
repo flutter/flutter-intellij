@@ -18,7 +18,6 @@ import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.util.SystemInfo;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
@@ -69,21 +68,15 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
 
   @Nullable private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
-  @NotNull private final String myDebuggingHost;
-  private final int myObservatoryPort;
   @NotNull private final XBreakpointHandler[] myBreakpointHandlers;
   private final IsolatesInfo myIsolatesInfo;
   @NotNull private final Map<String, CompletableFuture<Object>> mySuspendedIsolateIds = Collections.synchronizedMap(new HashMap<>());
   private final Map<String, LightVirtualFile> myScriptIdToContentMap = new THashMap<>();
-  private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap =
-    new THashMap<>();
-  private final int myTimeout;
+  private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap = new THashMap<>();
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @NotNull private final ObservatoryConnector myConnector;
-  @NotNull
-  private final ExecutionEnvironment executionEnvironment;
-  @NotNull
-  private final PositionMapper mapper;
+  @NotNull private final ExecutionEnvironment executionEnvironment;
+  @NotNull private final PositionMapper mapper;
   @Nullable protected String myRemoteProjectRootUri;
   private boolean myVmConnected = false;
   @NotNull private final OpenDartObservatoryUrlAction myOpenObservatoryAction =
@@ -100,11 +93,8 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
                                    @NotNull final PositionMapper mapper) {
     super(session);
 
-    myDebuggingHost = "localhost";
-    myObservatoryPort = 0;
     myExecutionResult = executionResult;
     myDartUrlResolver = dartUrlResolver;
-    myTimeout = 0;
     myCurrentWorkingDirectory = null;
 
     myIsolatesInfo = new IsolatesInfo();
@@ -118,7 +108,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       @Override
       public void sessionPaused() {
         // This can be removed if XFramesView starts popping the project window to the top of the z-axis stack.
-        Project project = getSession().getProject();
+        final Project project = getSession().getProject();
         focusProject(project);
         stackFrameChanged();
       }
@@ -293,12 +283,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     myVmServiceWrapper.handleDebuggerConnected();
 
     myVmConnected = true;
-  }
-
-  @NotNull
-  @Deprecated // returns incorrect URL for Dart SDK 1.22+ because returned URL doesn't contain auth token
-  private String getObservatoryUrl(@NotNull final String scheme, @Nullable final String path) {
-    return scheme + "://" + myDebuggingHost + ":" + myObservatoryPort + StringUtil.notNullize(path);
   }
 
   @Override

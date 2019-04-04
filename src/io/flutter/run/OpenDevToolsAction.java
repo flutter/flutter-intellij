@@ -55,7 +55,6 @@ public class OpenDevToolsAction extends DumbAwareAction {
 
     final DevToolsManager devToolsManager = DevToolsManager.getInstance(event.getProject());
 
-
     if (myConnector == null) {
       if (devToolsManager.hasInstalledDevTools()) {
         devToolsManager.openBrowser();
