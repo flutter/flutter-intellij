@@ -17,7 +17,6 @@ import com.intellij.execution.runners.GenericProgramRunner;
 import com.intellij.execution.ui.RunContentDescriptor;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
@@ -26,6 +25,7 @@ import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.run.PositionMapper;
+import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -136,8 +136,7 @@ public class FlutterTestRunner extends GenericProgramRunner {
       if (observatoryUri == null || !observatoryUri.startsWith("http:")) {
         return null;
       }
-      final String wsUrl = observatoryUri.replaceFirst("http:", "ws:");
-      return StringUtil.trimTrailing(wsUrl, '/') + "/ws";
+      return CommonTestConfigUtils.convertHttpServiceProtocolToWs(observatoryUri);
     }
 
     @Nullable

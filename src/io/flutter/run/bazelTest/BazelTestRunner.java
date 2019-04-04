@@ -24,7 +24,6 @@ import com.intellij.openapi.roots.ContentEntry;
 import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XDebugProcess;
@@ -36,6 +35,7 @@ import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
 import io.flutter.run.PositionMapper;
+import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -154,8 +154,7 @@ public class BazelTestRunner extends GenericProgramRunner {
       if (observatoryUri == null || !observatoryUri.startsWith("http:")) {
         return null;
       }
-      final String wsUrl = observatoryUri.replaceFirst("http:", "ws:");
-      return StringUtil.trimTrailing(wsUrl, '/') + "/ws";
+      return CommonTestConfigUtils.convertHttpServiceProtocolToWs(observatoryUri);
     }
 
     @Nullable
