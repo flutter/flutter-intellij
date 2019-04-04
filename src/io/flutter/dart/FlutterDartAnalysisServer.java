@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
-import com.intellij.util.ReflectionUtil;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterService;
@@ -23,7 +22,6 @@ import org.dartlang.analysis.server.protocol.SourceChange;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -103,7 +101,7 @@ public class FlutterDartAnalysisServer {
   @Nullable
   public SourceChange flutter_getChangeAddForDesignTimeConstructor(@NotNull VirtualFile file, int _offset) {
     final String filePath = FileUtil.toSystemDependentName(file.getPath());
-    final int offset = getOriginalOffset(file, _offset);
+    final int offset = analysisService.getOriginalOffset(file, _offset);
 
     final CountDownLatch latch = new CountDownLatch(1);
     final AtomicReference<SourceChange> result = new AtomicReference<>();
@@ -184,22 +182,5 @@ public class FlutterDartAnalysisServer {
       }
     }
     return true;
-  }
-
-  /**
-   * Must use it right before sending any offsets and lengths to the AnalysisServer.
-   */
-  private int getOriginalOffset(@Nullable final VirtualFile file, final int convertedOffset) {
-    // TODO(scheglov) Remove reflection when the method is made public everywhere.
-    // https://github.com/JetBrains/intellij-plugins/pull/572
-    final Method method = ReflectionUtil.getDeclaredMethod(analysisService.getClass(), "getOriginalOffset", VirtualFile.class, int.class);
-    if (method != null) {
-      try {
-        return (Integer)method.invoke(analysisService, file, convertedOffset);
-      }
-      catch (Throwable ignored) {
-      }
-    }
-    return convertedOffset;
   }
 }
