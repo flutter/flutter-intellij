@@ -125,10 +125,12 @@ public class FlutterAllMemoryData {
         int diffCapacity = oldHeapSpace.getCapacity() - newHeapSpace.getCapacity();
         long timestamp = TimeUnit.MILLISECONDS.toMicros(System.currentTimeMillis());
 
-        int lastEntry = multiData.get(HEAP_CAPACITY).mData.size();
-        SeriesData<Long> lastItem = multiData.get(HEAP_CAPACITY).mData.get(lastEntry - 1);
-        long yValue = lastItem.value;
-        multiData.get(GC_DATA).mData.add(new SeriesData<Long>(timestamp, yValue));
+        int entriesLength = multiData.get(HEAP_CAPACITY).mData.size();
+        if (entriesLength > 0) {
+          SeriesData<Long> lastItem = multiData.get(HEAP_CAPACITY).mData.get(entriesLength - 1);
+          long yValue = lastItem.value;
+          multiData.get(GC_DATA).mData.add(new SeriesData<Long>(timestamp, yValue));
+        }
       }
 
       private void updateModel(HeapState heapState) {
