@@ -16,14 +16,11 @@
 package io.flutter.inspector;
 
 import io.flutter.server.vmService.HeapMonitor;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
+
+import java.text.DecimalFormat;
+import java.util.*;
 
 public class HeapState implements HeapMonitor.HeapListener {
   private static final DecimalFormat df = new DecimalFormat();
@@ -79,6 +76,10 @@ public class HeapState implements HeapMonitor.HeapListener {
     return printMb(rssBytes) + " RSS";
   }
 
+  public int getRssBytes() {
+    return rssBytes;
+  }
+
   public String getHeapSummary() {
     return printMb1(samples.samples.getLast().getBytes()) + " of " + printMb1(heapMaxInBytes);
   }
@@ -112,7 +113,7 @@ public class HeapState implements HeapMonitor.HeapListener {
     rssBytes = vm.getJson().get("_currentRSS").getAsInt();
     heapMaxInBytes = total;
 
-    addSample(new HeapMonitor.HeapSample(current, external,false));
+    addSample(new HeapMonitor.HeapSample(current, external, false));
   }
 
   @Override
@@ -129,6 +130,6 @@ public class HeapState implements HeapMonitor.HeapListener {
       }
     }
 
-    addSample(new HeapMonitor.HeapSample(current, external,true));
+    addSample(new HeapMonitor.HeapSample(current, external, true));
   }
 }

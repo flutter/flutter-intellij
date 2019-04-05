@@ -142,21 +142,7 @@ public class FlutterAllMemoryData {
           multiData.get(EXTERNAL_MEMORY_USED).mData.add(new SeriesData<>(sampleTime,
                                                                          (long)sample.getExternal()));
 
-          String rssString = heapState.getRSSSummary();
-          rssString = rssString.substring(0, rssString.indexOf(" RSS"));
-          int rssLength = rssString.length();
-          int rssSize = Integer.valueOf(rssString.substring(0, rssLength - 2));
-          String rssUnit = rssString.substring(rssLength - 2);
-          if (rssUnit.equals("KB")) {
-            rssSize *= 1000;
-          }
-          else if (rssUnit.equals("MB")) {
-            rssSize *= 1000000;
-          }
-          else if (rssUnit.equals("GB")) {
-            rssSize *= 1000000000;
-          }
-          multiData.get(RSS_SIZE).mData.add(new SeriesData<>(sampleTime, (long)rssSize));
+          multiData.get(RSS_SIZE).mData.add(new SeriesData<>(sampleTime, (long)heapState.getRssBytes()));
         }
       }
     };
