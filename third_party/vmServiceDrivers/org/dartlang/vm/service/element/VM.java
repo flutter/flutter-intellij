@@ -52,6 +52,13 @@ public class VM extends Response {
   }
 
   /**
+   * A name identifying this vm. Not guaranteed to be unique.
+   */
+  public String getName() {
+    return json.get("name").getAsString();
+  }
+
+  /**
    * The process id for the VM.
    */
   public int getPid() {

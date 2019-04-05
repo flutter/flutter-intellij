@@ -45,7 +45,8 @@ public class Script extends Obj {
   }
 
   /**
-   * A table encoding a mapping from token position to line and column.
+   * A table encoding a mapping from token position to line and column. This field is null if
+   * sources aren't available.
    *
    * Can return <code>null</code>.
    */
