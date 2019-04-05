@@ -95,9 +95,7 @@ public class EvalOnDartLibrary implements Disposable {
         final CompletableFuture<?> previousDone = allPendingRequestsDone;
         allPendingRequestsDone = response;
         // Actually schedule this request only after the previous request completes.
-        previousDone.whenCompleteAsync((v, error) -> {
-          myRequestsScheduler.addRequest(wrappedRequest, 0);
-        });
+        previousDone.whenCompleteAsync((v, error) -> myRequestsScheduler.addRequest(wrappedRequest, 0));
       }
     }
     return response;
@@ -136,7 +134,8 @@ public class EvalOnDartLibrary implements Disposable {
       final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
       libraryRef.thenAcceptAsync((LibraryRef ref) -> {
         vmService.evaluate(
-          getIsolateId(), ref.getId(), expression, scope,
+          getIsolateId(), ref.getId(), expression,
+          scope, true,
           new EvaluateConsumer() {
             @Override
             public void onError(RPCError error) {

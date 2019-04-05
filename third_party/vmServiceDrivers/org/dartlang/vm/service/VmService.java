@@ -77,7 +77,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 12;
+  public static final int versionMinor = 15;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -183,13 +183,15 @@ public class VmService extends VmServiceBase {
   /**
    * The [evaluate] RPC is used to evaluate an expression in the context of some target.
    * @param scope This parameter is optional and may be null.
+   * @param disableBreakpoints This parameter is optional and may be null.
    */
-  public void evaluate(String isolateId, String targetId, String expression, Map<String, String> scope, EvaluateConsumer consumer) {
+  public void evaluate(String isolateId, String targetId, String expression, Map<String, String> scope, Boolean disableBreakpoints, EvaluateConsumer consumer) {
     JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
     params.addProperty("expression", expression);
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
+    if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluate", params, consumer);
   }
 
@@ -211,13 +213,15 @@ public class VmService extends VmServiceBase {
    * stack frame. [frameIndex] is the index of the desired Frame, with an index of [0] indicating
    * the top (most recent) frame.
    * @param scope This parameter is optional and may be null.
+   * @param disableBreakpoints This parameter is optional and may be null.
    */
-  public void evaluateInFrame(String isolateId, int frameIndex, String expression, Map<String, String> scope, EvaluateInFrameConsumer consumer) {
+  public void evaluateInFrame(String isolateId, int frameIndex, String expression, Map<String, String> scope, Boolean disableBreakpoints, EvaluateInFrameConsumer consumer) {
     JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
     params.addProperty("expression", expression);
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
+    if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluateInFrame", params, consumer);
   }
 
@@ -394,6 +398,22 @@ public class VmService extends VmServiceBase {
    * The [invoke] RPC is used to perform regular method invocation on some receiver, as if by
    * dart:mirror's ObjectMirror.invoke. Note this does not provide a way to perform getter, setter
    * or constructor invocation.
+   * @param disableBreakpoints This parameter is optional and may be null.
+   */
+  public void invoke(String isolateId, String targetId, String selector, List<String> argumentIds, Boolean disableBreakpoints, InvokeConsumer consumer) {
+    JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("targetId", targetId);
+    params.addProperty("selector", selector);
+    params.add("argumentIds", convertIterableToJsonArray(argumentIds));
+    if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
+    request("invoke", params, consumer);
+  }
+
+  /**
+   * The [invoke] RPC is used to perform regular method invocation on some receiver, as if by
+   * dart:mirror's ObjectMirror.invoke. Note this does not provide a way to perform getter, setter
+   * or constructor invocation.
    */
   public void invoke(String isolateId, String targetId, String selector, List<String> argumentIds, InvokeConsumer consumer) {
     JsonObject params = new JsonObject();
@@ -485,7 +505,8 @@ public class VmService extends VmServiceBase {
 
   /**
    * The [resume] RPC is used to resume execution of a paused isolate.
-   * @param step This parameter is optional and may be null.
+   * @param step A [StepOption] indicates which form of stepping is requested in a resume RPC. This
+   * parameter is optional and may be null.
    * @param frameIndex This parameter is optional and may be null.
    */
   public void resume(String isolateId, StepOption step, Integer frameIndex, SuccessConsumer consumer) {
@@ -507,6 +528,8 @@ public class VmService extends VmServiceBase {
 
   /**
    * The [setExceptionPauseMode] RPC is used to control if an isolate pauses when an exception is
+   * thrown.
+   * @param mode An [ExceptionPauseMode] indicates how the isolate pauses when an exception is
    * thrown.
    */
   public void setExceptionPauseMode(String isolateId, ExceptionPauseMode mode, SuccessConsumer consumer) {
@@ -809,6 +832,10 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof ResponseConsumer) {
       if (responseType.equals("AllocationProfile")) {
         ((ResponseConsumer) consumer).received(new AllocationProfile(json));
+        return;
+      }
+      if (responseType.equals("BoundVariable")) {
+        ((ResponseConsumer) consumer).received(new BoundVariable(json));
         return;
       }
       if (responseType.equals("Breakpoint")) {

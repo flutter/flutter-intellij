@@ -17,20 +17,12 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import de.roderick.weberknecht.WebSocket;
 import de.roderick.weberknecht.WebSocketEventHandler;
 import de.roderick.weberknecht.WebSocketException;
 import de.roderick.weberknecht.WebSocketMessage;
-
 import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.Event;
-import org.dartlang.vm.service.element.Instance;
-import org.dartlang.vm.service.element.Library;
-import org.dartlang.vm.service.element.Obj;
-import org.dartlang.vm.service.element.RPCError;
-import org.dartlang.vm.service.element.Sentinel;
-import org.dartlang.vm.service.element.Version;
+import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.internal.RequestSink;
 import org.dartlang.vm.service.internal.VmServiceConst;
 import org.dartlang.vm.service.internal.WebSocketRequestSink;
@@ -51,14 +43,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
 abstract class VmServiceBase implements VmServiceConst {
-
   /**
    * Connect to the VM observatory service via the specified URI
    *
    * @return an API object for interacting with the VM service (not {@code null}).
    */
   public static VmService connect(final String url) throws IOException {
-
     // Validate URL
     URI uri;
     try {
@@ -178,7 +168,10 @@ abstract class VmServiceBase implements VmServiceConst {
    * Connect to the VM observatory service on the given local port.
    *
    * @return an API object for interacting with the VM service (not {@code null}).
+   *
+   * @deprecated prefer the Url based constructor {@link VmServiceBase#connect}
    */
+  @Deprecated
   public static VmService localConnect(int port) throws IOException {
     return connect("ws://localhost:" + port + "/ws");
   }
@@ -202,7 +195,7 @@ abstract class VmServiceBase implements VmServiceConst {
   /**
    * A list of objects to which {@link Event}s from the VM are forwarded.
    */
-  private final List<VmServiceListener> vmListeners = new ArrayList<VmServiceListener>();
+  private final List<VmServiceListener> vmListeners = new ArrayList<>();
 
   /**
    * A list of objects to which {@link Event}s from the VM are forwarded.
@@ -350,7 +343,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   public void connectionOpened() {
-    for (VmServiceListener listener : vmListeners) {
+    for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
       try {
         listener.connectionOpened();
       } catch (Exception e) {
@@ -360,7 +353,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   private void forwardEvent(String streamId, Event event) {
-    for (VmServiceListener listener : vmListeners) {
+    for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
       try {
         listener.received(streamId, event);
       } catch (Exception e) {
@@ -370,7 +363,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   public void connectionClosed() {
-    for (VmServiceListener listener : vmListeners) {
+    for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
       try {
         listener.connectionClosed();
       } catch (Exception e) {
@@ -522,7 +515,6 @@ abstract class VmServiceBase implements VmServiceConst {
       error.addProperty(MESSAGE, message);
       response.add(ERROR, error);
       requestSink.add(response);
-      return;
     }
   }
 
@@ -579,7 +571,6 @@ abstract class VmServiceBase implements VmServiceConst {
         runner.run(params, ignoreCallback);
       } catch (Exception e) {
         Logging.getLogger().logError("Internal Server Error", e);
-        return;
       }
     }
   }
