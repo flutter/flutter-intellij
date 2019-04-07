@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * An {@link Isolate} object provides information about one isolate in the VM.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Isolate extends Response {
 
   public Isolate(JsonObject json) {
@@ -55,7 +55,7 @@ public class Isolate extends Response {
    * The current pause on exception mode for this isolate.
    */
   public ExceptionPauseMode getExceptionPauseMode() {
-    JsonElement value = json.get("exceptionPauseMode");
+    final JsonElement value = json.get("exceptionPauseMode");
     try {
       return value == null ? ExceptionPauseMode.Unknown : ExceptionPauseMode.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {

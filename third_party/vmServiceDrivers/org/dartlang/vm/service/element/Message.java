@@ -21,7 +21,7 @@ import com.google.gson.JsonObject;
  * A {@link Message} provides information about a pending isolate message and the function that
  * will be invoked to handle it.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Message extends Response {
 
   public Message(JsonObject json) {

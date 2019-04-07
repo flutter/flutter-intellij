@@ -23,7 +23,7 @@ import com.google.gson.JsonObject;
  * An {@link Event} is an asynchronous notification from the VM. It is delivered only when the
  * client has subscribed to an event stream using the streamListen RPC.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Event extends Response {
 
   public Event(JsonObject json) {
@@ -150,7 +150,7 @@ public class Event extends Response {
    * What kind of event is this?
    */
   public EventKind getKind() {
-    JsonElement value = json.get("kind");
+    final JsonElement value = json.get("kind");
     try {
       return value == null ? EventKind.Unknown : EventKind.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {

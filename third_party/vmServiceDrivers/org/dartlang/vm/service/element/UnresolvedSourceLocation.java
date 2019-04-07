@@ -22,7 +22,7 @@ import com.google.gson.JsonObject;
  * location. As such, it is meant to approximate the final location of the breakpoint but it is not
  * exact.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class UnresolvedSourceLocation extends Response {
 
   public UnresolvedSourceLocation(JsonObject json) {

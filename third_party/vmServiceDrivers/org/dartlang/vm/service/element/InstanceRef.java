@@ -21,7 +21,7 @@ import com.google.gson.JsonObject;
 /**
  * {@link InstanceRef} is a reference to an {@link Instance}.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class InstanceRef extends ObjRef {
 
   public InstanceRef(JsonObject json) {
@@ -39,7 +39,7 @@ public class InstanceRef extends ObjRef {
    * What kind of instance is this?
    */
   public InstanceKind getKind() {
-    JsonElement value = json.get("kind");
+    final JsonElement value = json.get("kind");
     try {
       return value == null ? InstanceKind.Unknown : InstanceKind.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {
@@ -155,7 +155,7 @@ public class InstanceRef extends ObjRef {
    * Can return <code>null</code>.
    */
   public boolean getValueAsStringIsTruncated() {
-    JsonElement elem = json.get("valueAsStringIsTruncated");
+    final JsonElement elem = json.get("valueAsStringIsTruncated");
     return elem != null ? elem.getAsBoolean() : false;
   }
 }

@@ -20,7 +20,7 @@ import com.google.gson.JsonObject;
 /**
  * {@link NullRef} is a reference to an a {@link Null}.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class NullRef extends InstanceRef {
 
   public NullRef(JsonObject json) {
