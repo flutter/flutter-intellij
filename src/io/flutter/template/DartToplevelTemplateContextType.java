@@ -19,7 +19,6 @@ public class DartToplevelTemplateContextType extends DartTemplateContextType {
 
   @Override
   protected boolean isInContext(@NotNull PsiElement element) {
-    //noinspection unchecked
     return PsiTreeUtil.getNonStrictParentOfType(element, DartClassDefinition.class, PsiComment.class) == null;
   }
 }

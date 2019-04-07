@@ -7,6 +7,7 @@ package io.flutter.sdk;
 
 import com.intellij.openapi.roots.libraries.LibraryProperties;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterPluginLibraryProperties extends LibraryProperties<FlutterPluginLibraryProperties> {
@@ -30,7 +31,7 @@ public class FlutterPluginLibraryProperties extends LibraryProperties<FlutterPlu
   }
 
   @Override
-  public void loadState(FlutterPluginLibraryProperties properties) {
+  public void loadState(@NotNull FlutterPluginLibraryProperties properties) {
     XmlSerializerUtil.copyBean(properties, this);
   }
 }

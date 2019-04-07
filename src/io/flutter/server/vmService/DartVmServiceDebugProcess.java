@@ -30,7 +30,6 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import com.jetbrains.lang.dart.ide.runner.DartConsoleFilter;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.ide.runner.actions.DartPopFrameAction;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
@@ -39,6 +38,7 @@ import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
@@ -66,7 +66,7 @@ import java.util.concurrent.CompletableFuture;
 public class DartVmServiceDebugProcess extends XDebugProcess {
   private static final Logger LOG = Logger.getInstance(DartVmServiceDebugProcess.class.getName());
 
-  @Nullable private final ExecutionResult myExecutionResult;
+  @NotNull private final ExecutionResult myExecutionResult;
   @NotNull private final DartUrlResolver myDartUrlResolver;
   @NotNull private final XBreakpointHandler[] myBreakpointHandlers;
   private final IsolatesInfo myIsolatesInfo;

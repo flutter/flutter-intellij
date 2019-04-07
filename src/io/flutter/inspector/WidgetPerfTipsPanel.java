@@ -146,6 +146,7 @@ public class WidgetPerfTipsPanel extends JPanel {
         }
       }
 
+      // TODO(devoncarew): We never query changedEditors.
       final ArrayList<TextEditor> changedEditors = new ArrayList<>();
       for (TextEditor editor : newTipsForFile.keySet()) {
         final List<PerfTip> entry = newTipsForFile.get(editor);

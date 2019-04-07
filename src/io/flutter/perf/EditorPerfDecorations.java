@@ -49,7 +49,7 @@ class EditorPerfDecorations implements EditorMouseListener, EditorPerfModel {
 
   /**
    * Experimental option to animate highlighted widget names.
-   *
+   * <p>
    * Disabled by default as animating contents of the TextEditor results in
    * higher than desired memory usage.
    */
@@ -342,7 +342,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
   public AnAction getClickAction() {
     return new AnAction() {
       @Override
-      public void actionPerformed(AnActionEvent e) {
+      public void actionPerformed(@NotNull AnActionEvent event) {
         if (isActive()) {
 
           final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(getApp().getProject());

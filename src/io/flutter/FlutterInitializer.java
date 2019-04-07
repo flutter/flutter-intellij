@@ -158,7 +158,7 @@ public class FlutterInitializer implements StartupActivity {
         });
       notification.addAction(new AnAction("Sounds good!") {
         @Override
-        public void actionPerformed(AnActionEvent event) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
           notification.expire();
           final Analytics analytics = getAnalytics();
           // We only track for flutter projects.
@@ -169,7 +169,7 @@ public class FlutterInitializer implements StartupActivity {
       });
       notification.addAction(new AnAction("No thanks") {
         @Override
-        public void actionPerformed(AnActionEvent event) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
           notification.expire();
           setCanReportAnalytics(false);
         }

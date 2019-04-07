@@ -123,6 +123,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
    * a suitable default.
    */
   private void updateFields(Scope next) {
+    // TODO(devoncarew): This if path is empty - due to a refactoring?
     if (next == Scope.TARGET_PATTERN && displayedScope != Scope.TARGET_PATTERN) {
     }
     else if (next != Scope.TARGET_PATTERN) {

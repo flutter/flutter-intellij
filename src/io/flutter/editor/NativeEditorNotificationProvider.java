@@ -56,7 +56,7 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     if (actionName == null) {
       return null;
     }
-    NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, actionName);
+    final NativeEditorActionsPanel panel = new NativeEditorActionsPanel(file, root, actionName);
     return panel.isValidForFile() ? panel : null;
   }
 
@@ -65,7 +65,6 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
       return null;
     }
 
-    //noinspection IfCanBeSwitch
     if (root.getName().equals("android")) {
       return "flutter.androidstudio.open";
     }

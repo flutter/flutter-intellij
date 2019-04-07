@@ -40,7 +40,6 @@ import java.util.Map;
  * The fields in a Bazel test run configuration.
  */
 public class BazelTestFields {
-
   @Nullable private final String testName;
   @Nullable private final String entryFile;
   @Nullable private final String bazelTarget;

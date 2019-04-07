@@ -45,26 +45,26 @@ public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
       //          new FlutterStudioProfilersView(fsp);
       //        add(view.getComponent(), BorderLayout.CENTER);
 
-      Class flutterStudioProfilers_class = Class.forName(CLASS_FlutterStudioProfilers);
+      final Class flutterStudioProfilers_class = Class.forName(CLASS_FlutterStudioProfilers);
 
-      Constructor flutterStudioProfilers_constructor =
+      @SuppressWarnings("unchecked") final Constructor flutterStudioProfilers_constructor =
         flutterStudioProfilers_class.getConstructor(Disposable.class, FlutterApp.class);
-      Object flutterStudioProfilers_instance =
+      final Object flutterStudioProfilers_instance =
         flutterStudioProfilers_constructor.newInstance(parentDisposable, app);
 
-      Class flutterStudioProfilersView_class =
+      final Class flutterStudioProfilersView_class =
         Class.forName(CLASS_FlutterStudioProfilersView);
 
-      Constructor flutterStudioProfilersView_constructor =
+      @SuppressWarnings("unchecked") final Constructor flutterStudioProfilersView_constructor =
         flutterStudioProfilersView_class.getConstructor(flutterStudioProfilers_class);
-      Object flutterStudioProfilersView_instance =
+      final Object flutterStudioProfilersView_instance =
         flutterStudioProfilersView_constructor.newInstance(flutterStudioProfilers_instance);
 
-      Class noArguments[] = new Class[]{};
-      Method getComponentMethod =
+      final Class[] noArguments = new Class[]{ };
+      @SuppressWarnings("unchecked") final Method getComponentMethod =
         flutterStudioProfilersView_class.getMethod("getComponent", noArguments);
       // call getComponent()
-      Component component =
+      @SuppressWarnings("JavaReflectionInvocation") final Component component =
         (Component)getComponentMethod.invoke(flutterStudioProfilersView_instance, (Object[])noArguments);
 
       final JPanel labels = new JPanel(new BorderLayout(6, 0));

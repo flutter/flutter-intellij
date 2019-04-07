@@ -57,7 +57,7 @@ public class BazelFields {
    * </ul>
    *
    * <p>
-   * If the user overrides --define flutter_build_mode in {@link bazelArgs}, then this field will be ignored.
+   * If the user overrides --define flutter_build_mode in {@link #bazelArgs}, then this field will be ignored.
    */
   private final boolean enableReleaseMode;
 

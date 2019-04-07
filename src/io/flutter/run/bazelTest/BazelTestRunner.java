@@ -30,10 +30,10 @@ import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
+import io.flutter.ObservatoryConnector;
 import io.flutter.run.PositionMapper;
 import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.run.test.FlutterTestRunner;
@@ -49,7 +49,6 @@ import java.util.Collection;
  * The Bazel version of the {@link FlutterTestRunner}. Runs a Bazel Flutter test configuration in the debugger.
  */
 public class BazelTestRunner extends GenericProgramRunner {
-
   private static final Logger LOG = Logger.getInstance(BazelTestRunner.class);
 
   @NotNull

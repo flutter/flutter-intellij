@@ -9,9 +9,9 @@ import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.DumbAwareAction;
 import com.intellij.openapi.util.Computable;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
+import io.flutter.ObservatoryConnector;
 import org.jetbrains.annotations.NotNull;
 
 public class OpenTimelineViewAction extends DumbAwareAction {

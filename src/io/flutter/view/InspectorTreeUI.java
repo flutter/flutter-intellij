@@ -23,7 +23,6 @@ package io.flutter.view;
 import com.intellij.openapi.util.Condition;
 import com.intellij.openapi.util.Conditions;
 import com.intellij.openapi.util.registry.Registry;
-import com.intellij.ui.Gray;
 import com.intellij.ui.JBColor;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.MouseEventAdapter;
@@ -31,7 +30,6 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
-import io.flutter.inspector.InspectorTree;
 import org.jetbrains.annotations.NonNls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -173,15 +171,15 @@ public class InspectorTreeUI extends BasicTreeUI {
         public void actionPerformed(ActionEvent e) {
           final Object source = e.getSource();
           if (source instanceof JTree) {
-            JTree tree = (JTree)source;
-            int selectionRow = tree.getLeadSelectionRow();
+            final JTree tree = (JTree)source;
+            final int selectionRow = tree.getLeadSelectionRow();
             if (selectionRow != -1) {
-              TreePath selectionPath = tree.getPathForRow(selectionRow);
+              final TreePath selectionPath = tree.getPathForRow(selectionRow);
               if (selectionPath != null) {
-                boolean leaf = tree.getModel().isLeaf(selectionPath.getLastPathComponent());
+                final boolean leaf = tree.getModel().isLeaf(selectionPath.getLastPathComponent());
                 int toSelect = -1;
                 int toScroll = -1;
-                if ((!leaf && tree.isExpanded(selectionRow)) || leaf) {
+                if (leaf || tree.isExpanded(selectionRow)) {
                   if (selectionRow + 1 < tree.getRowCount()) {
                     toSelect = selectionRow + 1;
                     toScroll = toSelect;
