@@ -6,6 +6,7 @@
 package io.flutter.run.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
@@ -33,6 +34,11 @@ public abstract class CommonTestConfigUtils {
   public static final Pattern WIDGET_TEST_REGEX = Pattern.compile("test([A-Z][A-Za-z0-9_$]*)?Widgets");
 
   public abstract TestType asTestCall(@NotNull PsiElement element);
+
+  public static String convertHttpServiceProtocolToWs(String url) {
+    return StringUtil.trimTrailing(
+      url.replaceFirst("http:", "ws:"), '/') + "/ws";
+  }
 
   @VisibleForTesting
   public boolean isMainFunctionDeclarationWithTests(@NotNull PsiElement element) {

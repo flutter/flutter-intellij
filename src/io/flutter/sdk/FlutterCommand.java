@@ -48,13 +48,28 @@ public class FlutterCommand {
   @NotNull
   private final List<String> args;
 
+  // TODO(https://github.com/flutter/flutter-intellij/issues/3348) This is a temporary "<pub-cache>/bin/webdev" that can be provided to test
+  //  some webdev directly.
+  @Nullable
+  private final String localWebDevExe = "webdev";
+
+  private final boolean isFlutterWeb;
+
   /**
    * @see FlutterSdk for methods to create specific commands.
    */
   FlutterCommand(@NotNull FlutterSdk sdk, @Nullable VirtualFile workDir, @NotNull Type type, String... args) {
+    this(sdk, workDir, type, false, args);
+  }
+
+  /**
+   * @see FlutterSdk for methods to create specific commands.
+   */
+  FlutterCommand(@NotNull FlutterSdk sdk, @Nullable VirtualFile workDir, @NotNull Type type, boolean isFlutterWeb, String... args) {
     this.sdk = sdk;
     this.workDir = workDir;
     this.type = type;
+    this.isFlutterWeb = isFlutterWeb;
     this.args = ImmutableList.copyOf(args);
   }
 
@@ -245,23 +260,54 @@ public class FlutterCommand {
   public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
     final GeneralCommandLine line = new GeneralCommandLine();
     line.setCharset(CharsetToolkit.UTF8_CHARSET);
-
-    line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-
-    final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
-    if (androidHome != null) {
-      line.withEnvironment("ANDROID_HOME", androidHome);
+    if (isFlutterWeb) {
+      if (workDir != null) {
+        line.setWorkDirectory(workDir.getPath());
+      }
+      if (localWebDevExe != null || !localWebDevExe.isEmpty()) {
+        line.setExePath(localWebDevExe);
+        line.addParameters("daemon");
+        if (args.contains("--debug")) {
+          line.addParameters("--debug");
+        }
+        if (args.contains("--hot-reload")) {
+          line.addParameters("--hot-reload");
+        }
+      }
+      else {
+        line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
+        line.addParameters(args);
+      }
     }
+    else {
+      line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+      final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
+      if (androidHome != null) {
+        line.withEnvironment("ANDROID_HOME", androidHome);
+      }
+      line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
+      if (workDir != null) {
+        line.setWorkDirectory(workDir.getPath());
+      }
+      if (!isDoctorCommand()) {
+        line.addParameter("--no-color");
+      }
+      line.addParameters(type.subCommand);
+      line.addParameters(args);
+    }
+    return line;
+  }
 
-    line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
+  @NotNull
+  public GeneralCommandLine createFlutterWebCommandLine(@Nullable Project project) {
+    final GeneralCommandLine line = new GeneralCommandLine();
+    line.setCharset(CharsetToolkit.UTF8_CHARSET);
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
-    if (!isDoctorCommand()) {
-      line.addParameter("--no-color");
-    }
     line.addParameters(type.subCommand);
     line.addParameters(args);
+
     return line;
   }
 

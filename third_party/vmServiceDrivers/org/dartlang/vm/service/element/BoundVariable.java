@@ -22,7 +22,7 @@ import com.google.gson.JsonObject;
  * Frame}.
  */
 @SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
-public class BoundVariable extends Element {
+public class BoundVariable extends Response {
 
   public BoundVariable(JsonObject json) {
     super(json);

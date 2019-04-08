@@ -132,7 +132,7 @@ public class DartSyntax {
    */
   public static boolean isCallToFunctionMatching(@NotNull DartCallExpression element, @NotNull Pattern functionRegex) {
     final String name = getCalledFunctionName(element);
-    return functionRegex.matcher(name).matches();
+    return name != null && functionRegex.matcher(name).matches();
   }
 
   /**

@@ -98,18 +98,6 @@ public class Instance extends Obj {
   }
 
   /**
-   * The context associated with a Closure instance.
-   *
-   * Provided for instance kinds:
-   *  - Closure
-   *
-   * Can return <code>null</code>.
-   */
-  public ContextRef getClosureContext() {
-    return json.get("closureContext") == null ? null : new ContextRef((JsonObject) json.get("closureContext"));
-  }
-
-  /**
    * The function associated with a Closure instance.
    *
    * Provided for instance kinds:
@@ -253,7 +241,12 @@ public class Instance extends Obj {
   }
 
   /**
-   * The referent of a MirrorReference instance.
+   * TODO(devoncarew): this can return an InstanceRef
+   *
+   * The context associated with a Closure instance.
+   *
+   * Provided for instance kinds:
+   *  - Closure@Context closureContext [optional]; The referent of a MirrorReference instance.
    *
    * Provided for instance kinds:
    *  - MirrorReference
