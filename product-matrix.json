@@ -11,17 +11,7 @@
       "untilBuild": "182.*"
     },
     {
-      "comments": "IntelliJ 2018.3",
-      "name": "IntelliJ 2018.3",
-      "version": "2018.3",
-      "ideaProduct": "android-studio",
-      "ideaVersion": "183.5290690",
-      "dartPluginVersion": "183.5901",
-      "sinceBuild": "183.5153",
-      "untilBuild": "183.*"
-    },
-    {
-      "comments": "AS 3.4 beta",
+      "comments": "IntelliJ 2018.3, AS 3.4 beta",
       "name": "Android Studio 3.4",
       "version": "3.4",
       "ideaProduct": "android-studio",
@@ -36,9 +26,9 @@
       "version": "3.5",
       "isTestTarget": "true",
       "ideaProduct": "android-studio",
-      "ideaVersion": "191.5375575",
+      "ideaVersion": "191.6183.62",
       "dartPluginVersion": "191.6183.87",
-      "sinceBuild": "191.0",
+      "sinceBuild": "191.5416148",
       "untilBuild": "191.*"
     },
     {
