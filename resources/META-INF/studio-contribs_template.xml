@@ -48,6 +48,11 @@
             icon="AllIcons.Debugger.AttachToProcess">
     </action>
 
+    <action id="ShowProjectStructureSettings"
+            class="io.flutter.actions.FlutterShowStructureSettingsAction"
+            project-type="io.flutter"
+            icon="AllIcons.General.ProjectStructure"/>
+
   </actions>
 
 </idea-plugin>
