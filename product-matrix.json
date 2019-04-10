@@ -26,7 +26,6 @@
       "name": "Android Studio 3.5",
       "version": "3.5",
       "ijVersion": "2019.1",
-      "isTestTarget": "true",
       "ideaProduct": "android-studio",
       "ideaVersion": "191.5416148",
       "dartPluginVersion": "191.6183.87",
@@ -37,10 +36,11 @@
       "comments": "IntelliJ 2019.2 EAP",
       "name": "IntelliJ 2019.2 EAP",
       "version": "2019.2",
+      "isTestTarget": "true",
       "ideaProduct": "ideaIU",
       "ideaVersion": "2019.1",
       "dartPluginVersion": "191.4899",
-      "sinceBuild": "192.0",
+      "sinceBuild": "191.0",
       "untilBuild": "192.SNAPSHOT"
     }
   ]
