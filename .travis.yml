@@ -29,6 +29,5 @@ env:
   - DART_BOT=true
   - CHECK_BOT=true
   - IDEA_VERSION=3.3.2
-  - IDEA_VERSION=2018.3
   - IDEA_VERSION=3.4
   - IDEA_VERSION=3.5

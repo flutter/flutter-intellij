@@ -13,6 +13,8 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectType;
+import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.openapi.startup.StartupActivity;
 import com.intellij.openapi.ui.Messages;
 import icons.FlutterIcons;
@@ -28,6 +30,7 @@ import org.jetbrains.annotations.NotNull;
  * @see FlutterInitializer for actions that run later.
  */
 public class ProjectOpenActivity implements StartupActivity, DumbAware {
+  public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
   @Override
@@ -46,6 +49,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       if (!pubRoot.hasUpToDatePackages()) {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
       }
+    }
+    if (!FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
+      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
     }
   }
 
