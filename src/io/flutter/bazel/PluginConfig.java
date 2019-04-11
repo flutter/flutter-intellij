@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.PatternSyntaxException;
 
 /**
@@ -74,7 +75,7 @@ public class PluginConfig {
       try (
         // Create the input stream in a try-with-resources statement. This will automatically close the stream
         // in an implicit finally section; this addresses a file handle leak issue we had on MacOS.
-        final InputStreamReader input = new InputStreamReader(file.getInputStream(), "UTF-8")
+        final InputStreamReader input = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)
       ) {
         final Fields fields = GSON.fromJson(input, Fields.class);
         return new PluginConfig(fields);

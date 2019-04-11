@@ -20,7 +20,7 @@ import com.google.gson.JsonObject;
 /**
  * An {@link Obj} is a persistent object that is owned by some isolate.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Obj extends Response {
 
   public Obj(JsonObject json) {

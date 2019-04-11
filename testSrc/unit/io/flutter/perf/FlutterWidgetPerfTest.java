@@ -402,7 +402,7 @@ public class FlutterWidgetPerfTest {
     assert clockModel != null;
     assert mainModel != null;
 
-    FilePerfInfo mainStats = null;
+    FilePerfInfo mainStats;
     stats = clockModel.getStatsFuture().get();
     mainStats = mainModel.getStatsFuture().get();
 

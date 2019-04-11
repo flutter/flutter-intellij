@@ -21,7 +21,7 @@ import com.google.gson.JsonObject;
 /**
  * An {@link ErrorObj} represents a Dart language level error. This is distinct from an rpc error.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ErrorObj extends Obj {
 
   public ErrorObj(JsonObject json) {
@@ -41,7 +41,7 @@ public class ErrorObj extends Obj {
    * What kind of error is this?
    */
   public ErrorKind getKind() {
-    JsonElement value = json.get("kind");
+    final JsonElement value = json.get("kind");
     try {
       return value == null ? ErrorKind.Unknown : ErrorKind.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {

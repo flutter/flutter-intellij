@@ -70,7 +70,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
 
       addAction(new AnAction("Run 'flutter packages get'") {
         @Override
-        public void actionPerformed(AnActionEvent event) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
           expire();
 
           final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);

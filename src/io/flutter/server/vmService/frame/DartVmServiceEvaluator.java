@@ -2,7 +2,10 @@ package io.flutter.server.vmService.frame;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
-import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.FileEditorLocation;
+import com.intellij.openapi.fileEditor.FileEditorManager;
+import com.intellij.openapi.fileEditor.TextEditor;
+import com.intellij.openapi.fileEditor.TextEditorLocation;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.util.text.StringUtil;
@@ -16,10 +19,10 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.evaluation.ExpressionInfo;
 import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XValue;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import gnu.trove.THashSet;
+import io.flutter.server.vmService.DartVmServiceDebugProcess;
 import io.flutter.server.vmService.VmServiceWrapper;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
@@ -53,7 +56,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
     final List<VirtualFile> libraryFiles = new ArrayList<>();
     // Turn off pausing on exceptions as it is confusing to mouse over an expression
     // and to have that trigger pausing at an exception.
-    if (myDebugProcess == null || myDebugProcess.getVmServiceWrapper() == null) {
+    if (myDebugProcess.getVmServiceWrapper() == null) {
       callback.errorOccurred("Device disconnected");
       return;
     }
@@ -94,7 +97,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
         if (virtualFile != null) {
           psiFile = PsiManager.getInstance(project).findFile(virtualFile);
           if (psiFile != null && fileEditorLocation instanceof TextEditorLocation) {
-            TextEditorLocation textEditorLocation = (TextEditorLocation)fileEditorLocation;
+            final TextEditorLocation textEditorLocation = (TextEditorLocation)fileEditorLocation;
             element = psiFile.findElementAt(textEditor.getEditor().logicalPositionToOffset(textEditorLocation.getPosition()));
           }
         }
@@ -121,7 +124,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
         wrappedCallback.errorOccurred("No running isolate.");
         return;
       }
-      LibraryRef libraryRef = findMatchingLibrary(isolate, libraryFiles);
+      final LibraryRef libraryRef = findMatchingLibrary(isolate, libraryFiles);
       if (dartClassName != null) {
         vmService.getObject(isolateId, libraryRef.getId(), new GetObjectConsumer() {
 
@@ -132,7 +135,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
 
           @Override
           public void received(Obj response) {
-            Library library = (Library)response;
+            final Library library = (Library)response;
             for (ClassRef classRef : library.getClasses()) {
               if (classRef.getName().equals(dartClassName)) {
                 vmService.evaluateInTargetContext(isolateId, classRef.getId(), expression, wrappedCallback);
@@ -158,7 +161,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
 
   private LibraryRef findMatchingLibrary(Isolate isolate, List<VirtualFile> libraryFiles) {
     if (libraryFiles != null && !libraryFiles.isEmpty()) {
-      Set<String> uris = new THashSet<>();
+      final Set<String> uris = new THashSet<>();
 
       for (VirtualFile libraryFile : libraryFiles) {
         uris.addAll(myDebugProcess.getUrisForFile(libraryFile));
@@ -248,14 +251,14 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
     if (reference != null) {
       TextRange textRange = reference.getTextRange();
       // note<CURSOR>s.text - the whole reference expression is notes.txt, but we must return only notes
-      int endOffset = contextElement.getTextRange().getEndOffset();
+      final int endOffset = contextElement.getTextRange().getEndOffset();
       if (textRange.getEndOffset() != endOffset) {
         textRange = new TextRange(textRange.getStartOffset(), endOffset);
       }
       return new ExpressionInfo(textRange);
     }
 
-    PsiElement parent = contextElement.getParent();
+    final PsiElement parent = contextElement.getParent();
     return parent instanceof DartId ? new ExpressionInfo(parent.getTextRange()) : null;
   }
 }

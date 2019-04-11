@@ -16,6 +16,7 @@ import com.intellij.util.ui.JBUI;
 import com.intellij.xdebugger.impl.ui.DebuggerUIUtil;
 import com.intellij.xdebugger.impl.ui.tree.nodes.XValueNodeImpl;
 import io.flutter.view.InspectorTreeUI;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.plaf.TreeUI;
@@ -118,7 +119,7 @@ public class InspectorTree extends Tree implements DataProvider, Disposable {
 
   @Nullable
   @Override
-  public Object getData(String dataId) {
+  public Object getData(@NotNull String dataId) {
     if (InspectorTree.INSPECTOR_KEY.is(dataId)) {
       return this;
     }

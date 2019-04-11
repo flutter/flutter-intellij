@@ -43,12 +43,14 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @SuppressWarnings({"unused", "WeakerAccess"})
 abstract class VmServiceBase implements VmServiceConst {
+
   /**
    * Connect to the VM observatory service via the specified URI
    *
    * @return an API object for interacting with the VM service (not {@code null}).
    */
   public static VmService connect(final String url) throws IOException {
+
     // Validate URL
     URI uri;
     try {
@@ -84,8 +86,7 @@ abstract class VmServiceBase implements VmServiceConst {
         Logging.getLogger().logInformation("VM message: " + message.getText());
         try {
           vmService.processMessage(message.getText());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           Logging.getLogger().logError(e.getMessage(), e);
         }
       }
@@ -168,10 +169,7 @@ abstract class VmServiceBase implements VmServiceConst {
    * Connect to the VM observatory service on the given local port.
    *
    * @return an API object for interacting with the VM service (not {@code null}).
-   *
-   * @deprecated prefer the Url based constructor {@link VmServiceBase#connect}
    */
-  @Deprecated
   public static VmService localConnect(int port) throws IOException {
     return connect("ws://localhost:" + port + "/ws");
   }
@@ -300,7 +298,7 @@ abstract class VmServiceBase implements VmServiceConst {
 
   /**
    * Invoke a specific service protocol extension method.
-   *
+   * <p>
    * See https://api.dartlang.org/stable/dart-developer/dart-developer-library.html.
    */
   public void callServiceExtension(String isolateId, String method, ServiceExtensionConsumer consumer) {
@@ -311,7 +309,7 @@ abstract class VmServiceBase implements VmServiceConst {
 
   /**
    * Invoke a specific service protocol extension method.
-   *
+   * <p>
    * See https://api.dartlang.org/stable/dart-developer/dart-developer-library.html.
    */
   public void callServiceExtension(String isolateId, String method, JsonObject params, ServiceExtensionConsumer consumer) {
@@ -343,7 +341,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   public void connectionOpened() {
-    for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
+    for (VmServiceListener listener : vmListeners) {
       try {
         listener.connectionOpened();
       } catch (Exception e) {
@@ -353,7 +351,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   private void forwardEvent(String streamId, Event event) {
-    for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
+    for (VmServiceListener listener : vmListeners) {
       try {
         listener.received(streamId, event);
       } catch (Exception e) {
@@ -363,7 +361,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   public void connectionClosed() {
-    for (VmServiceListener listener : new ArrayList<>(vmListeners)) {
+    for (VmServiceListener listener : vmListeners) {
       try {
         listener.connectionClosed();
       } catch (Exception e) {
@@ -424,7 +422,7 @@ abstract class VmServiceBase implements VmServiceConst {
     } else if (json.has("result") || json.has("error")) {
       processResponse(json);
     } else {
-        Logging.getLogger().logError("Malformed message");
+      Logging.getLogger().logError("Malformed message");
     }
   }
 
@@ -491,21 +489,21 @@ abstract class VmServiceBase implements VmServiceConst {
     final RemoteServiceRunner runner = remoteServiceRunners.get(method);
     try {
       runner.run(params, new RemoteServiceCompleter() {
-          public void result(JsonObject result) {
-            response.add(RESULT, result);
-            requestSink.add(response);
-          }
+        public void result(JsonObject result) {
+          response.add(RESULT, result);
+          requestSink.add(response);
+        }
 
-          public void error(int code, String message, JsonObject data) {
-            final JsonObject error = new JsonObject();
-            error.addProperty(CODE, code);
-            error.addProperty(MESSAGE, message);
-            if (data != null) {
-              error.add(DATA, data);
-            }
-            response.add(ERROR, error);
-            requestSink.add(response);
+        public void error(int code, String message, JsonObject data) {
+          final JsonObject error = new JsonObject();
+          error.addProperty(CODE, code);
+          error.addProperty(MESSAGE, message);
+          if (data != null) {
+            error.add(DATA, data);
           }
+          response.add(ERROR, error);
+          requestSink.add(response);
+        }
       });
     } catch (Exception e) {
       final String message = "Internal Server Error";
@@ -519,7 +517,7 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   private static final RemoteServiceCompleter ignoreCallback =
-    new RemoteServiceCompleter() {
+      new RemoteServiceCompleter() {
         public void result(JsonObject result) {
           // ignore
         }
@@ -527,7 +525,7 @@ abstract class VmServiceBase implements VmServiceConst {
         public void error(int code, String message, JsonObject data) {
           // ignore
         }
-    };
+      };
 
   void processNotification(JsonObject json) {
     String method;

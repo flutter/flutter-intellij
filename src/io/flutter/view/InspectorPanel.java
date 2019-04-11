@@ -1050,7 +1050,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   }
 
   private void selectionChanged(TreeSelectionEvent event) {
-    if (visibleToUser == false) {
+    if (!visibleToUser) {
       return;
     }
 
@@ -1070,7 +1070,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
       final boolean maybeReroot = isSummaryTree && subtreePanel != null && selectedDiagnostic != null &&
                                   !subtreePanel.hasDiagnosticsValue(selectedDiagnostic.getValueRef());
       syncSelectionHelper(maybeReroot, null);
-      if (maybeReroot == false) {
+      if (!maybeReroot) {
         if (isSummaryTree && subtreePanel != null) {
           subtreePanel.selectAndShowNode(selectedDiagnostic);
         }

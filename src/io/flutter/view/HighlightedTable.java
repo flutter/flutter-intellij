@@ -27,7 +27,8 @@ public class HighlightedTable extends JBTable {
 
   public HighlightedTable(TableModel model) {
     super(model);
-    RollOverListener listener = new RollOverListener();
+
+    final RollOverListener listener = new RollOverListener();
     addMouseMotionListener(listener);
     addMouseListener(listener);
   }
@@ -69,7 +70,7 @@ public class HighlightedTable extends JBTable {
     @Override
     public void mouseMoved(MouseEvent e) {
       int row = rowAtPoint(e.getPoint());
-      if( row != rollOverRowIndex ) {
+      if (row != rollOverRowIndex) {
         rollOverRowIndex = row;
         repaint();
       }

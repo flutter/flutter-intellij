@@ -339,6 +339,7 @@ public class FlutterPerfView implements Disposable {
     @Nullable Content content;
     @Nullable Disposable disposable;
     JBRunnerTabs tabs;
+    // TODO(devoncarew): We never query flutterViewActions.
     ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
   }
 }

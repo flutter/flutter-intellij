@@ -77,7 +77,7 @@ abstract class FlutterViewToggleableAction extends FlutterViewAction implements 
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void actionPerformed(@NotNull AnActionEvent event) {
     this.setSelected(event, !isSelected());
     super.actionPerformed(event);
   }

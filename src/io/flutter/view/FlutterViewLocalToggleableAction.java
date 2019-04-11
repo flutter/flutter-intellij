@@ -71,7 +71,7 @@ abstract class FlutterViewLocalToggleableAction extends FlutterViewAction implem
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void actionPerformed(@NotNull AnActionEvent event) {
     this.setSelected(event, !isSelected());
     final Presentation presentation = event.getPresentation();
     presentation.putClientProperty("selected", isSelected());

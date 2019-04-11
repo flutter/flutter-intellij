@@ -687,7 +687,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
           fontType = fontType | textStyle;
         }
 
-        @SuppressWarnings("MagicConstant") final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
+        final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
           attributes.getBackgroundColor(),
           attributes.getForegroundColor(),
           effectColor,

@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner;
+package io.flutter;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
