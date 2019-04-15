@@ -15,6 +15,11 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterPerfViewFactory implements ToolWindowFactory, DumbAware {
+  @Override
+  public void init(ToolWindow window) {
+    window.setAvailable(false, null);
+  }
+
   public static void init(@NotNull Project project) {
     project.getMessageBus().connect().subscribe(
       FlutterViewMessages.FLUTTER_DEBUG_TOPIC, (event) -> initPerfView(project, event)

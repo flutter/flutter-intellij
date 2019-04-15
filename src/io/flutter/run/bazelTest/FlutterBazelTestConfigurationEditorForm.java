@@ -43,16 +43,17 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
   private JLabel myTestNameLabel;
   private JLabel myTestNameHintLabel;
 
+  private JTextField myAdditionalArgs;
+  private JLabel myAdditionalArgsLabel;
+  private JLabel myAdditionalArgsLabelHint;
+
   private Scope displayedScope;
 
   public FlutterBazelTestConfigurationEditorForm(final Project project) {
-    FlutterSettings.getInstance().addListener(new FlutterSettings.Listener() {
-      @Override
-      public void settingsChanged() {
-        final Scope next = getScope();
-        updateFields(next);
-        render(getScope());
-      }
+    FlutterSettings.getInstance().addListener(() -> {
+      final Scope next = getScope();
+      updateFields(next);
+      render(getScope());
     });
     scope.setModel(new DefaultComboBoxModel<>(new Scope[]{TARGET_PATTERN, FILE, NAME}));
     scope.addActionListener((ActionEvent e) -> {
@@ -85,6 +86,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     myTestName.setText(fields.getTestName());
     myEntryFile.setText(FileUtil.toSystemDependentName(StringUtil.notNullize(fields.getEntryFile())));
     myBuildTarget.setText(StringUtil.notNullize(fields.getBazelTarget()));
+    myAdditionalArgs.setText(StringUtil.notNullize(fields.getAdditionalArgs()));
     final Scope next = fields.getScope(configuration.getProject());
     scope.setSelectedItem(next);
     render(next);
@@ -95,10 +97,12 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     final String testName = getTextValue(myTestName);
     final String entryFile = getFilePathFromTextValue(myEntryFile);
     final String bazelTarget = getTextValue(myBuildTarget);
+    final String additionalArgs = getTextValue(myAdditionalArgs);
     final BazelTestFields fields = new BazelTestFields(
       testName,
       entryFile,
-      bazelTarget
+      bazelTarget,
+      additionalArgs
     );
     configuration.setFields(fields);
   }
@@ -115,6 +119,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
    * a suitable default.
    */
   private void updateFields(Scope next) {
+    // TODO(devoncarew): This if path is empty - due to a refactoring?
     if (next == Scope.TARGET_PATTERN && displayedScope != Scope.TARGET_PATTERN) {
     }
     else if (next != Scope.TARGET_PATTERN) {
@@ -141,6 +146,10 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
     scope.setVisible(true);
     scopeLabel.setVisible(true);
     scopeLabelHint.setVisible(true);
+
+    myAdditionalArgs.setVisible(true);
+    myAdditionalArgsLabel.setVisible(true);
+    myAdditionalArgsLabel.setVisible(true);
 
     myTestName.setVisible(next == Scope.NAME);
     myTestNameLabel.setVisible(next == Scope.NAME);

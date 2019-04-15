@@ -22,7 +22,7 @@ import com.google.gson.JsonObject;
 /**
  * An {@link Instance} represents an instance of the Dart language class {@link Obj}.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Instance extends Obj {
 
   public Instance(JsonObject json) {
@@ -95,18 +95,6 @@ public class Instance extends Obj {
    */
   public ClassRef getClassRef() {
     return new ClassRef((JsonObject) json.get("class"));
-  }
-
-  /**
-   * The context associated with a Closure instance.
-   *
-   * Provided for instance kinds:
-   *  - Closure
-   *
-   * Can return <code>null</code>.
-   */
-  public ContextRef getClosureContext() {
-    return json.get("closureContext") == null ? null : new ContextRef((JsonObject) json.get("closureContext"));
   }
 
   /**
@@ -215,7 +203,7 @@ public class Instance extends Obj {
    * What kind of instance is this?
    */
   public InstanceKind getKind() {
-    JsonElement value = json.get("kind");
+    final JsonElement value = json.get("kind");
     try {
       return value == null ? InstanceKind.Unknown : InstanceKind.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {
@@ -253,7 +241,12 @@ public class Instance extends Obj {
   }
 
   /**
-   * The referent of a MirrorReference instance.
+   * TODO(devoncarew): this can return an InstanceRef
+   *
+   * The context associated with a Closure instance.
+   *
+   * Provided for instance kinds:
+   *  - Closure@Context closureContext [optional]; The referent of a MirrorReference instance.
    *
    * Provided for instance kinds:
    *  - MirrorReference
@@ -428,7 +421,7 @@ public class Instance extends Obj {
    * Can return <code>null</code>.
    */
   public boolean getValueAsStringIsTruncated() {
-    JsonElement elem = json.get("valueAsStringIsTruncated");
+    final JsonElement elem = json.get("valueAsStringIsTruncated");
     return elem != null ? elem.getAsBoolean() : false;
   }
 }

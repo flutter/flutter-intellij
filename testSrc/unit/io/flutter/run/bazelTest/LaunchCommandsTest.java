@@ -24,8 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class LaunchCommandsTest {
   @Rule
@@ -192,12 +192,15 @@ public class LaunchCommandsTest {
   @Test
   public void runsInFileModeWhenBothFileAndBazelTargetAreProvided() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test")
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--arg1 --arg2 3")
     );
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/flutter-test.sh");
+    expectedCommandLine.add("--arg1");
+    expectedCommandLine.add("--arg2");
+    expectedCommandLine.add("3");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("foo/test/foo_test.dart");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
@@ -206,7 +209,7 @@ public class LaunchCommandsTest {
   @Test
   public void runsInBazelTargetModeWhenBothFileAndBazelTargetAreProvidedWithoutTestScript() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test"),
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",

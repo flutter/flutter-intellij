@@ -10,8 +10,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.execution.testframework.TestConsoleProperties;
-import com.jetbrains.lang.dart.ide.runner.test.DartTestEventsConverterZ;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
+import io.flutter.test.DartTestEventsConverterZ;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

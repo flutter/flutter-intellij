@@ -20,7 +20,7 @@ import com.google.gson.JsonObject;
 /**
  * A {@link Func} represents a Dart language function.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Func extends Obj {
 
   public Func(JsonObject json) {
@@ -58,7 +58,7 @@ public class Func extends Obj {
    * @return one of <code>LibraryRef</code>, <code>ClassRef</code> or <code>FuncRef</code>
    */
   public Object getOwner() {
-    JsonObject elem = (JsonObject)json.get("owner");
+    final JsonObject elem = (JsonObject)json.get("owner");
     if (elem == null) return null;
 
     if (elem.get("type").getAsString().equals("@Library")) return new LibraryRef(elem);

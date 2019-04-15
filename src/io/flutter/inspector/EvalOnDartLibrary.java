@@ -22,6 +22,7 @@ import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -32,7 +33,7 @@ public class EvalOnDartLibrary implements Disposable {
   private String isolateId;
   private final VmService vmService;
   @SuppressWarnings("FieldCanBeLocal") private final VMServiceManager vmServiceManager;
-  private final String libraryName;
+  private final Set<String> libraryNames;
   CompletableFuture<LibraryRef> libraryRef;
   private final Alarm myRequestsScheduler;
   private static final Logger LOG = Logger.getInstance(EvalOnDartLibrary.class);
@@ -94,16 +95,14 @@ public class EvalOnDartLibrary implements Disposable {
         final CompletableFuture<?> previousDone = allPendingRequestsDone;
         allPendingRequestsDone = response;
         // Actually schedule this request only after the previous request completes.
-        previousDone.whenCompleteAsync((v, error) -> {
-          myRequestsScheduler.addRequest(wrappedRequest, 0);
-        });
+        previousDone.whenCompleteAsync((v, error) -> myRequestsScheduler.addRequest(wrappedRequest, 0));
       }
     }
     return response;
   }
 
-  public EvalOnDartLibrary(String libraryName, VmService vmService, VMServiceManager vmServiceManager) {
-    this.libraryName = libraryName;
+  public EvalOnDartLibrary(Set<String> libraryNames, VmService vmService, VMServiceManager vmServiceManager) {
+    this.libraryNames = libraryNames;
     this.vmService = vmService;
     this.vmServiceManager = vmServiceManager;
     this.myRequestsScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
@@ -135,7 +134,8 @@ public class EvalOnDartLibrary implements Disposable {
       final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
       libraryRef.thenAcceptAsync((LibraryRef ref) -> {
         vmService.evaluate(
-          getIsolateId(), ref.getId(), expression, scope,
+          getIsolateId(), ref.getId(), expression,
+          scope, true,
           new EvaluateConsumer() {
             @Override
             public void onError(RPCError error) {
@@ -232,12 +232,13 @@ public class EvalOnDartLibrary implements Disposable {
       @Override
       public void received(Isolate response) {
         for (LibraryRef library : response.getLibraries()) {
-          if (library.getUri().equals(libraryName)) {
+
+          if (libraryNames.contains(library.getUri())) {
             libraryRef.complete(library);
             return;
           }
         }
-        libraryRef.completeExceptionally(new RuntimeException("Library " + libraryName + " not found."));
+        libraryRef.completeExceptionally(new RuntimeException("No library matching " + libraryNames + " found."));
       }
 
       @Override

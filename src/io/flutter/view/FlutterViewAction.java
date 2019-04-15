@@ -30,7 +30,7 @@ abstract class FlutterViewAction extends DumbAwareAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent e) {
+  public void actionPerformed(@NotNull AnActionEvent e) {
     FlutterInitializer.sendAnalyticsAction(this);
     perform(e);
   }

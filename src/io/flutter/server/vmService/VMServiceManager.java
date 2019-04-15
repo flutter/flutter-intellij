@@ -126,8 +126,12 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     // framework to determine if a frame has already been rendered.
     // This check would be safe to do outside of attach mode but is not needed.
     if (attach && isolate.getExtensionRPCs() != null && !firstFrameEventReceived) {
+      final Set<String> bindingLibraryNames = new HashSet<>();
+      bindingLibraryNames.add("package:flutter/src/widgets/binding.dart");
+      bindingLibraryNames.add("package:flutter_web/src/widgets/binding.dart");
+
       final EvalOnDartLibrary flutterLibrary = new EvalOnDartLibrary(
-        "package:flutter/src/widgets/binding.dart",
+        bindingLibraryNames,
         vmService,
         this
       );

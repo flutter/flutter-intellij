@@ -363,7 +363,7 @@ class TitleAction extends AnAction implements CustomComponentAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void actionPerformed(@NotNull AnActionEvent event) {
   }
 
   @Override

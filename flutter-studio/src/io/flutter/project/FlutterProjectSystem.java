@@ -65,7 +65,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
     return gradleProjectSystem.getModuleSystem(module);
   }
 
-  @Override
+  @SuppressWarnings("override")
   public boolean upgradeProjectToSupportInstantRun() {
     return false; // Already done.
   }

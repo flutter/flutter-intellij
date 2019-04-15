@@ -517,7 +517,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   private final Gson gsonHelper = new GsonBuilder().setPrettyPrinting().create();
   boolean isPinned;
-  // Auto-scroll defautls to on.
+  // Auto-scroll defaults to on.
   boolean prePinAutoScroll = true;
 
   public FlutterLogView(@NotNull FlutterApp app) {
@@ -687,7 +687,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
           fontType = fontType | textStyle;
         }
 
-        @SuppressWarnings("MagicConstant") final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
+        final SimpleTextAttributes textAttributes = new SimpleTextAttributes(
           attributes.getBackgroundColor(),
           attributes.getForegroundColor(),
           effectColor,
@@ -750,7 +750,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
     final boolean isError = entry.getKind() == FlutterLogEntry.Kind.FLUTTER_ERROR;
     logTree.append(entry, isError && !isPinned);
 
-    if (isError & !isPinned) {
+    if (isError && !isPinned) {
       prePinAutoScroll = logModel.autoScrollToEnd;
       scrollToEndAction.disableIfNeeded();
       isPinned = true;
@@ -759,6 +759,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
 
   @Override
   public void onEntryContentChange() {
+    // Called when truncated text values are returned.
     logModel.uiExec(logModel::update, 10);
   }
 

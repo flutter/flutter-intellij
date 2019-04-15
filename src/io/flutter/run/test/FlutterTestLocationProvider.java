@@ -9,16 +9,13 @@ package io.flutter.run.test;
 import com.intellij.execution.Location;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProviderZ;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
+import io.flutter.util.DartTestLocationProviderZ;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
-
 public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
   public static final FlutterTestLocationProvider INSTANCE = new FlutterTestLocationProvider();
-
 
   @Nullable
   @Override

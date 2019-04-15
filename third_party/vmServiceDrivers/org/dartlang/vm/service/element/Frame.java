@@ -19,7 +19,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Frame extends Response {
 
   public Frame(JsonObject json) {
@@ -50,7 +50,7 @@ public class Frame extends Response {
   public FrameKind getKind() {
     if (json.get("kind") == null) return null;
     
-    JsonElement value = json.get("kind");
+    final JsonElement value = json.get("kind");
     try {
       return value == null ? FrameKind.Unknown : FrameKind.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {

@@ -48,7 +48,7 @@ import org.dartlang.vm.service.element.*;
  * More specifically, you should not make any calls to {@link VmService}
  * from within any {@link Consumer} method.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class VmService extends VmServiceBase {
 
   public static final String DEBUG_STREAM_ID = "Debug";
@@ -77,13 +77,13 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 12;
+  public static final int versionMinor = 15;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
    */
   public void addBreakpoint(String isolateId, String scriptId, int line, BreakpointConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptId", scriptId);
     params.addProperty("line", line);
@@ -95,7 +95,7 @@ public class VmService extends VmServiceBase {
    * @param column This parameter is optional and may be null.
    */
   public void addBreakpoint(String isolateId, String scriptId, int line, Integer column, BreakpointConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptId", scriptId);
     params.addProperty("line", line);
@@ -107,7 +107,7 @@ public class VmService extends VmServiceBase {
    * The [addBreakpointAtEntry] RPC is used to add a breakpoint at the entrypoint of some function.
    */
   public void addBreakpointAtEntry(String isolateId, String functionId, BreakpointConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("functionId", functionId);
     request("addBreakpointAtEntry", params, consumer);
@@ -119,7 +119,7 @@ public class VmService extends VmServiceBase {
    * deferred library which has not yet been loaded.
    */
   public void addBreakpointWithScriptUri(String isolateId, String scriptUri, int line, BreakpointConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptUri", scriptUri);
     params.addProperty("line", line);
@@ -133,7 +133,7 @@ public class VmService extends VmServiceBase {
    * @param column This parameter is optional and may be null.
    */
   public void addBreakpointWithScriptUri(String isolateId, String scriptUri, int line, Integer column, BreakpointConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("scriptUri", scriptUri);
     params.addProperty("line", line);
@@ -145,7 +145,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void clearCpuProfile(String isolateId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("_clearCpuProfile", params, consumer);
   }
@@ -154,7 +154,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void clearVMTimeline(SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     request("_clearVMTimeline", params, consumer);
   }
 
@@ -164,7 +164,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void collectAllGarbage(String isolateId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("_collectAllGarbage", params, consumer);
   }
@@ -173,7 +173,7 @@ public class VmService extends VmServiceBase {
    * The [evaluate] RPC is used to evaluate an expression in the context of some target.
    */
   public void evaluate(String isolateId, String targetId, String expression, EvaluateConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
     params.addProperty("expression", expression);
@@ -183,13 +183,15 @@ public class VmService extends VmServiceBase {
   /**
    * The [evaluate] RPC is used to evaluate an expression in the context of some target.
    * @param scope This parameter is optional and may be null.
+   * @param disableBreakpoints This parameter is optional and may be null.
    */
-  public void evaluate(String isolateId, String targetId, String expression, Map<String, String> scope, EvaluateConsumer consumer) {
-    JsonObject params = new JsonObject();
+  public void evaluate(String isolateId, String targetId, String expression, Map<String, String> scope, Boolean disableBreakpoints, EvaluateConsumer consumer) {
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
     params.addProperty("expression", expression);
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
+    if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluate", params, consumer);
   }
 
@@ -199,7 +201,7 @@ public class VmService extends VmServiceBase {
    * the top (most recent) frame.
    */
   public void evaluateInFrame(String isolateId, int frameIndex, String expression, EvaluateInFrameConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
     params.addProperty("expression", expression);
@@ -211,13 +213,15 @@ public class VmService extends VmServiceBase {
    * stack frame. [frameIndex] is the index of the desired Frame, with an index of [0] indicating
    * the top (most recent) frame.
    * @param scope This parameter is optional and may be null.
+   * @param disableBreakpoints This parameter is optional and may be null.
    */
-  public void evaluateInFrame(String isolateId, int frameIndex, String expression, Map<String, String> scope, EvaluateInFrameConsumer consumer) {
-    JsonObject params = new JsonObject();
+  public void evaluateInFrame(String isolateId, int frameIndex, String expression, Map<String, String> scope, Boolean disableBreakpoints, EvaluateInFrameConsumer consumer) {
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("frameIndex", frameIndex);
     params.addProperty("expression", expression);
     if (scope != null) params.add("scope", convertMapToJsonObject(scope));
+    if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
     request("evaluateInFrame", params, consumer);
   }
 
@@ -227,7 +231,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void getAllocationProfile(String isolateId, AllocationProfileConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("_getAllocationProfile", params, consumer);
   }
@@ -241,7 +245,7 @@ public class VmService extends VmServiceBase {
    * @param reset This parameter is optional and may be null.
    */
   public void getAllocationProfile(String isolateId, String gc, Boolean reset, AllocationProfileConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     if (gc != null) params.addProperty("gc", gc);
     if (reset != null) params.addProperty("reset", reset);
@@ -254,7 +258,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void getCpuProfile(String isolateId, String tags, CpuProfileConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("tags", tags);
     request("_getCpuProfile", params, consumer);
@@ -265,7 +269,7 @@ public class VmService extends VmServiceBase {
    * current values.
    */
   public void getFlagList(FlagListConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     request("getFlagList", params, consumer);
   }
 
@@ -275,7 +279,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void getInstances(String isolateId, String classId, int limit, ObjRefConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("classId", classId);
     params.addProperty("limit", limit);
@@ -286,7 +290,7 @@ public class VmService extends VmServiceBase {
    * The [getIsolate] RPC is used to lookup an [Isolate] object by its [id].
    */
   public void getIsolate(String isolateId, GetIsolateConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getIsolate", params, consumer);
   }
@@ -295,7 +299,7 @@ public class VmService extends VmServiceBase {
    * The [getObject] RPC is used to lookup an [object] from some isolate by its [id].
    */
   public void getObject(String isolateId, String objectId, GetObjectConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("objectId", objectId);
     request("getObject", params, consumer);
@@ -307,7 +311,7 @@ public class VmService extends VmServiceBase {
    * @param count This parameter is optional and may be null.
    */
   public void getObject(String isolateId, String objectId, Integer offset, Integer count, GetObjectConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("objectId", objectId);
     if (offset != null) params.addProperty("offset", offset);
@@ -320,7 +324,7 @@ public class VmService extends VmServiceBase {
    * based on the isolate's [isolateId].
    */
   public void getScripts(String isolateId, ScriptListConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getScripts", params, consumer);
   }
@@ -330,7 +334,7 @@ public class VmService extends VmServiceBase {
    * isolate.
    */
   public void getSourceReport(String isolateId, List<SourceReportKind> reports, SourceReportConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.add("reports", convertIterableToJsonArray(reports));
     request("getSourceReport", params, consumer);
@@ -345,7 +349,7 @@ public class VmService extends VmServiceBase {
    * @param forceCompile This parameter is optional and may be null.
    */
   public void getSourceReport(String isolateId, List<SourceReportKind> reports, String scriptId, Integer tokenPos, Integer endTokenPos, Boolean forceCompile, SourceReportConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.add("reports", convertIterableToJsonArray(reports));
     if (scriptId != null) params.addProperty("scriptId", scriptId);
@@ -360,7 +364,7 @@ public class VmService extends VmServiceBase {
    * isolate. The isolate does not need to be paused.
    */
   public void getStack(String isolateId, StackConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getStack", params, consumer);
   }
@@ -369,7 +373,7 @@ public class VmService extends VmServiceBase {
    * The [getVM] RPC returns global information about a Dart virtual machine.
    */
   public void getVM(VMConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     request("getVM", params, consumer);
   }
 
@@ -377,7 +381,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void getVMTimeline(ResponseConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     request("_getVMTimeline", params, consumer);
   }
 
@@ -386,8 +390,24 @@ public class VmService extends VmServiceBase {
    * VM.
    */
   public void getVersion(VersionConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     request("getVersion", params, consumer);
+  }
+
+  /**
+   * The [invoke] RPC is used to perform regular method invocation on some receiver, as if by
+   * dart:mirror's ObjectMirror.invoke. Note this does not provide a way to perform getter, setter
+   * or constructor invocation.
+   * @param disableBreakpoints This parameter is optional and may be null.
+   */
+  public void invoke(String isolateId, String targetId, String selector, List<String> argumentIds, Boolean disableBreakpoints, InvokeConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("targetId", targetId);
+    params.addProperty("selector", selector);
+    params.add("argumentIds", convertIterableToJsonArray(argumentIds));
+    if (disableBreakpoints != null) params.addProperty("disableBreakpoints", disableBreakpoints);
+    request("invoke", params, consumer);
   }
 
   /**
@@ -396,7 +416,7 @@ public class VmService extends VmServiceBase {
    * or constructor invocation.
    */
   public void invoke(String isolateId, String targetId, String selector, List<String> argumentIds, InvokeConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("targetId", targetId);
     params.addProperty("selector", selector);
@@ -409,7 +429,7 @@ public class VmService extends VmServiceBase {
    * <code>Isolate.kill(IMMEDIATE)</code>Isolate.kill(IMMEDIATE).
    */
   public void kill(String isolateId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("kill", params, consumer);
   }
@@ -419,7 +439,7 @@ public class VmService extends VmServiceBase {
    * and potentially returns before the isolate is paused.
    */
   public void pause(String isolateId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("pause", params, consumer);
   }
@@ -428,7 +448,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void registerService(String service, String alias, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("service", service);
     params.addProperty("alias", alias);
     request("_registerService", params, consumer);
@@ -442,7 +462,7 @@ public class VmService extends VmServiceBase {
    * @param packagesUri This parameter is optional and may be null.
    */
   public void reloadSources(String isolateId, Boolean force, Boolean pause, String rootLibUri, String packagesUri, ReloadReportConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     if (force != null) params.addProperty("force", force);
     if (pause != null) params.addProperty("pause", pause);
@@ -455,7 +475,7 @@ public class VmService extends VmServiceBase {
    * The [reloadSources] RPC is used to perform a hot reload of an Isolate's sources.
    */
   public void reloadSources(String isolateId, ReloadReportConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("reloadSources", params, consumer);
   }
@@ -464,7 +484,7 @@ public class VmService extends VmServiceBase {
    * The [removeBreakpoint] RPC is used to remove a breakpoint by its [id].
    */
   public void removeBreakpoint(String isolateId, String breakpointId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("breakpointId", breakpointId);
     request("removeBreakpoint", params, consumer);
@@ -476,7 +496,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void requestHeapSnapshot(String isolateId, String roots, boolean collectGarbage, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("roots", roots);
     params.addProperty("collectGarbage", collectGarbage);
@@ -485,11 +505,12 @@ public class VmService extends VmServiceBase {
 
   /**
    * The [resume] RPC is used to resume execution of a paused isolate.
-   * @param step This parameter is optional and may be null.
+   * @param step A [StepOption] indicates which form of stepping is requested in a resume RPC. This
+   * parameter is optional and may be null.
    * @param frameIndex This parameter is optional and may be null.
    */
   public void resume(String isolateId, StepOption step, Integer frameIndex, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     if (step != null) params.addProperty("step", step.name());
     if (frameIndex != null) params.addProperty("frameIndex", frameIndex);
@@ -500,7 +521,7 @@ public class VmService extends VmServiceBase {
    * The [resume] RPC is used to resume execution of a paused isolate.
    */
   public void resume(String isolateId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("resume", params, consumer);
   }
@@ -508,9 +529,11 @@ public class VmService extends VmServiceBase {
   /**
    * The [setExceptionPauseMode] RPC is used to control if an isolate pauses when an exception is
    * thrown.
+   * @param mode An [ExceptionPauseMode] indicates how the isolate pauses when an exception is
+   * thrown.
    */
   public void setExceptionPauseMode(String isolateId, ExceptionPauseMode mode, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("mode", mode.name());
     request("setExceptionPauseMode", params, consumer);
@@ -521,7 +544,7 @@ public class VmService extends VmServiceBase {
    * not exist, the flag may not be set at runtime, or the value is of the wrong type for the flag.
    */
   public void setFlag(String name, String value, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("name", name);
     params.addProperty("value", value);
     request("setFlag", params, consumer);
@@ -532,7 +555,7 @@ public class VmService extends VmServiceBase {
    * work for a given library.
    */
   public void setLibraryDebuggable(String isolateId, String libraryId, boolean isDebuggable, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("libraryId", libraryId);
     params.addProperty("isDebuggable", isDebuggable);
@@ -543,7 +566,7 @@ public class VmService extends VmServiceBase {
    * The [setName] RPC is used to change the debugging name for an isolate.
    */
   public void setName(String isolateId, String name, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     params.addProperty("name", name);
     request("setName", params, consumer);
@@ -553,7 +576,7 @@ public class VmService extends VmServiceBase {
    * The [setVMName] RPC is used to change the debugging name for the vm.
    */
   public void setVMName(String name, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("name", name);
     request("setVMName", params, consumer);
   }
@@ -562,7 +585,7 @@ public class VmService extends VmServiceBase {
    * @undocumented
    */
   public void setVMTimelineFlags(List<String> recordedStreams, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.add("recordedStreams", convertIterableToJsonArray(recordedStreams));
     request("_setVMTimelineFlags", params, consumer);
   }
@@ -571,7 +594,7 @@ public class VmService extends VmServiceBase {
    * The [streamCancel] RPC cancels a stream subscription in the VM.
    */
   public void streamCancel(String streamId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("streamId", streamId);
     request("streamCancel", params, consumer);
   }
@@ -581,7 +604,7 @@ public class VmService extends VmServiceBase {
    * begin receiving events from the stream.
    */
   public void streamListen(String streamId, SuccessConsumer consumer) {
-    JsonObject params = new JsonObject();
+    final JsonObject params = new JsonObject();
     params.addProperty("streamId", streamId);
     request("streamListen", params, consumer);
   }
@@ -809,6 +832,10 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof ResponseConsumer) {
       if (responseType.equals("AllocationProfile")) {
         ((ResponseConsumer) consumer).received(new AllocationProfile(json));
+        return;
+      }
+      if (responseType.equals("BoundVariable")) {
+        ((ResponseConsumer) consumer).received(new BoundVariable(json));
         return;
       }
       if (responseType.equals("Breakpoint")) {

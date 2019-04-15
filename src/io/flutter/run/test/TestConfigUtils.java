@@ -15,6 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class TestConfigUtils extends CommonTestConfigUtils {
   private static TestConfigUtils instance;
+
   public static TestConfigUtils getInstance() {
     if (instance == null) {
       instance = new TestConfigUtils();
@@ -22,7 +23,8 @@ public class TestConfigUtils extends CommonTestConfigUtils {
     return instance;
   }
 
-  private TestConfigUtils() {}
+  private TestConfigUtils() {
+  }
 
   @Nullable
   @Override

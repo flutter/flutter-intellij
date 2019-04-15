@@ -35,6 +35,8 @@ const Map<String, String> plugins = const {
   'io.flutter.as': '10139', // Currently unused.
 };
 
+const int cloudErrorFileMaxSize = 1000; // In bytes.
+
 String rootPath;
 int pluginCount = 0;
 
@@ -97,8 +99,9 @@ List<File> findJars(String path) {
   final dir = new Directory(path);
   return dir
       .listSync(recursive: true, followLinks: false)
-      .where((e) => e.path.endsWith('.jar'))
-      .toList();
+      .where((e) => e is File && e.path.endsWith('.jar'))
+      .toList()
+      .cast<File>();
 }
 
 List<String> findJavaFiles(String path) {
@@ -274,7 +277,7 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
         return spec.untilBuild;
       case 'VERSION':
         return spec.release == null
-            ? ''
+            ? '<version>SNAPSHOT</version>'
             : '<version>${spec.release}.${++pluginCount}</version>';
       case 'CHANGELOG':
         return spec.changeLog;
@@ -314,11 +317,15 @@ Future<int> zip(String directory, String outFile) async {
   return await exec('zip', args, cwd: p.dirname(directory));
 }
 
-void _copyFile(File file, Directory to) {
+String _convertToTar(String path) =>
+    path.replaceFirst('.zip', '.tar.gz', path.length - 5);
+
+void _copyFile(File file, Directory to, {String filename = ''}) {
   if (!to.existsSync()) {
     to.createSync(recursive: true);
   }
-  final target = new File(p.join(to.path, p.basename(file.path)));
+  if (filename == '') filename = p.basename(file.path);
+  final target = new File(p.join(to.path, filename));
   target.writeAsBytesSync(file.readAsBytesSync());
 }
 
@@ -340,6 +347,10 @@ void _copyResources(Directory from, Directory to) {
   }
 }
 
+bool _isValidDownloadArtifact(File archiveFile) =>
+    archiveFile.existsSync() &&
+    archiveFile.lengthSync() > cloudErrorFileMaxSize;
+
 String _shorten(String str) {
   return str.length < 200
       ? str
@@ -350,7 +361,7 @@ Stream<String> _toLineStream(Stream<List<int>> s, Encoding encoding) =>
     s.transform(encoding.decoder).transform(const LineSplitter());
 
 class Artifact {
-  final String file;
+  String file;
   final bool bareArchive;
   String output;
 
@@ -363,6 +374,13 @@ class Artifact {
   bool get isZip => file.endsWith('.zip');
 
   String get outPath => p.join(rootPath, 'artifacts', output);
+
+  // Historically, Android Studio has been distributed as a zip file.
+  // Recent distros are packaged as gzip'd tar files.
+  void convertToTar() {
+    if (!isZip) return;
+    file = _convertToTar(file);
+  }
 }
 
 class ArtifactManager {
@@ -392,25 +410,55 @@ class ArtifactManager {
 
     var result = 0;
     for (var artifact in artifacts) {
-      final path = 'artifacts/${artifact.file}';
-      if (FileSystemEntity.isFileSync(path)) {
+      var doDownload = true;
+
+      void alreadyDownloaded(String path) {
         log('$path exists in cache');
+        doDownload = false;
+      }
+
+      var path = 'artifacts/${artifact.file}';
+      if (FileSystemEntity.isFileSync(path)) {
+        alreadyDownloaded(path);
       } else {
-        log('downloading $path...');
-        result = await curl('$base/${artifact.file}', to: path);
-        if (result != 0) {
-          log('download failed');
-          break;
+        if (artifact.isZip) {
+          var tarPath = _convertToTar(path);
+          if (FileSystemEntity.isFileSync(tarPath)) {
+            artifact.convertToTar();
+            alreadyDownloaded(tarPath);
+          }
         }
-        var archiveFile = new File(path);
-        if (!archiveFile.existsSync() || archiveFile.lengthSync() < 200) {
-          // If the file is missing the server returns a small file containing
-          // an error message. Delete it and fail. The smallest file we store in
-          // the cloud is over 700K.
-          log('archive file not found: $base/${artifact.file}');
-          archiveFile.deleteSync();
-          result = 1;
-          break;
+        if (doDownload) {
+          log('downloading $path...');
+          result = await curl('$base/${artifact.file}', to: path);
+          if (result != 0) {
+            log('download failed');
+            break;
+          }
+          var archiveFile = new File(path);
+          if (!_isValidDownloadArtifact(archiveFile)) {
+            // If the file is missing the server returns a small file containing
+            // an error message. Delete it and try again. The smallest file we
+            // store in the cloud is over 700K.
+            log('archive file not found: $base/${artifact.file}');
+            archiveFile.deleteSync();
+            if (artifact.isZip) {
+              artifact.convertToTar();
+              path = 'artifacts/${artifact.file}';
+              result = await curl('$base/${artifact.file}', to: path);
+              if (result != 0) {
+                log('download failed');
+                break;
+              }
+              var archiveFile = new File(path);
+              if (!_isValidDownloadArtifact(archiveFile)) {
+                log('archive file not found: $base/${artifact.file}');
+                archiveFile.deleteSync();
+                result = 1;
+                break;
+              }
+            }
+          }
         }
       }
 
@@ -536,7 +584,7 @@ class BuildCommand extends ProductCommand {
       // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
       var files = <File, String>{};
       var processedFile, source;
-      if ((spec.version == '2018.2.5') || spec.version == '3.3.1') {
+      if (spec.version == '3.3.2') {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
@@ -544,28 +592,32 @@ class BuildCommand extends ProductCommand {
         files[processedFile] = source;
         source = source.replaceAll('List<? extends File>', 'List<File>');
         processedFile.writeAsStringSync(source);
-
-        if (spec.version == '2018.2.5') {
-          processedFile = File(
-              'flutter-studio/src/io/flutter/profiler/FlutterStudioProfilers.java');
-          source = processedFile.readAsStringSync();
-          files[processedFile] = source;
-          source = source.replaceAll('//changed(ProfilerAspect.DEVICES);',
-              'changed(ProfilerAspect.DEVICES);');
-          processedFile.writeAsStringSync(source);
-
-          processedFile = File(
-              'flutter-studio/src/io/flutter/android/AndroidModuleLibraryManager.java');
-          source = processedFile.readAsStringSync();
-          files[processedFile] = source;
-          source = source.replaceAll(
-              'import static com.google.wireless.android.sdk.stats.GradleSyncStats.Trigger.TRIGGER_PROJECT_MODIFIED;',
-              '');
-          source = source.replaceAll(
-              'new GradleSyncInvoker.Request(TRIGGER_PROJECT_MODIFIED);',
-              'GradleSyncInvoker.Request.projectModified();');
-          processedFile.writeAsStringSync(source);
-        }
+      }
+      if (spec.version == '3.3.2' ||
+          spec.version == '3.4') {
+        log('spec.version: ${spec.version}');
+        processedFile = File(
+            'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('Icon getIcon()', 'Image getIcon()');
+        source = source.replaceAll(
+          'return FlutterIcons.AndroidStudioNewProject;',
+          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewProject);',
+        );
+        source = source.replaceAll(
+          'return FlutterIcons.AndroidStudioNewPackage;',
+          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewPackage);',
+        );
+        source = source.replaceAll(
+          'return FlutterIcons.AndroidStudioNewPlugin;',
+          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewPlugin);',
+        );
+        source = source.replaceAll(
+          'return FlutterIcons.AndroidStudioNewModule;',
+          'return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);',
+        );
+        processedFile.writeAsStringSync(source);
       }
 
       try {
@@ -573,7 +625,7 @@ class BuildCommand extends ProductCommand {
       } finally {
         // Restore sources.
         files.forEach((file, src) {
-          log('Reestoring ${file.path}');
+          log('Restoring ${file.path}');
           file.writeAsStringSync(src);
         });
 
@@ -605,6 +657,11 @@ class BuildCommand extends ProductCommand {
         log('jar failed: ${result.toString()}');
         return new Future(() => result);
       }
+      if (spec.isTestTarget && !isReleaseMode) {
+        _copyFile(File('build/flutter-intellij/lib/flutter-intellij.jar'),
+            Directory(testTargetPath(spec)),
+            filename: 'io.flutter.jar');
+      }
       if (spec.isAndroidStudio) {
         result = await jar(
             'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
@@ -619,6 +676,10 @@ class BuildCommand extends ProductCommand {
       if (result != 0) {
         log('zip failed: ${result.toString()}');
         return new Future(() => result);
+      }
+      if (spec.copyIjVersion && !isReleaseMode) {
+        _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
+            filename: 'flutter-intellij.zip');
       }
       separator('BUILT');
       log('${releasesFilePath(spec)}');
@@ -705,6 +766,8 @@ class BuildSpec {
   // Build targets
   final String name;
   final String version;
+  final String ijVersion;
+  final bool isTestTarget;
   final String ideaProduct;
   final String ideaVersion;
   final String dartPluginVersion;
@@ -726,14 +789,18 @@ class BuildSpec {
       : release = releaseNum,
         name = json['name'],
         version = json['version'],
+        ijVersion = json['ijVersion'] ?? null,
         ideaProduct = json['ideaProduct'],
         ideaVersion = json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
         sinceBuild = json['sinceBuild'],
         untilBuild = json['untilBuild'],
-        filesToSkip = json['filesToSkip'] ?? [] {
+        filesToSkip = json['filesToSkip'] ?? [],
+        isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
     createArtifacts();
   }
+
+  bool get copyIjVersion => isAndroidStudio && ijVersion != null;
 
   bool get isAndroidStudio => ideaProduct.contains('android-studio');
 
@@ -959,6 +1026,18 @@ abstract class ProductCommand extends Command {
     var subDir = isReleaseMode ? 'release_$releaseMajor' : 'release_master';
     var filePath = p.join(
         rootPath, 'releases', subDir, spec.version, 'flutter-intellij.zip');
+    return filePath;
+  }
+
+  String testTargetPath(BuildSpec spec) {
+    var subDir = 'release_master';
+    var filePath = p.join(rootPath, 'releases', subDir, 'test_target');
+    return filePath;
+  }
+
+  String ijVersionPath(BuildSpec spec) {
+    var subDir = 'release_master';
+    var filePath = p.join(rootPath, 'releases', subDir, spec.ijVersion);
     return filePath;
   }
 

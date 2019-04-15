@@ -18,6 +18,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
+import com.jetbrains.lang.dart.psi.DartId;
+import com.jetbrains.lang.dart.psi.DartReferenceExpression;
 import io.flutter.inspector.InspectorService;
 
 public class DocumentFileLocationMapper implements FileLocationMapper {
@@ -47,7 +49,8 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
       psiFile = PsiDocumentManager.getInstance(project).getPsiFile(document);
       virtualFile = psiFile != null ? psiFile.getVirtualFile() : null;
       debuggerUtil = XDebuggerUtil.getInstance();
-    } else {
+    }
+    else {
       psiFile = null;
       virtualFile = null;
       debuggerUtil = null;
@@ -73,9 +76,19 @@ public class DocumentFileLocationMapper implements FileLocationMapper {
       return null;
     }
     final int offset = pos.getOffset();
-    final PsiElement element = psiFile.getOriginalFile().findElementAt(offset);
+    PsiElement element = psiFile.getOriginalFile().findElementAt(offset);
     if (element == null) {
       return null;
+    }
+
+    // Handle named constructors gracefully.
+    // For example, for the constructor
+    // Image.asset(...) we want to return "Image.asset" instead of "asset".
+    if (element.getParent() instanceof DartId) {
+      element = element.getParent();
+    }
+    while (element.getParent() instanceof DartReferenceExpression) {
+      element = element.getParent();
     }
     return element.getTextRange();
   }

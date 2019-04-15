@@ -195,7 +195,7 @@ abstract class DaemonEvent {
   static class AppDebugPort extends DaemonEvent {
     // "event":"app.eventDebugPort"
     String appId;
-    // port seems to be deprecated
+    // <code>port</code> is deprecated; prefer using <code>wsUri</code>.
     // int port;
     String wsUri;
     String baseUri;
@@ -261,7 +261,8 @@ abstract class DaemonEvent {
     void accept(Listener listener) {
       if (isStarting()) {
         listener.onAppProgressStarting(this);
-      } else {
+      }
+      else {
         listener.onAppProgressFinished(this);
       }
     }

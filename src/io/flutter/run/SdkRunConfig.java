@@ -142,7 +142,8 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
     final LaunchState.CreateAppCallback createAppCallback = (device) -> {
-      if (device == null) return null;
+      // Up until the FlutterWeb support, device was checked for null and returned.  The device
+      // can only be null if this is a FlutterWeb execution, this expecation is checked elsewhere.
 
       final GeneralCommandLine command = getCommand(env, device);
       {

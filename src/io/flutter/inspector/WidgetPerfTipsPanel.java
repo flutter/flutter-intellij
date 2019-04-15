@@ -25,8 +25,8 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import javax.swing.Timer;
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.*;
 
@@ -146,13 +146,6 @@ public class WidgetPerfTipsPanel extends JPanel {
         }
       }
 
-      final ArrayList<TextEditor> changedEditors = new ArrayList<>();
-      for (TextEditor editor : newTipsForFile.keySet()) {
-        final List<PerfTip> entry = newTipsForFile.get(editor);
-        if (tipsPerFile == null || !PerfTipRule.equivalentPerfTips(entry, tipsPerFile.get(editor))) {
-          changedEditors.add(editor);
-        }
-      }
       tipsPerFile = newTipsForFile;
       if (!PerfTipRule.equivalentPerfTips(currentTips, tips)) {
         showPerfTips(tips);

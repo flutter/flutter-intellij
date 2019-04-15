@@ -11,12 +11,12 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.xdebugger.XSourcePosition;
-import io.flutter.server.vmService.ServiceExtensions;
-import io.flutter.server.vmService.VmServiceConsumers;
-import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.server.vmService.VmServiceConsumers;
+import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.dartlang.vm.service.VmService;
@@ -28,8 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-
-import static java.util.Arrays.asList;
 
 /**
  * Manages all communication between inspector code running on the DartVM and
@@ -57,12 +55,15 @@ public class InspectorService implements Disposable {
     return create(app, debugProcess, vmService).thenApplyAsync((service) -> service.createObjectGroup(groupName));
   }
 
-    public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
+  public static CompletableFuture<InspectorService> create(@NotNull FlutterApp app,
                                                            @NotNull FlutterDebugProcess debugProcess,
                                                            @NotNull VmService vmService) {
     assert app.getVMServiceManager() != null;
+    Set<String> inspectorLibraryNames = new HashSet<>();
+    inspectorLibraryNames.add("package:flutter/src/widgets/widget_inspector.dart");
+    inspectorLibraryNames.add("package:flutter_web/src/widgets/widget_inspector.dart");
     final EvalOnDartLibrary inspectorLibrary = new EvalOnDartLibrary(
-      "package:flutter/src/widgets/widget_inspector.dart",
+      inspectorLibraryNames,
       vmService,
       app.getVMServiceManager()
     );
@@ -89,7 +90,7 @@ public class InspectorService implements Disposable {
   private InspectorService(@NotNull FlutterApp app,
                            @NotNull FlutterDebugProcess debugProcess,
                            @NotNull VmService vmService,
-                           EvalOnDartLibrary inspectorLibrary,
+                           @NotNull EvalOnDartLibrary inspectorLibrary,
                            @NotNull Set<String> supportedServiceMethods) {
     this.vmService = vmService;
     this.app = app;
@@ -136,7 +137,7 @@ public class InspectorService implements Disposable {
 
   /**
    * Returns whether to use the Daemon API or the VM Service protocol directly.
-   *
+   * <p>
    * The VM Service protocol must be used when paused at a breakpoint as the
    * Daemon API calls won't execute until after the current frame is done
    * rendering.
@@ -170,6 +171,7 @@ public class InspectorService implements Disposable {
     return new ObjectGroup(debugName);
   }
 
+  @NotNull
   private EvalOnDartLibrary getInspectorLibrary() {
     return inspectorLibrary;
   }
@@ -241,7 +243,7 @@ public class InspectorService implements Disposable {
   public CompletableFuture<Boolean> isWidgetTreeReady() {
     if (useDaemonApi()) {
       return invokeServiceMethodDaemonNoGroup("isWidgetTreeReady", new HashMap<>())
-        .thenApplyAsync((JsonElement element) -> element.getAsBoolean() == true);
+        .thenApplyAsync((JsonElement element) -> element.getAsBoolean());
     }
     else {
       return invokeServiceMethodObservatoryNoGroup("isWidgetTreeReady")
@@ -260,7 +262,7 @@ public class InspectorService implements Disposable {
   /*
    * We make a best guess for the pub directory based on the the root directory
    * of the first non artifical widget in the tree.
-  */
+   */
   public CompletableFuture<String> inferPubRootDirectoryIfNeeded() {
     ObjectGroup group = createObjectGroup("temp");
 
@@ -272,7 +274,7 @@ public class InspectorService implements Disposable {
       }
 
       return root.getChildren().<String>thenComposeAsync((ArrayList<DiagnosticsNode> children) -> {
-        if (children != null && children.isEmpty() == false) {
+        if (children != null && !children.isEmpty()) {
           // There are already widgets identified as being from the summary tree so
           // no need to guess the pub root directory.
           return CompletableFuture.<String>completedFuture(null);
@@ -302,7 +304,7 @@ public class InspectorService implements Disposable {
           // TODO(jacobr): use the list of loaded scripts to determine the appropriate
           // package root directory given that the root script of this project is in
           // this directory rather than guessing based on url structure.
-          ArrayList<String> parts = new ArrayList<String>(Arrays.asList(path.split("/")));
+          ArrayList<String> parts = new ArrayList<>(Arrays.asList(path.split("/")));
           String pubRootDirectory = null;
 
           for (int i = parts.size() - 1; i >= 0; i--) {
@@ -323,10 +325,9 @@ public class InspectorService implements Disposable {
           }
 
           final String finalPubRootDirectory = pubRootDirectory;
-          return setPubRootDirectories(new ArrayList<String>(Arrays.asList(pubRootDirectory))).thenApplyAsync((ignored) -> {
+          return setPubRootDirectories(new ArrayList<>(Collections.singletonList(pubRootDirectory))).thenApplyAsync((ignored) -> {
             group.dispose();
-            final String directory = finalPubRootDirectory;
-            return directory;
+            return finalPubRootDirectory;
           });
         });
       });
@@ -710,15 +711,20 @@ public class InspectorService implements Disposable {
         }));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture, DiagnosticsNode parent) {
-      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture,
+                                                                                   DiagnosticsNode parent) {
+      return nullIfDisposed(
+        () -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture, DiagnosticsNode parent) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture,
+                                                                              DiagnosticsNode parent) {
       return nullIfDisposed(() -> jsonFuture.thenApplyAsync((json) -> parseDiagnosticsNodesHelper(json, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef, boolean summaryTree, DiagnosticsNode parent) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef,
+                                                              boolean summaryTree,
+                                                              DiagnosticsNode parent) {
       if (isDetailsSummaryViewSupported()) {
         return getListHelper(instanceRef, summaryTree ? "getChildrenSummaryTree" : "getChildrenDetailsSubtree", parent);
       }

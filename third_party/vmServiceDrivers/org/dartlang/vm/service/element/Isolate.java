@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * An {@link Isolate} object provides information about one isolate in the VM.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Isolate extends Response {
 
   public Isolate(JsonObject json) {
@@ -55,7 +55,7 @@ public class Isolate extends Response {
    * The current pause on exception mode for this isolate.
    */
   public ExceptionPauseMode getExceptionPauseMode() {
-    JsonElement value = json.get("exceptionPauseMode");
+    final JsonElement value = json.get("exceptionPauseMode");
     try {
       return value == null ? ExceptionPauseMode.Unknown : ExceptionPauseMode.valueOf(value.getAsString());
     } catch (IllegalArgumentException e) {
@@ -70,6 +70,16 @@ public class Isolate extends Response {
    */
   public List<String> getExtensionRPCs() {
     return json.get("extensionRPCs") == null ? null : getListString("extensionRPCs");
+  }
+
+  /**
+   * Provided and set to true if the id of an Object is fixed. If true, the id of an Object is
+   * guaranteed not to change or expire. The object may, however, still be _Collected_.
+   *
+   * Can return <code>null</code>.
+   */
+  public boolean getFixedId() {
+    return json.get("fixedId") == null ? false : json.get("fixedId").getAsBoolean();
   }
 
   /**

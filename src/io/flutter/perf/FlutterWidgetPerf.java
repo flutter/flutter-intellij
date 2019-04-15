@@ -71,7 +71,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   private final Map<PerfReportKind, StatsForReportKind> stats = new HashMap<>();
 
   final Set<TextEditor> currentEditors = new HashSet<>();
-  private boolean profilingEnabled = false;
+  private boolean profilingEnabled;
   final Timer uiAnimationTimer;
   private final WidgetPerfProvider perfProvider;
   private boolean isDisposed = false;

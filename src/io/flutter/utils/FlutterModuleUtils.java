@@ -68,7 +68,7 @@ public class FlutterModuleUtils {
    * </code>
    */
   public static boolean isFlutterModule(@Nullable final Module module) {
-    if (module == null) return false;
+    if (module == null || module.isDisposed()) return false;
 
     if (PlatformUtils.isIntelliJ() || FlutterUtils.isAndroidStudio()) {
       // [Flutter support enabled for a module] ===
@@ -84,6 +84,8 @@ public class FlutterModuleUtils {
   }
 
   public static boolean hasFlutterModule(@NotNull Project project) {
+    if (project.isDisposed()) return false;
+
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::isFlutterModule);
   }
 
@@ -97,7 +99,7 @@ public class FlutterModuleUtils {
    */
   @Nullable
   public static Workspace getFlutterBazelWorkspace(@Nullable Project project) {
-    if (project == null) return null;
+    if (project == null || project.isDisposed()) return null;
 
     final Workspace workspace = WorkspaceCache.getInstance(project).getNow();
     if (workspace == null) return null;
@@ -121,6 +123,8 @@ public class FlutterModuleUtils {
 
   @Nullable
   public static VirtualFile findXcodeProjectFile(@NotNull Project project) {
+    if (project.isDisposed()) return null;
+
     // Look for XCode metadata file in `ios/`.
     for (PubRoot root : PubRoots.forProject(project)) {
       final VirtualFile dir = root.getiOsDir();
@@ -169,6 +173,9 @@ public class FlutterModuleUtils {
 
   @NotNull
   public static Module[] getModules(@NotNull Project project) {
+    // A disposed project has no modules.
+    if (project.isDisposed()) return new Module[]{};
+
     return ModuleManager.getInstance(project).getModules();
   }
 
@@ -176,9 +183,7 @@ public class FlutterModuleUtils {
    * Check if any module in this project {@link #declaresFlutter(Module)}.
    */
   public static boolean declaresFlutter(@NotNull Project project) {
-    if (project.isDisposed()) {
-      return false;
-    }
+    if (project.isDisposed()) return false;
     return CollectionUtils.anyMatch(getModules(project), FlutterModuleUtils::declaresFlutter);
   }
 
@@ -186,6 +191,7 @@ public class FlutterModuleUtils {
    * Ensures a Flutter run configuration is selected in the run pull down.
    */
   public static void ensureRunConfigSelected(@NotNull Project project) {
+    if (project.isDisposed()) return;
     final FlutterRunConfigurationType configType = FlutterRunConfigurationType.getInstance();
 
     final RunManager runManager = RunManager.getInstance(project);
@@ -204,6 +210,7 @@ public class FlutterModuleUtils {
    */
   public static void autoCreateRunConfig(@NotNull Project project, @NotNull PubRoot root) {
     assert ApplicationManager.getApplication().isReadAccessAllowed();
+    if (project.isDisposed()) return;
 
     VirtualFile main = root.getLibMain();
     if (main == null || !main.exists()) {
@@ -241,6 +248,8 @@ public class FlutterModuleUtils {
    * If no files are open, show lib/main.dart for the given PubRoot.
    */
   public static void autoShowMain(@NotNull Project project, @NotNull PubRoot root) {
+    if (project.isDisposed()) return;
+
     final VirtualFile main = root.getFileToOpen();
     if (main == null) return;
 
@@ -312,6 +321,8 @@ public class FlutterModuleUtils {
   }
 
   public static void setFlutterModuleAndReload(@NotNull Module module, @NotNull Project project) {
+    if (project.isDisposed()) return;
+
     setFlutterModuleType(module);
     enableDartSDK(module);
     project.save();

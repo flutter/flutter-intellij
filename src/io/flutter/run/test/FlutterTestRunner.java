@@ -21,10 +21,11 @@ import com.intellij.xdebugger.XDebugProcess;
 import com.intellij.xdebugger.XDebugProcessStarter;
 import com.intellij.xdebugger.XDebugSession;
 import com.intellij.xdebugger.XDebuggerManager;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterUtils;
+import io.flutter.ObservatoryConnector;
 import io.flutter.run.PositionMapper;
+import io.flutter.run.common.CommonTestConfigUtils;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.StdoutJsonParser;
@@ -132,10 +133,10 @@ public class FlutterTestRunner extends GenericProgramRunner {
     @Nullable
     @Override
     public String getWebSocketUrl() {
-      if (observatoryUri == null || !observatoryUri.startsWith("http:") || !observatoryUri.endsWith("/")) {
+      if (observatoryUri == null || !observatoryUri.startsWith("http:")) {
         return null;
       }
-      return observatoryUri.replace("http:", "ws:") + "ws";
+      return CommonTestConfigUtils.convertHttpServiceProtocolToWs(observatoryUri);
     }
 
     @Nullable

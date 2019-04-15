@@ -29,9 +29,9 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.jetbrains.lang.dart.ide.runner.ObservatoryConnector;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
+import io.flutter.ObservatoryConnector;
 import io.flutter.logging.FlutterLog;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -68,7 +68,8 @@ public class FlutterApp {
   private final @NotNull Project myProject;
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
-  private final @NotNull FlutterDevice myDevice;
+  // TODO(github.com/flutter/flutter-intellij/issues/3293) myDevice is not-null for all run configurations except flutter web configurations
+  private final @Nullable FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
   private final @NotNull DaemonApi myDaemonApi;
@@ -122,7 +123,7 @@ public class FlutterApp {
   FlutterApp(@NotNull Project project,
              @Nullable Module module,
              @NotNull RunMode mode,
-             @NotNull FlutterDevice device,
+             @Nullable FlutterDevice device,
              @NotNull ProcessHandler processHandler,
              @NotNull ExecutionEnvironment executionEnvironment,
              @NotNull DaemonApi daemonApi,
@@ -193,7 +194,7 @@ public class FlutterApp {
   }
 
   @Nullable
-  public static FlutterApp fromProjectProcess(@NotNull Project project) {
+  public static FlutterApp firstFromProjectProcess(@NotNull Project project) {
     final List<RunContentDescriptor> runningProcesses =
       ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
     for (RunContentDescriptor descriptor : runningProcesses) {
@@ -209,6 +210,24 @@ public class FlutterApp {
     return null;
   }
 
+  @NotNull
+  public static List<FlutterApp> allFromProjectProcess(@NotNull Project project) {
+    final List<FlutterApp> allRunningApps = new ArrayList<>();
+    final List<RunContentDescriptor> runningProcesses =
+      ExecutionManager.getInstance(project).getContentManager().getAllDescriptors();
+    for (RunContentDescriptor descriptor : runningProcesses) {
+      final ProcessHandler process = descriptor.getProcessHandler();
+      if (process != null) {
+        final FlutterApp app = FlutterApp.fromProcess(process);
+        if (app != null) {
+          allRunningApps.add(app);
+        }
+      }
+    }
+
+    return allRunningApps;
+  }
+
   /**
    * Creates a process that will launch the flutter app.
    * <p>
@@ -219,7 +238,7 @@ public class FlutterApp {
                                  @NotNull Project project,
                                  @Nullable Module module,
                                  @NotNull RunMode mode,
-                                 @NotNull FlutterDevice device,
+                                 @Nullable FlutterDevice device,
                                  @NotNull GeneralCommandLine command,
                                  @Nullable String analyticsStart,
                                  @Nullable String analyticsStop)
@@ -575,7 +594,12 @@ public class FlutterApp {
   }
 
   public String deviceId() {
-    return myDevice.deviceId();
+    return myDevice != null ? myDevice.deviceId() : "";
+  }
+
+  // TODO this should be a temporary hack until there is some mocked out "browser" device
+  public boolean isWebDev() {
+    return myDevice == null;
   }
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {

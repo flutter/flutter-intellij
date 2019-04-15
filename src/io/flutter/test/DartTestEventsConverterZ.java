@@ -1,5 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.test;
-
+package io.flutter.test;
 
 import com.google.gson.*;
 import com.intellij.execution.testframework.TestConsoleProperties;
@@ -725,7 +724,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
     }
 
     public String toString() {
-      return getClass().getSimpleName() + "(" + String.valueOf(myId) + "," + String.valueOf(myName) + ")";
+      return getClass().getSimpleName() + "(" + myId + "," + myName + ")";
     }
   }
 
@@ -781,7 +780,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   }
 
   protected static class Group extends Item {
-    private int myTestCount = 0;
+    private int myTestCount;
     private int myDoneTestsCount = 0;
 
     static Group from(JsonObject obj, Map<Integer, Group> groups, Map<Integer, Suite> suites) {

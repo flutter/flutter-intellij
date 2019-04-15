@@ -17,20 +17,12 @@ import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
 import de.roderick.weberknecht.WebSocket;
 import de.roderick.weberknecht.WebSocketEventHandler;
 import de.roderick.weberknecht.WebSocketException;
 import de.roderick.weberknecht.WebSocketMessage;
-
 import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.Event;
-import org.dartlang.vm.service.element.Instance;
-import org.dartlang.vm.service.element.Library;
-import org.dartlang.vm.service.element.Obj;
-import org.dartlang.vm.service.element.RPCError;
-import org.dartlang.vm.service.element.Sentinel;
-import org.dartlang.vm.service.element.Version;
+import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.internal.RequestSink;
 import org.dartlang.vm.service.internal.VmServiceConst;
 import org.dartlang.vm.service.internal.WebSocketRequestSink;
@@ -94,8 +86,7 @@ abstract class VmServiceBase implements VmServiceConst {
         Logging.getLogger().logInformation("VM message: " + message.getText());
         try {
           vmService.processMessage(message.getText());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
           Logging.getLogger().logError(e.getMessage(), e);
         }
       }
@@ -202,7 +193,7 @@ abstract class VmServiceBase implements VmServiceConst {
   /**
    * A list of objects to which {@link Event}s from the VM are forwarded.
    */
-  private final List<VmServiceListener> vmListeners = new ArrayList<VmServiceListener>();
+  private final List<VmServiceListener> vmListeners = new ArrayList<>();
 
   /**
    * A list of objects to which {@link Event}s from the VM are forwarded.
@@ -307,7 +298,7 @@ abstract class VmServiceBase implements VmServiceConst {
 
   /**
    * Invoke a specific service protocol extension method.
-   *
+   * <p>
    * See https://api.dartlang.org/stable/dart-developer/dart-developer-library.html.
    */
   public void callServiceExtension(String isolateId, String method, ServiceExtensionConsumer consumer) {
@@ -318,7 +309,7 @@ abstract class VmServiceBase implements VmServiceConst {
 
   /**
    * Invoke a specific service protocol extension method.
-   *
+   * <p>
    * See https://api.dartlang.org/stable/dart-developer/dart-developer-library.html.
    */
   public void callServiceExtension(String isolateId, String method, JsonObject params, ServiceExtensionConsumer consumer) {
@@ -431,7 +422,7 @@ abstract class VmServiceBase implements VmServiceConst {
     } else if (json.has("result") || json.has("error")) {
       processResponse(json);
     } else {
-        Logging.getLogger().logError("Malformed message");
+      Logging.getLogger().logError("Malformed message");
     }
   }
 
@@ -498,21 +489,21 @@ abstract class VmServiceBase implements VmServiceConst {
     final RemoteServiceRunner runner = remoteServiceRunners.get(method);
     try {
       runner.run(params, new RemoteServiceCompleter() {
-          public void result(JsonObject result) {
-            response.add(RESULT, result);
-            requestSink.add(response);
-          }
+        public void result(JsonObject result) {
+          response.add(RESULT, result);
+          requestSink.add(response);
+        }
 
-          public void error(int code, String message, JsonObject data) {
-            final JsonObject error = new JsonObject();
-            error.addProperty(CODE, code);
-            error.addProperty(MESSAGE, message);
-            if (data != null) {
-              error.add(DATA, data);
-            }
-            response.add(ERROR, error);
-            requestSink.add(response);
+        public void error(int code, String message, JsonObject data) {
+          final JsonObject error = new JsonObject();
+          error.addProperty(CODE, code);
+          error.addProperty(MESSAGE, message);
+          if (data != null) {
+            error.add(DATA, data);
           }
+          response.add(ERROR, error);
+          requestSink.add(response);
+        }
       });
     } catch (Exception e) {
       final String message = "Internal Server Error";
@@ -522,12 +513,11 @@ abstract class VmServiceBase implements VmServiceConst {
       error.addProperty(MESSAGE, message);
       response.add(ERROR, error);
       requestSink.add(response);
-      return;
     }
   }
 
   private static final RemoteServiceCompleter ignoreCallback =
-    new RemoteServiceCompleter() {
+      new RemoteServiceCompleter() {
         public void result(JsonObject result) {
           // ignore
         }
@@ -535,7 +525,7 @@ abstract class VmServiceBase implements VmServiceConst {
         public void error(int code, String message, JsonObject data) {
           // ignore
         }
-    };
+      };
 
   void processNotification(JsonObject json) {
     String method;
@@ -579,7 +569,6 @@ abstract class VmServiceBase implements VmServiceConst {
         runner.run(params, ignoreCallback);
       } catch (Exception e) {
         Logging.getLogger().logError("Internal Server Error", e);
-        return;
       }
     }
   }

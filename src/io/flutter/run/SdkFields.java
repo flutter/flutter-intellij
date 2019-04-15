@@ -14,6 +14,7 @@ import com.intellij.util.ArrayUtil;
 import com.jetbrains.lang.dart.sdk.DartConfigurable;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
+import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.daemon.FlutterDevice;
@@ -37,7 +38,7 @@ public class SdkFields {
   /**
    * Creates SDK fields from a Dart file containing a main method.
    */
-  public SdkFields(VirtualFile launchFile, Project project) {
+  public SdkFields(VirtualFile launchFile) {
     filePath = launchFile.getPath();
   }
 
@@ -124,11 +125,13 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    String[] args = additionalArgs == null ? new String[]{} : additionalArgs.split(" ");
+    String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }
-    final FlutterCommand command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
+    final FlutterCommand command = FlutterUtils.declaresFlutterWeb(root.getPubspec()) ?
+                                   flutterSdk.flutterRunWeb(root, runMode) :
+                                   flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
     return command.createGeneralCommandLine(project);
   }
 
@@ -150,7 +153,7 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
-    String[] args = additionalArgs == null ? new String[]{} : additionalArgs.split(" ");
+    String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
     if (buildFlavor != null) {
       args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
     }

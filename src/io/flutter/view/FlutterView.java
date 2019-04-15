@@ -101,6 +101,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     new EventStream<>(FlutterViewState.HIGHLIGHT_NODES_SHOWN_IN_BOTH_TREES_DEFAULT);
 
 
+  private boolean previouslyVisible = false;
+
   @NotNull
   private final FlutterViewState state = new FlutterViewState();
 
@@ -401,10 +403,6 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   }
 
   private void debugActiveHelper(FlutterApp app, @Nullable InspectorService inspectorService) {
-    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch()) {
-      activateToolWindow();
-    }
-
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
       return;
@@ -413,6 +411,15 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final ToolWindow toolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
     if (toolWindow == null) {
       return;
+    }
+
+    if (toolWindow.isAvailable()) {
+      updateToolWindowVisibility(toolWindow);
+    }
+    else {
+      toolWindow.setAvailable(true, () -> {
+        updateToolWindowVisibility(toolWindow);
+      });
     }
 
     if (emptyContent != null) {
@@ -455,6 +462,12 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
             updateForEmptyContent(toolWindow);
+            if (toolWindow.isAvailable()) {
+              // Store whether the tool window was visible before we decided to close it
+              // because it had no content.
+              previouslyVisible = toolWindow.isVisible();
+              toolWindow.setAvailable(false, null);
+            }
           }
         });
       }
@@ -576,21 +589,14 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     }
   }
 
-  /**
-   * Activate the tool window.
-   */
-  private void activateToolWindow() {
-    final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
-    if (!(toolWindowManager instanceof ToolWindowManagerEx)) {
-      return;
-    }
-
-    final ToolWindow flutterToolWindow = toolWindowManager.getToolWindow(FlutterView.TOOL_WINDOW_ID);
+  private void updateToolWindowVisibility(ToolWindow flutterToolWindow) {
     if (flutterToolWindow.isVisible()) {
       return;
     }
 
-    flutterToolWindow.show(null);
+    if (FlutterSettings.getInstance().isOpenInspectorOnAppLaunch() || previouslyVisible) {
+      flutterToolWindow.show(null);
+    }
   }
 }
 

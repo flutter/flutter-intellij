@@ -7,6 +7,7 @@ package io.flutter.run.bazelTest;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.process.OSProcessHandler;
@@ -39,25 +40,26 @@ import java.util.Map;
  * The fields in a Bazel test run configuration.
  */
 public class BazelTestFields {
-
   @Nullable private final String testName;
   @Nullable private final String entryFile;
   @Nullable private final String bazelTarget;
+  @Nullable private final String additionalArgs;
 
-  BazelTestFields(@Nullable String testName, @Nullable String entryFile, @Nullable String bazelTarget) {
+  BazelTestFields(@Nullable String testName, @Nullable String entryFile, @Nullable String bazelTarget, @Nullable String additionalArgs) {
     if (testName != null && entryFile == null) {
       throw new IllegalArgumentException("testName must be specified with an entryFile");
     }
     this.testName = testName;
     this.entryFile = entryFile;
     this.bazelTarget = bazelTarget;
+    this.additionalArgs = additionalArgs;
   }
 
   /**
    * Copy constructor
    */
   BazelTestFields(@NotNull BazelTestFields template) {
-    this(template.testName, template.entryFile, template.bazelTarget);
+    this(template.testName, template.entryFile, template.bazelTarget, template.additionalArgs);
   }
 
   private String getTestScriptFromWorkspace(@NotNull Project project) {
@@ -78,21 +80,21 @@ public class BazelTestFields {
    */
   @NotNull
   public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path) {
-    return new BazelTestFields(testName, path, null);
+    return new BazelTestFields(testName, path, null, null);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
   public static BazelTestFields forFile(@NotNull String path) {
-    return new BazelTestFields(null, path, null);
+    return new BazelTestFields(null, path, null, null);
   }
 
   /**
    * Creates settings for running all the tests in a Bazel target
    */
   public static BazelTestFields forTarget(@NotNull String target) {
-    return new BazelTestFields(null, null, target);
+    return new BazelTestFields(null, null, target, null);
   }
 
 
@@ -122,6 +124,15 @@ public class BazelTestFields {
   @Nullable
   public String getBazelTarget() {
     return bazelTarget;
+  }
+
+
+  /**
+   * Parameters to pass to the test runner, such as --watch.
+   */
+  @Nullable
+  public String getAdditionalArgs() {
+    return additionalArgs;
   }
 
   @NotNull
@@ -187,6 +198,14 @@ public class BazelTestFields {
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
+
+    // User specified additional target arguments.
+    final CommandLineTokenizer testArgsTokenizer = new CommandLineTokenizer(
+      StringUtil.notNullize(additionalArgs));
+    while (testArgsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(testArgsTokenizer.nextToken());
+    }
+
     commandLine.addParameter("--no-color");
     final String relativeEntryFilePath = entryFile == null
                                          ? null
@@ -203,6 +222,7 @@ public class BazelTestFields {
         commandLine.addParameter(bazelTarget);
         break;
     }
+
 
     if (mode == RunMode.DEBUG) {
       commandLine.addParameters("--", "--enable-debugging");
@@ -252,6 +272,7 @@ public class BazelTestFields {
     ElementIO.addOption(element, "testName", testName);
     ElementIO.addOption(element, "entryFile", entryFile);
     ElementIO.addOption(element, "bazelTarget", bazelTarget);
+    ElementIO.addOption(element, "additionalArgs", additionalArgs);
   }
 
   public static BazelTestFields readFrom(Element element) {
@@ -260,9 +281,10 @@ public class BazelTestFields {
     final String testName = options.get("testName");
     final String entryFile = options.get("entryFile");
     final String bazelTarget = options.get("bazelTarget");
+    final String additionalArgs = options.get("additionalArgs");
 
     try {
-      return new BazelTestFields(testName, entryFile, bazelTarget);
+      return new BazelTestFields(testName, entryFile, bazelTarget, additionalArgs);
     }
     catch (IllegalArgumentException e) {
       throw new InvalidDataException(e.getMessage());

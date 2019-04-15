@@ -101,7 +101,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     });
 
-    //noinspection Convert2Lambda
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
@@ -180,7 +179,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    //noinspection RedundantIfStatement
     if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
       return true;
     }

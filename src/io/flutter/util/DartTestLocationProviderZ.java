@@ -1,4 +1,4 @@
-package com.jetbrains.lang.dart.ide.runner.util;
+package io.flutter.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.Gson;
@@ -19,6 +19,7 @@ import com.intellij.psi.PsiManager;
 import com.intellij.psi.search.GlobalSearchScope;
 import com.intellij.psi.search.PsiElementProcessor;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.jetbrains.lang.dart.ide.runner.util.TestUtil;
 import com.jetbrains.lang.dart.psi.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

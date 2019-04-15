@@ -74,8 +74,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 @com.intellij.openapi.components.State(
@@ -342,14 +342,14 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     if (toolWindow instanceof ToolWindowEx) {
       final AnAction sendFeedbackAction = new AnAction("Send Feedback", "Send Feedback", FlutterIcons.Feedback) {
         @Override
-        public void actionPerformed(AnActionEvent event) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
           BrowserUtil.browse(FEEDBACK_URL);
         }
       };
 
       final AnAction separator = new AnAction(AllIcons.General.Divider) {
         @Override
-        public void actionPerformed(AnActionEvent event) {
+        public void actionPerformed(@NotNull AnActionEvent event) {
         }
       };
 
@@ -1013,7 +1013,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       sendAnalyticEvent(id);
       final SourceChange change;
       synchronized (actionToChangeMap) {
@@ -1044,7 +1044,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       final AnAction action = ActionManager.getInstance().getAction("ExtractMethod");
       if (action != null) {
         final FlutterOutline outline = getWidgetOutline();
@@ -1097,7 +1097,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       final AnAction action = ActionManager.getInstance().getAction("Flutter.ExtractWidget");
       if (action != null) {
         TransactionGuard.submitTransaction(project, () -> {
@@ -1138,7 +1138,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void actionPerformed(AnActionEvent e) {
+    public void actionPerformed(@NotNull AnActionEvent e) {
       final FlutterSettings flutterSettings = FlutterSettings.getInstance();
       flutterSettings.setShowOnlyWidgets(!flutterSettings.isShowOnlyWidgets());
       if (currentOutline != null) {
@@ -1168,7 +1168,7 @@ class OutlineComponent extends SimpleToolWindowPanel {
   }
 
   @Override
-  public Object getData(String dataId) {
+  public Object getData(@NotNull String dataId) {
     if (PlatformDataKeys.FILE_EDITOR.is(dataId)) {
       return myView.currentFileEditor;
     }
@@ -1393,7 +1393,7 @@ class TextOnlyActionWrapper extends AnAction {
   }
 
   @Override
-  public void actionPerformed(AnActionEvent event) {
+  public void actionPerformed(@NotNull AnActionEvent event) {
     action.actionPerformed(event);
   }
 }

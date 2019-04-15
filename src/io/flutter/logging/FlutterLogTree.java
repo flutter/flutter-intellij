@@ -22,10 +22,11 @@ import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import javax.swing.Timer;
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
@@ -177,8 +178,11 @@ public class FlutterLogTree extends TreeTable {
     private final FlutterLog log;
     @NotNull
     private final Alarm uiThreadAlarm;
+    @NotNull
+    final Timer updateTimer;
+
     boolean autoScrollToEnd;
-    // Cached for hide and restore (because *sigh* Swing).
+    // Cached for hide and restore.
     private List<TableColumn> tableColumns;
     private JScrollPane scrollPane;
     private TreeTable treeTable;
@@ -207,6 +211,7 @@ public class FlutterLogTree extends TreeTable {
       setShowSequenceNumbers(false);
 
       uiThreadAlarm = new Alarm(Alarm.ThreadToUse.SWING_THREAD, parent);
+      updateTimer = new Timer(100, e -> uiExec(this::update, 0));
     }
 
     public void setUpdateCallback(UpdateCallback updateCallback) {
@@ -226,32 +231,38 @@ public class FlutterLogTree extends TreeTable {
     }
 
     void uiExec(@NotNull Runnable runnable, int delayMillis) {
-      uiThreadAlarm.addRequest(runnable, delayMillis);
+      if (!uiThreadAlarm.isDisposed()) {
+        uiThreadAlarm.addRequest(runnable, delayMillis);
+      }
     }
 
-    void update(@Nullable int[] selectedRows) {
+    void update() {
       columns.update();
 
       reload(getRoot());
       treeTable.updateUI();
 
-      // Preserve / restore selection state if unspecified.
-      if (selectedRows == null) {
-        selectedRows = treeTable.getSelectedRows();
+      final TreeTableTree tree = treeTable.getTree();
+
+      // Restore/preserve selection state.
+      tree.setSelectionRows(treeTable.getSelectedRows());
+
+      // Select and reveal a selection path (e.g., on error) if specified.
+      if (pathToSelectAndReveal != null) {
+        // TODO(pq): if there are timing issues, consider a delayed uiExec
+        // TODO(pq): consider scrolling bounding rectangle to top of scrollpane
+        tree.setSelectionPath(pathToSelectAndReveal);
+        tree.scrollPathToVisible(pathToSelectAndReveal);
+        pathToSelectAndReveal = null;
       }
-      treeTable.getTree().setSelectionRows(selectedRows);
 
       if (updateCallback != null) {
         updateCallback.updated();
       }
 
       if (autoScrollToEnd) {
-        uiThreadAlarm.addRequest(this::scrollToEnd, 100);
+        uiExec(this::scrollToEnd, 100);
       }
-    }
-
-    void update() {
-      update(null);
     }
 
     @Override
@@ -276,17 +287,26 @@ public class FlutterLogTree extends TreeTable {
       update();
     }
 
+    // Cached, for example, by errors.
+    TreePath pathToSelectAndReveal;
+
     public void appendNode(FlutterLogEntry entry, boolean selectNode) {
       if (treeTable == null || uiThreadAlarm.isDisposed()) {
         return;
       }
 
-      uiThreadAlarm.addRequest(() -> {
-        final MutableTreeNode root = getRoot();
-        final int nodeIndex = root.getChildCount();
-        insertNodeInto(new FlutterEventNode(entry), root, nodeIndex);
-        update(selectNode ? new int[]{nodeIndex} : null);
-      }, 10);
+      final FlutterEventNode node = new FlutterEventNode(entry);
+      getRoot().add(node);
+
+      if (selectNode) {
+        pathToSelectAndReveal = new TreePath(node.getPath());
+      }
+
+      if (updateTimer.isRunning()) {
+        return;
+      }
+
+      updateTimer.restart();
     }
 
     public boolean shouldShowTimestamps() {
@@ -426,9 +446,12 @@ public class FlutterLogTree extends TreeTable {
     final List<FlutterEventNode> nodes = new ArrayList<>();
     for (int row : getSelectedRows()) {
       final int realRow = convertRowIndexToModel(row);
-      final Object pathComponent = getTree().getPathForRow(realRow).getLastPathComponent();
-      if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
-        nodes.add((FlutterEventNode)pathComponent);
+      final TreePath pathForRow = getTree().getPathForRow(realRow);
+      if (pathForRow != null) {
+        final Object pathComponent = pathForRow.getLastPathComponent();
+        if (pathComponent instanceof FlutterLogTree.FlutterEventNode) {
+          nodes.add((FlutterEventNode)pathComponent);
+        }
       }
     }
     return nodes;

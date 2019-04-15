@@ -23,7 +23,7 @@ public class FlutterPackagesExplorerActionGroup extends DefaultActionGroup {
   }
 
   @Override
-  public void update(AnActionEvent e) {
+  public void update(@NotNull AnActionEvent e) {
     final boolean enabled = isFlutterPubspec(e);
     final Presentation presentation = e.getPresentation();
     presentation.setEnabled(enabled);

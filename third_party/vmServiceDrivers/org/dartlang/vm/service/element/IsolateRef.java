@@ -20,11 +20,21 @@ import com.google.gson.JsonObject;
 /**
  * {@link IsolateRef} is a reference to an {@link Isolate} object.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class IsolateRef extends Response {
 
   public IsolateRef(JsonObject json) {
     super(json);
+  }
+
+  /**
+   * Provided and set to true if the id of an Object is fixed. If true, the id of an Object is
+   * guaranteed not to change or expire. The object may, however, still be _Collected_.
+   *
+   * Can return <code>null</code>.
+   */
+  public boolean getFixedId() {
+    return json.get("fixedId") == null ? false : json.get("fixedId").getAsBoolean();
   }
 
   /**

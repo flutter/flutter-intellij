@@ -10,8 +10,7 @@ import java.util.List;
  * Superclass for all observatory elements.
  */
 public class Element {
-
-  protected JsonObject json;
+  protected final JsonObject json;
 
   public Element(JsonObject json) {
     this.json = json;
@@ -47,7 +46,7 @@ public class Element {
       return null;
     }
     int size = array.size();
-    List<List<Integer>> result = new ArrayList<List<Integer>>();
+    List<List<Integer>> result = new ArrayList<>();
     for (int index = 0; index < size; ++index) {
       result.add(jsonArrayToListInt(array.get(index).getAsJsonArray()));
     }
@@ -56,7 +55,7 @@ public class Element {
 
   private List<Integer> jsonArrayToListInt(JsonArray array) {
     int size = array.size();
-    List<Integer> result = new ArrayList<Integer>();
+    List<Integer> result = new ArrayList<>();
     for (int index = 0; index < size; ++index) {
       result.add(array.get(index).getAsInt());
     }
@@ -65,7 +64,7 @@ public class Element {
 
   private List<String> jsonArrayToListString(JsonArray array) {
     int size = array.size();
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
     for (int index = 0; index < size; ++index) {
       result.add(array.get(index).getAsString());
     }

@@ -26,7 +26,6 @@ public class FlutterStudioStartupActivity implements StartupActivity {
     // The IntelliJ version of this action spawns a new process for Android Studio.
     // Since we're already running Android Studio we want to simply open the project in the current process.
     replaceAction("flutter.androidstudio.open", new OpenAndroidModule());
-    replaceAction("ShowProjectStructureSettings", new FlutterShowStructureSettingsAction());
     // Unset this flag for all projects, mainly to ease the upgrade from 3.0.1 to 3.1.
     // TODO(messick) Delete once 3.0.x has 0 7DA's.
     FlutterProjectCreator.disableUserConfig(project);

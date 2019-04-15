@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * A {@link Script} provides information about a Dart language script.
  */
-@SuppressWarnings({"WeakerAccess", "unused", "UnnecessaryInterfaceModifier"})
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class Script extends Obj {
 
   public Script(JsonObject json) {
@@ -45,7 +45,8 @@ public class Script extends Obj {
   }
 
   /**
-   * A table encoding a mapping from token position to line and column.
+   * A table encoding a mapping from token position to line and column. This field is null if
+   * sources aren't available.
    *
    * Can return <code>null</code>.
    */

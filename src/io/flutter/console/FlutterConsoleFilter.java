@@ -189,7 +189,7 @@ public class FlutterConsoleFilter implements Filter {
         return;
       }
 
-      final FlutterApp app = FlutterApp.fromProjectProcess(project);
+      final FlutterApp app = FlutterApp.firstFromProjectProcess(project);
       if (app == null) {
         Messages.showErrorDialog(project, "Running Flutter App not found", "Error");
         return;

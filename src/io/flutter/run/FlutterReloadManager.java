@@ -49,7 +49,6 @@ import io.flutter.actions.ProjectActions;
 import io.flutter.actions.ReloadFlutterApp;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
-import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
@@ -233,10 +232,8 @@ public class FlutterReloadManager {
     }, reloadDelayMs, TimeUnit.MILLISECONDS);
   }
 
-  public void saveAllAndReload(@NotNull FlutterApp app, String reason) {
+  private void reloadApp(@NotNull FlutterApp app, @NotNull String reason) {
     if (app.isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
-
       app.performHotReload(true, reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
@@ -251,9 +248,21 @@ public class FlutterReloadManager {
     }
   }
 
-  public void saveAllAndRestart(@NotNull FlutterApp app, String reason) {
+  public void saveAllAndReload(@NotNull FlutterApp app, @NotNull String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+    reloadApp(app, reason);
+  }
+
+  public void saveAllAndReloadAll(@NotNull List<FlutterApp> appsToReload, @NotNull String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+
+    for (FlutterApp app : appsToReload) {
+      reloadApp(app, reason);
+    }
+  }
+
+  private void restartApp(@NotNull FlutterApp app, @NotNull String reason) {
     if (app.isStarted()) {
-      FileDocumentManager.getInstance().saveAllDocuments();
       app.performRestartApp(reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Restart", result.getMessage(), true);
@@ -263,10 +272,23 @@ public class FlutterReloadManager {
         return null;
       });
 
-      final FlutterDevice device = DeviceService.getInstance(myProject).getSelectedDevice();
+      final FlutterDevice device = app.device();
       if (device != null) {
         device.bringToFront();
       }
+    }
+  }
+
+  public void saveAllAndRestart(@NotNull FlutterApp app, @NotNull String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+    restartApp(app, reason);
+  }
+
+  public void saveAllAndRestartAll(@NotNull List<FlutterApp> appsToRestart, @NotNull String reason) {
+    FileDocumentManager.getInstance().saveAllDocuments();
+
+    for (FlutterApp app : appsToRestart) {
+      restartApp(app, reason);
     }
   }
 
@@ -335,11 +357,6 @@ public class FlutterReloadManager {
     if (balloon != null) {
       balloon.hide();
     }
-  }
-
-  private FlutterApp getApp() {
-    final AnAction action = ProjectActions.getAction(myProject, ReloadFlutterApp.ID);
-    return action instanceof FlutterAppAction ? ((FlutterAppAction)action).getApp() : null;
   }
 
   private boolean hasErrors(@NotNull Project project, @Nullable Module module, @NotNull Document document) {

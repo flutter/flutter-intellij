@@ -25,7 +25,6 @@ import java.io.File;
 import java.util.Collections;
 
 public class FlutterTestUtils {
-
   public static final String BASE_TEST_DATA_PATH = findTestDataPath();
   public static final String SDK_HOME_PATH = BASE_TEST_DATA_PATH + "/sdk";
 
