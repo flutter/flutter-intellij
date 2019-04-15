@@ -71,8 +71,6 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
         setText(value.getDisplayName());
       }
     });
-    // Only enable scope changes if the new bazel test runner is enabled.
-    // If the new runner is disabled, all scopes will be blaze target-level.
     scope.setEnabled(true);
 
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
