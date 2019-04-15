@@ -163,20 +163,8 @@ public class LaunchCommandsTest {
     boolean didThrow = false;
     try {
       final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    } catch (ExecutionException e) {
-      didThrow = true;
     }
-    assertTrue("This test method expected to throw an exception, but did not.", didThrow);
-  }
-
-  @Test
-  public void failsForFileWithoutNewTestRunner() {
-    final BazelTestFields fields = forFile("/workspace/foo/test/foo_test.dart");
-    fields.useNewBazelTestRunnerOverride = false;
-    boolean didThrow = false;
-    try {
-      final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    } catch (ExecutionException e) {
+    catch (ExecutionException e) {
       didThrow = true;
     }
     assertTrue("This test method expected to throw an exception, but did not.", didThrow);
@@ -194,7 +182,8 @@ public class LaunchCommandsTest {
     boolean didThrow = false;
     try {
       final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    } catch (ExecutionException e) {
+    }
+    catch (ExecutionException e) {
       didThrow = true;
     }
     assertTrue("This test method expected to throw an exception, but did not.", didThrow);
@@ -267,14 +256,8 @@ public class LaunchCommandsTest {
       if (launchScript != null) {
         fs.file("/workspace/" + launchScript, "");
       }
-      if (testScript!= null) {
+      if (testScript != null) {
         fs.file("/workspace/" + testScript, "");
-      }
-      if (testScript == null) {
-        // When the test script is null, Flutter Settings will report the new Bazel test script as disabled.
-        useNewBazelTestRunnerOverride = false;
-      } else {
-        useNewBazelTestRunnerOverride = true;
       }
       fakeWorkspace = Workspace.forTest(
         fs.findFileByPath("/workspace/"),
@@ -294,8 +277,7 @@ public class LaunchCommandsTest {
         "scripts/flutter-doctor.sh",
         "scripts/bazel-run.sh",
         "scripts/flutter-test.sh"
-        );
-
+      );
     }
 
     @Override
