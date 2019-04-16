@@ -13,35 +13,27 @@ import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.framework.Timeouts
 import com.intellij.testGuiFramework.impl.GuiTestCase
-import com.intellij.testGuiFramework.impl.GuiTestUtilKt
-import com.intellij.testGuiFramework.impl.button
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import com.intellij.testGuiFramework.util.step
-import io.flutter.tests.gui.fixtures.FlutterInspectorFixture
-import org.fest.swing.edt.GuiActionRunner.execute
-import org.fest.swing.edt.GuiQuery
-import org.fest.swing.fixture.JButtonFixture
+import io.flutter.tests.gui.fixtures.flutterInspectorFixture
 import org.fest.swing.fixture.JTreeRowFixture
 import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause.pause
-import org.junit.Assert.assertNotNull
 import org.junit.Test
-import java.awt.Container
 import java.awt.event.KeyEvent
 import kotlin.test.expect
-import kotlin.test.fail
 
 @RunWithIde(CommunityIde::class)
 class InspectorTest : GuiTestCase() {
 
-  //@Test
+  @Test
   fun widgetTree() {
     ProjectCreator.importProject()
     ideFrame {
       launchFlutterApp()
       val inspector = flutterInspectorFixture(this)
       inspector.populate()
-      val widgetTree = inspector.widgetTreeFixture()
+      val widgetTree = inspector.widgetsFixture()
       val inspectorTree = widgetTree.inspectorTreeFixture()
       val detailsTree = widgetTree.inspectorTreeFixture(isDetails = true)
       expect(true) { detailsTree.selection() == null }
@@ -86,10 +78,10 @@ class InspectorTest : GuiTestCase() {
       launchFlutterApp()
       val inspector = flutterInspectorFixture(this)
       inspector.populate()
-      var widgetTree = inspector.widgetTreeFixture()
-      var inspectorTree = widgetTree.inspectorTreeFixture()
-      inspectorTree.selectRow(0)
-      var detailsTree = widgetTree.inspectorTreeFixture(isDetails = true)
+      val widgets = inspector.widgetsFixture()
+      val widgetsTree = widgets.inspectorTreeFixture(isDetails = false)
+      widgetsTree.selectRow(0)
+      val detailsTree = widgets.inspectorTreeFixture(isDetails = true)
       val initialDetails = detailsTree.selectionSync().toString()
 
       editor {
@@ -114,13 +106,13 @@ class InspectorTest : GuiTestCase() {
             return reload.isEnabled
           }
         }, Timeouts.seconds05)
-        // Work around https://github.com/flutter/flutter-intellij/issues/3370
-        inspector.renderTreeFixture() // The refresh button is broken so force tree update by switching views.
-        inspector.populate()
-        widgetTree = inspector.widgetTreeFixture() // And back to the one we want
-        inspectorTree = widgetTree.inspectorTreeFixture()
-        inspectorTree.selectRow(6)
-        detailsTree = widgetTree.inspectorTreeFixture(isDetails = true)
+        step("Work around #3370") {
+          // https://github.com/flutter/flutter-intellij/issues/3370
+          inspector.renderTreeFixture().show() // The refresh button is broken so force tree update by switching views.
+          inspector.populate()
+          widgets.show() // And back to the one we want
+        }
+        widgetsTree.selectRow(6) // Text widget
         pause(object : Condition("Details tree changes") {
           override fun test(): Boolean {
             return initialDetails != detailsTree.selectionSync().toString()
@@ -135,14 +127,6 @@ class InspectorTest : GuiTestCase() {
     }
   }
 
-  private fun findHotReloadButton(): ActionButtonFixture {
-    return findActionButtonByClassName("ReloadFlutterAppRetarget")
-  }
-
-  private fun IdeFrameFixture.runner(): ExecutionToolWindowFixture.ContentFixture {
-    return runToolWindow.findContent("main.dart")
-  }
-
   fun IdeFrameFixture.launchFlutterApp() {
     step("Launch Flutter app") {
       findRunApplicationButton().click()
@@ -155,35 +139,12 @@ class InspectorTest : GuiTestCase() {
     }
   }
 
-  fun IdeFrameFixture.selectSimulator() {
-    step("Select Simulator") {
-      selectDevice("Open iOS Simulator")
-    }
+  private fun findHotReloadButton(): ActionButtonFixture {
+    return findActionButtonByClassName("ReloadFlutterAppRetarget")
   }
 
-  fun IdeFrameFixture.selectDevice(devName: String) {
-    val runButton = findRunApplicationButton()
-    val actionToolbarContainer = execute<Container>(object : GuiQuery<Container>() {
-      @Throws(Throwable::class)
-      override fun executeInEDT(): Container? {
-        return runButton.target().parent
-      }
-    })
-    assertNotNull(actionToolbarContainer)
-
-    // These next two lines look like the right way to select the simulator, but it does not work.
-    //    val comboBoxActionFixture = ComboBoxActionFixture.findComboBoxByText(robot(), actionToolbarContainer!!, "<no devices>")
-    //    comboBoxActionFixture.selectItem(devName)
-    // Need to get focus on the combo box but the ComboBoxActionFixture.click() method is private, so it is inlined here.
-    val selector = button("<no devices>")
-    val comboBoxButtonFixture = JButtonFixture(robot(), selector.target())
-    GuiTestUtilKt.waitUntil("ComboBoxButton will be enabled", Timeouts.seconds10) {
-      GuiTestUtilKt.computeOnEdt { comboBoxButtonFixture.target().isEnabled } ?: false
-    }
-    comboBoxButtonFixture.click()
-    robot().pressAndReleaseKey(KeyEvent.VK_DOWN)
-    robot().pressAndReleaseKey(KeyEvent.VK_ENTER)
-    robot().waitForIdle()
+  private fun IdeFrameFixture.runner(): ExecutionToolWindowFixture.ContentFixture {
+    return runToolWindow.findContent("main.dart")
   }
 
   private fun findActionButtonByActionId(actionId: String): ActionButtonFixture {
@@ -196,15 +157,12 @@ class InspectorTest : GuiTestCase() {
   }
 
   private fun findActionButtonByClassName(className: String): ActionButtonFixture {
+    // This works when the button is enabled but fails if it is disabled (implementation detail).
     var button: ActionButtonFixture? = null
     ideFrame {
       button = ActionButtonFixture.fixtureByActionClassName(target(), robot(), className)
     }
     return button!!
-  }
-
-  fun IdeFrameFixture.flutterInspectorFixture(ideFrame: IdeFrameFixture): FlutterInspectorFixture {
-    return FlutterInspectorFixture(project, robot(), ideFrame)
   }
 
 }

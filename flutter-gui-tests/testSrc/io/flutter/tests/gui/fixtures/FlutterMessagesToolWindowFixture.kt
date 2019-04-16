@@ -29,7 +29,7 @@ class FlutterMessagesToolWindowFixture(project: Project, robot: Robot) : ToolWin
 
   inner class FlutterContentFixture(val myContent: Content) {
 
-    fun findMessageContainingText(text: String, timeout: Timeout = Timeouts.seconds10): FlutterMessageFixture {
+    fun findMessageContainingText(text: String, timeout: Timeout = Timeouts.seconds30): FlutterMessageFixture {
       val element = doFindMessage(text, timeout)
       return createFixture(element)
     }

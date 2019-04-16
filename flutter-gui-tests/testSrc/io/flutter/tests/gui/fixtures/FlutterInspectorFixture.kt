@@ -20,7 +20,6 @@ import com.intellij.ui.tabs.TabInfo
 import com.intellij.ui.tabs.impl.TabLabel
 import io.flutter.inspector.InspectorService
 import io.flutter.inspector.InspectorTree
-import io.flutter.view.FlutterView
 import io.flutter.view.InspectorPanel
 import junit.framework.Assert.assertNotNull
 import org.fest.swing.core.ComponentFinder
@@ -34,6 +33,11 @@ import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.TreePath
 
+fun IdeFrameFixture.flutterInspectorFixture(ideFrame: IdeFrameFixture): FlutterInspectorFixture {
+  return FlutterInspectorFixture(project, robot(), ideFrame)
+}
+
+// A fixture for the Inspector top-level view.
 class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFrame: IdeFrameFixture)
   : ToolWindowFixture("Flutter Inspector", project, robot) {
 
@@ -49,7 +53,7 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     }
   }
 
-  fun widgetTreeFixture(): InspectorPanelFixture {
+  fun widgetsFixture(): InspectorPanelFixture {
     showTab(0)
     return inspectorPanel(InspectorService.FlutterTreeType.widget)
   }
@@ -59,9 +63,9 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     return inspectorPanel(InspectorService.FlutterTreeType.renderObject)
   }
 
-  private fun showTab(index : Int) {
-    val tabs : JBRunnerTabs = contents[0].component.components[0] as JBRunnerTabs
-    val info : TabInfo = tabs.getTabAt(index)
+  private fun showTab(index: Int) {
+    val tabs: JBRunnerTabs = contents[0].component.components[0] as JBRunnerTabs
+    val info: TabInfo = tabs.getTabAt(index)
     val label = tabs.getTabLabel(info)
     TabLabelFixture(robot, label).click()
   }
@@ -87,7 +91,7 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
 
     val notificationPanel = inspectorPanelRef.get()
     assertNotNull(notificationPanel)
-    return InspectorPanelFixture(notificationPanel)
+    return InspectorPanelFixture(notificationPanel, type)
   }
 
   private fun findInspectorPanel(type: InspectorService.FlutterTreeType): InspectorPanel? {
@@ -95,7 +99,18 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     return panels.firstOrNull { it is InspectorPanel && it.treeType == type && !it.isDetailsSubtree } as InspectorPanel
   }
 
-  inner class InspectorPanelFixture(val inspectorPanel: InspectorPanel) {
+  // The InspectorPanel is a little tricky to work with. In order for the tree to have content its view must be made
+  // visible (either Widgets or Render Tree). However, we don't want to return a reference to an empty tree, because
+  // of timing issues. We use the fact that the tree has content as a signal to move on to the next step.
+  inner class InspectorPanelFixture(val inspectorPanel: InspectorPanel, val type: InspectorService.FlutterTreeType) {
+
+    fun show() {
+      showTab(tabIndex())
+    }
+
+    private fun tabIndex(): Int {
+      return if (type == InspectorService.FlutterTreeType.widget) 0 else 1
+    }
 
     fun inspectorTreeFixture(isDetails: Boolean = false): InspectorTreeFixture {
       val inspectorTreeRef = Ref<InspectorTree>()
@@ -120,7 +135,8 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     }
   }
 
-  inner class InspectorTreeFixture(val inspectorTree: InspectorTree) {
+  // This fixture is used to access the tree for both Widgets and Render Objects.
+  inner class InspectorTreeFixture(private val inspectorTree: InspectorTree) {
 
     fun treeFixture(): JTreeFixture {
       return JTreeFixture(ideFrame.robot(), inspectorTree)
@@ -161,5 +177,6 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   }
 }
 
+// A clickable fixture for the three tabs in the inspector: Widgets, Render Tree, and Performance.
 class TabLabelFixture(robot: Robot, target: TabLabel)
   : JComponentFixture<TabLabelFixture, TabLabel>(TabLabelFixture::class.java, robot, target)
