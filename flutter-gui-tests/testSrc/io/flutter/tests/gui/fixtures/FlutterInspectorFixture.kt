@@ -6,15 +6,21 @@
 
 package io.flutter.tests.gui.fixtures
 
+import com.intellij.execution.ui.layout.impl.JBRunnerTabs
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
+import com.intellij.testGuiFramework.fixtures.JComponentFixture
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import com.intellij.testGuiFramework.framework.Timeouts
+import com.intellij.testGuiFramework.impl.GuiRobotHolder.robot
 import com.intellij.testGuiFramework.matcher.ClassNameMatcher
-import com.intellij.util.ui.EdtInvocationManager
+import com.intellij.testGuiFramework.util.step
+import com.intellij.ui.tabs.TabInfo
+import com.intellij.ui.tabs.impl.TabLabel
 import io.flutter.inspector.InspectorService
 import io.flutter.inspector.InspectorTree
+import io.flutter.view.FlutterView
 import io.flutter.view.InspectorPanel
 import junit.framework.Assert.assertNotNull
 import org.fest.swing.core.ComponentFinder
@@ -24,7 +30,6 @@ import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import java.awt.Component
-import java.awt.event.MouseEvent
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.TreePath
@@ -33,21 +38,32 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   : ToolWindowFixture("Flutter Inspector", project, robot) {
 
   fun populate() {
-    activate()
-    selectedContent
-    Pause.pause(object : Condition("Initialize inspector") {
-      override fun test(): Boolean {
-        return contents[0].displayName != null
-      }
-    }, Timeouts.seconds30)
+    step("Populate inspector tree") {
+      activate()
+      selectedContent
+      Pause.pause(object : Condition("Initialize inspector") {
+        override fun test(): Boolean {
+          return contents[0].displayName != null
+        }
+      }, Timeouts.seconds30)
+    }
   }
 
   fun widgetTreeFixture(): InspectorPanelFixture {
+    showTab(0)
     return inspectorPanel(InspectorService.FlutterTreeType.widget)
   }
 
   fun renderTreeFixture(): InspectorPanelFixture {
+    showTab(1)
     return inspectorPanel(InspectorService.FlutterTreeType.renderObject)
+  }
+
+  private fun showTab(index : Int) {
+    val tabs : JBRunnerTabs = contents[0].component.components[0] as JBRunnerTabs
+    val info : TabInfo = tabs.getTabAt(index)
+    val label = tabs.getTabLabel(info)
+    TabLabelFixture(robot, label).click()
   }
 
   private fun finder(): ComponentFinder {
@@ -81,12 +97,12 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
 
   inner class InspectorPanelFixture(val inspectorPanel: InspectorPanel) {
 
-    fun inspectorTreeFixture(): InspectorTreeFixture {
+    fun inspectorTreeFixture(isDetails: Boolean = false): InspectorTreeFixture {
       val inspectorTreeRef = Ref<InspectorTree>()
 
       pause(object : Condition("Tree shows up") {
         override fun test(): Boolean {
-          val inspectorTree = findInspectorTree()
+          val inspectorTree = findInspectorTree(isDetails)
           inspectorTreeRef.set(inspectorTree)
           return inspectorTree != null
         }
@@ -97,34 +113,53 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
       return InspectorTreeFixture(inspectorTree)
     }
 
-    fun findInspectorTree(): InspectorTree? {
+    fun findInspectorTree(isDetails: Boolean): InspectorTree? {
       val trees = finder().findAll(inspectorPanel, classMatcher("io.flutter.inspector.InspectorTree", JTree::class.java))
-      val tree = trees.firstOrNull { it is InspectorTree && !it.detailsSubtree }
+      val tree = trees.firstOrNull { it is InspectorTree && isDetails == it.detailsSubtree }
       if (tree != null) return tree as InspectorTree else return null
     }
   }
 
   inner class InspectorTreeFixture(val inspectorTree: InspectorTree) {
 
-    fun treeFixture() : JTreeFixture {
+    fun treeFixture(): JTreeFixture {
       return JTreeFixture(ideFrame.robot(), inspectorTree)
     }
 
-    fun selectRow(number: Int) {
-      pause(object : Condition("Tree has content") {
-        override fun test(): Boolean {
-          return inspectorTree.rowCount > 0
-        }
-      }, Timeouts.seconds05)
-//      val click = MouseEvent(inspectorTree, 0, 0L, 0, 100, 30, 1, false)
-//      EdtInvocationManager.getInstance().invokeAndWait() {
-//        inspectorTree.dispatchEvent(click)
-//      }
-      treeFixture().clickRow(number)
+    fun selectRow(number: Int, expand: Boolean = true) {
+      waitForContent()
+      treeFixture().clickRow(number) // This should not collapse the tree, but it does.
+      if (expand) {
+        treeFixture().expandRow(number) // TODO(messick) Remove when selection preserves tree expansion.
+      }
     }
 
     fun selection(): TreePath? {
       return inspectorTree.selectionPath
     }
+
+    fun selectionSync(): TreePath {
+      waitForContent()
+      waitForCondition("Selection is set") { inspectorTree.selectionPath != null }
+      return selection()!!
+    }
+
+    private fun waitForContent() {
+      waitForCondition("Tree has content") { inspectorTree.rowCount > 1 }
+    }
+
+    private fun waitForCondition(description: String, condition: () -> Boolean): Boolean {
+      var result: Boolean = false
+      pause(object : Condition(description) {
+        override fun test(): Boolean {
+          result = condition.invoke()
+          return result
+        }
+      }, Timeouts.seconds05)
+      return result
+    }
   }
 }
+
+class TabLabelFixture(robot: Robot, target: TabLabel)
+  : JComponentFixture<TabLabelFixture, TabLabel>(TabLabelFixture::class.java, robot, target)
