@@ -5,6 +5,7 @@
  */
 package io.flutter.view;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Joiner;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.*;
@@ -291,6 +292,16 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
         onIsolateStopped();
       }
     }, true);
+  }
+
+  @VisibleForTesting
+  public boolean isDetailsSubtree() {
+    return detailsSubtree;
+  }
+
+  @VisibleForTesting
+  public boolean isSummaryTree() {
+    return isSummaryTree;
   }
 
   public boolean isHighlightNodesShownInBothTrees() {
