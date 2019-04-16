@@ -20,6 +20,7 @@ import org.fest.swing.edt.GuiActionRunner.execute
 import org.fest.swing.edt.GuiQuery
 import org.fest.swing.fixture.JButtonFixture
 import org.fest.swing.timing.Condition
+import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import org.junit.Assert.assertNotNull
 import org.junit.Test
@@ -32,11 +33,21 @@ class InspectorTest : GuiTestCase() {
   @Test
   fun importSimpleProject() {
     ProjectCreator.importProject()
+    println("DEBUG 1")
     ideFrame {
       launchFlutterApp()
+      println("DEBUG 2")
       val inspector = flutterInspectorFixture(this)
       inspector.populate()
+      println("DEBUG 3 $inspector")
       val widgetTree = inspector.widgetTreeFixture()
+      println("DEBUG 4 $widgetTree")
+      val inspectorTree = widgetTree.inspectorTreeFixture()
+      println("DEBUG 5 $inspectorTree")
+      inspectorTree.selectRow(1)
+      println("DEBUG 6 ${inspectorTree.selection()}")
+      Pause.pause(2000)
+      println("DEBUG 7 ${inspectorTree.selection()}")
       runner().stop()
     }
   }
@@ -70,8 +81,8 @@ class InspectorTest : GuiTestCase() {
     assertNotNull(actionToolbarContainer)
 
     // These next two lines look like the right way to select the simulator, but it does not work.
-    //    val comboBoxActionFixture = ComboBoxActionFixture.findComboBoxByText(robot(), actionToolbarContainer!!, "<no devices>")
-    //    comboBoxActionFixture.selectItem(devName)
+//    val comboBoxActionFixture = ComboBoxActionFixture.findComboBoxByText(robot(), actionToolbarContainer!!, "<no devices>")
+//    comboBoxActionFixture.selectItem(devName)
     // Need to get focus on the combo box but the ComboBoxActionFixture.click() method is private, so it is inlined here.
     val selector = button("<no devices>")
     val comboBoxButtonFixture = JButtonFixture(robot(), selector.target())
