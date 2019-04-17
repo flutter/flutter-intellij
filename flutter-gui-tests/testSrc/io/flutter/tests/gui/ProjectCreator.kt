@@ -13,6 +13,7 @@ import com.intellij.platform.templates.github.ZipUtil
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.Timeouts
 import com.intellij.testGuiFramework.impl.*
+import com.intellij.testGuiFramework.util.step
 import com.intellij.testGuiFramework.utils.TestUtilsClass
 import com.intellij.testGuiFramework.utils.TestUtilsClassCompanion
 import com.intellij.util.UriUtil
@@ -37,25 +38,30 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   var flutterMessagesFixture: FlutterMessagesToolWindowFixture.FlutterContentFixture? = null
 
   fun importProject(projectName: String = sampleProjectName): File {
-    val projectDirFile = extractProject(projectName)
-    val projectPath: File = guiTestCase.guiTestRule.importProject(projectDirFile)
-    with(guiTestCase) {
-      waitForFirstIndexing()
-      openPubspecInProject()
-      ideFrame {
-        editor {
-          val note = notificationPanel()
-          if (note?.getLabelText() == "Flutter commands") {
-            note.clickLink("Packages get")
-            flutterMessagesFixture = flutterMessagesToolWindowFixture().getFlutterContent(projectName)
-            flutterMessagesFixture!!.findMessageContainingText("Process finished")
+    return step("Import project $projectName") {
+      val projectDirFile = extractProject(projectName)
+      val projectPath: File = guiTestCase.guiTestRule.importProject(projectDirFile)
+      with(guiTestCase) {
+        waitForFirstIndexing()
+        step("Get packages") {
+          openPubspecInProject()
+          ideFrame {
+            editor {
+              val note = notificationPanel()
+              if (note?.getLabelText() == "Flutter commands") {
+                note.clickLink("Packages get")
+                flutterMessagesFixture = flutterMessagesToolWindowFixture().getFlutterContent(projectName)
+                flutterMessagesFixture!!.findMessageContainingText("Process finished")
+              }
+              // TODO(messick) Close pubspec.yaml once editor tab fixtures are working.
+              //closeTab("pubspec.yaml")
+            }
           }
-          // TODO(messick) Close pubspec.yaml once editor tab fixtures are working.
         }
+        openMainInProject()
       }
-      openMainInProject()
+      projectPath
     }
-    return projectPath
   }
 
   private fun extractProject(projectName: String): File {
@@ -93,20 +99,22 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
 
   fun createProject(projectName: String = defaultProjectName, needToOpenMain: Boolean = true) {
     with(guiTestCase) {
-      welcomeFrame {
-        this.actionLink(name = "Create New Project").click()
-        GuiTestUtilKt.waitProgressDialogUntilGone(robot = robot(), progressTitle = "Loading Templates",
-            timeoutToAppear = Timeouts.seconds02)
-        dialog("New Project") {
-          jList("Flutter").clickItem("Flutter")
-          button("Next").click()
-          typeText(projectName)
-          button("Finish").click()
-          GuiTestUtilKt.waitProgressDialogUntilGone(robot = robot(), progressTitle = "Creating Flutter Project",
-              timeoutToAppear = Timeouts.seconds03)
+      step("Create project $projectName") {
+        welcomeFrame {
+          this.actionLink(name = "Create New Project").click()
+          GuiTestUtilKt.waitProgressDialogUntilGone(
+            robot = robot(), progressTitle = "Loading Templates", timeoutToAppear = Timeouts.seconds02)
+          dialog("New Project") {
+            jList("Flutter").clickItem("Flutter")
+            button("Next").click()
+            typeText(projectName)
+            button("Finish").click()
+            GuiTestUtilKt.waitProgressDialogUntilGone(
+              robot = robot(), progressTitle = "Creating Flutter Project", timeoutToAppear = Timeouts.seconds03)
+          }
         }
+        waitForFirstIndexing()
       }
-      waitForFirstIndexing()
       if (needToOpenMain) openMainInProject(wait = true)
     }
   }
@@ -127,8 +135,10 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private fun GuiTestCase.openMainInProject(wait: Boolean = false) {
     ideFrame {
       projectView {
-        path(project.name, "lib", "main.dart").doubleClick()
-        if (wait) waitForBackgroundTasksToFinish()
+        step("Open lib/main.dart") {
+          path(project.name, "lib", "main.dart").doubleClick()
+          if (wait) waitForBackgroundTasksToFinish()
+        }
       }
     }
   }
@@ -136,7 +146,9 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
   private fun GuiTestCase.openPubspecInProject() {
     ideFrame {
       projectView {
-        path(project.name, "pubspec.yaml").doubleClick()
+        step("Open pubspec.yaml") {
+          path(project.name, "pubspec.yaml").doubleClick()
+        }
       }
     }
   }

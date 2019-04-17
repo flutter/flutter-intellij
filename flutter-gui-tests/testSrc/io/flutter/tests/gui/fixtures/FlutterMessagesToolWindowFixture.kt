@@ -29,7 +29,7 @@ class FlutterMessagesToolWindowFixture(project: Project, robot: Robot) : ToolWin
 
   inner class FlutterContentFixture(val myContent: Content) {
 
-    fun findMessageContainingText(text: String, timeout: Timeout = Timeouts.seconds10): FlutterMessageFixture {
+    fun findMessageContainingText(text: String, timeout: Timeout = Timeouts.seconds30): FlutterMessageFixture {
       val element = doFindMessage(text, timeout)
       return createFixture(element)
     }
@@ -43,15 +43,16 @@ class FlutterMessagesToolWindowFixture(project: Project, robot: Robot) : ToolWin
     }
 
     private fun doFindMessage(matcher: String, timeout: Timeout): ConsoleViewImpl {
-      return GuiTestUtil.waitUntilFound(robot(), myContent.component, object : GenericTypeMatcher<ConsoleViewImpl>(ConsoleViewImpl::class.java) {
-        override fun isMatching(panel: ConsoleViewImpl): Boolean {
-          if (panel.javaClass.name.startsWith(ConsoleViewImpl::class.java.name) && panel.isShowing) {
-            val doc = panel.editor.document
-            return (doc.text.contains(matcher))
-          }
-          return false
-        }
-      }, timeout)
+      return GuiTestUtil.waitUntilFound(robot(), myContent.component,
+                                        object : GenericTypeMatcher<ConsoleViewImpl>(ConsoleViewImpl::class.java) {
+                                          override fun isMatching(panel: ConsoleViewImpl): Boolean {
+                                            if (panel.javaClass.name.startsWith(ConsoleViewImpl::class.java.name) && panel.isShowing) {
+                                              val doc = panel.editor.document
+                                              return (doc.text.contains(matcher))
+                                            }
+                                            return false
+                                          }
+                                        }, timeout)
     }
 
   }

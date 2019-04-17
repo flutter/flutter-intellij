@@ -10,6 +10,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.impl.GuiTestCase
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
+import com.intellij.testGuiFramework.util.step
 import org.junit.Assert
 import org.junit.Test
 
@@ -36,9 +37,13 @@ class SmokeTest : GuiTestCase() {
         // Wait until current file has appeared in current editor and set focus to editor.
         moveTo(1)
       }
-      val editorCode = editor.getCurrentFileContents(false)
-      Assert.assertTrue(editorCode!!.isNotEmpty())
-      closeProjectAndWaitWelcomeFrame()
+      step("Verify open file has some content") {
+        val editorCode = editor.getCurrentFileContents(false)
+        Assert.assertTrue(editorCode!!.isNotEmpty())
+      }
+      step("Close project") {
+        closeProjectAndWaitWelcomeFrame()
+      }
     }
   }
 }
