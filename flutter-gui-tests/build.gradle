@@ -95,5 +95,6 @@ test {
                                              (it.key as String) != "jb.vmOptionsFile"
   }
   sysProps.put("idea.gui.tests.gradle.runner", true) //Use Gradle Launcher to run GUI tests
+  //sysProps.put("idea.debug.mode", true) // Add to enable debugging with breakpoints
   systemProperties sysProps
 }
