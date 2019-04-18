@@ -65,7 +65,7 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
     BoolProperty isPackageSynced = new BoolValueProperty(true);
     myBindings.bind(packageNameText, computedPackageName, isPackageSynced);
     myBindings.bind(model.packageName(), packageNameText);
-    myListeners.receive(packageNameText, value -> isPackageSynced.set(value.equals(computedPackageName.get())));
+    myListeners.listen(packageNameText, value -> isPackageSynced.set(value.equals(computedPackageName.get())));
 
     myBindings.bindTwoWay(new TextProperty(myCompanyDomain), model.companyDomain());
 

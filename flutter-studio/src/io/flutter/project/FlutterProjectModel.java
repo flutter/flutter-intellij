@@ -48,7 +48,7 @@ public class FlutterProjectModel extends WizardModel {
   public FlutterProjectModel(@NotNull FlutterProjectType type) {
     myProjectType.set(new OptionalValueProperty<>(type));
 
-    myCompanyDomain.addListener(sender -> {
+    myCompanyDomain.addListener(() -> {
       String domain = myCompanyDomain.get();
       if (domain.isEmpty()) {
         domain = null; // Keys with null values are deleted.
@@ -59,10 +59,10 @@ public class FlutterProjectModel extends WizardModel {
     myProjectName.addConstraint(String::trim);
 
     myKotlin.set(getInitialKotlinSupport());
-    myKotlin.addListener(sender -> setInitialKotlinSupport(myKotlin.get()));
+    myKotlin.addListener(() -> setInitialKotlinSupport(myKotlin.get()));
 
     mySwift.set(getInitialSwiftSupport());
-    mySwift.addListener(sender -> setInitialSwiftSupport(mySwift.get()));
+    mySwift.addListener(() -> setInitialSwiftSupport(mySwift.get()));
   }
 
   public void setSample(@Nullable FlutterSample sample) {
