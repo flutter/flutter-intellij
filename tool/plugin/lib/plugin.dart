@@ -619,6 +619,23 @@ class BuildCommand extends ProductCommand {
         );
         processedFile.writeAsStringSync(source);
       }
+      if (spec.version != '3.6') {
+        // There is no 3.6 yet, but these edits will be needed for next canary
+        log('spec.version: ${spec.version}');
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('addListener(()', 'addListener(sender');
+        processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/project/FlutterSettingsStep.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('listen', 'receive');
+        processedFile.writeAsStringSync(source);
+      }
 
       try {
         result = await runner.javac2(spec);
