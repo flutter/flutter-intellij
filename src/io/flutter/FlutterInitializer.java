@@ -30,6 +30,7 @@ import io.flutter.pub.PubRoots;
 import io.flutter.run.FlutterReloadManager;
 import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
+import io.flutter.samples.FlutterSampleManager;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
@@ -122,6 +123,9 @@ public class FlutterInitializer implements StartupActivity {
 
     // Start the widget perf manager.
     FlutterWidgetPerfManager.init(project);
+
+    // Load the sample index.
+    FlutterSampleManager.initialize(project);
 
     // Watch save actions for reload on save.
     FlutterReloadManager.init(project);

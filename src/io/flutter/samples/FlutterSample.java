@@ -42,7 +42,23 @@ public class FlutterSample {
    * Get a label suitable for display in a chooser (e.g., combobox).
    */
   public String getDisplayLabel() {
-    // TODO(pq): add disambiguation once it's needed.
+    // TODO(pq): come up with disambiguated labels.
+    // TODO(pq): consider adding (package suffix too).
+    // Index isn't quite enough for disambiguation (there are still dups like DeletableChips).
+    //final String[] parts = id.split("\\.");
+    //final String lastPart = parts[parts.length-1];
+    //
+    //String suffix = "";
+    //try {
+    //  final int index = Integer.parseInt(lastPart);
+    //  if (index != 1) {
+    //    suffix = " (" + index + ")";
+    //  }
+    //} catch (NumberFormatException e) {
+    //  // ignore
+    //}
+    //
+    //return getElement() + suffix;
     return getElement();
   }
 
@@ -71,18 +87,18 @@ public class FlutterSample {
 
     // Remove links: [Card] => **Card**
     final StringBuilder builder = new StringBuilder();
-    for (int i=0; i < description.length(); ++i) {
+    for (int i = 0; i < description.length(); ++i) {
       final char c = description.charAt(i);
-      if ((c == '[' || c == ']') && (i == 0 || description.charAt(i-1) != '\\')) {
+      if ((c == '[' || c == ']') && (i == 0 || description.charAt(i - 1) != '\\')) {
         builder.append("**");
-      } else {
+      }
+      else {
         builder.append(c);
       }
     }
 
     return new MarkdownProcessor().markdown(builder.toString()).trim();
   }
-
 
   @NotNull
   public String getLibrary() {

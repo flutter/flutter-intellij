@@ -9,7 +9,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.intellij.execution.ExecutionException;
 import com.intellij.execution.OutputListener;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.OSProcessHandler;
+import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.diagnostic.Logger;
@@ -32,31 +36,112 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 public class FlutterSampleManager {
+  // TODO(pq): remove after testing.
   // See https://github.com/flutter/flutter-intellij/issues/3330.
-  private static final boolean DISABLE_SAMPLES = true;
+  private static final boolean DISABLE_SAMPLES = false;
 
   private static final String SNIPPETS_REMOTE_INDEX_URL = "https://docs.flutter.io/snippets/index.json";
 
   private static final Logger LOG = Logger.getInstance(FlutterSampleManager.class);
+  @NotNull
+  private final FlutterSdk sdk;
 
-  private static List<FlutterSample> SAMPLES;
+  private List<FlutterSample> flutterSamples;
 
-  public static List<FlutterSample> getSamples() {
+  public FlutterSampleManager(@NotNull FlutterSdk sdk) {
+    this.sdk = sdk;
+  }
+
+  public List<FlutterSample> getSamples() {
     if (DISABLE_SAMPLES) {
       return Collections.emptyList();
     }
 
-    if (SAMPLES == null) {
-      // When we're reading from the repo and the file may be changing, consider a fresh read on each access.
-      SAMPLES = loadSamples();
+    if (flutterSamples != null) {
+      return flutterSamples;
     }
-    return SAMPLES;
+
+    try {
+      final File tempDir = Files.createTempDirectory("flutter-samples-index").toFile();
+      tempDir.deleteOnExit();
+      final File tempFile = new File(tempDir, "index.json");
+
+      try {
+        final GeneralCommandLine commandLine = sdk.flutterListSamples(tempFile).createGeneralCommandLine(null);
+        LOG.info(commandLine.toString());
+        final OSProcessHandler process = new OSProcessHandler(commandLine);
+        process.addProcessListener(new ProcessAdapter() {
+          @Override
+          public void processTerminated(@NotNull ProcessEvent event) {
+            try {
+              final byte[] bytes = Files.readAllBytes(tempFile.toPath());
+              final String content = new String(bytes);
+              flutterSamples = FlutterSampleManager.readSamples(content);
+            }
+            catch (IOException e) {
+              LOG.warn(e);
+              // On IOException, short circuit checking again.
+              flutterSamples = Collections.emptyList();
+            }
+          }
+        });
+
+        process.startNotify();
+
+        final int timeoutInMs = 2000;
+        // TODO(pq): is this wait right?
+        if (process.waitFor(timeoutInMs)) {
+          LOG.info("Flutter sample listing took more than " + timeoutInMs + "ms");
+          // Don't cache here so that we can try again later.
+        }
+      }
+      catch (ExecutionException e) {
+        LOG.warn(e);
+        // On ExecutionException, short circuit checking again.
+        flutterSamples = Collections.emptyList();
+      }
+    }
+    catch (IOException e) {
+      LOG.warn(e);
+      // On IOException, short circuit checking again.
+      flutterSamples = Collections.emptyList();
+    }
+
+    return flutterSamples != null ? flutterSamples : Collections.emptyList();
+  }
+
+  // Called at project initialization.
+  public static void initialize(Project project) {
+    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    if (sdk != null) {
+      // Trigger a sample listing.
+      sdk.getSamples();
+    }
+  }
+
+  public static List<FlutterSample> readSamples(String indexFileContents) {
+    final List<FlutterSample> samples = new ArrayList<>();
+    final JsonArray json = new JsonParser().parse(indexFileContents).getAsJsonArray();
+    for (JsonElement element : json) {
+      final JsonObject sample = element.getAsJsonObject();
+      samples.add(new FlutterSample(sample.getAsJsonPrimitive("element").getAsString(),
+                                    sample.getAsJsonPrimitive("library").getAsString(),
+                                    sample.getAsJsonPrimitive("id").getAsString(),
+                                    sample.getAsJsonPrimitive("file").getAsString(),
+                                    sample.getAsJsonPrimitive("sourcePath").getAsString(),
+                                    sample.getAsJsonPrimitive("description").getAsString()));
+    }
+
+    // Sort by display label.
+    samples.sort(Comparator.comparing(FlutterSample::getDisplayLabel));
+    return samples;
   }
 
   private static JsonArray readSampleIndex(final URL sampleUrl) throws IOException {
@@ -85,24 +170,6 @@ public class FlutterSampleManager {
       }
     }
     return new JsonArray();
-  }
-
-  private static List<FlutterSample> loadSamples() {
-    final List<FlutterSample> samples = new ArrayList<>();
-    final JsonArray jsonArray = readSampleIndex();
-    for (JsonElement element : jsonArray) {
-      final JsonObject sample = element.getAsJsonObject();
-      samples.add(new FlutterSample(sample.getAsJsonPrimitive("element").getAsString(),
-                                    sample.getAsJsonPrimitive("library").getAsString(),
-                                    sample.getAsJsonPrimitive("id").getAsString(),
-                                    sample.getAsJsonPrimitive("file").getAsString(),
-                                    sample.getAsJsonPrimitive("sourcePath").getAsString(),
-                                    sample.getAsJsonPrimitive("description").getAsString()));
-    }
-
-    // Sort by display label.
-    samples.sort(Comparator.comparing(FlutterSample::getDisplayLabel));
-    return samples;
   }
 
   public static String createSampleProject(@NotNull FlutterSample sample, @NotNull Project project) {
