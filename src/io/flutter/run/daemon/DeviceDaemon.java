@@ -140,10 +140,11 @@ class DeviceDaemon {
 
     try {
       final String path = FlutterSdkUtil.pathToFlutterTool(sdk.getHomePath());
-      ImmutableList<String> list;
+      final ImmutableList<String> list;
       if (FlutterUtils.isIntegrationTestingMode()) {
         list = ImmutableList.of("--show-test-device", "daemon");
-      } else {
+      }
+      else {
         list = ImmutableList.of("daemon");
       }
       return new Command(sdk.getHomePath(), path, list, androidHome);
@@ -319,12 +320,12 @@ class DeviceDaemon {
     // daemon domain
 
     @Override
-    public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
+    public void onDaemonLogMessage(@NotNull DaemonEvent.DaemonLogMessage message) {
       LOG.info("flutter device daemon #" + daemonId + ": " + message.message);
     }
 
     @Override
-    public void onDaemonShowMessage(@NotNull DaemonEvent.ShowMessage event) {
+    public void onDaemonShowMessage(@NotNull DaemonEvent.DaemonShowMessage event) {
       if ("error".equals(event.level)) {
         FlutterMessages.showError(event.title, event.message);
       }

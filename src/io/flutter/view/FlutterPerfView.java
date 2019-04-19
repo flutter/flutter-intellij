@@ -98,7 +98,6 @@ public class FlutterPerfView implements Disposable {
   }
 
   void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
-
     final FlutterApp app = event.app;
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
     if (!(toolWindowManager instanceof ToolWindowManagerEx)) {

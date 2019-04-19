@@ -64,8 +64,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -386,17 +384,26 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
   public void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     final FlutterApp app = event.app;
 
+    System.out.println("FlutterView.debugActive()");
+
     if (app.getMode().isProfiling() || app.getLaunchMode().isProfiling()) {
       ApplicationManager.getApplication().invokeLater(() -> debugActiveHelper(app, null));
     }
     else {
+      System.out.println("FlutterView.whenCompleteUiThread()");
+
       whenCompleteUiThread(
         InspectorService.create(app, app.getFlutterDebugProcess(), app.getVmService()),
         (InspectorService inspectorService, Throwable throwable) -> {
+          System.out.println("FlutterView InspectorService.create()");
+
           if (throwable != null) {
             FlutterUtils.warn(LOG, throwable);
             return;
           }
+
+          System.out.println("FlutterView debugActiveHelper()");
+
           debugActiveHelper(app, inspectorService);
         });
     }
@@ -613,24 +620,14 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
         return;
       }
 
-      final URL url;
-      try {
-        url = new URL(urlString);
-      }
-      catch (MalformedURLException e) {
-        return;
-      }
-
-      final int port = url.getPort();
-
       final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(port);
+        devToolsManager.openBrowserAndConnect(urlString);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(port));
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(urlString));
       }
     }
   }

@@ -33,12 +33,12 @@ public class DaemonEventTest {
       // daemon domain
 
       @Override
-      public void onDaemonLogMessage(DaemonEvent.LogMessage event) {
+      public void onDaemonLogMessage(DaemonEvent.DaemonLogMessage event) {
         logEvent(event, event.level, event.message, event.stackTrace);
       }
 
       @Override
-      public void onDaemonShowMessage(DaemonEvent.ShowMessage event) {
+      public void onDaemonShowMessage(DaemonEvent.DaemonShowMessage event) {
         logEvent(event, event.level, event.title, event.message);
       }
 

@@ -92,13 +92,11 @@ public class SdkRunConfig extends LocatableConfigurationBase
     private final PathMatcher matcher;
 
     RecursiveDeleter(String pattern) {
-      matcher = FileSystems.getDefault()
-        .getPathMatcher("glob:" + pattern);
+      matcher = FileSystems.getDefault().getPathMatcher("glob:" + pattern);
     }
 
     @Override
-    public FileVisitResult visitFile(Path file,
-                                     BasicFileAttributes attrs) {
+    public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
       final Path name = file.getFileName();
       if (name != null && matcher.matches(name)) {
         try {
@@ -113,14 +111,12 @@ public class SdkRunConfig extends LocatableConfigurationBase
     }
 
     @Override
-    public FileVisitResult preVisitDirectory(Path dir,
-                                             BasicFileAttributes attrs) {
+    public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
       return CONTINUE;
     }
 
     @Override
-    public FileVisitResult visitFileFailed(Path file,
-                                           IOException exc) {
+    public FileVisitResult visitFileFailed(Path file, IOException exc) {
       FlutterUtils.warn(LOG, exc);
       return CONTINUE;
     }
@@ -141,58 +137,57 @@ public class SdkRunConfig extends LocatableConfigurationBase
     final Project project = env.getProject();
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
-    final LaunchState.CreateAppCallback createAppCallback = (device) -> {
-      // Up until the FlutterWeb support, device was checked for null and returned.  The device
-      // can only be null if this is a FlutterWeb execution, this expecation is checked elsewhere.
+    final LaunchState.CreateAppCallback createAppCallback = (@Nullable FlutterDevice device) -> {
+      // Up until the support for Flutter Web, 'device' was checked for null and returned. The device
+      // can only be null if this is a Flutter Web execution; this expecation is checked elsewhere.
 
       final GeneralCommandLine command = getCommand(env, device);
-      {
-        // Workaround for https://github.com/flutter/flutter/issues/16766
-        // TODO(jacobr): remove once flutter tool incremental building works
-        // properly with --track-widget-creation.
-        final Path buildPath = command.getWorkDirectory().toPath().resolve("build");
-        final Path cachedParametersPath = buildPath.resolve("last_build_run.json");
-        final String[] parametersToTrack = {"--preview-dart-2", "--track-widget-creation"};
-        final JsonArray jsonArray = new JsonArray();
-        for (String parameter : command.getParametersList().getList()) {
-          for (String allowedParameter : parametersToTrack) {
-            if (parameter.startsWith(allowedParameter)) {
-              jsonArray.add(new JsonPrimitive(parameter));
-              break;
-            }
+
+      // Workaround for https://github.com/flutter/flutter/issues/16766
+      // TODO(jacobr): remove once flutter tool incremental building works
+      // properly with --track-widget-creation.
+      final Path buildPath = command.getWorkDirectory().toPath().resolve("build");
+      final Path cachedParametersPath = buildPath.resolve("last_build_run.json");
+      final String[] parametersToTrack = {"--preview-dart-2", "--track-widget-creation"};
+      final JsonArray jsonArray = new JsonArray();
+      for (String parameter : command.getParametersList().getList()) {
+        for (String allowedParameter : parametersToTrack) {
+          if (parameter.startsWith(allowedParameter)) {
+            jsonArray.add(new JsonPrimitive(parameter));
+            break;
           }
         }
-        final String json = new Gson().toJson(jsonArray);
-        String existingJson = null;
-        if (Files.exists(cachedParametersPath)) {
-          try {
-            existingJson = new String(Files.readAllBytes(cachedParametersPath), StandardCharsets.UTF_8);
-          }
-          catch (IOException e) {
-            FlutterUtils.warn(LOG, "Unable to get existing json from " + cachedParametersPath);
-          }
+      }
+      final String json = new Gson().toJson(jsonArray);
+      String existingJson = null;
+      if (Files.exists(cachedParametersPath)) {
+        try {
+          existingJson = new String(Files.readAllBytes(cachedParametersPath), StandardCharsets.UTF_8);
         }
-        if (!StringUtil.equals(json, existingJson)) {
-          // We don't have proof the current run is consistent with the existing run.
-          // Be safe and delete cached files that could cause problems due to
-          // https://github.com/flutter/flutter/issues/16766
-          // We could just delete app.dill and snapshot_blob.bin.d.fingerprint
-          // but it is safer to just delete everything as we won't be broken by future changes
-          // to the underlying Flutter build rules.
-          try {
-            if (Files.exists(buildPath)) {
-              if (Files.isDirectory(buildPath)) {
-                Files.walkFileTree(buildPath, new RecursiveDeleter("*.{fingerprint,dill}"));
-              }
+        catch (IOException e) {
+          FlutterUtils.warn(LOG, "Unable to get existing json from " + cachedParametersPath);
+        }
+      }
+      if (!StringUtil.equals(json, existingJson)) {
+        // We don't have proof the current run is consistent with the existing run.
+        // Be safe and delete cached files that could cause problems due to
+        // https://github.com/flutter/flutter/issues/16766
+        // We could just delete app.dill and snapshot_blob.bin.d.fingerprint
+        // but it is safer to just delete everything as we won't be broken by future changes
+        // to the underlying Flutter build rules.
+        try {
+          if (Files.exists(buildPath)) {
+            if (Files.isDirectory(buildPath)) {
+              Files.walkFileTree(buildPath, new RecursiveDeleter("*.{fingerprint,dill}"));
             }
-            else {
-              Files.createDirectory(buildPath);
-            }
-            Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
           }
-          catch (IOException e) {
-            FlutterUtils.warn(LOG, e);
+          else {
+            Files.createDirectory(buildPath);
           }
+          Files.write(cachedParametersPath, json.getBytes(StandardCharsets.UTF_8));
+        }
+        catch (IOException e) {
+          FlutterUtils.warn(LOG, e);
         }
       }
 

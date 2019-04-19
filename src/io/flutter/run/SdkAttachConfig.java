@@ -71,22 +71,22 @@ public class SdkAttachConfig extends SdkRunConfig {
       throw new ExecutionException(e);
     }
 
-    SdkFields launchFields = getFields();
-    MainFile mainFile = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
-    Project project = env.getProject();
-    RunMode mode = RunMode.fromEnv(env);
-    Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
-    LaunchState.CreateAppCallback createAppCallback = (device) -> {
+    final SdkFields launchFields = getFields();
+    final MainFile mainFile = MainFile.verify(launchFields.getFilePath(), env.getProject()).get();
+    final Project project = env.getProject();
+    final RunMode mode = RunMode.fromEnv(env);
+    final Module module = ModuleUtilCore.findModuleForFile(mainFile.getFile(), env.getProject());
+    final LaunchState.CreateAppCallback createAppCallback = (@Nullable FlutterDevice device) -> {
       if (device == null) return null;
 
-      GeneralCommandLine command = getCommand(env, device);
+      final GeneralCommandLine command = getCommand(env, device);
 
-      FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
+      final FlutterApp app = FlutterApp.start(env, project, module, mode, device, command,
                                         StringUtil.capitalize(mode.mode()) + "App",
-                                        "StopApp");
+                                              "StopApp");
 
       // Stop the app if the Flutter SDK changes.
-      FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
+      final FlutterSdkManager.Listener sdkListener = new FlutterSdkManager.Listener() {
         @Override
         public void flutterSdkRemoved() {
           app.shutdownAsync();
@@ -98,7 +98,7 @@ public class SdkAttachConfig extends SdkRunConfig {
       return app;
     };
 
-    LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
+    final LaunchState launcher = new AttachState(env, mainFile.getAppDir(), mainFile.getFile(), this, createAppCallback);
     addConsoleFilters(launcher, env, mainFile, module);
     return launcher;
   }
@@ -110,12 +110,12 @@ public class SdkAttachConfig extends SdkRunConfig {
   }
 
   private void checkRunnable(@NotNull Project project) throws RuntimeConfigurationError {
-    DartSdk sdk = DartPlugin.getDartSdk(project);
+    final DartSdk sdk = DartPlugin.getDartSdk(project);
     if (sdk == null) {
       throw new RuntimeConfigurationError(FlutterBundle.message("dart.sdk.is.not.configured"),
                                           () -> DartConfigurable.openDartSettings(project));
     }
-    MainFile.Result main = MainFile.verify(getFields().getFilePath(), project);
+    final MainFile.Result main = MainFile.verify(getFields().getFilePath(), project);
     if (!main.canLaunch()) {
       throw new RuntimeConfigurationError(main.getError());
     }

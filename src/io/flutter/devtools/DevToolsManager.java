@@ -106,16 +106,16 @@ public class DevToolsManager {
   }
 
   public void openBrowser() {
-    openBrowserImpl(-1);
+    openBrowserImpl(null);
   }
 
-  public void openBrowserAndConnect(int port) {
-    openBrowserImpl(port);
+  public void openBrowserAndConnect(String uri) {
+    openBrowserImpl(uri);
   }
 
-  private void openBrowserImpl(int port) {
+  private void openBrowserImpl(String uri) {
     if (devToolsInstance != null) {
-      devToolsInstance.openBrowserAndConnect(port);
+      devToolsInstance.openBrowserAndConnect(uri);
       return;
     }
 
@@ -133,7 +133,7 @@ public class DevToolsManager {
     DevToolsInstance.startServer(project, sdk, pubRoots.get(0), instance -> {
       devToolsInstance = instance;
 
-      devToolsInstance.openBrowserAndConnect(port);
+      devToolsInstance.openBrowserAndConnect(uri);
     }, instance -> {
       // Listen for closing, null out the devToolsInstance.
       devToolsInstance = null;
@@ -209,13 +209,14 @@ class DevToolsInstance {
     this.devtoolsPort = devtoolsPort;
   }
 
-  public void openBrowserAndConnect(int serviceProtocolPort) {
-    if (serviceProtocolPort == -1) {
+  public void openBrowserAndConnect(String serviceProtocolUri) {
+    if (serviceProtocolUri == null) {
       BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
     }
     else {
+      // TODO: do we need to url encode uri?
       BrowserLauncher.getInstance().browse(
-        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&port=" + serviceProtocolPort,
+        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + serviceProtocolUri,
         null
       );
     }
