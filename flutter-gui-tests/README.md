@@ -7,8 +7,10 @@ creating the plugin.
 
 ## Usage
 
-1. Prepare the flutter-intellij plugin. Main menu: Build -> Prepare All Plugin Modules for Deployment.
-Ensure that `flutter-intellij.zip` appears under the root of the project.
+1. Prepare the flutter-intellij plugin. Run `bin/plugin build` in a terminal. If you do not
+want to wait for all the distros to be build, consult product-matrix.json to find which version
+sets isTestTarget to true. Then you can use it as the value of the -o option to the build command.
+For example: `bin/plugin build -o3.5`
 
 2. Check that the buildPlugin task works normally. Open the Gradle
 tool view: View -> Tool Windows -> Gradle. Expamd `Tasks`, then expand `intellij`.
@@ -25,6 +27,8 @@ cd flutter-gui-tests
 
 Currently, the tests need to be edited in a minimal flutter-intellij project. Open the flutter-intellij
 project in IntelliJ 2019.1 for stand-alone editing, without Dart or IntelliJ sources (see CONTRIBUTING.md).
+
+If you want to test recent changes be sure to repeat Step 1 in Usage so you are testing the latest build.
 
 ## Notes
 

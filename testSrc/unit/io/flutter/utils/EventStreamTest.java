@@ -5,33 +5,32 @@
  */
 package io.flutter.utils;
 
-import com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.common.collect.ImmutableList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import org.junit.Before;
+import org.junit.Test;
+
 public class EventStreamTest {
 
-  private EventStream<Integer> eventStream;
-
   private final List<String> logEntries = new ArrayList<>();
+  private final Object logValueListenerLock = new Object();
+  private EventStream<Integer> eventStream;
   private CompletableFuture<Object> callbacksDone;
-
   private volatile int expectedEvents;
   private volatile int numEvents;
   private boolean onUiThread;
-  private final Object logValueListenerLock = new Object();
 
   @Before
   public void setUp() {
@@ -86,9 +85,9 @@ public class EventStreamTest {
   }
 
   @Test
-  public void duplicateValues() {
+  public void duplicateValues() throws Exception {
     expectedEvents = 6;
-    SwingUtilities.invokeLater(() -> {
+    SwingUtilities.invokeAndWait(() -> {
       addLogValueListener(true);
       eventStream.setValue(100);
       eventStream.setValue(100);
@@ -96,20 +95,18 @@ public class EventStreamTest {
       eventStream.setValue(200);
       eventStream.setValue(200);
     });
-
     checkLog("42", "100", "100", "100", "200", "200");
   }
 
   @Test
-  public void nullInitialValue() {
+  public void nullInitialValue() throws Exception {
     expectedEvents = 3;
-    SwingUtilities.invokeLater(() -> {
+    SwingUtilities.invokeAndWait(() -> {
       eventStream = new EventStream<>();
       addLogValueListener(true);
       eventStream.setValue(100);
       eventStream.setValue(200);
     });
-
     checkLog("null", "100", "200");
   }
 
@@ -246,8 +243,19 @@ public class EventStreamTest {
   }
 
   private void checkLog(String... expectedEntries) {
+    java.util.Timer timer = new java.util.Timer();
     try {
+      TimerTask task = new TimerTask() {
+        @Override
+        public void run() {
+          timer.cancel();
+          callbacksDone.completeExceptionally(new InterruptedException("Expected more events"));
+          fail();
+        }
+      };
+      timer.schedule(task, 1000);
       callbacksDone.get();
+      timer.cancel();
     }
     catch (InterruptedException | ExecutionException e) {
       e.printStackTrace();

@@ -123,7 +123,7 @@ public class DaemonEventTest {
   @Test
   public void canReceiveAppStarting() {
     send("app.start", curly("appId:42", "deviceId:456", "directory:somedir", "launchMode:run"));
-    checkLog("AppStarting: 42, 456, somedir", "run");
+    checkLog("AppStarting: 42, 456, somedir, run");
   }
 
   @Test
