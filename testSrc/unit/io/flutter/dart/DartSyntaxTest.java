@@ -77,7 +77,7 @@ public class DartSyntaxTest extends AbstractDartElementTest {
       final PsiElement helloElt = setUpDartElement("main() { test(\"hello\"); }", "hello", LeafPsiElement.class);
 
       final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(helloElt, Pattern.compile("t.*a"));
-      assertNotNull("findEnclosingFunctionCall() didn't find enclosing function call", call);
+      assertNull("findEnclosingFunctionCall() didn't find enclosing function call", call);
     });
   }
 
