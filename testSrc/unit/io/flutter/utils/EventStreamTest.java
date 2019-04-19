@@ -5,37 +5,32 @@
  */
 package io.flutter.utils;
 
-import com.google.common.collect.ImmutableList;
-import com.intellij.testFramework.EdtTestUtil;
-import com.intellij.util.concurrency.EdtExecutorService;
-import com.intellij.util.concurrency.Invoker;
-import java.util.TimerTask;
-import org.junit.Before;
-import org.junit.Test;
-
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
+import com.google.common.collect.ImmutableList;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TimerTask;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import org.junit.Before;
+import org.junit.Test;
+
 public class EventStreamTest {
 
-  private EventStream<Integer> eventStream;
-
   private final List<String> logEntries = new ArrayList<>();
+  private final Object logValueListenerLock = new Object();
+  private EventStream<Integer> eventStream;
   private CompletableFuture<Object> callbacksDone;
-
   private volatile int expectedEvents;
   private volatile int numEvents;
   private boolean onUiThread;
-  private final Object logValueListenerLock = new Object();
 
   @Before
   public void setUp() {
@@ -104,7 +99,7 @@ public class EventStreamTest {
   }
 
   @Test
-  public void nullInitialValue() throws Exception{
+  public void nullInitialValue() throws Exception {
     expectedEvents = 3;
     SwingUtilities.invokeAndWait(() -> {
       eventStream = new EventStream<>();
