@@ -16,6 +16,7 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Verifies that we can watch files and directories.
@@ -37,14 +38,16 @@ public class FileWatchTest {
 
     // create
     tmp.writeFile("abc/child", "");
-    assertEquals(1, eventCount.get());
+    int count;
+    // The number of events fired is an implementation detail of the VFS. We just need at least one.
+    assertNotEquals(0, count = eventCount.get());
 
     // modify
     tmp.writeFile("abc/child", "hello");
-    assertEquals(2, eventCount.get());
+    assertEquals(count + 1, eventCount.get());
 
     // delete
     tmp.deleteFile("abc/child");
-    assertEquals(3, eventCount.get());
+    assertEquals(count + 2, eventCount.get());
   }
 }
