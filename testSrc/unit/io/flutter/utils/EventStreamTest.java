@@ -6,6 +6,10 @@
 package io.flutter.utils;
 
 import com.google.common.collect.ImmutableList;
+import com.intellij.testFramework.EdtTestUtil;
+import com.intellij.util.concurrency.EdtExecutorService;
+import com.intellij.util.concurrency.Invoker;
+import java.util.TimerTask;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -86,9 +90,9 @@ public class EventStreamTest {
   }
 
   @Test
-  public void duplicateValues() {
+  public void duplicateValues() throws Exception {
     expectedEvents = 6;
-    SwingUtilities.invokeLater(() -> {
+    SwingUtilities.invokeAndWait(() -> {
       addLogValueListener(true);
       eventStream.setValue(100);
       eventStream.setValue(100);
@@ -96,20 +100,18 @@ public class EventStreamTest {
       eventStream.setValue(200);
       eventStream.setValue(200);
     });
-
     checkLog("42", "100", "100", "100", "200", "200");
   }
 
   @Test
-  public void nullInitialValue() {
+  public void nullInitialValue() throws Exception{
     expectedEvents = 3;
-    SwingUtilities.invokeLater(() -> {
+    SwingUtilities.invokeAndWait(() -> {
       eventStream = new EventStream<>();
       addLogValueListener(true);
       eventStream.setValue(100);
       eventStream.setValue(200);
     });
-
     checkLog("null", "100", "200");
   }
 
@@ -246,8 +248,19 @@ public class EventStreamTest {
   }
 
   private void checkLog(String... expectedEntries) {
+    java.util.Timer timer = new java.util.Timer();
     try {
+      TimerTask task = new TimerTask() {
+        @Override
+        public void run() {
+          timer.cancel();
+          callbacksDone.completeExceptionally(new InterruptedException("Expected more events"));
+          fail();
+        }
+      };
+      timer.schedule(task, 1000);
       callbacksDone.get();
+      timer.cancel();
     }
     catch (InterruptedException | ExecutionException e) {
       e.printStackTrace();
