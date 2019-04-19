@@ -96,8 +96,6 @@ abstract class VmServiceBase implements VmServiceConst {
 
       @Override
       public void onOpen() {
-        System.out.println("VmServiceBase.onOpen()");
-
         vmService.connectionOpened();
 
         Logging.getLogger().logInformation("VM connection open: " + url);
@@ -352,8 +350,6 @@ abstract class VmServiceBase implements VmServiceConst {
   }
 
   public void connectionOpened() {
-    System.out.println("VmServiceBase.connectionOpened()");
-
     for (VmServiceListener listener : vmListeners) {
       try {
         listener.connectionOpened();
