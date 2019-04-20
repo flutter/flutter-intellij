@@ -12,6 +12,7 @@ import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -26,15 +27,14 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
   private final FlutterCreateParams createParams;
-
   public FlutterCreateAdditionalSettingsFields() {
-    this(new FlutterCreateAdditionalSettings());
+    this(new FlutterCreateAdditionalSettings(), null);
   }
 
-  public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings) {
+  public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings, FlutterSdk sdk) {
     settings = additionalSettings;
 
-    projectTypeForm = new ProjectType();
+    projectTypeForm = new ProjectType(sdk);
     projectTypeForm.addListener(e -> {
       settings.setType(projectTypeForm.getType());
       settings.setSampleContent(projectTypeForm.getSample());

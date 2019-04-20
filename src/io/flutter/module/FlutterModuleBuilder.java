@@ -51,9 +51,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   private static final Logger LOG = Logger.getInstance(FlutterModuleBuilder.class);
 
   private FlutterModuleWizardStep myStep;
-  @NotNull
-  private final FlutterCreateAdditionalSettingsFields mySettingsFields =
-    new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings());
+  private FlutterCreateAdditionalSettingsFields mySettingsFields;
 
   @Override
   public String getName() {
@@ -258,6 +256,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Override
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
     myStep = new FlutterModuleWizardStep(context);
+    mySettingsFields = new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings(), myStep.getFlutterSdk());
     Disposer.register(parentDisposable, myStep);
     return myStep;
   }
