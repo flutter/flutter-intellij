@@ -56,10 +56,12 @@ abstract class DaemonEvent {
   static DaemonEvent create(@NotNull String eventName, @NotNull JsonObject params) {
     try {
       switch (eventName) {
+        case "daemon.log":
+          return GSON.fromJson(params, DaemonLog.class);
         case "daemon.logMessage":
-          return GSON.fromJson(params, LogMessage.class);
+          return GSON.fromJson(params, DaemonLogMessage.class);
         case "daemon.showMessage":
-          return GSON.fromJson(params, ShowMessage.class);
+          return GSON.fromJson(params, DaemonShowMessage.class);
         case "app.start":
           return GSON.fromJson(params, AppStarting.class);
         case "app.debugPort":
@@ -108,10 +110,13 @@ abstract class DaemonEvent {
 
     // daemon domain
 
-    default void onDaemonLogMessage(LogMessage event) {
+    default void onDaemonLog(DaemonLog event) {
     }
 
-    default void onDaemonShowMessage(ShowMessage event) {
+    default void onDaemonLogMessage(DaemonLogMessage event) {
+    }
+
+    default void onDaemonShowMessage(DaemonShowMessage event) {
     }
 
     // app domain
@@ -149,7 +154,18 @@ abstract class DaemonEvent {
   // daemon domain
 
   @SuppressWarnings("unused")
-  static class LogMessage extends DaemonEvent {
+  static class DaemonLog extends DaemonEvent {
+    // "event":"daemon.log"
+    String log;
+    boolean error;
+
+    void accept(Listener listener) {
+      listener.onDaemonLog(this);
+    }
+  }
+
+  @SuppressWarnings("unused")
+  static class DaemonLogMessage extends DaemonEvent {
     // "event":"daemon.logMessage"
     String level;
     String message;
@@ -161,7 +177,7 @@ abstract class DaemonEvent {
   }
 
   @SuppressWarnings("unused")
-  static class ShowMessage extends DaemonEvent {
+  static class DaemonShowMessage extends DaemonEvent {
     // "event":"daemon.showMessage"
     String level;
     String title;

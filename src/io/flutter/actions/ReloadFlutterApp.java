@@ -51,4 +51,14 @@ public class ReloadFlutterApp extends FlutterAppAction {
       FlutterReloadManager.getInstance(project).saveAllAndReload(getApp(), FlutterConstants.RELOAD_REASON_MANUAL);
     }
   }
+
+  // Override to disable the hot reload action when running flutter web apps.
+  @Override
+  public void update(@NotNull AnActionEvent e) {
+    super.update(e);
+
+    if (!getApp().appSupportsHotReload()) {
+      e.getPresentation().setEnabled(false);
+    }
+  }
 }
