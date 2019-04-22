@@ -843,7 +843,7 @@ public class DiagnosticsNode {
         group.safeWhenComplete(future, action);
       });
     }
-    catch (Exception e) {
+    catch (Exception ignored) {
       // Nothing to do if the service can't be acquired.
     }
   }

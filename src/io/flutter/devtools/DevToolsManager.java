@@ -216,17 +216,15 @@ class DevToolsInstance {
       BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
     }
     else {
-      String urlParam = serviceProtocolUri;
       try {
-        urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
+        final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
+        BrowserLauncher.getInstance().browse(
+          "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + urlParam,
+          null
+        );
       }
       catch (UnsupportedEncodingException ignored) {
       }
-
-      BrowserLauncher.getInstance().browse(
-        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + urlParam,
-        null
-      );
     }
   }
 }
