@@ -7,6 +7,7 @@ package io.flutter.dart;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -16,9 +17,7 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import org.dartlang.analysis.server.protocol.FlutterOutline;
-import org.dartlang.analysis.server.protocol.FlutterService;
-import org.dartlang.analysis.server.protocol.SourceChange;
+import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -58,6 +57,16 @@ public class FlutterDartAnalysisServer {
   private FlutterDartAnalysisServer(@NotNull Project project) {
     analysisService = DartPlugin.getInstance().getAnalysisService(project);
     analysisService.addResponseListener(FlutterDartAnalysisServer.this::processResponse);
+    analysisService.addAnalysisServerListener(new AnalysisServerListenerAdapter() {
+      @Override
+      public void serverConnected(String s) {
+        // If the server reconnected we need to let it know that we still care
+        // about our subscriptions.
+        if (!subscriptions.isEmpty()) {
+          sendSubscriptions();
+        }
+      }
+    });
   }
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
