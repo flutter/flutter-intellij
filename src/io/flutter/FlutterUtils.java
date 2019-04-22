@@ -68,6 +68,12 @@ public class FlutterUtils {
     return isDartFile(file) || PubRoot.isPubspec(file);
   }
 
+  public static boolean couldContainWidgets(@Nullable VirtualFile file) {
+    // TODO(jacobr): we might also want to filter for files not under the
+    // current project root.
+    return file != null && FlutterUtils.isDartFile(file);
+  }
+
   public static boolean isDartFile(@NotNull VirtualFile file) {
     return Objects.equals(file.getFileType(), DartFileType.INSTANCE);
   }

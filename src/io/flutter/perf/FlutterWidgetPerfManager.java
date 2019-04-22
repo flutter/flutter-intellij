@@ -20,6 +20,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
@@ -110,7 +111,7 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
     for (FileEditor editor : editors) {
       if (editor instanceof TextEditor) {
         final VirtualFile file = editor.getFile();
-        if (couldContainWidgets(file)) {
+        if (FlutterUtils.couldContainWidgets(file)) {
           newEditors.add((TextEditor)editor);
         }
       }
@@ -247,12 +248,6 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
         app.callBooleanExtension(serviceExtension, valueProvider.compute());
       }
     }));
-  }
-
-  private boolean couldContainWidgets(@Nullable VirtualFile file) {
-    // TODO(jacobr): we might also want to filter for files not under the
-    // current project root.
-    return file != null && FlutterUtils.isDartFile(file);
   }
 
   private void updateCurrentAppChanged(@Nullable FlutterApp app) {

@@ -64,6 +64,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
 
+  // Settings for UI as Code experiments:
+  private JCheckBox myShowBuildMethodGuides;
+  private JCheckBox myShowMultipleChildrenGuides;
+  private JCheckBox myShowThickLineGuides;
+  private JCheckBox myShowBuildMethodsOnScrollbar;
+
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -103,6 +109,18 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+
+    // These options are only enabled if build method guides are enabled as the
+    // same class handles all these cases.
+    myShowBuildMethodGuides.addChangeListener((e) -> {
+      myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
+      myShowThickLineGuides.setEnabled(myShowBuildMethodGuides.isSelected() && myShowMultipleChildrenGuides.isSelected());
+      myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+    });
+
+    myShowMultipleChildrenGuides.addChangeListener((e) -> {
+      myShowThickLineGuides.setEnabled(myShowBuildMethodGuides.isSelected() && myShowMultipleChildrenGuides.isSelected());
+    });
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
   }
 
@@ -164,6 +182,20 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isShowBuildMethodGuides() != myShowBuildMethodGuides.isSelected()) {
+      return true;
+    }
+    if (settings.isShowMultipleChildrenGuides() != myShowMultipleChildrenGuides.isSelected()) {
+      return true;
+    }
+    if (settings.isShowThickLineGuides() != myShowThickLineGuides.isSelected()) {
+      return true;
+    }
+
+    if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
+      return true;
+    }
+
     if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
       return true;
     }
@@ -215,6 +247,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
+
+    settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
+    settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
+    settings.setShowThickLineGuides(myShowThickLineGuides.isSelected());
+    settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setLegacyTrackWidgetCreation(myLegacyTrackWidgetCreationCheckBox.isSelected());
@@ -245,6 +282,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
+
+    myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
+    myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
+    myShowThickLineGuides.setSelected(settings.isShowThickLineGuides());
+    myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
+
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myLegacyTrackWidgetCreationCheckBox.setSelected(settings.isLegacyTrackWidgetCreation());
@@ -253,6 +296,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
+
+    // These options are only enabled if build method guides are enabled as the
+    // same class handles all these cases.
+    myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
+    myShowThickLineGuides.setEnabled(myShowBuildMethodGuides.isSelected() && myShowMultipleChildrenGuides.isSelected());
+    myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
   }
 
   private void onVersionChanged() {

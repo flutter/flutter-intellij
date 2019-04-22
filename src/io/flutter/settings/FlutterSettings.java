@@ -28,6 +28,12 @@ public class FlutterSettings {
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
 
+  // Settings for UI as Code experiments.
+  private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
+  private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
+  private static final String showThickLineGuidesKey = "io.flutter.editor.showThickLineGuides";
+  private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
+
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
   }
@@ -222,6 +228,46 @@ public class FlutterSettings {
 
   public void setVerboseLogging(boolean value) {
     getPropertiesComponent().setValue(verboseLoggingKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowBuildMethodGuides() {
+    return getPropertiesComponent().getBoolean(showBuildMethodGuidesKey, false);
+  }
+
+  public void setShowBuildMethodGuides(boolean value) {
+    getPropertiesComponent().setValue(showBuildMethodGuidesKey, value, false);
+
+    fireEvent();
+  }
+
+  public void setShowThickLineGuides(boolean value) {
+    getPropertiesComponent().setValue(showThickLineGuidesKey, value, true);
+
+    fireEvent();
+  }
+
+  public boolean isShowThickLineGuides() {
+    return getPropertiesComponent().getBoolean(showThickLineGuidesKey, true);
+  }
+
+  public boolean isShowBuildMethodsOnScrollbar() {
+    return getPropertiesComponent().getBoolean(showBuildMethodsOnScrollbarKey, false);
+  }
+
+  public void setShowBuildMethodsOnScrollbar(boolean value) {
+    getPropertiesComponent().setValue(showBuildMethodsOnScrollbarKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowMultipleChildrenGuides() {
+    return getPropertiesComponent().getBoolean(showMultipleChildrenGuidesKey, false);
+  }
+
+  public void setShowMultipleChildrenGuides(boolean value) {
+    getPropertiesComponent().setValue(showMultipleChildrenGuidesKey, value, false);
 
     fireEvent();
   }
