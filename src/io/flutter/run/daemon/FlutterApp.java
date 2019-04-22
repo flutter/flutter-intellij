@@ -605,6 +605,7 @@ public class FlutterApp {
            !debugProcess.getSession().isStopped();
   }
 
+  @Nullable
   public FlutterDevice device() {
     return myDevice;
   }
@@ -754,7 +755,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     if (console == null) return;
     if (message.log != null) {
       console.print(message.log + "\n", message.error ? ConsoleViewContentType.ERROR_OUTPUT : ConsoleViewContentType.NORMAL_OUTPUT);
-    }    
+    }
   }
 
   @Override

@@ -26,6 +26,8 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -214,9 +216,15 @@ class DevToolsInstance {
       BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
     }
     else {
-      // TODO: do we need to url encode uri?
+      String urlParam = serviceProtocolUri;
+      try {
+        urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
+      }
+      catch (UnsupportedEncodingException ignored) {
+      }
+
       BrowserLauncher.getInstance().browse(
-        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + serviceProtocolUri,
+        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + urlParam,
         null
       );
     }

@@ -216,12 +216,22 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
     runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
-    final List<FlutterDevice> existingDevices = new ArrayList<>();
-    for (FlutterApp otherApp : perAppViewState.keySet()) {
-      existingDevices.add(otherApp.device());
-    }
     final JPanel tabContainer = new JPanel(new BorderLayout());
-    final Content content = contentManager.getFactory().createContent(null, app.device().getUniqueName(existingDevices), false);
+
+    final String tabName;
+    final FlutterDevice device = app.device();
+    if (device == null) {
+      tabName = app.getProject().getName();
+    }
+    else {
+      final List<FlutterDevice> existingDevices = new ArrayList<>();
+      for (FlutterApp otherApp : perAppViewState.keySet()) {
+        existingDevices.add(otherApp.device());
+      }
+      tabName = device.getUniqueName(existingDevices);
+    }
+
+    final Content content = contentManager.getFactory().createContent(null, tabName, false);
     tabContainer.add(runnerTabs.getComponent(), BorderLayout.CENTER);
     content.setComponent(tabContainer);
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
