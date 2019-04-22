@@ -75,7 +75,6 @@ public class FlutterSampleManager {
 
       try {
         final GeneralCommandLine commandLine = sdk.flutterListSamples(tempFile).createGeneralCommandLine(null);
-        LOG.info(commandLine.toString());
         final OSProcessHandler process = new OSProcessHandler(commandLine);
         process.addProcessListener(new ProcessAdapter() {
           @Override
