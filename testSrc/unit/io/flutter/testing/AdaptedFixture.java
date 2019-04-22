@@ -5,8 +5,6 @@
  */
 package io.flutter.testing;
 
-import com.intellij.openapi.diagnostic.ExceptionWithAttachments;
-import com.intellij.openapi.util.TraceableDisposable;
 import com.intellij.testFramework.fixtures.IdeaTestFixture;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -38,18 +36,22 @@ public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
         inner = factory.create(description.getClassName());
         if (runOnDispatchThread) {
           Testing.runOnDispatchThread(inner::setUp);
-        } else {
+        }
+        else {
           inner.setUp();
         }
         try {
           base.evaluate();
-        } finally {
+        }
+        finally {
           if (runOnDispatchThread) {
             Testing.runOnDispatchThread(inner::tearDown);
-          } else {
+          }
+          else {
             try {
               inner.tearDown();
-            } catch (RuntimeException ex) {
+            }
+            catch (RuntimeException ex) {
               // TraceableDisposable.DisposalException is private.
               // It gets thrown during CodeInsightTestFixtureImpl.tearDown,
               // apparently because of a Kotlin test framework convenience
