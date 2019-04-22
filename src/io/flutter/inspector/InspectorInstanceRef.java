@@ -23,7 +23,6 @@ public class InspectorInstanceRef {
 
   @Override
   public boolean equals(Object other) {
-    //noinspection SimplifiableIfStatement
     if (other instanceof InspectorInstanceRef) {
       final InspectorInstanceRef otherRef = (InspectorInstanceRef)other;
       return Objects.equals(id, otherRef.id);

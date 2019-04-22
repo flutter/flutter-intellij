@@ -227,7 +227,6 @@ public abstract class LineParser {
       }
     }
 
-    //noinspection MagicConstant
     return new SimpleTextAttributes(fontStyle, color);
   }
 
