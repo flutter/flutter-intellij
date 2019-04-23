@@ -63,7 +63,11 @@ public class FlutterSample {
   }
 
   public String getShortHtmlDescription() {
-    return "<html>" + parseShortHtmlDescription(description) + "</html>";
+    // The markdown builder adds paragraph blocks when we don't want them.
+    String html = parseShortHtmlDescription(description);
+    html = html.replaceAll("<p>", "");
+    html = html.replaceAll("</p>", "");
+    return "<html>" + html + "</html>";
   }
 
   @VisibleForTesting
