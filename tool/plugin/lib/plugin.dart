@@ -584,17 +584,7 @@ class BuildCommand extends ProductCommand {
       // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
       var files = <File, String>{};
       var processedFile, source;
-      if (spec.version == '3.3.2') {
-        log('spec.version: ${spec.version}');
-        processedFile = File(
-            'flutter-studio/src/io/flutter/project/FlutterProjectCreator.java');
-        source = processedFile.readAsStringSync();
-        files[processedFile] = source;
-        source = source.replaceAll('List<? extends File>', 'List<File>');
-        processedFile.writeAsStringSync(source);
-      }
-      if (spec.version == '3.3.2' ||
-          spec.version == '3.4') {
+      if (spec.version == '3.4') {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
@@ -619,8 +609,7 @@ class BuildCommand extends ProductCommand {
         );
         processedFile.writeAsStringSync(source);
       }
-      if (spec.version != '3.6') {
-        // There is no 3.6 yet, but these edits will be needed for next canary
+      if (spec.version != '3.5') {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
