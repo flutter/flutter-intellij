@@ -144,8 +144,7 @@ void genTravisYml(List<BuildSpec> specs) {
   var file = new File(p.join(rootPath, '.travis.yml'));
   var env = '';
   for (var spec in specs) {
-    if (!spec.untilBuild.contains('SNAPSHOT'))
-      env += '  - IDEA_VERSION=${spec.version}\n';
+    env += '  - IDEA_VERSION=${spec.version}\n';
   }
 
   var templateFile = new File(p.join(rootPath, '.travis_template.yml'));
@@ -272,9 +271,9 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'PLUGINID':
         return spec.pluginId;
       case 'SINCE':
-        return spec.sinceBuild;
+        return spec.sinceBuild.toString();
       case 'UNTIL':
-        return spec.untilBuild;
+        return spec.untilBuild.toString();
       case 'VERSION':
         return spec.release == null
             ? '<version>SNAPSHOT</version>'
@@ -768,7 +767,7 @@ compile
   }
 }
 
-class BuildSpec {
+class BuildSpec implements Comparable<BuildSpec> {
   // Build targets
   final String name;
   final String version;
@@ -779,8 +778,8 @@ class BuildSpec {
   final String dartPluginVersion;
 
   // plugin.xml variables
-  final String sinceBuild;
-  final String untilBuild;
+  final PlatformVersion sinceBuild;
+  final PlatformVersion untilBuild;
   final String pluginId = 'io.flutter';
   final String release;
   final List<dynamic> filesToSkip;
@@ -799,8 +798,8 @@ class BuildSpec {
         ideaProduct = json['ideaProduct'],
         ideaVersion = json['ideaVersion'],
         dartPluginVersion = json['dartPluginVersion'],
-        sinceBuild = json['sinceBuild'],
-        untilBuild = json['untilBuild'],
+        sinceBuild = new PlatformVersion(json['sinceBuild']),
+        untilBuild = new PlatformVersion(json['untilBuild']),
         filesToSkip = json['filesToSkip'] ?? [],
         isTestTarget = (json['isTestTarget'] ?? 'false') == 'true' {
     createArtifacts();
@@ -847,10 +846,63 @@ class BuildSpec {
         .replaceAll('<li>\n<p>', '<li><p>');
   }
 
-  String toString() {
-    return 'BuildSpec($ideaProduct $ideaVersion $dartPluginVersion $sinceBuild '
-        '$untilBuild version: "$release")';
+  @override
+  int compareTo(BuildSpec other) {
+    if (other.sinceBuild == this.sinceBuild) return 0;
+    return this.sinceBuild < other.sinceBuild ? -1 : 1;
   }
+
+  String toString() {
+    var releaseStr = release == null ? '' : ' version: $release';
+    return 'BuildSpec: $name, $ideaVersion, Dart $dartPluginVersion, '
+        '[$sinceBuild $untilBuild)$releaseStr';
+  }
+}
+
+/// Supports IntelliJ platform versions.
+///
+/// This includes versions like 182.0, 183.5153, 191.*, ...
+class PlatformVersion {
+  static const int _infinite = 1000000000;
+
+  int _major;
+  int _minor;
+
+  PlatformVersion(String str) {
+    var index = str.indexOf('.');
+    if (index == -1) {
+      throw new ArgumentError(str);
+    }
+    _major = int.parse(str.substring(0, index));
+    str = str.substring(index + 1);
+    if (str == '*') {
+      _minor = _infinite;
+    } else {
+      _minor = int.parse(str);
+    }
+  }
+
+  bool operator ==(dynamic other) {
+    if (other is! PlatformVersion) return false;
+    return _major == other._major && _minor == other._minor;
+  }
+
+  bool operator <(PlatformVersion other) {
+    if (_major == other._major) return _minor < other._minor;
+    return _major < other._major;
+  }
+
+  bool operator >(PlatformVersion other) {
+    if (_major == other._major) return _minor > other._minor;
+    return _major > other._major;
+  }
+
+  int get hashCode => _major ^ _minor;
+
+  String get versionString =>
+      _minor == _infinite ? '$_major.*' : '$_major.$_minor';
+
+  String toString() => versionString;
 }
 
 /// Prompt for the JetBrains account password then upload
@@ -954,6 +1006,30 @@ class GenerateCommand extends ProductCommand {
 
   Future<int> doit() async {
     var json = readProductMatrix();
+
+    // validate the product matrix
+    var buildSpecs = specs.toList();
+    buildSpecs.sort();
+    var hasOverlap = false;
+
+    for (var i = 1; i < buildSpecs.length; i++) {
+      var spec1 = buildSpecs[i - 1];
+      var spec2 = buildSpecs[i];
+      if (spec1.untilBuild > spec2.sinceBuild) {
+        if (!hasOverlap) {
+          print('Product version ranges overlap (untilBuild > sinceBuild):\n');
+          hasOverlap = true;
+        }
+
+        print('$spec1\n$spec2\n');
+      }
+    }
+
+    if (hasOverlap) {
+      // return a failure code
+      return 1;
+    }
+
     var spec = new SyntheticBuildSpec.fromJson(json.first, release, json.last);
     var value = 1;
     var result = await genPluginFiles(spec, 'resources');
@@ -1078,7 +1154,8 @@ class SyntheticBuildSpec extends BuildSpec {
   SyntheticBuildSpec.fromJson(Map json, String releaseNum, this.alternate)
       : super.fromJson(json, releaseNum);
 
-  String get untilBuild => alternate['untilBuild'];
+  PlatformVersion get untilBuild =>
+      new PlatformVersion(alternate['untilBuild']);
 
   bool get isSynthetic => true;
 }
