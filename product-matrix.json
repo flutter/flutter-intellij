@@ -8,7 +8,7 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "183.5370308",
       "dartPluginVersion": "183.5901",
-      "sinceBuild": "183.5153",
+      "sinceBuild": "183.0",
       "untilBuild": "183.*"
     },
     {
@@ -19,8 +19,8 @@
       "ideaProduct": "android-studio",
       "ideaVersion": "191.5471097",
       "dartPluginVersion": "191.6183.87",
-      "sinceBuild": "191.6183",
-      "untilBuild": "191.*"
+      "sinceBuild": "191.0",
+      "untilBuild": "191.6707"
     },
     {
       "comments": "IntelliJ 2019.1.1",
@@ -40,8 +40,8 @@
       "ideaProduct": "ideaIC",
       "ideaVersion": "2019.1",
       "dartPluginVersion": "191.7019",
-      "sinceBuild": "191.6707",
-      "untilBuild": "192.SNAPSHOT"
+      "sinceBuild": "192.0",
+      "untilBuild": "192.*"
     }
   ]
 }
