@@ -59,7 +59,7 @@ public class InspectorService implements Disposable {
                                                            @NotNull FlutterDebugProcess debugProcess,
                                                            @NotNull VmService vmService) {
     assert app.getVMServiceManager() != null;
-    Set<String> inspectorLibraryNames = new HashSet<>();
+    final Set<String> inspectorLibraryNames = new HashSet<>();
     inspectorLibraryNames.add("package:flutter/src/widgets/widget_inspector.dart");
     inspectorLibraryNames.add("package:flutter_web/src/widgets/widget_inspector.dart");
     final EvalOnDartLibrary inspectorLibrary = new EvalOnDartLibrary(

@@ -15,6 +15,7 @@ import org.junit.Test;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 public class ProjectWatchTest {
 
@@ -28,7 +29,8 @@ public class ProjectWatchTest {
       final ProjectWatch listen = ProjectWatch.subscribe(fixture.getProject(), callCount::incrementAndGet);
 
       ProjectManager.getInstance().closeProject(fixture.getProject());
-      assertEquals(1, callCount.get());
+      // The number of events fired is an implementation detail of the project manager. We just need at least one.
+      assertNotEquals(0, callCount.get());
     });
   }
 

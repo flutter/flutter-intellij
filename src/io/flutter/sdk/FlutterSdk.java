@@ -25,6 +25,8 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
+import io.flutter.samples.FlutterSample;
+import io.flutter.samples.FlutterSampleManager;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,6 +53,8 @@ public class FlutterSdk {
   private final @NotNull VirtualFile myHome;
   private final @NotNull FlutterSdkVersion myVersion;
   private final Map<String, String> cachedConfigValues = new HashMap<>();
+
+  private FlutterSampleManager sampleManager;
 
   private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;
@@ -190,6 +194,10 @@ public class FlutterSdk {
     return new FlutterCommand(this, getHome(), FlutterCommand.Type.CONFIG, additionalArgs);
   }
 
+  public FlutterCommand flutterListSamples(@NotNull File indexFile) {
+    return new FlutterCommand(this, getHome(), FlutterCommand.Type.LIST_SAMPLES, indexFile.getAbsolutePath());
+  }
+
   public FlutterCommand flutterRun(@NotNull PubRoot root,
                                    @NotNull VirtualFile main,
                                    @Nullable FlutterDevice device,
@@ -270,16 +278,14 @@ public class FlutterSdk {
   }
 
   public FlutterCommand flutterRunWeb(@NotNull PubRoot root, @NotNull RunMode mode) {
-    // flutter packages pub global run webdev serve [--debug] [--hot-reload]
-    final List<String> args = new ArrayList<>();
-    args.add("global");
-    args.add("run");
-    args.add("webdev");
-    args.add("daemon");
-    // TODO(https://github.com/flutter/flutter-intellij/issues/3349) After debug is supported by webdev, this should be modified to check
-    //  for debug and add any additional needed flags:
-    //  i.e. if (mode == RunMode.DEBUG) { args.add("--debug"); }
-    return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, true, args.toArray(new String[]{ }));
+    // TODO(devoncarew): We need to provision the webdev cli here.
+
+    // TODO(jwren): After debugging is supported by webdev, this should be modified to check for debug and add
+    // any additional needed flags: i.e. if (mode == RunMode.DEBUG) { args.add("--debug"); }
+    // See https://github.com/flutter/flutter-intellij/issues/3349.
+
+    // flutter packages pub global run webdev daemon
+    return new FlutterWebCommand(this, root.getRoot(), FlutterCommand.Type.FLUTTER_WEB_RUN, new String[]{ });
   }
 
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
@@ -411,6 +417,14 @@ public class FlutterSdk {
       baseDir.refresh(false, true); // The current thread must NOT be in a read action.
     }
     return PubRoot.forDirectory(baseDir);
+  }
+
+
+  public List<FlutterSample> getSamples() {
+    if (sampleManager == null) {
+      sampleManager = new FlutterSampleManager(this);
+    }
+    return sampleManager.getSamples();
   }
 
   public Process startMakeHostAppEditable(@NotNull PubRoot root, @NotNull Project project) {

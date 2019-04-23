@@ -64,10 +64,6 @@ public class FlutterSampleComboBox extends ComboBox<FlutterSample> {
     }
   }
 
-  FlutterSampleComboBox() {
-    this(FlutterSampleManager.getSamples());
-  }
-
   FlutterSampleComboBox(@NotNull List<FlutterSample> samples) {
     super(new SampleModel(samples));
     setRenderer(new SampleCellRenderer());

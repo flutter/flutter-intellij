@@ -36,16 +36,27 @@ public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
         inner = factory.create(description.getClassName());
         if (runOnDispatchThread) {
           Testing.runOnDispatchThread(inner::setUp);
-        } else {
+        }
+        else {
           inner.setUp();
         }
         try {
           base.evaluate();
-        } finally {
+        }
+        finally {
           if (runOnDispatchThread) {
             Testing.runOnDispatchThread(inner::tearDown);
-          } else {
-            inner.tearDown();
+          }
+          else {
+            try {
+              inner.tearDown();
+            }
+            catch (RuntimeException ex) {
+              // TraceableDisposable.DisposalException is private.
+              // It gets thrown during CodeInsightTestFixtureImpl.tearDown,
+              // apparently because of a Kotlin test framework convenience
+              // feature that we don't have.
+            }
           }
           inner = null;
         }

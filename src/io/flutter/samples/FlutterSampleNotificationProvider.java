@@ -57,7 +57,7 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
     final String pathSuffix = FileUtil.normalize(sdk.getHomePath()) + "/packages/flutter/";
 
     final List<FlutterSample> samples = new ArrayList<>();
-    for (FlutterSample sample : FlutterSampleManager.getSamples()) {
+    for (FlutterSample sample : sdk.getSamples()) {
       final String samplePath = pathSuffix + sample.getSourcePath();
       if (filePath.equals(samplePath)) {
         samples.add(sample);

@@ -29,7 +29,6 @@ import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.popup.Balloon;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VfsUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindowId;
@@ -72,10 +71,6 @@ import java.util.stream.Collectors;
  * Handle the mechanics of performing a hot reload on file save.
  */
 public class FlutterReloadManager {
-  private static final String RESTART_SUGGESTED_TEXT =
-    "Not all changed program elements ran during view reassembly; consider restarting ("
-    + (SystemInfo.isMac ? "⇧⌘S" : "⇧^S") + ").";
-
   private static final Logger LOG = Logger.getInstance(FlutterReloadManager.class);
 
   private static final Map<String, NotificationGroup> toolWindowNotificationGroups = new HashMap<>();
@@ -175,7 +170,7 @@ public class FlutterReloadManager {
       return;
     }
 
-    if (!app.getLaunchMode().supportsReload()) {
+    if (!app.getLaunchMode().supportsReload() || !app.appSupportsHotReload()) {
       return;
     }
 
@@ -211,10 +206,6 @@ public class FlutterReloadManager {
           notification.expire();
           showRunNotification(app, "Hot Reload Error", result.getMessage(), true);
         }
-        else if (result.isRestartRecommended()) {
-          notification.expire();
-          showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
-        }
         else {
           // Make sure the reloading message is displayed for at least 2 seconds (so it doesn't just flash by).
           final long delay = Math.max(0, 2000 - (System.currentTimeMillis() - startTime));
@@ -237,9 +228,6 @@ public class FlutterReloadManager {
       app.performHotReload(true, reason).thenAccept(result -> {
         if (!result.ok()) {
           showRunNotification(app, "Hot Reload", result.getMessage(), true);
-        }
-        else if (result.isRestartRecommended()) {
-          showRunNotification(app, "Reloading…", RESTART_SUGGESTED_TEXT, false);
         }
       }).exceptionally(throwable -> {
         showRunNotification(app, "Hot Reload", throwable.getMessage(), true);

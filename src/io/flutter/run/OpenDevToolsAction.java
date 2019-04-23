@@ -15,8 +15,6 @@ import io.flutter.devtools.DevToolsManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 
 public class OpenDevToolsAction extends DumbAwareAction {
@@ -70,22 +68,12 @@ public class OpenDevToolsAction extends DumbAwareAction {
         return;
       }
 
-      final URL url;
-      try {
-        url = new URL(urlString);
-      }
-      catch (MalformedURLException e) {
-        return;
-      }
-
-      final int port = url.getPort();
-
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(port);
+        devToolsManager.openBrowserAndConnect(urlString);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(port));
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(urlString));
       }
     }
   }

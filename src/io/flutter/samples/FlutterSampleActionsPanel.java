@@ -18,20 +18,25 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.List;
 
 public class FlutterSampleActionsPanel extends JPanel {
+
+  // Enable to run local main.
+  private static final boolean TESTING_LOCALLY = false;
 
   protected final JBLabel myLabel = new JBLabel();
   protected final JBLabel goLink;
 
   @NotNull private final List<FlutterSample> samples;
-  @NotNull private final Project project;
+  @Nullable private final Project project;
   protected Color myBackgroundColor;
   protected ColorKey myBackgroundColorKey;
 
@@ -40,7 +45,7 @@ public class FlutterSampleActionsPanel extends JPanel {
   // Combo or label.
   JComponent sampleSelector;
 
-  FlutterSampleActionsPanel(@NotNull List<FlutterSample> samples, @NotNull Project project) {
+  FlutterSampleActionsPanel(@NotNull List<FlutterSample> samples, @Nullable Project project) {
     super(new BorderLayout());
     this.samples = samples;
     this.project = project;
@@ -52,7 +57,7 @@ public class FlutterSampleActionsPanel extends JPanel {
     myLabel.setBorder(JBUI.Borders.emptyRight(5));
 
     goLink = createLinkLabel("Go...", this::doCreate);
-    goLink.setBorder(JBUI.Borders.empty(1, 8, 0, 0));
+    goLink.setBorder(JBUI.Borders.emptyLeft(8));
 
     sampleSelector = setupSelectorComponent();
 
@@ -75,7 +80,7 @@ public class FlutterSampleActionsPanel extends JPanel {
   private static JBLabel createLinkLabel(@NotNull String text, @NotNull Runnable onClick) {
     // Standard hyperlinks were rendering oddly on 2018.3, so we create our own.
     // See: https://github.com/flutter/flutter-intellij/issues/3197
-    final JBLabel label  = new JBLabel(text);
+    final JBLabel label = new JBLabel(text);
     label.setForeground(JBColor.blue);
     label.setCursor(new Cursor(Cursor.HAND_CURSOR));
     label.addMouseListener(new MouseAdapter() {
@@ -103,8 +108,9 @@ public class FlutterSampleActionsPanel extends JPanel {
   }
 
   private void setupPanel() {
+    setLayout(new BorderLayout(0, 10));
     // LABEL | SELECTOR | LINK...
-    final JPanel subPanel = new NonOpaquePanel(new BorderLayout(0, 10));
+    final JPanel subPanel = new NonOpaquePanel(new BorderLayout());
     subPanel.add(BorderLayout.WEST, myLabel);
     subPanel.add(BorderLayout.CENTER, sampleSelector);
     subPanel.add(BorderLayout.EAST, goLink);
@@ -114,19 +120,23 @@ public class FlutterSampleActionsPanel extends JPanel {
 
     // DESCRIPTION
     final JPanel descriptionPanel = new NonOpaquePanel(new BorderLayout());
-    final int descriptionTopNudge = sampleSelector instanceof FlutterSampleComboBox ? -7 : -14;
-    descriptionPanel.setBorder(JBUI.Borders.empty(descriptionTopNudge, 12, 5, 5));
+    final int topNudge = samples.size() > 1 ? 6 : 0;
+    descriptionPanel.setBorder(JBUI.Borders.empty(topNudge, 12, 5, 5));
     descriptionPanel.add(BorderLayout.NORTH, descriptionText);
     add(BorderLayout.CENTER, descriptionPanel);
 
     // PLACEHOLDER (to force reflow on resize)
     add(BorderLayout.EAST, new NonOpaquePanel(new BorderLayout()));
 
-    setBorder(JBUI.Borders.empty(10, 10, 5,  10));
+    setBorder(JBUI.Borders.empty(10, 10, 5, 10));
   }
 
   @Override
   public Color getBackground() {
+    if (TESTING_LOCALLY) {
+      return UIUtil.getToolTipBackground();
+    }
+
     final EditorColorsScheme globalScheme = EditorColorsManager.getInstance().getGlobalScheme();
     if (myBackgroundColor != null) return myBackgroundColor;
     if (myBackgroundColorKey != null) {
@@ -143,10 +153,41 @@ public class FlutterSampleActionsPanel extends JPanel {
   }
 
   private void doCreate() {
+    // For testing.
+    if (project == null) {
+      if (!TESTING_LOCALLY) {
+        FlutterMessages.showError("Sample Project Creation", "Error: null project");
+      }
+      return;
+    }
     final FlutterSample sample = getSelectedSample();
     final String status = FlutterSampleManager.createSampleProject(sample, project);
     if (status != null) {
       FlutterMessages.showError("Sample Project Creation", "Error: " + status);
     }
+  }
+
+  // For testing.
+  public static void main(String[] args) {
+    if (!TESTING_LOCALLY) {
+      throw new IllegalStateException("Set TESTING_LOCALLY and re-run.");
+    }
+
+    final List<FlutterSample> samples = Arrays.asList(
+      new FlutterSample(
+        "foo", "baz", "baz", "baz", "baz", "This sample shows creation of a [Card] widget that shows album information\nand two actions."
+      )
+      ,
+      new FlutterSample(
+        "bar", "baz", "baz", "baz", "baz", "This sample shows how to use [onDeleted] to remove an entry when the\ndelete button is tapped."
+      )
+    );
+
+    final FlutterSampleActionsPanel panel = new FlutterSampleActionsPanel(samples, null);
+    final JFrame frame = new JFrame("BorderLayoutDemo");
+    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    frame.add(panel);
+    frame.pack();
+    frame.setVisible(true);
   }
 }
