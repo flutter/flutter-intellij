@@ -2,7 +2,6 @@
 - Sample panel layout improvements (#3396)
 - Remove unneeded logging (#3394)
 - Java analysis lints cleanup (#3395)
-- More work to support running Flutter web apps (#3389)
 - Update subscriptions after analysis server restart (#3393)
 - Read sample index from flutter_tool call (#3379)
 - Update README (#3387)
