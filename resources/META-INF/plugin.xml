@@ -13,7 +13,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="182.5107.16" until-build="192.SNAPSHOT"/>
+  <idea-version since-build="183.5153" until-build="192.SNAPSHOT"/>
 
   <depends>Dart</depends>
 
@@ -34,7 +34,6 @@
   <li>Sample panel layout improvements (#3396)</li>
   <li>Remove unneeded logging (#3394)</li>
   <li>Java analysis lints cleanup (#3395)</li>
-  <li>More work to support running Flutter web apps (#3389)</li>
   <li>Update subscriptions after analysis server restart (#3393)</li>
   <li>Read sample index from flutter_tool call (#3379)</li>
   <li>Update README (#3387)</li>
