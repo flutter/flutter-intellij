@@ -271,9 +271,9 @@ String substituteTemplateVariables(String line, BuildSpec spec) {
       case 'PLUGINID':
         return spec.pluginId;
       case 'SINCE':
-        return spec.sinceBuild.toString();
+        return spec.sinceBuild.versionString;
       case 'UNTIL':
-        return spec.untilBuild.toString();
+        return spec.untilBuild.versionString;
       case 'VERSION':
         return spec.release == null
             ? '<version>SNAPSHOT</version>'
