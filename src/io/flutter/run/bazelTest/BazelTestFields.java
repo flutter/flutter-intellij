@@ -63,33 +63,11 @@ public class BazelTestFields {
     this(template.testName, template.entryFile, template.bazelTarget, template.additionalArgs);
   }
 
-  /**
-   * Returns whether the new test bazel runner is enabled, and if it's available.
-   */
-  private boolean useNewBazelTestRunner(@NotNull Project project) {
-    if (useNewBazelTestRunnerOverride != null) {
-      return useNewBazelTestRunnerOverride;
-    }
-    // Check that the new test runner is available.
-    final Workspace workspace = getWorkspace(project);
-    final FlutterSettings settings = FlutterSettings.getInstance();
-    return settings != null && settings.useNewBazelTestRunner(project);
-  }
-
-  // The value to use for the bazel test runner setting if no FlutterSettings are available.
-  // TODO(DaveShuckerow): set up a FlutterSettings implementation that we can use in tests.
-  // In the meanwhile, we'll assume that if settings is null, this code is running in a test.
-  // In the tests, we want to cover the new behavior by default, and provide coverage of the old
-  // behavior in cases where the new test script is not available.
-  @VisibleForTesting
-  Boolean useNewBazelTestRunnerOverride = null;
-
   private String getTestScriptFromWorkspace(@NotNull Project project) {
     final Workspace workspace = getWorkspace(project);
     String testScript = workspace.getTestScript();
     // Fall back on the regular launch script if the test script is not available.
-    // Also fall back on the regular launch script if the user has opted out of the new bazel test script.
-    if (testScript == null || !useNewBazelTestRunner(project)) {
+    if (testScript == null) {
       testScript = workspace.getLaunchScript();
     }
     if (testScript != null) {
@@ -221,39 +199,31 @@ public class BazelTestFields {
     final GeneralCommandLine commandLine = new GeneralCommandLine().withWorkDirectory(workspace.getRoot().getPath());
     commandLine.setCharset(CharsetToolkit.UTF8_CHARSET);
     commandLine.setExePath(FileUtil.toSystemDependentName(launchingScript));
-    // If we use the normal bazel launch script, then we want to use only flags for that mode.
-    // The below flags for the new bazel test runner will be skipped if FlutterSettings.useNewBazelTestRunner is false,
-    // or if the new bazel test script is not available.
-    if (useNewBazelTestRunner(project)) {
 
-      // User specified additional target arguments.
-      final CommandLineTokenizer testArgsTokenizer = new CommandLineTokenizer(
-        StringUtil.notNullize(additionalArgs));
-      while (testArgsTokenizer.hasMoreTokens()) {
-        commandLine.addParameter(testArgsTokenizer.nextToken());
-      }
+    // User specified additional target arguments.
+    final CommandLineTokenizer testArgsTokenizer = new CommandLineTokenizer(
+      StringUtil.notNullize(additionalArgs));
+    while (testArgsTokenizer.hasMoreTokens()) {
+      commandLine.addParameter(testArgsTokenizer.nextToken());
+    }
 
-      commandLine.addParameter("--no-color");
-      final String relativeEntryFilePath = entryFile == null
-                                           ? null
-                                           : FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
-      switch (getScope(project)) {
-        case NAME:
-          commandLine.addParameters("--name", testName);
-          commandLine.addParameter(relativeEntryFilePath);
-          break;
-        case FILE:
-          commandLine.addParameter(relativeEntryFilePath);
-          break;
-        case TARGET_PATTERN:
-          commandLine.addParameter(bazelTarget);
-          break;
-      }
+    commandLine.addParameter("--no-color");
+    final String relativeEntryFilePath = entryFile == null
+                                         ? null
+                                         : FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
+    switch (getScope(project)) {
+      case NAME:
+        commandLine.addParameters("--name", testName);
+        commandLine.addParameter(relativeEntryFilePath);
+        break;
+      case FILE:
+        commandLine.addParameter(relativeEntryFilePath);
+        break;
+      case TARGET_PATTERN:
+        commandLine.addParameter(bazelTarget);
+        break;
     }
-    else {
-      // If the new bazel test runner is disabled, we will simply run the bazel target.
-      commandLine.addParameter(bazelTarget);
-    }
+
 
     if (mode == RunMode.DEBUG) {
       commandLine.addParameters("--", "--enable-debugging");
@@ -290,9 +260,6 @@ public class BazelTestFields {
    */
   @NotNull
   public Scope getScope(@NotNull Project project) {
-    if (!useNewBazelTestRunner(project)) {
-      return Scope.TARGET_PATTERN;
-    }
     if (testName != null && entryFile != null) {
       return Scope.NAME;
     }
@@ -340,11 +307,6 @@ public class BazelTestFields {
         final Workspace workspace = fields.getWorkspace(project);
         if (workspace == null || workspace.getTestScript() == null) {
           throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.newBazelTestRunnerUnavailable"),
-                                              () -> FlutterSettingsConfigurable.openFlutterSettings(project));
-        }
-        // The new bazel test runner was not turned on.
-        if (!fields.useNewBazelTestRunner(project)) {
-          throw new RuntimeConfigurationError(FlutterBundle.message("flutter.run.bazel.mustUseNewBazelTestRunner"),
                                               () -> FlutterSettingsConfigurable.openFlutterSettings(project));
         }
 

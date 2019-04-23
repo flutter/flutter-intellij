@@ -49,12 +49,8 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
 
   private Scope displayedScope;
 
-  private boolean useNewBazelTestRunner;
-
   public FlutterBazelTestConfigurationEditorForm(final Project project) {
-    useNewBazelTestRunner = FlutterSettings.getInstance().useNewBazelTestRunner(project);
     FlutterSettings.getInstance().addListener(() -> {
-      useNewBazelTestRunner = FlutterSettings.getInstance().useNewBazelTestRunner(project);
       final Scope next = getScope();
       updateFields(next);
       render(getScope());
@@ -75,9 +71,7 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
         setText(value.getDisplayName());
       }
     });
-    // Only enable scope changes if the new bazel test runner is enabled.
-    // If the new runner is disabled, all scopes will be blaze target-level.
-    scope.setEnabled(useNewBazelTestRunner);
+    scope.setEnabled(true);
 
     final FileChooserDescriptor descriptor = FileChooserDescriptorFactory.createSingleFileDescriptor();
 
@@ -147,60 +141,34 @@ public class FlutterBazelTestConfigurationEditorForm extends SettingsEditor<Baze
    */
   private void render(Scope next) {
 
-    if (useNewBazelTestRunner) {
-      scope.setVisible(true);
-      scopeLabel.setVisible(true);
-      scopeLabelHint.setVisible(true);
+    scope.setVisible(true);
+    scopeLabel.setVisible(true);
+    scopeLabelHint.setVisible(true);
 
-      myAdditionalArgs.setVisible(true);
-      myAdditionalArgsLabel.setVisible(true);
-      myAdditionalArgsLabel.setVisible(true);
+    myAdditionalArgs.setVisible(true);
+    myAdditionalArgsLabel.setVisible(true);
+    myAdditionalArgsLabel.setVisible(true);
 
-      myTestName.setVisible(next == Scope.NAME);
-      myTestNameLabel.setVisible(next == Scope.NAME);
-      myTestNameHintLabel.setVisible(next == Scope.NAME);
+    myTestName.setVisible(next == Scope.NAME);
+    myTestNameLabel.setVisible(next == Scope.NAME);
+    myTestNameHintLabel.setVisible(next == Scope.NAME);
 
-      myEntryFile.setVisible(next == Scope.FILE || next == Scope.NAME);
-      myEntryFileLabel.setVisible(next == Scope.FILE || next == Scope.NAME);
-      myEntryFileHintLabel.setVisible(next == Scope.FILE || next == Scope.NAME);
+    myEntryFile.setVisible(next == Scope.FILE || next == Scope.NAME);
+    myEntryFileLabel.setVisible(next == Scope.FILE || next == Scope.NAME);
+    myEntryFileHintLabel.setVisible(next == Scope.FILE || next == Scope.NAME);
 
-      myBuildTarget.setVisible(next == Scope.TARGET_PATTERN);
-      myBuildTargetLabel.setVisible(next == Scope.TARGET_PATTERN);
-      myBuildTargetHintLabel.setVisible(next == Scope.TARGET_PATTERN);
+    myBuildTarget.setVisible(next == Scope.TARGET_PATTERN);
+    myBuildTargetLabel.setVisible(next == Scope.TARGET_PATTERN);
+    myBuildTargetHintLabel.setVisible(next == Scope.TARGET_PATTERN);
 
-      // Because the scope of the underlying fields is calculated based on which parameters are assigned,
-      // we remove fields that aren't part of the selected scope.
-      if (next.equals(Scope.TARGET_PATTERN)) {
-        myTestName.setText("");
-        myEntryFile.setText("");
-      }
-      else if (next.equals(Scope.FILE)) {
-        myTestName.setText("");
-      }
+    // Because the scope of the underlying fields is calculated based on which parameters are assigned,
+    // we remove fields that aren't part of the selected scope.
+    if (next.equals(Scope.TARGET_PATTERN)) {
+      myTestName.setText("");
+      myEntryFile.setText("");
     }
-    else {
-      // If the new bazel test runner is disabled, then all scopes are build target-level.
-      // We'll preserve the legacy appearance of the form.
-      scope.setVisible(false);
-      scopeLabel.setVisible(false);
-      scopeLabelHint.setVisible(false);
-
-      // The old bazel test runner doesn't support additional args.
-      myAdditionalArgs.setVisible(false);
-      myAdditionalArgsLabel.setVisible(false);
-      myAdditionalArgsLabel.setVisible(false);
-
-      myTestName.setVisible(false);
-      myTestNameLabel.setVisible(false);
-      myTestNameHintLabel.setVisible(false);
-
-      myEntryFile.setVisible(true);
-      myEntryFileLabel.setVisible(true);
-      myEntryFileHintLabel.setVisible(true);
-
-      myBuildTarget.setVisible(true);
-      myBuildTargetLabel.setVisible(true);
-      myBuildTargetHintLabel.setVisible(true);
+    else if (next.equals(Scope.FILE)) {
+      myTestName.setText("");
     }
 
     displayedScope = next;

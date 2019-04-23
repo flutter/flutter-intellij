@@ -64,7 +64,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myDisableMemoryProfilerCheckBox;
-  private JCheckBox myUseNewBazelTestRunner;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -105,14 +104,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
-
-    // Disable the bazel test runner experiment if no new bazel test script is available.
-    final Workspace workspace = Workspace.load(myProject);
-    if (workspace == null || workspace.getTestScript() == null) {
-      myUseNewBazelTestRunner.setEnabled(false);
-    } else {
-      myUseNewBazelTestRunner.setEnabled(true);
-    }
   }
 
   private void createUIComponents() {
@@ -196,11 +187,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    //noinspection RedundantIfStatement
-    if (settings.useNewBazelTestRunner(myProject) != myUseNewBazelTestRunner.isSelected()) {
-      return true;
-    }
-
     return false;
   }
 
@@ -233,7 +219,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
-    settings.setUseNewBazelTestRunner(myUseNewBazelTestRunner.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -264,7 +249,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
     myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
-    myUseNewBazelTestRunner.setSelected(settings.useNewBazelTestRunner(myProject));
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }

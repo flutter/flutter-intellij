@@ -24,10 +24,6 @@ public class FlutterBazelTestLineMarkerContributor extends TestLineMarkerContrib
   @Override
   public Info getInfo(@NotNull PsiElement element) {
     final FlutterSettings settings = FlutterSettings.getInstance();
-    // Only the new bazel test runner supports running tests inside of a file or for a specific test name.
-    if (!settings.useNewBazelTestRunner(element.getProject())) {
-      return null;
-    }
     return super.getInfo(element);
   }
 }

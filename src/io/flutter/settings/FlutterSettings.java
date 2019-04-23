@@ -91,9 +91,6 @@ public class FlutterSettings {
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
-    if (shouldUseNewBazelTestRunner()) {
-      analytics.sendEvent("settings", afterLastPeriod(newBazelTestRunnerKey));
-    }
   }
 
   public void addListener(Listener listener) {
@@ -242,36 +239,6 @@ public class FlutterSettings {
   public void setMemoryProfilerDisabled(boolean value) {
     getPropertiesComponent().setValue(memoryProfilerKey, value, false);
 
-    fireEvent();
-  }
-
-  /**
-   * Whether to use the new bazel-test script instead of the old bazel-run script to run tests.
-   *
-   * Defaults to false.
-   */
-  public boolean useNewBazelTestRunner(Project project) {
-    // Check that the new test runner is available.
-    final Workspace workspace = Workspace.load(project);
-    // If the workspace can't be found, we'll return false. This normally happens during tests. Test code that covers this setting
-    // has an override for this setting built-in.
-    if (workspace == null) {
-      return false;
-    }
-    @Nullable String testScript = workspace.getTestScript();
-    if (testScript == null) {
-      // The test script was not found, so it can't be used.
-      return false;
-    }
-    return shouldUseNewBazelTestRunner();
-  }
-
-  private boolean shouldUseNewBazelTestRunner() {
-    return getPropertiesComponent().getBoolean(newBazelTestRunnerKey, true);
-  }
-
-  public void setUseNewBazelTestRunner(boolean value) {
-    getPropertiesComponent().setValue(newBazelTestRunnerKey, value, true);
     fireEvent();
   }
 

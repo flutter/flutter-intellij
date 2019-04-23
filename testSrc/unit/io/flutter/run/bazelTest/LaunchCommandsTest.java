@@ -171,20 +171,6 @@ public class LaunchCommandsTest {
   }
 
   @Test
-  public void failsForFileWithoutNewTestRunner() {
-    final BazelTestFields fields = forFile("/workspace/foo/test/foo_test.dart");
-    fields.useNewBazelTestRunnerOverride = false;
-    boolean didThrow = false;
-    try {
-      final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-    }
-    catch (ExecutionException e) {
-      didThrow = true;
-    }
-    assertTrue("This test method expected to throw an exception, but did not.", didThrow);
-  }
-
-  @Test
   public void failsForTestNameWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
       BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart"),
@@ -275,13 +261,6 @@ public class LaunchCommandsTest {
       }
       if (testScript != null) {
         fs.file("/workspace/" + testScript, "");
-      }
-      if (testScript == null) {
-        // When the test script is null, Flutter Settings will report the new Bazel test script as disabled.
-        useNewBazelTestRunnerOverride = false;
-      }
-      else {
-        useNewBazelTestRunnerOverride = true;
       }
       fakeWorkspace = Workspace.forTest(
         fs.findFileByPath("/workspace/"),
