@@ -29,6 +29,32 @@
 
   <change-notes>
     <![CDATA[
+<h2>35.0</h2>
+<ul>
+  <li>Sample panel layout improvements (#3396)</li>
+  <li>Remove unneeded logging (#3394)</li>
+  <li>Java analysis lints cleanup (#3395)</li>
+  <li>Update subscriptions after analysis server restart (#3393)</li>
+  <li>Read sample index from flutter_tool call (#3379)</li>
+  <li>Update README (#3387)</li>
+  <li>Fix unit tests</li>
+  <li>Update build for canary 11 (#3380)</li>
+  <li>Integration test update (#3374)</li>
+  <li>Make the inspector easier to test (#3373)</li>
+  <li>Adjust build to make plugin for testing (#3366)</li>
+  <li>Address reported Java lints (#3356)</li>
+  <li>Adjust build for AS canary 10</li>
+  <li>Address an array index out of bounds (#3355)</li>
+  <li>Address an NPE (#3354)</li>
+  <li>Upgrade the service protocol library (#3353)</li>
+  <li>Address a number format exception (#3352)</li>
+  <li>Update how we manipulate the service protocol url (#3351)</li>
+  <li>Remove some uses of reflection (#3350)</li>
+  <li>Some initial work for FlutterWeb apps (#3342)</li>
+  <li>Fix an NPE when sample content generation is disabled (#3336)</li>
+  <li>Add inspector dependency to test (#3316)</li>
+  <li>Make Dart constructor calls pop out in light mode  (#3327)</li>
+</ul>
 <h2>34.0</h2>
 <ul>
   <li>Update build for Android Studio 3.3.2 and IntelliJ 2019.1 (#3321)</li>
