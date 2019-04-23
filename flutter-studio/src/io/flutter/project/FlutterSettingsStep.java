@@ -24,10 +24,15 @@ import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.module.settings.ProjectType;
+import io.flutter.sdk.FlutterSdk;
+import javax.swing.Icon;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import javax.swing.*;
 
 /**
  * Configure Flutter project parameters that relate to platform-specific code.
@@ -123,6 +128,12 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
     }
     //noinspection OptionalGetWithoutIsPresent
     FlutterProjectType projectType = getModel().projectType().get().get();
+    if (projectType == FlutterProjectType.APP) {
+      FlutterSdk sdk = FlutterSdk.forPath(getModel().flutterSdk().get());
+      if (sdk != null) {
+        myProjectTypeForm.setSdk(sdk);
+      }
+    }
     mySamplePanel.setVisible(projectType == FlutterProjectType.APP);
     myProjectTypeForm.getProjectTypeCombo().setSelectedItem(projectType);
     myProjectTypeForm.getProjectTypeCombo().setVisible(false);

@@ -8,6 +8,7 @@ package io.flutter.module.settings;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
+import com.intellij.util.ui.EdtInvocationManager;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.samples.FlutterSample;
@@ -119,7 +120,7 @@ public class ProjectType {
   }
 
   @Nullable
-  private final FlutterSdk sdk;
+  private FlutterSdk sdk;
 
   private JPanel projectTypePanel;
   private ComboBox projectTypeCombo;
@@ -128,6 +129,11 @@ public class ProjectType {
 
   public ProjectType(@Nullable FlutterSdk sdk) {
     this.sdk = sdk;
+  }
+
+  @SuppressWarnings("unused")
+  public ProjectType() {
+    // Required by AS NPW
   }
 
   private void createUIComponents() {
@@ -171,6 +177,11 @@ public class ProjectType {
 
   public ComboBox getProjectTypeCombo() {
     return projectTypeCombo;
+  }
+
+  public void setSdk(@NotNull FlutterSdk sdk) {
+    this.sdk = sdk;
+    snippetSelectorCombo.setModel(new FlutterSampleComboBoxModel(sdk));
   }
 
   public void addListener(ItemListener listener) {
