@@ -32,7 +32,6 @@ public class FlutterWebCommand extends FlutterCommand {
     line.setExePath(FileUtil.toSystemDependentName(sdk.getHomePath() + "/bin/" + FlutterSdkUtil.flutterScriptName()));
     // flutter packages pub
     line.addParameters(Type.PACKAGES_PUB.subCommand);
-    // TODO(devoncarew): We need to provision webdev locally.
     line.addParameters("global", "run", "webdev", "daemon");
     line.addParameters(args);
     return line;

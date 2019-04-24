@@ -242,6 +242,13 @@ public class PubRoot {
   }
 
   /**
+   * Returns true if the pubspec declares a flutter web dependency.
+   */
+  public boolean declaresFlutterWeb() {
+    return FlutterUtils.declaresFlutterWeb(pubspec);
+  }
+
+  /**
    * Returns true if the pubspec indicates that it is a Flutter plugin.
    */
   public boolean isFlutterPlugin() {

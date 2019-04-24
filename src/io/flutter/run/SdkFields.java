@@ -125,13 +125,17 @@ public class SdkFields {
       throw new ExecutionException("Entrypoint isn't within a Flutter pub root");
     }
 
+    final FlutterCommand command;
     String[] args = additionalArgs == null ? new String[]{ } : additionalArgs.split(" ");
-    if (buildFlavor != null) {
-      args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
+    if (FlutterUtils.declaresFlutterWeb(root.getPubspec())) {
+      command = flutterSdk.flutterRunWeb(root, runMode, args);
     }
-    final FlutterCommand command = FlutterUtils.declaresFlutterWeb(root.getPubspec()) ?
-                                   flutterSdk.flutterRunWeb(root, runMode) :
-                                   flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
+    else {
+      if (buildFlavor != null) {
+        args = ArrayUtil.append(args, "--flavor=" + buildFlavor);
+      }
+      command = flutterSdk.flutterRun(root, main.getFile(), device, runMode, flutterLaunchMode, project, args);
+    }
     return command.createGeneralCommandLine(project);
   }
 
