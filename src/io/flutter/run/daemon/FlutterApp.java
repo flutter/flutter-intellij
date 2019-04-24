@@ -68,8 +68,7 @@ public class FlutterApp {
   private final @NotNull Project myProject;
   private final @Nullable Module myModule;
   private final @NotNull RunMode myMode;
-  // TODO(jwren): myDevice is not-null for all run configurations except flutter web configurations
-  // See https://github.com/flutter/flutter-intellij/issues/3293.
+  // TODO(github.com/flutter/flutter-intellij/issues/3293) myDevice is not-null for all run configurations except flutter web configurations
   private final @Nullable FlutterDevice myDevice;
   private final @NotNull ProcessHandler myProcessHandler;
   private final @NotNull ExecutionEnvironment myExecutionEnvironment;
@@ -80,8 +79,6 @@ public class FlutterApp {
   private @Nullable String myWsUrl;
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
-
-  private boolean isFlutterWeb = false;
 
   /**
    * The command with which the app was launched.
@@ -303,19 +300,6 @@ public class FlutterApp {
   @NotNull
   public ObservatoryConnector getConnector() {
     return myConnector;
-  }
-
-  public void setIsFlutterWeb(boolean value) {
-    isFlutterWeb = value;
-  }
-
-  public boolean getIsFlutterWeb() {
-    return isFlutterWeb;
-  }
-
-  @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-  public boolean appSupportsHotReload() {
-    return !isFlutterWeb;
   }
 
   public State getState() {
@@ -605,14 +589,17 @@ public class FlutterApp {
            !debugProcess.getSession().isStopped();
   }
 
-  @Nullable
   public FlutterDevice device() {
     return myDevice;
   }
 
-  @Nullable
   public String deviceId() {
-    return myDevice != null ? myDevice.deviceId() : null;
+    return myDevice != null ? myDevice.deviceId() : "";
+  }
+
+  // TODO this should be a temporary hack until there is some mocked out "browser" device
+  public boolean isWebDev() {
+    return myDevice == null;
   }
 
   public void setFlutterDebugProcess(FlutterDebugProcess flutterDebugProcess) {
@@ -750,16 +737,7 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
   // daemon domain
 
   @Override
-  public void onDaemonLog(@NotNull DaemonEvent.DaemonLog message) {
-    final ConsoleView console = app.getConsole();
-    if (console == null) return;
-    if (message.log != null) {
-      console.print(message.log + "\n", message.error ? ConsoleViewContentType.ERROR_OUTPUT : ConsoleViewContentType.NORMAL_OUTPUT);
-    }
-  }
-
-  @Override
-  public void onDaemonLogMessage(@NotNull DaemonEvent.DaemonLogMessage message) {
+  public void onDaemonLogMessage(@NotNull DaemonEvent.LogMessage message) {
     LOG.info("flutter app: " + message.message);
   }
 

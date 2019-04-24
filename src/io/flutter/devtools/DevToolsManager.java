@@ -26,8 +26,6 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -108,16 +106,16 @@ public class DevToolsManager {
   }
 
   public void openBrowser() {
-    openBrowserImpl(null);
+    openBrowserImpl(-1);
   }
 
-  public void openBrowserAndConnect(String uri) {
-    openBrowserImpl(uri);
+  public void openBrowserAndConnect(int port) {
+    openBrowserImpl(port);
   }
 
-  private void openBrowserImpl(String uri) {
+  private void openBrowserImpl(int port) {
     if (devToolsInstance != null) {
-      devToolsInstance.openBrowserAndConnect(uri);
+      devToolsInstance.openBrowserAndConnect(port);
       return;
     }
 
@@ -135,7 +133,7 @@ public class DevToolsManager {
     DevToolsInstance.startServer(project, sdk, pubRoots.get(0), instance -> {
       devToolsInstance = instance;
 
-      devToolsInstance.openBrowserAndConnect(uri);
+      devToolsInstance.openBrowserAndConnect(port);
     }, instance -> {
       // Listen for closing, null out the devToolsInstance.
       devToolsInstance = null;
@@ -211,20 +209,15 @@ class DevToolsInstance {
     this.devtoolsPort = devtoolsPort;
   }
 
-  public void openBrowserAndConnect(String serviceProtocolUri) {
-    if (serviceProtocolUri == null) {
+  public void openBrowserAndConnect(int serviceProtocolPort) {
+    if (serviceProtocolPort == -1) {
       BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
     }
     else {
-      try {
-        final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
-        BrowserLauncher.getInstance().browse(
-          "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + urlParam,
-          null
-        );
-      }
-      catch (UnsupportedEncodingException ignored) {
-      }
+      BrowserLauncher.getInstance().browse(
+        "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&port=" + serviceProtocolPort,
+        null
+      );
     }
   }
 }

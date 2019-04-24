@@ -340,8 +340,8 @@ public class FlutterUtils {
    */
   public static boolean declaresFlutterWeb(@NotNull final VirtualFile pubspec) {
     // It uses Flutter if it contains:
-    // dependencies:
-    //   flutter_web:
+    //dependencies:
+    //  flutter_web: any
 
     try {
       final Map<String, Object> yamlMap = readPubspecFileToMap(pubspec);

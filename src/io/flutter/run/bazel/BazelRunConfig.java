@@ -25,7 +25,6 @@ import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.run.daemon.RunMode;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class BazelRunConfig extends RunConfigurationBase
   implements RunConfigurationWithSuppressedDefaultRunAction, LaunchState.RunConfig {
@@ -72,7 +71,7 @@ public class BazelRunConfig extends RunConfigurationBase
     final RunMode mode = RunMode.fromEnv(env);
     final Module module = ModuleUtil.findModuleForFile(workspaceRoot, env.getProject());
 
-    final LaunchState.CreateAppCallback createAppCallback = (@Nullable FlutterDevice device) -> {
+    final LaunchState.CreateAppCallback createAppCallback = (device) -> {
       if (device == null) return null;
 
       final GeneralCommandLine command = getCommand(env, device);
