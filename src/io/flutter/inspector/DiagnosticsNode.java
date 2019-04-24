@@ -9,13 +9,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
-import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.utils.CustomIconMaker;
 import io.flutter.utils.JsonUtils;
 import org.apache.commons.lang.StringUtils;
@@ -49,6 +50,8 @@ import java.util.function.BiConsumer;
  * also available via the getValue() method.
  */
 public class DiagnosticsNode {
+  private static final Logger LOG = Logger.getInstance(DiagnosticsNode.class);
+
   private static final CustomIconMaker iconMaker = new CustomIconMaker();
   private final FlutterApp app;
 
@@ -104,7 +107,8 @@ public class DiagnosticsNode {
       final InspectorService.ObjectGroup service = inspectorService.getNow(null);
       // If the service isn't created yet it can't have been disposed.
       return service != null && service.isDisposed();
-    } catch (Exception e) {
+    }
+    catch (Exception e) {
       // If the service can't be acquired then it is disposed.
       return false;
     }
@@ -638,12 +642,13 @@ public class DiagnosticsNode {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService,  app,false, parent);
+          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, false, parent);
           child.setParent(this);
           nodes.add(child);
         }
         children = CompletableFuture.completedFuture(nodes);
-      } else  if (hasChildren()) {
+      }
+      else if (hasChildren()) {
         children = inspectorService.thenComposeAsync((service) -> {
           if (service == null) {
             return null;
@@ -720,12 +725,12 @@ public class DiagnosticsNode {
   @NotNull
   public CompletableFuture<String> getPropertyDoc() {
     if (propertyDocFuture == null) {
-      propertyDocFuture = createPropertyDocFurure();
+      propertyDocFuture = createPropertyDocFuture();
     }
     return propertyDocFuture;
   }
 
-  private CompletableFuture<String> createPropertyDocFurure() {
+  private CompletableFuture<String> createPropertyDocFuture() {
     final DiagnosticsNode parent = getParent();
     if (parent != null) {
       return inspectorService.thenComposeAsync((service) -> service.toDartVmServiceValueForSourceLocation(parent.getValueRef())
@@ -734,23 +739,26 @@ public class DiagnosticsNode {
             return CompletableFuture.completedFuture(null);
           }
           return inspectorService.getNow(null).getPropertyLocation(vmValue.getInstanceRef(), getName())
-          .thenApplyAsync((XSourcePosition sourcePosition) -> {
-            if (sourcePosition != null) {
-              final VirtualFile file = sourcePosition.getFile();
-              final int offset = sourcePosition.getOffset();
+            .thenApplyAsync((XSourcePosition sourcePosition) -> {
+              if (sourcePosition != null) {
+                final VirtualFile file = sourcePosition.getFile();
+                final int offset = sourcePosition.getOffset();
 
-              final Project project = getProject(file);
-              if (project != null) {
-                final List<HoverInformation> hovers =
-                  DartAnalysisServerService.getInstance(project).analysis_getHover(file, offset);
-                if (!hovers.isEmpty()) {
-                  return hovers.get(0).getDartdoc();
+                final Project project = getProject(file);
+                if (project != null) {
+                  final List<HoverInformation> hovers =
+                    DartAnalysisServerService.getInstance(project).analysis_getHover(file, offset);
+                  if (!hovers.isEmpty()) {
+                    return hovers.get(0).getDartdoc();
+                  }
                 }
               }
-            }
-            return "Unable to find property source";
-          });
-        }));
+              return "Unable to find property source";
+            });
+        })).exceptionally(t -> {
+        LOG.info("ignoring exception from toObjectForSourceLocation: " + t.toString());
+        return null;
+      });
     }
 
     return CompletableFuture.completedFuture("Unable to find property source");
@@ -834,7 +842,8 @@ public class DiagnosticsNode {
         }
         group.safeWhenComplete(future, action);
       });
-    } catch (Exception e) {
+    }
+    catch (Exception ignored) {
       // Nothing to do if the service can't be acquired.
     }
   }

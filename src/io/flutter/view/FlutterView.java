@@ -64,8 +64,6 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -218,12 +216,22 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final SimpleToolWindowPanel toolWindowPanel = new SimpleToolWindowPanel(true);
     final JBRunnerTabs runnerTabs = new JBRunnerTabs(myProject, ActionManager.getInstance(), null, this);
     runnerTabs.setSelectionChangeHandler(this::onTabSelectionChange);
-    final List<FlutterDevice> existingDevices = new ArrayList<>();
-    for (FlutterApp otherApp : perAppViewState.keySet()) {
-      existingDevices.add(otherApp.device());
-    }
     final JPanel tabContainer = new JPanel(new BorderLayout());
-    final Content content = contentManager.getFactory().createContent(null, app.device().getUniqueName(existingDevices), false);
+
+    final String tabName;
+    final FlutterDevice device = app.device();
+    if (device == null) {
+      tabName = app.getProject().getName();
+    }
+    else {
+      final List<FlutterDevice> existingDevices = new ArrayList<>();
+      for (FlutterApp otherApp : perAppViewState.keySet()) {
+        existingDevices.add(otherApp.device());
+      }
+      tabName = device.getUniqueName(existingDevices);
+    }
+
+    final Content content = contentManager.getFactory().createContent(null, tabName, false);
     tabContainer.add(runnerTabs.getComponent(), BorderLayout.CENTER);
     content.setComponent(tabContainer);
     content.putUserData(ToolWindow.SHOW_CONTENT_ICON, Boolean.TRUE);
@@ -397,6 +405,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
             FlutterUtils.warn(LOG, throwable);
             return;
           }
+
           debugActiveHelper(app, inspectorService);
         });
     }
@@ -613,24 +622,14 @@ class FlutterViewDevToolsAction extends FlutterViewAction {
         return;
       }
 
-      final URL url;
-      try {
-        url = new URL(urlString);
-      }
-      catch (MalformedURLException e) {
-        return;
-      }
-
-      final int port = url.getPort();
-
       final DevToolsManager devToolsManager = DevToolsManager.getInstance(app.getProject());
 
       if (devToolsManager.hasInstalledDevTools()) {
-        devToolsManager.openBrowserAndConnect(port);
+        devToolsManager.openBrowserAndConnect(urlString);
       }
       else {
         final CompletableFuture<Boolean> result = devToolsManager.installDevTools();
-        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(port));
+        result.thenAccept(o -> devToolsManager.openBrowserAndConnect(urlString));
       }
     }
   }

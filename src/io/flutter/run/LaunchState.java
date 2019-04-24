@@ -119,25 +119,31 @@ public class LaunchState extends CommandLineState {
     }
 
     final Project project = getEnvironment().getProject();
-    final FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
+    @Nullable FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
 
-    // Flutter web does not yet support device objects yet, hence the null as the indicator that this might be a flutter web project.
-    if (device == null) {
-      boolean isFlutterWeb = false;
-      final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
-      if (filePath != null) {
-        final MainFile main = MainFile.verify(filePath, project).get();
-        final PubRoot root = PubRoot.forDirectory(main.getAppDir());
-        if (root != null) {
-          isFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
-        }
-      }
-      if (!isFlutterWeb) {
-        showNoDeviceConnectedMessage(project);
-        return null;
+    boolean isFlutterWeb = false;
+    final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
+    if (filePath != null) {
+      final MainFile main = MainFile.verify(filePath, project).get();
+      final PubRoot root = PubRoot.forDirectory(main.getAppDir());
+      if (root != null) {
+        isFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
       }
     }
+
+    // Flutter web does not yet support devices.
+    if (isFlutterWeb) {
+      device = null;
+    }
+    else if (device == null) {
+      showNoDeviceConnectedMessage(project);
+      return null;
+    }
+
     final FlutterApp app = myCreateAppCallback.createApp(device);
+    if (isFlutterWeb) {
+      app.setIsFlutterWeb(true);
+    }
 
     // Cache for use in console configuration.
     FlutterApp.addToEnvironment(env, app);
@@ -147,10 +153,8 @@ public class LaunchState extends CommandLineState {
 
     final ExecutionResult result = setUpConsoleAndActions(app);
 
-    // For Bazel run configurations,
-    // where the console is not null,
-    // and we find the expected process handler type,
-    // print the command line command to the console.
+    // For Bazel run configurations, where the console is not null, and we find the expected
+    // process handler type, print the command line command to the console.
     if (runConfig instanceof BazelRunConfig &&
         app.getConsole() != null &&
         app.getProcessHandler() instanceof OSProcessHandler) {
@@ -394,31 +398,35 @@ public class LaunchState extends CommandLineState {
         final FlutterApp app = FlutterApp.fromProcess(process);
         final String selectedDeviceId = getSelectedDeviceId(env.getProject());
 
-        if (app != null && StringUtil.equals(app.deviceId(), selectedDeviceId)) {
-          if (executorId.equals(app.getMode().mode())) {
-            if (!identicalCommands(app.getCommand(), launchState.runConfig.getCommand(env, app.device()))) {
-              // To be safe, relaunch as the arguments to launch have changed.
-              try {
-                // TODO(jacobr): ideally we shouldn't be synchronously waiting for futures like this
-                // but I don't see a better option. In practice this seems fine.
-                app.shutdownAsync().get();
+        if (app != null) {
+          final boolean sameDevice = app.getIsFlutterWeb() || StringUtil.equals(app.deviceId(), selectedDeviceId);
+
+          if (sameDevice) {
+            if (executorId.equals(app.getMode().mode())) {
+              if (!identicalCommands(app.getCommand(), launchState.runConfig.getCommand(env, app.device()))) {
+                // To be safe, relaunch as the arguments to launch have changed.
+                try {
+                  // TODO(jacobr): ideally we shouldn't be synchronously waiting for futures like this
+                  // but I don't see a better option. In practice this seems fine.
+                  app.shutdownAsync().get();
+                }
+                catch (InterruptedException | java.util.concurrent.ExecutionException e) {
+                  FlutterUtils.warn(LOG, e);
+                }
+                return launchState.launch(env);
               }
-              catch (InterruptedException | java.util.concurrent.ExecutionException e) {
-                FlutterUtils.warn(LOG, e);
+
+              final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
+              if (launchMode.supportsReload() && app.isStarted()) {
+                // Map a re-run action to a flutter hot restart.
+                FileDocumentManager.getInstance().saveAllDocuments();
+                FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
+                app.performRestartApp(FlutterConstants.RELOAD_REASON_SAVE);
               }
-              return launchState.launch(env);
             }
 
-            final FlutterLaunchMode launchMode = FlutterLaunchMode.fromEnv(env);
-            if (launchMode.supportsReload() && app.isStarted()) {
-              // Map a re-run action to a flutter hot restart.
-              FileDocumentManager.getInstance().saveAllDocuments();
-              FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-              app.performRestartApp(FlutterConstants.RELOAD_REASON_SAVE);
-            }
+            return null;
           }
-
-          return null;
         }
       }
 

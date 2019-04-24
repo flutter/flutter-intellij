@@ -39,7 +39,6 @@ import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
-import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.FlutterLaunchMode;
 import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
 import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
@@ -249,25 +248,20 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
         return;
       }
 
-      // "Flutter run" has given us a websocket; we can assume it's ready immediately,
-      // because "flutter run" has already connected to it.
+      // "flutter run" has given us a websocket; we can assume it's ready immediately, because
+      // "flutter run" has already connected to it.
       final VmService vmService;
       final VmOpenSourceLocationListener vmOpenSourceLocationListener;
-      // TODO(github.com/dart-lang/webdev/issues/233) The following check disables the WebSocket connection for all FlutterWeb run
-      //  configurations, for some reason the WebSocket port can't be connected to, see listed issue above.
-      if (this instanceof FlutterDebugProcess && (!((FlutterDebugProcess)this).getApp().isWebDev())) {
-        try {
-          vmService = VmService.connect(url);
-          vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
-        }
-        catch (IOException | RuntimeException e) {
-          onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
-                          + e.toString() + "\n" +
-                          formatStackTraces(e));
-          return;
-        }
-        onConnectSucceeded(vmService, vmOpenSourceLocationListener);
+      try {
+        vmService = VmService.connect(url);
+        vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
       }
+      catch (IOException | RuntimeException e) {
+        onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
+                        + e.toString() + "\n" + formatStackTraces(e));
+        return;
+      }
+      onConnectSucceeded(vmService, vmOpenSourceLocationListener);
     });
   }
 
