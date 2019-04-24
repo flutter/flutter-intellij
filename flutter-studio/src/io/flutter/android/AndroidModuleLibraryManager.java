@@ -254,7 +254,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (project.isDefault()) {
       return;
     }
-    if (FlutterSdkUtil.hasFlutterModules(project)) {
+    if (hasAndroidDir(project)) {
       AndroidModuleLibraryManager manager = getInstance(project);
       VirtualFileManager.getInstance().addVirtualFileListener(new VirtualFileContentsChangedAdapter() {
         @Override
@@ -274,6 +274,17 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
         }
       });
       manager.scheduleUpdate();
+    }
+  }
+
+  private static boolean hasAndroidDir(Project project) {
+    if (FlutterSdkUtil.hasFlutterModules(project)) {
+      VirtualFile base = project.getBaseDir();
+      VirtualFile dir = base.findChild("android");
+      if (dir == null) dir = base.findChild(".android");
+      return dir != null;
+    } else {
+      return false;
     }
   }
 
