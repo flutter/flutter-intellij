@@ -23,6 +23,7 @@ import com.intellij.openapi.startup.StartupActivity;
 import io.flutter.analytics.Analytics;
 import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
+import io.flutter.devtools.WebDevManager;
 import io.flutter.editor.FlutterSaveActionsManager;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.pub.PubRoot;
@@ -32,6 +33,8 @@ import io.flutter.run.FlutterRunNotifications;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.samples.FlutterSampleManager;
 import io.flutter.sdk.FlutterPluginsLibraryManager;
+import io.flutter.sdk.FlutterSdk;
+import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterPerfViewFactory;
@@ -82,13 +85,18 @@ public class FlutterInitializer implements StartupActivity {
 
     // If the project declares a Flutter dependency, do some extra initialization.
     boolean hasFlutterModule = false;
+    boolean hasFlutterWebModule = false;
 
     for (Module module : ModuleManager.getInstance(project).getModules()) {
-      if (!FlutterModuleUtils.declaresFlutter(module)) {
+      final boolean declaresFlutter = FlutterModuleUtils.declaresFlutter(module);
+      final boolean declaresFlutterWeb = FlutterModuleUtils.declaresFlutterWeb(module);
+
+      hasFlutterModule = hasFlutterModule || declaresFlutter;
+      hasFlutterWebModule = hasFlutterWebModule || declaresFlutterWeb;
+
+      if (!declaresFlutter && !declaresFlutterWeb) {
         continue;
       }
-
-      hasFlutterModule = true;
 
       // Ensure SDKs are configured; needed for clean module import.
       FlutterModuleUtils.enableDartSDK(module);
@@ -117,6 +125,11 @@ public class FlutterInitializer implements StartupActivity {
     if (hasFlutterModule) {
       // Check to see if we're on a supported version of Android Studio; warn otherwise.
       performAndroidStudioCanaryCheck();
+    }
+
+    // Check if the project is a flutter web project; if so, install webdev.
+    if (hasFlutterWebModule) {
+      installWebDev(project);
     }
 
     FlutterRunNotifications.init(project);
@@ -185,6 +198,38 @@ public class FlutterInitializer implements StartupActivity {
       if (FlutterModuleUtils.declaresFlutter(project)) {
         ToolWindowTracker.track(project, getAnalytics());
       }
+    }
+  }
+
+  private void installWebDev(@NotNull Project project) {
+    final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+
+    final WebDevManager webDevManager = WebDevManager.getInstance(project);
+
+    if (flutterSdk != null) {
+      if (!webDevManager.hasInstalledWebDev()) {
+        webDevManager.installWebdev();
+      }
+    }
+    else {
+      // Listen for sdk changes; on a valid flutter sdk, attempt to install webdev.
+      FlutterSdkManager.getInstance(project).addListener(new FlutterSdkManager.Listener() {
+        boolean installAttempted = false;
+
+        @Override
+        public void flutterSdkAdded() {
+          final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
+          if (flutterSdk == null) {
+            return;
+          }
+
+          if (!installAttempted && !webDevManager.hasInstalledWebDev()) {
+            installAttempted = true;
+
+            webDevManager.installWebdev();
+          }
+        }
+      });
     }
   }
 

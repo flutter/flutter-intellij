@@ -174,7 +174,7 @@ public class FlutterModuleUtils {
   @NotNull
   public static Module[] getModules(@NotNull Project project) {
     // A disposed project has no modules.
-    if (project.isDisposed()) return new Module[]{};
+    if (project.isDisposed()) return new Module[]{ };
 
     return ModuleManager.getInstance(project).getModules();
   }
@@ -262,14 +262,25 @@ public class FlutterModuleUtils {
   }
 
   /**
-   * Introspect into the module's content roots, looking for flutter.yaml or a pubspec.yaml that
-   * references flutter.
+   * Introspect into the module's content roots, looking for a pubspec.yaml that references flutter.
    * <p/>
    * True is returned if any of the PubRoots associated with the {@link Module} have a pubspec that declares flutter.
    */
   public static boolean declaresFlutter(@NotNull Module module) {
     for (PubRoot root : PubRoots.forModule(module)) {
       if (root.declaresFlutter()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Introspect into the module's content roots, looking for a pubspec.yaml that references flutter web.
+   */
+  public static boolean declaresFlutterWeb(@NotNull Module module) {
+    for (PubRoot root : PubRoots.forModule(module)) {
+      if (root.declaresFlutterWeb()) {
         return true;
       }
     }

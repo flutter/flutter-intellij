@@ -290,6 +290,9 @@
     <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
                     serviceImplementation="io.flutter.devtools.DevToolsManager"
                     overrides="false"/>
+    <projectService serviceInterface="io.flutter.devtools.WebDevManager"
+                    serviceImplementation="io.flutter.devtools.WebDevManager"
+                    overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 
