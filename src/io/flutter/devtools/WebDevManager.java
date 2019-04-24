@@ -29,7 +29,7 @@ public class WebDevManager {
     return ServiceManager.getService(project, WebDevManager.class);
   }
 
-  private final Project project;
+  @NotNull private final Project project;
 
   private boolean installedWebdev = false;
 
