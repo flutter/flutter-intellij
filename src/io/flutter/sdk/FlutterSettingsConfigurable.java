@@ -27,7 +27,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
@@ -53,6 +52,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myReportUsageInformationCheckBox;
   private JLabel myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
+  private JCheckBox myHotReloadIgnoreErrorCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
@@ -64,6 +64,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myDisableMemoryProfilerCheckBox;
+
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -147,6 +148,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isReloadWithError() != myHotReloadIgnoreErrorCheckBox.isSelected()) {
+      return true;
+    }
+
+
     if (settings.isFormatCodeOnSave() != myFormatCodeOnSaveCheckBox.isSelected()) {
       return true;
     }
@@ -209,6 +215,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
+    settings.setReloadWithError(myHotReloadIgnoreErrorCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
@@ -239,6 +246,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
+    myHotReloadIgnoreErrorCheckBox.setSelected(settings.isReloadWithError());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
