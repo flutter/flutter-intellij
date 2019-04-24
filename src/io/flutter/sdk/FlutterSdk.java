@@ -277,15 +277,13 @@ public class FlutterSdk {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.ATTACH, args.toArray(new String[]{ }));
   }
 
-  public FlutterCommand flutterRunWeb(@NotNull PubRoot root, @NotNull RunMode mode) {
-    // TODO(devoncarew): We need to provision the webdev cli here.
-
+  public FlutterCommand flutterRunWeb(@NotNull PubRoot root, @NotNull RunMode mode, String... additionalArgs) {
     // TODO(jwren): After debugging is supported by webdev, this should be modified to check for debug and add
     // any additional needed flags: i.e. if (mode == RunMode.DEBUG) { args.add("--debug"); }
     // See https://github.com/flutter/flutter-intellij/issues/3349.
 
     // flutter packages pub global run webdev daemon
-    return new FlutterWebCommand(this, root.getRoot(), FlutterCommand.Type.FLUTTER_WEB_RUN, new String[]{ });
+    return new FlutterWebCommand(this, root.getRoot(), FlutterCommand.Type.FLUTTER_WEB_RUN, additionalArgs);
   }
 
   public FlutterCommand flutterRunOnTester(@NotNull PubRoot root, @NotNull String mainPath) {
