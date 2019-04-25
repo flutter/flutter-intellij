@@ -29,6 +29,7 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -64,6 +65,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myDisableMemoryProfilerCheckBox;
+  private JCheckBox myUseBazelByDefaultCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -187,6 +189,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    //noinspection RedundantIfStatement
+    if (settings.useBazelByDefault() != myUseBazelByDefaultCheckBox.isSelected()) {
+      return true;
+    }
+
     return false;
   }
 
@@ -219,6 +226,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
+    settings.setUseBazelByDefault(myUseBazelByDefaultCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -249,6 +257,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
     myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
+    myUseBazelByDefaultCheckBox.setSelected(settings.useBazelByDefault());
+    // We only show the bazel by default checkbox inside of a bazel project.
+    myUseBazelByDefaultCheckBox.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }

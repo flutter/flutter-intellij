@@ -10,10 +10,15 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
+import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
 import io.flutter.bazel.Workspace;
+import io.flutter.pub.PubRoot;
+import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -34,6 +39,7 @@ public class FlutterSettings {
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
   private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
+  private static final String useBazelByDefaultKey = "io.flutter.bazel.useByDefault";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -90,6 +96,9 @@ public class FlutterSettings {
     }
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
+    }
+    if (useBazelByDefault()) {
+      analytics.sendEvent("settings", afterLastPeriod(useBazelByDefaultKey));
     }
   }
 
@@ -209,6 +218,25 @@ public class FlutterSettings {
     getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, false);
 
     fireEvent();
+  }
+
+  public boolean useBazelByDefault() {
+    return getPropertiesComponent().getBoolean(useBazelByDefaultKey, false);
+  }
+
+  public void setUseBazelByDefault(boolean value) {
+    getPropertiesComponent().setValue(useBazelByDefaultKey, value, false);
+
+    fireEvent();
+  }
+
+  /**
+   * Determines whether bazel should be used for a project based on the user's preferences and the structure of the project.
+   */
+  public boolean shouldUseBazel(Project project) {
+    final boolean isBazelProject = FlutterModuleUtils.isFlutterBazelProject(project);
+    final boolean isNotPubProject = PubRoots.forProject(project).isEmpty();
+    return isBazelProject && (useBazelByDefault() || isNotPubProject);
   }
 
   // TODO(devoncarew): Remove this after M31 ships.
