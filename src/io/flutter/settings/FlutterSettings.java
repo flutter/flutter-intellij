@@ -31,8 +31,6 @@ public class FlutterSettings {
   private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-  private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
-  private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -240,16 +238,6 @@ public class FlutterSettings {
 
   public void setVerboseLogging(boolean value) {
     getPropertiesComponent().setValue(verboseLoggingKey, value, false);
-
-    fireEvent();
-  }
-
-  public boolean isMemoryProfilerDisabled() {
-    return getPropertiesComponent().getBoolean(memoryProfilerKey, false);
-  }
-
-  public void setMemoryProfilerDisabled(boolean value) {
-    getPropertiesComponent().setValue(memoryProfilerKey, value, false);
 
     fireEvent();
   }

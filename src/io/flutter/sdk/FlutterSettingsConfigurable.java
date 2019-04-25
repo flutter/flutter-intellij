@@ -63,7 +63,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
-  private JCheckBox myDisableMemoryProfilerCheckBox;
 
   private final @NotNull Project myProject;
 
@@ -185,11 +184,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    //noinspection RedundantIfStatement
     if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.isMemoryProfilerDisabled() != myDisableMemoryProfilerCheckBox.isSelected()) {
       return true;
     }
 
@@ -225,7 +221,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
-    settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -256,7 +251,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
-    myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
@@ -269,7 +263,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
     final ModalityState modalityState = ModalityState.current();
 
-    boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
+    final boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
     myLegacyTrackWidgetCreationCheckBox.setVisible(!trackWidgetCreationRecommended);
     myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
@@ -289,7 +283,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null) {
       myVersionLabel.setText("");
-    } else {
+    }
+    else {
       myVersionLabel.setText(value);
     }
   }

@@ -33,7 +33,6 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -207,7 +206,7 @@ public class FlutterPerfView implements Disposable {
 
       addPerformanceTab(runnerTabs, app, toolWindow, true);
 
-      if (FlutterUtils.isAndroidStudio() && !FlutterSettings.getInstance().isMemoryProfilerDisabled()) {
+      if (FlutterUtils.isAndroidStudio()) {
         addMemoryTab(runnerTabs, app, false, state);
       }
 
