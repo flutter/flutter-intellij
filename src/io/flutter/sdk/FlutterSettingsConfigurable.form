@@ -209,7 +209,7 @@
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.hot.reload.with.error"/>
-              <toolTipText value="Hot reload changes into running Flutter apps even with analysis errors."/>
+              <toolTipText value="Hot reload changes into running Flutter apps even if there are analysis errors"/>
             </properties>
           </component>
         </children>
