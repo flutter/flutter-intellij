@@ -109,13 +109,13 @@ public class DaemonEventTest {
   @Test
   public void canReceiveLogMessage() {
     send("daemon.logMessage", curly("level:\"spam\"", "message:\"Make money fast\"", "stackTrace:\"Las Vegas\""));
-    checkLog("LogMessage: spam, Make money fast, Las Vegas");
+    checkLog("DaemonLogMessage: spam, Make money fast, Las Vegas");
   }
 
   @Test
   public void canReceiveShowMessage() {
     send("daemon.showMessage", curly("level:\"info\"", "title:\"Spam\"", "message:\"Make money fast\""));
-    checkLog("ShowMessage: info, Spam, Make money fast");
+    checkLog("DaemonShowMessage: info, Spam, Make money fast");
   }
 
   // app domain
