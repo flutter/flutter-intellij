@@ -8,15 +8,11 @@ package io.flutter.settings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.registry.Registry;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
 
-import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.List;
 
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
@@ -46,7 +42,6 @@ public class FlutterSettings {
   private final EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
 
   public FlutterSettings() {
-    updateAnalysisServerArgs();
   }
 
   public void sendSettingsToAnalytics(Analytics analytics) {
@@ -205,17 +200,6 @@ public class FlutterSettings {
     getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, false);
 
     fireEvent();
-  }
-
-  // TODO(devoncarew): Remove this after M31 ships.
-  private void updateAnalysisServerArgs() {
-    final String serverRegistryKey = "dart.server.additional.arguments";
-    final String previewDart2FlagSuffix = "preview-dart-2";
-
-    final List<String> params = new ArrayList<>(StringUtil.split(Registry.stringValue(serverRegistryKey), " "));
-    if (params.removeIf((s) -> s.endsWith(previewDart2FlagSuffix))) {
-      Registry.get(serverRegistryKey).setValue(StringUtil.join(params, " "));
-    }
   }
 
   public boolean isVerboseLogging() {
