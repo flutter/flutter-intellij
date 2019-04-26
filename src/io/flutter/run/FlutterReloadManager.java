@@ -190,14 +190,17 @@ public class FlutterReloadManager {
         return;
       }
 
-      if (hasErrors(app.getProject(), app.getModule(), editor.getDocument())) {
+      // If the analysis server detects any errors in the project, it will not perform a hot reload.
+      // This can cause hot reload to stop working needlessly when, eg, there is an analysis error in a test file.
+      // The reloadWithError option in settings is a workaround.
+      // See https://github.com/flutter/flutter/issues/27618 for the high-level goal.
+      if (hasErrors(app.getProject(), app.getModule(), editor.getDocument()) && !mySettings.isReloadWithError()) {
         handlingSave.set(false);
 
         showAnalysisNotification("Reload not performed", "Analysis issues found", true);
 
         return;
       }
-
       final Notification notification = showRunNotification(app, null, "Reloading…", false);
       final long startTime = System.currentTimeMillis();
 
