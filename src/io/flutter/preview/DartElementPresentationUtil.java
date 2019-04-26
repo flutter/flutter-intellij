@@ -17,9 +17,9 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 
-import static com.intellij.icons.AllIcons.Nodes.*;
 import static com.intellij.icons.AllIcons.Nodes.Class;
 import static com.intellij.icons.AllIcons.Nodes.Enum;
+import static com.intellij.icons.AllIcons.Nodes.*;
 import static com.intellij.icons.AllIcons.RunConfigurations.Junit;
 
 /**
@@ -44,8 +44,7 @@ public class DartElementPresentationUtil {
     switch (element.getKind()) {
       case ElementKind.CLASS:
         return element.isAbstract() ? AbstractClass : Class;
-      case "MIXIN":
-        // TODO(devoncarew): Use ElementKind.MIXIN when its available.
+      case ElementKind.MIXIN:
         return AbstractClass;
       case ElementKind.CONSTRUCTOR:
         return Method;
