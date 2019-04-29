@@ -5,7 +5,6 @@
  */
 package io.flutter.project;
 
-import com.android.ide.common.repository.GradleCoordinate;
 import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.LightResourceClassService;
@@ -19,14 +18,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterProjectSystem implements AndroidProjectSystem {
   private static final Logger LOG = Logger.getInstance(FlutterProjectSystem.class);

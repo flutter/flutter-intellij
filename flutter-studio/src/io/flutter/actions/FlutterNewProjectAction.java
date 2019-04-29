@@ -16,13 +16,8 @@ import com.intellij.openapi.project.DumbAware;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.project.ChoseProjectTypeStep;
 import io.flutter.project.FlutterProjectModel;
-import org.jetbrains.annotations.NotNull;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.NoSuchElementException;
-
-import static com.intellij.util.ReflectionUtil.getMethod;
+import org.jetbrains.annotations.NotNull;
 
 public class FlutterNewProjectAction extends AnAction implements DumbAware {
   private static final Logger LOG = Logger.getInstance(FlutterNewProjectAction.class);
