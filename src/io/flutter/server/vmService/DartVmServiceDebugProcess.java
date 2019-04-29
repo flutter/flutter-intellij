@@ -17,11 +17,8 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.openapi.wm.WindowManager;
 import com.intellij.testFramework.LightVirtualFile;
-import com.intellij.util.BitUtil;
 import com.intellij.util.TimeoutUtil;
 import com.intellij.xdebugger.*;
 import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
@@ -46,19 +43,13 @@ import io.flutter.server.vmService.frame.DartVmServiceSuspendContext;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -108,7 +99,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       public void sessionPaused() {
         // This can be removed if XFramesView starts popping the project window to the top of the z-axis stack.
         final Project project = getSession().getProject();
-        focusProject(project);
+        ProjectUtil.focusProjectWindow(project, true);
         stackFrameChanged();
       }
 
@@ -587,13 +578,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
               ApplicationManager.getApplication().invokeLater(() -> ApplicationManager.getApplication().runWriteAction(() -> {
                 info.navigate(project);
 
-                if (SystemInfo.isLinux) {
-                  // TODO(cbernaschina): remove when ProjectUtil.focusProjectWindow(project, true); works as expected.
-                  focusProject(project);
-                }
-                else {
-                  ProjectUtil.focusProjectWindow(project, true);
-                }
+                ProjectUtil.focusProjectWindow(project, true);
               }));
             }
           });
@@ -654,57 +639,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     if (uri.startsWith("file:/")) return "file:///" + uri.substring("file:/".length());
     if (uri.startsWith("file:")) return "file:///" + uri.substring("file:".length());
     return uri;
-  }
-
-  private static void focusProject(@NotNull Project project) {
-    final JFrame projectFrame = WindowManager.getInstance().getFrame(project);
-    final int frameState = projectFrame.getExtendedState();
-
-    if (BitUtil.isSet(frameState, java.awt.Frame.ICONIFIED)) {
-      // restore the frame if it is minimized
-      projectFrame.setExtendedState(frameState ^ java.awt.Frame.ICONIFIED);
-      projectFrame.toFront();
-    }
-    else {
-      final JFrame anchor = new JFrame();
-      anchor.setType(Window.Type.UTILITY);
-      anchor.setUndecorated(true);
-      anchor.setSize(0, 0);
-      anchor.addWindowListener(new WindowListener() {
-        @Override
-        public void windowOpened(WindowEvent e) {
-        }
-
-        @Override
-        public void windowClosing(WindowEvent e) {
-        }
-
-        @Override
-        public void windowClosed(WindowEvent e) {
-        }
-
-        @Override
-        public void windowIconified(WindowEvent e) {
-        }
-
-        @Override
-        public void windowDeiconified(WindowEvent e) {
-        }
-
-        @Override
-        public void windowActivated(WindowEvent e) {
-          projectFrame.setVisible(true);
-          anchor.dispose();
-        }
-
-        @Override
-        public void windowDeactivated(WindowEvent e) {
-        }
-      });
-      anchor.pack();
-      anchor.setVisible(true);
-      anchor.toFront();
-    }
   }
 
   public interface PositionMapper {
