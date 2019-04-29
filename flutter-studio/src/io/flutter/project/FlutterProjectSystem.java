@@ -5,7 +5,6 @@
  */
 package io.flutter.project;
 
-import com.android.ide.common.repository.GradleCoordinate;
 import com.android.tools.idea.projectsystem.AndroidModuleSystem;
 import com.android.tools.idea.projectsystem.AndroidProjectSystem;
 import com.android.tools.idea.projectsystem.LightResourceClassService;
@@ -19,14 +18,13 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElementFinder;
 import com.intellij.util.ReflectionUtil;
 import io.flutter.FlutterUtils;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterProjectSystem implements AndroidProjectSystem {
   private static final Logger LOG = Logger.getInstance(FlutterProjectSystem.class);
@@ -67,6 +65,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
 
   @SuppressWarnings("override")
   public boolean upgradeProjectToSupportInstantRun() {
+    // TODO(messick) Remove when 3.5 is stable
     return false; // Already done.
   }
 
@@ -82,26 +81,6 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Override
   public ProjectSystemSyncManager getSyncManager() {
     return gradleProjectSystem.getSyncManager();
-  }
-
-  @SuppressWarnings("override")
-  @Nullable
-  public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
-    //return gradleProjectSystem.getAvailableDependency(coordinate, includePreview);
-    // TODO(messick): Delete the remainder of this method and use the previous line once AS 3.1 is no longer supported.
-    Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getAvailableDependency");
-    if (finders == null) {
-      FlutterUtils.warn(LOG, "No method found: GradleProjectSystem.getAvailableDependency()");
-      return null;
-    }
-    try {
-      //noinspection unchecked
-      return (GradleCoordinate)finders.invoke(gradleProjectSystem, coordinate, includePreview);
-    }
-    catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e);
-      throw new IllegalArgumentException(e);
-    }
   }
 
   @SuppressWarnings("override")
@@ -124,6 +103,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
 
   @SuppressWarnings("override")
   public boolean getAugmentRClasses() {
+    // TODO(messick) Remove when 3.5 is stable
     return false;
   }
 
