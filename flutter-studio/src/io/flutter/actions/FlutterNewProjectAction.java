@@ -47,16 +47,7 @@ public class FlutterNewProjectAction extends AnAction implements DumbAware {
       .addStep(new ChoseProjectTypeStep(model))
       .build();
     StudioWizardDialogBuilder builder = new StudioWizardDialogBuilder(wizard, "Create New Flutter Project");
-    // TODO(messick) Remove this reflection call after 3.2 is stable.
-    Method method = getMethod(builder.getClass(), "setUseNewUx", Boolean.class);
-    if (method != null) {
-      try {
-        method.invoke(builder, Boolean.TRUE);
-      }
-      catch (IllegalAccessException | InvocationTargetException e1) {
-        LOG.error(e1);
-      }
-    } // End of code to remove
+    builder.setUxStyle(StudioWizardDialogBuilder.UxStyle.DYNAMIC_APP);
     ModelWizardDialog dialog = builder.build();
     try {
       dialog.show();

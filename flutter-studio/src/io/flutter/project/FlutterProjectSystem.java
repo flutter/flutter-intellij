@@ -67,6 +67,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
 
   @SuppressWarnings("override")
   public boolean upgradeProjectToSupportInstantRun() {
+    // TODO(messick) Remove when 3.5 is stable
     return false; // Already done.
   }
 
@@ -82,26 +83,6 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
   @Override
   public ProjectSystemSyncManager getSyncManager() {
     return gradleProjectSystem.getSyncManager();
-  }
-
-  @SuppressWarnings("override")
-  @Nullable
-  public GradleCoordinate getAvailableDependency(@NotNull GradleCoordinate coordinate, boolean includePreview) {
-    //return gradleProjectSystem.getAvailableDependency(coordinate, includePreview);
-    // TODO(messick): Delete the remainder of this method and use the previous line once AS 3.1 is no longer supported.
-    Method finders = ReflectionUtil.getMethod(gradleProjectSystem.getClass(), "getAvailableDependency");
-    if (finders == null) {
-      FlutterUtils.warn(LOG, "No method found: GradleProjectSystem.getAvailableDependency()");
-      return null;
-    }
-    try {
-      //noinspection unchecked
-      return (GradleCoordinate)finders.invoke(gradleProjectSystem, coordinate, includePreview);
-    }
-    catch (IllegalAccessException | InvocationTargetException e) {
-      LOG.error(e);
-      throw new IllegalArgumentException(e);
-    }
   }
 
   @SuppressWarnings("override")
@@ -124,6 +105,7 @@ public class FlutterProjectSystem implements AndroidProjectSystem {
 
   @SuppressWarnings("override")
   public boolean getAugmentRClasses() {
+    // TODO(messick) Remove when 3.5 is stable
     return false;
   }
 
