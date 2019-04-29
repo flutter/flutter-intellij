@@ -25,6 +25,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.testFramework.LightVirtualFile;
 import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
@@ -69,6 +70,10 @@ public class FlutterUtils {
   }
 
   public static boolean couldContainWidgets(@Nullable VirtualFile file) {
+    // Skip temp file used to show things like files downloaded from the VM.
+    if (file instanceof LightVirtualFile) {
+      return false;
+    }
     // TODO(jacobr): we might also want to filter for files not under the
     // current project root.
     return file != null && FlutterUtils.isDartFile(file);

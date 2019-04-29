@@ -47,11 +47,12 @@ import java.util.*;
 import java.util.List;
 
 /**
- * This is an IndentsPass class forked from com.intellij.codeInsight.daemon.impl.IndentsPass
+ * This is an FliteredIndentsHighlightingPass class forked from com.intellij.codeInsight.daemon.impl.FliteredIndentsHighlightingPass
  * that supports filtering out indent guides that conflict with widget indent
- * guides as determined by calling WidgetIndentsPass.isIndentGuideHidden.
+ * guides as determined by calling WidgetIndentsHighlightingPass.isIndentGuideHidden.
  */
-public class IndentsPass extends TextEditorHighlightingPass implements DumbAware {
+@SuppressWarnings("ALL")
+public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass implements DumbAware {
   private static final Key<List<RangeHighlighter>> INDENT_HIGHLIGHTERS_IN_EDITOR_KEY = Key.create("INDENT_HIGHLIGHTERS_IN_EDITOR_KEY");
   private static final Key<Long> LAST_TIME_INDENTS_BUILT = Key.create("LAST_TIME_INDENTS_BUILT");
 
@@ -131,7 +132,7 @@ public class IndentsPass extends TextEditorHighlightingPass implements DumbAware
       maxY = Math.min(maxY, clip.y + clip.height);
     }
 
-    if (WidgetIndentsPass.isIndentGuideHidden(editor, new LineRange(startLine, endPosition.line))) {
+    if (WidgetIndentsHighlightingPass.isIndentGuideHidden(editor, new LineRange(startLine, endPosition.line))) {
       // Avoid rendering this guide as it overlaps with the Widget indent guides.
       return;
     }
@@ -238,7 +239,7 @@ public class IndentsPass extends TextEditorHighlightingPass implements DumbAware
     return new io.flutter.editor.LineRange(startLine, endPosition.line);
   }
 
-  IndentsPass(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
+  FliteredIndentsHighlightingPass(@NotNull Project project, @NotNull Editor editor, @NotNull PsiFile file) {
     super(project, editor.getDocument(), false);
     myEditor = (EditorEx)editor;
     myFile = file;
@@ -250,8 +251,8 @@ public class IndentsPass extends TextEditorHighlightingPass implements DumbAware
       for (RangeHighlighter highlighter : highlighters) {
         final LineRange range = getGuideLineRange(editor, highlighter);
         if (range != null) {
-          final boolean before = WidgetIndentsPass.isIndentGuideHidden(oldHitTester, range);
-          final boolean after = WidgetIndentsPass.isIndentGuideHidden(newHitTester, range);
+          final boolean before = WidgetIndentsHighlightingPass.isIndentGuideHidden(oldHitTester, range);
+          final boolean after = WidgetIndentsHighlightingPass.isIndentGuideHidden(newHitTester, range);
           if (before != after) {
             editor.repaint(highlighter.getStartOffset(), highlighter.getEndOffset());
           }

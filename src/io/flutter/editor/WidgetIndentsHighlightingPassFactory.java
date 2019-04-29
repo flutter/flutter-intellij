@@ -26,7 +26,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.util.messages.MessageBusConnection;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
@@ -38,28 +37,9 @@ import java.util.*;
 import java.util.List;
 
 /**
- * Highlighing pass used as a placeholder when WidgetIndentPass was enabled
- * and then later disabled.
- * <p>
- * This is required as a TextEditorHighlightingPassFactory cannot return null.
- */
-class PlaceholderHighlightingPass extends TextEditorHighlightingPass {
-  PlaceholderHighlightingPass(Project project, Document document, boolean isRunIntentionPassAfter) {
-    super(project, document, isRunIntentionPassAfter);
-  }
-
-  public void doCollectInformation(@NotNull ProgressIndicator indicator) {
-  }
-
-  @Override
-  public void doApplyInformationToEditor() {
-  }
-}
-
-/**
  * Factory that drives all rendering of widget indents.
  */
-public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFactory, Disposable {
+public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlightingPassFactory, Disposable {
   // This is a debugging flag to track down bugs that are hard to spot if
   // analysis server updates are occuring at their normal rate. If there are
   // bugs, With this flag on you should be able to spot flickering or invalid
@@ -81,14 +61,12 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
   // from the FlutterSettings class.
   private boolean isShowMultipleChildrenGuides;
   private boolean isShowBuildMethodGuides;
-  private boolean isShowThickLineGuides;
 
   private final FlutterSettings.Listener settingsListener = () -> {
     final FlutterSettings settings = FlutterSettings.getInstance();
     // Skip if none of the settings that impact Widget Idents were changed.
     if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
-        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides() &&
-        isShowThickLineGuides == settings.isShowThickLineGuides()) {
+        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides()) {
       // Change doesn't matter for us.
       return;
     }
@@ -102,7 +80,7 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
     }
   };
 
-  public WidgetIndentsPassFactory(Project project) {
+  public WidgetIndentsHighlightingPassFactory(Project project) {
     this.project = project;
     TextEditorHighlightingPassRegistrar.getInstance(project)
       .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
@@ -120,7 +98,7 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
         if (editor.getProject() != project) return;
         if (!(editor instanceof EditorEx)) return;
         final EditorEx editorEx = (EditorEx)editor;
-        WidgetIndentsPass.onCaretPositionChanged(editorEx, event.getCaret());
+        WidgetIndentsHighlightingPass.onCaretPositionChanged(editorEx, event.getCaret());
       }
     }, this);
 
@@ -229,7 +207,6 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
       updateActiveEditors();
     }
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
-    isShowThickLineGuides = settings.isShowThickLineGuides() && isShowBuildMethodGuides;
   }
 
   private void updateEditorSettings(EditorEx editor) {
@@ -249,12 +226,12 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
         // Cleanup highlighters from the widget indents pass if it was
         // previously enabled.
         ApplicationManager.getApplication().invokeLater(() -> {
-          WidgetIndentsPass.cleanupHighlighters((EditorEx)e);
+          WidgetIndentsHighlightingPass.cleanupHighlighters((EditorEx)e);
         });
       }
 
       // Return a placeholder editor highlighting pass. The user will get the
-      // regular IntelliJ platform provided IndentsPass in this case.
+      // regular IntelliJ platform provided FliteredIndentsHighlightingPass in this case.
       // This is the special case where the user disabled the
       // WidgetIndentsGuides after previously having them setup.
       return new PlaceholderHighlightingPass(
@@ -263,13 +240,13 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
         false
       );
     }
-    final IndentsPass indentsPass = new IndentsPass(project, e, file);
-    if (!(e instanceof EditorEx)) return indentsPass;
+    final FliteredIndentsHighlightingPass fliteredIndentsHighlightingPass = new FliteredIndentsHighlightingPass(project, e, file);
+    if (!(e instanceof EditorEx)) return fliteredIndentsHighlightingPass;
     final EditorEx editor = (EditorEx)e;
 
     final VirtualFile virtualFile = editor.getVirtualFile();
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
-      return indentsPass;
+      return fliteredIndentsHighlightingPass;
     }
     final String path = virtualFile.getPath();
     final FlutterOutline outline;
@@ -284,7 +261,7 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
     }
     // Return the indent pass rendering regular indent guides with guides that
     // intersect with the widget guides filtered out.
-    return indentsPass;
+    return fliteredIndentsHighlightingPass;
   }
 
   void runWidgetIndentsPass(EditorEx editor, @NotNull FlutterOutline outline) {
@@ -308,12 +285,31 @@ public class WidgetIndentsPassFactory implements TextEditorHighlightingPassFacto
       return;
     }
 
-    WidgetIndentsPass.run(project, editor, outline);
+    WidgetIndentsHighlightingPass.run(project, editor, outline);
   }
 
   @Override
   public void dispose() {
     clearListeners();
     FlutterSettings.getInstance().removeListener(settingsListener);
+  }
+}
+
+/**
+ * Highlighing pass used as a placeholder when WidgetIndentPass was enabled
+ * and then later disabled.
+ * <p>
+ * This is required as a TextEditorHighlightingPassFactory cannot return null.
+ */
+class PlaceholderHighlightingPass extends TextEditorHighlightingPass {
+  PlaceholderHighlightingPass(Project project, Document document, boolean isRunIntentionPassAfter) {
+    super(project, document, isRunIntentionPassAfter);
+  }
+
+  public void doCollectInformation(@NotNull ProgressIndicator indicator) {
+  }
+
+  @Override
+  public void doApplyInformationToEditor() {
   }
 }

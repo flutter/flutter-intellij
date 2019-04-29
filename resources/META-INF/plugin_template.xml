@@ -307,7 +307,7 @@
 
   <project-components>
     <component>
-      <implementation-class>io.flutter.editor.WidgetIndentsPassFactory</implementation-class>
+      <implementation-class>io.flutter.editor.WidgetIndentsHighlightingPassFactory</implementation-class>
     </component>
   </project-components>
 

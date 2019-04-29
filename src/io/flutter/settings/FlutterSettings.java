@@ -31,7 +31,6 @@ public class FlutterSettings {
   // Settings for UI as Code experiments.
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
-  private static final String showThickLineGuidesKey = "io.flutter.editor.showThickLineGuides";
   private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
 
   public static FlutterSettings getInstance() {
@@ -89,6 +88,17 @@ public class FlutterSettings {
     if (isDisableTrackWidgetCreation()) {
       analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
     }
+
+    if (isShowBuildMethodGuides()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodGuidesKey));
+    }
+    if (isShowMultipleChildrenGuides()) {
+      analytics.sendEvent("settings", afterLastPeriod(showMultipleChildrenGuidesKey));
+    }
+    if (isShowBuildMethodsOnScrollbar()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
+    }
+
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
@@ -233,23 +243,13 @@ public class FlutterSettings {
   }
 
   public boolean isShowBuildMethodGuides() {
-    return getPropertiesComponent().getBoolean(showBuildMethodGuidesKey, false);
+    return getPropertiesComponent().getBoolean(showBuildMethodGuidesKey, true);
   }
 
   public void setShowBuildMethodGuides(boolean value) {
-    getPropertiesComponent().setValue(showBuildMethodGuidesKey, value, false);
+    getPropertiesComponent().setValue(showBuildMethodGuidesKey, value, true);
 
     fireEvent();
-  }
-
-  public void setShowThickLineGuides(boolean value) {
-    getPropertiesComponent().setValue(showThickLineGuidesKey, value, true);
-
-    fireEvent();
-  }
-
-  public boolean isShowThickLineGuides() {
-    return getPropertiesComponent().getBoolean(showThickLineGuidesKey, true);
   }
 
   public boolean isShowBuildMethodsOnScrollbar() {

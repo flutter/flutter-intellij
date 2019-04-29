@@ -13,11 +13,11 @@ import java.util.ArrayList;
 import static java.lang.Math.max;
 
 /**
- * Analog to the IndentGuideDescriptor class from the regular IndentsPass.
+ * Analog to the IndentGuideDescriptor class from the regular FliteredIndentsHighlightingPass.
  *
  * The core difference relative to IndentGuideDescriptor is this descriptor
  * tracks a list of child nodes to visualize the tree structure of a build
- * method. WidgetIndentsPass will use this information to draw horizontal
+ * method. WidgetIndentsHighlightingPass will use this information to draw horizontal
  * lines to show part-child relationships.
  *
  * Widget indent guides depend on the analysis service as the source of truth,

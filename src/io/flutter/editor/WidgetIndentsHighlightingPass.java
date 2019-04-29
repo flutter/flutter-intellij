@@ -33,59 +33,63 @@ import java.util.List;
 
 import static java.lang.Math.*;
 
+// Instructions for how this code should be tested:
+// This code could be tested by true integration tests or better yet by
+// unittests that are able to create Editor object instances. Testing this
+// code does not require running a Flutter application but it does require
+// creating Editor object instances and would benefit from creating a live
+// Dart analysis server to communicate with.
+//
+// Suggested steps to test this code:
+// Create a representative Dart file containing a a couple build methods with
+// deeply nested widget trees.
+// Create an Editor instance from the dart file.
+// Get a Flutter outline from that file or inject a snapshotted Flutter outline
+// iof it isn't feasible to get a true Flutter outline.
+// Verify that calling
+// pass = new WidgetIndentsHighlightingPass(project, editor);
+// pass.setOutline(flutterOutline);
+// results in adding highlights to the expected ranges. Highlighters can be
+// found querying the editor directly or calling.
+
+// final CustomHighlighterRenderer renderer = highlighter.getCustomRenderer();
+//      ((WidgetCustomHighlighterRenderer)renderer).dispose();
+// You could then even call the render method on a highlighter if you wanted
+// a golden image that just contained the widget indent tree diagram. In
+// practice it would be sufficient to get the WidgetIndentGuideDescriptor from
+// the renderer and verify that the child locations are correct. The
+// important piece to test is that the child widget locations are acurate even
+// after making some edits to the document which brings to the next step:
+// Make a couple edits to the document and verify that the widget indents are
+// still accurate even after the change. The machinery in Editor will track the
+// edits and update the widget indents appropriately even before a new
+// FlutterOutline is available.
+//
+// Final step: create a new FlutterOutline and verify passing it in updates the
+// widget guides removing guides not part of the outline. For example, Add a
+// character to a constructor name so the constructor is not a Widget subclass.
+// That will cause the outermost guide in the tree to be removed. Alternately,
+// add another widget to the list of children for a widget.
+//
+// You could also performa golden image integration test to verify that the
+// actual render of the text editor matched what was expected but changes
+// in font rendering would make that tricky.
+
 /**
- * Data describing widget indents for an editor that is persisted across
- * multiple runs of the WidgetIndentsPass.
- */
-class WidgetIndentsPassData {
-  /**
-   * Descriptors describing the data model to render the widget indents.
-   *
-   * This data is computed from the FlutterOutline and contains additional
-   * information to manage how the locations need to be updated to reflect
-   * edits to the documents.
-   */
-  List<WidgetIndentGuideDescriptor> myDescriptors = Collections.emptyList();
-
-  /**
-   * Descriptors combined with their current locations in the possibly modified document.
-   */
-  List<WidgetIndentsPass.TextRangeDescriptorPair> myRangesWidgets = Collections.emptyList();
-
-  /**
-   * Highlighters that perform the actual rendering of the widget indent
-   * guides.
-   */
-  List<RangeHighlighter> highlighters;
-
-  /**
-   * Source of truth for whether other UI overlaps with the widget indents.
-   */
-  WidgetIndentHitTester hitTester;
-
-  /**
-   * Outline the widget indents are based on.
-   * */
-  FlutterOutline outline;
-}
-
-/**
- * A WidgetIndentsPass drawsg UI as Code Guides for a code editor using a
+ * A WidgetIndentsHighlightingPass drawsg UI as Code Guides for a code editor using a
  * FlutterOutline.
- *
+ * <p>
  * This class is similar to a TextEditorHighlightingPass but doesn't actually
  * implement TextEditorHighlightingPass as it is driven by changes to the
  * FlutterOutline which is only available when the AnalysisServer computes a
  * new outline while TextEditorHighlightingPass assumes all information needed
  * is available immediately.
  */
-public class WidgetIndentsPass {
+public class WidgetIndentsHighlightingPass {
   private final static Stroke SOLID_STROKE = new BasicStroke(1);
   private final static JBColor VERY_LIGHT_GRAY = new JBColor(Gray._224, Gray._80);
   private final static JBColor SHADOW_GRAY = new JBColor(Gray._192, Gray._100);
   private final static JBColor OUTLINE_LINE_COLOR = new JBColor(Gray._128, Gray._128);
-  private final static JBColor OUTLINE_SHADOW_1 = new JBColor(new Color(128, 128, 128, 80), new Color(128, 128, 128, 160));
-  private final static JBColor OUTLINE_SHADOW_2 = new JBColor(new Color(128, 128, 128, 40), new Color(128, 128, 128, 80));
   private final static JBColor OUTLINE_LINE_COLOR_PAST_BLOCK = new JBColor(new Color(128, 128, 128, 65), new Color(128, 128, 128, 65));
   private final static JBColor BUILD_METHOD_STRIPE_COLOR = new JBColor(new Color(0xc0d8f0), new Color(0x8d7043));
 
@@ -95,15 +99,6 @@ public class WidgetIndentsPass {
    * When this debugging flag is true, problematic text ranges are reported.
    */
   private final static boolean DEBUG_WIDGET_INDENTS = false;
-
-  static class TextRangeDescriptorPair {
-    final TextRange range;
-    final WidgetIndentGuideDescriptor descriptor;
-    TextRangeDescriptorPair(TextRange range, WidgetIndentGuideDescriptor descriptor) {
-      this.range = range;
-      this.descriptor = descriptor;
-    }
-  }
 
   private static class WidgetCustomHighlighterRenderer implements CustomHighlighterRenderer {
     private final WidgetIndentGuideDescriptor descriptor;
@@ -176,7 +171,6 @@ public class WidgetIndentsPass {
       }
       final FlutterSettings settings = FlutterSettings.getInstance();
       final boolean showMultipleChildrenGuides = settings.isShowMultipleChildrenGuides();
-      final boolean showThickLineGuides = settings.isShowThickLineGuides();
 
       final Graphics2D g2d = (Graphics2D)g.create();
       // Required to render colors with an alpha channel. Rendering with an
@@ -276,7 +270,7 @@ public class WidgetIndentsPass {
       g2d.setColor(lineColor);
       final Color pastBlockColor = selected ? scheme.getColor(EditorColors.SELECTED_INDENT_GUIDE_COLOR) : OUTLINE_LINE_COLOR_PAST_BLOCK;
 
-      // TODO(jacobr): this logic for softwraps is duplicated for the IndentsPass
+      // TODO(jacobr): this logic for softwraps is duplicated for the FliteredIndentsHighlightingPass
       // and may be more conservative than sensible for WidgetIndents.
 
       // There is a possible case that indent line intersects soft wrap-introduced text. Example:
@@ -385,7 +379,7 @@ public class WidgetIndentsPass {
         }
         if (!softWraps.isEmpty() && softWraps.get(0).getIndentInColumns() < indentColumn) {
           if (y < newY || i > startLine + lineShift) { // There is a possible case that soft wrap is located on indent start line.
-            drawVerticalLineHelper(g2d, lineColor, start.x, y, newY + lineHeight, childLines, showThickLineGuides,
+            drawVerticalLineHelper(g2d, lineColor, start.x, y, newY + lineHeight, childLines,
                                    showMultipleChildrenGuides);
           }
           newY += logicalLineHeight;
@@ -407,7 +401,7 @@ public class WidgetIndentsPass {
       }
       if (y < maxY) {
         if (splitY != -1) {
-          drawVerticalLineHelper(g2d, lineColor, start.x, y, splitY, childLines, showThickLineGuides, showMultipleChildrenGuides);
+          drawVerticalLineHelper(g2d, lineColor, start.x, y, splitY, childLines, showMultipleChildrenGuides);
           g2d.setColor(pastBlockColor);
           g2d.drawLine(start.x + 2, (int)splitY + 1, start.x + 2, maxY);
         }
@@ -425,7 +419,7 @@ public class WidgetIndentsPass {
   private final Project myProject;
   private final VirtualFile myFile;
 
-  WidgetIndentsPass(@NotNull Project project, @NotNull EditorEx editor) {
+  WidgetIndentsHighlightingPass(@NotNull Project project, @NotNull EditorEx editor) {
     this.myDocument = editor.getDocument();
     this.myEditor = editor;
     this.myProject = project;
@@ -439,28 +433,18 @@ public class WidgetIndentsPass {
     double yStart,
     double yEnd,
     ArrayList<OutlineLocation> childLines,
-    boolean showThickLineGuides,
     boolean showMultipleChildrenGuides
   ) {
     if (childLines != null && childLines.size() >= 2 && showMultipleChildrenGuides) {
       // TODO(jacobr): optimize this code a bit. This is a sloppy way to draw these lines.
-      if (showThickLineGuides) {
-        g.setStroke(SOLID_STROKE);
-        g.setColor(lineColor);
-        g.drawLine(x + 1, (int)yStart, x + 1, (int)yEnd+1);
-        g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd+1);
-      } else {
-        g.setStroke(SOLID_STROKE);
-        g.setColor(OUTLINE_SHADOW_2);
-        g.drawLine(x, (int)yStart, x, (int)yEnd + 1);
-        g.setColor(OUTLINE_SHADOW_1);
-        g.drawLine(x + 1, (int)yStart, x + 1, (int)yEnd + 1);
-        g.setColor(lineColor);
-        g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
-      }
-    } else {
+      g.setStroke(SOLID_STROKE);
       g.setColor(lineColor);
-      g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd+1);
+      g.drawLine(x + 1, (int)yStart, x + 1, (int)yEnd + 1);
+      g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
+    }
+    else {
+      g.setColor(lineColor);
+      g.drawLine(x + 2, (int)yStart, x + 2, (int)yEnd + 1);
     }
   }
 
@@ -497,8 +481,9 @@ public class WidgetIndentsPass {
     final WidgetIndentsPassData data = getIndentsPassData(editor);
     if (data == null || data.highlighters == null) return;
     for (RangeHighlighter h : data.highlighters) {
-      if (h.getCustomRenderer() instanceof WidgetIndentsPass.WidgetCustomHighlighterRenderer) {
-        final  WidgetIndentsPass.WidgetCustomHighlighterRenderer renderer = (WidgetIndentsPass.WidgetCustomHighlighterRenderer) h.getCustomRenderer();
+      if (h.getCustomRenderer() instanceof WidgetIndentsHighlightingPass.WidgetCustomHighlighterRenderer) {
+        final WidgetIndentsHighlightingPass.WidgetCustomHighlighterRenderer renderer =
+          (WidgetIndentsHighlightingPass.WidgetCustomHighlighterRenderer)h.getCustomRenderer();
         final boolean changed = renderer.updateSelected(editor, h, caret);
         if (changed) {
           editor.repaint(h.getStartOffset(), h.getEndOffset());
@@ -533,8 +518,8 @@ public class WidgetIndentsPass {
   }
 
   public static void run(@NotNull Project project, @NotNull EditorEx editor, @NotNull FlutterOutline outline) {
-    final WidgetIndentsPass widgetIndentsPass = new WidgetIndentsPass(project, editor);
-    widgetIndentsPass.setOutline(outline);
+    final WidgetIndentsHighlightingPass widgetIndentsHighlightingPass = new WidgetIndentsHighlightingPass(project, editor);
+    widgetIndentsHighlightingPass.setOutline(outline);
   }
 
   /**
@@ -543,7 +528,7 @@ public class WidgetIndentsPass {
    * Some of this logic would appear to be safe to call on a background thread but
    * there are race conditions where the data will be out of order if the document
    * is being edited while the code is executing.
-   *
+   * <p>
    * If there are performance concerns we can work to perform more of this
    * computation on a separate thread.
    */
@@ -571,7 +556,7 @@ public class WidgetIndentsPass {
     if (Objects.equals(data.hitTester, hitTester)) {
       return;
     }
-    IndentsPass.onWidgetIndentsChanged(myEditor, data.hitTester, hitTester);
+    FliteredIndentsHighlightingPass.onWidgetIndentsChanged(myEditor, data.hitTester, hitTester);
     data.hitTester = hitTester;
   }
 
@@ -626,7 +611,7 @@ public class WidgetIndentsPass {
     if (oldHighlighters != null) {
       // after document change some range highlighters could have become
       // invalid, or the order could have been broken.
-      // This is similar to logic in IndentsPass.java that also attempts to
+      // This is similar to logic in FliteredIndentsHighlightingPass.java that also attempts to
       // only update highlighters that have actually changed.
       oldHighlighters.sort(Comparator.comparing((RangeHighlighter h) -> !h.isValid())
                              .thenComparing(Segment.BY_START_OFFSET_THEN_END_OFFSET));
@@ -779,5 +764,51 @@ public class WidgetIndentsPass {
     }
     highlighter.setCustomRenderer(new WidgetCustomHighlighterRenderer(entry.descriptor, myDocument));
     return highlighter;
+  }
+}
+
+/**
+ * Data describing widget indents for an editor that is persisted across
+ * multiple runs of the WidgetIndentsHighlightingPass.
+ */
+class WidgetIndentsPassData {
+  /**
+   * Descriptors describing the data model to render the widget indents.
+   * <p>
+   * This data is computed from the FlutterOutline and contains additional
+   * information to manage how the locations need to be updated to reflect
+   * edits to the documents.
+   */
+  List<WidgetIndentGuideDescriptor> myDescriptors = Collections.emptyList();
+
+  /**
+   * Descriptors combined with their current locations in the possibly modified document.
+   */
+  List<TextRangeDescriptorPair> myRangesWidgets = Collections.emptyList();
+
+  /**
+   * Highlighters that perform the actual rendering of the widget indent
+   * guides.
+   */
+  List<RangeHighlighter> highlighters;
+
+  /**
+   * Source of truth for whether other UI overlaps with the widget indents.
+   */
+  WidgetIndentHitTester hitTester;
+
+  /**
+   * Outline the widget indents are based on.
+   */
+  FlutterOutline outline;
+}
+
+class TextRangeDescriptorPair {
+  final TextRange range;
+  final WidgetIndentGuideDescriptor descriptor;
+
+  TextRangeDescriptorPair(TextRange range, WidgetIndentGuideDescriptor descriptor) {
+    this.range = range;
+    this.descriptor = descriptor;
   }
 }

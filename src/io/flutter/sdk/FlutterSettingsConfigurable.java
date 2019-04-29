@@ -67,7 +67,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   // Settings for UI as Code experiments:
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowMultipleChildrenGuides;
-  private JCheckBox myShowThickLineGuides;
   private JCheckBox myShowBuildMethodsOnScrollbar;
 
   private final @NotNull Project myProject;
@@ -114,13 +113,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // same class handles all these cases.
     myShowBuildMethodGuides.addChangeListener((e) -> {
       myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
-      myShowThickLineGuides.setEnabled(myShowBuildMethodGuides.isSelected() && myShowMultipleChildrenGuides.isSelected());
       myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
     });
 
-    myShowMultipleChildrenGuides.addChangeListener((e) -> {
-      myShowThickLineGuides.setEnabled(myShowBuildMethodGuides.isSelected() && myShowMultipleChildrenGuides.isSelected());
-    });
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
   }
 
@@ -188,9 +183,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isShowMultipleChildrenGuides() != myShowMultipleChildrenGuides.isSelected()) {
       return true;
     }
-    if (settings.isShowThickLineGuides() != myShowThickLineGuides.isSelected()) {
-      return true;
-    }
 
     if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
       return true;
@@ -250,7 +242,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
-    settings.setShowThickLineGuides(myShowThickLineGuides.isSelected());
     settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
@@ -285,7 +276,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
     myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
-    myShowThickLineGuides.setSelected(settings.isShowThickLineGuides());
     myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
 
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
@@ -300,7 +290,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // These options are only enabled if build method guides are enabled as the
     // same class handles all these cases.
     myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
-    myShowThickLineGuides.setEnabled(myShowBuildMethodGuides.isSelected() && myShowMultipleChildrenGuides.isSelected());
     myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
   }
 
