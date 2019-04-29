@@ -35,7 +35,7 @@ import java.util.concurrent.CompletableFuture;
 public class FlutterLog implements FlutterLogEntry.ContentListener {
   private static final Logger LOG = Logger.getInstance(FlutterLog.class);
 
-  // TODO(devoncarew): Remove on or after approx. 10/1/2019.
+  // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
   public static final String LOGGING_STREAM_ID_OLD = "_Logging";
   public static final String LOGGING_STREAM_ID = "Logging";
 
