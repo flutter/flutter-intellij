@@ -33,10 +33,11 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class FlutterLog implements FlutterLogEntry.ContentListener {
-
   private static final Logger LOG = Logger.getInstance(FlutterLog.class);
 
-  public static final String LOGGING_STREAM_ID = "_Logging";
+  // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
+  public static final String LOGGING_STREAM_ID_OLD = "_Logging";
+  public static final String LOGGING_STREAM_ID = "Logging";
 
   public interface Listener extends EventListener {
     void onEvent(@NotNull FlutterLogEntry entry);
@@ -188,6 +189,7 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
       }
     });
 
+    vmService.streamListen(LOGGING_STREAM_ID_OLD, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     vmService.streamListen(LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
     // TODO(pq): listen for frame events (Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame, etc).
