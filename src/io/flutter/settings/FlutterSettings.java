@@ -8,9 +8,12 @@ package io.flutter.settings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.pub.PubRoots;
+import io.flutter.utils.FlutterModuleUtils;
 
 import java.util.EventListener;
 
@@ -26,6 +29,12 @@ public class FlutterSettings {
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
+
+  // The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
+  // pubspec.yaml.
+  //
+  // In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
+  private static final String dartProjectsWithoutPubspecRegistryKey = "dart.projects.without.pubspec";
 
   // Settings for UI as Code experiments.
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
@@ -97,6 +106,9 @@ public class FlutterSettings {
 
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
+    }
+    if (shouldUseBazel()) {
+      analytics.sendEvent("settings", afterLastPeriod(dartProjectsWithoutPubspecRegistryKey));
     }
   }
 
@@ -213,6 +225,19 @@ public class FlutterSettings {
 
   public void setOpenInspectorOnAppLaunch(boolean value) {
     getPropertiesComponent().setValue(openInspectorOnAppLaunchKey, value, false);
+
+    fireEvent();
+  }
+
+  /**
+   * Determines whether to use bazel project.
+   */
+  public boolean shouldUseBazel() {
+    return Registry.is(dartProjectsWithoutPubspecRegistryKey, false);
+  }
+
+  public void setShouldUseBazel(boolean value) {
+    Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(value);
 
     fireEvent();
   }

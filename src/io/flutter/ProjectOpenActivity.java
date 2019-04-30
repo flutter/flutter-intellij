@@ -21,6 +21,7 @@ import icons.FlutterIcons;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,6 +34,12 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
+  @NotNull private final FlutterSettings settings;
+
+  public ProjectOpenActivity(@NotNull FlutterSettings settings) {
+    this.settings = settings;
+  }
+
   @Override
   public void runActivity(@NotNull Project project) {
     if (!FlutterModuleUtils.declaresFlutter(project)) {
@@ -42,6 +49,11 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     final FlutterSdk sdk = FlutterSdk.getIncomplete(project);
     if (sdk == null) {
       // We can't do anything without a Flutter SDK.
+      return;
+    }
+
+    // If this project is intended as a bazel project, don't run the pub alerts.
+    if (settings.shouldUseBazel()) {
       return;
     }
 
