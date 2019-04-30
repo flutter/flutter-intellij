@@ -52,7 +52,7 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
 
     // If the user has opted out of using pub in a project with both bazel rules and pub rules,
     // then we will default to bazel instead of pub.
-    if (settings.shouldUseBazel(project)) {
+    if (settings.shouldUseBazel()) {
       return null;
     }
 

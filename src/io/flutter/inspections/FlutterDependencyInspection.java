@@ -55,7 +55,7 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     if (root == null || myIgnoredPubspecPaths.contains(root.getPubspec().getPath())) return null;
 
     // If the project should use bazel instead of pub, don't surface this warning.
-    if (FlutterSettings.getInstance().shouldUseBazel(project)) return null;
+    if (FlutterSettings.getInstance().shouldUseBazel()) return null;
 
     // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 

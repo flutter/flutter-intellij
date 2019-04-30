@@ -14,7 +14,6 @@ import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
-import org.ini4j.Reg;
 
 import java.util.EventListener;
 
@@ -30,9 +29,12 @@ public class FlutterSettings {
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-  // The Dart plugin uses this registry key to keep bazel users from getting their settings overridden on projects that include a
+
+  // The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
   // pubspec.yaml.
-  private static final String ignorePubspecRegistryKey = "dart.projects.without.pubspec";
+  //
+  // In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
+  private static final String dartProjectsWithoutPubspecRegistryKey = "dart.projects.without.pubspec";
 
   // Settings for UI as Code experiments.
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
@@ -105,8 +107,8 @@ public class FlutterSettings {
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
-    if (useBazelByDefault()) {
-      analytics.sendEvent("settings", afterLastPeriod(ignorePubspecRegistryKey));
+    if (shouldUseBazel()) {
+      analytics.sendEvent("settings", afterLastPeriod(dartProjectsWithoutPubspecRegistryKey));
     }
   }
 
@@ -227,23 +229,17 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean useBazelByDefault() {
-    return Registry.is(ignorePubspecRegistryKey, false);
+  /**
+   * Determines whether to use bazel project.
+   */
+  public boolean shouldUseBazel() {
+    return Registry.is(dartProjectsWithoutPubspecRegistryKey, false);
   }
 
-  public void setUseBazelByDefault(boolean value) {
-    Registry.get(ignorePubspecRegistryKey).setValue(value);
+  public void setShouldUseBazel(boolean value) {
+    Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(value);
 
     fireEvent();
-  }
-
-  /**
-   * Determines whether bazel should be used for a project based on the user's preferences and the structure of the project.
-   */
-  public boolean shouldUseBazel(Project project) {
-    final boolean isBazelProject = FlutterModuleUtils.isFlutterBazelProject(project);
-    final boolean isNotPubProject = PubRoots.forProject(project).isEmpty();
-    return isBazelProject && (useBazelByDefault() || isNotPubProject);
   }
 
   public boolean isVerboseLogging() {

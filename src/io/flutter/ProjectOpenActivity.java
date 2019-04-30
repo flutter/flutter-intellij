@@ -53,7 +53,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     }
 
     // If this project is intended as a bazel project, don't run the pub alerts.
-    if (settings.shouldUseBazel(project)) {
+    if (settings.shouldUseBazel()) {
       return;
     }
 
