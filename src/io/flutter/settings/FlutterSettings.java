@@ -8,25 +8,11 @@ package io.flutter.settings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-<<<<<<< HEAD
-=======
-import com.intellij.openapi.util.registry.Registry;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
->>>>>>> a39cdc2e42e82bfadf0b04fdd76a9826e8d9ab0b
 import com.intellij.util.EventDispatcher;
-import io.flutter.FlutterUtils;
 import io.flutter.analytics.Analytics;
-<<<<<<< HEAD
 import io.flutter.sdk.FlutterSdk;
-=======
-import io.flutter.bazel.Workspace;
-import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
-import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
-import org.jetbrains.annotations.Nullable;
->>>>>>> a39cdc2e42e82bfadf0b04fdd76a9826e8d9ab0b
 
 import java.util.EventListener;
 
@@ -43,12 +29,9 @@ public class FlutterSettings {
   private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-<<<<<<< HEAD
-=======
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
   private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
   private static final String useBazelByDefaultKey = "io.flutter.bazel.useByDefault";
->>>>>>> a39cdc2e42e82bfadf0b04fdd76a9826e8d9ab0b
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
