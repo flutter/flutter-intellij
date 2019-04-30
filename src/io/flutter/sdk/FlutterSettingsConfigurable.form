@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="6" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="802" height="860"/>
+      <xy x="20" y="20" width="802" height="800"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -51,7 +51,7 @@
           </component>
         </children>
       </grid>
-      <grid id="e885c" layout-manager="GridLayoutManager" row-count="5" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="e885c" layout-manager="GridLayoutManager" row-count="3" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
           <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
@@ -61,7 +61,7 @@
         <children>
           <component id="6304a" class="javax.swing.JCheckBox" binding="myReportUsageInformationCheckBox">
             <constraints>
-              <grid row="2" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="2" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.report.google.analytics"/>
@@ -70,7 +70,7 @@
           </component>
           <component id="99e58" class="javax.swing.JLabel" binding="myPrivacyPolicy">
             <constraints>
-              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="3" use-parent-layout="false"/>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="1" indent="3" use-parent-layout="false"/>
             </constraints>
             <properties>
               <horizontalAlignment value="2"/>
@@ -81,16 +81,53 @@
           </component>
           <component id="be19f" class="javax.swing.JCheckBox" binding="myEnableVerboseLoggingCheckBox" default-binding="true">
             <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.verbose.logging"/>
               <toolTipText value="Enables verbose logging (this can be useful for diagnostic purposes)."/>
             </properties>
           </component>
-          <component id="a0dd8" class="javax.swing.JCheckBox" binding="myFormatCodeOnSaveCheckBox" default-binding="true">
+        </children>
+      </grid>
+      <grid id="32490" layout-manager="GridLayoutManager" row-count="5" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="0" left="0" bottom="0" right="0"/>
+        <constraints>
+          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="Editor"/>
+        <children>
+          <component id="70775" class="javax.swing.JCheckBox" binding="myShowBuildMethodGuides">
             <constraints>
               <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="UI Guides"/>
+              <toolTipText value="Visualize the widget tree structure from the outline view directly in build methods."/>
+            </properties>
+          </component>
+          <component id="70776" class="javax.swing.JCheckBox" binding="myShowMultipleChildrenGuides">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Emphasize widgets with multiple children"/>
+              <toolTipText value="Make lines indicating the relationship between a widget and its multiple children more visible."/>
+            </properties>
+          </component>
+          <component id="23423483" class="javax.swing.JCheckBox" binding="myShowBuildMethodsOnScrollbar">
+            <constraints>
+              <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Show where build methods are on the scrollbar"/>
+              <toolTipText value="When this option is checked lines are drawn on the scrollbar indicating where build methods are."/>
+            </properties>
+          </component>
+          <component id="a0dd8" class="javax.swing.JCheckBox" binding="myFormatCodeOnSaveCheckBox" default-binding="true">
+            <constraints>
+              <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.format.code.on.save"/>
@@ -99,7 +136,7 @@
           </component>
           <component id="8bd46" class="javax.swing.JCheckBox" binding="myOrganizeImportsOnSaveCheckBox" default-binding="true">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
+              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.organize.imports.on.save"/>
@@ -108,10 +145,10 @@
           </component>
         </children>
       </grid>
-      <grid id="23e52" layout-manager="GridLayoutManager" row-count="7" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+      <grid id="23e52" layout-manager="GridLayoutManager" row-count="4" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="etched" title="Experiments"/>
@@ -147,33 +184,6 @@
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.enable.android.gradle.sync"/>
               <toolTipText value="Provides advanced editing capabilities for Java and Kotlin code. Uses Gradle to find Android libraries then links them into the Flutter project."/>
-            </properties>
-          </component>
-          <component id="70775" class="javax.swing.JCheckBox" binding="myShowBuildMethodGuides">
-            <constraints>
-              <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Show build() method structure in the editor"/>
-              <toolTipText value="Visualize the widget tree structure from the outline view directly in build methods."/>
-            </properties>
-          </component>
-          <component id="70776" class="javax.swing.JCheckBox" binding="myShowMultipleChildrenGuides">
-            <constraints>
-              <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Emphasize widgets with multiple children"/>
-              <toolTipText value="Make lines indicating the relationship between a widget and its multiple children more visible."/>
-            </properties>
-          </component>
-          <component id="23423483" class="javax.swing.JCheckBox" binding="myShowBuildMethodsOnScrollbar">
-            <constraints>
-              <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="2" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Show where build methods are on the scrollbar"/>
-              <toolTipText value="When this option is checked lines are drawn on the scrollbar indicating where build methods are."/>
             </properties>
           </component>
         </children>
@@ -235,7 +245,7 @@
       <grid id="f89bc" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
         <margin top="0" left="0" bottom="0" right="0"/>
         <constraints>
-          <grid row="4" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+          <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="7" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
