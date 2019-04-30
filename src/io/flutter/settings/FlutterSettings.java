@@ -8,11 +8,13 @@ package io.flutter.settings;
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
+import org.ini4j.Reg;
 
 import java.util.EventListener;
 
@@ -31,7 +33,9 @@ public class FlutterSettings {
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
   private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
-  private static final String useBazelByDefaultKey = "io.flutter.bazel.useByDefault";
+  // The Dart plugin uses this registry key to keep bazel users from getting their settings overridden on projects that include a
+  // pubspec.yaml.
+  private static final String ignorePubspecRegistryKey = "dart.projects.without.pubspec";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -92,7 +96,7 @@ public class FlutterSettings {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
     if (useBazelByDefault()) {
-      analytics.sendEvent("settings", afterLastPeriod(useBazelByDefaultKey));
+      analytics.sendEvent("settings", afterLastPeriod(ignorePubspecRegistryKey));
     }
   }
 
@@ -225,11 +229,11 @@ public class FlutterSettings {
   }
 
   public boolean useBazelByDefault() {
-    return getPropertiesComponent().getBoolean(useBazelByDefaultKey, false);
+    return Registry.is(ignorePubspecRegistryKey, false);
   }
 
   public void setUseBazelByDefault(boolean value) {
-    getPropertiesComponent().setValue(useBazelByDefaultKey, value, false);
+    Registry.get(ignorePubspecRegistryKey).setValue(value);
 
     fireEvent();
   }
