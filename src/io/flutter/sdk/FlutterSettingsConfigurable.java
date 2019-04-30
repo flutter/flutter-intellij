@@ -105,8 +105,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     });
 
-    myFormatCodeOnSaveCheckBox
-      .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+    myHotReloadOnSaveCheckBox.addChangeListener(
+      (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
+    myFormatCodeOnSaveCheckBox.addChangeListener(
+      (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
 
     // These options are only enabled if build method guides are enabled as the
     // same class handles all these cases.
@@ -277,6 +279,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
+
+    myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
