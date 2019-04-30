@@ -28,6 +28,7 @@ import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -63,7 +64,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
-
+  private JCheckBox myUseBazelByDefaultCheckBox;
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -184,8 +185,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    //noinspection RedundantIfStatement
     if (settings.isSyncingAndroidLibraries() != mySyncAndroidLibrariesCheckBox.isSelected()) {
+      return true;
+    }
+
+    //noinspection RedundantIfStatement
+    if (settings.useBazelByDefault() != myUseBazelByDefaultCheckBox.isSelected()) {
       return true;
     }
 
@@ -221,6 +226,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
+    settings.setUseBazelByDefault(myUseBazelByDefaultCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -251,7 +257,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
-
+    myUseBazelByDefaultCheckBox.setSelected(settings.useBazelByDefault());
+    // We only show the bazel by default checkbox inside of a bazel project.
+    myUseBazelByDefaultCheckBox.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
   }
 
