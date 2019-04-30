@@ -28,12 +28,16 @@ public class FlutterSettings {
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
-  private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
   // The Dart plugin uses this registry key to keep bazel users from getting their settings overridden on projects that include a
   // pubspec.yaml.
   private static final String ignorePubspecRegistryKey = "dart.projects.without.pubspec";
+
+  // Settings for UI as Code experiments.
+  private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
+  private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
+  private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -84,12 +88,20 @@ public class FlutterSettings {
     if (isSyncingAndroidLibraries()) {
       analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
     }
-    if (isLegacyTrackWidgetCreation()) {
-      analytics.sendEvent("settings", afterLastPeriod(legacyTrackWidgetCreationKey));
-    }
     if (isDisableTrackWidgetCreation()) {
       analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
     }
+
+    if (isShowBuildMethodGuides()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodGuidesKey));
+    }
+    if (isShowMultipleChildrenGuides()) {
+      analytics.sendEvent("settings", afterLastPeriod(showMultipleChildrenGuidesKey));
+    }
+    if (isShowBuildMethodsOnScrollbar()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
+    }
+
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
@@ -114,24 +126,13 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadWithErrorKey, false);
   }
 
-  // TODO(jacobr): remove after 0.10.2 is the default.
-  public boolean isLegacyTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(legacyTrackWidgetCreationKey, false);
-  }
-
-  public void setLegacyTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(legacyTrackWidgetCreationKey, value, false);
-
-    fireEvent();
-  }
-
   public boolean isTrackWidgetCreationEnabled(Project project) {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
       return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
     }
     else {
-      return isLegacyTrackWidgetCreation();
+      return false;
     }
   }
 
@@ -251,6 +252,36 @@ public class FlutterSettings {
 
   public void setVerboseLogging(boolean value) {
     getPropertiesComponent().setValue(verboseLoggingKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowBuildMethodGuides() {
+    return getPropertiesComponent().getBoolean(showBuildMethodGuidesKey, true);
+  }
+
+  public void setShowBuildMethodGuides(boolean value) {
+    getPropertiesComponent().setValue(showBuildMethodGuidesKey, value, true);
+
+    fireEvent();
+  }
+
+  public boolean isShowBuildMethodsOnScrollbar() {
+    return getPropertiesComponent().getBoolean(showBuildMethodsOnScrollbarKey, false);
+  }
+
+  public void setShowBuildMethodsOnScrollbar(boolean value) {
+    getPropertiesComponent().setValue(showBuildMethodsOnScrollbarKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowMultipleChildrenGuides() {
+    return getPropertiesComponent().getBoolean(showMultipleChildrenGuidesKey, false);
+  }
+
+  public void setShowMultipleChildrenGuides(boolean value) {
+    getPropertiesComponent().setValue(showMultipleChildrenGuidesKey, value, false);
 
     fireEvent();
   }

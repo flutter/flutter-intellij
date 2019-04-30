@@ -60,11 +60,16 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myShowPreviewAreaCheckBox;
   private JCheckBox myShowHeapDisplayCheckBox;
-  private JCheckBox myLegacyTrackWidgetCreationCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
   private JCheckBox myUseBazelByDefaultCheckBox;
+
+  // Settings for UI as Code experiments:
+  private JCheckBox myShowBuildMethodGuides;
+  private JCheckBox myShowMultipleChildrenGuides;
+  private JCheckBox myShowBuildMethodsOnScrollbar;
+
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -104,6 +109,14 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myFormatCodeOnSaveCheckBox
       .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+
+    // These options are only enabled if build method guides are enabled as the
+    // same class handles all these cases.
+    myShowBuildMethodGuides.addChangeListener((e) -> {
+      myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
+      myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+    });
+
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
   }
 
@@ -165,15 +178,22 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isShowBuildMethodGuides() != myShowBuildMethodGuides.isSelected()) {
+      return true;
+    }
+    if (settings.isShowMultipleChildrenGuides() != myShowMultipleChildrenGuides.isSelected()) {
+      return true;
+    }
+
+    if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
+      return true;
+    }
+
     if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
       return true;
     }
 
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.isLegacyTrackWidgetCreation() != myLegacyTrackWidgetCreationCheckBox.isSelected()) {
       return true;
     }
 
@@ -220,9 +240,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
     settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
+
+    settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
+    settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
+    settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
-    settings.setLegacyTrackWidgetCreation(myLegacyTrackWidgetCreationCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
@@ -251,9 +274,13 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
     myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
+
+    myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
+    myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
+    myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
+
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
-    myLegacyTrackWidgetCreationCheckBox.setSelected(settings.isLegacyTrackWidgetCreation());
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
@@ -261,6 +288,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // We only show the bazel by default checkbox inside of a bazel project.
     myUseBazelByDefaultCheckBox.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
+
+    // These options are only enabled if build method guides are enabled as the
+    // same class handles all these cases.
+    myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
+    myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
   }
 
   private void onVersionChanged() {
@@ -272,7 +304,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final ModalityState modalityState = ModalityState.current();
 
     final boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
-    myLegacyTrackWidgetCreationCheckBox.setVisible(!trackWidgetCreationRecommended);
     myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
     sdk.flutterVersion().start((ProcessOutput output) -> {
