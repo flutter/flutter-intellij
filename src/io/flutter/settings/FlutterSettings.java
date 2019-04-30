@@ -31,8 +31,6 @@ public class FlutterSettings {
   private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-  private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
-  private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
   // The Dart plugin uses this registry key to keep bazel users from getting their settings overridden on projects that include a
   // pubspec.yaml.
   private static final String ignorePubspecRegistryKey = "dart.projects.without.pubspec";
