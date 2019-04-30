@@ -24,7 +24,6 @@ public class FlutterSettings {
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
   private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
-  private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
 
@@ -82,9 +81,6 @@ public class FlutterSettings {
     if (isSyncingAndroidLibraries()) {
       analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
     }
-    if (isLegacyTrackWidgetCreation()) {
-      analytics.sendEvent("settings", afterLastPeriod(legacyTrackWidgetCreationKey));
-    }
     if (isDisableTrackWidgetCreation()) {
       analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
     }
@@ -120,24 +116,13 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadWithErrorKey, false);
   }
 
-  // TODO(jacobr): remove after 0.10.2 is the default.
-  public boolean isLegacyTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(legacyTrackWidgetCreationKey, false);
-  }
-
-  public void setLegacyTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(legacyTrackWidgetCreationKey, value, false);
-
-    fireEvent();
-  }
-
   public boolean isTrackWidgetCreationEnabled(Project project) {
     final FlutterSdk flutterSdk = FlutterSdk.getFlutterSdk(project);
     if (flutterSdk != null && flutterSdk.getVersion().isTrackWidgetCreationRecommended()) {
       return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
     }
     else {
-      return isLegacyTrackWidgetCreation();
+      return false;
     }
   }
 
