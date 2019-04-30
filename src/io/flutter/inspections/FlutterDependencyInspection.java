@@ -21,6 +21,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -52,6 +53,9 @@ public class FlutterDependencyInspection extends LocalInspectionTool {
     final PubRoot root = PubRoot.forPsiFile(psiFile);
 
     if (root == null || myIgnoredPubspecPaths.contains(root.getPubspec().getPath())) return null;
+
+    // If the project should use bazel instead of pub, don't surface this warning.
+    if (FlutterSettings.getInstance().shouldUseBazel()) return null;
 
     // TODO(pq): consider validating package name here (`get` will fail if it's invalid).
 

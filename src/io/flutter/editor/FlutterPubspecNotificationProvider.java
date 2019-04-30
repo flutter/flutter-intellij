@@ -19,6 +19,7 @@ import icons.FlutterIcons;
 import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -29,8 +30,11 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
 
   @NotNull private final Project project;
 
-  public FlutterPubspecNotificationProvider(@NotNull Project project) {
+  @NotNull private final FlutterSettings settings;
+
+  public FlutterPubspecNotificationProvider(@NotNull Project project, @NotNull FlutterSettings settings) {
     this.project = project;
+    this.settings = settings;
   }
 
   @NotNull
@@ -46,9 +50,13 @@ public class FlutterPubspecNotificationProvider extends EditorNotifications.Prov
       return null;
     }
 
-    // The Bazel workspace condition is handled by this check, pubspecs are not used.
-    // If for some reason a pubspec is opened, the next condition, isFlutterModule, will return false,
-    // there is no reason to call FlutterModuleUtils.isFlutterBazelProject().
+    // If the user has opted out of using pub in a project with both bazel rules and pub rules,
+    // then we will default to bazel instead of pub.
+    if (settings.shouldUseBazel()) {
+      return null;
+    }
+
+    // We only show this notification inside pubspec files.
     if (!PubRoot.isPubspec(file)) {
       return null;
     }
