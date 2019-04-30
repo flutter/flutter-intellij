@@ -5,7 +5,6 @@
  */
 package io.flutter.run.bazelTest;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.CommandLineTokenizer;
 import com.intellij.execution.configurations.GeneralCommandLine;
@@ -28,7 +27,6 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSettingsConfigurable;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
