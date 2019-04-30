@@ -305,6 +305,12 @@
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
   </extensions>
 
+  <project-components>
+    <component>
+      <implementation-class>io.flutter.editor.WidgetIndentsHighlightingPassFactory</implementation-class>
+    </component>
+  </project-components>
+
   <!-- Dart Plugin extensions -->
   <extensions defaultExtensionNs="Dart">
     <completionExtension implementation="io.flutter.editor.FlutterCompletionContributor" order="last"/>
