@@ -12,8 +12,6 @@ import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.pub.PubRoots;
-import io.flutter.utils.FlutterModuleUtils;
 
 import java.util.EventListener;
 
