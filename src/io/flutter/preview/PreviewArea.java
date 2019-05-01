@@ -32,19 +32,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// TODO: have a way to tell the panel whether it's hidden or shown
-
-// TODO: we'll need to know whether the preview element is stateless widget or a state of a stateful
-//       widget; for the 2nd case, we'll need to find the corresponding stateful widget class
-
-// TODO: we want to preview anything in a state, stateful, or stateless class (not
-//       just things contained in a build method)
-
-// TODO: we should be bolding stateful and stateless (and state) classes, not build() methods
-//       or, show all elements of these classes with some additional emphasis (italic? background color?)
-
-// TODO: we need to take the layer (or z-index?) of the widget into account (see Scaffold and its FAB)
-
 public class PreviewArea {
   public static int BORDER_WIDTH = 0;
   public static final String NOTHING_TO_SHOW = "Nothing to show";

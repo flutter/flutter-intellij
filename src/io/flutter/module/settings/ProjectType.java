@@ -8,7 +8,6 @@ package io.flutter.module.settings;
 import com.intellij.openapi.ui.ComboBox;
 import com.intellij.ui.ColoredListCellRenderer;
 import com.intellij.ui.SimpleTextAttributes;
-import com.intellij.util.ui.EdtInvocationManager;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.samples.FlutterSample;
