@@ -26,6 +26,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
@@ -61,12 +62,14 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // from the FlutterSettings class.
   private boolean isShowMultipleChildrenGuides;
   private boolean isShowBuildMethodGuides;
+  private boolean isDisableDartClosingLabels;
 
   private final FlutterSettings.Listener settingsListener = () -> {
     final FlutterSettings settings = FlutterSettings.getInstance();
     // Skip if none of the settings that impact Widget Idents were changed.
     if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
-        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides()) {
+        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides() &&
+        isDisableDartClosingLabels == settings.isDisableDartClosingLabels()) {
       // Change doesn't matter for us.
       return;
     }
@@ -205,6 +208,14 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (isShowBuildMethodGuides != settings.isShowBuildMethodGuides()) {
       isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
       updateActiveEditors();
+      if (settings.isDisableDartClosingLabels()) {
+        DartClosingLabelManager.getInstance().setShowClosingLabels(!isShowBuildMethodGuides);
+      }
+    }
+    if (settings.isShowBuildMethodGuides() && isDisableDartClosingLabels != settings.isDisableDartClosingLabels()) {
+      isDisableDartClosingLabels = settings.isDisableDartClosingLabels();
+      DartClosingLabelManager.getInstance().setShowClosingLabels(!isDisableDartClosingLabels);
+
     }
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
   }

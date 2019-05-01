@@ -69,6 +69,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowMultipleChildrenGuides;
   private JCheckBox myShowBuildMethodsOnScrollbar;
+  private JCheckBox myDisableDartClosingLabels;
 
   private final @NotNull Project myProject;
 
@@ -117,6 +118,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowBuildMethodGuides.addChangeListener((e) -> {
       myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
       myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+      myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
     });
 
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
@@ -190,6 +192,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
       return true;
     }
+    if (settings.isDisableDartClosingLabels() != myDisableDartClosingLabels.isSelected()) {
+      return true;
+    }
 
     if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
       return true;
@@ -246,6 +251,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
     settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
+    settings.setDisableDartClosingLabels(myDisableDartClosingLabels.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
@@ -280,6 +286,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
     myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
     myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
+    myDisableDartClosingLabels.setSelected(settings.isDisableDartClosingLabels());
 
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
@@ -299,6 +306,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // same class handles all these cases.
     myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
     myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+    myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
   }
 
   private void onVersionChanged() {
