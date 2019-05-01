@@ -29,6 +29,15 @@
 
   <change-notes>
     <![CDATA[
+<h2>35.1</h2>
+<ul>
+  <li>Add an option to hide closing labels in Dart source code when UI guides are on (#3438)</li>
+  <li>Create "Editor" section of Flutter Settings (#3434)</li>
+  <li>Support UI as Code Widget Guides (#3420)</li>
+  <li>Add checkbox to skip the dart analyzer error check before a hot reload (#3414)</li>
+  <li>Remove the option to disable the memory view from the settings (#3408)</li>
+  <li>Track API changes (#3427)</li>
+</ul>
 <h2>35.0</h2>
 <ul>
   <li>Sample panel layout improvements (#3396)</li>
