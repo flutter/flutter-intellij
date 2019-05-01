@@ -1,3 +1,11 @@
+## 35.1
+- Add an option to hide closing labels in Dart source code when UI guides are on (#3438)
+- Create "Editor" section of Flutter Settings (#3434)
+- Support UI as Code Widget Guides (#3420)
+- Add checkbox to skip the dart analyzer error check before a hot reload (#3414)
+- Remove the option to disable the memory view from the settings (#3408)
+- Track API changes (#3427)
+
 ## 35.0
 - Sample panel layout improvements (#3396)
 - Remove unneeded logging (#3394)
