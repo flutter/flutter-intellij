@@ -231,6 +231,8 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       var branch = await gitDir.getCurrentBranch();
       var name = branch.branchName;
       var result = name == "release_${cmd.releaseMajor}";
+      if (!result) result = name.startsWith("release_${cmd.releaseMajor}")
+          && name.lastIndexOf(new RegExp("\.[0-9]")) == name.length - 2;
       if (result) {
         if (isTravisFileValid()) {
           return new Future(() => result);
