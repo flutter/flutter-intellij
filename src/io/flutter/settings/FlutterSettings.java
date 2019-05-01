@@ -38,6 +38,7 @@ public class FlutterSettings {
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
   private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
+  private static final String disableDartClosingLabelsKey = "io.flutter.editor.disableDartClosingLabelsKey";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -100,6 +101,10 @@ public class FlutterSettings {
     }
     if (isShowBuildMethodsOnScrollbar()) {
       analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
+    }
+    if (!isDisableDartClosingLabels()) {
+      // The default value is true so only send the event if the setting was turned off.
+      analytics.sendEvent("settings", afterLastPeriod(disableDartClosingLabelsKey + "_off"));
     }
 
     if (useFlutterLogView()) {
@@ -269,6 +274,17 @@ public class FlutterSettings {
 
     fireEvent();
   }
+
+  public boolean isDisableDartClosingLabels() {
+    return getPropertiesComponent().getBoolean(disableDartClosingLabelsKey, true);
+  }
+
+  public void setDisableDartClosingLabels(boolean value) {
+    getPropertiesComponent().setValue(disableDartClosingLabelsKey, value, true);
+
+    fireEvent();
+  }
+
 
   public boolean isShowMultipleChildrenGuides() {
     return getPropertiesComponent().getBoolean(showMultipleChildrenGuidesKey, false);
