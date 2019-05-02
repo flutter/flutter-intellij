@@ -46,6 +46,8 @@ import java.awt.*;
 import java.util.*;
 import java.util.List;
 
+import static java.lang.Math.min;
+
 /**
  * This is an FliteredIndentsHighlightingPass class forked from com.intellij.codeInsight.daemon.impl.FliteredIndentsHighlightingPass
  * that supports filtering out indent guides that conflict with widget indent
@@ -65,9 +67,10 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
   private static final CustomHighlighterRenderer RENDERER = (editor, highlighter, g) -> {
     int startOffset = highlighter.getStartOffset();
     final Document doc = highlighter.getDocument();
-    if (startOffset >= doc.getTextLength()) return;
+    final int textLength = doc.getTextLength();
+    if (startOffset >= textLength) return;
 
-    final int endOffset = highlighter.getEndOffset();
+    final int endOffset = min(highlighter.getEndOffset(), textLength);
     final int endLine = doc.getLineNumber(endOffset);
 
     int off;
@@ -129,7 +132,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
       if (clip.y >= maxY || clip.y + clip.height <= start.y) {
         return;
       }
-      maxY = Math.min(maxY, clip.y + clip.height);
+      maxY = min(maxY, clip.y + clip.height);
     }
 
     if (WidgetIndentsHighlightingPass.isIndentGuideHidden(editor, new LineRange(startLine, endPosition.line))) {
@@ -196,9 +199,10 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
   static io.flutter.editor.LineRange getGuideLineRange(Editor editor, RangeHighlighter highlighter) {
     final int startOffset = highlighter.getStartOffset();
     final Document doc = highlighter.getDocument();
-    if (startOffset >= doc.getTextLength()) return null;
+    final int textLength = doc.getTextLength();
+    if (startOffset >= textLength || !highlighter.isValid()) return null;
 
-    final int endOffset = highlighter.getEndOffset();
+    final int endOffset = min(highlighter.getEndOffset(), textLength);
     final int endLine = doc.getLineNumber(endOffset);
 
     int off;
@@ -212,7 +216,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
       off = CharArrayUtil.shiftForward(chars, start, end, " \t");
       startLine--;
     }
-    while (startLine > 1 && off < doc.getTextLength() && chars.charAt(off) == '\n');
+    while (startLine > 1 && off < textLength && chars.charAt(off) == '\n');
 
     final VisualPosition startPosition = editor.offsetToVisualPosition(off);
     int indentColumn = startPosition.column;
@@ -248,13 +252,22 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
   public static void onWidgetIndentsChanged(EditorEx editor, WidgetIndentHitTester oldHitTester, WidgetIndentHitTester newHitTester) {
     final List<RangeHighlighter> highlighters = editor.getUserData(INDENT_HIGHLIGHTERS_IN_EDITOR_KEY);
     if (highlighters != null) {
+      final Document doc = editor.getDocument();
+      final int textLength = doc.getTextLength();
       for (RangeHighlighter highlighter : highlighters) {
+        if (!highlighter.isValid()) {
+          continue;
+        }
         final LineRange range = getGuideLineRange(editor, highlighter);
         if (range != null) {
           final boolean before = WidgetIndentsHighlightingPass.isIndentGuideHidden(oldHitTester, range);
           final boolean after = WidgetIndentsHighlightingPass.isIndentGuideHidden(newHitTester, range);
           if (before != after) {
-            editor.repaint(highlighter.getStartOffset(), highlighter.getEndOffset());
+            int safeStart = min(highlighter.getStartOffset(), textLength);
+            int safeEnd = min(highlighter.getEndOffset(), textLength);
+            if (safeEnd > safeStart) {
+              editor.repaint(safeStart, safeEnd);
+            }
           }
         }
       }
@@ -500,7 +513,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
 
           int bottomIndent = line < lineIndents.length ? lineIndents[line] : topIndent;
 
-          int indent = Math.min(topIndent, bottomIndent);
+          int indent = min(topIndent, bottomIndent);
           if (bottomIndent < topIndent) {
             int lineStart = myDocument.getLineStartOffset(line);
             int lineEnd = myDocument.getLineEndOffset(line);
@@ -513,7 +526,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
 
           for (int blankLine = startLine; blankLine < line; blankLine++) {
             assert lineIndents[blankLine] == -1;
-            lineIndents[blankLine] = - Math.min(topIndent, indent);
+            lineIndents[blankLine] = - min(topIndent, indent);
           }
 
           //noinspection AssignmentToForLoopParameter
