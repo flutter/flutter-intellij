@@ -182,9 +182,10 @@ public class WidgetIndentsHighlightingPass {
 
       final int startOffset = highlighter.getStartOffset();
       final Document doc = highlighter.getDocument();
-      if (startOffset >= doc.getTextLength()) return;
+      final int textLength = doc.getTextLength();
+      if (startOffset >= textLength) return;
 
-      final int endOffset = highlighter.getEndOffset();
+      final int endOffset = min(highlighter.getEndOffset(), textLength);
 
       int off;
       int startLine = doc.getLineNumber(startOffset);
@@ -667,7 +668,7 @@ public class WidgetIndentsHighlightingPass {
   private OutlineLocation computeLocation(FlutterOutline node) {
     final int nodeOffset = getAnalysisService().getConvertedOffset(myFile, node.getOffset());
     assert (myDocument != null);
-    final int line = myDocument.getLineNumber(nodeOffset);
+    final int line = myDocument.getLineNumber(min(nodeOffset, myDocument.getTextLength()));
     final int lineStartOffset = myDocument.getLineStartOffset(line);
 
     final int column = nodeOffset - lineStartOffset;
