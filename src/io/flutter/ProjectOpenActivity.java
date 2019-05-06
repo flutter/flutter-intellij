@@ -35,7 +35,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
-  @Nullable private FlutterSettings settings;
+  private FlutterSettings settings;
 
   public ProjectOpenActivity() {}
 
