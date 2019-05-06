@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+// TODO(pq): remove for M36 / post: 2019/05/27.
 public class FlutterSurveyNotifications {
   private static final int NOTIFICATION_DELAY_IN_SECS = 3;
 
