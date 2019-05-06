@@ -47,8 +47,8 @@ public class FlutterSurveyNotifications {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
     try {
-      SURVEY_START = dateFormat.parse("2019/05/13 20:00").getTime();
-      SURVEY_END = dateFormat.parse("2019/05/27 08:00").getTime();
+      SURVEY_START = dateFormat.parse("2019/05/13 19:00").getTime();
+      SURVEY_END = dateFormat.parse("2019/05/27 07:00").getTime();
     }
     catch (ParseException e) {
       // Shouldn't happen.
