@@ -24,6 +24,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Runs startup actions just after a project is opened, before it's indexed.
@@ -34,7 +35,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
-  private FlutterSettings settings;
+  @Nullable private FlutterSettings settings;
 
   public ProjectOpenActivity() {}
 
