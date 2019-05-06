@@ -34,7 +34,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
   public static final ProjectType FLUTTER_PROJECT_TYPE = new ProjectType("io.flutter");
   private static final Logger LOG = Logger.getInstance(ProjectOpenActivity.class);
 
-  @NotNull private final FlutterSettings settings;
+  private FlutterSettings settings;
+
+  public ProjectOpenActivity() {}
 
   public ProjectOpenActivity(@NotNull FlutterSettings settings) {
     this.settings = settings;
@@ -53,7 +55,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     }
 
     // If this project is intended as a bazel project, don't run the pub alerts.
-    if (settings.shouldUseBazel()) {
+    if (settings != null && settings.shouldUseBazel()) {
       return;
     }
 

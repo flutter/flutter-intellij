@@ -8,19 +8,24 @@ package io.flutter.dart;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.dart.server.AnalysisServerListenerAdapter;
+import com.google.dart.server.ResponseListener;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Version;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
+import com.sun.deploy.util.ReflectionUtil;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,7 +61,7 @@ public class FlutterDartAnalysisServer {
 
   private FlutterDartAnalysisServer(@NotNull Project project) {
     analysisService = DartPlugin.getInstance().getAnalysisService(project);
-    analysisService.addResponseListener(FlutterDartAnalysisServer.this::processResponse);
+    analysisService.addResponseListener(new CompatibleResponseListener());
     analysisService.addAnalysisServerListener(new AnalysisServerListenerAdapter() {
       @Override
       public void serverConnected(String s) {
@@ -133,6 +138,10 @@ public class FlutterDartAnalysisServer {
     return result.get();
   }
 
+  private void processString(String jsonString) {
+    processResponse(new Gson().fromJson(jsonString, JsonObject.class));
+  }
+
   /**
    * Handle the given {@link JsonObject} response.
    */
@@ -191,5 +200,18 @@ public class FlutterDartAnalysisServer {
       }
     }
     return true;
+  }
+
+  class CompatibleResponseListener implements ResponseListener {
+    // TODO(anyone): Remove this once 192 is the minimum supported base.
+    @SuppressWarnings({"override", "RedundantSuppression"})
+    public void onResponse(JsonObject jsonObject) {
+      processResponse(jsonObject);
+    }
+
+    @SuppressWarnings({"override", "RedundantSuppression"})
+    public void onResponse(String jsonString) {
+      processString(jsonString);
+    }
   }
 }
