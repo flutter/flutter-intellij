@@ -55,6 +55,11 @@ public class Analytics {
     this.platformVersion = platformVersion;
   }
 
+  @NotNull
+  public String getClientId() {
+    return clientId;
+  }
+
   public boolean canSend() {
     return myCanSend;
   }
