@@ -169,6 +169,9 @@ public class WidgetIndentsHighlightingPass {
       if (!highlighter.isValid()) {
         return;
       }
+      if (!descriptor.widget.isValid()) {
+        return;
+      }
       final FlutterSettings settings = FlutterSettings.getInstance();
       final boolean showMultipleChildrenGuides = settings.isShowMultipleChildrenGuides();
 
@@ -666,9 +669,11 @@ public class WidgetIndentsHighlightingPass {
   }
 
   private OutlineLocation computeLocation(FlutterOutline node) {
-    final int nodeOffset = getAnalysisService().getConvertedOffset(myFile, node.getOffset());
     assert (myDocument != null);
-    final int line = myDocument.getLineNumber(min(nodeOffset, myDocument.getTextLength()));
+    final int documentLength = myDocument.getTextLength();
+    final int rawOffset = getAnalysisService().getConvertedOffset(myFile, node.getOffset());
+    final int nodeOffset = min(rawOffset, documentLength);
+    final int line = myDocument.getLineNumber(nodeOffset);
     final int lineStartOffset = myDocument.getLineStartOffset(line);
 
     final int column = nodeOffset - lineStartOffset;
@@ -683,6 +688,7 @@ public class WidgetIndentsHighlightingPass {
         break;
       }
     }
+
     return new OutlineLocation(node, line, column, indent, myFile, getAnalysisService());
   }
 

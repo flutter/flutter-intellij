@@ -42,6 +42,9 @@ public class WidgetIndentGuideDescriptor {
   }
 
   void dispose() {
+    if (widget != null) {
+      widget.dispose();
+    }
     if (childLines == null) return;
     for (OutlineLocation childLine : childLines) {
       childLine.dispose();
@@ -58,6 +61,9 @@ public class WidgetIndentGuideDescriptor {
    * obsolete.
    */
   public void trackLocations(Document document) {
+    if (widget != null) {
+      widget.track(document);
+    }
     if (childLines == null) return;
     for (OutlineLocation childLine : childLines) {
       childLine.track(document);

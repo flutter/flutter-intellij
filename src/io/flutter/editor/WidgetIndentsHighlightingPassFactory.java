@@ -19,8 +19,10 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.EditorEventMulticaster;
+import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.fileEditor.impl.FileOffsetsManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -128,15 +130,19 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   }
 
   private void clearListeners() {
-    for (Map.Entry<String, FlutterOutlineListener> entry : outlineListeners.entrySet()) {
-      final String path = entry.getKey();
-      final FlutterOutlineListener listener = outlineListeners.remove(path);
-      if (listener != null) {
-        flutterDartAnalysisService.removeOutlineListener(path, listener);
+    synchronized (outlineListeners) {
+      for (Map.Entry<String, FlutterOutlineListener> entry : outlineListeners.entrySet()) {
+        final String path = entry.getKey();
+        final FlutterOutlineListener listener = outlineListeners.remove(path);
+        if (listener != null) {
+          flutterDartAnalysisService.removeOutlineListener(path, listener);
+        }
       }
+      outlineListeners.clear();
     }
-    outlineListeners.clear();
-    currentOutlines.clear();
+    synchronized (currentOutlines) {
+      currentOutlines.clear();
+    }
   }
 
   private void updateActiveEditors() {
@@ -156,8 +162,8 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     }
 
     // Remove obsolete outline listeners.
+    final List<String> obsoletePaths = new ArrayList<>();
     synchronized (outlineListeners) {
-      final List<String> obsoletePaths = new ArrayList<>();
       for (final String path : outlineListeners.keySet()) {
         if (!newPaths.contains(path)) {
           obsoletePaths.add(path);
@@ -168,9 +174,6 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
         if (listener != null) {
           flutterDartAnalysisService.removeOutlineListener(path, listener);
         }
-        // Clear the current outline as it may become out of date before the
-        // file is visible again.
-        currentOutlines.remove(path);
       }
 
       // Register new outline listeners.
@@ -200,6 +203,14 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
           };
         outlineListeners.put(path, listener);
         flutterDartAnalysisService.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
+      }
+    }
+
+    synchronized (currentOutlines) {
+      for (final String path : obsoletePaths) {
+        // Clear the current outline as it may become out of date before the
+        // file is visible again.
+        currentOutlines.remove(path);
       }
     }
   }
@@ -282,12 +293,15 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       return;
     }
 
+    final VirtualFile file = editor.getVirtualFile();
+    if (!FlutterUtils.couldContainWidgets(file)) {
+      return;
+    }
     // If the editor and the outline have different lengths then
     // the outline is out of date and cannot safely be displayed.
-    if (editor.getDocument().getTextLength() != outline.getLength() &&
-        // Workaround windows bug where the outline and document content have inconsistent lengths until the file is modified.
-        editor.getDocument().getModificationStamp() != 0) {
-
+    FileOffsetsManager offsetManager = FileOffsetsManager.getInstance();
+    final DocumentEx document = editor.getDocument();
+    if (document.getTextLength() != offsetManager.getConvertedOffset(file, outline.getLength())) {
       // Outline is out of date. That is ok. Ignore it for now.
       // An up to date outline will probably arive shortly. Showing an
       // outline from data inconsistent with the current

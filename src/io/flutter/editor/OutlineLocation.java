@@ -13,10 +13,11 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 
 import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 /**
  * Class that tracks the location of a FlutterOutline node in a document.
- *
+ * <p>
  * Once the track method has been called, edits to the document are reflected
  * by by all locations returned by the outline location.
  */
@@ -27,6 +28,32 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
   private final int offset;
   private final int endOffset;
   private RangeMarker marker;
+  private String nodeStartingWord;
+
+  /**
+   * Get the next word in the document starting at offset.
+   *
+   * This helper is used to avoid displaying outline guides where it appears
+   * that the word at the start of the outline (e.g. the Widget constructor
+   * name) has changed since the guide was created. This catches edge cases
+   * where RangeMarkers go off the rails and return strange values after
+   * running a code formatter or other tool that generates widespread edits.
+   */
+  private static String getCurrentWord(Document document, int offset) {
+    final int documentLength = document.getTextLength();
+    if (offset < 0 || offset >= documentLength) return "";
+    final CharSequence chars = document.getCharsSequence();
+    // Clamp the max current word length at 20 to avoid slow behavior if the
+    // next "word" in the document happened to be incredibly long.
+    final int maxWordEnd = min(documentLength, offset + 20);
+
+    int end = offset;
+    while (end < maxWordEnd && Character.isAlphabetic(chars.charAt(end))) {
+      end++;
+    }
+    if (offset == end) return "";
+    return chars.subSequence(offset, end).toString();
+  }
 
   public OutlineLocation(
     FlutterOutline node,
@@ -80,7 +107,8 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     final int markerEnd = offset;
     // Create a range marker that goes from the start of the indent for the line
     // to the column of the actual entity;
-    marker = document.createRangeMarker(markerEnd - delta, markerEnd + 1);
+    marker = document.createRangeMarker(max(markerEnd - delta, 0), min(markerEnd + 1, document.getTextLength()));
+    nodeStartingWord = getCurrentWord(document, markerEnd);
   }
 
   @Override
@@ -114,7 +142,16 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
   // Sometimes markers stop being valid in which case we need to stop
   // displaying the rendering until they are valid again.
   public boolean isValid() {
-    return marker == null || marker.isValid();
+    if (marker == null) return true;
+
+    return marker.isValid() &&
+           nodeStartingWord != null &&
+           // Verify that the word starting at the end of the marker matches
+           // its expected value. This is sometimes not the case if the logic
+           // to update marker locations has hit a bad edge case as sometimes
+           // happens when there is a large document edit due to running a
+           // code formatter.
+           nodeStartingWord.equals(getCurrentWord(marker.getDocument(), marker.getEndOffset() - 1));
   }
 
   /**
