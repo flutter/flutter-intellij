@@ -1,3 +1,7 @@
+## 35.1.3
+- Support IntelliJ 2019.1.2 RC
+- Bug fixes
+
 ## 35.1
 - Add an option to hide closing labels in Dart source code when UI guides are on (#3438)
 - Create "Editor" section of Flutter Settings (#3434)

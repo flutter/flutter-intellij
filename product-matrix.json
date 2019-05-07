@@ -30,6 +30,16 @@
       "ideaVersion": "2019.1",
       "dartPluginVersion": "191.7019",
       "sinceBuild": "191.6707",
+      "untilBuild": "191.7140"
+    },
+    {
+      "comments": "IntelliJ 2019.1.2",
+      "name": "IntelliJ 2019.1.2",
+      "version": "2019.1.2",
+      "ideaProduct": "ideaIU",
+      "ideaVersion": "191.7141.32",
+      "dartPluginVersion": "191.7141.24",
+      "sinceBuild": "191.7141.2",
       "untilBuild": "191.*"
     },
     {
@@ -37,10 +47,10 @@
       "name": "IntelliJ 2019.2 EAP",
       "version": "2019.2",
       "isTestTarget": "true",
-      "ideaProduct": "ideaIC",
-      "ideaVersion": "2019.1",
-      "dartPluginVersion": "191.7019",
-      "sinceBuild": "191.6707",
+      "ideaProduct": "ideaIU",
+      "ideaVersion": "2019.2",
+      "dartPluginVersion": "191.7141.24",
+      "sinceBuild": "191.7141.32",
       "untilBuild": "192.SNAPSHOT"
     }
   ]
