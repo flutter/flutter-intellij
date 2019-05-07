@@ -16,14 +16,14 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class FlutterMessages {
-  public static final String FLUTTER_NOTIFICATION_GOUP_ID = "Flutter Messages";
+  public static final String FLUTTER_NOTIFICATION_GROUP_ID = "Flutter Messages";
 
   private FlutterMessages() {
   }
 
   public static void showError(String title, String message) {
     Notifications.Bus.notify(
-      new Notification(FLUTTER_NOTIFICATION_GOUP_ID,
+      new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
                        title,
                        message,
                        NotificationType.ERROR));
@@ -31,7 +31,7 @@ public class FlutterMessages {
 
   public static void showWarning(String title, String message) {
     Notifications.Bus.notify(
-      new Notification(FLUTTER_NOTIFICATION_GOUP_ID,
+      new Notification(FLUTTER_NOTIFICATION_GROUP_ID,
                        title,
                        message,
                        NotificationType.WARNING));
@@ -39,7 +39,7 @@ public class FlutterMessages {
 
   public static void showInfo(String title, String message) {
     final Notification notification = new Notification(
-      FLUTTER_NOTIFICATION_GOUP_ID,
+      FLUTTER_NOTIFICATION_GROUP_ID,
       title,
       message,
       NotificationType.INFORMATION);
