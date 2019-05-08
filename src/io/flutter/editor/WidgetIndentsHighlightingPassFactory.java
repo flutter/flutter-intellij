@@ -49,7 +49,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // widget indent guide lines after editing code containing guides.
   private static final boolean SIMULATE_SLOW_ANALYSIS_UPDATES = false;
 
-  private final Project project;
+  private Project project;
   private final FlutterDartAnalysisServer flutterDartAnalysisService;
   /**
    * Outlines for the currently visible files.
@@ -67,6 +67,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private boolean isDisableDartClosingLabels;
 
   private final FlutterSettings.Listener settingsListener = () -> {
+    if (project == null || project.isDisposed()) {
+      return;
+    }
     final FlutterSettings settings = FlutterSettings.getInstance();
     // Skip if none of the settings that impact Widget Idents were changed.
     if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
@@ -101,6 +104,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       public void caretPositionChanged(@NotNull CaretEvent event) {
         final Editor editor = event.getEditor();
         if (editor.getProject() != project) return;
+        if (editor.isDisposed() || project.isDisposed()) return;
         if (!(editor instanceof EditorEx)) return;
         final EditorEx editorEx = (EditorEx)editor;
         WidgetIndentsHighlightingPass.onCaretPositionChanged(editorEx, event.getCaret());
@@ -116,6 +120,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   }
 
   List<EditorEx> getActiveDartEditors() {
+    if (project.isDisposed()) {
+      return Collections.emptyList();
+    }
     final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
     final List<EditorEx> dartEditors = new ArrayList<>();
     for (FileEditor fileEditor : editors) {
@@ -146,6 +153,10 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   }
 
   private void updateActiveEditors() {
+    if (project.isDisposed()) {
+      return;
+    }
+
     if (!FlutterSettings.getInstance().isShowBuildMethodGuides()) {
       clearListeners();
       return;
@@ -194,6 +205,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
               // Find visible editors for the path. If the file is not actually
               // being displayed on screen, there is no need to go through the
               // work of updating the outline.
+              if (project.isDisposed()) {
+                return;
+              }
               for (EditorEx editor : getActiveDartEditors()) {
                 if (!editor.isDisposed() && Objects.equals(editor.getVirtualFile().getCanonicalPath(), path)) {
                   runWidgetIndentsPass(editor, outline);
