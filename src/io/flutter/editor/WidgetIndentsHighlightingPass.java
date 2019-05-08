@@ -6,6 +6,7 @@
 
 package io.flutter.editor;
 
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.*;
 import com.intellij.openapi.editor.colors.EditorColors;
 import com.intellij.openapi.editor.colors.EditorColorsScheme;
@@ -28,8 +29,8 @@ import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 import static java.lang.Math.*;
 
@@ -86,6 +87,8 @@ import static java.lang.Math.*;
  * is available immediately.
  */
 public class WidgetIndentsHighlightingPass {
+  private static final Logger LOG = Logger.getInstance(WidgetIndentsHighlightingPass.class);
+
   private final static Stroke SOLID_STROKE = new BasicStroke(1);
   private final static JBColor VERY_LIGHT_GRAY = new JBColor(Gray._224, Gray._80);
   private final static JBColor SHADOW_GRAY = new JBColor(Gray._192, Gray._100);
@@ -754,7 +757,7 @@ public class WidgetIndentsHighlightingPass {
     final TextRange range = entry.range;
     final FlutterSettings settings = FlutterSettings.getInstance();
     if (range.getEndOffset() >= myDocument.getTextLength() && DEBUG_WIDGET_INDENTS) {
-      System.out.println("Warning: highlighter extends past the end of document.");
+      LOG.info("Warning: highlighter extends past the end of document.");
     }
     final RangeHighlighter highlighter =
       mm.addRangeHighlighter(
