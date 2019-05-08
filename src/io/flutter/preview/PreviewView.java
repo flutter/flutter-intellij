@@ -5,11 +5,9 @@
  */
 package io.flutter.preview;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.Uninterruptibles;
-import com.google.gson.JsonObject;
 import com.intellij.icons.AllIcons;
 import com.intellij.ide.*;
 import com.intellij.openapi.Disposable;
@@ -23,19 +21,14 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.fileEditor.*;
-import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
-import com.intellij.openapi.ui.Splitter;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ex.ToolWindowEx;
 import com.intellij.ui.*;
-import com.intellij.ui.components.JBLabel;
-import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentFactory;
 import com.intellij.ui.content.ContentManager;
@@ -49,13 +42,11 @@ import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
-import io.flutter.console.FlutterConsoles;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.inspector.FlutterWidget;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.CustomIconMaker;
-import net.miginfocom.swing.MigLayout;
 import org.dartlang.analysis.server.protocol.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -70,10 +61,6 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.List;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -113,11 +100,8 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private final Map<String, AnAction> messageToActionMap = new HashMap<>();
   private final Map<AnAction, SourceChange> actionToChangeMap = new HashMap<>();
 
-  private boolean isSettingSplitterProportion = false;
-  private Splitter splitter;
   private JScrollPane scrollPane;
   private OutlineTree tree;
-  private PreviewArea previewArea;
 
   private final Set<FlutterOutline> outlinesWithWidgets = Sets.newHashSet();
   private final Map<FlutterOutline, DefaultMutableTreeNode> outlineToNodeMap = Maps.newHashMap();
@@ -128,21 +112,11 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
   private Editor currentEditor;
   private FlutterOutline currentOutline;
 
-  private final RenderHelper myRenderHelper;
-
   private final FlutterOutlineListener outlineListener = new FlutterOutlineListener() {
     @Override
     public void outlineUpdated(@NotNull String filePath, @NotNull FlutterOutline outline, @Nullable String instrumentedCode) {
       if (Objects.equals(currentFilePath, filePath)) {
         ApplicationManager.getApplication().invokeLater(() -> updateOutline(outline));
-        if (myRenderHelper != null && previewArea != null) {
-          previewArea.renderingStarted();
-          myRenderHelper.setFile(currentFile, outline, instrumentedCode);
-          ApplicationManager.getApplication().invokeLater(() -> {
-            final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
-            myRenderHelper.setOffset(caret.getOffset());
-          });
-        }
       }
     }
   };
@@ -157,102 +131,20 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     }
 
     @Override
-    public void caretAdded(CaretEvent e) {
+    public void caretAdded(@NotNull CaretEvent e) {
     }
 
     @Override
-    public void caretRemoved(CaretEvent e) {
+    public void caretRemoved(@NotNull CaretEvent e) {
     }
   };
 
   private final TreeSelectionListener treeSelectionListener = this::handleTreeSelectionEvent;
 
-  final RenderHelper.Listener renderListener = new RenderHelper.Listener() {
-    @Override
-    public void onSchedule(@NotNull FlutterOutline widget) {
-      // If rendering is fast, showing message is not nice.
-      //ApplicationManager.getApplication().invokeLater(() -> {
-      //  previewArea.clear("Rendering...");
-      //});
-    }
-
-    @Override
-    public void onResponse(@NotNull FlutterOutline widget, @NotNull JsonObject response) {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        if (previewArea != null) {
-          previewArea.show(currentOutline, widget, response);
-
-          final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
-          final FlutterOutline outline = findOutlineAtOffset(currentOutline, caret.getOffset());
-          if (outline != null) {
-            previewArea.select(ImmutableList.of(outline));
-          }
-        }
-      });
-    }
-
-    @Override
-    public void onFailure(@NotNull RenderProblemKind kind, @Nullable FlutterOutline widget) {
-      ApplicationManager.getApplication().invokeLater(() -> {
-        if (previewArea != null) {
-          switch (kind) {
-            case NO_WIDGET:
-              previewArea.clear(PreviewArea.NO_WIDGET_MESSAGE);
-              minimizePreviewArea();
-              break;
-            case NOT_RENDERABLE_WIDGET:
-              assert widget != null;
-              showNotRenderableInPreviewArea(widget);
-              break;
-            case TIMEOUT_START:
-              previewArea.clear("Timeout during start");
-              break;
-            case TIMEOUT_RENDER:
-              previewArea.clear("Timeout during rendering");
-              break;
-            case INVALID_JSON:
-              previewArea.clear("Invalid JSON response");
-              break;
-          }
-        }
-      });
-    }
-
-    @Override
-    public void onRenderableWidget(@NotNull FlutterOutline widget) {
-      setSplitterProportion(getState().getSplitterProportion());
-      final Dimension renderSize = previewArea.getRenderSize();
-      myRenderHelper.setSize(renderSize.width, renderSize.height);
-    }
-
-    @Override
-    public void onLocalException(@NotNull FlutterOutline widget, @NotNull Throwable localException) {
-      ApplicationManager.getApplication().invokeLater(() -> showLocalException(localException));
-    }
-
-    @Override
-    public void onRemoteException(@NotNull FlutterOutline widget, @NotNull JsonObject remoteException) {
-      ApplicationManager.getApplication().invokeLater(() -> showRemoteException(remoteException));
-    }
-  };
-
-  private void minimizePreviewArea() {
-    // TODO(devoncarew): We should size the preview area to a fixed, smaller size (based on the largest
-    //                   non-preview sized content).
-    setSplitterProportion(0.85f);
-  }
-
   public PreviewView(@NotNull Project project) {
     this.project = project;
 
     flutterAnalysisServer = FlutterDartAnalysisServer.getInstance(project);
-
-    if (FlutterSettings.getInstance().isShowPreviewArea()) {
-      myRenderHelper = new RenderHelper(project, renderListener);
-    }
-    else {
-      myRenderHelper = null;
-    }
 
     // Show preview for the file selected when the view is being opened.
     final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
@@ -393,51 +285,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     tree.addTreeSelectionListener(treeSelectionListener);
 
     scrollPane = ScrollPaneFactory.createScrollPane(tree);
-
-    previewArea = new PreviewArea(new PreviewArea.Listener() {
-      @Override
-      public void clicked(FlutterOutline outline) {
-        final ImmutableList<FlutterOutline> outlines = ImmutableList.of(outline);
-        updateActionsForOutlines(outlines);
-        applyOutlinesSelectionToTree(outlines);
-        jumpToOutlineInEditor(outline, false);
-      }
-
-      @Override
-      public void doubleClicked(FlutterOutline outline) {
-        final ImmutableList<FlutterOutline> outlines = ImmutableList.of(outline);
-        updateActionsForOutlines(outlines);
-        applyOutlinesSelectionToTree(outlines);
-        jumpToOutlineInEditor(outline, true);
-      }
-
-      @Override
-      public void resized(int width, int height) {
-        if (myRenderHelper != null) {
-          myRenderHelper.setSize(width, height);
-        }
-      }
-    });
-
-    splitter = new Splitter(true);
-    setSplitterProportion(getState().getSplitterProportion());
-    getState().addListener(e -> {
-      final float newProportion = getState().getSplitterProportion();
-      if (splitter.getProportion() != newProportion) {
-        setSplitterProportion(newProportion);
-      }
-    });
-    //noinspection Convert2Lambda
-    splitter.addPropertyChangeListener("proportion", new PropertyChangeListener() {
-      @Override
-      public void propertyChange(PropertyChangeEvent evt) {
-        if (!isSettingSplitterProportion) {
-          getState().setSplitterProportion(splitter.getProportion());
-        }
-      }
-    });
-    splitter.setFirstComponent(scrollPane);
-    windowPanel.setContent(splitter);
+    windowPanel.setContent(scrollPane);
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
@@ -554,11 +402,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         currentEditor.getCaretModel().addCaretListener(caretListener);
       }
     }
-
-    if (myRenderHelper != null) {
-      myRenderHelper.setOffset(editorOffset);
-      previewArea.select(ImmutableList.of(outline));
-    }
   }
 
   private void updateActionsForOutlines(List<FlutterOutline> outlines) {
@@ -646,15 +489,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     if (currentEditor != null) {
       final Caret caret = currentEditor.getCaretModel().getPrimaryCaret();
       applyEditorSelectionToTree(caret);
-    }
-
-    if (FlutterSettings.getInstance().isShowPreviewArea()) {
-      if (ModelUtils.containsBuildMethod(outline)) {
-        splitter.setSecondComponent(previewArea.getComponent());
-      }
-      else {
-        splitter.setSecondComponent(null);
-      }
     }
   }
 
@@ -809,14 +643,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
       getTreeModel().reload(rootNode);
     }
 
-    // Set the new file, without outline.
-    if (myRenderHelper != null) {
-      myRenderHelper.setFile(newFile, null, null);
-      if (newFile == null && previewArea != null) {
-        previewArea.clear(PreviewArea.NOTHING_TO_SHOW);
-      }
-    }
-
     // Subscribe for the outline for the new file.
     if (newFile != null) {
       currentFile = newFile;
@@ -852,12 +678,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     updateActionsForOutlines(selectedOutlines);
     applyOutlinesSelectionToTree(selectedOutlines);
-
-    if (myRenderHelper != null) {
-      final int offset = caret.getOffset();
-      myRenderHelper.setOffset(offset);
-      previewArea.select(selectedOutlines);
-    }
   }
 
   private void applyOutlinesSelectionToTree(List<FlutterOutline> outlines) {
@@ -906,86 +726,6 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
         tree.scrollRectToVisible(bounds);
       }
     }
-  }
-
-  private void setSplitterProportion(float value) {
-    isSettingSplitterProportion = true;
-    try {
-      splitter.setProportion(value);
-    }
-    finally {
-      isSettingSplitterProportion = false;
-    }
-    doLayoutRecursively(splitter);
-  }
-
-  private static void doLayoutRecursively(Component component) {
-    if (component != null) {
-      component.doLayout();
-      if (component instanceof Container) {
-        final Container container = (Container)component;
-        for (Component child : container.getComponents()) {
-          doLayoutRecursively(child);
-        }
-      }
-    }
-  }
-
-  private void showNotRenderableInPreviewArea(@NotNull FlutterOutline widget) {
-    final JPanel panel = new JPanel();
-    panel.setLayout(new MigLayout("insets 0", "[grow, center]", "[grow, bottom][grow 200, top]"));
-
-    panel.add(new JBLabel(PreviewArea.NOT_RENDERABLE), "cell 0 0");
-
-    final LinkLabel linkLabel = LinkLabel.create("Add forDesignTime() constructor...", () -> {
-      final SourceChange change = flutterAnalysisServer.flutter_getChangeAddForDesignTimeConstructor(currentFile, widget.getOffset());
-      if (change != null) {
-        applyChangeAndShowException(change);
-      }
-    });
-    panel.add(linkLabel, "cell 0 1");
-
-    previewArea.clear(panel);
-
-    minimizePreviewArea();
-  }
-
-  private void showLocalException(@NotNull Throwable localException) {
-    final JPanel panel = new JPanel();
-    panel.setLayout(new MigLayout("insets 0", "[grow, center]", "[grow, bottom][grow 200, top]"));
-
-    panel.add(new JBLabel("Encountered an exception during rendering"), "cell 0 0");
-
-    final LinkLabel linkLabel = LinkLabel.create("Show exception...", () -> {
-      final StringWriter stringWriter = new StringWriter();
-      final PrintWriter printWriter = new PrintWriter(stringWriter);
-      printWriter.println(localException.getMessage());
-      localException.printStackTrace(printWriter);
-      final Module module = currentFile == null ? null : ModuleUtil.findModuleForFile(currentFile, project);
-      FlutterConsoles.displayMessage(project, module, stringWriter.toString().trim(), true);
-    });
-    panel.add(linkLabel, "cell 0 1");
-
-    previewArea.clear(panel);
-  }
-
-  private void showRemoteException(@NotNull JsonObject remoteException) {
-    final JPanel panel = new JPanel();
-    panel.setLayout(new MigLayout("insets 0", "[grow, center]", "[grow, bottom][grow 200, top]"));
-
-    panel.add(new JBLabel("Encountered an exception during rendering"), "cell 0 0");
-
-    final LinkLabel linkLabel = LinkLabel.create("Show exception...", () -> {
-      final StringWriter stringWriter = new StringWriter();
-      final PrintWriter printWriter = new PrintWriter(stringWriter);
-      printWriter.println(remoteException.get("exception").getAsString());
-      printWriter.println(remoteException.get("stackTrace").getAsString());
-      final Module module = currentFile == null ? null : ModuleUtil.findModuleForFile(currentFile, project);
-      FlutterConsoles.displayMessage(project, module, stringWriter.toString().trim(), true);
-    });
-    panel.add(linkLabel, "cell 0 1");
-
-    previewArea.clear(panel);
   }
 
   private void applyChangeAndShowException(SourceChange change) {
