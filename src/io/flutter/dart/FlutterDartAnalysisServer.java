@@ -6,35 +6,26 @@
 package io.flutter.dart;
 
 import com.google.common.collect.Lists;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.ResponseListener;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.util.Consumer;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.FlutterService;
 import org.dartlang.analysis.server.protocol.SourceChange;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class FlutterDartAnalysisServer {
-  private static final String FLUTTER_DESIGN_TIME_CONSTRUCTOR = "flutter.getChangeAddForDesignTimeConstructor";
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
 
   @NotNull final DartAnalysisServerService analysisService;
@@ -46,12 +37,6 @@ public class FlutterDartAnalysisServer {
   private final Map<String, List<String>> subscriptions = new HashMap<>();
 
   private final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = new HashMap<>();
-
-  /**
-   * Each key is a request identifier.
-   * Each value is the {@link Consumer} for the response.
-   */
-  private final Map<String, Consumer<JsonObject>> responseConsumers = new HashMap<>();
 
   @NotNull
   public static FlutterDartAnalysisServer getInstance(@NotNull final Project project) {
@@ -111,32 +96,6 @@ public class FlutterDartAnalysisServer {
     return analysisService.edit_getAssists(file, offset, length);
   }
 
-  @Nullable
-  public SourceChange flutter_getChangeAddForDesignTimeConstructor(@NotNull VirtualFile file, int _offset) {
-    final String filePath = FileUtil.toSystemDependentName(file.getPath());
-    final int offset = analysisService.getOriginalOffset(file, _offset);
-
-    final CountDownLatch latch = new CountDownLatch(1);
-    final AtomicReference<SourceChange> result = new AtomicReference<>();
-    final String id = analysisService.generateUniqueId();
-    responseConsumers.put(id, (resultObject) -> {
-      try {
-        final JsonObject changeObject = resultObject.getAsJsonObject("change");
-        final SourceChange change = SourceChange.fromJson(changeObject);
-        result.set(change);
-      }
-      catch (Throwable ignored) {
-      }
-      latch.countDown();
-    });
-
-    final JsonObject request = FlutterRequestUtilities.generateFlutterGetChangeAddForDesignTimeConstructor(id, filePath, offset);
-    analysisService.sendRequest(id, request);
-
-    Uninterruptibles.awaitUninterruptibly(latch, 100, TimeUnit.MILLISECONDS);
-    return result.get();
-  }
-
   private void processString(String jsonString) {
     processResponse(new Gson().fromJson(jsonString, JsonObject.class));
   }
@@ -145,41 +104,19 @@ public class FlutterDartAnalysisServer {
    * Handle the given {@link JsonObject} response.
    */
   private void processResponse(JsonObject response) {
-    if (processNotification(response)) {
-      return;
-    }
-
-    if (response.has("error")) {
-      return;
-    }
-
-    final JsonObject resultObject = response.getAsJsonObject("result");
-    if (resultObject == null) {
-      return;
-    }
-
-    final JsonPrimitive idJsonPrimitive = (JsonPrimitive)response.get("id");
-    if (idJsonPrimitive == null) {
-      return;
-    }
-    final String idString = idJsonPrimitive.getAsString();
-
-    final Consumer<JsonObject> consumer = responseConsumers.remove(idString);
-    if (consumer == null) {
-      return;
-    }
-
-    consumer.consume(resultObject);
+    processNotification(response);
   }
 
   /**
    * Attempts to handle the given {@link JsonObject} as a notification.
    */
+  @SuppressWarnings("UnusedReturnValue")
   private boolean processNotification(JsonObject response) {
     final JsonElement eventElement = response.get("event");
     if (eventElement == null || !eventElement.isJsonPrimitive()) {
       return false;
     }
+
     final String event = eventElement.getAsString();
     if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();

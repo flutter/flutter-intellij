@@ -58,8 +58,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
-  private JCheckBox myShowPreviewAreaCheckBox;
-  private JCheckBox myShowHeapDisplayCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
@@ -178,10 +176,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isShowPreviewArea() != myShowPreviewAreaCheckBox.isSelected()) {
-      return true;
-    }
-
     if (settings.isShowBuildMethodGuides() != myShowBuildMethodGuides.isSelected()) {
       return true;
     }
@@ -246,7 +240,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setReloadWithError(myHotReloadIgnoreErrorCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
-    settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
 
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
@@ -281,7 +274,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myHotReloadIgnoreErrorCheckBox.setSelected(settings.isReloadWithError());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
-    myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
 
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
     myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
