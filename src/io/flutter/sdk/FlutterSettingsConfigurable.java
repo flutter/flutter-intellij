@@ -314,7 +314,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     sdk.flutterVersion().start((ProcessOutput output) -> {
       final String stdout = output.getStdout();
-      final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXmlEntities(stdout.trim()), "\n", "<br/>") + "</html>";
+      final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
       ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, htmlText), modalityState);
     }, null);
   }
