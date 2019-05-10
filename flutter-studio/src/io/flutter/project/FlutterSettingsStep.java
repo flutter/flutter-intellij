@@ -7,7 +7,6 @@ package io.flutter.project;
 
 import com.android.tools.adtui.LabelWithEditButton;
 import com.android.tools.adtui.util.FormScalingUtil;
-import com.android.tools.adtui.validation.Validator;
 import com.android.tools.adtui.validation.ValidatorPanel;
 import com.android.tools.idea.npw.project.DomainToPackageExpression;
 import com.android.tools.idea.observable.BindingsManager;
@@ -19,12 +18,19 @@ import com.android.tools.idea.observable.expressions.Expression;
 import com.android.tools.idea.observable.ui.SelectedProperty;
 import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
-import com.android.tools.idea.ui.wizard.WizardUtils;
-import com.android.tools.idea.wizard.model.SkippableWizardStep;
+import com.android.tools.idea.wizard.model.ModelWizard;
+import com.android.tools.idea.wizard.model.ModelWizardStep;
+import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.ui.components.JBLayeredPane;
+import com.intellij.ui.components.JBScrollPane;
 import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.module.settings.ProjectType;
 import io.flutter.sdk.FlutterSdk;
+import java.awt.Container;
+import java.awt.event.FocusAdapter;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import javax.swing.Icon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -38,13 +44,14 @@ import org.jetbrains.annotations.Nullable;
  * Configure Flutter project parameters that relate to platform-specific code.
  * These values are preserved (by the model) for use as defaults when other projects are created.
  */
-public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel> {
-  private final StudioWizardStepPanel myRootPanel;
-  private final ValidatorPanel myValidatorPanel;
+public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
 
-  private JPanel myPanel;
+  private JBScrollPane myRoot;
+  private JPanel myRootPanel;
+  private ValidatorPanel myValidatorPanel;
+
   private JTextField myCompanyDomain;
   private LabelWithEditButton myPackageName;
   private JCheckBox myKotlinCheckBox;
@@ -53,9 +60,18 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
   private JPanel mySamplePanel;
   private ProjectType myProjectTypeForm;
   private boolean hasEntered = false;
+  private FocusListener focusListener;
 
   public FlutterSettingsStep(FlutterProjectModel model, String title, Icon icon) {
     super(model, title, icon);
+    myValidatorPanel = new ValidatorPanel(this, myRootPanel);
+    myRoot = StudioWizardStepPanel.wrappedWithVScroll(myRootPanel);
+    FormScalingUtil.scaleComponentTree(this.getClass(), myRoot);
+  }
+
+  @Override
+  protected void onWizardStarting(@NotNull ModelWizard.Facade wizard) {
+    FlutterProjectModel model = getModel();
     myKotlinCheckBox.setText(FlutterBundle.message("module.wizard.language.name_kotlin"));
     mySwiftCheckBox.setText(FlutterBundle.message("module.wizard.language.name_swift"));
 
@@ -74,13 +90,28 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
 
     myBindings.bindTwoWay(new TextProperty(myCompanyDomain), model.companyDomain());
 
-    myValidatorPanel = new ValidatorPanel(this, myPanel);
-
-    myValidatorPanel.registerValidator(model.packageName(),
-                                       value -> Validator.Result.fromNullableMessage(WizardUtils.validatePackageName(value)));
-
-    myRootPanel = new StudioWizardStepPanel(myValidatorPanel);
-    FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
+    // The wizard changed substantially in 3.5. Something causes this page to not get properly validated
+    // after it is added to the Swing tree. Here we check that we have to validate the tree, then do so.
+    // It only needs to be done once, so we remove the listener to prevent possible flicker.
+    ApplicationInfo info = ApplicationInfo.getInstance();
+    if (info.getMajorVersion().equals("3") && info.getMinorVersion().equals("4")) { // "0" while debugging
+      return; // Do nothing for 3.4
+    }
+    focusListener = new FocusAdapter() {
+      @Override
+      public void focusGained(FocusEvent e) {
+        super.focusGained(e);
+        Container parent = myRoot;
+        while (parent != null && !(parent instanceof JBLayeredPane)) {
+          parent = parent.getParent();
+        }
+        if (parent != null) {
+          parent.validate();
+        }
+        myCompanyDomain.removeFocusListener(focusListener);
+      }
+    };
+    myCompanyDomain.addFocusListener(focusListener);
   }
 
   @Override
@@ -92,7 +123,7 @@ public class FlutterSettingsStep extends SkippableWizardStep<FlutterProjectModel
   @NotNull
   @Override
   protected JComponent getComponent() {
-    return myRootPanel;
+    return myRoot;
   }
 
   @Nullable

@@ -210,7 +210,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
       @SuppressWarnings("override")
       public void syncTaskCreated(@NotNull Project project, @NotNull GradleSyncInvoker.Request request) {}
 
-      @Override
+      // TODO(messick) Remove when 3.6 is stable.
       public void syncStarted(@NotNull Project project, boolean skipped, boolean sourceGenerationRequested) {}
 
       @Override
