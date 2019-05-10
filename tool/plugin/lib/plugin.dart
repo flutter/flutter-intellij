@@ -231,8 +231,9 @@ Future<bool> performReleaseChecks(ProductCommand cmd) async {
       var branch = await gitDir.getCurrentBranch();
       var name = branch.branchName;
       var result = name == "release_${cmd.releaseMajor}";
-      if (!result) result = name.startsWith("release_${cmd.releaseMajor}")
-          && name.lastIndexOf(new RegExp("\.[0-9]")) == name.length - 2;
+      if (!result)
+        result = name.startsWith("release_${cmd.releaseMajor}") &&
+            name.lastIndexOf(new RegExp("\.[0-9]")) == name.length - 2;
       if (result) {
         if (isTravisFileValid()) {
           return new Future(() => result);
@@ -620,10 +621,23 @@ class BuildCommand extends ProductCommand {
         files[processedFile] = source;
         source = source.replaceAll('listen', 'receive');
         processedFile.writeAsStringSync(source);
+
+        processedFile = File('resources/META-INF/studio-contribs_template.xml');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll(
+            'JavaNewProjectOrModuleGroup', 'NewProjectOrModuleGroup');
+        processedFile.writeAsStringSync(source);
       }
 
       try {
         result = await runner.javac2(spec);
+
+        // copy resources
+        copyResources(from: 'src', to: 'build/classes');
+        copyResources(from: 'resources', to: 'build/classes');
+        copyResources(from: 'gen', to: 'build/classes');
+        await genPluginFiles(spec, 'build/classes');
       } finally {
         // Restore sources.
         files.forEach((file, src) {
@@ -644,12 +658,6 @@ class BuildCommand extends ProductCommand {
       if (result != 0) {
         return new Future(() => result);
       }
-
-      // copy resources
-      copyResources(from: 'src', to: 'build/classes');
-      copyResources(from: 'resources', to: 'build/classes');
-      copyResources(from: 'gen', to: 'build/classes');
-      await genPluginFiles(spec, 'build/classes');
 
       // create the jars
       createDir('build/flutter-intellij/lib');
