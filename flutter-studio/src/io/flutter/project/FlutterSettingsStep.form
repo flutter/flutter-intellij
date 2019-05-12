@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="io.flutter.project.FlutterSettingsStep">
-  <grid id="27dc6" binding="myPanel" layout-manager="GridLayoutManager" row-count="14" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
-    <margin top="0" left="5" bottom="0" right="5"/>
+  <grid id="27dc6" binding="myRootPanel" layout-manager="GridLayoutManager" row-count="14" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
       <xy x="20" y="20" width="500" height="452"/>
     </constraints>
     <properties/>
     <border type="none"/>
     <children>
-      <component id="a0d4c" class="javax.swing.JLabel">
+      <component id="29b06" class="com.intellij.ui.components.JBLabel">
         <constraints>
           <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -33,7 +33,7 @@
           <text value="Platform channel language"/>
         </properties>
       </component>
-      <component id="a3bbd" class="javax.swing.JLabel">
+      <component id="ab6e5" class="com.intellij.ui.components.JBLabel">
         <constraints>
           <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -88,7 +88,7 @@
           <toolTipText value="Objective-C support will be included"/>
         </properties>
       </component>
-      <component id="92255" class="javax.swing.JLabel">
+      <component id="f7960" class="com.intellij.ui.components.JBLabel">
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>
@@ -104,7 +104,7 @@
           </grid>
         </constraints>
       </vspacer>
-      <component id="9cfa6" class="javax.swing.JLabel">
+      <component id="dedae" class="com.intellij.ui.components.JBLabel">
         <constraints>
           <grid row="1" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
         </constraints>

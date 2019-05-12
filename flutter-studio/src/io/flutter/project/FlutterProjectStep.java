@@ -21,6 +21,7 @@ import com.android.tools.idea.observable.ui.TextProperty;
 import com.android.tools.idea.ui.validation.validators.PathValidator;
 import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
 import com.android.tools.idea.ui.wizard.WizardUtils;
+import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.android.tools.idea.wizard.model.SkippableWizardStep;
 import com.google.common.collect.Lists;
@@ -37,6 +38,7 @@ import com.intellij.ui.ColorUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.JBColor;
+import com.intellij.ui.components.JBScrollPane;
 import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.FlutterBundle;
@@ -48,6 +50,7 @@ import io.flutter.module.settings.FlutterCreateParams;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import java.awt.Color;
+import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Font;
 import java.awt.event.MouseAdapter;
@@ -62,6 +65,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JRootPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
 import javax.swing.event.DocumentEvent;
@@ -73,7 +77,7 @@ import org.jetbrains.annotations.Nullable;
  * Configure Flutter project parameters that are common to all types.
  */
 public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel> implements InstallSdkAction.Model {
-  private final StudioWizardStepPanel myRootPanel;
+  private final JBScrollPane myRootPanel;
   private final ValidatorPanel myValidatorPanel;
   private final BindingsManager myBindings = new BindingsManager();
   private final ListenerManager myListeners = new ListenerManager();
@@ -101,9 +105,15 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   public FlutterProjectStep(FlutterProjectModel model, String title, Icon icon, FlutterProjectType type) {
     super(model, title, icon);
     myProjectType = new OptionalValueProperty<>(type);
-
     myValidatorPanel = new ValidatorPanel(this, myPanel);
+    myInstallSdkAction = new InstallSdkAction(this);
+    myRootPanel = StudioWizardStepPanel.wrappedWithVScroll(myValidatorPanel);
+    FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
+  }
 
+  @Override
+  protected void onWizardStarting(@NotNull ModelWizard.Facade wizard) {
+    FlutterProjectModel model = getModel();
     String initialLocation = WizardUtils.getProjectLocationParent().getPath();
     // Directionality matters. Let the bindings set the model's value from the text field.
     myProjectLocation.getChildComponent().setText(initialLocation);
@@ -163,7 +173,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
     myProgressBar.setVisible(false);
     myProgressText.setVisible(false);
     myCancelProgressButton.setVisible(false);
-    myInstallSdkAction = new InstallSdkAction(this);
 
     myInstallActionLink.setIcon(myInstallSdkAction.getLinkIcon());
     myInstallActionLink.setDisabledIcon(IconLoader.getDisabledIcon(myInstallSdkAction.getLinkIcon()));
@@ -184,9 +193,6 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
         myListener.actionCanceled();
       }
     });
-
-    myRootPanel = new StudioWizardStepPanel(myValidatorPanel);
-    FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
   }
 
   private void updateSdkField(JTextComponent sdkEditor) {
@@ -306,6 +312,8 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
       case MODULE:
         heading = FlutterBundle.message("module.wizard.module_step_body");
         break;
+      case IMPORT:
+        throw new Error("Import is handled in a different class");
     }
     myHeading.setText(heading);
     myDownloadErrorMessage.set("");
@@ -330,6 +338,9 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
       case MODULE:
         name = FlutterBundle.message("module.wizard.module_name");
         descrText = FlutterBundle.message("module.wizard.module_text");
+        break;
+      case IMPORT:
+        throw new Error("Import is handled in a different class");
     }
     myDescription.setText(descrText);
     myProjectName.setText(name);

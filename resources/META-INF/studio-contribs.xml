@@ -28,11 +28,10 @@
     <action id="flutter.NewProject" class="io.flutter.actions.FlutterNewProjectAction"
             text="New Flutter Project..."
             description="Create a new Flutter project">
-      <add-to-group group-id="NewProjectOrModuleGroup" anchor="after" relative-to-action="NewProject"/>
+      <add-to-group group-id="JavaNewProjectOrModuleGroup" anchor="after" relative-to-action="NewProject"/>
     </action>
 
-    <!-- The icon isn't being used here, but the same syntax works for menu items -->
-    <!-- We can't change it in a StartupActivity because those don't run until a project is opened -->
+    <!-- The icon isn't being used here, but it is set by the action -->
     <action id="flutter.NewProject.welcome" class="io.flutter.actions.FlutterNewProjectAction"
             text="Start a new Flutter project"
             icon="FlutterIcons.Flutter"
