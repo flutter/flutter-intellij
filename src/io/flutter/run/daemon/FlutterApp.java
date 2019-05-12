@@ -734,7 +734,10 @@ class FlutterAppDaemonEventListener implements DaemonEvent.Listener {
     // Shutdown must be sync so that we prevent the processTerminated() event from being delivered
     // until a graceful shutdown has been tried.
     try {
-      app.shutdownAsync().get();
+      app.shutdownAsync().get(100, TimeUnit.MILLISECONDS);
+    }
+    catch (TimeoutException e) {
+      LOG.info("app shutdown took longer than 100ms");
     }
     catch (Exception e) {
       FlutterUtils.warn(LOG, "exception while shutting down Flutter App", e);
