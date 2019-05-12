@@ -7,31 +7,37 @@ package io.flutter.view;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.util.ui.JBFont;
+import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
+import io.flutter.inspector.HeapDisplay;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class InspectorMemoryTab extends JPanel implements InspectorTabPanel {
-  private static final Logger LOG = Logger.getInstance(InspectorMemoryTab.class);
+// TODO(devoncarew): have an 'open in devtools' UI
+
+public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
+  private static final Logger LOG = Logger.getInstance(PerfMemoryTab.class);
 
   private @NotNull final FlutterApp app;
 
-  InspectorMemoryTab(Disposable parentDisposable, @NotNull FlutterApp app) {
+  PerfMemoryTab(Disposable parentDisposable, @NotNull FlutterApp app) {
     this.app = app;
 
     setLayout(new BorderLayout());
+    setBorder(JBUI.Borders.empty(3));
 
-    // TODO: ??? add polling client
+    // todo: is this necessary?
+    app.getVMServiceManager().addPollingClient();
 
-    final JLabel warningLabel = new JLabel(
-      "Todo:", null, SwingConstants.CENTER);
-    warningLabel.setFont(JBFont.create(warningLabel.getFont()).asBold());
-    warningLabel.setBorder(JBUI.Borders.empty(3, 10));
-    add(warningLabel, BorderLayout.CENTER);
+    final JPanel memoryPanel = new JPanel(new BorderLayout());
+    final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
+    memoryPanel.add(heapDisplay, BorderLayout.CENTER);
+    memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory usage"));
+
+    add(memoryPanel, BorderLayout.CENTER);
   }
 
   @Override
