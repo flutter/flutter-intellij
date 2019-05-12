@@ -39,7 +39,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
    * Tracking widget repaints may confuse users so we disable it by default currently.
    */
   private static final boolean ENABLE_TRACK_REPAINTS = false;
-  private static final boolean SHOW_MEMORY_PANEL = false;
 
   private static final NumberFormat fpsFormat = new DecimalFormat();
 
@@ -134,7 +133,6 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     // mode.
     setMinimumSize(new Dimension(0, 0));
 
-    // Header
     final JPanel footer = new JPanel(new VerticalLayout(0));
     footer.add(new JSeparator());
     final JPanel labels = new JPanel(new BorderLayout(6, 0));
@@ -157,6 +155,7 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     treeSplitter = new JBSplitter(false, "io.flutter.view.InspectorPerfTab", lastSplitterProportion);
     add(treeSplitter, BorderLayout.CENTER);
+    add(footer, BorderLayout.SOUTH);
 
     // FPS
     assert app.getVMServiceManager() != null;
@@ -179,13 +178,10 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
     frameRenderingPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Frame rendering time"));
 
     // Memory
-    JPanel memoryPanel = null;
-    if (SHOW_MEMORY_PANEL) {
-      memoryPanel = new JPanel(new BorderLayout());
-      final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
-      memoryPanel.add(heapDisplay, BorderLayout.CENTER);
-      memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory usage"));
-    }
+    final JPanel memoryPanel = new JPanel(new BorderLayout());
+    final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
+    memoryPanel.add(heapDisplay, BorderLayout.CENTER);
+    memoryPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Memory usage"));
 
     // Performance settings
     final JPanel perfSettings = new JPanel(new VerticalLayout(5));
@@ -199,11 +195,8 @@ public class InspectorPerfTab extends JBPanel implements InspectorTabPanel {
 
     final JBPanel leftColumn = new JBPanel(new BorderLayout());
     leftColumn.add(ScrollPaneFactory.createScrollPane(generalPerfPanel), BorderLayout.CENTER);
-    leftColumn.add(footer, BorderLayout.SOUTH);
 
-    if (memoryPanel != null) {
-      generalPerfPanel.add(memoryPanel);
-    }
+    generalPerfPanel.add(memoryPanel);
 
     Disposer.register(parentDisposable, treeSplitter::dispose);
     treeSplitter.setFirstComponent(leftColumn);
