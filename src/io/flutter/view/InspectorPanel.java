@@ -1182,11 +1182,10 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
   @Override
   public void dispose() {
     flutterIsolateSubscription.dispose();
+    refreshRateLimiter.dispose();
     // TODO(jacobr): actually implement.
     final InspectorService service = getInspectorService();
-    if (service != null) {
-      shutdownTree(false);
-    }
+    shutdownTree(false);
     // TODO(jacobr): verify subpanels are disposed as well.
   }
 
@@ -1197,7 +1196,7 @@ public class InspectorPanel extends JPanel implements Disposable, InspectorServi
     // TODO(jacobr): remove the following code once the
     // `setPubRootDirectories` method has been in two revs of the Flutter Alpha
     // channel. The feature is expected to have landed in the Flutter dev
-    // chanel on March 2, 2018.
+    // channel on March 2, 2018.
     final InspectorSourceLocation location = node.getCreationLocation();
     if (location == null) {
       return false;

@@ -28,7 +28,9 @@ public class AsyncRateLimiter implements Disposable {
   private final RateLimiter rateLimiter;
   private final Alarm requestScheduler;
   private final Computable<CompletableFuture<?>> callback;
+
   private CompletableFuture<?> pendingRequest;
+
   /**
    * A request has been scheduled to run but is not yet pending.
    */
@@ -36,6 +38,7 @@ public class AsyncRateLimiter implements Disposable {
 
   public AsyncRateLimiter(double framesPerSecond, Computable<CompletableFuture<?>> callback) {
     this.callback = callback;
+
     rateLimiter = RateLimiter.create(framesPerSecond);
     requestScheduler = new Alarm(Alarm.ThreadToUse.POOLED_THREAD, this);
   }
@@ -93,5 +96,6 @@ public class AsyncRateLimiter implements Disposable {
 
   @Override
   public void dispose() {
+    requestScheduler.dispose();
   }
 }
