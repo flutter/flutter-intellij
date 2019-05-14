@@ -97,7 +97,7 @@ public class BazelTestLaunchState extends CommandLineState {
   @Override
   protected ConsoleView createConsole(@NotNull Executor executor) throws ExecutionException {
     // If the --machine output flag is not turned on, then don't activate the new window.
-    if (fields.getAdditionalArgs() == null || !fields.getAdditionalArgs().contains("--machine")) {
+    if (fields.getAdditionalArgs() == null || !fields.getAdditionalArgs().contains(BazelTestFields.Flags.machine)) {
       return super.createConsole(executor);
     }
 
@@ -112,7 +112,7 @@ public class BazelTestLaunchState extends CommandLineState {
 
     final DartUrlResolver resolver = DartUrlResolver.getInstance(project, workspace.getRoot());
     final ConsoleProps props = ConsoleProps.forBazel(config, executor, resolver);
-    final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole("FlutterBazelTestRunner", props);
+    final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole(ConsoleProps.bazelFrameworkName, props);
 
     final String baseDir = workspace.getRoot().getPath();
     console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
