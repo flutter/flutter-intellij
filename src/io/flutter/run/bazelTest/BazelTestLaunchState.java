@@ -28,6 +28,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.ide.runner.DartRelativePathsConsoleFilter;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.bazel.Workspace;
+import io.flutter.run.common.ConsoleProps;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.run.test.FlutterTestEventsConverter;
@@ -103,49 +104,19 @@ public class BazelTestLaunchState extends CommandLineState {
     // Create a console showing a test tree.
     final Project project = getEnvironment().getProject();
     final Workspace workspace = Workspace.load(project);
-    assert (workspace != null);
+
+    // Fail gracefully if we have an unexpected null.
+    if (workspace == null) {
+      return super.createConsole(executor);
+    }
+
     final DartUrlResolver resolver = DartUrlResolver.getInstance(project, workspace.getRoot());
-    final ConsoleProps props = new ConsoleProps(config, executor, resolver);
+    final ConsoleProps props = ConsoleProps.forBazel(config, executor, resolver);
     final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole("FlutterBazelTestRunner", props);
 
     final String baseDir = workspace.getRoot().getPath();
     console.addMessageFilter(new DartRelativePathsConsoleFilter(project, baseDir));
     console.addMessageFilter(new UrlFilter());
     return console;
-  }
-
-  /**
-   * Configuration for the test console.
-   * <p>
-   * In particular, configures how it parses test events and handles the re-run action.
-   */
-  private static class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustomMessagesParsing {
-    @NotNull
-    private final DartUrlResolver resolver;
-
-    public ConsoleProps(@NotNull BazelTestConfig config, @NotNull Executor exec, @NotNull DartUrlResolver resolver) {
-      super(config, "FlutterBazelTestRunner", exec);
-      this.resolver = resolver;
-      setUsePredefinedMessageFilter(false);
-      setIdBasedTestTree(true);
-    }
-
-    @Nullable
-    @Override
-    public SMTestLocator getTestLocator() {
-      return FlutterTestLocationProvider.INSTANCE;
-    }
-
-    @Override
-    public OutputToGeneralTestEventsConverter createTestEventsConverter(@NotNull String testFrameworkName,
-                                                                        @NotNull TestConsoleProperties props) {
-      return new FlutterTestEventsConverter(testFrameworkName, props, resolver);
-    }
-
-    @Nullable
-    @Override
-    public AbstractRerunFailedTestsAction createRerunFailedTestsAction(ConsoleView consoleView) {
-      return null; // TODO(skybrian) implement
-    }
   }
 }
