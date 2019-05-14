@@ -43,7 +43,6 @@ import java.text.NumberFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
-import static io.flutter.logging.FlutterLog.LOGGING_STREAM_ID;
 import static io.flutter.logging.FlutterLogEntry.Kind;
 import static io.flutter.logging.FlutterLogEntry.UNDEFINED_LEVEL;
 
@@ -234,7 +233,10 @@ public class FlutterLogEntryParser {
   public List<FlutterLogEntry> parse(@Nullable String id, @Nullable Event event) {
     if (id != null && event != null) {
       switch (id) {
-        case LOGGING_STREAM_ID:
+        case FlutterLog.LOGGING_STREAM_ID_OLD:
+          return parseLoggingEvent(event);
+        case FlutterLog.LOGGING_STREAM_ID:
+          //noinspection DuplicateBranchesInSwitch
           return parseLoggingEvent(event);
         case VmService.GC_STREAM_ID:
           return parseGCEvent(event);

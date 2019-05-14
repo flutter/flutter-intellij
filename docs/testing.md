@@ -138,7 +138,7 @@ Assuming the app state from above (i.e., leave the Debug session running):
   3. the + button decreases the value
 
 Keybindings:
-* verify that the hot reload keybinding works (on a mac: `cmd-\`)
+* verify that the hot reload keybinding works (on a mac: `cmd-\ `)
 * verify that the reload-on-save feature works (hitting cmd-s / ctrl-s triggers a reload)
 
 ## Hot Restart

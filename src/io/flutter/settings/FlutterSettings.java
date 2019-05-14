@@ -9,31 +9,35 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.util.EventDispatcher;
 import io.flutter.analytics.Analytics;
-import io.flutter.bazel.Workspace;
 import io.flutter.sdk.FlutterSdk;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.EventListener;
-import java.util.List;
 
 public class FlutterSettings {
   private static final String reloadOnSaveKey = "io.flutter.reloadOnSave";
+  private static final String reloadWithErrorKey = "io.flutter.reloadWithError";
   private static final String openInspectorOnAppLaunchKey = "io.flutter.openInspectorOnAppLaunch";
   private static final String verboseLoggingKey = "io.flutter.verboseLogging";
   private static final String formatCodeOnSaveKey = "io.flutter.formatCodeOnSave";
   private static final String organizeImportsOnSaveKey = "io.flutter.organizeImportsOnSave";
   private static final String showOnlyWidgetsKey = "io.flutter.showOnlyWidgets";
-  private static final String showPreviewAreaKey = "io.flutter.showPreviewArea";
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
-  private static final String legacyTrackWidgetCreationKey = "io.flutter.trackWidgetCreation";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
-  private static final String memoryProfilerKey = "io.flutter.memoryProfiler";
-  private static final String newBazelTestRunnerKey = "io.flutter.bazel.legacyTestBehavior";
+
+  // The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
+  // pubspec.yaml.
+  //
+  // In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
+  private static final String dartProjectsWithoutPubspecRegistryKey = "dart.projects.without.pubspec";
+
+  // Settings for UI as Code experiments.
+  private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
+  private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
+  private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
+  private static final String disableDartClosingLabelsKey = "io.flutter.editor.disableDartClosingLabelsKey";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -50,7 +54,6 @@ public class FlutterSettings {
   private final EventDispatcher<Listener> dispatcher = EventDispatcher.create(Listener.class);
 
   public FlutterSettings() {
-    updateAnalysisServerArgs();
   }
 
   public void sendSettingsToAnalytics(Analytics analytics) {
@@ -61,6 +64,9 @@ public class FlutterSettings {
 
     if (isReloadOnSave()) {
       analytics.sendEvent("settings", afterLastPeriod(reloadOnSaveKey));
+    }
+    if (isReloadWithError()) {
+      analytics.sendEvent("settings", afterLastPeriod(reloadWithErrorKey));
     }
     if (isOpenInspectorOnAppLaunch()) {
       analytics.sendEvent("settings", afterLastPeriod(openInspectorOnAppLaunchKey));
@@ -75,21 +81,33 @@ public class FlutterSettings {
     if (isShowOnlyWidgets()) {
       analytics.sendEvent("settings", afterLastPeriod(showOnlyWidgetsKey));
     }
-    if (isShowPreviewArea()) {
-      analytics.sendEvent("settings", afterLastPeriod(showPreviewAreaKey));
-    }
 
     if (isSyncingAndroidLibraries()) {
       analytics.sendEvent("settings", afterLastPeriod(syncAndroidLibrariesKey));
     }
-    if (isLegacyTrackWidgetCreation()) {
-      analytics.sendEvent("settings", afterLastPeriod(legacyTrackWidgetCreationKey));
-    }
     if (isDisableTrackWidgetCreation()) {
       analytics.sendEvent("settings", afterLastPeriod(disableTrackWidgetCreationKey));
     }
+
+    if (isShowBuildMethodGuides()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodGuidesKey));
+    }
+    if (isShowMultipleChildrenGuides()) {
+      analytics.sendEvent("settings", afterLastPeriod(showMultipleChildrenGuidesKey));
+    }
+    if (isShowBuildMethodsOnScrollbar()) {
+      analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
+    }
+    if (!isDisableDartClosingLabels()) {
+      // The default value is true so only send the event if the setting was turned off.
+      analytics.sendEvent("settings", afterLastPeriod(disableDartClosingLabelsKey + "_off"));
+    }
+
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
+    }
+    if (shouldUseBazel()) {
+      analytics.sendEvent("settings", afterLastPeriod(dartProjectsWithoutPubspecRegistryKey));
     }
   }
 
@@ -105,15 +123,8 @@ public class FlutterSettings {
     return getPropertiesComponent().getBoolean(reloadOnSaveKey, true);
   }
 
-  // TODO(jacobr): remove after 0.10.2 is the default.
-  public boolean isLegacyTrackWidgetCreation() {
-    return getPropertiesComponent().getBoolean(legacyTrackWidgetCreationKey, false);
-  }
-
-  public void setLegacyTrackWidgetCreation(boolean value) {
-    getPropertiesComponent().setValue(legacyTrackWidgetCreationKey, value, false);
-
-    fireEvent();
+  public boolean isReloadWithError() {
+    return getPropertiesComponent().getBoolean(reloadWithErrorKey, false);
   }
 
   public boolean isTrackWidgetCreationEnabled(Project project) {
@@ -122,7 +133,7 @@ public class FlutterSettings {
       return !getPropertiesComponent().getBoolean(disableTrackWidgetCreationKey, false);
     }
     else {
-      return isLegacyTrackWidgetCreation();
+      return false;
     }
   }
 
@@ -137,6 +148,12 @@ public class FlutterSettings {
 
   public void setReloadOnSave(boolean value) {
     getPropertiesComponent().setValue(reloadOnSaveKey, value, true);
+
+    fireEvent();
+  }
+
+  public void setReloadWithError(boolean value) {
+    getPropertiesComponent().setValue(reloadWithErrorKey, value, false);
 
     fireEvent();
   }
@@ -171,16 +188,6 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isShowPreviewArea() {
-    return getPropertiesComponent().getBoolean(showPreviewAreaKey, false);
-  }
-
-  public void setShowPreviewArea(boolean value) {
-    getPropertiesComponent().setValue(showPreviewAreaKey, value, false);
-
-    fireEvent();
-  }
-
   public boolean isSyncingAndroidLibraries() {
     return getPropertiesComponent().getBoolean(syncAndroidLibrariesKey, false);
   }
@@ -211,15 +218,17 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  // TODO(devoncarew): Remove this after M31 ships.
-  private void updateAnalysisServerArgs() {
-    final String serverRegistryKey = "dart.server.additional.arguments";
-    final String previewDart2FlagSuffix = "preview-dart-2";
+  /**
+   * Determines whether to use bazel project.
+   */
+  public boolean shouldUseBazel() {
+    return Registry.is(dartProjectsWithoutPubspecRegistryKey, false);
+  }
 
-    final List<String> params = new ArrayList<>(StringUtil.split(Registry.stringValue(serverRegistryKey), " "));
-    if (params.removeIf((s) -> s.endsWith(previewDart2FlagSuffix))) {
-      Registry.get(serverRegistryKey).setValue(StringUtil.join(params, " "));
-    }
+  public void setShouldUseBazel(boolean value) {
+    Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(value);
+
+    fireEvent();
   }
 
   public boolean isVerboseLogging() {
@@ -232,12 +241,43 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isMemoryProfilerDisabled() {
-    return getPropertiesComponent().getBoolean(memoryProfilerKey, false);
+  public boolean isShowBuildMethodGuides() {
+    return getPropertiesComponent().getBoolean(showBuildMethodGuidesKey, true);
   }
 
-  public void setMemoryProfilerDisabled(boolean value) {
-    getPropertiesComponent().setValue(memoryProfilerKey, value, false);
+  public void setShowBuildMethodGuides(boolean value) {
+    getPropertiesComponent().setValue(showBuildMethodGuidesKey, value, true);
+
+    fireEvent();
+  }
+
+  public boolean isShowBuildMethodsOnScrollbar() {
+    return getPropertiesComponent().getBoolean(showBuildMethodsOnScrollbarKey, false);
+  }
+
+  public void setShowBuildMethodsOnScrollbar(boolean value) {
+    getPropertiesComponent().setValue(showBuildMethodsOnScrollbarKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isDisableDartClosingLabels() {
+    return getPropertiesComponent().getBoolean(disableDartClosingLabelsKey, true);
+  }
+
+  public void setDisableDartClosingLabels(boolean value) {
+    getPropertiesComponent().setValue(disableDartClosingLabelsKey, value, true);
+
+    fireEvent();
+  }
+
+
+  public boolean isShowMultipleChildrenGuides() {
+    return getPropertiesComponent().getBoolean(showMultipleChildrenGuidesKey, false);
+  }
+
+  public void setShowMultipleChildrenGuides(boolean value) {
+    getPropertiesComponent().setValue(showMultipleChildrenGuidesKey, value, false);
 
     fireEvent();
   }

@@ -12,6 +12,7 @@ import com.google.gson.JsonSyntaxException;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
+import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -19,6 +20,7 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
@@ -69,34 +71,40 @@ public class DevToolsManager {
 
     final ProgressManager progressManager = ProgressManager.getInstance();
     progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
-      OSProcessHandler processHandler;
+      Process process;
 
       @Override
       public void run(@NotNull ProgressIndicator indicator) {
         indicator.setText(getTitle());
+        indicator.setIndeterminate(true);
 
-        processHandler = command.startInConsole(project);
+        process = command.start((ProcessOutput output) -> {
+          if (output.getExitCode() != 0) {
+            final String message = (output.getStdout() + "\n" + output.getStderr()).trim();
+            FlutterConsoles.displayMessage(project, null, message, true);
+          }
+        }, null);
 
         try {
-          final boolean value = processHandler.waitFor();
-          if (value) {
+          final int resultCode = process.waitFor();
+          if (resultCode == 0) {
             installedDevTools = true;
           }
-          result.complete(value);
+          result.complete(resultCode == 0);
         }
-        catch (RuntimeException re) {
+        catch (RuntimeException | InterruptedException re) {
           if (!result.isDone()) {
             result.complete(false);
           }
         }
 
-        processHandler = null;
+        process = null;
       }
 
       @Override
       public void onCancel() {
-        if (processHandler != null && !processHandler.isProcessTerminated()) {
-          processHandler.destroyProcess();
+        if (process != null && process.isAlive()) {
+          process.destroy();
           if (!result.isDone()) {
             result.complete(false);
           }
@@ -158,6 +166,9 @@ class DevToolsInstance {
     Callback<DevToolsInstance> onClose
   ) {
     final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
+
+    // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
+    // focus away from the Run (or Debug) view.
     final OSProcessHandler processHandler = command.startInConsole(project);
 
     if (processHandler == null) {
@@ -170,7 +181,7 @@ class DevToolsInstance {
         final String text = event.getText().trim();
 
         if (text.startsWith("{") && text.endsWith("}")) {
-          // {"method":"server.started","params":{"host":"127.0.0.1","port":9100}}
+          // {"event":"server.started","params":{"host":"127.0.0.1","port":9100}}
 
           try {
             final JsonParser jsonParser = new JsonParser();

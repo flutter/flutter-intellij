@@ -27,8 +27,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
-import io.flutter.bazel.Workspace;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -53,17 +53,22 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myReportUsageInformationCheckBox;
   private JLabel myPrivacyPolicy;
   private JCheckBox myHotReloadOnSaveCheckBox;
+  private JCheckBox myHotReloadIgnoreErrorCheckBox;
   private JCheckBox myEnableVerboseLoggingCheckBox;
   private JCheckBox myOpenInspectorOnAppLaunchCheckBox;
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
-  private JCheckBox myShowPreviewAreaCheckBox;
-  private JCheckBox myShowHeapDisplayCheckBox;
-  private JCheckBox myLegacyTrackWidgetCreationCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
-  private JCheckBox myDisableMemoryProfilerCheckBox;
+  private JCheckBox myUseBazelByDefaultCheckBox;
+
+  // Settings for UI as Code experiments:
+  private JCheckBox myShowBuildMethodGuides;
+  private JCheckBox myShowMultipleChildrenGuides;
+  private JCheckBox myShowBuildMethodsOnScrollbar;
+  private JCheckBox myDisableDartClosingLabels;
+
   private final @NotNull Project myProject;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
@@ -101,8 +106,19 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       }
     });
 
-    myFormatCodeOnSaveCheckBox
-      .addChangeListener((e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+    myHotReloadOnSaveCheckBox.addChangeListener(
+      (e) -> myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected()));
+    myFormatCodeOnSaveCheckBox.addChangeListener(
+      (e) -> myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected()));
+
+    // These options are only enabled if build method guides are enabled as the
+    // same class handles all these cases.
+    myShowBuildMethodGuides.addChangeListener((e) -> {
+      myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
+      myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+      myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
+    });
+
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
   }
 
@@ -147,6 +163,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isReloadWithError() != myHotReloadIgnoreErrorCheckBox.isSelected()) {
+      return true;
+    }
+
+
     if (settings.isFormatCodeOnSave() != myFormatCodeOnSaveCheckBox.isSelected()) {
       return true;
     }
@@ -155,7 +176,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isShowPreviewArea() != myShowPreviewAreaCheckBox.isSelected()) {
+    if (settings.isShowBuildMethodGuides() != myShowBuildMethodGuides.isSelected()) {
+      return true;
+    }
+    if (settings.isShowMultipleChildrenGuides() != myShowMultipleChildrenGuides.isSelected()) {
+      return true;
+    }
+
+    if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
+      return true;
+    }
+    if (settings.isDisableDartClosingLabels() != myDisableDartClosingLabels.isSelected()) {
       return true;
     }
 
@@ -164,10 +195,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
 
     if (settings.isOpenInspectorOnAppLaunch() != myOpenInspectorOnAppLaunchCheckBox.isSelected()) {
-      return true;
-    }
-
-    if (settings.isLegacyTrackWidgetCreation() != myLegacyTrackWidgetCreationCheckBox.isSelected()) {
       return true;
     }
 
@@ -183,7 +210,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isMemoryProfilerDisabled() != myDisableMemoryProfilerCheckBox.isSelected()) {
+    //noinspection RedundantIfStatement
+    if (settings.shouldUseBazel() != myUseBazelByDefaultCheckBox.isSelected()) {
       return true;
     }
 
@@ -209,16 +237,20 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     settings.setReloadOnSave(myHotReloadOnSaveCheckBox.isSelected());
+    settings.setReloadWithError(myHotReloadIgnoreErrorCheckBox.isSelected());
     settings.setFormatCodeOnSave(myFormatCodeOnSaveCheckBox.isSelected());
     settings.setOrganizeImportsOnSaveKey(myOrganizeImportsOnSaveCheckBox.isSelected());
-    settings.setShowPreviewArea(myShowPreviewAreaCheckBox.isSelected());
+
+    settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
+    settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
+    settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
+    settings.setDisableDartClosingLabels(myDisableDartClosingLabels.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
-    settings.setLegacyTrackWidgetCreation(myLegacyTrackWidgetCreationCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
-    settings.setMemoryProfilerDisabled(myDisableMemoryProfilerCheckBox.isSelected());
+    settings.setShouldUseBazel(myUseBazelByDefaultCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -239,18 +271,34 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     final FlutterSettings settings = FlutterSettings.getInstance();
     myHotReloadOnSaveCheckBox.setSelected(settings.isReloadOnSave());
+    myHotReloadIgnoreErrorCheckBox.setSelected(settings.isReloadWithError());
     myFormatCodeOnSaveCheckBox.setSelected(settings.isFormatCodeOnSave());
     myOrganizeImportsOnSaveCheckBox.setSelected(settings.isOrganizeImportsOnSaveKey());
-    myShowPreviewAreaCheckBox.setSelected(settings.isShowPreviewArea());
+
+    myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
+    myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
+    myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
+    myDisableDartClosingLabels.setSelected(settings.isDisableDartClosingLabels());
+
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
-    myLegacyTrackWidgetCreationCheckBox.setSelected(settings.isLegacyTrackWidgetCreation());
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
     mySyncAndroidLibrariesCheckBox.setSelected(settings.isSyncingAndroidLibraries());
-    myDisableMemoryProfilerCheckBox.setSelected(settings.isMemoryProfilerDisabled());
+
+    myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
+
+    myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
+    // We only show the bazel by default checkbox inside of a bazel project.
+    myUseBazelByDefaultCheckBox.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
 
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
+
+    // These options are only enabled if build method guides are enabled as the
+    // same class handles all these cases.
+    myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
+    myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+    myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
   }
 
   private void onVersionChanged() {
@@ -261,8 +309,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     }
     final ModalityState modalityState = ModalityState.current();
 
-    boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
-    myLegacyTrackWidgetCreationCheckBox.setVisible(!trackWidgetCreationRecommended);
+    final boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
     myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
     sdk.flutterVersion().start((ProcessOutput output) -> {
@@ -281,7 +328,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null) {
       myVersionLabel.setText("");
-    } else {
+    }
+    else {
       myVersionLabel.setText(value);
     }
   }

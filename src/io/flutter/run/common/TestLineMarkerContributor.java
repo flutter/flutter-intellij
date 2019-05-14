@@ -85,7 +85,7 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
         final Map<String, TestStateStorage.Record> tests =
           storage.getRecentTests(SCANNED_TEST_RESULT_LIMIT, getSinceDate());
         if (tests != null) {
-          //TODO(pq): investigate performance implications.
+          // TODO(pq): investigate performance implications.
           for (Map.Entry<String, TestStateStorage.Record> entry : tests.entrySet()) {
             if (entry.getKey().startsWith(testLocationPrefix)) {
               final TestStateStorage.Record state = entry.getValue();

@@ -120,17 +120,7 @@ public class LaunchState extends CommandLineState {
 
     final Project project = getEnvironment().getProject();
     @Nullable FlutterDevice device = DeviceService.getInstance(project).getSelectedDevice();
-
-    boolean isFlutterWeb = false;
-    final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
-    if (filePath != null) {
-      final MainFile main = MainFile.verify(filePath, project).get();
-      final PubRoot root = PubRoot.forDirectory(main.getAppDir());
-      if (root != null) {
-        isFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
-      }
-    }
-
+    final boolean isFlutterWeb = isFlutterWeb(project);
     // Flutter web does not yet support devices.
     if (isFlutterWeb) {
       device = null;
@@ -189,6 +179,26 @@ public class LaunchState extends CommandLineState {
     else {
       return new RunContentBuilder(result, env).showRunContent(env.getContentToReuse());
     }
+  }
+
+  private boolean isFlutterWeb(Project project) {
+    boolean isFlutterWeb = false;
+
+    // Checks if this is a pub-based project.
+    // TODO(djshuckerow): Refactor out pub-specific logic and provide bazel support.
+    if (SdkRunConfig.class.isAssignableFrom(runConfig.getClass())) {
+
+      final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
+
+      if (filePath != null) {
+        final MainFile main = MainFile.verify(filePath, project).get();
+        final PubRoot root = PubRoot.forDirectory(main.getAppDir());
+        if (root != null) {
+          isFlutterWeb = FlutterUtils.declaresFlutterWeb(root.getPubspec());
+        }
+      }
+    }
+    return isFlutterWeb;
   }
 
   private static Class classForName(String className) {

@@ -290,6 +290,9 @@
     <projectService serviceInterface="io.flutter.devtools.DevToolsManager"
                     serviceImplementation="io.flutter.devtools.DevToolsManager"
                     overrides="false"/>
+    <projectService serviceInterface="io.flutter.devtools.WebDevManager"
+                    serviceImplementation="io.flutter.devtools.WebDevManager"
+                    overrides="false"/>
 
     <iconProvider implementation="io.flutter.project.FlutterIconProvider" order="first"/>
 
@@ -301,6 +304,12 @@
     <additionalTextAttributes scheme="Default" file="colorSchemes/FlutterCodeColorSchemeDefault.xml"/>
     <search.optionContributor implementation="io.flutter.sdk.FlutterSearchableOptionContributor"/>
   </extensions>
+
+  <project-components>
+    <component>
+      <implementation-class>io.flutter.editor.WidgetIndentsHighlightingPassFactory</implementation-class>
+    </component>
+  </project-components>
 
   <!-- Dart Plugin extensions -->
   <extensions defaultExtensionNs="Dart">

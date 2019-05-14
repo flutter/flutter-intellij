@@ -24,7 +24,7 @@ public class FlutterRunNotifications {
   public static void init(@NotNull Project project) {
     // Initialize the flutter run notification group.
     NotificationsConfiguration.getNotificationsConfiguration().register(
-      FlutterMessages.FLUTTER_NOTIFICATION_GOUP_ID,
+      FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
       NotificationDisplayType.BALLOON,
       false);
 
@@ -52,7 +52,7 @@ public class FlutterRunNotifications {
       properties.setValue(RELOAD_ALREADY_RUN, true);
 
       final Notification notification = new Notification(
-        FlutterMessages.FLUTTER_NOTIFICATION_GOUP_ID,
+        FlutterMessages.FLUTTER_NOTIFICATION_GROUP_ID,
         FlutterBundle.message("flutter.reload.firstRun.title"),
         FlutterBundle.message("flutter.reload.firstRun.content"),
         NotificationType.INFORMATION);
