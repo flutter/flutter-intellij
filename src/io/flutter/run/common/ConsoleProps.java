@@ -28,16 +28,23 @@ import org.jetbrains.annotations.Nullable;
  * In particular, configures how it parses test events and handles the re-run action.
  */
 public class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustomMessagesParsing {
-  /**Name of the {@code testFrameworkName}passed to the {@link ConsoleProps} constructor for Pub-based consoles.*/
+  /**
+   * Name of the {@code testFrameworkName}passed to the {@link ConsoleProps} constructor for Pub-based consoles.
+   */
   public static String pubFrameworkName = "FlutterTestRunner";
 
-  /**Name of the {@code testFrameworkName}passed to the {@link ConsoleProps} constructor for Bazel-based consoles..*/
+  /**
+   * Name of the {@code testFrameworkName}passed to the {@link ConsoleProps} constructor for Bazel-based consoles..
+   */
   public static String bazelFrameworkName = "FlutterBazelTestRunner";
 
   @NotNull
   private final DartUrlResolver resolver;
 
-  private ConsoleProps(@NotNull RunConfiguration config, @NotNull Executor exec, @NotNull DartUrlResolver resolver, String testFrameworkName) {
+  private ConsoleProps(@NotNull RunConfiguration config,
+                       @NotNull Executor exec,
+                       @NotNull DartUrlResolver resolver,
+                       String testFrameworkName) {
     super(config, "FlutterTestRunner", exec);
     this.resolver = resolver;
     setUsePredefinedMessageFilter(false);
@@ -48,11 +55,9 @@ public class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustom
     return new ConsoleProps(config, exec, resolver, pubFrameworkName);
   }
 
-
   public static ConsoleProps forBazel(@NotNull BazelTestConfig config, @NotNull Executor exec, @NotNull DartUrlResolver resolver) {
     return new ConsoleProps(config, exec, resolver, bazelFrameworkName);
   }
-
 
   @Nullable
   @Override

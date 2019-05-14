@@ -369,6 +369,7 @@ public class BazelTestFields {
     static String machine = "--machine";
 
     // Don't allow construction of this class.
-    private Flags() {}
+    private Flags() {
+    }
   }
 }
