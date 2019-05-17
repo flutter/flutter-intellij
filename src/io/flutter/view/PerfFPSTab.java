@@ -8,12 +8,13 @@ package io.flutter.view;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.openapi.wm.ToolWindow;
-import com.intellij.ui.ScrollPaneFactory;
 import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBPanel;
+import com.intellij.ui.components.labels.LinkLabel;
 import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.FrameRenderingDisplay;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.FlutterFramesMonitor;
@@ -24,8 +25,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-// TODO(devoncarew): have an 'open in devtools' UI
 
 public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
   private static final NumberFormat fpsFormat = new DecimalFormat();
@@ -75,19 +74,32 @@ public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
     frameRenderingPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Frame rendering time"));
 
     // Performance settings
-    final JPanel perfSettings = new JPanel(new VerticalLayout(5));
-    perfSettings.add(showPerfOverlay.getComponent());
-    perfSettings.add(showRepaintRainbow.getComponent());
+    final JPanel leftPanel = new JPanel(new VerticalLayout(5));
+    leftPanel.add(showPerfOverlay.getComponent());
+    leftPanel.add(showRepaintRainbow.getComponent());
+    final JPanel rightPanel = new JPanel(new VerticalLayout(5));
+    final LinkLabel openDevtools = new LinkLabel("Open in DevTools", null);
+    //noinspection unchecked
+    openDevtools.setListener((linkLabel, data) -> openInDevTools(), null);
+    rightPanel.add(openDevtools);
+    final JPanel perfSettings = new JPanel(new BorderLayout());
+    perfSettings.add(leftPanel, BorderLayout.WEST);
+    perfSettings.add(rightPanel, BorderLayout.EAST);
     perfSettings.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Framework settings"));
 
     final JBPanel generalPerfPanel = new JBPanel(new BorderLayout());
     generalPerfPanel.add(perfSettings, BorderLayout.NORTH);
     generalPerfPanel.add(frameRenderingPanel, BorderLayout.CENTER);
 
-    final JBPanel leftColumn = new JBPanel(new BorderLayout());
-    leftColumn.add(ScrollPaneFactory.createScrollPane(generalPerfPanel), BorderLayout.CENTER);
+    add(generalPerfPanel, BorderLayout.CENTER);
+  }
 
-    add(leftColumn, BorderLayout.CENTER);
+  private void openInDevTools() {
+    // open the timeline view
+    DevToolsManager.getInstance(app.getProject()).openBrowserAndConnect(
+      app.getConnector().getBrowserUrl(),
+      "timeline"
+    );
   }
 
   @Override

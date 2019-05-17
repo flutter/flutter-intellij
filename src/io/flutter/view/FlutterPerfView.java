@@ -187,10 +187,7 @@ public class FlutterPerfView implements Disposable {
 
     final JLabel runModeLabel = new JBLabel("Run mode: " + app.getLaunchMode());
     runModeLabel.setVerticalAlignment(SwingConstants.TOP);
-    labels.add(
-      runModeLabel,
-      BorderLayout.WEST
-    );
+    labels.add(runModeLabel, BorderLayout.WEST);
 
     if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
       final JBLabel label =
