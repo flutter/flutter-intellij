@@ -27,12 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class HeapDisplay extends JPanel {
-  static final int PANEL_HEIGHT = 100;
-
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new BorderLayout());
-    panel.setPreferredSize(new Dimension(-1, PANEL_HEIGHT));
-    panel.setMaximumSize(new Dimension(Short.MAX_VALUE, HeapDisplay.PANEL_HEIGHT));
 
     final JBLabel rssLabel = new JBLabel();
     rssLabel.setAlignmentY(Component.BOTTOM_ALIGNMENT);

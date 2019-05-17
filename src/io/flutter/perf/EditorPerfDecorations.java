@@ -27,7 +27,6 @@ import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.AsyncUtils;
 import io.flutter.view.FlutterPerfView;
-import io.flutter.view.InspectorPerfTab;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -359,7 +358,7 @@ class PerfGutterIconRenderer extends GutterIconRenderer {
 
   private void showPerfViewMessage() {
     final FlutterPerfView flutterPerfView = ServiceManager.getService(getApp().getProject(), FlutterPerfView.class);
-    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(getApp());
+    flutterPerfView.showForAppRebuildCounts(getApp());
     String message = "<html><body>" +
                      getTooltipHtmlFragment() +
                      "</body></html>";

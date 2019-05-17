@@ -116,16 +116,20 @@ public class DevToolsManager {
   }
 
   public void openBrowser() {
-    openBrowserImpl(null);
+    openBrowserImpl(null, null);
   }
 
   public void openBrowserAndConnect(String uri) {
-    openBrowserImpl(uri);
+    openBrowserAndConnect(uri, null);
   }
 
-  private void openBrowserImpl(String uri) {
+  public void openBrowserAndConnect(String uri, String page) {
+    openBrowserImpl(uri, page);
+  }
+
+  private void openBrowserImpl(String uri, String page) {
     if (devToolsInstance != null) {
-      devToolsInstance.openBrowserAndConnect(uri);
+      devToolsInstance.openBrowserAndConnect(uri, page);
       return;
     }
 
@@ -143,7 +147,7 @@ public class DevToolsManager {
     DevToolsInstance.startServer(project, sdk, pubRoots.get(0), instance -> {
       devToolsInstance = instance;
 
-      devToolsInstance.openBrowserAndConnect(uri);
+      devToolsInstance.openBrowserAndConnect(uri, page);
     }, instance -> {
       // Listen for closing, null out the devToolsInstance.
       devToolsInstance = null;
@@ -222,15 +226,17 @@ class DevToolsInstance {
     this.devtoolsPort = devtoolsPort;
   }
 
-  public void openBrowserAndConnect(String serviceProtocolUri) {
+  public void openBrowserAndConnect(String serviceProtocolUri, String page) {
     if (serviceProtocolUri == null) {
       BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
     }
     else {
       try {
         final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
+        final String pageParam = page == null ? "" : ("#" + page);
+
         BrowserLauncher.getInstance().browse(
-          "http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&uri=" + urlParam,
+          "http://" + devtoolsHost + ":" + devtoolsPort + "/?uri=" + urlParam + pageParam,
           null
         );
       }

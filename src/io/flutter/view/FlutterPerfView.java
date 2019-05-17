@@ -21,16 +21,19 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.openapi.wm.ex.ToolWindowManagerEx;
 import com.intellij.ui.IdeBorderFactory;
+import com.intellij.ui.JBColor;
 import com.intellij.ui.SideBorder;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.ui.components.panels.VerticalLayout;
 import com.intellij.ui.content.Content;
 import com.intellij.ui.content.ContentManager;
 import com.intellij.ui.tabs.TabInfo;
+import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterInitializer;
-import io.flutter.FlutterUtils;
+import io.flutter.run.FlutterLaunchMode;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.run.daemon.FlutterDevice;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -46,12 +49,12 @@ import java.util.Map;
 
 public class FlutterPerfView implements Disposable {
   public static final String TOOL_WINDOW_ID = "Flutter Performance";
-  public static final String PERFORMANCE_TAB_LABEL = "Performance";
-  public static final String MEMORY_TAB_LABEL = "Memory";
+
+  private static final String PERFORMANCE_TAB_LABEL = "Frame times";
+  private static final String MEMORY_TAB_LABEL = "Memory usage";
+  private static final String REBUILD_STATS_TAB_LABEL = "Widget rebuild stats";
 
   private static final Logger LOG = Logger.getInstance(FlutterPerfView.class);
-
-  private boolean previouslyVisible = false;
 
   @NotNull
   private final Project myProject;
@@ -86,16 +89,6 @@ public class FlutterPerfView implements Disposable {
     }
   }
 
-  private void updateToolWindowVisibility(ToolWindow toolWindow) {
-    if (toolWindow.isVisible()) {
-      return;
-    }
-
-    if (previouslyVisible) {
-      toolWindow.show(null);
-    }
-  }
-
   void debugActive(@NotNull FlutterViewMessages.FlutterDebugEvent event) {
     final FlutterApp app = event.app;
     final ToolWindowManager toolWindowManager = ToolWindowManager.getInstance(myProject);
@@ -108,13 +101,8 @@ public class FlutterPerfView implements Disposable {
       return;
     }
 
-    if (toolWindow.isAvailable()) {
-      updateToolWindowVisibility(toolWindow);
-    }
-    else {
-      toolWindow.setAvailable(true, () -> {
-        updateToolWindowVisibility(toolWindow);
-      });
+    if (!toolWindow.isAvailable()) {
+      toolWindow.setAvailable(true, null);
     }
 
     addPerformanceViewContent(app, toolWindow);
@@ -143,12 +131,6 @@ public class FlutterPerfView implements Disposable {
           if (perAppViewState.isEmpty()) {
             // No more applications are running.
             updateForEmptyContent(toolWindow);
-            if (toolWindow.isAvailable()) {
-              // Store whether the tool window was visible before we decided to close it
-              // because it had no content.
-              previouslyVisible = toolWindow.isVisible();
-              toolWindow.setAvailable(false, null);
-            }
           }
         });
       }
@@ -197,6 +179,31 @@ public class FlutterPerfView implements Disposable {
     toolbarComponent.setBorder(IdeBorderFactory.createBorder(SideBorder.BOTTOM));
     tabContainer.add(toolbarComponent, BorderLayout.NORTH);
 
+    final JPanel footer = new JPanel(new VerticalLayout(0));
+    footer.setBorder(JBUI.Borders.empty(0, 5));
+    footer.add(new JSeparator());
+    final JPanel labels = new JPanel(new BorderLayout(6, 0));
+    labels.setBorder(JBUI.Borders.empty(3, 0));
+
+    final JLabel runModeLabel = new JBLabel("Run mode: " + app.getLaunchMode());
+    runModeLabel.setVerticalAlignment(SwingConstants.TOP);
+    labels.add(runModeLabel, BorderLayout.WEST);
+
+    if (app.getLaunchMode() == FlutterLaunchMode.DEBUG) {
+      final JBLabel label =
+        new JBLabel("<html><body>(debug mode frame rendering times are not indicative of release mode performance)</body></html>");
+      label.setForeground(JBColor.RED);
+      labels.add(label, BorderLayout.CENTER);
+    }
+
+    // We have to set the minimum size to make "Split Mode" work well. Otherwise, this tab will
+    // require the majority of the IntelliJ window width largely due to the long warning message
+    // about running in debug mode.
+    footer.setMinimumSize(new Dimension(0, 0));
+
+    footer.add(labels);
+    tabContainer.add(footer, BorderLayout.SOUTH);
+
     final boolean debugConnectionAvailable = app.getLaunchMode().supportsDebugConnection();
     final boolean isInProfileMode = app.getMode().isProfiling() || app.getLaunchMode().isProfiling();
 
@@ -204,11 +211,9 @@ public class FlutterPerfView implements Disposable {
     if (debugConnectionAvailable) {
       state.disposable = Disposer.newDisposable();
 
-      addPerformanceTab(runnerTabs, app, toolWindow, true);
-
-      if (FlutterUtils.isAndroidStudio()) {
-        addMemoryTab(runnerTabs, app, false, state);
-      }
+      addFPSTab(runnerTabs, app, toolWindow, true);
+      addMemoryTab(runnerTabs, app, state);
+      addWidgetRebuildsTab(runnerTabs, app, state);
 
       // If in profile mode, auto-open the performance tool window.
       if (isInProfileMode) {
@@ -243,11 +248,11 @@ public class FlutterPerfView implements Disposable {
     return action;
   }
 
-  private void addPerformanceTab(JBRunnerTabs runnerTabs,
-                                 FlutterApp app,
-                                 ToolWindow toolWindow,
-                                 boolean selectedTab) {
-    final InspectorPerfTab perfTab = new InspectorPerfTab(runnerTabs, app, toolWindow);
+  private void addFPSTab(JBRunnerTabs runnerTabs,
+                         FlutterApp app,
+                         ToolWindow toolWindow,
+                         boolean selectedTab) {
+    final PerfFPSTab perfTab = new PerfFPSTab(runnerTabs, app, toolWindow);
     final TabInfo tabInfo = new TabInfo(perfTab)
       .append(PERFORMANCE_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
@@ -258,15 +263,20 @@ public class FlutterPerfView implements Disposable {
 
   private void addMemoryTab(JBRunnerTabs runnerTabs,
                             FlutterApp app,
-                            boolean selectedTab,
                             PerfViewAppState state) {
-    final InspectorMemoryTab memoryTab = new InspectorMemoryTab(state.disposable, app);
+    final PerfMemoryTab memoryTab = new PerfMemoryTab(state.disposable, app);
     final TabInfo tabInfo = new TabInfo(memoryTab)
       .append(MEMORY_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
     runnerTabs.addTab(tabInfo);
-    if (selectedTab) {
-      runnerTabs.select(tabInfo, false);
-    }
+  }
+
+  private void addWidgetRebuildsTab(JBRunnerTabs runnerTabs,
+                                    FlutterApp app,
+                                    PerfViewAppState state) {
+    final PerfWidgetRebuildsTab tab = new PerfWidgetRebuildsTab(state.disposable, app);
+    final TabInfo tabInfo = new TabInfo(tab)
+      .append(REBUILD_STATS_TAB_LABEL, SimpleTextAttributes.REGULAR_ATTRIBUTES);
+    runnerTabs.addTab(tabInfo);
   }
 
   private ActionCallback onTabSelectionChange(TabInfo info, boolean requestFocus, @NotNull ActiveRunnable doChangeSelection) {
@@ -291,20 +301,28 @@ public class FlutterPerfView implements Disposable {
     return doChangeSelection.run();
   }
 
-  public InspectorPerfTab showPerfTab(@NotNull FlutterApp app) {
+  public void showForApp(@NotNull FlutterApp app) {
+    final PerfViewAppState appState = perAppViewState.get(app);
+    if (appState != null) {
+      final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
+      toolWindow.getContentManager().setSelectedContent(appState.content);
+    }
+  }
+
+
+  public void showForAppRebuildCounts(@NotNull FlutterApp app) {
     final PerfViewAppState appState = perAppViewState.get(app);
     if (appState != null) {
       final ToolWindow toolWindow = ToolWindowManager.getInstance(myProject).getToolWindow(TOOL_WINDOW_ID);
 
       toolWindow.getContentManager().setSelectedContent(appState.content);
+
       for (TabInfo tabInfo : appState.tabs.getTabs()) {
-        if (tabInfo.getComponent() instanceof InspectorPerfTab) {
+        if (tabInfo.getComponent() instanceof PerfWidgetRebuildsTab) {
           appState.tabs.select(tabInfo, true);
-          return (InspectorPerfTab)tabInfo.getComponent();
         }
       }
     }
-    return null;
   }
 
   private void onAppChanged(FlutterApp app) {
