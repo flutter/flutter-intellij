@@ -380,12 +380,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final ToolWindowManagerEx toolWindowManager = ToolWindowManagerEx.getInstanceEx(myProject);
     final ToolWindow flutterPerfToolWindow = toolWindowManager.getToolWindow(FlutterPerfView.TOOL_WINDOW_ID);
     final FlutterPerfView flutterPerfView = ServiceManager.getService(myProject, FlutterPerfView.class);
-    final InspectorPerfTab inspectorPerfTab = flutterPerfView.showPerfTab(app);
-    if (flutterPerfToolWindow.isVisible()) {
-      inspectorPerfTab.setVisibleToUser(true);
-      return;
-    }
-    flutterPerfToolWindow.show(() -> inspectorPerfTab.setVisibleToUser(true));
+    flutterPerfToolWindow.show(() -> flutterPerfView.showForApp(app));
   }
 
   /**

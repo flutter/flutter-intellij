@@ -19,8 +19,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Path2D;
 import java.text.DecimalFormat;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class FrameRenderingDisplay {
   static final DecimalFormat df = new DecimalFormat();
@@ -34,8 +34,6 @@ public class FrameRenderingDisplay {
   public static JPanel createJPanelView(Disposable parentDisposable, FlutterApp app) {
     final JPanel panel = new JPanel(new StackLayout());
     panel.setDoubleBuffered(true);
-    panel.setPreferredSize(new Dimension(-1, HeapDisplay.PANEL_HEIGHT));
-    panel.setMaximumSize(new Dimension(Short.MAX_VALUE, Short.MAX_VALUE));
 
     assert app.getVMServiceManager() != null;
     final FlutterFramesMonitor flutterFramesMonitor = app.getVMServiceManager().getFlutterFramesMonitor();

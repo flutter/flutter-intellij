@@ -29,9 +29,6 @@ public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
     setLayout(new BorderLayout());
     setBorder(JBUI.Borders.empty(3));
 
-    // todo: is this necessary?
-    app.getVMServiceManager().addPollingClient();
-
     final JPanel memoryPanel = new JPanel(new BorderLayout());
     final JPanel heapDisplay = HeapDisplay.createJPanelView(parentDisposable, app);
     memoryPanel.add(heapDisplay, BorderLayout.CENTER);
@@ -41,15 +38,16 @@ public class PerfMemoryTab extends JBPanel implements InspectorTabPanel {
   }
 
   @Override
-  public void finalize() {
-    // Done collecting for the memory profiler - if this instance is GC'd.
-    assert app.getVMServiceManager() != null;
-
-    // TODO: ???
-    app.getVMServiceManager().removePollingClient();
-  }
-
-  @Override
   public void setVisibleToUser(boolean visible) {
+    if (app.getVMServiceManager() == null) {
+      return;
+    }
+
+    if (visible) {
+      app.getVMServiceManager().addPollingClient();
+    }
+    else {
+      app.getVMServiceManager().removePollingClient();
+    }
   }
 }

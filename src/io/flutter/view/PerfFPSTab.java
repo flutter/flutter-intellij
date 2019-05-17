@@ -92,13 +92,5 @@ public class PerfFPSTab extends JBPanel implements InspectorTabPanel {
 
   @Override
   public void setVisibleToUser(boolean visible) {
-    assert app.getVMServiceManager() != null;
-
-    if (visible) {
-      app.getVMServiceManager().addPollingClient();
-    }
-    else {
-      app.getVMServiceManager().removePollingClient();
-    }
   }
 }

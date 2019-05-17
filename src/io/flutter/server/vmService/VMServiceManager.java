@@ -240,7 +240,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     final String kind = event.getExtensionKind();
 
     if (event.getKind() == EventKind.Extension) {
-      switch(kind) {
+      switch (kind) {
         case "Flutter.FirstFrame":
         case "Flutter.Frame":
           // Track whether we have received the first frame event and add pending service extensions if we have.
@@ -295,9 +295,11 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
     if (enabledValue instanceof Boolean) {
       return valueFromJson.equals("true");
-    } else if (enabledValue instanceof Double) {
+    }
+    else if (enabledValue instanceof Double) {
       return Double.valueOf(valueFromJson);
-    } else {
+    }
+    else {
       return valueFromJson;
     }
   }
@@ -379,7 +381,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     });
   }
 
-  private void maybeRestoreExtension(String name, Object value)  {
+  private void maybeRestoreExtension(String name, Object value) {
     if (value.equals(ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue())) {
       setServiceExtensionState(name, true, value);
     }
