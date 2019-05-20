@@ -205,13 +205,13 @@ public class BazelTestFields {
       commandLine.addParameter(testArgsTokenizer.nextToken());
     }
 
-    commandLine.addParameter("--no-color");
+    commandLine.addParameter(Flags.noColor);
     final String relativeEntryFilePath = entryFile == null
                                          ? null
                                          : FileUtil.getRelativePath(workspace.getRoot().getPath(), entryFile, '/');
     switch (getScope(project)) {
       case NAME:
-        commandLine.addParameters("--name", testName);
+        commandLine.addParameters(Flags.name, testName);
         commandLine.addParameter(relativeEntryFilePath);
         break;
       case FILE:
@@ -224,7 +224,7 @@ public class BazelTestFields {
 
 
     if (mode == RunMode.DEBUG) {
-      commandLine.addParameters("--", "--enable-debugging");
+      commandLine.addParameters(Flags.separator, Flags.enableDebugging);
     }
     return commandLine;
   }
@@ -337,5 +337,39 @@ public class BazelTestFields {
     }
 
     public abstract void checkRunnable(@NotNull BazelTestFields fields, @NotNull Project project) throws RuntimeConfigurationError;
+  }
+
+  /**
+   * Flags and options that we pass on to the flutter runner or pay special attention to.
+   */
+  final static class Flags {
+    /**
+     * Flag passed to the test runner script.  Tells it to display results without any special text coloring.
+     */
+    static String noColor = "--no-color";
+
+    /**
+     * Option passed to the test runner script.  Tells it to only run tests matching a given name.
+     */
+    static String name = "--name";
+
+    /**
+     * Flag passed to the bazel test runner.  Tells it to allow the debugger to attach to the tests.
+     */
+    static String enableDebugging = "--enable-debugging";
+
+    /**
+     * Separator between groups of flags.  This distinguishes bazel args from additional args.
+     */
+    static String separator = "--";
+
+    /**
+     * Option passed to the bazel test runner.  Tells it to report test status in machine-readable JSON to show results in the UI.
+     */
+    static String machine = "--machine";
+
+    // Don't allow construction of this class.
+    private Flags() {
+    }
   }
 }

@@ -12,13 +12,7 @@ import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.runners.ExecutionEnvironment;
-import com.intellij.execution.testframework.TestConsoleProperties;
-import com.intellij.execution.testframework.actions.AbstractRerunFailedTestsAction;
-import com.intellij.execution.testframework.sm.SMCustomMessagesParsing;
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil;
-import com.intellij.execution.testframework.sm.runner.OutputToGeneralTestEventsConverter;
-import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties;
-import com.intellij.execution.testframework.sm.runner.SMTestLocator;
 import com.intellij.execution.testframework.ui.BaseTestsOutputConsoleView;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.openapi.module.Module;
@@ -30,6 +24,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import io.flutter.FlutterBundle;
 import io.flutter.console.FlutterConsoleFilter;
 import io.flutter.pub.PubRoot;
+import io.flutter.run.common.ConsoleProps;
 import io.flutter.run.daemon.DaemonConsoleView;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterCommandStartResult;
@@ -116,8 +111,8 @@ class TestLaunchState extends CommandLineState {
     // Create a console showing a test tree.
     final Project project = getEnvironment().getProject();
     final DartUrlResolver resolver = DartUrlResolver.getInstance(project, testFileOrDir);
-    final ConsoleProps props = new ConsoleProps(config, executor, resolver);
-    final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole("FlutterTestRunner", props);
+    final ConsoleProps props = ConsoleProps.forPub(config, executor, resolver);
+    final BaseTestsOutputConsoleView console = SMTestRunnerConnectionUtil.createConsole(ConsoleProps.pubFrameworkName, props);
     final Module module = ModuleUtil.findModuleForFile(testFileOrDir, project);
     if (module != null) {
       console.addMessageFilter(new FlutterConsoleFilter(module));
@@ -148,40 +143,5 @@ class TestLaunchState extends CommandLineState {
   @NotNull
   PubRoot getPubRoot() {
     return pubRoot;
-  }
-
-  /**
-   * Configuration for the test console.
-   * <p>
-   * In particular, configures how it parses test events and handles the re-run action.
-   */
-  private static class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustomMessagesParsing {
-    @NotNull
-    private final DartUrlResolver resolver;
-
-    public ConsoleProps(@NotNull TestConfig config, @NotNull Executor exec, @NotNull DartUrlResolver resolver) {
-      super(config, "FlutterTestRunner", exec);
-      this.resolver = resolver;
-      setUsePredefinedMessageFilter(false);
-      setIdBasedTestTree(true);
-    }
-
-    @Nullable
-    @Override
-    public SMTestLocator getTestLocator() {
-      return FlutterTestLocationProvider.INSTANCE;
-    }
-
-    @Override
-    public OutputToGeneralTestEventsConverter createTestEventsConverter(@NotNull String testFrameworkName,
-                                                                        @NotNull TestConsoleProperties props) {
-      return new FlutterTestEventsConverter(testFrameworkName, props, resolver);
-    }
-
-    @Nullable
-    @Override
-    public AbstractRerunFailedTestsAction createRerunFailedTestsAction(ConsoleView consoleView) {
-      return null; // TODO(skybrian) implement
-    }
   }
 }
