@@ -16,6 +16,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
+import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -197,7 +198,18 @@ class DeviceDaemon {
                        Consumer<String> processStopped) throws ExecutionException {
       final int daemonId = nextDaemonId.incrementAndGet();
       LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
-      final ProcessHandler process = new OSProcessHandler(toCommandLine());
+      final ProcessHandler process = new OSProcessHandler(toCommandLine()) {
+        /**
+         * Return BaseOutputReader.Options.forMostlySilentProcess() in order to reduce cpu usage
+         * of the device daemon process (this also address a log message in the IntelliJ log).
+         */
+        @NotNull
+        @Override
+        protected BaseOutputReader.Options readerOptions() {
+          return BaseOutputReader.Options.forMostlySilentProcess();
+        }
+      };
+
       boolean succeeded = false;
       try {
         final AtomicReference<ImmutableList<FlutterDevice>> devices = new AtomicReference<>(ImmutableList.of());
