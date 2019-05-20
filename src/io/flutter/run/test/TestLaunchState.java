@@ -144,6 +144,4 @@ class TestLaunchState extends CommandLineState {
   PubRoot getPubRoot() {
     return pubRoot;
   }
-
-
 }

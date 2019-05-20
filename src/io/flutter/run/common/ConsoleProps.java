@@ -74,6 +74,7 @@ public class ConsoleProps extends SMTRunnerConsoleProperties implements SMCustom
   @Nullable
   @Override
   public AbstractRerunFailedTestsAction createRerunFailedTestsAction(ConsoleView consoleView) {
-    return null; // TODO(skybrian) implement
+    // TODO(github.com/flutter/flutter-intellij/issues/3504): Implement this.
+    return null;
   }
 }
