@@ -78,22 +78,22 @@ public class BazelTestFields {
    * Creates settings for running tests with the given name within a Dart file.
    */
   @NotNull
-  public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path) {
-    return new BazelTestFields(testName, path, null, null);
+  public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path,@Nullable String additionalArgs) {
+    return new BazelTestFields(testName, path, null, additionalArgs);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
-  public static BazelTestFields forFile(@NotNull String path) {
-    return new BazelTestFields(null, path, null, null);
+  public static BazelTestFields forFile(@NotNull String path, @Nullable String additionalArgs) {
+    return new BazelTestFields(null, path, null, additionalArgs);
   }
 
   /**
    * Creates settings for running all the tests in a Bazel target
    */
-  public static BazelTestFields forTarget(@NotNull String target) {
-    return new BazelTestFields(null, null, target, null);
+  public static BazelTestFields forTarget(@NotNull String target, @Nullable String additionalArgs) {
+    return new BazelTestFields(null, null, target, additionalArgs);
   }
 
 
@@ -239,6 +239,10 @@ public class BazelTestFields {
     if (!main.canLaunch()) {
       throw new RuntimeConfigurationError(main.getError());
     }
+  }
+
+  public boolean isWatchConfig() {
+    return getAdditionalArgs() != null && getAdditionalArgs().contains("--watch");
   }
 
 

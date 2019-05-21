@@ -9,8 +9,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.execution.actions.ConfigurationFromContext;
 import com.intellij.execution.actions.RunConfigurationProducer;
+import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Ref;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiDirectory;
 import com.intellij.psi.PsiElement;
@@ -30,7 +32,11 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   private final BazelTestConfigUtils bazelTestConfigUtils;
 
   protected BazelTestConfigProducer() {
-    super(FlutterBazelTestConfigurationType.getInstance());
+    this(FlutterBazelTestConfigurationType.getInstance().factory);
+  }
+
+  protected BazelTestConfigProducer(ConfigurationFactory factory) {
+    super(factory);
     bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
   }
 
@@ -83,7 +89,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(BazelTestFields.forTestName(testName, testFile.getPath()));
+    config.setFields(BazelTestFields.forTestName(testName, testFile.getPath(), config.getFields().getAdditionalArgs()));
     config.setGeneratedName();
     config.setName(file.getName() + " (" + testName + ")");
     return true;
@@ -93,7 +99,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(BazelTestFields.forFile(testFile.getPath()));
+    config.setFields(BazelTestFields.forFile(testFile.getPath(),config.getFields().getAdditionalArgs()));
     config.setName(file.getName());
 
     return true;
@@ -111,10 +117,14 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   }
 
   /**
-   * Returns true if a run config was already created for this file. If so we will reuse it.
+   * Called on existing run configurations to check if one has already been created for the given {@param context}.
+   *
+   * @return true if a run config was already created for this context. If so we will reuse it.
    */
   @Override
   public boolean isConfigurationFromContext(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context) {
+    if (!StringUtil.equals(getId(config), getConfigurationFactory().getId())) return false;
+
     final VirtualFile file = config.getFields().getFile();
     if (file == null) return false;
 
@@ -129,13 +139,16 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     if (config.getFields().getTestName() != null) {
       return testName != null && testName.equals(config.getFields().getTestName());
     }
-    else {
-      return testName == null;
-    }
+    return testName == null;
   }
 
   @Override
   public boolean shouldReplace(@NotNull ConfigurationFromContext self, @NotNull ConfigurationFromContext other) {
     return DartPlugin.isDartTestConfiguration(other.getConfigurationType());
+  }
+
+
+  private @NotNull String getId(BazelTestConfig config) {
+    return config.getFields().isWatchConfig() ? "Watch" : "No Watch";
   }
 }

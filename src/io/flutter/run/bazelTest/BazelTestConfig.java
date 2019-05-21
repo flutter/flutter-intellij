@@ -15,6 +15,7 @@ import com.intellij.openapi.util.InvalidDataException;
 import com.intellij.openapi.util.WriteExternalException;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The Bazel version of the {@link io.flutter.run.test.TestConfig}.
@@ -24,6 +25,7 @@ public class BazelTestConfig extends LocatableConfigurationBase {
 
   BazelTestConfig(@NotNull final Project project, @NotNull final ConfigurationFactory factory, @NotNull final String name) {
     super(project, factory, name);
+
     fields = new BazelTestFields(null, null, null, null);
   }
 
