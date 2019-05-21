@@ -121,7 +121,7 @@
             </constraints>
             <properties>
               <text resource-bundle="io/flutter/FlutterBundle" key="settings.hot.reload.on.save"/>
-              <toolTipText value="On save, hot reload changes into running Flutter apps."/>
+              <toolTipText value="On save all, hot reload changes into running Flutter apps."/>
             </properties>
           </component>
           <component id="6d6f0" class="javax.swing.JCheckBox" binding="myDisableTrackWidgetCreationCheckBox">
