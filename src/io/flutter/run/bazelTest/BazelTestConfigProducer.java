@@ -152,6 +152,4 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   String getId(BazelTestConfig config) {
     return config.getFields().isWatchConfig() ? "Watch" : "No Watch";
   }
-
-  is
 }
