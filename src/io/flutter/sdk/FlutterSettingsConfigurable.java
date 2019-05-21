@@ -61,6 +61,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
+
+  // Settings for Bazel users.
+  private JPanel myBazelOptionsSection;
+  private JButton myRecommendedBazelSettingsButton;
   private JCheckBox myUseBazelByDefaultCheckBox;
 
   // Settings for UI as Code experiments:
@@ -120,6 +124,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     });
 
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
+
+    myRecommendedBazelSettingsButton.addActionListener(e -> {
+      FlutterSettings.getInstance().setBazelDefaults(myProject);
+      reset();
+    });
   }
 
   private void createUIComponents() {
@@ -288,10 +297,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
 
-    myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
-    // We only show the bazel by default checkbox inside of a bazel project.
-    myUseBazelByDefaultCheckBox.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
-
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
     // These options are only enabled if build method guides are enabled as the
@@ -299,6 +304,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
     myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
     myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
+
+    // We only show the bazel options inside of a bazel project.
+    myBazelOptionsSection.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
+
+    myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
   }
 
   private void onVersionChanged() {

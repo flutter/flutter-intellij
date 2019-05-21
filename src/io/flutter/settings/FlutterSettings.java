@@ -7,11 +7,17 @@ package io.flutter.settings;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
+import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import io.flutter.analytics.Analytics;
+import io.flutter.bazel.Workspace;
+import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.utils.FlutterModuleUtils;
+import org.fest.swing.util.Platform;
 
 import java.util.EventListener;
 
@@ -289,5 +295,57 @@ public class FlutterSettings {
   private static String afterLastPeriod(String str) {
     final int index = str.lastIndexOf('.');
     return index == -1 ? str : str.substring(index + 1);
+  }
+
+  public void setBazelDefaults(Project project) {
+    Workspace workspace = Workspace.load(project);
+    if (workspace == null) return;
+
+    // Set up useful registry flags.
+    Registry.get(BazelDefaults.suggestAllRunConfigurationsFromContextKey).setValue(true);
+    Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(true);
+
+    // Set up the Dart SDK.
+    String macOsDartPath = BazelDefaults.getMacOsDartPath(workspace);
+    if (Platform.isOSX() && DartPlugin.isDartSdkHome(macOsDartPath)) {
+      DartPlugin.ensureDartSdkConfigured(project, BazelDefaults.getMacOsDartPath(workspace));
+      DartPlugin.setCheckForUpdates(DartSdkUpdateOption.DoNotCheck);
+    }
+    else if (Platform.isLinux() && DartPlugin.isDartSdkHome(BazelDefaults.linuxDartPath)) {
+      DartPlugin.ensureDartSdkConfigured(project, BazelDefaults.linuxDartPath);
+      DartPlugin.setCheckForUpdates(DartSdkUpdateOption.DoNotCheck);
+    }
+
+    // Enable Dart for the project.
+    for (Module module : FlutterModuleUtils.getModules(project)) {
+      DartPlugin.enableDartSdk(module);
+    }
+  }
+
+  private static final class BazelDefaults {
+    /**
+     * Registry key to suggest all run configurations instead of just one.
+     * <p>
+     * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
+     * in the left-hand gutter.
+     */
+    private static String suggestAllRunConfigurationsFromContextKey = "suggest.all.run.configurations.from.context";
+
+    /**
+     * The relative path in a workspace where the macOS Dart SDK is found.
+     */
+    private static String macOsRelativeDartPath = "third_party/dart/macos_sdk";
+
+    /**
+     * Gets the absolute path where the macOS Dart SDK is found.
+     */
+    private static String getMacOsDartPath(Workspace workspace) {
+      return workspace.getRoot().getPath() + macOsRelativeDartPath;
+    }
+
+    /**
+     * The absolute path where the linux Dart SDK is found.
+     */
+    private static String linuxDartPath = "/usr/lib/google-dartlang";
   }
 }
