@@ -5,14 +5,12 @@
  */
 package io.flutter.run.common;
 
-import com.intellij.execution.ExecutorRegistry;
 import com.intellij.execution.TestStateStorage;
 import com.intellij.execution.lineMarker.ExecutorAction;
 import com.intellij.execution.lineMarker.RunLineMarkerContributor;
 import com.intellij.execution.testframework.TestIconMapper;
 import com.intellij.execution.testframework.sm.runner.states.TestStateInfo;
 import com.intellij.icons.AllIcons;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
@@ -26,7 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 
@@ -51,13 +48,9 @@ public abstract class TestLineMarkerContributor extends RunLineMarkerContributor
       final Icon icon = getTestStateIcon(element, testCall.getIcon());
       final Function<PsiElement, String> tooltipProvider =
         psiElement -> testCall.getTooltip(psiElement, testConfigUtils);
-      return new RunLineMarkerContributor.Info(icon, tooltipProvider, getActions());
+      return new RunLineMarkerContributor.Info(icon, tooltipProvider, ExecutorAction.getActions());
     }
     return null;
-  }
-
-  protected AnAction[] getActions() {
-    return ExecutorAction.getActions();
   }
 
   @NotNull

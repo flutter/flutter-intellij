@@ -28,7 +28,6 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
   protected FlutterBazelTestConfigurationType() {
     super("FlutterBazelTestConfigurationType", FlutterBundle.message("runner.flutter.bazel.test.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
-    // TODO: How to make multiple factories work with the run button in the left-hand tray?
     addFactory(watchFactory);
     addFactory(factory);
 
@@ -38,17 +37,12 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterBazelTestConfigurationType.class);
   }
 
-  private static class Options extends BaseState {
-  }
-
+  /**
+   * {@link ConfigurationFactory} for Flutter Bazel tests that run one-off.
+   */
   static class Factory extends ConfigurationFactory {
-    public Factory(FlutterBazelTestConfigurationType type) {
+    private Factory(FlutterBazelTestConfigurationType type) {
       super(type);
-    }
-
-    @Override
-    public @Nullable Class<? extends BaseState> getOptionsClass() {
-      return super.getOptionsClass();
     }
 
     @Override
@@ -70,9 +64,12 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     }
   }
 
+  /**
+   * {@link ConfigurationFactory} for Flutter Bazel tests that watch test results and re-run them.
+   */
   static class WatchFactory extends ConfigurationFactory {
 
-    public WatchFactory(FlutterBazelTestConfigurationType type) {
+    private WatchFactory(FlutterBazelTestConfigurationType type) {
       super(type);
     }
 
@@ -82,9 +79,13 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
       // This is always called first when loading a run config, even when it's a non-template config.
       // See RunManagerImpl.doCreateConfiguration
       BazelTestConfig config = new BazelTestConfig(project, this, FlutterBundle.message("runner.flutter.bazel.test.configuration.name"));
-      config.setName("Watch " + config.getName());
       config.setFields(new BazelTestFields(null, null, null, "--watch"));
       return config;
+    }
+
+    @Override
+    public boolean isApplicable(@NotNull Project project) {
+      return FlutterBazelRunConfigurationType.doShowBazelRunConfigurationForProject(project);
     }
 
     @Override

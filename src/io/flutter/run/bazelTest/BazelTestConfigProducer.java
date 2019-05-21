@@ -35,7 +35,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     this(FlutterBazelTestConfigurationType.getInstance().factory);
   }
 
-  protected BazelTestConfigProducer(ConfigurationFactory factory) {
+  protected BazelTestConfigProducer(@NotNull ConfigurationFactory factory) {
     super(factory);
     bazelTestConfigUtils = BazelTestConfigUtils.getInstance();
   }
@@ -147,9 +147,8 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     return DartPlugin.isDartTestConfiguration(other.getConfigurationType());
   }
 
-
-  private @NotNull
-  String getId(BazelTestConfig config) {
+  @NotNull
+  private String getId(BazelTestConfig config) {
     return config.getFields().isWatchConfig() ? "Watch" : "No Watch";
   }
 }
