@@ -99,7 +99,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     final VirtualFile testFile = verifyFlutterTestFile(config, context, file);
     if (testFile == null) return false;
 
-    config.setFields(BazelTestFields.forFile(testFile.getPath(),config.getFields().getAdditionalArgs()));
+    config.setFields(BazelTestFields.forFile(testFile.getPath(), config.getFields().getAdditionalArgs()));
     config.setName(file.getName());
 
     return true;
@@ -148,7 +148,10 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
   }
 
 
-  private @NotNull String getId(BazelTestConfig config) {
+  private @NotNull
+  String getId(BazelTestConfig config) {
     return config.getFields().isWatchConfig() ? "Watch" : "No Watch";
   }
+
+  is
 }

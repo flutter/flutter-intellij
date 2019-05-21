@@ -6,10 +6,7 @@
 package io.flutter.run.bazelTest;
 
 import com.intellij.execution.ExecutionBundle;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationTypeBase;
-import com.intellij.execution.configurations.ConfigurationUtil;
-import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.*;
 import com.intellij.openapi.components.BaseState;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
@@ -32,8 +29,9 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     super("FlutterBazelTestConfigurationType", FlutterBundle.message("runner.flutter.bazel.test.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
     // TODO: How to make multiple factories work with the run button in the left-hand tray?
-    addFactory(factory);
     addFactory(watchFactory);
+    addFactory(factory);
+
   }
 
   public static FlutterBazelTestConfigurationType getInstance() {
