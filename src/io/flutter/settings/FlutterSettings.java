@@ -320,6 +320,8 @@ public class FlutterSettings {
     for (Module module : FlutterModuleUtils.getModules(project)) {
       DartPlugin.enableDartSdk(module);
     }
+
+    DartPlugin.getInstance().notifyAll();
   }
 
   private static final class BazelDefaults {
