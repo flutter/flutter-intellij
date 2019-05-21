@@ -305,6 +305,11 @@ public class FlutterSettings {
     Registry.get(BazelDefaults.suggestAllRunConfigurationsFromContextKey).setValue(true);
     Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(true);
 
+    // Enable Dart for the project.
+    for (Module module : FlutterModuleUtils.getModules(project)) {
+      DartPlugin.enableDartSdk(module);
+    }
+
     // Set up the Dart SDK.
     String macOsDartPath = BazelDefaults.getMacOsDartPath(workspace);
     if (Platform.isOSX() && DartPlugin.isDartSdkHome(macOsDartPath)) {
@@ -315,13 +320,6 @@ public class FlutterSettings {
       DartPlugin.ensureDartSdkConfigured(project, BazelDefaults.linuxDartPath);
       DartPlugin.setCheckForUpdates(DartSdkUpdateOption.DoNotCheck);
     }
-
-    // Enable Dart for the project.
-    for (Module module : FlutterModuleUtils.getModules(project)) {
-      DartPlugin.enableDartSdk(module);
-    }
-
-    DartPlugin.getInstance().notifyAll();
   }
 
   private static final class BazelDefaults {
