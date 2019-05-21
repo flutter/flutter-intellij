@@ -9,6 +9,7 @@ import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.SystemInfoRt;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
 import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
@@ -17,6 +18,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.System;
 import org.fest.swing.util.Platform;
 
 import java.util.EventListener;
@@ -312,11 +314,11 @@ public class FlutterSettings {
 
     // Set up the Dart SDK.
     String macOsDartPath = BazelDefaults.getMacOsDartPath(workspace);
-    if (Platform.isOSX() && DartPlugin.isDartSdkHome(macOsDartPath)) {
+    if (SystemInfoRt.isMac && DartPlugin.isDartSdkHome(macOsDartPath)) {
       DartPlugin.ensureDartSdkConfigured(project, BazelDefaults.getMacOsDartPath(workspace));
       DartPlugin.setCheckForUpdates(DartSdkUpdateOption.DoNotCheck);
     }
-    else if (Platform.isLinux() && DartPlugin.isDartSdkHome(BazelDefaults.linuxDartPath)) {
+    else if (SystemInfoRt.isLinux && DartPlugin.isDartSdkHome(BazelDefaults.linuxDartPath)) {
       DartPlugin.ensureDartSdkConfigured(project, BazelDefaults.linuxDartPath);
       DartPlugin.setCheckForUpdates(DartSdkUpdateOption.DoNotCheck);
     }
