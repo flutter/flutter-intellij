@@ -18,8 +18,6 @@ import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.FlutterModuleUtils;
-import io.flutter.utils.System;
-import org.fest.swing.util.Platform;
 
 import java.util.EventListener;
 
