@@ -28,8 +28,11 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
   protected FlutterBazelTestConfigurationType() {
     super("FlutterBazelTestConfigurationType", FlutterBundle.message("runner.flutter.bazel.test.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
-    addFactory(watchFactory);
+    // Note that for both factories to produce inline run configurations for the left-hand tray context menu,
+    // the Registry flag `suggest.all.run.configurations.from.context` should be enabled.
+    // Otherwise, only one configuration may show up.
     addFactory(factory);
+    addFactory(watchFactory);
 
   }
 

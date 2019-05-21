@@ -123,6 +123,8 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
    */
   @Override
   public boolean isConfigurationFromContext(@NotNull BazelTestConfig config, @NotNull ConfigurationContext context) {
+    // Check if the config is a non-watch producer and the producer is a watch producer or vice versa, then the given configuration
+    // is not a replacement for one by this producer.
     if (!StringUtil.equals(getId(config), getConfigurationFactory().getId())) return false;
 
     final VirtualFile file = config.getFields().getFile();
