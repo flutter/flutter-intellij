@@ -91,7 +91,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
 
     config.setFields(BazelTestFields.forTestName(testName, testFile.getPath(), config.getFields().getAdditionalArgs()));
     config.setGeneratedName();
-    config.setName(file.getName() + " (" + testName + ")");
+    config.setName("Run " + file.getName() + " (" + testName + ")");
     return true;
   }
 
@@ -100,7 +100,7 @@ public class BazelTestConfigProducer extends RunConfigurationProducer<BazelTestC
     if (testFile == null) return false;
 
     config.setFields(BazelTestFields.forFile(testFile.getPath(), config.getFields().getAdditionalArgs()));
-    config.setName(file.getName());
+    config.setName("Run " + file.getName());
 
     return true;
   }

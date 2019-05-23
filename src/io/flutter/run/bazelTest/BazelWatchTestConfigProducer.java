@@ -24,7 +24,7 @@ public class BazelWatchTestConfigProducer extends BazelTestConfigProducer {
                                                   @NotNull ConfigurationContext context,
                                                   @NotNull Ref<PsiElement> sourceElement) {
     if (!super.setupConfigurationFromContext(config, context, sourceElement)) return false;
-    config.setName("Watch " + config.getName());
+    config.setName(config.getName().replaceFirst("Run", "Watch"));
     return true;
   }
 }
