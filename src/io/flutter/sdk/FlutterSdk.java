@@ -9,6 +9,7 @@ import com.google.gson.*;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.service.execution.InvalidSdkException;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -16,14 +17,11 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.util.SystemInfoRt;
-import com.intellij.openapi.util.io.FileSystemUtil;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.*;
-import com.intellij.openapi.vfs.newvfs.impl.VirtualFileImpl;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
-import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
@@ -34,13 +32,11 @@ import io.flutter.run.daemon.RunMode;
 import io.flutter.samples.FlutterSample;
 import io.flutter.samples.FlutterSampleManager;
 import io.flutter.settings.FlutterSettings;
-import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
@@ -99,7 +95,7 @@ public class FlutterSdk {
     if (workspace == null) {
       return null;
     }
-    return new BazelSdk(workspace);
+    return new BazelSdk(project, workspace);
   }
 
   /**
@@ -592,27 +588,26 @@ public class FlutterSdk {
      */
     @NotNull final Workspace workspace;
 
-    private BazelSdk(@NotNull Workspace workspace) {
+    @NotNull final Project project;
+
+    private BazelSdk(@NotNull Project project, @NotNull Workspace workspace) {
       super(
         Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")),
         FlutterSdkVersion
           .readFromSdk(Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")))
       );
       this.workspace = workspace;
-    }
-
-    @Override
-    public List<FlutterSample> getSamples() {
-      throw new NotImplementedException("getSamples() is not supported in the Bazel Dart SDK");
+      this.project = project;
     }
 
     @Nullable
     @Override
     public String getDartSdkPath() {
-      if (SystemInfoRt.isLinux) return "/usr/lib/google-dartlang";
-      if (SystemInfoRt.isMac) return workspace.getRoot().getPath() + "third_party/dart_lang/macos_sdk";
-      // Bazel sdk only supports linux and mac.
-      return null;
+      DartSdk sdk = DartSdk.getDartSdk(project);
+      if (sdk == null) {
+        return null;
+      }
+      return sdk.getHomePath();
     }
 
     @Override
@@ -631,26 +626,35 @@ public class FlutterSdk {
 
     @Override
     public String getDisplayCommand() {
-        final List<String> words = new ArrayList<>();
-        words.add("flutter");
-        words.addAll(args);
-        return String.join(" ", words);
+      final List<String> words = new ArrayList<>();
+      words.add("flutter");
+      words.addAll(args);
+      return String.join(" ", words);
     }
 
     @NotNull
     @Override
     public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
-      GeneralCommandLine line = super.createGeneralCommandLine(project);
-      final List<String> parameters = new ArrayList<>();
-      Collections.copy(parameters, line.getParametersList().getList());
+      GeneralCommandLine original = super.createGeneralCommandLine(project);
+      GeneralCommandLine line = new GeneralCommandLine();
+
       // Strip the subcommand from the parameters, because we will talk directly to pub.
+      final List<String> parameters = new ArrayList<>(original.getParametersList().getList());
       final int pubSubcommandIndex = Collections.indexOfSubList(parameters, Type.PACKAGES_PUB.subCommand);
-      for (int i=0; i<Type.PACKAGES_PUB.subCommand.size(); i++) {
+      for (int i = 0; i < Type.PACKAGES_PUB.subCommand.size(); i++) {
         parameters.remove(pubSubcommandIndex);
       }
-      line = line.withParameters(parameters);
-      line.setExePath(sdk.getDartSdkPath() + "/bin/pub");
-      return line;
+
+      final String dartSdkPath = sdk.getDartSdkPath();
+      if (dartSdkPath == null) {
+        throw new InvalidSdkException("Unable to find the Dart SDK");
+      }
+      // Copy the original without the unneeded subcommand params and an adjusted sdk path.
+      return line
+        .withParameters(parameters)
+        .withExePath(DartSdkUtil.getPubPath(dartSdkPath))
+        .withCharset(CharsetToolkit.UTF8_CHARSET)
+        .withEnvironment(original.getEnvironment()).withWorkDirectory(original.getWorkDirectory());
     }
   }
 }
