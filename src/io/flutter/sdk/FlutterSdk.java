@@ -6,6 +6,7 @@
 package io.flutter.sdk;
 
 import com.google.gson.*;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
@@ -39,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 
@@ -581,6 +583,9 @@ public class FlutterSdk {
     return null;
   }
 
+  /**
+   * A {@link FlutterSdk} that is compatible with the Bazel version of the Dart and Flutter SDK.
+   */
   public static class BazelSdk extends FlutterSdk {
     /**
      * The Bazel workspace for this project.
@@ -590,7 +595,8 @@ public class FlutterSdk {
     private BazelSdk(@NotNull Workspace workspace) {
       super(
         Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")),
-        FlutterSdkVersion.readFromSdk(Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")))
+        FlutterSdkVersion
+          .readFromSdk(Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")))
       );
       this.workspace = workspace;
     }
@@ -607,6 +613,44 @@ public class FlutterSdk {
       if (SystemInfoRt.isMac) return workspace.getRoot().getPath() + "third_party/dart_lang/macos_sdk";
       // Bazel sdk only supports linux and mac.
       return null;
+    }
+
+    @Override
+    public FlutterCommand flutterPackagesPub(@Nullable PubRoot root, String... args) {
+      return new BazelPubCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
+    }
+  }
+
+  /**
+   * Creates a pub command that uses the bazel Dart SDK instead of the Flutter SDK.
+   */
+  private static class BazelPubCommand extends FlutterCommand {
+    private BazelPubCommand(@NotNull BazelSdk sdk, @Nullable VirtualFile workDir, @NotNull Type type, String... args) {
+      super(sdk, workDir, type, args);
+    }
+
+    @Override
+    public String getDisplayCommand() {
+        final List<String> words = new ArrayList<>();
+        words.add("flutter");
+        words.addAll(args);
+        return String.join(" ", words);
+    }
+
+    @NotNull
+    @Override
+    public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
+      GeneralCommandLine line = super.createGeneralCommandLine(project);
+      final List<String> parameters = new ArrayList<>();
+      Collections.copy(parameters, line.getParametersList().getList());
+      // Strip the subcommand from the parameters, because we will talk directly to pub.
+      final int pubSubcommandIndex = Collections.indexOfSubList(parameters, Type.PACKAGES_PUB.subCommand);
+      for (int i=0; i<Type.PACKAGES_PUB.subCommand.size(); i++) {
+        parameters.remove(pubSubcommandIndex);
+      }
+      line = line.withParameters(parameters);
+      line.setExePath(sdk.getDartSdkPath() + "/bin/pub");
+      return line;
     }
   }
 }
