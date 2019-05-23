@@ -9,10 +9,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonSyntaxException;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessOutput;
+import com.intellij.execution.ExecutionException;
+import com.intellij.execution.configurations.GeneralCommandLine;
+import com.intellij.execution.process.*;
 import com.intellij.ide.browsers.BrowserLauncher;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -20,11 +19,17 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
+import com.jetbrains.lang.dart.sdk.DartSdkUtil;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
+import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -56,6 +61,80 @@ public class DevToolsManager {
   }
 
   public CompletableFuture<Boolean> installDevTools() {
+    if (FlutterSettings.getInstance().shouldUseBazel()) {
+      DartSdk dartSdk = DartSdk.getDartSdk(project);
+      DartSdkUtil.getPubPath(dartSdk);
+
+      final CompletableFuture<Boolean> result = new CompletableFuture<>();
+
+      final ProgressManager progressManager = ProgressManager.getInstance();
+      progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
+        @Override
+        public void run(@NotNull ProgressIndicator indicator) {
+          indicator.setText(getTitle());
+          indicator.setIndeterminate(true);
+
+          GeneralCommandLine commandLine = new GeneralCommandLine(DartSdkUtil.getPubPath(dartSdk), "global", "activate", "devtools").withWorkDirectory(
+            Workspace.load(project).getRoot().getPath()).withRedirectErrorStream(true).withParentEnvironmentType(
+            GeneralCommandLine.ParentEnvironmentType.CONSOLE);
+          OSProcessHandler process = null;
+          try {
+            process = new OSProcessHandler(commandLine);
+          }
+          catch (ExecutionException e) {
+            e.printStackTrace();
+            result.completeExceptionally(e);
+          }
+          if (process == null) {
+            result.complete(false);
+            return;
+          }
+
+          process.addProcessListener(new ProcessListener() {
+            @Override
+            public void startNotified(@NotNull ProcessEvent event) {
+
+            }
+
+            @Override
+            public void processTerminated(@NotNull ProcessEvent event) {
+
+            }
+
+            @Override
+            public void processWillTerminate(@NotNull ProcessEvent event, boolean willBeDestroyed) {
+
+            }
+
+            @Override
+            public void onTextAvailable(@NotNull ProcessEvent event, @NotNull Key outputType) {
+              FlutterConsoles.displayMessage(project, null, event.getText(), false);
+            }
+          });
+
+          FlutterConsoles.displayMessage(project, null, "Installing devtools...", true);
+          boolean processResult = false;
+          try {
+            processResult = process.waitFor(10000);
+          } catch (RuntimeException re) {
+            if (!process.isProcessTerminated()) {
+              result.completeExceptionally(re);
+            }
+          }
+          if (processResult) {
+            installedDevTools = true;
+            FlutterConsoles.displayMessage(project, null, "Devtools installation completed", true);
+            result.complete(true);
+          } else {
+            FlutterConsoles.displayMessage(project, null, "Devtools installation failed", true);
+            result.complete(false);
+          }
+        }
+      });
+
+      return result;
+    }
+
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       return createCompletedFuture(false);
@@ -131,6 +210,9 @@ public class DevToolsManager {
     if (devToolsInstance != null) {
       devToolsInstance.openBrowserAndConnect(uri, page);
       return;
+    }
+    if (FlutterSettings.getInstance().shouldUseBazel()) {
+
     }
 
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
