@@ -15,11 +15,16 @@ import com.intellij.openapi.roots.OrderRootType;
 import com.intellij.openapi.roots.impl.libraries.ProjectLibraryTable;
 import com.intellij.openapi.roots.libraries.Library;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.util.SystemInfoRt;
+import com.intellij.openapi.util.io.FileSystemUtil;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.*;
+import com.intellij.openapi.vfs.newvfs.impl.VirtualFileImpl;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.sun.corba.se.spi.orbutil.threadpool.Work;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
@@ -28,14 +33,12 @@ import io.flutter.run.daemon.RunMode;
 import io.flutter.samples.FlutterSample;
 import io.flutter.samples.FlutterSampleManager;
 import io.flutter.settings.FlutterSettings;
+import org.apache.commons.lang.NotImplementedException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 
@@ -86,6 +89,15 @@ public class FlutterSdk {
     // Cache based on the project and path ('e41cfa3d:/Users/devoncarew/projects/flutter/flutter').
     final String cacheKey = project.getLocationHash() + ":" + sdkPath;
     return projectSdkCache.computeIfAbsent(cacheKey, s -> forPath(sdkPath));
+  }
+
+  public static FlutterSdk forBazel(@NotNull final Project project) {
+    // If this is not a bazel project, return null.
+    final Workspace workspace = Workspace.load(project);
+    if (workspace == null) {
+      return null;
+    }
+    return new BazelSdk(workspace);
   }
 
   /**
@@ -180,6 +192,10 @@ public class FlutterSdk {
 
   public FlutterCommand flutterPackagesPub(@Nullable PubRoot root, String... args) {
     return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
+  }
+
+  public FlutterCommand flutterPackagesPub(@Nullable VirtualFile root, String... args) {
+    return new FlutterCommand(this, root == null ? null : root, FlutterCommand.Type.PACKAGES_PUB, args);
   }
 
   public FlutterCommand flutterMakeHostAppEditable(@NotNull PubRoot root) {
@@ -567,5 +583,34 @@ public class FlutterSdk {
     }
 
     return null;
+  }
+
+  public static class BazelSdk extends FlutterSdk {
+    /**
+     * The Bazel workspace for this project.
+     */
+    @NotNull final Workspace workspace;
+
+    private BazelSdk(@NotNull Workspace workspace) {
+      super(
+        Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")),
+        FlutterSdkVersion.readFromSdk(Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")))
+      );
+      this.workspace = workspace;
+    }
+
+    @Override
+    public List<FlutterSample> getSamples() {
+      throw new NotImplementedException("getSamples() is not supported in the Bazel Dart SDK");
+    }
+
+    @Nullable
+    @Override
+    public String getDartSdkPath() {
+      if (SystemInfoRt.isLinux) return "/usr/lib/google-dartlang";
+      if (SystemInfoRt.isMac) return workspace.getRoot().getPath() + "third_party/dart_lang/macos_sdk";
+      // Bazel sdk only supports linux and mac.
+      return null;
+    }
   }
 }
