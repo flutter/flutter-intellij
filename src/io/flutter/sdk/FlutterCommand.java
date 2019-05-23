@@ -277,7 +277,7 @@ public class FlutterCommand {
     MAKE_HOST_APP_EDITABLE("Flutter make-host-app-editable", "make-host-app-editable"),
     PACKAGES_GET("Flutter packages get", "packages", "get"),
     PACKAGES_UPGRADE("Flutter packages upgrade", "packages", "upgrade"),
-    PACKAGES_PUB("Flutter packages pub", "pub"),
+    PACKAGES_PUB("Flutter packages pub", "packages", "pub"),
     RUN("Flutter run", "run"),
     FLUTTER_WEB_RUN("Flutter Web run", "flutter_web_run"),
     UPGRADE("Flutter upgrade", "upgrade"),

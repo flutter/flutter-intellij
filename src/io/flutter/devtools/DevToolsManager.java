@@ -59,26 +59,15 @@ public class DevToolsManager {
   }
 
   public CompletableFuture<Boolean> installDevTools() {
-    final FlutterSdk sdk = FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk =
+      FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
-        return createCompletedFuture(false);
+      return createCompletedFuture(false);
     }
 
-    VirtualFile pubRoot = null;
-    if (FlutterSettings.getInstance().shouldUseBazel()) {
-      final Workspace workspace = Workspace.load(project);
-      if ( workspace != null) {
-        pubRoot = workspace.getRoot();
-      }
-    } else {
-      final List<PubRoot> pubRoots = PubRoots.forProject(project);
-      if (pubRoots.isEmpty()) {
-        return createCompletedFuture(false);
-      }
-      pubRoot = pubRoots.get(0).getRoot();
-    }
     final CompletableFuture<Boolean> result = new CompletableFuture<>();
-    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "activate", "devtools");
+    // We don't need a pubroot to call pub global.
+    final FlutterCommand command = sdk.flutterPackagesPub(null, "global", "activate", "devtools");
 
     final ProgressManager progressManager = ProgressManager.getInstance();
     progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
@@ -144,27 +133,14 @@ public class DevToolsManager {
       return;
     }
 
-    final FlutterSdk sdk = FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk =
+      FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
     if (sdk == null) {
       return;
     }
 
-    VirtualFile pubRoot  = null;
-    if (FlutterSettings.getInstance().shouldUseBazel()) {
-      final Workspace workspace = Workspace.load(project);
-      if ( workspace != null) {
-        pubRoot = workspace.getRoot();
-      }
-    } else {
-      final List<PubRoot> pubRoots = PubRoots.forProject(project);
-      if (pubRoots.isEmpty()) {
-        return;
-      }
-      pubRoot = pubRoots.get(0).getRoot();
-    }
-
     // start the server
-    DevToolsInstance.startServer(project, sdk, pubRoot, instance -> {
+    DevToolsInstance.startServer(project, sdk, instance -> {
       devToolsInstance = instance;
 
       devToolsInstance.openBrowserAndConnect(uri, page);
@@ -185,11 +161,11 @@ class DevToolsInstance {
   public static void startServer(
     Project project,
     FlutterSdk sdk,
-    VirtualFile pubRoot,
     Callback<DevToolsInstance> onSuccess,
     Callback<DevToolsInstance> onClose
   ) {
-    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
+    // We don't need a pubroot to call pub global.
+    final FlutterCommand command = sdk.flutterPackagesPub(null, "global", "run", "devtools", "--machine", "--port=0");
 
     // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
     // focus away from the Run (or Debug) view.

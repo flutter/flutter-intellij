@@ -194,10 +194,6 @@ public class FlutterSdk {
     return new FlutterCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
   }
 
-  public FlutterCommand flutterPackagesPub(@Nullable VirtualFile root, String... args) {
-    return new FlutterCommand(this, root == null ? null : root, FlutterCommand.Type.PACKAGES_PUB, args);
-  }
-
   public FlutterCommand flutterMakeHostAppEditable(@NotNull PubRoot root) {
     return new FlutterCommand(this, root.getRoot(), FlutterCommand.Type.MAKE_HOST_APP_EDITABLE);
   }
