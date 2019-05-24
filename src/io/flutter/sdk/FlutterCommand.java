@@ -254,16 +254,13 @@ public class FlutterCommand {
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
-    if (!isDoctorCommand() && !(sdk instanceof FlutterSdk.BazelSdk)) {
+    // The Bazel version of the Flutter SDK doesn't know how to handle the no-color flag.
+    if (!(sdk instanceof FlutterSdk.BazelSdk)) {
       line.addParameter("--no-color");
     }
     line.addParameters(type.subCommand);
     line.addParameters(args);
     return line;
-  }
-
-  private boolean isDoctorCommand() {
-    return type == Type.DOCTOR;
   }
 
   enum Type {
