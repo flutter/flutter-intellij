@@ -611,9 +611,18 @@ public class FlutterSdk {
 
     private BazelSdk(@NotNull Project project, @NotNull Workspace workspace) {
       super(
-        Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")),
-        FlutterSdkVersion
-          .readFromSdk(Objects.requireNonNull(workspace.getRoot().findFileByRelativePath("mobile/flutter/tools/ide/gflutter")))
+        Objects.requireNonNull(
+          workspace.getRoot().findFileByRelativePath(
+            Objects.requireNonNull(workspace.getSdkHomePath())
+          )
+        ),
+        FlutterSdkVersion.readFromFile(
+          Objects.requireNonNull(
+            workspace.getRoot().findFileByRelativePath(
+              Objects.requireNonNull(workspace.getVersionFile())
+            )
+          )
+        )
       );
       this.workspace = workspace;
       this.project = project;
