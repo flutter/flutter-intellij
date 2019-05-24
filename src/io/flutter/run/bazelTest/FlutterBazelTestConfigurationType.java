@@ -6,9 +6,8 @@
 package io.flutter.run.bazelTest;
 
 import com.intellij.execution.ExecutionBundle;
-import com.intellij.execution.configurations.ConfigurationFactory;
-import com.intellij.execution.configurations.ConfigurationTypeBase;
-import com.intellij.execution.configurations.RunConfiguration;
+import com.intellij.execution.configurations.*;
+import com.intellij.openapi.components.BaseState;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
@@ -16,24 +15,36 @@ import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
 import io.flutter.run.test.FlutterTestConfigType;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The Bazel version of the {@link FlutterTestConfigType} configuration.
  */
 public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
+  final ConfigurationFactory factory = new Factory(this);
+  final ConfigurationFactory watchFactory = new WatchFactory(this);
+
   protected FlutterBazelTestConfigurationType() {
     super("FlutterBazelTestConfigurationType", FlutterBundle.message("runner.flutter.bazel.test.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
-    addFactory(new Factory(this));
+    // Note that for both factories to produce inline run configurations for the left-hand tray context menu,
+    // the Registry flag `suggest.all.run.configurations.from.context` should be enabled.
+    // Otherwise, only one configuration may show up.
+    addFactory(factory);
+    addFactory(watchFactory);
+
   }
 
   public static FlutterBazelTestConfigurationType getInstance() {
     return Extensions.findExtension(CONFIGURATION_TYPE_EP, FlutterBazelTestConfigurationType.class);
   }
 
-  private static class Factory extends ConfigurationFactory {
-    public Factory(FlutterBazelTestConfigurationType type) {
+  /**
+   * {@link ConfigurationFactory} for Flutter Bazel tests that run one-off.
+   */
+  static class Factory extends ConfigurationFactory {
+    private Factory(FlutterBazelTestConfigurationType type) {
       super(type);
     }
 
@@ -46,35 +57,48 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     }
 
     @Override
-    @NotNull
-    public RunConfiguration createConfiguration(String name, RunConfiguration template) {
-      // Called in two cases:
-      //   - When creating a non-template config from a template.
-      //   - whenever the run configuration editor is open (for creating snapshots).
-      // In the first case, we want to override the defaults from the template.
-      // In the second case, don't change anything.
-      if (isNewlyGeneratedName(name) && template instanceof BazelTestConfig) {
-        // TODO(jwren) is this really a good name for a new run config? Not sure why we override this.
-        // Note that if the user creates more than one run config, they will need to rename it manually.
-        name = template.getProject().getName();
-        return ((BazelTestConfig)template).copyTemplateToNonTemplate(name);
-      }
-      else {
-        return super.createConfiguration(name, template);
-      }
+    public boolean isApplicable(@NotNull Project project) {
+      return FlutterBazelRunConfigurationType.doShowBazelRunConfigurationForProject(project);
     }
 
-    private boolean isNewlyGeneratedName(String name) {
-      // Try to determine if this we are creating a non-template configuration from a template.
-      // This is a hack based on what the code does in RunConfigurable.createUniqueName().
-      // If it fails to match, the new run config still works, just without any defaults set.
-      final String baseName = ExecutionBundle.message("run.configuration.unnamed.name.prefix");
-      return name.equals(baseName) || name.startsWith(baseName + " (");
+    @Override
+    public @NotNull String getId() {
+      return "No Watch";
+    }
+  }
+
+  /**
+   * {@link ConfigurationFactory} for Flutter Bazel tests that watch test results and re-run them.
+   */
+  static class WatchFactory extends ConfigurationFactory {
+
+    private WatchFactory(FlutterBazelTestConfigurationType type) {
+      super(type);
+    }
+
+    @Override
+    @NotNull
+    public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
+      // This is always called first when loading a run config, even when it's a non-template config.
+      // See RunManagerImpl.doCreateConfiguration
+      BazelTestConfig config = new BazelTestConfig(project, this, FlutterBundle.message("runner.flutter.bazel.test.configuration.name"));
+      config.setFields(new BazelTestFields(null, null, null, "--watch"));
+      return config;
     }
 
     @Override
     public boolean isApplicable(@NotNull Project project) {
       return FlutterBazelRunConfigurationType.doShowBazelRunConfigurationForProject(project);
+    }
+
+    @Override
+    public @NotNull String getName() {
+      return "Watch " + super.getName();
+    }
+
+    @Override
+    public @NotNull String getId() {
+      return "Watch";
     }
   }
 }
