@@ -118,7 +118,7 @@ public class LaunchCommandsTest {
   @Test
   public void producesCorrectCommandLineForBazelTargetWithoutTestScript() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("//foo:test"),
+      BazelTestFields.forTarget("//foo:test", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
@@ -135,7 +135,7 @@ public class LaunchCommandsTest {
   @Test
   public void producesCorrectCommandLineForBazelTargetWithoutTestScriptInDebugMode() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("//foo:test"),
+      BazelTestFields.forTarget("//foo:test", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
@@ -154,7 +154,7 @@ public class LaunchCommandsTest {
   @Test
   public void failsForFileWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forFile("/workspace/foo/test/foo_test.dart"),
+      BazelTestFields.forFile("/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
@@ -173,7 +173,7 @@ public class LaunchCommandsTest {
   @Test
   public void failsForTestNameWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart"),
+      BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
@@ -224,15 +224,15 @@ public class LaunchCommandsTest {
   }
 
   private FakeBazelTestFields forFile(String file) {
-    return new FakeBazelTestFields(BazelTestFields.forFile(file));
+    return new FakeBazelTestFields(BazelTestFields.forFile(file, null));
   }
 
   private FakeBazelTestFields forTestName(String testName, String file) {
-    return new FakeBazelTestFields(BazelTestFields.forTestName(testName, file));
+    return new FakeBazelTestFields(BazelTestFields.forTestName(testName, file, null));
   }
 
   private FakeBazelTestFields forTarget(String target) {
-    return new FakeBazelTestFields(BazelTestFields.forTarget(target));
+    return new FakeBazelTestFields(BazelTestFields.forTarget(target, null));
   }
 
   /**
