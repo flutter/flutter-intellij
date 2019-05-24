@@ -37,17 +37,23 @@ public class Workspace {
   @Nullable private final String daemonScript;
   @Nullable private final String doctorScript;
   @Nullable private final String testScript;
+  @Nullable private final String sdkHomePath;
+  @Nullable private final String versionFile;
 
   private Workspace(@NotNull VirtualFile root,
                     @Nullable PluginConfig config,
                     @Nullable String daemonScript,
                     @Nullable String doctorScript,
-                    @Nullable String testScript) {
+                    @Nullable String testScript,
+                    @Nullable String sdkHomePath,
+                    @Nullable String versionFile) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
     this.doctorScript = doctorScript;
     this.testScript = testScript;
+    this.sdkHomePath = sdkHomePath;
+    this.versionFile = versionFile;
   }
 
   /**
@@ -132,6 +138,22 @@ public class Workspace {
   }
 
   /**
+   * Returns the directory that contains the flutter SDK commands, or null if not configured.
+   */
+  @Nullable
+  public String getSdkHomePath() {
+    return sdkHomePath;
+  }
+
+  /**
+   * Returns the file for the in-use version of Flutter, or null if not configured.
+   */
+  @Nullable
+  public String getVersionFile() {
+    return versionFile;
+  }
+
+  /**
    * Returns true if the plugin config was loaded.
    */
   public boolean hasPluginConfig() {
@@ -189,7 +211,11 @@ public class Workspace {
 
     final String testScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getTestScript());
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript);
+    final String sdkHomePath = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
+
+    final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
+
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, sdkHomePath, versionFile);
   }
 
   @VisibleForTesting
@@ -199,7 +225,9 @@ public class Workspace {
       pluginConfig,
       pluginConfig.getDaemonScript(),
       pluginConfig.getDoctorScript(),
-      pluginConfig.getTestScript()
+      pluginConfig.getTestScript(),
+      pluginConfig.getSdkHome(),
+      pluginConfig.getVersionFile()
     );
   }
 
