@@ -89,6 +89,14 @@ public class FlutterSdk {
     return projectSdkCache.computeIfAbsent(cacheKey, s -> forPath(sdkPath));
   }
 
+  /**
+   * Return the FlutterSdk for a project in a Bazel workspace.
+   * <p>
+   * Returns null if we are not in a bazel project.
+   * <p>
+   * NOTE that the Bazel FlutterSdk does not have the same features defined as the normal SDK.
+   * Only use this if you are sure you know what you are doing.
+   */
   public static FlutterSdk forBazel(@NotNull final Project project) {
     // If this is not a bazel project, return null.
     final Workspace workspace = Workspace.load(project);
@@ -96,6 +104,17 @@ public class FlutterSdk {
       return null;
     }
     return new BazelSdk(project, workspace);
+  }
+
+  /**
+   * Return the FlutterSdk for a project, using a pub or bazel-based SDK as appropriate.
+   * <p>
+   * NOTE that the Bazel FlutterSdk does not have the same features defined as the normal SDK.
+   * Only use this if you are sure you know what you are doing.
+   */
+  @Nullable
+  public static FlutterSdk forPubOrBazel(@NotNull final Project project) {
+    return FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
   }
 
   /**

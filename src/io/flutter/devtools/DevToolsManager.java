@@ -59,8 +59,7 @@ public class DevToolsManager {
   }
 
   public CompletableFuture<Boolean> installDevTools() {
-    final FlutterSdk sdk =
-      FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk = FlutterSdk.forPubOrBazel(project);
     if (sdk == null) {
       return createCompletedFuture(false);
     }
@@ -133,8 +132,7 @@ public class DevToolsManager {
       return;
     }
 
-    final FlutterSdk sdk =
-      FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk = FlutterSdk.forPubOrBazel(project);
     if (sdk == null) {
       return;
     }
