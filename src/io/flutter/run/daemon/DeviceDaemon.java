@@ -49,6 +49,11 @@ class DeviceDaemon {
   private static final AtomicInteger nextDaemonId = new AtomicInteger();
 
   /**
+   * Attempt to start the daemon this many times before showing the user a warning that the daemon is having trouble starting up.
+   */
+  private static final int RESTART_ATTEMPTS_BEFORE_WARNING = 100;
+
+  /**
    * A unique id used to log device daemon actions.
    */
   private final int id;
@@ -221,22 +226,37 @@ class DeviceDaemon {
         final Future ready = api.enableDeviceEvents();
 
         // Block until we get a response, or are cancelled.
+        int attempts = 0;
         while (true) {
           if (isCancelled.get()) {
             throw new CancellationException();
           }
           else if (process.isProcessTerminated()) {
             final Integer exitCode = process.getExitCode();
-            LOG.warn(("Flutter device daemon #" +
-                      daemonId +
-                      ": process exited during startup. Exit code: " +
-                      exitCode +
-                      ", stderr:\n" +
-                      api.getStderrTail()));
+            final String failureMessage = ("Flutter device daemon #" +
+                                           daemonId +
+                                           ": process exited during startup. Exit code: " +
+                                           exitCode +
+                                           ", stderr:\n" +
+                                           api.getStderrTail());
+            attempts++;
+            if (attempts < DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING) {
+              LOG.warn(failureMessage);
+            }
+            else {
+              // IntelliJ will show a generic failure message the first time we log this error.
+              LOG.error(failureMessage);
+              // The second time we log this error, we'll show a customized message to alert the user to the specific problem.
+              if (attempts == DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING + 1) {
+                // Show a message in the UI when we reach the warning threshold.
+                FlutterMessages.showError("Flutter device daemon", failureMessage);
+              }
+            }
           }
 
           try {
-            ready.get(100, TimeUnit.MILLISECONDS);
+            // Retry with a longer delay if we are encountering repeated failures of the daemon.
+            ready.get(attempts < DeviceDaemon.RESTART_ATTEMPTS_BEFORE_WARNING ? 100 : 10000, TimeUnit.MILLISECONDS);
 
             succeeded = true;
             return new DeviceDaemon(daemonId, this, process, listener, devices);
