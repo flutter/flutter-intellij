@@ -1,0 +1,127 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+buildscript {
+  repositories {
+    mavenLocal()
+    gradlePluginPortal()
+    maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
+    maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+  }
+
+  dependencies {
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion"
+  }
+}
+
+plugins {
+  id "org.jetbrains.intellij" version "0.4.8"
+  id "com.adarshr.test-logger" version "1.6.0"
+  id "de.undercouch.download" version "3.4.2"
+}
+
+testlogger {
+  theme 'mocha'
+}
+
+repositories {
+  mavenLocal()
+  maven { url "https://maven-central.storage-download.googleapis.com/repos/central/data/" }
+  maven { url "http://maven.aliyun.com/nexus/content/groups/public/" }
+}
+
+apply plugin: "idea"
+apply plugin: "kotlin"
+apply plugin: "org.jetbrains.intellij"
+apply plugin: "jacoco"
+
+intellij {
+  pluginName name
+
+  version ideaVersion
+  downloadSources Boolean.valueOf(downloadIdeaSources)
+  updateSinceUntilBuild = false
+
+  sandboxDirectory project.rootDir.canonicalPath + "/.sandbox"
+  plugins "org.jetbrains.kotlin:$kotlinVersion-$kotlinRelease", "Dart:$dartVersion"
+}
+
+publishPlugin {
+  def authenticationToken = "$System.env.token"
+  token authenticationToken
+  channels publishChannels
+}
+
+idea {
+  project {
+    jdkName = javaVersion
+    languageLevel = javaVersion
+  }
+}
+
+dependencies {
+  testCompile("io.kotlintest:kotlintest:2.0.7")
+}
+
+sourceCompatibility = javaVersion
+targetCompatibility = javaVersion
+
+jar.archiveName = "flutter-intellij.jar"
+
+[compileKotlin, compileTestKotlin]*.kotlinOptions {
+  languageVersion = kotlinLanguageVersion
+  apiVersion = kotlinTargetVersion
+  jvmTarget = javaVersion
+  freeCompilerArgs = ["-Xskip-runtime-version-check"]
+}
+
+jacocoTestReport {
+  reports {
+    xml.enabled true
+    csv.enabled false
+    html.enabled true
+  }
+}
+
+check.dependsOn jacocoTestReport
+
+task downloadIntellijPluginVerifier(type: Download) {
+  src "https://dl.bintray.com/jetbrains/intellij-plugin-service/org/jetbrains/intellij/plugins/verifier-cli/$pluginVerifierVersion/verifier-cli-$pluginVerifierVersion-all.jar"
+  dest buildDir
+  overwrite false
+}
+
+task listPlugins(type: Exec) {
+  workingDir = buildDir
+  executable = "sh"
+  args = ["-c", "ls ../releases/release_master/*/*.zip >release.list"]
+}
+
+task verifyPluginCompatibility(type: Exec, dependsOn: ["downloadIntellijPluginVerifier", "listPlugins"]) {
+  workingDir = buildDir
+  executable = "sh"
+  args = ["-c", "java -jar verifier-cli-$pluginVerifierVersion-all.jar check-plugin @release.list ~/.gradle/caches/modules-2/files-2.1/com.jetbrains.intellij.idea/ideaIC/LATEST-EAP-SNAPSHOT/80852e6b02067b26385f5f0ef8e2174f0cd4576/ideaIC-LATEST-EAP-SNAPSHOT"]
+}
+
+verifyPlugin {
+  pluginDirectory "resources/META-INF"
+  ignoreFailures true
+}
+
+jacocoTestReport {
+  afterEvaluate {
+    classDirectories.setFrom(
+      files(classDirectories.files.collect {
+        fileTree(dir: it, exclude: [
+          "**/settings/**"
+        ])
+      })
+    )
+  }
+}
+
+check.dependsOn verifyPluginCompatibility
+check.dependsOn verifyPlugin
