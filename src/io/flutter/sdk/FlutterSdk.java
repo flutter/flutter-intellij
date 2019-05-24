@@ -613,7 +613,7 @@ public class FlutterSdk {
       super(
         Objects.requireNonNull(
           workspace.getRoot().findFileByRelativePath(
-            Objects.requireNonNull(workspace.getSdkHomePath())
+            Objects.requireNonNull(workspace.getSdkHome())
           )
         ),
         FlutterSdkVersion.readFromFile(

@@ -37,7 +37,7 @@ public class Workspace {
   @Nullable private final String daemonScript;
   @Nullable private final String doctorScript;
   @Nullable private final String testScript;
-  @Nullable private final String sdkHomePath;
+  @Nullable private final String sdkHome;
   @Nullable private final String versionFile;
 
   private Workspace(@NotNull VirtualFile root,
@@ -45,14 +45,14 @@ public class Workspace {
                     @Nullable String daemonScript,
                     @Nullable String doctorScript,
                     @Nullable String testScript,
-                    @Nullable String sdkHomePath,
+                    @Nullable String sdkHome,
                     @Nullable String versionFile) {
     this.root = root;
     this.config = config;
     this.daemonScript = daemonScript;
     this.doctorScript = doctorScript;
     this.testScript = testScript;
-    this.sdkHomePath = sdkHomePath;
+    this.sdkHome = sdkHome;
     this.versionFile = versionFile;
   }
 
@@ -141,8 +141,8 @@ public class Workspace {
    * Returns the directory that contains the flutter SDK commands, or null if not configured.
    */
   @Nullable
-  public String getSdkHomePath() {
-    return sdkHomePath;
+  public String getSdkHome() {
+    return sdkHome;
   }
 
   /**
@@ -211,11 +211,11 @@ public class Workspace {
 
     final String testScript = config == null ? null : getScriptFromPath(root, readonlyPath, config.getTestScript());
 
-    final String sdkHomePath = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
+    final String sdkHome = config == null ? null : getScriptFromPath(root, readonlyPath, config.getSdkHome());
 
     final String versionFile = config == null ? null : getScriptFromPath(root, readonlyPath, config.getVersionFile());
 
-    return new Workspace(root, config, daemonScript, doctorScript, testScript, sdkHomePath, versionFile);
+    return new Workspace(root, config, daemonScript, doctorScript, testScript, sdkHome, versionFile);
   }
 
   @VisibleForTesting
