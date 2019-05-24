@@ -30,6 +30,7 @@ import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -65,8 +66,9 @@ public class DevToolsManager {
     }
 
     final CompletableFuture<Boolean> result = new CompletableFuture<>();
-    // We don't need a pubroot to call pub global.
-    final FlutterCommand command = sdk.flutterPackagesPub(null, "global", "activate", "devtools");
+    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
+    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
+    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "activate", "devtools");
 
     final ProgressManager progressManager = ProgressManager.getInstance();
     progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
@@ -162,8 +164,9 @@ class DevToolsInstance {
     Callback<DevToolsInstance> onSuccess,
     Callback<DevToolsInstance> onClose
   ) {
-    // We don't need a pubroot to call pub global.
-    final FlutterCommand command = sdk.flutterPackagesPub(null, "global", "run", "devtools", "--machine", "--port=0");
+    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
+    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
+    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
 
     // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
     // focus away from the Run (or Debug) view.
