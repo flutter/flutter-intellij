@@ -27,7 +27,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
-import io.flutter.dart.DartPlugin;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nls;
@@ -65,8 +64,8 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
   // Settings for Bazel users.
   private JPanel myBazelOptionsSection;
-  private JButton myRecommendedBazelSettingsButton;
   private JCheckBox myUseBazelByDefaultCheckBox;
+  private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
   // Settings for UI as Code experiments:
   private JCheckBox myShowBuildMethodGuides;
@@ -125,11 +124,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     });
 
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
-
-    myRecommendedBazelSettingsButton.addActionListener(e -> {
-      FlutterSettings.getInstance().setBazelDefaults(myProject);
-      reset();
-    });
   }
 
   private void createUIComponents() {
@@ -220,8 +214,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    //noinspection RedundantIfStatement
     if (settings.shouldUseBazel() != myUseBazelByDefaultCheckBox.isSelected()) {
+      return true;
+    }
+
+    //noinspection RedundantIfStatement
+    if (settings.showAllRunConfigurationsInContext() != myShowAllRunConfigurationsInContextCheckBox.isSelected()) {
       return true;
     }
 
@@ -261,6 +259,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setShouldUseBazel(myUseBazelByDefaultCheckBox.isSelected());
+    settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -310,6 +309,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myBazelOptionsSection.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
 
     myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
+    myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
   }
 
   private void onVersionChanged() {
