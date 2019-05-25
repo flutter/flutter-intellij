@@ -258,7 +258,7 @@ public class FlutterSettings {
   }
 
   public void setShowAllRunConfigurationsInContext(boolean value) {
-    Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(value);
+    Registry.get(suggestAllRunConfigurationsFromContextKey).setValue(value);
 
     fireEvent();
   }
