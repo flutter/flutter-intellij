@@ -305,9 +305,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
     myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
 
-    // We only show the bazel options inside of a bazel project.
-    myBazelOptionsSection.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
-
     myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
     myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
   }
