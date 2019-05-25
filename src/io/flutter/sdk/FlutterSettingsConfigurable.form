@@ -241,31 +241,22 @@
         <properties/>
         <border type="etched" title="Bazel"/>
         <children>
-          <component id="b4ad2" class="javax.swing.JButton" binding="myRecommendedBazelSettingsButton">
-            <constraints>
-              <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-            <properties>
-              <text value="Use Recommended settings for Bazel"/>
-            </properties>
-          </component>
-          <hspacer id="a31ee">
-            <constraints>
-              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </hspacer>
-          <hspacer id="fe45">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
-            </constraints>
-          </hspacer>
           <component id="1f83" class="javax.swing.JCheckBox" binding="myUseBazelByDefaultCheckBox">
             <constraints>
-              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <grid row="0" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
               <text value="Assume projects use Bazel for package management (instead of Pub)"/>
               <toolTipText value="When a project contains both Bazel and Pub sources, prefer Bazel instead of Pub."/>
+            </properties>
+          </component>
+          <component id="e902c" class="javax.swing.JCheckBox">
+            <constraints>
+              <grid row="1" column="0" row-span="1" col-span="3" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <text value="Always suggest multiple run configurations for test code"/>
+              <toolTipText value="If there is a defined run configuration to watch a specific test and one to just run it, show both."/>
             </properties>
           </component>
         </children>
