@@ -76,7 +76,11 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     }
   }
 
-  private static VirtualFile findRootDir(@NotNull VirtualFile file, VirtualFile projectDir) {
+  @Nullable
+  private static VirtualFile findRootDir(@NotNull VirtualFile file, @Nullable VirtualFile projectDir) {
+    if (projectDir == null) {
+      return null;
+    }
     // Return the top-most parent of file that is a child of the project directory.
     VirtualFile parent = file.getParent();
     if (projectDir.equals(parent)) {
