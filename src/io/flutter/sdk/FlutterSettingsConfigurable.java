@@ -67,7 +67,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowMultipleChildrenGuides;
   private JCheckBox myShowBuildMethodsOnScrollbar;
-  private JCheckBox myShowClosingLabelsInCheckBox;
+  private JCheckBox myShowClosingLabels;
 
   private final @NotNull Project myProject;
 
@@ -189,7 +189,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    if (settings.isShowClosingLabels() != myShowClosingLabelsInCheckBox.isSelected()) {
+    if (settings.isShowClosingLabels() != myShowClosingLabels.isSelected()) {
       return true;
     }
 
@@ -247,7 +247,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
     settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
-    settings.setShowClosingLabels(myShowClosingLabelsInCheckBox.isSelected());
+    settings.setShowClosingLabels(myShowClosingLabels.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
@@ -288,7 +288,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
     myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
 
-    myShowClosingLabelsInCheckBox.setSelected(settings.isShowClosingLabels());
+    myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());

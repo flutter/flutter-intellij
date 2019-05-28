@@ -197,7 +197,7 @@
               <toolTipText value="On save, organize imports for changed Dart files."/>
             </properties>
           </component>
-          <component id="92f7c" class="javax.swing.JCheckBox" binding="myShowClosingLabelsInCheckBox" default-binding="true">
+          <component id="92f7c" class="javax.swing.JCheckBox" binding="myShowClosingLabels" default-binding="true">
             <constraints>
               <grid row="3" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
