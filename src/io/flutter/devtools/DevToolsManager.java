@@ -20,13 +20,17 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
+import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -56,18 +60,15 @@ public class DevToolsManager {
   }
 
   public CompletableFuture<Boolean> installDevTools() {
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk = FlutterSdk.forPubOrBazel(project);
     if (sdk == null) {
       return createCompletedFuture(false);
     }
 
-    final List<PubRoot> pubRoots = PubRoots.forProject(project);
-    if (pubRoots.isEmpty()) {
-      return createCompletedFuture(false);
-    }
-
     final CompletableFuture<Boolean> result = new CompletableFuture<>();
-    final FlutterCommand command = sdk.flutterPackagesPub(pubRoots.get(0), "global", "activate", "devtools");
+    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
+    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
+    final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "activate", "devtools");
 
     final ProgressManager progressManager = ProgressManager.getInstance();
     progressManager.run(new Task.Backgroundable(project, "Installing DevTools...", true) {
@@ -133,18 +134,13 @@ public class DevToolsManager {
       return;
     }
 
-    final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
+    final FlutterSdk sdk = FlutterSdk.forPubOrBazel(project);
     if (sdk == null) {
       return;
     }
 
-    final List<PubRoot> pubRoots = PubRoots.forProject(project);
-    if (pubRoots.isEmpty()) {
-      return;
-    }
-
     // start the server
-    DevToolsInstance.startServer(project, sdk, pubRoots.get(0), instance -> {
+    DevToolsInstance.startServer(project, sdk, instance -> {
       devToolsInstance = instance;
 
       devToolsInstance.openBrowserAndConnect(uri, page);
@@ -165,10 +161,11 @@ class DevToolsInstance {
   public static void startServer(
     Project project,
     FlutterSdk sdk,
-    PubRoot pubRoot,
     Callback<DevToolsInstance> onSuccess,
     Callback<DevToolsInstance> onClose
   ) {
+    // TODO(https://github.com/flutter/flutter/issues/33324): We shouldn't need a pubroot to call pub global.
+    @Nullable final PubRoot pubRoot = PubRoots.forProject(project).stream().findFirst().orElse(null);
     final FlutterCommand command = sdk.flutterPackagesPub(pubRoot, "global", "run", "devtools", "--machine", "--port=0");
 
     // TODO(devoncarew): Refactor this so that we don't use the console to display output - this steals
