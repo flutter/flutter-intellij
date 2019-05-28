@@ -1,35 +1,45 @@
 {
   "list": [
     {
-      "comments": "IntelliJ 2018.3, AS 3.4",
-      "name": "Android Studio 3.4",
-      "version": "3.4",
+      "comments": "IntelliJ 2018.3, AS 3.4.1",
+      "name": "Android Studio 3.4.1",
+      "version": "3.4.1",
       "ijVersion": "2018.3",
       "ideaProduct": "android-studio",
-      "ideaVersion": "183.5370308",
-      "dartPluginVersion": "183.5901",
-      "sinceBuild": "183.5153",
+      "ideaVersion": "183.5522156",
+      "dartPluginVersion": "183.6270",
+      "sinceBuild": "183.6156",
       "untilBuild": "183.*"
     },
     {
-      "comments": "IntelliJ 2019.1.1, Android Studio 3.5 beta 1",
-      "name": "IntelliJ 2019.1.1",
+      "comments": "IntelliJ 2019.1.2, Android Studio 3.5 beta 3",
+      "name": "IntelliJ 2019.1.2",
       "version": "3.5",
-      "ijVersion": "2019.1.1",
+      "ijVersion": "2019.1.2",
       "ideaProduct": "android-studio",
-      "ideaVersion": "191.5529924",
-      "dartPluginVersion": "191.7019",
+      "ideaVersion": "191.5585527",
+      "dartPluginVersion": "191.7221",
       "sinceBuild": "191.6707",
-      "untilBuild": "191.7140"
+      "untilBuild": "191.7141.44.35.*"
     },
     {
-      "comments": "IntelliJ 2019.1.2",
-      "name": "IntelliJ 2019.1.2",
-      "version": "2019.1.2",
-      "ideaProduct": "ideaIU",
-      "ideaVersion": "191.7141.32",
-      "dartPluginVersion": "191.7141.24",
-      "sinceBuild": "191.7141.2",
+      "comments": "Android Studio 3.6 canary 1",
+      "name": "Android Studio 3.6 canary 1",
+      "version": "3.6",
+      "ideaProduct": "android-studio",
+      "ideaVersion": "191.5595896",
+      "dartPluginVersion": "191.7221",
+      "sinceBuild": "191.7141.44.36",
+      "untilBuild": "191.7141.44.*"
+    },
+    {
+      "comments": "IntelliJ 2019.1.3",
+      "name": "IntelliJ 2019.1.3",
+      "version": "2019.1.3",
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "2019.1.3",
+      "dartPluginVersion": "191.7479.14",
+      "sinceBuild": "191.7479.19",
       "untilBuild": "191.*"
     },
     {
@@ -37,11 +47,11 @@
       "name": "IntelliJ 2019.2 EAP",
       "version": "2019.2",
       "isTestTarget": "true",
-      "ideaProduct": "ideaIU",
-      "ideaVersion": "2019.2",
-      "dartPluginVersion": "191.7141.24",
-      "sinceBuild": "191.7141.32",
-      "untilBuild": "192.SNAPSHOT"
+      "ideaProduct": "ideaIC",
+      "ideaVersion": "192.4205.45",
+      "dartPluginVersion": "192.4205.33",
+      "sinceBuild": "192.4205.45",
+      "untilBuild": "192.*"
     }
   ]
 }
