@@ -76,7 +76,8 @@ public class NativeEditorNotificationProvider extends EditorNotifications.Provid
     }
   }
 
-  private static VirtualFile findRootDir(@NotNull VirtualFile file, VirtualFile projectDir) {
+  @Nullable
+  private static VirtualFile findRootDir(@NotNull VirtualFile file, @Nullable VirtualFile projectDir) {
     if (projectDir == null) {
       return null;
     }
