@@ -6,16 +6,15 @@
 
 package io.flutter.editor;
 
-import com.intellij.openapi.Disposable;
-import com.intellij.openapi.editor.EditorFactory;
-
 import com.intellij.codeHighlighting.Pass;
 import com.intellij.codeHighlighting.TextEditorHighlightingPass;
 import com.intellij.codeHighlighting.TextEditorHighlightingPassFactory;
 import com.intellij.codeHighlighting.TextEditorHighlightingPassRegistrar;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.EditorFactory;
 import com.intellij.openapi.editor.event.CaretEvent;
 import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.EditorEventMulticaster;
@@ -28,16 +27,14 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.settings.FlutterSettings;
-import org.dartlang.analysis.server.protocol.*;
+import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.List;
 
 /**
  * Factory that drives all rendering of widget indents.
@@ -64,7 +61,6 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // from the FlutterSettings class.
   private boolean isShowMultipleChildrenGuides;
   private boolean isShowBuildMethodGuides;
-  private boolean isDisableDartClosingLabels;
 
   private final FlutterSettings.Listener settingsListener = () -> {
     if (project == null || project.isDisposed()) {
@@ -73,8 +69,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     final FlutterSettings settings = FlutterSettings.getInstance();
     // Skip if none of the settings that impact Widget Idents were changed.
     if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
-        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides() &&
-        isDisableDartClosingLabels == settings.isDisableDartClosingLabels()) {
+        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides()) {
       // Change doesn't matter for us.
       return;
     }
@@ -90,6 +85,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   public WidgetIndentsHighlightingPassFactory(Project project) {
     this.project = project;
+
     TextEditorHighlightingPassRegistrar.getInstance(project)
       .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
     currentOutlines = new HashMap<>();
@@ -233,15 +229,8 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (isShowBuildMethodGuides != settings.isShowBuildMethodGuides()) {
       isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
       updateActiveEditors();
-      if (settings.isDisableDartClosingLabels()) {
-        DartClosingLabelManager.getInstance().setShowClosingLabels(!isShowBuildMethodGuides);
-      }
     }
-    if (settings.isShowBuildMethodGuides() && isDisableDartClosingLabels != settings.isDisableDartClosingLabels()) {
-      isDisableDartClosingLabels = settings.isDisableDartClosingLabels();
-      DartClosingLabelManager.getInstance().setShowClosingLabels(!isDisableDartClosingLabels);
 
-    }
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
   }
 
@@ -262,7 +251,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
         // Cleanup highlighters from the widget indents pass if it was
         // previously enabled.
         ApplicationManager.getApplication().invokeLater(() -> {
-          WidgetIndentsHighlightingPass.cleanupHighlighters((EditorEx)e);
+          WidgetIndentsHighlightingPass.cleanupHighlighters(e);
         });
       }
 
@@ -313,7 +302,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     }
     // If the editor and the outline have different lengths then
     // the outline is out of date and cannot safely be displayed.
-    FileOffsetsManager offsetManager = FileOffsetsManager.getInstance();
+    final FileOffsetsManager offsetManager = FileOffsetsManager.getInstance();
     final DocumentEx document = editor.getDocument();
     if (document.getTextLength() != offsetManager.getConvertedOffset(file, outline.getLength())) {
       // Outline is out of date. That is ok. Ignore it for now.

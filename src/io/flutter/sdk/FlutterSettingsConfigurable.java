@@ -67,9 +67,10 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowBuildMethodGuides;
   private JCheckBox myShowMultipleChildrenGuides;
   private JCheckBox myShowBuildMethodsOnScrollbar;
-  private JCheckBox myDisableDartClosingLabels;
 
   private final @NotNull Project myProject;
+
+  private boolean ignoringSdkChanges = false;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
@@ -87,7 +88,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
       @Override
       protected void textChanged(@NotNull final DocumentEvent e) {
-        onVersionChanged();
+        if (!ignoringSdkChanges) {
+          onVersionChanged();
+        }
       }
     });
 
@@ -116,7 +119,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowBuildMethodGuides.addChangeListener((e) -> {
       myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
       myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
-      myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
     });
 
     mySyncAndroidLibrariesCheckBox.setVisible(FlutterUtils.isAndroidStudio());
@@ -186,9 +188,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isShowBuildMethodsOnScrollbar() != myShowBuildMethodsOnScrollbar.isSelected()) {
       return true;
     }
-    if (settings.isDisableDartClosingLabels() != myDisableDartClosingLabels.isSelected()) {
-      return true;
-    }
 
     if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
       return true;
@@ -244,7 +243,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowBuildMethodGuides(myShowBuildMethodGuides.isSelected());
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
     settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
-    settings.setDisableDartClosingLabels(myDisableDartClosingLabels.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
@@ -259,11 +257,17 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   public void reset() {
     final FlutterSdk sdk = FlutterSdk.getFlutterSdk(myProject);
     final String path = sdk != null ? sdk.getHomePath() : "";
-    FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
 
     // Set this after populating the combo box to display correctly when the Flutter SDK is unset.
     // (This can happen if the user changed the Dart SDK.)
-    mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+    try {
+      ignoringSdkChanges = true;
+      FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkCombo.getComboBox());
+      mySdkCombo.getComboBox().getEditor().setItem(FileUtil.toSystemDependentName(path));
+    }
+    finally {
+      ignoringSdkChanges = false;
+    }
 
     onVersionChanged();
 
@@ -278,7 +282,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myShowBuildMethodGuides.setSelected(settings.isShowBuildMethodGuides());
     myShowMultipleChildrenGuides.setSelected(settings.isShowMultipleChildrenGuides());
     myShowBuildMethodsOnScrollbar.setSelected(settings.isShowBuildMethodsOnScrollbar());
-    myDisableDartClosingLabels.setSelected(settings.isDisableDartClosingLabels());
 
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
@@ -298,7 +301,6 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     // same class handles all these cases.
     myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
     myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
-    myDisableDartClosingLabels.setEnabled(myShowBuildMethodGuides.isSelected());
   }
 
   private void onVersionChanged() {
@@ -307,6 +309,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       myVersionLabel.setText("");
       return;
     }
+
     final ModalityState modalityState = ModalityState.current();
 
     final boolean trackWidgetCreationRecommended = sdk.getVersion().isTrackWidgetCreationRecommended();
