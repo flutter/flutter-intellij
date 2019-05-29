@@ -67,7 +67,7 @@ Include -D arguments to define these properties: idea.product, idea.version.
 
     <path id="src.sourcepath">
       <dirset dir=".">
-        <include name="src"/>
+        <include name="src/main/java"/>
         <include name="resources"/>
         <include name="gen"/>
         <include name="third_party/vmServiceDrivers"/>
