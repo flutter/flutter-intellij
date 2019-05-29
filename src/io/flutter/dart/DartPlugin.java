@@ -17,6 +17,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.ide.actions.DartPubActionBase;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
+import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,6 +81,14 @@ public class DartPlugin {
 
   public static boolean isDartTestConfiguration(ConfigurationType type) {
     return type.getId().equals("DartTestRunConfigurationType");
+  }
+
+  public static DartSdkUpdateOption doCheckForUpdates() {
+    return DartSdkUpdateOption.getDartSdkUpdateOption();
+  }
+
+  public static void setCheckForUpdates(DartSdkUpdateOption sdkUpdateOption) {
+    DartSdkUpdateOption.setDartSdkUpdateOption(sdkUpdateOption);
   }
 
   /**

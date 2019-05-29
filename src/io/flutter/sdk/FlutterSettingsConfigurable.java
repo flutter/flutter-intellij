@@ -61,7 +61,11 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
+
+  // Settings for Bazel users.
+  private JPanel myBazelOptionsSection;
   private JCheckBox myUseBazelByDefaultCheckBox;
+  private JCheckBox myShowAllRunConfigurationsInContextCheckBox;
 
   // Settings for UI as Code experiments:
   private JCheckBox myShowBuildMethodGuides;
@@ -213,8 +217,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
-    //noinspection RedundantIfStatement
     if (settings.shouldUseBazel() != myUseBazelByDefaultCheckBox.isSelected()) {
+      return true;
+    }
+
+    //noinspection RedundantIfStatement
+    if (settings.showAllRunConfigurationsInContext() != myShowAllRunConfigurationsInContextCheckBox.isSelected()) {
       return true;
     }
 
@@ -254,6 +262,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
     settings.setSyncingAndroidLibraries(mySyncAndroidLibrariesCheckBox.isSelected());
     settings.setShouldUseBazel(myUseBazelByDefaultCheckBox.isSelected());
+    settings.setShowAllRunConfigurationsInContext(myShowAllRunConfigurationsInContextCheckBox.isSelected());
 
     reset(); // because we rely on remembering initial state
   }
@@ -298,16 +307,15 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myHotReloadIgnoreErrorCheckBox.setEnabled(myHotReloadOnSaveCheckBox.isSelected());
 
-    myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
-    // We only show the bazel by default checkbox inside of a bazel project.
-    myUseBazelByDefaultCheckBox.setVisible(FlutterModuleUtils.isFlutterBazelProject(myProject));
-
     myOrganizeImportsOnSaveCheckBox.setEnabled(myFormatCodeOnSaveCheckBox.isSelected());
 
     // These options are only enabled if build method guides are enabled as the
     // same class handles all these cases.
     myShowMultipleChildrenGuides.setEnabled(myShowBuildMethodGuides.isSelected());
     myShowBuildMethodsOnScrollbar.setEnabled(myShowBuildMethodGuides.isSelected());
+
+    myUseBazelByDefaultCheckBox.setSelected(settings.shouldUseBazel());
+    myShowAllRunConfigurationsInContextCheckBox.setSelected(settings.showAllRunConfigurationsInContext());
   }
 
   private void onVersionChanged() {

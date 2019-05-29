@@ -28,11 +28,21 @@ public class FlutterSettings {
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
 
-  // The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
-  // pubspec.yaml.
-  //
-  // In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
+  /**
+   * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
+   * pubspec.yaml.
+   * <p>
+   * In other words, this key tells the plugin to configure dart projects without pubspec.yaml.
+   */
   private static final String dartProjectsWithoutPubspecRegistryKey = "dart.projects.without.pubspec";
+
+  /**
+   * Registry key to suggest all run configurations instead of just one.
+   * <p>
+   * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
+   * in the left-hand gutter.
+   */
+  private static final String suggestAllRunConfigurationsFromContextKey = "suggest.all.run.configurations.from.context";
 
   // Settings for UI as Code experiments.
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
@@ -216,7 +226,7 @@ public class FlutterSettings {
   }
 
   /**
-   * Determines whether to use bazel project.
+   * Determines whether to use bazel package management.
    */
   public boolean shouldUseBazel() {
     return Registry.is(dartProjectsWithoutPubspecRegistryKey, false);
@@ -224,6 +234,22 @@ public class FlutterSettings {
 
   public void setShouldUseBazel(boolean value) {
     Registry.get(dartProjectsWithoutPubspecRegistryKey).setValue(value);
+
+    fireEvent();
+  }
+
+  /**
+   * Tells IntelliJ to show all run configurations possible when the user clicks on the left-hand green arror to run a test.
+   * <p>
+   * Useful for {@link io.flutter.run.bazelTest.FlutterBazelTestConfigurationType} to show both watch and regular configurations
+   * in the left-hand gutter.
+   */
+  public boolean showAllRunConfigurationsInContext() {
+    return Registry.is(suggestAllRunConfigurationsFromContextKey, false);
+  }
+
+  public void setShowAllRunConfigurationsInContext(boolean value) {
+    Registry.get(suggestAllRunConfigurationsFromContextKey).setValue(value);
 
     fireEvent();
   }
