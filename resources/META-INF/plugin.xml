@@ -29,7 +29,7 @@
 
   <change-notes>
     <![CDATA[
-<h2>36</h2>
+<h2>36.0</h2>
 <ul>
   <li>Add Gradle build script (#3529)</li>
   <li>Update for new platform releases (#3527)</li>
