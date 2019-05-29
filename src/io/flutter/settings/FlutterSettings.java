@@ -10,6 +10,7 @@ import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
+import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.analytics.Analytics;
 import io.flutter.sdk.FlutterSdk;
 
@@ -255,6 +256,14 @@ public class FlutterSettings {
     getPropertiesComponent().setValue(showBuildMethodsOnScrollbarKey, value, false);
 
     fireEvent();
+  }
+
+  public boolean isShowClosingLabels() {
+    return DartClosingLabelManager.getInstance().getShowClosingLabels();
+  }
+
+  public void setShowClosingLabels(boolean value) {
+    DartClosingLabelManager.getInstance().setShowClosingLabels(value);
   }
 
   public boolean isShowMultipleChildrenGuides() {
