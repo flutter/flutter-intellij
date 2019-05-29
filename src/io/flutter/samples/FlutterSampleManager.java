@@ -17,6 +17,8 @@ import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.ide.impl.ProjectUtil;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.io.FileUtil;
@@ -74,58 +76,74 @@ public class FlutterSampleManager {
 
     final Timer timer = new Timer();
 
-    try {
-      final File tempDir = Files.createTempDirectory("flutter-samples-index").toFile();
-      tempDir.deleteOnExit();
-      final File tempFile = new File(tempDir, "index.json");
+    final Task.Backgroundable task = new Task.Backgroundable(null, "Initializing Flutter Sample Listing", true) {
+      OSProcessHandler process;
+      public void run(@NotNull ProgressIndicator indicator) {
+        try {
+          final File tempDir = Files.createTempDirectory("flutter-samples-index").toFile();
+          tempDir.deleteOnExit();
+          final File tempFile = new File(tempDir, "index.json");
 
-      try {
-        final GeneralCommandLine commandLine = sdk.flutterListSamples(tempFile).createGeneralCommandLine(null);
-        final OSProcessHandler process = new OSProcessHandler(commandLine);
+          try {
+            final GeneralCommandLine commandLine = sdk.flutterListSamples(tempFile).createGeneralCommandLine(null);
+            process = new OSProcessHandler(commandLine);
 
-        timer.schedule(new TimerTask() {
-          @Override
-          public void run() {
-            LOG.info("Flutter sample listing timed out, process cancelled.");
-            final Process p = process.getProcess();
-            try {
-              if (p.isAlive()) {
-                p.destroy();
+            timer.schedule(new TimerTask() {
+              @Override
+              public void run() {
+                LOG.info("Flutter sample listing timed out, process cancelled.");
+                onCancel();
               }
-            }
-            catch (Exception e) {
-              LOG.warn(e);
-            }
-          }
-        }, SAMPLE_LISTING_PROCESS_TIMEOUT_IN_MS);
+            }, SAMPLE_LISTING_PROCESS_TIMEOUT_IN_MS);
 
-        process.addProcessListener(new ProcessAdapter() {
-          @Override
-          public void processTerminated(@NotNull ProcessEvent event) {
+            process.addProcessListener(new ProcessAdapter() {
+              @Override
+              public void processTerminated(@NotNull ProcessEvent event) {
+                timer.cancel();
+                try {
+                  final byte[] bytes = Files.readAllBytes(tempFile.toPath());
+                  final String content = new String(bytes);
+                  flutterSamples = FlutterSampleManager.readSamples(content);
+                }
+                catch (IOException e) {
+                  LOG.warn(e);
+                }
+              }
+            });
+            process.startNotify();
+
+            // TODO(pq): consider something to allow for a retry after some amount of ellapsed time.
+          }
+          catch (ExecutionException e) {
+            LOG.warn(e);
             timer.cancel();
-            try {
-              final byte[] bytes = Files.readAllBytes(tempFile.toPath());
-              final String content = new String(bytes);
-              flutterSamples = FlutterSampleManager.readSamples(content);
-            }
-            catch (IOException e) {
-              LOG.warn(e);
-            }
           }
-        });
-        process.startNotify();
+        }
+        catch (IOException e) {
+          LOG.warn(e);
+          timer.cancel();
+        }
+      }
 
-        // TODO(pq): consider something to allow for a retry after some amount of ellapsed time.
+      @Override
+      public void onCancel() {
+        if (process == null) {
+          return;
+        }
+        final Process p = process.getProcess();
+        try {
+          if (p.isAlive()) {
+            p.destroyForcibly();
+          }
+        }
+        catch (Exception e) {
+          LOG.warn(e);
+        }
       }
-      catch (ExecutionException e) {
-        LOG.warn(e);
-        timer.cancel();
-      }
-    }
-    catch (IOException e) {
-      LOG.warn(e);
-      timer.cancel();
-    }
+    };
+
+    task.setCancelText("Cancel Flutter Sample List initialization").queue();
+    task.queue();
 
     return flutterSamples;
   }
