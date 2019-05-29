@@ -29,6 +29,28 @@
 
   <change-notes>
     <![CDATA[
+<h2>36.0</h2>
+<ul>
+  <li>Add Gradle build script (#3529)</li>
+  <li>Update for new platform releases (#3527)</li>
+  <li>Add in a preference to toggle closing labels (#3528)</li>
+  <li>Don't disable closing labels as part of UI Guides (#3525)</li>
+  <li>Enable devtools launching from Bazel (#3511)</li>
+  <li>Guard against null project basedir (#3524)</li>
+  <li>Change DeviceDaemon to show a detailed error when it fails too many times. (#3513)</li>
+  <li>Add an inline run menu option to run or watch Bazel Flutter tests (#3507)</li>
+  <li>Make the save dialog refer to the save all action, not the save action (#3505)</li>
+  <li>Introduce an opt-in detailed test runner for Bazel tests (#3451)</li>
+  <li>Remove the android studio specific memory view (#3497)</li>
+  <li>Limit the amount of time we wait for a graceful app shutdown (#3490)</li>
+  <li>Mark the device daemon process as a background process (#3488)</li>
+  <li>Fix errors in AS 3.5 beta 1 (#3487)</li>
+  <li>Remove the preview view from the flutter outline view (#3481)</li>
+  <li>Remove a println in WidgetIndentsHighlightingPass.java (#3468)</li>
+  <li>Fix an npe from the FlutterErrorReportSubmitter.java class (#3469)</li>
+  <li>Handle notifications when a project has been disposed more gracefully. (#3472)</li>
+  <li>Fix two bugs for widget guide outlines. (#3470)</li>
+</ul>
 <h2>35.1.3</h2>
 <ul>
   <li>Support IntelliJ 2019.1.2 RC</li>

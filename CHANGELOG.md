@@ -1,3 +1,24 @@
+## 36.0
+- Add Gradle build script (#3529)
+- Update for new platform releases (#3527)
+- Add in a preference to toggle closing labels (#3528)
+- Don't disable closing labels as part of UI Guides (#3525)
+- Enable devtools launching from Bazel (#3511)
+- Guard against null project basedir (#3524)
+- Change DeviceDaemon to show a detailed error when it fails too many times. (#3513)
+- Add an inline run menu option to run or watch Bazel Flutter tests (#3507)
+- Make the save dialog refer to the save all action, not the save action (#3505)
+- Introduce an opt-in detailed test runner for Bazel tests (#3451)
+- Remove the android studio specific memory view (#3497)
+- Limit the amount of time we wait for a graceful app shutdown (#3490)
+- Mark the device daemon process as a background process (#3488)
+- Fix errors in AS 3.5 beta 1 (#3487)
+- Remove the preview view from the flutter outline view (#3481)
+- Remove a println in WidgetIndentsHighlightingPass.java (#3468)
+- Fix an npe from the FlutterErrorReportSubmitter.java class (#3469)
+- Handle notifications when a project has been disposed more gracefully. (#3472)
+- Fix two bugs for widget guide outlines. (#3470)
+
 ## 35.1.3
 - Support IntelliJ 2019.1.2 RC
 - Support Android Studio 3.5 beta 1
