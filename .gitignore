@@ -15,5 +15,5 @@ pubspec.lock
 material-design-icons/
 flutter-gui-tests/guitest.log
 flutter-gui-tests/.gradle/
-.gradle
-.sandbox
+.gradle/
+.sandbox/

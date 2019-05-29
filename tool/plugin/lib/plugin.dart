@@ -339,7 +339,10 @@ void _copyResources(Directory from, Directory to) {
     if (entity is File) {
       _copyFile(entity, to);
     } else {
-      _copyResources(entity, new Directory(p.join(to.path, basename)));
+      final pathToCopy = p.join(to.path, basename);
+      if (File(pathToCopy) is Directory) {
+        _copyResources(entity, new Directory(pathToCopy));
+      }
     }
   }
 }
