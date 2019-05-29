@@ -37,15 +37,14 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class FlutterSampleManager {
   // TODO(pq): remove after testing.
   // See https://github.com/flutter/flutter-intellij/issues/3330.
   private static final boolean DISABLE_SAMPLES = false;
+
+  private static final long SAMPLE_LISTING_PROCESS_TIMEOUT_IN_MS = 30000L;
 
   private static final String SNIPPETS_REMOTE_INDEX_URL = "https://docs.flutter.io/snippets/index.json";
 
@@ -68,6 +67,13 @@ public class FlutterSampleManager {
       return flutterSamples;
     }
 
+    // Set samples to an empty list to:
+    // 1. ensure we don't call the flutter tool multiple times
+    // 2. leave things in a sensible default state if an exception occurs
+    flutterSamples = Collections.emptyList();
+
+    final Timer timer = new Timer();
+
     try {
       final File tempDir = Files.createTempDirectory("flutter-samples-index").toFile();
       tempDir.deleteOnExit();
@@ -76,9 +82,27 @@ public class FlutterSampleManager {
       try {
         final GeneralCommandLine commandLine = sdk.flutterListSamples(tempFile).createGeneralCommandLine(null);
         final OSProcessHandler process = new OSProcessHandler(commandLine);
+
+        timer.schedule(new TimerTask() {
+          @Override
+          public void run() {
+            LOG.info("Flutter sample listing timed out, process cancelled.");
+            final Process p = process.getProcess();
+            try {
+              if (p.isAlive()) {
+                p.destroy();
+              }
+            }
+            catch (Exception e) {
+              LOG.warn(e);
+            }
+          }
+        }, SAMPLE_LISTING_PROCESS_TIMEOUT_IN_MS);
+
         process.addProcessListener(new ProcessAdapter() {
           @Override
           public void processTerminated(@NotNull ProcessEvent event) {
+            timer.cancel();
             try {
               final byte[] bytes = Files.readAllBytes(tempFile.toPath());
               final String content = new String(bytes);
@@ -86,34 +110,24 @@ public class FlutterSampleManager {
             }
             catch (IOException e) {
               LOG.warn(e);
-              // On IOException, short circuit checking again.
-              flutterSamples = Collections.emptyList();
             }
           }
         });
-
         process.startNotify();
 
-        final int timeoutInMs = 2000;
-        // TODO(pq): is this wait right?
-        if (process.waitFor(timeoutInMs)) {
-          LOG.info("Flutter sample listing took more than " + timeoutInMs + "ms");
-          // Don't cache here so that we can try again later.
-        }
+        // TODO(pq): consider something to allow for a retry after some amount of ellapsed time.
       }
       catch (ExecutionException e) {
         LOG.warn(e);
-        // On ExecutionException, short circuit checking again.
-        flutterSamples = Collections.emptyList();
+        timer.cancel();
       }
     }
     catch (IOException e) {
       LOG.warn(e);
-      // On IOException, short circuit checking again.
-      flutterSamples = Collections.emptyList();
+      timer.cancel();
     }
 
-    return flutterSamples != null ? flutterSamples : Collections.emptyList();
+    return flutterSamples;
   }
 
   // Called at project initialization.
