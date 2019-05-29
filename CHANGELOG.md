@@ -1,4 +1,4 @@
-## 36
+## 36.0
 - Add Gradle build script (#3529)
 - Update for new platform releases (#3527)
 - Add in a preference to toggle closing labels (#3528)
