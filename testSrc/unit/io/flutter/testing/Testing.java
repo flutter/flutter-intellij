@@ -11,7 +11,6 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.TransactionGuard;
 import com.intellij.openapi.util.ThrowableComputable;
 import com.intellij.testFramework.builders.EmptyModuleFixtureBuilder;
-import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
 import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import com.intellij.testFramework.fixtures.TestFixtureBuilder;
@@ -26,11 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class Testing {
 
   static {
-    // Very early on in the process of running tests we need to trigger all
-    // the initialization that typically happens when an IntelliJ test is run.
-    // TODO(jacobr): calling this method appears to trigger that initialization
-    // but this is not a robust solution. It could be better long term to switch
-    // to the standard test fixtures used by IntelliJ.
+    // Initialize the application.
     IdeaTestApplication.getInstance();
   }
 
@@ -63,10 +58,7 @@ public class Testing {
     return new ProjectFixture((x) -> {
       final IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
       final IdeaProjectTestFixture light = factory.createLightFixtureBuilder().getFixture();
-      final CodeInsightTestFixture insight = factory.createCodeInsightFixture(light);
-      // Not clear that we need this; test passes without it.
-      insight.setTestDataPath(FlutterTestUtils.BASE_TEST_DATA_PATH);
-      return insight;
+      return factory.createCodeInsightFixture(light);
     }, false);
   }
 

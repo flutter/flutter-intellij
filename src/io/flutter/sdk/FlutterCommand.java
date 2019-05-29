@@ -254,7 +254,7 @@ public class FlutterCommand {
     if (workDir != null) {
       line.setWorkDirectory(workDir.getPath());
     }
-    if (!isDoctorCommand()) {
+    if (!isDoctorCommand() && !(sdk instanceof FlutterSdk.BazelSdk)) {
       line.addParameter("--no-color");
     }
     line.addParameters(type.subCommand);

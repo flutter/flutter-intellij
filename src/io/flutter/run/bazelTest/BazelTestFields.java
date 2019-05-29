@@ -25,6 +25,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
+import io.flutter.run.bazelTest.FlutterBazelTestConfigurationType.WatchFactory;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.sdk.FlutterSettingsConfigurable;
 import io.flutter.utils.ElementIO;
@@ -78,22 +79,22 @@ public class BazelTestFields {
    * Creates settings for running tests with the given name within a Dart file.
    */
   @NotNull
-  public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path) {
-    return new BazelTestFields(testName, path, null, null);
+  public static BazelTestFields forTestName(@NotNull String testName, @NotNull String path, @Nullable String additionalArgs) {
+    return new BazelTestFields(testName, path, null, additionalArgs);
   }
 
   /**
    * Creates settings for running all the tests in a Dart file.
    */
-  public static BazelTestFields forFile(@NotNull String path) {
-    return new BazelTestFields(null, path, null, null);
+  public static BazelTestFields forFile(@NotNull String path, @Nullable String additionalArgs) {
+    return new BazelTestFields(null, path, null, additionalArgs);
   }
 
   /**
    * Creates settings for running all the tests in a Bazel target
    */
-  public static BazelTestFields forTarget(@NotNull String target) {
-    return new BazelTestFields(null, null, target, null);
+  public static BazelTestFields forTarget(@NotNull String target, @Nullable String additionalArgs) {
+    return new BazelTestFields(null, null, target, additionalArgs);
   }
 
 
@@ -241,6 +242,14 @@ public class BazelTestFields {
     }
   }
 
+  /**
+   * Checks if these fields provide a test-watching configuration (include the flag --watch).
+   *
+   * See {@link BazelWatchTestConfigProducer} and {@link WatchFactory} for more information.
+   */
+  public boolean isWatchConfig() {
+    return getAdditionalArgs() != null && getAdditionalArgs().contains("--watch");
+  }
 
   /**
    * Determines the type of test invocation we need to run: test-by-name, test-by-file, or test-by-bazel-target.

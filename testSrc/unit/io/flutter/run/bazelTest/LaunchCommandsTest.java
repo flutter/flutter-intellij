@@ -10,7 +10,8 @@ import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.configurations.RuntimeConfigurationError;
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.project.Project;
-import io.flutter.bazel.PluginConfig;
+import com.intellij.openapi.util.Pair;
+import io.flutter.bazel.FakeWorkspaceFactory;
 import io.flutter.bazel.Workspace;
 import io.flutter.run.daemon.RunMode;
 import io.flutter.testing.ProjectFixture;
@@ -118,10 +119,12 @@ public class LaunchCommandsTest {
   @Test
   public void producesCorrectCommandLineForBazelTargetWithoutTestScript() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("//foo:test"),
+      BazelTestFields.forTarget("//foo:test", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
+      null,
       null
     );
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
@@ -135,10 +138,12 @@ public class LaunchCommandsTest {
   @Test
   public void producesCorrectCommandLineForBazelTargetWithoutTestScriptInDebugMode() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTarget("//foo:test"),
+      BazelTestFields.forTarget("//foo:test", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
+      null,
       null
     );
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.DEBUG);
@@ -154,10 +159,12 @@ public class LaunchCommandsTest {
   @Test
   public void failsForFileWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forFile("/workspace/foo/test/foo_test.dart"),
+      BazelTestFields.forFile("/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
+      null,
       null
     );
     boolean didThrow = false;
@@ -173,10 +180,12 @@ public class LaunchCommandsTest {
   @Test
   public void failsForTestNameWithoutTestScript() {
     final BazelTestFields fields = new FakeBazelTestFields(
-      BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart"),
+      BazelTestFields.forTestName("first test", "/workspace/foo/test/foo_test.dart", null),
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
+      null,
       null
     );
     boolean didThrow = false;
@@ -213,6 +222,8 @@ public class LaunchCommandsTest {
       "scripts/daemon.sh",
       "scripts/doctor.sh",
       "scripts/launch.sh",
+      null,
+      null,
       null
     );
     final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
@@ -224,15 +235,15 @@ public class LaunchCommandsTest {
   }
 
   private FakeBazelTestFields forFile(String file) {
-    return new FakeBazelTestFields(BazelTestFields.forFile(file));
+    return new FakeBazelTestFields(BazelTestFields.forFile(file, null));
   }
 
   private FakeBazelTestFields forTestName(String testName, String file) {
-    return new FakeBazelTestFields(BazelTestFields.forTestName(testName, file));
+    return new FakeBazelTestFields(BazelTestFields.forTestName(testName, file, null));
   }
 
   private FakeBazelTestFields forTarget(String target) {
-    return new FakeBazelTestFields(BazelTestFields.forTarget(target));
+    return new FakeBazelTestFields(BazelTestFields.forTarget(target, null));
   }
 
   /**
@@ -240,47 +251,28 @@ public class LaunchCommandsTest {
    */
   private static class FakeBazelTestFields extends BazelTestFields {
 
-    final MockVirtualFileSystem fs = new MockVirtualFileSystem();
+    final MockVirtualFileSystem fs;
     final Workspace fakeWorkspace;
 
     FakeBazelTestFields(@NotNull BazelTestFields template,
                         @Nullable String daemonScript,
                         @Nullable String doctorScript,
                         @Nullable String launchScript,
-                        @Nullable String testScript) {
+                        @Nullable String testScript,
+                        @Nullable String sdkHome,
+                        @Nullable String versionFile) {
       super(template);
-      fs.file("/workspace/WORKSPACE", "");
-      if (daemonScript != null) {
-        fs.file("/workspace/" + daemonScript, "");
-      }
-      if (doctorScript != null) {
-        fs.file("/workspace/" + doctorScript, "");
-      }
-      if (launchScript != null) {
-        fs.file("/workspace/" + launchScript, "");
-      }
-      if (testScript != null) {
-        fs.file("/workspace/" + testScript, "");
-      }
-      fakeWorkspace = Workspace.forTest(
-        fs.findFileByPath("/workspace/"),
-        PluginConfig.forTest(
-          daemonScript,
-          doctorScript,
-          launchScript,
-          testScript
-        )
-      );
+      final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory
+        .createWorkspaceAndFilesystem(daemonScript, doctorScript, launchScript, testScript, sdkHome, versionFile);
+      fs = pair.first;
+      fakeWorkspace = pair.second;
     }
 
     FakeBazelTestFields(@NotNull BazelTestFields template) {
-      this(
-        template,
-        "scripts/flutter-daemon.sh",
-        "scripts/flutter-doctor.sh",
-        "scripts/bazel-run.sh",
-        "scripts/flutter-test.sh"
-      );
+      super(template);
+      final Pair.NonNull<MockVirtualFileSystem, Workspace> pair = FakeWorkspaceFactory.createWorkspaceAndFilesystem();
+      fs = pair.first;
+      fakeWorkspace = pair.second;
     }
 
     @Override

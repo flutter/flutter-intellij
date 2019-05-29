@@ -6,8 +6,10 @@
 package io.flutter.sdk;
 
 import com.google.gson.*;
+import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.*;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.externalSystem.service.execution.InvalidSdkException;
 import com.intellij.openapi.fileEditor.FileDocumentManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
@@ -19,7 +21,9 @@ import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.*;
 import com.intellij.util.ui.EdtInvocationManager;
 import com.jetbrains.lang.dart.sdk.DartSdk;
+import com.jetbrains.lang.dart.sdk.DartSdkUtil;
 import io.flutter.FlutterUtils;
+import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterLaunchMode;
@@ -32,10 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.util.Arrays.asList;
 
@@ -86,6 +87,34 @@ public class FlutterSdk {
     // Cache based on the project and path ('e41cfa3d:/Users/devoncarew/projects/flutter/flutter').
     final String cacheKey = project.getLocationHash() + ":" + sdkPath;
     return projectSdkCache.computeIfAbsent(cacheKey, s -> forPath(sdkPath));
+  }
+
+  /**
+   * Return the FlutterSdk for a project in a Bazel workspace.
+   * <p>
+   * Returns null if we are not in a bazel project.
+   * <p>
+   * NOTE that the Bazel FlutterSdk does not have the same features defined as the normal SDK.
+   * Only use this if you are sure you know what you are doing.
+   */
+  public static FlutterSdk forBazel(@NotNull final Project project) {
+    // If this is not a bazel project, return null.
+    final Workspace workspace = Workspace.load(project);
+    if (workspace == null) {
+      return null;
+    }
+    return new BazelSdk(project, workspace);
+  }
+
+  /**
+   * Return the FlutterSdk for a project, using a pub or bazel-based SDK as appropriate.
+   * <p>
+   * NOTE that the Bazel FlutterSdk does not have the same features defined as the normal SDK.
+   * Only use this if you are sure you know what you are doing.
+   */
+  @Nullable
+  public static FlutterSdk forPubOrBazel(@NotNull final Project project) {
+    return FlutterSettings.getInstance().shouldUseBazel() ? FlutterSdk.forBazel(project) : FlutterSdk.getFlutterSdk(project);
   }
 
   /**
@@ -567,5 +596,93 @@ public class FlutterSdk {
     }
 
     return null;
+  }
+
+  /**
+   * A {@link FlutterSdk} that is compatible with the Bazel version of the Dart and Flutter SDK.
+   */
+  public static class BazelSdk extends FlutterSdk {
+    /**
+     * The Bazel workspace for this project.
+     */
+    @NotNull final Workspace workspace;
+
+    @NotNull final Project project;
+
+    private BazelSdk(@NotNull Project project, @NotNull Workspace workspace) {
+      super(
+        Objects.requireNonNull(
+          workspace.getRoot().findFileByRelativePath(
+            Objects.requireNonNull(workspace.getSdkHome())
+          )
+        ),
+        FlutterSdkVersion.readFromFile(
+          Objects.requireNonNull(
+            workspace.getRoot().findFileByRelativePath(
+              Objects.requireNonNull(workspace.getVersionFile())
+            )
+          )
+        )
+      );
+      this.workspace = workspace;
+      this.project = project;
+    }
+
+    @Nullable
+    @Override
+    public String getDartSdkPath() {
+      DartSdk sdk = DartSdk.getDartSdk(project);
+      if (sdk == null) {
+        return null;
+      }
+      return sdk.getHomePath();
+    }
+
+    @Override
+    public FlutterCommand flutterPackagesPub(@Nullable PubRoot root, String... args) {
+      return new BazelPubCommand(this, root == null ? null : root.getRoot(), FlutterCommand.Type.PACKAGES_PUB, args);
+    }
+  }
+
+  /**
+   * Creates a pub command that uses the bazel Dart SDK instead of the Flutter SDK.
+   */
+  private static class BazelPubCommand extends FlutterCommand {
+    private BazelPubCommand(@NotNull BazelSdk sdk, @Nullable VirtualFile workDir, @NotNull Type type, String... args) {
+      super(sdk, workDir, type, args);
+    }
+
+    @Override
+    public String getDisplayCommand() {
+      final List<String> words = new ArrayList<>();
+      words.add("flutter");
+      words.addAll(args);
+      return String.join(" ", words);
+    }
+
+    @NotNull
+    @Override
+    public GeneralCommandLine createGeneralCommandLine(@Nullable Project project) {
+      GeneralCommandLine original = super.createGeneralCommandLine(project);
+      GeneralCommandLine line = new GeneralCommandLine();
+
+      // Strip the subcommand from the parameters, because we will talk directly to pub.
+      final List<String> parameters = new ArrayList<>(original.getParametersList().getList());
+      final int pubSubcommandIndex = Collections.indexOfSubList(parameters, Type.PACKAGES_PUB.subCommand);
+      for (int i = 0; i < Type.PACKAGES_PUB.subCommand.size(); i++) {
+        parameters.remove(pubSubcommandIndex);
+      }
+
+      final String dartSdkPath = sdk.getDartSdkPath();
+      if (dartSdkPath == null) {
+        throw new InvalidSdkException("Unable to find the Dart SDK");
+      }
+      // Copy the original without the unneeded subcommand params and an adjusted sdk path.
+      return line
+        .withParameters(parameters)
+        .withExePath(DartSdkUtil.getPubPath(dartSdkPath))
+        .withCharset(CharsetToolkit.UTF8_CHARSET)
+        .withEnvironment(original.getEnvironment()).withWorkDirectory(original.getWorkDirectory());
+    }
   }
 }

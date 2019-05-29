@@ -7,17 +7,12 @@ package io.flutter.settings;
 
 import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.components.ServiceManager;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.SystemInfoRt;
 import com.intellij.openapi.util.registry.Registry;
 import com.intellij.util.EventDispatcher;
-import com.jetbrains.lang.dart.sdk.DartSdkUpdateOption;
+import com.jetbrains.lang.dart.analyzer.DartClosingLabelManager;
 import io.flutter.analytics.Analytics;
-import io.flutter.bazel.Workspace;
-import io.flutter.dart.DartPlugin;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.utils.FlutterModuleUtils;
 
 import java.util.EventListener;
 
@@ -53,7 +48,6 @@ public class FlutterSettings {
   private static final String showBuildMethodGuidesKey = "io.flutter.editor.showBuildMethodGuides";
   private static final String showMultipleChildrenGuidesKey = "io.flutter.editor.showMultipleChildrenGuides";
   private static final String showBuildMethodsOnScrollbarKey = "io.flutter.editor.showBuildMethodsOnScrollbarKey";
-  private static final String disableDartClosingLabelsKey = "io.flutter.editor.disableDartClosingLabelsKey";
 
   public static FlutterSettings getInstance() {
     return ServiceManager.getService(FlutterSettings.class);
@@ -114,10 +108,6 @@ public class FlutterSettings {
     if (isShowBuildMethodsOnScrollbar()) {
       analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
     }
-    if (!isDisableDartClosingLabels()) {
-      // The default value is true so only send the event if the setting was turned off.
-      analytics.sendEvent("settings", afterLastPeriod(disableDartClosingLabelsKey + "_off"));
-    }
 
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
@@ -159,6 +149,7 @@ public class FlutterSettings {
 
   public void setDisableTrackWidgetCreation(boolean value) {
     getPropertiesComponent().setValue(disableTrackWidgetCreationKey, value, false);
+
     fireEvent();
   }
 
@@ -293,16 +284,13 @@ public class FlutterSettings {
     fireEvent();
   }
 
-  public boolean isDisableDartClosingLabels() {
-    return getPropertiesComponent().getBoolean(disableDartClosingLabelsKey, true);
+  public boolean isShowClosingLabels() {
+    return DartClosingLabelManager.getInstance().getShowClosingLabels();
   }
 
-  public void setDisableDartClosingLabels(boolean value) {
-    getPropertiesComponent().setValue(disableDartClosingLabelsKey, value, true);
-
-    fireEvent();
+  public void setShowClosingLabels(boolean value) {
+    DartClosingLabelManager.getInstance().setShowClosingLabels(value);
   }
-
 
   public boolean isShowMultipleChildrenGuides() {
     return getPropertiesComponent().getBoolean(showMultipleChildrenGuidesKey, false);

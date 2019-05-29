@@ -15,6 +15,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
+import org.dartlang.vm.service.element.Obj;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,6 +53,16 @@ public class PluginConfig {
   @Nullable
   String getTestScript() {
     return fields.testScript;
+  }
+
+  @Nullable
+  String getSdkHome() {
+    return fields.sdkHome;
+  }
+
+  @Nullable
+  String getVersionFile() {
+    return fields.versionFile;
   }
 
   @Override
@@ -93,7 +104,8 @@ public class PluginConfig {
         return null;
       }
       catch (PatternSyntaxException e) {
-        FlutterUtils.warn(LOG, "Flutter plugin failed to parse directory pattern (" + e.getPattern() + ") in config file at " + file.getPath());
+        FlutterUtils
+          .warn(LOG, "Flutter plugin failed to parse directory pattern (" + e.getPattern() + ") in config file at " + file.getPath());
         return null;
       }
     };
@@ -106,13 +118,17 @@ public class PluginConfig {
     @Nullable String daemonScript,
     @Nullable String doctorScript,
     @Nullable String launchScript,
-    @Nullable String testScript
+    @Nullable String testScript,
+    @Nullable String sdkHome,
+    @Nullable String versionFile
   ) {
     final Fields fields = new Fields(
       daemonScript,
       doctorScript,
       launchScript,
-      testScript
+      testScript,
+      sdkHome,
+      versionFile
     );
     return new PluginConfig(fields);
   }
@@ -146,17 +162,31 @@ public class PluginConfig {
     @SerializedName("testScript")
     private String testScript;
 
+    /**
+     * The directory containing the SDK tools.
+     */
+    @SerializedName("sdkHome")
+    private String sdkHome;
+
+    /**
+     * The file containing the Flutter version.
+     */
+    @SerializedName("versionFile")
+    private String versionFile;
+
     Fields() {
     }
 
     /**
      * Convenience constructor that takes all
      */
-    Fields(String daemonScript, String doctorScript, String launchScript, String testScript) {
+    Fields(String daemonScript, String doctorScript, String launchScript, String testScript, String sdkHome, String versionFile) {
       this.daemonScript = daemonScript;
       this.doctorScript = doctorScript;
       this.launchScript = launchScript;
       this.testScript = testScript;
+      this.sdkHome = sdkHome;
+      this.versionFile = versionFile;
     }
 
     @Override
@@ -166,12 +196,14 @@ public class PluginConfig {
       return Objects.equal(daemonScript, other.daemonScript)
              && Objects.equal(doctorScript, other.doctorScript)
              && Objects.equal(launchScript, other.launchScript)
-             && Objects.equal(testScript, other.testScript);
+             && Objects.equal(testScript, other.testScript)
+             && Objects.equal(sdkHome, other.sdkHome)
+             && Objects.equal(versionFile, other.versionFile);
     }
 
     @Override
     public int hashCode() {
-      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript);
+      return Objects.hashCode(daemonScript, doctorScript, launchScript, testScript, sdkHome, versionFile);
     }
   }
 

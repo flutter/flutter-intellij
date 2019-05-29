@@ -41,6 +41,11 @@ public class FlutterSdkVersion {
   public static FlutterSdkVersion readFromSdk(@NotNull VirtualFile sdkHome) {
     final VirtualFile file = sdkHome.findChild("version");
 
+    return readFromFile(file);
+  }
+
+  @NotNull
+  public static FlutterSdkVersion readFromFile(@Nullable VirtualFile file) {
     if (file == null) {
       return MIN_SUPPORTED_SDK;
     }

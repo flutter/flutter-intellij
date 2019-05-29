@@ -339,7 +339,10 @@ void _copyResources(Directory from, Directory to) {
     if (entity is File) {
       _copyFile(entity, to);
     } else {
-      _copyResources(entity, new Directory(p.join(to.path, basename)));
+      final pathToCopy = p.join(to.path, basename);
+      if (FileSystemEntity.isDirectorySync(pathToCopy)) {
+        _copyResources(entity, new Directory(pathToCopy));
+      }
     }
   }
 }
@@ -581,7 +584,7 @@ class BuildCommand extends ProductCommand {
       // TODO: Remove this when we no longer support AS 3.3 (IJ 2018.2.5) or AS 3.4
       var files = <File, String>{};
       var processedFile, source;
-      if (spec.version == '3.4') {
+      if (spec.version.startsWith('3.4')) {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/module/FlutterDescriptionProvider.java');
@@ -606,7 +609,7 @@ class BuildCommand extends ProductCommand {
         );
         processedFile.writeAsStringSync(source);
       }
-      if (spec.version != '3.5') {
+      if (!spec.version.startsWith('3.5') && !spec.version.startsWith('3.6')) {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
