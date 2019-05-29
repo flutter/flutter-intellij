@@ -340,7 +340,7 @@ void _copyResources(Directory from, Directory to) {
       _copyFile(entity, to);
     } else {
       final pathToCopy = p.join(to.path, basename);
-      if (File(pathToCopy) is Directory) {
+      if (FileSystemEntity.isDirectorySync(pathToCopy)) {
         _copyResources(entity, new Directory(pathToCopy));
       }
     }
@@ -609,7 +609,7 @@ class BuildCommand extends ProductCommand {
         );
         processedFile.writeAsStringSync(source);
       }
-      if (!spec.version.startsWith('3.5') && ! spec.version.startsWith('3.6')) {
+      if (!spec.version.startsWith('3.5') && !spec.version.startsWith('3.6')) {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
