@@ -36,7 +36,6 @@ import io.flutter.sdk.FlutterPluginsLibraryManager;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.survey.FlutterSurveyNotifications;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.view.FlutterPerfViewFactory;
 import io.flutter.view.FlutterViewFactory;
@@ -134,9 +133,6 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     FlutterRunNotifications.init(project);
-
-    // Start watching for survey triggers.
-    FlutterSurveyNotifications.init(project);
     
     // Start the widget perf manager.
     FlutterWidgetPerfManager.init(project);
