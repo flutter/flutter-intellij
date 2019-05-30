@@ -338,11 +338,8 @@ void _copyResources(Directory from, Directory to) {
 
     if (entity is File) {
       _copyFile(entity, to);
-    } else {
-      final pathToCopy = p.join(to.path, basename);
-      if (FileSystemEntity.isDirectorySync(pathToCopy)) {
-        _copyResources(entity, new Directory(pathToCopy));
-      }
+    } else if (entity is Directory) {
+      _copyResources(entity, new Directory(p.join(to.path, basename)));
     }
   }
 }
