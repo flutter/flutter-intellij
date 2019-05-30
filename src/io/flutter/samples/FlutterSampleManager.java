@@ -78,7 +78,15 @@ public class FlutterSampleManager {
 
     final Task.Backgroundable task = new Task.Backgroundable(null, "Initializing Flutter Sample Listing", true) {
       OSProcessHandler process;
+      boolean isRunning;
       public void run(@NotNull ProgressIndicator indicator) {
+        synchronized(this) {
+          if (isRunning) {
+            return;
+          }
+          isRunning = true;
+        }
+
         // Don't re-run.
         if (process != null) {
           return;
