@@ -55,7 +55,8 @@ public class FlutterSdk {
   private final @NotNull FlutterSdkVersion myVersion;
   private final Map<String, String> cachedConfigValues = new HashMap<>();
 
-  private FlutterSampleManager sampleManager;
+  // TODO(pq): make this an instance field as soon as SDKs are being cached and not constantly regenerated.
+  private static FlutterSampleManager sampleManager;
 
   private FlutterSdk(@NotNull final VirtualFile home, @NotNull final FlutterSdkVersion version) {
     myHome = home;

@@ -79,6 +79,10 @@ public class FlutterSampleManager {
     final Task.Backgroundable task = new Task.Backgroundable(null, "Initializing Flutter Sample Listing", true) {
       OSProcessHandler process;
       public void run(@NotNull ProgressIndicator indicator) {
+        // Don't re-run.
+        if (process != null) {
+          return;
+        }
         try {
           final File tempDir = Files.createTempDirectory("flutter-samples-index").toFile();
           tempDir.deleteOnExit();
@@ -110,7 +114,10 @@ public class FlutterSampleManager {
                 }
               }
             });
-            process.startNotify();
+
+            if (!process.isStartNotified()) {
+              process.startNotify();
+            }
 
             // TODO(pq): consider something to allow for a retry after some amount of ellapsed time.
           }
