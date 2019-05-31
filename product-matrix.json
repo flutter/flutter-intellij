@@ -20,11 +20,11 @@
       "ideaVersion": "191.5585527",
       "dartPluginVersion": "191.7221",
       "sinceBuild": "191.6707",
-      "untilBuild": "191.7141.44.35.*"
+      "untilBuild": "191.7141.44.*"
     },
     {
-      "comments": "Android Studio 3.6 canary 1",
-      "name": "Android Studio 3.6 canary 1",
+      "comments": "Android Studio 3.6 canary 2",
+      "name": "Android Studio 3.6 canary 2",
       "version": "3.6",
       "ideaProduct": "android-studio",
       "ideaVersion": "191.5595896",
