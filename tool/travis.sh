@@ -22,7 +22,7 @@ if [ "$DART_BOT" = true ] ; then
   pub global activate tuneup
   pub global run tuneup
 
-  # ensure that the edits have been applied to template files (and they're target
+  # ensure that the edits have been applied to template files (and their target
   # files have been regenerated)
   ./bin/plugin generate
 
