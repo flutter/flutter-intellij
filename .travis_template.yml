@@ -26,4 +26,4 @@ script: ./tool/travis.sh
 env:
   - DART_BOT=true
   - CHECK_BOT=true
-  - UNIT_TEST_BOT = true
+  - UNIT_TEST_BOT=true
