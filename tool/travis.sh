@@ -8,6 +8,7 @@
 set -e
 
 # Echo build info.
+echo "UNIT_TEST_BOT = $UNIT_TEST_BOT"
 echo $FLUTTER_SDK
 flutter --version
 
@@ -42,7 +43,9 @@ elif [ "$CHECK_BOT" = true ] ; then
 elif [ "$UNIT_TEST_BOT" = true ] ; then
   # Run unit tests without failing the build.
   set +e
+  echo "TRACE: Starting unit tests with Gradle"
   ./gradlew -s test
+  echo "TRACE: Finished unit tests with Gradle"
   return 0
 
 else
