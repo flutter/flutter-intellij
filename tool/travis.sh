@@ -39,6 +39,12 @@ elif [ "$CHECK_BOT" = true ] ; then
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
 
+elif [ "$UNIT_TEST_BOT" = true ] ; then
+  # Run unit tests without failing the build.
+  set +e
+  ./gradlew -d -s test
+  return 0
+
 else
   # Run some validations on the repo code.
   ./bin/plugin lint
