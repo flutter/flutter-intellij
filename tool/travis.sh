@@ -42,7 +42,7 @@ elif [ "$CHECK_BOT" = true ] ; then
 elif [ "$UNIT_TEST_BOT" = true ] ; then
   # Run unit tests without failing the build.
   set +e
-  ./gradlew -d -s test
+  ./gradlew -s test
   return 0
 
 else
