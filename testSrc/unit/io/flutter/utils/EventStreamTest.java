@@ -5,11 +5,11 @@
  */
 package io.flutter.utils;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
 import com.google.common.collect.ImmutableList;
+import org.junit.Before;
+import org.junit.Test;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -17,10 +17,10 @@ import java.util.List;
 import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import javax.swing.SwingUtilities;
-import javax.swing.Timer;
-import org.junit.Before;
-import org.junit.Test;
+
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 public class EventStreamTest {
 
