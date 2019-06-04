@@ -7,8 +7,6 @@ package io.flutter.bazel;
 
 import com.intellij.mock.MockVirtualFileSystem;
 import com.intellij.openapi.util.Pair;
-import io.flutter.bazel.PluginConfig;
-import io.flutter.bazel.Workspace;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

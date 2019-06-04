@@ -57,6 +57,19 @@ public class DaemonApiTest {
   }
 
   @Test
+  public void daemonGetSupportedPlatforms() throws Exception {
+    final Future<List<String>> result = api.daemonGetSupportedPlatforms("foo/bar");
+    checkSent(result,
+              "daemon.getSupportedPlatforms",
+              curly("projectRoot:\"foo/bar\""));
+
+    replyWithResult(result, curly("platforms:[\"ios\"]"));
+    final List<String> platforms = result.get();
+    assertEquals(1, platforms.size());
+    assertEquals("ios", platforms.get(0));
+  }
+
+  @Test
   public void canCallServiceExtension() throws Exception {
     final Map<String, Object> params = ImmutableMap.of("reversed", true);
     final Future<JsonObject> result = api.callAppServiceExtension("foo", "rearrange", params);

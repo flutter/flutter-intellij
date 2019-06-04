@@ -23,10 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.ArrayDeque;
-import java.util.Deque;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
@@ -69,6 +66,10 @@ public class DaemonApi {
    */
   DaemonApi(@NotNull ProcessHandler process) {
     this((String json) -> sendCommand(json, process));
+  }
+
+  CompletableFuture<List<String>> daemonGetSupportedPlatforms(@NotNull String projectRoot) {
+    return send("daemon.getSupportedPlatforms", new DaemonGetSupportedPlatforms(projectRoot));
   }
 
   CompletableFuture<RestartResult> restartApp(@NotNull String appId, boolean fullRestart, boolean pause, @NotNull String reason) {
@@ -450,6 +451,37 @@ public class DaemonApi {
       final JsonObject obj = new JsonObject();
       obj.add("result", result);
       return obj;
+    }
+  }
+
+  private static class DaemonGetSupportedPlatforms extends Params<List<String>> {
+    final String projectRoot;
+
+    DaemonGetSupportedPlatforms(String projectRoot) {
+      this.projectRoot = projectRoot;
+    }
+
+    @Override
+    List<String> parseResult(JsonElement result) {
+      // {"platforms":["ios","android"]}
+
+      if (!(result instanceof JsonObject)) {
+        return Collections.emptyList();
+      }
+
+      final JsonElement obj = ((JsonObject)result).get("platforms");
+      if (!(obj instanceof JsonArray)) {
+        return Collections.emptyList();
+      }
+
+      final List<String> platforms = new ArrayList<>();
+
+      for (int i = 0; i < ((JsonArray)obj).size(); i++) {
+        final JsonElement element = ((JsonArray)obj).get(i);
+        platforms.add(element.getAsString());
+      }
+
+      return platforms;
     }
   }
 }
