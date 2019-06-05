@@ -22,7 +22,7 @@ if [ "$DART_BOT" = true ] ; then
   pub global activate tuneup
   pub global run tuneup
 
-  # ensure that the edits have been applied to template files (and they're target
+  # ensure that the edits have been applied to template files (and their target
   # files have been regenerated)
   ./bin/plugin generate
 
@@ -38,6 +38,12 @@ if [ "$DART_BOT" = true ] ; then
 elif [ "$CHECK_BOT" = true ] ; then
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
+
+elif [ "$UNIT_TEST_BOT" = true ] ; then
+  # Run unit tests without failing the build.
+  set +e
+  ./gradlew -s test
+  exit 0
 
 else
   # Run some validations on the repo code.
