@@ -108,7 +108,7 @@ public abstract class InspectorColoredTreeCellRenderer extends MultiIconSimpleCo
     super.setOpaque(isOpaque);
   }
 
-  protected InspectorTreeUI getUI() {
+  public InspectorTreeUI getUI() {
     return (InspectorTreeUI)myTree.getUI();
   }
 

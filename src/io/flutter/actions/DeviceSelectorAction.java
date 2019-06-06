@@ -68,10 +68,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   }
 
   private void update(Project project, Presentation presentation) {
-    FlutterUtils.invokeAndWait(() -> {
+    //FlutterUtils.invokeAndWait(() -> {
       updateActions(project, presentation);
       updateVisibility(project, presentation);
-    });
+    //});
   }
 
   private void updateVisibility(final Project project, final Presentation presentation) {
