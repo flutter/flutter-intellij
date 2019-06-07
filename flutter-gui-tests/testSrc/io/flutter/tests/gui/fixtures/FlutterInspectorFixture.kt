@@ -17,7 +17,7 @@ import com.intellij.testGuiFramework.impl.GuiRobotHolder.robot
 import com.intellij.testGuiFramework.matcher.ClassNameMatcher
 import com.intellij.testGuiFramework.util.step
 import com.intellij.ui.tabs.TabInfo
-import com.intellij.ui.tabs.impl.TabLabel
+import com.intellij.ui.tabs.newImpl.TabLabel
 import io.flutter.inspector.InspectorService
 import io.flutter.inspector.InspectorTree
 import io.flutter.view.InspectorPanel
