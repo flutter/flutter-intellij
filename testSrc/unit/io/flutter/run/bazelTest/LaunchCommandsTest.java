@@ -131,6 +131,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/launch.sh");
+    expectedCommandLine.add("--no-color");
     expectedCommandLine.add("//foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
@@ -150,6 +151,7 @@ public class LaunchCommandsTest {
 
     final List<String> expectedCommandLine = new ArrayList<>();
     expectedCommandLine.add("/workspace/scripts/launch.sh");
+    expectedCommandLine.add("--no-color");
     expectedCommandLine.add("//foo:test");
     expectedCommandLine.add("--");
     expectedCommandLine.add("--enable-debugging");
@@ -199,6 +201,28 @@ public class LaunchCommandsTest {
   }
 
   @Test
+  public void failsForTestNameAndBazelTargetWithoutTestScript() throws ExecutionException {
+    final BazelTestFields fields = new FakeBazelTestFields(
+      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
+      "scripts/daemon.sh",
+      "scripts/doctor.sh",
+      "scripts/launch.sh",
+      null,
+      null,
+      null
+    );
+
+    boolean didThrow = false;
+    try {
+      final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
+    }
+    catch (ExecutionException e) {
+      didThrow = true;
+    }
+    assertTrue("This test method expected to throw an exception, but did not.", didThrow);
+  }
+
+  @Test
   public void runsInFileModeWhenBothFileAndBazelTargetAreProvided() throws ExecutionException {
     final BazelTestFields fields = new FakeBazelTestFields(
       new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--arg1 --arg2 3")
@@ -212,25 +236,6 @@ public class LaunchCommandsTest {
     expectedCommandLine.add("3");
     expectedCommandLine.add("--no-color");
     expectedCommandLine.add("foo/test/foo_test.dart");
-    assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
-  }
-
-  @Test
-  public void runsInBazelTargetModeWhenBothFileAndBazelTargetAreProvidedWithoutTestScript() throws ExecutionException {
-    final BazelTestFields fields = new FakeBazelTestFields(
-      new BazelTestFields(null, "/workspace/foo/test/foo_test.dart", "//foo:test", "--ignored-args"),
-      "scripts/daemon.sh",
-      "scripts/doctor.sh",
-      "scripts/launch.sh",
-      null,
-      null,
-      null
-    );
-    final GeneralCommandLine launchCommand = fields.getLaunchCommand(projectFixture.getProject(), RunMode.RUN);
-
-    final List<String> expectedCommandLine = new ArrayList<>();
-    expectedCommandLine.add("/workspace/scripts/launch.sh");
-    expectedCommandLine.add("//foo:test");
     assertThat(launchCommand.getCommandLineList(null), equalTo(expectedCommandLine));
   }
 
