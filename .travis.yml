@@ -28,6 +28,7 @@ script: ./tool/travis.sh
 env:
   - DART_BOT=true
   - CHECK_BOT=true
+  - UNIT_TEST_BOT=true
   - IDEA_VERSION=3.4.1
   - IDEA_VERSION=3.5
   - IDEA_VERSION=3.6
