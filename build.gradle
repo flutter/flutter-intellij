@@ -83,7 +83,6 @@ sourceSets {
 }
 
 test {
-//  exclude "io/flutter/run/bazelTest/LaunchCommandsTest.class"
 //  exclude "io/flutter/utils/EventStreamTest.class"
   ignoreFailures true
 }
