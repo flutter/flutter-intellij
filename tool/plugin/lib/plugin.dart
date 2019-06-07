@@ -1092,46 +1092,27 @@ class TestCommand extends ProductCommand {
   final BuildCommandRunner runner;
 
   TestCommand(this.runner) : super('test') {
-    argParser.addFlag('unit',
-        abbr: 'u', defaultsTo: true, help: 'Run unit tests');
+    argParser.addFlag('unit', negatable: false, help: 'Run unit tests');
     argParser.addFlag('integration',
-        abbr: 'i', defaultsTo: false, help: 'Run integration tests');
+        negatable: false, help: 'Run integration tests');
   }
 
   String get description => 'Run the tests for the Flutter plugin.';
 
   Future<int> doit() async {
-    if (isReleaseMode) {
-      if (!await performReleaseChecks(this)) {
-        return new Future(() => 1);
-      }
+    if (argResults['integration']) {
+      return _runIntegrationTests();
+    } else {
+      return _runUnitTests();
     }
+  }
 
-    for (var spec in specs) {
-      await spec.artifacts.provision();
+  Future<int> _runUnitTests() async {
+    // run './gradlew test'
+    return await exec('./gradlew', ['test']);
+  }
 
-      // TODO(messick) Finish the implementation of TestCommand.
-      separator('Compiling test sources');
-
-      var jars = []
-        ..addAll(findJars('${spec.dartPlugin.outPath}/lib'))
-        ..addAll(findJars('${spec.product.outPath}/lib')); //TODO: also, plugins
-
-      var sourcepath = [
-        'testSrc',
-        'resources',
-        'gen',
-        'third_party/intellij-plugins-dart/testSrc'
-      ];
-      createDir('build/classes');
-
-      await runner.javac(
-        sources: sourcepath.expand(findJavaFiles).toList(),
-        sourcepath: sourcepath,
-        destdir: 'build/classes',
-        classpath: jars.map((j) => j.path).toList(),
-      );
-    }
-    throw 'unimplemented';
+  Future<int> _runIntegrationTests() async {
+    throw 'integration test execution not yet implemented';
   }
 }
