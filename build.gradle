@@ -83,8 +83,8 @@ sourceSets {
 }
 
 test {
-//  exclude "io/flutter/utils/EventStreamTest.class"
-  ignoreFailures true
+  exclude "io/flutter/utils/EventStreamTest.class"
+  ignoreFailures false
 }
 
 /* This fails in a way that suggests internal version skew at JetBrains. */
