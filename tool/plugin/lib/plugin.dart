@@ -1100,6 +1100,14 @@ class TestCommand extends ProductCommand {
   String get description => 'Run the tests for the Flutter plugin.';
 
   Future<int> doit() async {
+    final javaHome = Platform.environment['JAVA_HOME'];
+    if (javaHome == null) {
+      log('JAVA_HOME environment variable net set - this is needed by gradle.');
+      return 1;
+    }
+
+    log('JAVA_HOME=$javaHome');
+
     if (argResults['integration']) {
       return _runIntegrationTests();
     } else {
