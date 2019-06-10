@@ -1,10 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CompilerConfiguration">
-    <bytecodeTargetLevel>
-      <module name="flutter-gui-tests.main" target="1.8" />
-      <module name="flutter-gui-tests.test" target="1.8" />
-    </bytecodeTargetLevel>
     <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="!?*.java" />
@@ -22,5 +18,9 @@
         <processorPath useClasspath="true" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="flutter-gui-tests.main" target="11" />
+      <module name="flutter-gui-tests.test" target="11" />
+    </bytecodeTargetLevel>
   </component>
 </project>
