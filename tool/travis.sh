@@ -4,6 +4,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# Fast fail the script on failures.
+set -e
+
 # Echo build info.
 echo $FLUTTER_SDK
 flutter --version
