@@ -41,9 +41,7 @@ elif [ "$CHECK_BOT" = true ] ; then
 
 elif [ "$UNIT_TEST_BOT" = true ] ; then
   # Run unit tests without failing the build.
-  set +e
   ./gradlew -s test
-  exit 0
 
 else
   # Run some validations on the repo code.
