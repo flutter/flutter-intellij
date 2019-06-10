@@ -40,7 +40,7 @@ elif [ "$CHECK_BOT" = true ] ; then
   dart tool/grind.dart check-urls
 
 elif [ "$UNIT_TEST_BOT" = true ] ; then
-  # Run unit tests without failing the build.
+  # Run unit tests.
   ./gradlew -s test
 
 else
