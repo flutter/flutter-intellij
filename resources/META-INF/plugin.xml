@@ -13,7 +13,7 @@
 
   <category>Custom Languages</category>
   <version>SNAPSHOT</version>
-  <idea-version since-build="183.6156" until-build="192.*"/>
+  <idea-version since-build="183.5429" until-build="192.*"/>
 
   <depends>Dart</depends>
 
@@ -29,6 +29,11 @@
 
   <change-notes>
     <![CDATA[
+<h2>36.1</h2>
+<ul>
+  <li>Use new editor tabs (#3563)</li>
+  <li>Revise Android Studio version down (#3558)</li>
+</ul>
 <h2>36.0</h2>
 <ul>
   <li>Add Gradle build script (#3529)</li>
