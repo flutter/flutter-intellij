@@ -36,7 +36,7 @@ sourceSets {
 
 intellij {
   // Check versions at https://plugins.jetbrains.com/plugin/11114-test-gui-framework/
-  plugins 'com.intellij.testGuiFramework:0.9.44.1@nightly', 'Dart:192.4488.21', 'io.flutter:SNAPSHOT'
+  plugins 'com.intellij.testGuiFramework:0.9.44.1@nightly', 'Dart:192.4787.16', 'io.flutter:SNAPSHOT'
   if (System.getProperty("idea.gui.test.alternativeIdePath") != null) {
     alternativeIdePath System.getProperty("idea.gui.test.alternativeIdePath")
   }
@@ -95,5 +95,6 @@ test {
                                              (it.key as String) != "jb.vmOptionsFile"
   }
   sysProps.put("idea.gui.tests.gradle.runner", true) //Use Gradle Launcher to run GUI tests
+  //sysProps.put("idea.debug.mode", true) // Add to enable debugging with breakpoints
   systemProperties sysProps
 }
