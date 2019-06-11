@@ -1,3 +1,7 @@
+## 36.1
+- Use new editor tabs (#3563)
+- Revise Android Studio version down (#3558)
+
 ## 36.0
 - Add Gradle build script (#3529)
 - Update for new platform releases (#3527)
