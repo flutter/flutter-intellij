@@ -142,11 +142,13 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
       return JTreeFixture(ideFrame.robot(), inspectorTree)
     }
 
-    fun selectRow(number: Int, expand: Boolean = true) {
+    fun selectRow(number: Int, reexpand: Boolean = true) {
       waitForContent()
       treeFixture().clickRow(number) // This should not collapse the tree, but it does.
-      if (expand) {
+      if (reexpand) {
+        pause()
         treeFixture().expandRow(number) // TODO(messick) Remove when selection preserves tree expansion.
+        pause()
       }
     }
 

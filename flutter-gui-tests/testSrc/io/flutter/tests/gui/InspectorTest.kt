@@ -16,6 +16,7 @@ import com.intellij.testGuiFramework.impl.GuiTestCase
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import com.intellij.testGuiFramework.util.step
 import io.flutter.tests.gui.fixtures.flutterInspectorFixture
+import org.fest.swing.exception.ComponentLookupException
 import org.fest.swing.fixture.JTreeRowFixture
 import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause.pause
@@ -39,16 +40,19 @@ class InspectorTest : GuiTestCase() {
       expect(true) { detailsTree.selection() == null }
 
       step("Details selection synced with main tree") {
-        inspectorTree.selectRow(2, expand = true)
+        inspectorTree.selectRow(2, reexpand = true)
+        //inspectorTree.selectRow(2, expand = true)
         expect("[[root], MyApp, MaterialApp, MyHomePage]") { inspectorTree.selectionSync().toString() }
         expect("[MyHomePage]") { detailsTree.selectionSync().toString() }
-        inspectorTree.selectRow(10, expand = true)
+        inspectorTree.selectRow(10, reexpand = true)
+        //inspectorTree.selectRow(10, expand = true)
         expect("[[root], MyApp, MaterialApp, MyHomePage, Scaffold, FloatingActionButton]") {
           inspectorTree.selectionSync().toString()
         }
         val string = detailsTree.selectionSync().toString()
+        println("DEBUG $string")
         expect(true) {
-          string.startsWith("[MyHomePage,") && string.endsWith("FloatingActionButton]")
+          string.startsWith("[FloatingActionButton]")
         }
       }
 
@@ -129,13 +133,24 @@ class InspectorTest : GuiTestCase() {
 
   fun IdeFrameFixture.launchFlutterApp() {
     step("Launch Flutter app") {
-      findRunApplicationButton().click()
+      tryFindRunAppButton().click()
       val runner = runner()
       pause(object : Condition("Start app") {
         override fun test(): Boolean {
           return runner.isExecutionInProgress
         }
       }, Timeouts.seconds30)
+    }
+  }
+
+  private fun IdeFrameFixture.tryFindRunAppButton(): ActionButtonFixture {
+    while (true) {
+      try {
+        return findRunApplicationButton()
+      }
+      catch (ex: ComponentLookupException) {
+        pause()
+      }
     }
   }
 
