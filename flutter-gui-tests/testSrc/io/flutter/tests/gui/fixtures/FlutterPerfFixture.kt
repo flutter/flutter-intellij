@@ -6,11 +6,14 @@
 
 package io.flutter.tests.gui.fixtures
 
+import com.intellij.execution.ui.layout.impl.JBRunnerTabs
 import com.intellij.openapi.project.Project
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import com.intellij.testGuiFramework.framework.Timeouts
+import com.intellij.testGuiFramework.impl.GuiRobotHolder
 import com.intellij.testGuiFramework.util.step
+import com.intellij.ui.tabs.TabInfo
 import org.fest.swing.core.Robot
 import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause
@@ -36,10 +39,12 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
   }
 
   fun memoryTabFixture(): MemoryTabFixture {
+    showTab(0, contents)
     return MemoryTabFixture();
   }
 
   fun perfTabFixture(): PerfTabFixture {
+    showTab(1, contents)
     return PerfTabFixture();
   }
 

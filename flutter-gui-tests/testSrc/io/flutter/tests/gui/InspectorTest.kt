@@ -128,35 +128,8 @@ class InspectorTest : GuiTestCase() {
     }
   }
 
-  fun IdeFrameFixture.launchFlutterApp() {
-    step("Launch Flutter app") {
-      tryFindRunAppButton().click()
-      val runner = runner()
-      pause(object : Condition("Start app") {
-        override fun test(): Boolean {
-          return runner.isExecutionInProgress
-        }
-      }, Timeouts.seconds30)
-    }
-  }
-
-  private fun IdeFrameFixture.tryFindRunAppButton(): ActionButtonFixture {
-    while (true) {
-      try {
-        return findRunApplicationButton()
-      }
-      catch (ex: ComponentLookupException) {
-        pause()
-      }
-    }
-  }
-
   private fun findHotReloadButton(): ActionButtonFixture {
     return findActionButtonByClassName("ReloadFlutterAppRetarget")
-  }
-
-  private fun IdeFrameFixture.runner(): ExecutionToolWindowFixture.ContentFixture {
-    return runToolWindow.findContent("main.dart")
   }
 
   private fun findActionButtonByActionId(actionId: String): ActionButtonFixture {

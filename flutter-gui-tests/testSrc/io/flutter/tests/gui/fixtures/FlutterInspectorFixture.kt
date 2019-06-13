@@ -54,20 +54,13 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   }
 
   fun widgetsFixture(): InspectorPanelFixture {
-    showTab(0)
+    showTab(0, contents)
     return inspectorPanel(InspectorService.FlutterTreeType.widget)
   }
 
   fun renderTreeFixture(): InspectorPanelFixture {
-    showTab(1)
+    showTab(1, contents)
     return inspectorPanel(InspectorService.FlutterTreeType.renderObject)
-  }
-
-  private fun showTab(index: Int) {
-    val tabs: JBRunnerTabs = contents[0].component.components[0] as JBRunnerTabs
-    val info: TabInfo = tabs.getTabAt(index)
-    val label = tabs.getTabLabel(info)
-    TabLabelFixture(robot, label).click()
   }
 
   private fun finder(): ComponentFinder {
@@ -105,7 +98,7 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   inner class InspectorPanelFixture(val inspectorPanel: InspectorPanel, val type: InspectorService.FlutterTreeType) {
 
     fun show() {
-      showTab(tabIndex())
+      showTab(tabIndex(), contents)
     }
 
     private fun tabIndex(): Int {
@@ -178,7 +171,3 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     }
   }
 }
-
-// A clickable fixture for the three tabs in the inspector: Widgets, Render Tree, and Performance.
-class TabLabelFixture(robot: Robot, target: TabLabel)
-  : JComponentFixture<TabLabelFixture, TabLabel>(TabLabelFixture::class.java, robot, target)
