@@ -105,15 +105,15 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
 
     final int delta = Math.max(column - indent, 0);
     final int markerEnd = offset;
+
     // Create a range marker that goes from the start of the indent for the line
     // to the column of the actual entity.
     final int startOffset = Math.max(markerEnd - delta, 0);
-    final int endOffset = Math.min(markerEnd + 1, document.getTextLength());
+    int endOffset = Math.min(markerEnd + 1, document.getTextLength());
+    endOffset = Math.max(startOffset, endOffset);
 
-    if (startOffset <= endOffset) {
-      marker = document.createRangeMarker(startOffset, endOffset);
-      nodeStartingWord = getCurrentWord(document, markerEnd);
-    }
+    marker = document.createRangeMarker(startOffset, endOffset);
+    nodeStartingWord = getCurrentWord(document, markerEnd);
   }
 
   @Override
