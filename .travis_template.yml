@@ -1,13 +1,19 @@
 language: java
 
 jdk:
-  - oraclejdk11
+  - openjdk8
 
 install: true
 
 branches:
   only:
     - master
+
+before_install:
+  - wget --no-check-certificate https://www.apache.org/dist/ant/binaries/apache-ant-1.10.1-bin.tar.gz
+  - tar -xzvf apache-ant-1.10.1-bin.tar.gz
+  - export PATH=`pwd`/apache-ant-1.10.1/bin:$PATH
+  - echo $(ant -version)
 
 before_script:
   - # "export DISPLAY=:99.0"
