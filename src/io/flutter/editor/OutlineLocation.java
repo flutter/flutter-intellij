@@ -108,9 +108,10 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
 
     // Create a range marker that goes from the start of the indent for the line
     // to the column of the actual entity.
-    final int startOffset = Math.max(markerEnd - delta, 0);
-    int endOffset = Math.min(markerEnd + 1, document.getTextLength());
-    endOffset = Math.max(startOffset, endOffset);
+    final int docLength = document.getTextLength();
+    int startOffset = Math.max(markerEnd - delta, 0);
+    startOffset = Math.min(startOffset, docLength);
+    final int endOffset = Math.min(markerEnd + 1, docLength);
 
     marker = document.createRangeMarker(startOffset, endOffset);
     nodeStartingWord = getCurrentWord(document, markerEnd);
