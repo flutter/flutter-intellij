@@ -104,8 +104,6 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
       step("Create project $projectName") {
         welcomeFrame {
           this.actionLink(name = "Create New Project").click()
-//          GuiTestUtilKt.waitProgressDialogUntilGone(
-//            robot = robot(), progressTitle = "Loading Templates", timeoutToAppear = Timeouts.seconds02)
           dialog("New Project") {
             jList("Flutter").clickItem("Flutter")
             button("Next").click()

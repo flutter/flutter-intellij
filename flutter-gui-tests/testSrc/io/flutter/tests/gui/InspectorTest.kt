@@ -41,16 +41,13 @@ class InspectorTest : GuiTestCase() {
 
       step("Details selection synced with main tree") {
         inspectorTree.selectRow(2, reexpand = true)
-        //inspectorTree.selectRow(2, expand = true)
         expect("[[root], MyApp, MaterialApp, MyHomePage]") { inspectorTree.selectionSync().toString() }
         expect("[MyHomePage]") { detailsTree.selectionSync().toString() }
         inspectorTree.selectRow(10, reexpand = true)
-        //inspectorTree.selectRow(10, expand = true)
         expect("[[root], MyApp, MaterialApp, MyHomePage, Scaffold, FloatingActionButton]") {
           inspectorTree.selectionSync().toString()
         }
         val string = detailsTree.selectionSync().toString()
-        println("DEBUG $string")
         expect(true) {
           string.startsWith("[FloatingActionButton]")
         }
