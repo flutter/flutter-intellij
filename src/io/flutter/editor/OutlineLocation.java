@@ -11,9 +11,7 @@ import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
-
-import static java.lang.Math.max;
-import static java.lang.Math.min;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Class that tracks the location of a FlutterOutline node in a document.
@@ -27,12 +25,14 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
   private final int indent;
   private final int offset;
   private final int endOffset;
+  @Nullable
   private RangeMarker marker;
+  @Nullable
   private String nodeStartingWord;
 
   /**
    * Get the next word in the document starting at offset.
-   *
+   * <p>
    * This helper is used to avoid displaying outline guides where it appears
    * that the word at the start of the outline (e.g. the Widget constructor
    * name) has changed since the guide was created. This catches edge cases
@@ -45,7 +45,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     final CharSequence chars = document.getCharsSequence();
     // Clamp the max current word length at 20 to avoid slow behavior if the
     // next "word" in the document happened to be incredibly long.
-    final int maxWordEnd = min(documentLength, offset + 20);
+    final int maxWordEnd = Math.min(documentLength, offset + 20);
 
     int end = offset;
     while (end < maxWordEnd && Character.isAlphabetic(chars.charAt(end))) {
@@ -96,18 +96,24 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    */
   public void track(Document document) {
     if (marker != null) {
-      // TODO(jacobr): it does indicate a bit of a logic bug if we are calling
-      // this method twice.
+      // TODO(jacobr): it does indicate a bit of a logic bug if we are calling this method twice.
       assert (marker.getDocument() == document);
       return;
     }
+
     assert (indent <= column);
-    assert (marker == null);
-    final int delta = max(column - indent, 0);
+
+    final int delta = Math.max(column - indent, 0);
     final int markerEnd = offset;
+
     // Create a range marker that goes from the start of the indent for the line
-    // to the column of the actual entity;
-    marker = document.createRangeMarker(max(markerEnd - delta, 0), min(markerEnd + 1, document.getTextLength()));
+    // to the column of the actual entity.
+    final int docLength = document.getTextLength();
+    int startOffset = Math.max(markerEnd - delta, 0);
+    startOffset = Math.min(startOffset, docLength);
+    final int endOffset = Math.min(markerEnd + 1, docLength);
+
+    marker = document.createRangeMarker(startOffset, endOffset);
     nodeStartingWord = getCurrentWord(document, markerEnd);
   }
 
@@ -185,7 +191,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
    * This is the column offset of the start of the widget constructor call.
    */
   public int getColumn() {
-    return marker == null ? column : getColumnForOffset(max(marker.getStartOffset(), marker.getEndOffset() - 1));
+    return marker == null ? column : getColumnForOffset(Math.max(marker.getStartOffset(), marker.getEndOffset() - 1));
   }
 
   public TextRange getTextRange() {
