@@ -6,18 +6,10 @@
 
 package io.flutter.tests.gui
 
-import com.intellij.testGuiFramework.fixtures.ActionButtonFixture
-import com.intellij.testGuiFramework.fixtures.ExecutionToolWindowFixture
-import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.RunWithIde
-import com.intellij.testGuiFramework.framework.Timeouts
 import com.intellij.testGuiFramework.impl.GuiTestCase
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
-import com.intellij.testGuiFramework.util.step
 import io.flutter.tests.gui.fixtures.flutterPerfFixture
-import org.fest.swing.exception.ComponentLookupException
-import org.fest.swing.timing.Condition
-import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import org.junit.Test
 

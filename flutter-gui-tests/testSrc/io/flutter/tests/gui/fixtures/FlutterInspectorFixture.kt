@@ -6,18 +6,13 @@
 
 package io.flutter.tests.gui.fixtures
 
-import com.intellij.execution.ui.layout.impl.JBRunnerTabs
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
-import com.intellij.testGuiFramework.fixtures.JComponentFixture
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import com.intellij.testGuiFramework.framework.Timeouts
-import com.intellij.testGuiFramework.impl.GuiRobotHolder.robot
 import com.intellij.testGuiFramework.matcher.ClassNameMatcher
 import com.intellij.testGuiFramework.util.step
-import com.intellij.ui.tabs.TabInfo
-import com.intellij.ui.tabs.newImpl.TabLabel
 import io.flutter.inspector.InspectorService
 import io.flutter.inspector.InspectorTree
 import io.flutter.view.InspectorPanel

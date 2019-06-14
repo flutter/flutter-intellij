@@ -8,15 +8,12 @@ package io.flutter.tests.gui
 
 import com.intellij.openapi.util.SystemInfo.isMac
 import com.intellij.testGuiFramework.fixtures.ActionButtonFixture
-import com.intellij.testGuiFramework.fixtures.ExecutionToolWindowFixture
-import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.framework.Timeouts
 import com.intellij.testGuiFramework.impl.GuiTestCase
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import com.intellij.testGuiFramework.util.step
 import io.flutter.tests.gui.fixtures.flutterInspectorFixture
-import org.fest.swing.exception.ComponentLookupException
 import org.fest.swing.fixture.JTreeRowFixture
 import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause.pause
