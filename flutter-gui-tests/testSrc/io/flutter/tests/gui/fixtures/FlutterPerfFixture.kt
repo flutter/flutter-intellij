@@ -36,18 +36,16 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
   }
 
   fun memoryTabFixture(): MemoryTabFixture {
-    return MemoryTabFixture();
+    showTab(0, contents)
+    return MemoryTabFixture()
   }
 
   fun perfTabFixture(): PerfTabFixture {
-    return PerfTabFixture();
+    showTab(1, contents)
+    return PerfTabFixture()
   }
 
-  inner class MemoryTabFixture {
+  inner class MemoryTabFixture
 
-  }
-
-  inner class PerfTabFixture {
-
-  }
+  inner class PerfTabFixture
 }

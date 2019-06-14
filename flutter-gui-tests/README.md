@@ -34,3 +34,13 @@ If you want to test recent changes be sure to repeat Step 1 in Usage so you are 
 
 If the buildPlugin task fails, check for a new version of the Gradle plugin with id org.jetbrains.intellij.
 This is likely to be needed if a new version of IntelliJ is downloaded automatically.
+
+On a Mac, you must grant permission to control your computer to the JVM. Open System Preferences then select
+Security & Privacy. Unlock it and click the + button. Navigate to the JVM used to run the integration tests
+and add it to the list. One way to find the JVM is to run the tests, let it hang, and search the output of
+`ps xa` for LATEST-EAP. If that points to a JVM in a .gradle directory (which the Mac will not allow you to
+navigate to) you can hard link to it in some random directory then add that file.
+
+If you get errors from Gradle sync failing try using Java 11 instead of Java 8 in the project that manages
+the test plugin. For example, create an IntelliJ platform plugin SDK in Project Structure and point its base
+SDK to a Java 11 installation. Then set that as the default SDK for the project.

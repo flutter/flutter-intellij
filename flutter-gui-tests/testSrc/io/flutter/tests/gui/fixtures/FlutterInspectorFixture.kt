@@ -6,18 +6,13 @@
 
 package io.flutter.tests.gui.fixtures
 
-import com.intellij.execution.ui.layout.impl.JBRunnerTabs
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Ref
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
-import com.intellij.testGuiFramework.fixtures.JComponentFixture
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import com.intellij.testGuiFramework.framework.Timeouts
-import com.intellij.testGuiFramework.impl.GuiRobotHolder.robot
 import com.intellij.testGuiFramework.matcher.ClassNameMatcher
 import com.intellij.testGuiFramework.util.step
-import com.intellij.ui.tabs.TabInfo
-import com.intellij.ui.tabs.newImpl.TabLabel
 import io.flutter.inspector.InspectorService
 import io.flutter.inspector.InspectorTree
 import io.flutter.view.InspectorPanel
@@ -54,20 +49,13 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   }
 
   fun widgetsFixture(): InspectorPanelFixture {
-    showTab(0)
+    showTab(0, contents)
     return inspectorPanel(InspectorService.FlutterTreeType.widget)
   }
 
   fun renderTreeFixture(): InspectorPanelFixture {
-    showTab(1)
+    showTab(1, contents)
     return inspectorPanel(InspectorService.FlutterTreeType.renderObject)
-  }
-
-  private fun showTab(index: Int) {
-    val tabs: JBRunnerTabs = contents[0].component.components[0] as JBRunnerTabs
-    val info: TabInfo = tabs.getTabAt(index)
-    val label = tabs.getTabLabel(info)
-    TabLabelFixture(robot, label).click()
   }
 
   private fun finder(): ComponentFinder {
@@ -105,7 +93,7 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
   inner class InspectorPanelFixture(val inspectorPanel: InspectorPanel, val type: InspectorService.FlutterTreeType) {
 
     fun show() {
-      showTab(tabIndex())
+      showTab(tabIndex(), contents)
     }
 
     private fun tabIndex(): Int {
@@ -142,11 +130,13 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
       return JTreeFixture(ideFrame.robot(), inspectorTree)
     }
 
-    fun selectRow(number: Int, expand: Boolean = true) {
+    fun selectRow(number: Int, reexpand: Boolean = true) {
       waitForContent()
       treeFixture().clickRow(number) // This should not collapse the tree, but it does.
-      if (expand) {
+      if (reexpand) {
+        pause()
         treeFixture().expandRow(number) // TODO(messick) Remove when selection preserves tree expansion.
+        pause()
       }
     }
 
@@ -176,7 +166,3 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     }
   }
 }
-
-// A clickable fixture for the three tabs in the inspector: Widgets, Render Tree, and Performance.
-class TabLabelFixture(robot: Robot, target: TabLabel)
-  : JComponentFixture<TabLabelFixture, TabLabel>(TabLabelFixture::class.java, robot, target)

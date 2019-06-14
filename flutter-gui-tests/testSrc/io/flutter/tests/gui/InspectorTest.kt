@@ -8,8 +8,6 @@ package io.flutter.tests.gui
 
 import com.intellij.openapi.util.SystemInfo.isMac
 import com.intellij.testGuiFramework.fixtures.ActionButtonFixture
-import com.intellij.testGuiFramework.fixtures.ExecutionToolWindowFixture
-import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.framework.RunWithIde
 import com.intellij.testGuiFramework.framework.Timeouts
 import com.intellij.testGuiFramework.impl.GuiTestCase
@@ -39,16 +37,16 @@ class InspectorTest : GuiTestCase() {
       expect(true) { detailsTree.selection() == null }
 
       step("Details selection synced with main tree") {
-        inspectorTree.selectRow(2, expand = true)
+        inspectorTree.selectRow(2, reexpand = true)
         expect("[[root], MyApp, MaterialApp, MyHomePage]") { inspectorTree.selectionSync().toString() }
         expect("[MyHomePage]") { detailsTree.selectionSync().toString() }
-        inspectorTree.selectRow(10, expand = true)
+        inspectorTree.selectRow(10, reexpand = true)
         expect("[[root], MyApp, MaterialApp, MyHomePage, Scaffold, FloatingActionButton]") {
           inspectorTree.selectionSync().toString()
         }
         val string = detailsTree.selectionSync().toString()
         expect(true) {
-          string.startsWith("[MyHomePage,") && string.endsWith("FloatingActionButton]")
+          string.startsWith("[FloatingActionButton]")
         }
       }
 
@@ -127,24 +125,8 @@ class InspectorTest : GuiTestCase() {
     }
   }
 
-  fun IdeFrameFixture.launchFlutterApp() {
-    step("Launch Flutter app") {
-      findRunApplicationButton().click()
-      val runner = runner()
-      pause(object : Condition("Start app") {
-        override fun test(): Boolean {
-          return runner.isExecutionInProgress
-        }
-      }, Timeouts.seconds30)
-    }
-  }
-
   private fun findHotReloadButton(): ActionButtonFixture {
     return findActionButtonByClassName("ReloadFlutterAppRetarget")
-  }
-
-  private fun IdeFrameFixture.runner(): ExecutionToolWindowFixture.ContentFixture {
-    return runToolWindow.findContent("main.dart")
   }
 
   private fun findActionButtonByActionId(actionId: String): ActionButtonFixture {

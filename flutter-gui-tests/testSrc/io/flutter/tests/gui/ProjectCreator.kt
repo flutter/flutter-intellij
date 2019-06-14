@@ -20,6 +20,7 @@ import com.intellij.util.UriUtil
 import com.intellij.util.io.URLUtil
 import io.flutter.tests.gui.fixtures.FlutterMessagesToolWindowFixture
 import org.fest.swing.exception.WaitTimedOutError
+import org.fest.swing.timing.Pause.pause
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -58,7 +59,8 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
             }
           }
         }
-        openMainInProject()
+        openMainInProject(wait = true)
+        pause()
       }
       projectPath
     }
@@ -102,8 +104,6 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
       step("Create project $projectName") {
         welcomeFrame {
           this.actionLink(name = "Create New Project").click()
-          GuiTestUtilKt.waitProgressDialogUntilGone(
-            robot = robot(), progressTitle = "Loading Templates", timeoutToAppear = Timeouts.seconds02)
           dialog("New Project") {
             jList("Flutter").clickItem("Flutter")
             button("Next").click()
