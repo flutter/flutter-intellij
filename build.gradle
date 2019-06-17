@@ -67,6 +67,8 @@ idea {
 
 dependencies {
   testCompile("io.kotlintest:kotlintest:2.0.7")
+  testCompile "org.powermock:powermock-api-mockito2:2.0.0"
+  testCompile "org.powermock:powermock-module-junit4:2.0.0"
 }
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
