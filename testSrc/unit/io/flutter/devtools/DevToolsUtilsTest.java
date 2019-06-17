@@ -38,7 +38,7 @@ public class DevToolsUtilsTest {
       generateDevToolsUrl(devtoolsHost, devtoolsPort, null, null)
     );
 
-    PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("AndroidStudio");
+    PowerMockito.when(FlutterSdkUtil.getFlutterHostEnvValue()).thenReturn("Android-Studio");
 
     assertEquals(
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
