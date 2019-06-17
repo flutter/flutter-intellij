@@ -23,6 +23,7 @@ import com.intellij.openapi.util.Key;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
+import io.flutter.FlutterUtils;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
@@ -224,8 +225,12 @@ class DevToolsInstance {
   }
 
   public void openBrowserAndConnect(String serviceProtocolUri, String page) {
+    final String ideParam = "ide=" + (FlutterUtils.isAndroidStudio() ? "AndroidStudio&" : "IntelliJ&");
     if (serviceProtocolUri == null) {
-      BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
+      BrowserLauncher.getInstance().browse(
+        "http://" + devtoolsHost + ":" + devtoolsPort + "/?" + ideParam,
+        null
+      );
     }
     else {
       try {
@@ -233,7 +238,7 @@ class DevToolsInstance {
         final String pageParam = page == null ? "" : ("#" + page);
 
         BrowserLauncher.getInstance().browse(
-          "http://" + devtoolsHost + ":" + devtoolsPort + "/?uri=" + urlParam + pageParam,
+          "http://" + devtoolsHost + ":" + devtoolsPort + "/?" + ideParam + "uri=" + urlParam + pageParam,
           null
         );
       }
