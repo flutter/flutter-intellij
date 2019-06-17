@@ -60,5 +60,7 @@
     </orderEntry>
     <orderEntry type="library" name="Dart SDK" level="project" />
     <orderEntry type="library" name="Dart Packages" level="project" />
+    <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.0" level="project" />
+    <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.0" level="project" />
   </component>
 </module>

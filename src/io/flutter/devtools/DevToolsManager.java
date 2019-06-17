@@ -20,21 +20,15 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Key;
-import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.bazel.Workspace;
 import io.flutter.console.FlutterConsoles;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterCommand;
 import io.flutter.sdk.FlutterSdk;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.JsonUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /**
@@ -224,22 +218,10 @@ class DevToolsInstance {
   }
 
   public void openBrowserAndConnect(String serviceProtocolUri, String page) {
-    if (serviceProtocolUri == null) {
-      BrowserLauncher.getInstance().browse("http://" + devtoolsHost + ":" + devtoolsPort + "/?hide=debugger&", null);
-    }
-    else {
-      try {
-        final String urlParam = URLEncoder.encode(serviceProtocolUri, "UTF-8");
-        final String pageParam = page == null ? "" : ("#" + page);
-
-        BrowserLauncher.getInstance().browse(
-          "http://" + devtoolsHost + ":" + devtoolsPort + "/?uri=" + urlParam + pageParam,
-          null
-        );
-      }
-      catch (UnsupportedEncodingException ignored) {
-      }
-    }
+    BrowserLauncher.getInstance().browse(
+      DevToolsUtils.generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
+      null
+    );
   }
 }
 
