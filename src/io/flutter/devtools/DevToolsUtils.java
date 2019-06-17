@@ -5,7 +5,7 @@
  */
 package io.flutter.devtools;
 
-import io.flutter.FlutterUtils;
+import io.flutter.sdk.FlutterSdkUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -21,7 +21,7 @@ public class DevToolsUtils {
   ) {
     final List<String> params = new ArrayList<>();
 
-    params.add("ide=" + (FlutterUtils.isAndroidStudio() ? "AndroidStudio" : "IntelliJ"));
+    params.add("ide=" + FlutterSdkUtil.getFlutterHostEnvValue());
 
     if (serviceProtocolUri != null) {
       try {

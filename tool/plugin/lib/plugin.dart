@@ -1102,7 +1102,7 @@ class TestCommand extends ProductCommand {
   Future<int> doit() async {
     final javaHome = Platform.environment['JAVA_HOME'];
     if (javaHome == null) {
-      log('JAVA_HOME environment variable net set - this is needed by gradle.');
+      log('JAVA_HOME environment variable not set - this is needed by gradle.');
       return 1;
     }
 
