@@ -27,7 +27,7 @@ class PerfTest : GuiTestCase() {
       monitor.populate()
       pause()
 
-      step("Exercize FPS tab") {
+      step("Exercise FPS tab") {
         val perf = monitor.perfTabFixture()
         expect(false, perf.controlCheckboxes()::isEmpty)
         val performanceCheckbox = perf.performanceCheckbox()
