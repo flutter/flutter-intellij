@@ -11,6 +11,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import com.intellij.testGuiFramework.framework.Timeouts
+import com.intellij.testGuiFramework.impl.GuiTestUtilKt
 import com.intellij.testGuiFramework.matcher.ClassNameMatcher
 import com.intellij.testGuiFramework.util.step
 import io.flutter.inspector.InspectorService
@@ -45,6 +46,7 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
           return contents[0].displayName != null
         }
       }, Timeouts.seconds30)
+      GuiTestUtilKt.waitForBackgroundTasks(myRobot)
     }
   }
 

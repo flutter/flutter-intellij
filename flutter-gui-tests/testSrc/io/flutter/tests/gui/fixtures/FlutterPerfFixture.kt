@@ -46,6 +46,7 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
           return contents[0].displayName != null
         }
       }, Timeouts.seconds30)
+      GuiTestUtilKt.waitForBackgroundTasks(myRobot)
     }
   }
 
@@ -94,8 +95,9 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
       return finder().findAll(memoryTab, classMatcher(JBLabel::class.java))
     }
 
-    fun heapDisplay(): HeapDisplay {
-      return finder().find(memoryTab, classMatcher(HeapDisplay::class.java))
+    fun heapDisplay(): HeapDisplayFixture {
+      return HeapDisplayFixture(myRobot,
+          finder().find(memoryTab, classMatcher(HeapDisplay::class.java)))
     }
   }
 
@@ -124,7 +126,12 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
     : JComponentFixture<FrameRenderingPanelFixture, JPanel>(FrameRenderingPanelFixture::class.java, robot, target) {
 
     fun componentCount(): Int {
-      return GuiTestUtilKt.computeOnEdt { target().componentCount } !!
+      return GuiTestUtilKt.computeOnEdt { target().componentCount }!!
     }
+  }
+
+  inner class HeapDisplayFixture(robot: Robot, target: JPanel)
+    : JComponentFixture<HeapDisplayFixture, JPanel>(HeapDisplayFixture::class.java, robot, target) {
+
   }
 }
