@@ -11,7 +11,6 @@ import com.intellij.testGuiFramework.impl.GuiTestCase
 import com.intellij.testGuiFramework.launcher.ide.CommunityIde
 import com.intellij.testGuiFramework.util.step
 import io.flutter.tests.gui.fixtures.flutterPerfFixture
-import org.fest.swing.timing.Condition
 import org.fest.swing.timing.Pause.pause
 import org.junit.Test
 import kotlin.test.expect
@@ -54,7 +53,7 @@ class PerfTest : GuiTestCase() {
         }
       }
 
-      step("Exercize memory tab") {
+      step("Check memory tab") {
         val mem = monitor.memoryTabFixture()
         expect(false, mem.heapDisplayLabels()::isEmpty)
         expect(true, mem.heapDisplay()::isEnabled)

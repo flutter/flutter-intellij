@@ -24,7 +24,6 @@ import io.flutter.view.PerfMemoryTab
 import org.fest.swing.core.ComponentFinder
 import org.fest.swing.core.Robot
 import org.fest.swing.timing.Condition
-import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import java.awt.Component
 import javax.swing.JPanel
@@ -41,7 +40,7 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
     step("Populate perf view") {
       activate()
       selectedContent
-      Pause.pause(object : Condition("Initialize perf") {
+      pause(object : Condition("Initialize perf") {
         override fun test(): Boolean {
           return contents[0].displayName != null
         }
@@ -131,7 +130,5 @@ class FlutterPerfFixture(project: Project, robot: Robot, private val ideFrame: I
   }
 
   inner class HeapDisplayFixture(robot: Robot, target: JPanel)
-    : JComponentFixture<HeapDisplayFixture, JPanel>(HeapDisplayFixture::class.java, robot, target) {
-
-  }
+    : JComponentFixture<HeapDisplayFixture, JPanel>(HeapDisplayFixture::class.java, robot, target)
 }

@@ -22,7 +22,6 @@ import org.fest.swing.core.ComponentFinder
 import org.fest.swing.core.Robot
 import org.fest.swing.fixture.JTreeFixture
 import org.fest.swing.timing.Condition
-import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import java.awt.Component
 import javax.swing.JPanel
@@ -41,7 +40,7 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     step("Populate inspector tree") {
       activate()
       selectedContent
-      Pause.pause(object : Condition("Initialize inspector") {
+      pause(object : Condition("Initialize inspector") {
         override fun test(): Boolean {
           return contents[0].displayName != null
         }
