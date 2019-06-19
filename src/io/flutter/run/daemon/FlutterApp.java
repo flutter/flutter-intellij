@@ -29,6 +29,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
@@ -249,7 +250,17 @@ public class FlutterApp {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
 
-    final ProcessHandler process = new OSProcessHandler(command);
+    final ProcessHandler process = new OSProcessHandler(command) {
+      /**
+       * Return BaseOutputReader.Options.forMostlySilentProcess() in order to reduce cpu usage
+       * of the device daemon process (this also address a log message in the IntelliJ log).
+       */
+      @NotNull
+      @Override
+      protected BaseOutputReader.Options readerOptions() {
+        return BaseOutputReader.Options.forMostlySilentProcess();
+      }
+    };
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.
