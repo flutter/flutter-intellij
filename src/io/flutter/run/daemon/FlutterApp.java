@@ -41,6 +41,7 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -250,17 +251,7 @@ public class FlutterApp {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
 
-    final ProcessHandler process = new OSProcessHandler(command) {
-      /**
-       * Return BaseOutputReader.Options.forMostlySilentProcess() in order to reduce cpu usage
-       * of the device daemon process (this also address a log message in the IntelliJ log).
-       */
-      @NotNull
-      @Override
-      protected BaseOutputReader.Options readerOptions() {
-        return BaseOutputReader.Options.forMostlySilentProcess();
-      }
-    };
+    final ProcessHandler process = new MostlySilentOsProcessHandler(command);
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.
