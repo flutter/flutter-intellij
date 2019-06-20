@@ -19,7 +19,7 @@ import kotlin.test.expect
 class PerfTest : GuiTestCase() {
 
   @Test
-  fun test() {
+  fun checkPerfView() {
     ProjectCreator.importProject()
     ideFrame {
       launchFlutterApp()
