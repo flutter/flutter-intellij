@@ -25,6 +25,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.utils.FlutterModuleUtils;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -203,17 +204,8 @@ class DeviceDaemon {
                        Consumer<String> processStopped) throws ExecutionException {
       final int daemonId = nextDaemonId.incrementAndGet();
       LOG.info("starting Flutter device daemon #" + daemonId + ": " + toString());
-      final ProcessHandler process = new OSProcessHandler(toCommandLine()) {
-        /**
-         * Return BaseOutputReader.Options.forMostlySilentProcess() in order to reduce cpu usage
-         * of the device daemon process (this also address a log message in the IntelliJ log).
-         */
-        @NotNull
-        @Override
-        protected BaseOutputReader.Options readerOptions() {
-          return BaseOutputReader.Options.forMostlySilentProcess();
-        }
-      };
+      // The mostly silent process handler reduces CPU usage of the daemon process.
+      final ProcessHandler process = new MostlySilentOsProcessHandler(toCommandLine());
 
       boolean succeeded = false;
       try {

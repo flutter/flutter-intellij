@@ -29,6 +29,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
+import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
@@ -40,6 +41,7 @@ import io.flutter.run.FlutterLaunchMode;
 import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.server.vmService.VMServiceManager;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.MostlySilentOsProcessHandler;
 import io.flutter.utils.ProgressHelper;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
@@ -249,7 +251,7 @@ public class FlutterApp {
     LOG.info(analyticsStart + " " + project.getName() + " (" + mode.mode() + ")");
     LOG.info(command.toString());
 
-    final ProcessHandler process = new OSProcessHandler(command);
+    final ProcessHandler process = new MostlySilentOsProcessHandler(command);
     Disposer.register(project, process::destroyProcess);
 
     // Send analytics for the start and stop events.
