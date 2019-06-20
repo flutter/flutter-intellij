@@ -110,7 +110,7 @@ class ProjectCreator(guiTestCase: GuiTestCase) : TestUtilsClass(guiTestCase) {
             typeText(projectName)
             button("Finish").click()
             GuiTestUtilKt.waitProgressDialogUntilGone(
-              robot = robot(), progressTitle = "Creating Flutter Project", timeoutToAppear = Timeouts.seconds03)
+                robot = robot(), progressTitle = "Creating Flutter Project", timeoutToAppear = Timeouts.seconds03)
           }
         }
         waitForFirstIndexing()

@@ -11,6 +11,7 @@ import com.intellij.openapi.util.Ref
 import com.intellij.testGuiFramework.fixtures.IdeFrameFixture
 import com.intellij.testGuiFramework.fixtures.ToolWindowFixture
 import com.intellij.testGuiFramework.framework.Timeouts
+import com.intellij.testGuiFramework.impl.GuiTestUtilKt
 import com.intellij.testGuiFramework.matcher.ClassNameMatcher
 import com.intellij.testGuiFramework.util.step
 import io.flutter.inspector.InspectorService
@@ -21,7 +22,6 @@ import org.fest.swing.core.ComponentFinder
 import org.fest.swing.core.Robot
 import org.fest.swing.fixture.JTreeFixture
 import org.fest.swing.timing.Condition
-import org.fest.swing.timing.Pause
 import org.fest.swing.timing.Pause.pause
 import java.awt.Component
 import javax.swing.JPanel
@@ -40,11 +40,12 @@ class FlutterInspectorFixture(project: Project, robot: Robot, private val ideFra
     step("Populate inspector tree") {
       activate()
       selectedContent
-      Pause.pause(object : Condition("Initialize inspector") {
+      pause(object : Condition("Initialize inspector") {
         override fun test(): Boolean {
           return contents[0].displayName != null
         }
       }, Timeouts.seconds30)
+      GuiTestUtilKt.waitForBackgroundTasks(myRobot)
     }
   }
 
