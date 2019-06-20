@@ -42,7 +42,7 @@ public class DevToolsUtilsTest {
 
     assertEquals(
       generateDevToolsUrl(devtoolsHost, devtoolsPort, serviceProtocolUri, page),
-      "http://127.0.0.1:9100/?ide=AndroidStudio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
+      "http://127.0.0.1:9100/?ide=Android-Studio&uri=http%3A%2F%2F127.0.0.1%3A50224%2FWTFTYus3IPU%3D%2F#timeline"
     );
   }
 }
