@@ -14,7 +14,6 @@ import com.intellij.execution.filters.OpenFileHyperlinkInfo;
 import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.roots.ModuleRootManager;
@@ -65,8 +64,6 @@ public class FlutterConsoleFilter implements Filter {
     }
   }
 
-  private static final Logger LOG = Logger.getInstance(FlutterConsoleFilter.class);
-
   private final @NotNull Module module;
 
   public FlutterConsoleFilter(@NotNull Module module) {
@@ -111,6 +108,7 @@ public class FlutterConsoleFilter implements Filter {
     return file != null && file.exists() ? file : null;
   }
 
+  @Override
   @Nullable
   public Result applyFilter(final String line, final int entireLength) {
     if (line.startsWith("Run \"flutter doctor\" for information about installing additional components.")) {
@@ -139,6 +137,8 @@ public class FlutterConsoleFilter implements Filter {
     //    * "  • MyApp.xzzzz (lib/main.dart:6)"
     //    * "  • _MyHomePageState._incrementCounter (lib/main.dart:49)"
     final String[] parts = pathPart.split(" ");
+    int lineStart = -1;
+    int highlightLength = 0;
     for (String part : parts) {
       // "(lib/main.dart:49)"
       if (part.startsWith("(") && part.endsWith(")")) {
@@ -152,8 +152,28 @@ public class FlutterConsoleFilter implements Filter {
           catch (NumberFormatException e) {
             // Ignored.
           }
+          pathPart = part;
+          lineStart = entireLength - line.length() + line.indexOf(pathPart);
+          highlightLength = pathPart.length();
+          break;
         }
-        pathPart = part;
+        else if (split.length == 4 && split[0].equals("file")) {
+          // part = file:///Users/user/AndroidStudioProjects/flutter_app/test/widget_test.dart:23:18
+          try {
+            // Reconcile line number indexing.
+            lineNumber = Math.max(0, Integer.parseInt(split[2]) - 1);
+          }
+          catch (NumberFormatException e) {
+            // Ignored.
+          }
+          pathPart = findRelativePath(split[1]);
+          if (pathPart == null) {
+            return null;
+          }
+          lineStart = entireLength - line.length() + line.indexOf(part);
+          highlightLength = part.length();
+          break;
+        }
       }
     }
 
@@ -161,13 +181,25 @@ public class FlutterConsoleFilter implements Filter {
     if (file != null) {
       // "open ios/Runner.xcworkspace"
       final boolean openAsExternalFile = FlutterUtils.isXcodeFileName(pathPart);
-      final int lineStart = entireLength - line.length() + line.indexOf(pathPart);
 
       final HyperlinkInfo hyperlinkInfo =
         openAsExternalFile ? new OpenExternalFileHyperlink(file) : new OpenFileHyperlinkInfo(module.getProject(), file, lineNumber, 0);
-      return new Result(lineStart, lineStart + pathPart.length(), hyperlinkInfo);
+      return new Result(lineStart, lineStart + highlightLength, hyperlinkInfo);
     }
 
+    return null;
+  }
+
+  private String findRelativePath(String threeSlashFileName) {
+    final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
+    for (VirtualFile root : roots) {
+      String path = root.getPath();
+      int index = threeSlashFileName.indexOf(path);
+      if (index > 0) {
+        index += path.length();
+        return threeSlashFileName.substring(index + 1);
+      }
+    }
     return null;
   }
 
