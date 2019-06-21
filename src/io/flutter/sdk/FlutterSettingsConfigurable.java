@@ -335,6 +335,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void onVersionChanged() {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
+      // Clear the label out with a non-empty string, so that the layout doesn't give this element 0 height.
       myVersionLabel.setText(" ");
       fullVersionString = null;
       return;
