@@ -8,14 +8,17 @@ package io.flutter.sdk;
 import com.intellij.execution.process.ProcessOutput;
 import com.intellij.ide.actions.ShowSettingsUtilImpl;
 import com.intellij.ide.browsers.BrowserLauncher;
+import com.intellij.openapi.actionSystem.ActionToolbar;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory;
+import com.intellij.openapi.ide.CopyPasteManager;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.ComboBox;
+import com.intellij.openapi.ui.FixedSizeButton;
 import com.intellij.openapi.ui.TextComponentAccessor;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.io.FileUtilRt;
@@ -23,12 +26,12 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.ComboboxWithBrowseButton;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.components.JBLabel;
+import com.intellij.util.PlatformIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterConstants;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
-import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -36,6 +39,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.net.URI;
@@ -72,22 +76,32 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myShowMultipleChildrenGuides;
   private JCheckBox myShowBuildMethodsOnScrollbar;
   private JCheckBox myShowClosingLabels;
+  private FixedSizeButton myCopyButton;
 
   private final @NotNull Project myProject;
 
   private boolean ignoringSdkChanges = false;
+
+  private String fullVersionString;
 
   FlutterSettingsConfigurable(@NotNull Project project) {
     this.myProject = project;
 
     init();
 
-    myVersionLabel.setText("");
-    myVersionLabel.setCopyable(true);
+    myVersionLabel.setText(" ");
   }
 
   private void init() {
     mySdkCombo.getComboBox().setEditable(true);
+
+    myCopyButton.setSize(ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE);
+    myCopyButton.setIcon(PlatformIcons.COPY_ICON);
+    myCopyButton.addActionListener(e -> {
+      if (fullVersionString != null) {
+        CopyPasteManager.getInstance().setContents(new StringSelection(fullVersionString));
+      }
+    });
 
     final JTextComponent sdkEditor = (JTextComponent)mySdkCombo.getComboBox().getEditor().getEditorComponent();
     sdkEditor.getDocument().addDocumentListener(new DocumentAdapter() {
@@ -321,7 +335,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void onVersionChanged() {
     final FlutterSdk sdk = FlutterSdk.forPath(getSdkPathText());
     if (sdk == null) {
-      myVersionLabel.setText("");
+      // Clear the label out with a non-empty string, so that the layout doesn't give this element 0 height.
+      myVersionLabel.setText(" ");
+      fullVersionString = null;
       return;
     }
 
@@ -331,9 +347,12 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     myDisableTrackWidgetCreationCheckBox.setVisible(trackWidgetCreationRecommended);
 
     sdk.flutterVersion().start((ProcessOutput output) -> {
-      final String stdout = output.getStdout();
-      final String htmlText = "<html>" + StringUtil.replace(StringUtil.escapeXml(stdout.trim()), "\n", "<br/>") + "</html>";
-      ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, htmlText), modalityState);
+      final String fullVersionText = output.getStdout();
+      fullVersionString = fullVersionText;
+
+      final String[] lines = StringUtil.splitByLines(fullVersionText);
+      final String singleLineVersion = lines.length > 0 ? lines[0] : "";
+      ApplicationManager.getApplication().invokeLater(() -> updateVersionTextIfCurrent(sdk, singleLineVersion), modalityState);
     }, null);
   }
 
@@ -345,7 +364,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private void updateVersionTextIfCurrent(@NotNull FlutterSdk sdk, @NotNull String value) {
     final FlutterSdk current = FlutterSdk.forPath(getSdkPathText());
     if (current == null) {
-      myVersionLabel.setText("");
+      myVersionLabel.setText(" ");
     }
     else {
       myVersionLabel.setText(value);
