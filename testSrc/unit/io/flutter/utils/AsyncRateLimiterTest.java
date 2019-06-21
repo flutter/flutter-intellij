@@ -103,7 +103,7 @@ public class AsyncRateLimiterTest {
 
     // First event should occur immediately so don't count it.
     final double requestsPerSecond = (expectedEvents - 1) / (delta * 0.001);
-    assertTrue("Requests per second less than limit. Actual: " + requestsPerSecond, requestsPerSecond < TEST_FRAMES_PER_SECOND);
+    assertTrue("Requests per second does not exceed limit. Actual: " + requestsPerSecond, requestsPerSecond <= TEST_FRAMES_PER_SECOND);
     // We use a large delta so that tests run under load do not result in flakes.
     assertTrue("Requests per second within 3 fps of rate limit:", requestsPerSecond + 3.0 > TEST_FRAMES_PER_SECOND);
   }
