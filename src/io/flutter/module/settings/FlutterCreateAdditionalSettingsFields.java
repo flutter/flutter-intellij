@@ -27,6 +27,7 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
   private final FlutterCreateParams createParams;
+
   public FlutterCreateAdditionalSettingsFields() {
     this(new FlutterCreateAdditionalSettings(), null);
   }
@@ -37,7 +38,6 @@ public class FlutterCreateAdditionalSettingsFields {
     projectTypeForm = new ProjectType(sdk);
     projectTypeForm.addListener(e -> {
       settings.setType(projectTypeForm.getType());
-      settings.setSampleContent(projectTypeForm.getSample());
       changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
     });
 
@@ -114,7 +114,6 @@ public class FlutterCreateAdditionalSettingsFields {
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
-      .setSampleContent(projectTypeForm.getSample())
       .setOffline(createParams.isOfflineSelected())
       .build();
   }

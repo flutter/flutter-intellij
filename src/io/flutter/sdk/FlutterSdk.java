@@ -406,17 +406,6 @@ public class FlutterSdk {
   @Nullable
   public PubRoot createFiles(@NotNull VirtualFile baseDir, @Nullable Module module, @Nullable ProcessListener listener,
                              @Nullable FlutterCreateAdditionalSettings additionalSettings) {
-    // Sample projects overwrite project directory contents which causes the Android Support plugin to get confused.
-    // (See: https://github.com/flutter/flutter-intellij/issues/3120).
-    // As a work-around, we remove sample basedir project directory contents proactively.
-    if (additionalSettings != null && additionalSettings.getSampleContent() != null) {
-      for (VirtualFile f : baseDir.getChildren()) {
-        final File file = VfsUtilCore.virtualToIoFile(f);
-        FileUtil.delete(file);
-      }
-      baseDir.refresh(false, true);
-    }
-
     final Process process;
     if (module == null) {
       process = flutterCreate(baseDir, additionalSettings).start(null, listener);

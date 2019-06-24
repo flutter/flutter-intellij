@@ -42,10 +42,6 @@ import java.nio.file.Files;
 import java.util.*;
 
 public class FlutterSampleManager {
-  // TODO(pq): remove after testing.
-  // See https://github.com/flutter/flutter-intellij/issues/3330.
-  private static final boolean DISABLE_SAMPLES = false;
-
   private static final long SAMPLE_LISTING_PROCESS_TIMEOUT_IN_MS = 30000L;
 
   private static final String SNIPPETS_REMOTE_INDEX_URL = "https://docs.flutter.io/snippets/index.json";
@@ -61,10 +57,6 @@ public class FlutterSampleManager {
   }
 
   public List<FlutterSample> getSamples() {
-    if (DISABLE_SAMPLES) {
-      return Collections.emptyList();
-    }
-
     if (flutterSamples != null) {
       return flutterSamples;
     }
@@ -79,8 +71,9 @@ public class FlutterSampleManager {
     final Task.Backgroundable task = new Task.Backgroundable(null, "Initializing Flutter Sample Listing", true) {
       OSProcessHandler process;
       boolean isRunning;
+
       public void run(@NotNull ProgressIndicator indicator) {
-        synchronized(this) {
+        synchronized (this) {
           if (isRunning) {
             return;
           }
@@ -249,7 +242,6 @@ public class FlutterSampleManager {
         // TODO(pq): handle event.getExitCode().
       }
     };
-
 
     final PubRoot root =
       FlutterModuleBuilder.runFlutterCreateWithProgress(baseDir, sdk, project, outputListener, getCreateSettings(sample));
