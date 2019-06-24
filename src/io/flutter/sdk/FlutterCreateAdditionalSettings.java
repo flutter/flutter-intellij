@@ -28,8 +28,6 @@ public class FlutterCreateAdditionalSettings {
   private Boolean kotlin;
   @Nullable
   private Boolean offlineMode;
-  @Nullable
-  private FlutterSample sampleContent;
 
   public FlutterCreateAdditionalSettings() {
     type = FlutterProjectType.APP;
@@ -43,7 +41,6 @@ public class FlutterCreateAdditionalSettings {
                                           @Nullable String org,
                                           @Nullable Boolean swift,
                                           @Nullable Boolean kotlin,
-                                          @Nullable FlutterSample sampleContent,
                                           @Nullable Boolean offlineMode) {
     this.includeDriverTest = includeDriverTest;
     this.type = type;
@@ -51,7 +48,6 @@ public class FlutterCreateAdditionalSettings {
     this.org = org;
     this.swift = swift;
     this.kotlin = kotlin;
-    this.sampleContent = sampleContent;
     this.offlineMode = offlineMode;
   }
 
@@ -74,15 +70,6 @@ public class FlutterCreateAdditionalSettings {
 
   public void setKotlin(boolean value) {
     kotlin = value;
-  }
-
-  @Nullable
-  public FlutterSample getSampleContent() {
-    return sampleContent;
-  }
-
-  public void setSampleContent(@Nullable FlutterSample sampleContent) {
-    this.sampleContent = sampleContent;
   }
 
   public List<String> getArgs() {
@@ -119,11 +106,6 @@ public class FlutterCreateAdditionalSettings {
     if (Boolean.TRUE.equals(kotlin)) {
       args.add("--android-language");
       args.add("kotlin");
-    }
-
-    if (sampleContent != null) {
-      args.add("--sample");
-      args.add(sampleContent.getId());
     }
 
     return args;
@@ -210,7 +192,7 @@ public class FlutterCreateAdditionalSettings {
     }
 
     public FlutterCreateAdditionalSettings build() {
-      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, sampleContent, offlineMode);
+      return new FlutterCreateAdditionalSettings(includeDriverTest, type, description, org, swift, kotlin, offlineMode);
     }
   }
 }

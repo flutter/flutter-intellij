@@ -67,4 +67,3 @@ public class FlutterSampleNotificationProvider extends EditorNotifications.Provi
     return samples;
   }
 }
-

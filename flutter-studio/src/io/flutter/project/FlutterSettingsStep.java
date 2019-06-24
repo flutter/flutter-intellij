@@ -57,7 +57,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
   private JLabel myLanguageLabel;
-  private JPanel mySamplePanel;
   private ProjectType myProjectTypeForm;
   private boolean hasEntered = false;
   private FocusListener focusListener;
@@ -165,7 +164,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
         myProjectTypeForm.setSdk(sdk);
       }
     }
-    mySamplePanel.setVisible(projectType == FlutterProjectType.APP);
     myProjectTypeForm.getProjectTypeCombo().setSelectedItem(projectType);
     myProjectTypeForm.getProjectTypeCombo().setVisible(false);
     hasEntered = true;
@@ -173,6 +171,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
 
   @Override
   protected void onProceeding() {
-    getModel().setSample(myProjectTypeForm.getSample());
+
   }
 }
