@@ -1,3 +1,9 @@
+## 37.0
+- Fix an offset issue with the UI guides code (#3574)
+- Add IDE query param to DevTools url. (#3592)
+- Treat FlutterApp as a long-running process (#3599)
+- Fix links for test URLs (#3600)
+
 ## 36.0
 - Add Gradle build script (#3529)
 - Update for new platform releases (#3527)

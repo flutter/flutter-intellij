@@ -29,6 +29,13 @@
 
   <change-notes>
     <![CDATA[
+<h2>37.0</h2>
+<ul>
+  <li>Fix an offset issue with the UI guides code (#3574)</li>
+  <li>Add IDE query param to DevTools url. (#3592)</li>
+  <li>Treat FlutterApp as a long-running process (#3599)</li>
+  <li>Fix links for test URLs (#3600)</li>
+</ul>
 <h2>36.0</h2>
 <ul>
   <li>Add Gradle build script (#3529)</li>
