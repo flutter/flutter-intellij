@@ -20,7 +20,6 @@ import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.server.vmService.ServiceExtensions;
-import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.view.FlutterViewMessages;
 import org.jetbrains.annotations.NotNull;
@@ -230,24 +229,23 @@ public class FlutterWidgetPerfManager implements Disposable, FlutterApp.FlutterA
 
   private void updateTrackWidgetRebuilds() {
     app.maybeCallBooleanExtension(ServiceExtensions.trackRebuildWidgets.getExtension(), trackRebuildWidgets)
-      .whenCompleteAsync((v, e) -> {
-        notifyPerf();
-      });
+      .whenCompleteAsync((v, e) -> notifyPerf());
   }
 
   private void updateTrackWidgetRepaints() {
     app.maybeCallBooleanExtension(ServiceExtensions.trackRepaintWidgets.getExtension(), trackRepaintWidgets)
-      .whenCompleteAsync((v, e) -> {
-        notifyPerf();
-      });
+      .whenCompleteAsync((v, e) -> notifyPerf());
   }
 
   private void syncBooleanServiceExtension(String serviceExtension, Computable<Boolean> valueProvider) {
-    streamSubscriptions.add(app.hasServiceExtension(serviceExtension, (supported) -> {
+    StreamSubscription<Boolean> subscription = app.hasServiceExtension(serviceExtension, (supported) -> {
       if (supported) {
         app.callBooleanExtension(serviceExtension, valueProvider.compute());
       }
-    }));
+    });
+    if (subscription != null) {
+      streamSubscriptions.add(subscription);
+    }
   }
 
   private void updateCurrentAppChanged(@Nullable FlutterApp app) {

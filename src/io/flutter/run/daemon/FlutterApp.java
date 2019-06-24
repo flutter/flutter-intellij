@@ -10,7 +10,6 @@ import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.ExecutionManager;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessAdapter;
 import com.intellij.execution.process.ProcessEvent;
 import com.intellij.execution.process.ProcessHandler;
@@ -29,7 +28,6 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.EventDispatcher;
 import com.intellij.util.concurrency.AppExecutorUtil;
-import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
@@ -108,11 +106,11 @@ public class FlutterApp {
   private final AtomicReference<State> myState = new AtomicReference<>(State.STARTING);
   private final EventDispatcher<FlutterAppListener> listenersDispatcher = EventDispatcher.create(FlutterAppListener.class);
 
-  private @NotNull final FlutterLog myFlutterLog;
+  private final FlutterLog myFlutterLog;
   private final ObservatoryConnector myConnector;
-  private FlutterDebugProcess myFlutterDebugProcess;
+  private @Nullable FlutterDebugProcess myFlutterDebugProcess;
   private @Nullable VmService myVmService;
-  private VMServiceManager myVMServiceManager;
+  private @Nullable VMServiceManager myVMServiceManager;
 
   private static final Key<FlutterApp> APP_KEY = Key.create("FlutterApp");
 
@@ -493,19 +491,24 @@ public class FlutterApp {
    */
   @SuppressWarnings("UnusedReturnValue")
   public CompletableFuture<Boolean> maybeCallBooleanExtension(String methodName, boolean enabled) {
-    if (getVMServiceManager().hasServiceExtensionNow(methodName)) {
+    if (getVMServiceManager() != null && getVMServiceManager().hasServiceExtensionNow(methodName)) {
       return callBooleanExtension(methodName, enabled);
     }
     return CompletableFuture.completedFuture(false);
   }
 
-  @NotNull
+  @Nullable
   public StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
+    if (getVMServiceManager() == null) {
+      return null;
+    }
     return getVMServiceManager().hasServiceExtension(name, onData);
   }
 
   public void hasServiceExtension(String name, Consumer<Boolean> onData, Disposable parentDisposable) {
-    getVMServiceManager().hasServiceExtension(name, onData, parentDisposable);
+    if (getVMServiceManager() != null) {
+      getVMServiceManager().hasServiceExtension(name, onData, parentDisposable);
+    }
   }
 
   public void setConsole(@Nullable ConsoleView console) {
