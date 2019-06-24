@@ -10,13 +10,11 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -294,6 +292,8 @@ class DeviceDaemon {
       result.setCharset(CharsetToolkit.UTF8_CHARSET);
       result.setExePath(FileUtil.toSystemDependentName(command));
       result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+      result.withEnvironment("ENABLE_FLUTTER_DESKTOP", "true");
+      result.withEnvironment("FLUTTER_WEB", "true");
       if (androidHome != null) {
         result.withEnvironment("ANDROID_HOME", androidHome);
       }
@@ -373,7 +373,10 @@ class DeviceDaemon {
       final FlutterDevice newDevice = new FlutterDevice(event.id,
                                                         event.name == null ? event.id : event.name,
                                                         event.platform,
-                                                        event.emulator);
+                                                        event.emulator,
+                                                        event.category,
+                                                        event.platformType,
+                                                        event.ephemeral);
       devices.updateAndGet((old) -> addDevice(old.stream(), newDevice));
       deviceChanged.run();
     }

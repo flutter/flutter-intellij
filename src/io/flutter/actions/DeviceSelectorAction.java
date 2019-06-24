@@ -145,7 +145,7 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
           final Presentation template = action.getTemplatePresentation();
           presentation.setIcon(template.getIcon());
-          presentation.setText(deviceAction.deviceName());
+          presentation.setText(deviceAction.presentationName());
           presentation.setEnabled(true);
           return;
         }
@@ -192,8 +192,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       this.device = device;
     }
 
-    public String deviceName() {
-      return device.deviceName();
+    public String presentationName() {
+      return device.presentationName();
     }
 
     @Override

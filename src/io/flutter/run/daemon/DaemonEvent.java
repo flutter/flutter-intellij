@@ -302,7 +302,11 @@ abstract class DaemonEvent {
     String id;
     String name;
     String platform;
-    boolean emulator;
+    Boolean emulator;
+
+    @Nullable String category;
+    @Nullable String platformType;
+    @Nullable Boolean ephemeral;
 
     void accept(Listener listener) {
       listener.onDeviceAdded(this);

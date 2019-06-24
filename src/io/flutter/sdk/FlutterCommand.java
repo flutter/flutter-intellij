@@ -246,6 +246,8 @@ public class FlutterCommand {
     final GeneralCommandLine line = new GeneralCommandLine();
     line.setCharset(CharsetToolkit.UTF8_CHARSET);
     line.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+    line.withEnvironment("ENABLE_FLUTTER_DESKTOP", "true");
+    line.withEnvironment("FLUTTER_WEB", "true");
     final String androidHome = IntelliJAndroidSdk.chooseAndroidHome(project, false);
     if (androidHome != null) {
       line.withEnvironment("ANDROID_HOME", androidHome);
