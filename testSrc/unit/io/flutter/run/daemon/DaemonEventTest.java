@@ -88,7 +88,7 @@ public class DaemonEventTest {
 
       @Override
       public void onDeviceAdded(DaemonEvent.DeviceAdded event) {
-        logEvent(event, event.id, event.name, event.platform);
+        logEvent(event, event.id, event.name, event.platform, event.category);
       }
 
       @Override
@@ -173,8 +173,8 @@ public class DaemonEventTest {
 
   @Test
   public void canReceiveDeviceAdded() {
-    send("device.added", curly("id:9000", "name:\"Banana Jr\"", "platform:\"feet\""));
-    checkLog("DeviceAdded: 9000, Banana Jr, feet");
+    send("device.added", curly("id:9000", "name:\"Banana Jr\"", "platform:\"feet\"", "category:\"mobile\""));
+    checkLog("DeviceAdded: 9000, Banana Jr, feet, mobile");
   }
 
   @Test

@@ -27,6 +27,7 @@ public class FlutterSettings {
   private static final String syncAndroidLibrariesKey = "io.flutter.syncAndroidLibraries";
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
+  private static final String showWebDesktopDevices = "io.flutter.showWebDesktopDevices";
 
   /**
    * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
@@ -109,6 +110,9 @@ public class FlutterSettings {
       analytics.sendEvent("settings", afterLastPeriod(showBuildMethodsOnScrollbarKey));
     }
 
+    if (isShowWebDesktopDevices()) {
+      analytics.sendEvent("settings", afterLastPeriod(showWebDesktopDevices));
+    }
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
     }
@@ -201,6 +205,16 @@ public class FlutterSettings {
 
   public void setSyncingAndroidLibraries(boolean value) {
     getPropertiesComponent().setValue(syncAndroidLibrariesKey, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowWebDesktopDevices() {
+    return getPropertiesComponent().getBoolean(showWebDesktopDevices, false);
+  }
+
+  public void setShowWebDesktopDevices(boolean value) {
+    getPropertiesComponent().setValue(showWebDesktopDevices, value, false);
 
     fireEvent();
   }
