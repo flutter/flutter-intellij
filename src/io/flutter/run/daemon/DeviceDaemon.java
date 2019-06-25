@@ -10,13 +10,11 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
 import com.intellij.execution.process.ProcessHandler;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.CharsetToolkit;
-import com.intellij.util.io.BaseOutputReader;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
@@ -24,6 +22,7 @@ import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
@@ -294,6 +293,10 @@ class DeviceDaemon {
       result.setCharset(CharsetToolkit.UTF8_CHARSET);
       result.setExePath(FileUtil.toSystemDependentName(command));
       result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
+      if (FlutterSettings.getInstance().isShowWebDesktopDevices()) {
+        result.withEnvironment("ENABLE_FLUTTER_DESKTOP", "true");
+        result.withEnvironment("FLUTTER_WEB", "true");
+      }
       if (androidHome != null) {
         result.withEnvironment("ANDROID_HOME", androidHome);
       }
@@ -373,7 +376,10 @@ class DeviceDaemon {
       final FlutterDevice newDevice = new FlutterDevice(event.id,
                                                         event.name == null ? event.id : event.name,
                                                         event.platform,
-                                                        event.emulator);
+                                                        event.emulator,
+                                                        event.category,
+                                                        event.platformType,
+                                                        event.ephemeral);
       devices.updateAndGet((old) -> addDevice(old.stream(), newDevice));
       deviceChanged.run();
     }

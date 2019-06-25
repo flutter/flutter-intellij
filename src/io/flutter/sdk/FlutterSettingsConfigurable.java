@@ -63,6 +63,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myFormatCodeOnSaveCheckBox;
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
+  private JCheckBox myShowWebDevicesCheckBox;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
 
@@ -211,6 +212,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
       return true;
     }
 
+    if (settings.isShowWebDesktopDevices() != myShowWebDevicesCheckBox.isSelected()) {
+      return true;
+    }
     if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
       return true;
     }
@@ -270,6 +274,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowMultipleChildrenGuides(myShowMultipleChildrenGuides.isSelected());
     settings.setShowBuildMethodsOnScrollbar(myShowBuildMethodsOnScrollbar.isSelected());
     settings.setShowClosingLabels(myShowClosingLabels.isSelected());
+    settings.setShowWebDesktopDevices(myShowWebDevicesCheckBox.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
@@ -313,6 +318,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myShowClosingLabels.setSelected(settings.isShowClosingLabels());
 
+    myShowWebDevicesCheckBox.setSelected(settings.isShowWebDesktopDevices());
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());

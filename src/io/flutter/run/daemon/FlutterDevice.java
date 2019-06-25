@@ -18,11 +18,26 @@ public class FlutterDevice {
   private final @Nullable String myPlatform;
   private final boolean myEmulator;
 
+  private final @Nullable String myCategory;
+  private final @Nullable String myPlatformType;
+  private final boolean myEphemeral;
+
   public FlutterDevice(@NotNull String deviceId, @NotNull String deviceName, @Nullable String platform, boolean emulator) {
+    this(deviceId, deviceName, platform, emulator, null, null, null);
+  }
+
+  public FlutterDevice(
+    @NotNull String deviceId, @NotNull String deviceName, @Nullable String platform,
+    boolean emulator,
+    @Nullable String category, @Nullable String platformType, @Nullable Boolean ephemeral
+  ) {
     myDeviceId = deviceId;
     myDeviceName = deviceName;
     myPlatform = platform;
     myEmulator = emulator;
+    myCategory = category;
+    myPlatformType = platformType;
+    myEphemeral = ephemeral == null ? true : ephemeral;
   }
 
   @NotNull
@@ -42,6 +57,28 @@ public class FlutterDevice {
 
   public boolean emulator() {
     return myEmulator;
+  }
+
+  /**
+   * One of 'web', 'mobile', or 'desktop'.
+   */
+  @Nullable
+  public String category() {
+    return myCategory;
+  }
+
+  @Nullable
+  public String platformType() {
+    return myPlatformType;
+  }
+
+  /**
+   * Whether the device is persistent on the machine.
+   *
+   * Web and desktop devices are generally non-ephemeral; mobile devices are generally ephemeral
+   */
+  public boolean ephemeral() {
+    return myEphemeral;
   }
 
   public boolean isIOS() {
@@ -79,11 +116,11 @@ public class FlutterDevice {
       if (other == this) {
         continue;
       }
-      if (other.deviceName().equals(deviceName())) {
-        return deviceName() + " (" + deviceId() + ")";
+      if (other.presentationName().equals(presentationName())) {
+        return presentationName() + " (" + deviceId() + ")";
       }
     }
-    return deviceName();
+    return presentationName();
   }
 
   /**
@@ -102,5 +139,14 @@ public class FlutterDevice {
    */
   public static FlutterDevice getTester() {
     return new FlutterDevice("flutter-tester", "Flutter test device", null, false);
+  }
+
+  public String presentationName() {
+    if (category() != null) {
+      return deviceName() + " (" + category() + ")";
+    }
+    else {
+      return deviceName();
+    }
   }
 }

@@ -26,11 +26,13 @@ class DeviceSelection {
     this.selection = selected;
   }
 
-  @NotNull ImmutableList<FlutterDevice> getDevices() {
+  @NotNull
+  ImmutableList<FlutterDevice> getDevices() {
     return devices;
   }
 
-  @Nullable FlutterDevice getSelection() {
+  @Nullable
+  FlutterDevice getSelection() {
     return selection;
   }
 
@@ -41,9 +43,11 @@ class DeviceSelection {
   DeviceSelection withDevices(@NotNull List<FlutterDevice> newDevices) {
     final String selectedId = selection == null ? null : selection.deviceId();
     final Optional<FlutterDevice> selectedDevice = findById(newDevices, selectedId);
-    // If there's no selected device, default to the first one in the list.
-    final FlutterDevice selectionOrDefault = selectedDevice.orElse(newDevices.size() > 0 ? newDevices.get(0) : null);
-    return new DeviceSelection(ImmutableList.copyOf(newDevices), selectionOrDefault);
+
+    // If there's no selected device, default the first ephemoral one in the list.
+    final FlutterDevice firstEphemoral =
+      newDevices.stream().filter(FlutterDevice::ephemeral).findFirst().orElse(null);
+    return new DeviceSelection(ImmutableList.copyOf(newDevices), firstEphemoral);
   }
 
   /**

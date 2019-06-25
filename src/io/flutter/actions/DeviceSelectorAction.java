@@ -27,6 +27,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private final List<AnAction> actions = new ArrayList<>();
   private final List<Project> knownProjects = Collections.synchronizedList(new ArrayList<>());
 
+  private SelectDeviceAction selectedDeviceAction;
+
   @NotNull
   @Override
   protected DefaultActionGroup createPopupActionGroup(JComponent button) {
@@ -97,16 +99,23 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
 
     final DeviceService service = DeviceService.getInstance(project);
 
+    final FlutterDevice selectedDevice = service.getSelectedDevice();
     final Collection<FlutterDevice> devices = service.getConnectedDevices();
 
-    for (FlutterDevice device : devices) {
-      actions.add(new SelectDeviceAction(device, devices));
-    }
+    selectedDeviceAction = null;
 
-    if (actions.isEmpty()) {
-      final boolean isLoading = service.getStatus() == DeviceService.State.LOADING;
-      final String message = isLoading ? FlutterBundle.message("devicelist.loading") : FlutterBundle.message("devicelist.empty");
-      actions.add(new NoDevicesAction(message));
+    for (FlutterDevice device : devices) {
+      final SelectDeviceAction deviceAction = new SelectDeviceAction(device, devices);
+      actions.add(deviceAction);
+
+      if (Objects.equals(device, selectedDevice)) {
+        selectedDeviceAction = deviceAction;
+
+        final Presentation template = deviceAction.getTemplatePresentation();
+        presentation.setIcon(template.getIcon());
+        presentation.setText(deviceAction.presentationName());
+        presentation.setEnabled(true);
+      }
     }
 
     // Show the 'Open iOS Simulator' action.
@@ -133,54 +142,24 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       actions.addAll(emulatorActions);
     }
 
-    selectedDeviceAction = null;
-
-    final FlutterDevice selectedDevice = service.getSelectedDevice();
-    for (AnAction action : actions) {
-      if (action instanceof SelectDeviceAction) {
-        final SelectDeviceAction deviceAction = (SelectDeviceAction)action;
-
-        if (Objects.equals(deviceAction.device, selectedDevice)) {
-          selectedDeviceAction = deviceAction;
-
-          final Presentation template = action.getTemplatePresentation();
-          presentation.setIcon(template.getIcon());
-          presentation.setText(deviceAction.deviceName());
-          presentation.setEnabled(true);
-          return;
-        }
+    if (devices.isEmpty()) {
+      final boolean isLoading = service.getStatus() == DeviceService.State.LOADING;
+      if (isLoading) {
+        presentation.setText(FlutterBundle.message("devicelist.loading"));
+      }
+      else {
+        presentation.setText("<no devices>");
       }
     }
-
-    if (devices.isEmpty()) {
-      presentation.setText("<no devices>");
-    }
-    else {
-      presentation.setText(null);
+    else if (selectedDevice == null) {
+      presentation.setText("<no device selected>");
     }
   }
-
-  private SelectDeviceAction selectedDeviceAction;
 
   // Show the current device as selected when the combo box menu opens.
   @Override
   protected Condition<AnAction> getPreselectCondition() {
     return action -> action == selectedDeviceAction;
-  }
-
-  // It's not clear if we need TransparentUpdate, but apparently it will make the UI refresh
-  // the display more often?
-  // See: https://intellij-support.jetbrains.com/hc/en-us/community/posts/206772825-How-to-enable-disable-action-in-runtime
-  private static class NoDevicesAction extends AnAction implements TransparentUpdate {
-    NoDevicesAction(String message) {
-      super(message, null, null);
-      getTemplatePresentation().setEnabled(false);
-    }
-
-    @Override
-    public void actionPerformed(AnActionEvent e) {
-      // No-op
-    }
   }
 
   private static class SelectDeviceAction extends AnAction {
@@ -192,8 +171,8 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       this.device = device;
     }
 
-    public String deviceName() {
-      return device.deviceName();
+    public String presentationName() {
+      return device.presentationName();
     }
 
     @Override
