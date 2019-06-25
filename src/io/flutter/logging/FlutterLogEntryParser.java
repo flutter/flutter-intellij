@@ -215,28 +215,16 @@ public class FlutterLogEntryParser {
     return Kind.UNSPECIFIED;
   }
 
-  private static long timestamp() {
-    return System.currentTimeMillis();
-  }
-
   private static long timestamp(Event event) {
-    // TODO(devoncarew): Update the VM library - timestamp is a long.
-    if (event.getJson().has("timestamp")) {
-      return event.getJson().get("timestamp").getAsLong();
-    }
-    else {
-      return timestamp();
-    }
+    return event.getTimestamp() == -1 ? System.currentTimeMillis() : event.getTimestamp();
   }
 
   @Nullable
   public List<FlutterLogEntry> parse(@Nullable String id, @Nullable Event event) {
     if (id != null && event != null) {
       switch (id) {
-        case FlutterLog.LOGGING_STREAM_ID_OLD:
-          return parseLoggingEvent(event);
         case FlutterLog.LOGGING_STREAM_ID:
-          //noinspection DuplicateBranchesInSwitch
+        case FlutterLog.LOGGING_STREAM_ID_OLD:
           return parseLoggingEvent(event);
         case VmService.GC_STREAM_ID:
           return parseGCEvent(event);
@@ -322,7 +310,7 @@ public class FlutterLogEntryParser {
 
     FlutterLogEntry parseEntry(@NotNull String line, @NotNull String category, int level) {
       final LineInfo lineInfo = parseLineInfo(line, category);
-      return new FlutterLogEntry(timestamp(), lineInfo, level);
+      return new FlutterLogEntry(System.currentTimeMillis(), lineInfo, level);
     }
   }
 
