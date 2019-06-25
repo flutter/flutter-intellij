@@ -10,8 +10,8 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.ServiceExtensions;
-import io.flutter.server.vmService.ToggleableServiceExtensionDescription;
+import io.flutter.vmService.ServiceExtensions;
+import io.flutter.vmService.ToggleableServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.CompletableFuture;

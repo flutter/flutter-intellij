@@ -47,7 +47,10 @@ import io.flutter.logging.FlutterLog;
 import io.flutter.logging.FlutterLogView;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.bazel.BazelRunConfig;
-import io.flutter.run.daemon.*;
+import io.flutter.run.common.RunMode;
+import io.flutter.run.daemon.DaemonConsoleView;
+import io.flutter.run.daemon.DeviceService;
+import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

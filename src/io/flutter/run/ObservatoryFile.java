@@ -13,7 +13,7 @@ import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.DartFileType;
 import gnu.trove.THashMap;
 import gnu.trove.TIntObjectHashMap;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

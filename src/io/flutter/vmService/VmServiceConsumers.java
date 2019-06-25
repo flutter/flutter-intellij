@@ -1,4 +1,4 @@
-package io.flutter.server.vmService;
+package io.flutter.vmService;
 
 import org.dartlang.vm.service.consumer.*;
 import org.dartlang.vm.service.element.ErrorRef;

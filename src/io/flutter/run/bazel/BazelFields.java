@@ -21,8 +21,8 @@ import com.jetbrains.lang.dart.sdk.DartSdk;
 import io.flutter.FlutterBundle;
 import io.flutter.bazel.Workspace;
 import io.flutter.dart.DartPlugin;
-import io.flutter.run.daemon.FlutterDevice;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.FlutterDevice;
+import io.flutter.run.common.RunMode;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;
 import org.jetbrains.annotations.NotNull;
@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
-import static io.flutter.run.daemon.RunMode.DEBUG;
+import static io.flutter.run.common.RunMode.DEBUG;
 
 /**
  * The fields in a Bazel run configuration.

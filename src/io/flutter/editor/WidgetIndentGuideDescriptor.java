@@ -6,11 +6,8 @@
 package io.flutter.editor;
 
 import com.intellij.openapi.editor.Document;
-import com.intellij.openapi.editor.IndentGuideDescriptor;
 
 import java.util.ArrayList;
-
-import static java.lang.Math.max;
 
 /**
  * Analog to the IndentGuideDescriptor class from the regular FliteredIndentsHighlightingPass.

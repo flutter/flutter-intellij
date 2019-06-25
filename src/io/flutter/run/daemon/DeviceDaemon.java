@@ -20,6 +20,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.bazel.Workspace;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
 import io.flutter.settings.FlutterSettings;

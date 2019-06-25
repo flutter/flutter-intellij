@@ -17,8 +17,8 @@ import com.intellij.util.ui.UIUtil;
 import io.flutter.devtools.DevToolsManager;
 import io.flutter.inspector.FrameRenderingDisplay;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.FlutterFramesMonitor;
-import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.vmService.FlutterFramesMonitor;
+import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

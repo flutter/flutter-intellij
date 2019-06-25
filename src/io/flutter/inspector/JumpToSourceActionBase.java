@@ -11,9 +11,9 @@ import com.intellij.ui.AppUIUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.intellij.xdebugger.frame.XNavigatable;
 import com.intellij.xdebugger.frame.XValue;
-import io.flutter.server.vmService.frame.DartVmServiceValue;
 import io.flutter.FlutterInitializer;
 import io.flutter.utils.AsyncUtils;
+import io.flutter.vmService.frame.DartVmServiceValue;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.tree.DefaultMutableTreeNode;

@@ -15,8 +15,8 @@ import com.intellij.openapi.util.SystemInfo;
 import icons.FlutterIcons;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
+import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
-import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

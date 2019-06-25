@@ -6,6 +6,7 @@
 package io.flutter.run.daemon;
 
 import com.google.common.collect.ImmutableList;
+import io.flutter.run.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

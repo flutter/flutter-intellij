@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.server.vmService;
+package io.flutter.vmService;
 
 import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
@@ -12,10 +12,10 @@ import com.intellij.openapi.util.text.StringUtil;
 import gnu.trove.THashMap;
 import io.flutter.inspector.EvalOnDartLibrary;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.HeapMonitor.HeapListener;
 import io.flutter.utils.EventStream;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.utils.VmServiceListenerAdapter;
+import io.flutter.vmService.HeapMonitor.HeapListener;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;

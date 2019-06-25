@@ -25,7 +25,7 @@ import com.jetbrains.lang.dart.util.DartUrlResolver;
 import gnu.trove.THashMap;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.DartPlugin;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.LibraryRef;
 import org.dartlang.vm.service.element.Script;
 import org.dartlang.vm.service.element.ScriptRef;
