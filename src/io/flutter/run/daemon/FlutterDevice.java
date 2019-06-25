@@ -59,6 +59,9 @@ public class FlutterDevice {
     return myEmulator;
   }
 
+  /**
+   * One of 'web', 'mobile', or 'desktop'.
+   */
   @Nullable
   public String category() {
     return myCategory;
@@ -69,6 +72,11 @@ public class FlutterDevice {
     return myPlatformType;
   }
 
+  /**
+   * Whether the device is persistent on the machine.
+   *
+   * Web and desktop devices are generally non-ephemeral; mobile devices are generally ephemeral
+   */
   public boolean ephemeral() {
     return myEphemeral;
   }
