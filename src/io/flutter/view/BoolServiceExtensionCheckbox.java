@@ -8,9 +8,9 @@ package io.flutter.view;
 import com.intellij.openapi.Disposable;
 import com.intellij.ui.components.JBCheckBox;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.ServiceExtensionState;
-import io.flutter.server.vmService.ToggleableServiceExtensionDescription;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.vmService.ServiceExtensionState;
+import io.flutter.vmService.ToggleableServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

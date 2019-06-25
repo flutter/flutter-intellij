@@ -5,9 +5,9 @@
  */
 package io.flutter.run.bazelTest;
 
-import com.intellij.execution.ExecutionBundle;
-import com.intellij.execution.configurations.*;
-import com.intellij.openapi.components.BaseState;
+import com.intellij.execution.configurations.ConfigurationFactory;
+import com.intellij.execution.configurations.ConfigurationTypeBase;
+import com.intellij.execution.configurations.RunConfiguration;
 import com.intellij.openapi.extensions.Extensions;
 import com.intellij.openapi.project.Project;
 import icons.FlutterIcons;
@@ -15,7 +15,6 @@ import io.flutter.FlutterBundle;
 import io.flutter.run.bazel.FlutterBazelRunConfigurationType;
 import io.flutter.run.test.FlutterTestConfigType;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * The Bazel version of the {@link FlutterTestConfigType} configuration.

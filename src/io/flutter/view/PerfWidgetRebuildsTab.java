@@ -14,7 +14,7 @@ import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.perf.PerfMetric;
 import io.flutter.perf.PerfReportKind;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.ServiceExtensions;
+import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;

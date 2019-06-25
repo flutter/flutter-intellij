@@ -13,7 +13,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.Pair;
 import io.flutter.bazel.FakeWorkspaceFactory;
 import io.flutter.bazel.Workspace;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.common.RunMode;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
 import org.jetbrains.annotations.NotNull;

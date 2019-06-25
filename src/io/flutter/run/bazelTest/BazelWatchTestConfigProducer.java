@@ -7,7 +7,6 @@ package io.flutter.run.bazelTest;
 
 import com.intellij.execution.actions.ConfigurationContext;
 import com.intellij.openapi.util.Ref;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 

@@ -1,9 +1,9 @@
-package io.flutter.server.vmService.frame;
+package io.flutter.vmService.frame;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.xdebugger.frame.XExecutionStack;
 import com.intellij.xdebugger.frame.XStackFrame;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Frame;
 import org.dartlang.vm.service.element.InstanceRef;
 import org.jetbrains.annotations.NotNull;

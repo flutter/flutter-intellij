@@ -13,7 +13,7 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.FlutterFramesMonitor;
+import io.flutter.vmService.FlutterFramesMonitor;
 
 import javax.swing.*;
 import java.awt.*;

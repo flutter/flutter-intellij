@@ -15,7 +15,7 @@
  */
 package io.flutter.inspector;
 
-import io.flutter.server.vmService.HeapMonitor;
+import io.flutter.vmService.HeapMonitor;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
 

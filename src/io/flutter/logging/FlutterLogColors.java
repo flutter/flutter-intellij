@@ -9,7 +9,7 @@ import com.intellij.ui.JBColor;
 import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.NotNull;
 
-import java.awt.Color;
+import java.awt.*;
 
 import static io.flutter.logging.FlutterLogEntryParser.ERROR_CATEGORY;
 

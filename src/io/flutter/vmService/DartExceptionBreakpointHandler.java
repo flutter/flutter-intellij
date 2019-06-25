@@ -1,4 +1,4 @@
-package io.flutter.server.vmService;
+package io.flutter.vmService;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.xdebugger.XDebugSession;

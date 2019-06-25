@@ -11,9 +11,9 @@ import com.intellij.openapi.actionSystem.Presentation;
 import com.intellij.openapi.actionSystem.Toggleable;
 import com.intellij.openapi.application.ApplicationManager;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.ServiceExtensionState;
-import io.flutter.server.vmService.ToggleableServiceExtensionDescription;
 import io.flutter.utils.StreamSubscription;
+import io.flutter.vmService.ServiceExtensionState;
+import io.flutter.vmService.ToggleableServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

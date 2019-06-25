@@ -23,7 +23,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.run.daemon.DeviceService;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.run.daemon.FlutterDevice;
 import org.jetbrains.annotations.NotNull;
 
 public class AttachState extends LaunchState {

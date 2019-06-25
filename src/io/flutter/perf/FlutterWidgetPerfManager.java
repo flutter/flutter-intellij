@@ -19,9 +19,9 @@ import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterAppManager;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.ServiceExtensions;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.view.FlutterViewMessages;
+import io.flutter.vmService.ServiceExtensions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

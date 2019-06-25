@@ -5,18 +5,11 @@
  */
 package io.flutter.run.bazelTest;
 
-import com.intellij.execution.Executor;
-import com.intellij.execution.ExecutorRegistry;
-import com.intellij.execution.lineMarker.ExecutorAction;
-import com.intellij.openapi.actionSystem.ActionManager;
-import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.psi.PsiElement;
 import io.flutter.run.common.TestLineMarkerContributor;
 import io.flutter.settings.FlutterSettings;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.Arrays;
 
 /**
  * Annotates bazel Flutter tests with line markers.

@@ -1,7 +1,7 @@
-package io.flutter.server.vmService.frame;
+package io.flutter.vmService.frame;
 
 import com.intellij.xdebugger.XSourcePosition;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Frame;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

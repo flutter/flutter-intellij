@@ -14,7 +14,7 @@ import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterPopFrameAction;
 import io.flutter.run.OpenDevToolsAction;
 import io.flutter.run.OpenObservatoryAction;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.jetbrains.annotations.NotNull;
 
 /**

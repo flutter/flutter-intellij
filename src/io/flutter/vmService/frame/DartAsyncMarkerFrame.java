@@ -1,4 +1,4 @@
-package io.flutter.server.vmService.frame;
+package io.flutter.vmService.frame;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.ui.ColoredTextContainer;

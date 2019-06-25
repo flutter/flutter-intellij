@@ -1,4 +1,4 @@
-package io.flutter.server.vmService.frame;
+package io.flutter.vmService.frame;
 
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.editor.Editor;
@@ -22,8 +22,8 @@ import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
 import gnu.trove.THashSet;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
-import io.flutter.server.vmService.VmServiceWrapper;
+import io.flutter.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.VmServiceWrapper;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;

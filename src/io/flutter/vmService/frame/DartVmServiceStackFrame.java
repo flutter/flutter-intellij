@@ -1,4 +1,4 @@
-package io.flutter.server.vmService.frame;
+package io.flutter.vmService.frame;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.util.text.StringUtil;
@@ -11,7 +11,7 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XCompositeNode;
 import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XValueChildrenList;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;

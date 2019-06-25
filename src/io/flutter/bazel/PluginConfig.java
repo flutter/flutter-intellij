@@ -15,7 +15,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Computable;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.FlutterUtils;
-import org.dartlang.vm.service.element.Obj;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

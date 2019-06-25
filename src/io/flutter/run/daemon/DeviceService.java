@@ -18,6 +18,7 @@ import com.intellij.openapi.util.Disposer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
+import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;

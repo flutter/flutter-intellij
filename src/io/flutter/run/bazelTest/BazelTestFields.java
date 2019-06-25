@@ -26,7 +26,7 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.dart.DartPlugin;
 import io.flutter.run.MainFile;
 import io.flutter.run.bazelTest.FlutterBazelTestConfigurationType.WatchFactory;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.common.RunMode;
 import io.flutter.sdk.FlutterSettingsConfigurable;
 import io.flutter.utils.ElementIO;
 import org.jdom.Element;

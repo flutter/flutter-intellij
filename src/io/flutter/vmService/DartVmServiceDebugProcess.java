@@ -1,4 +1,4 @@
-package io.flutter.server.vmService;
+package io.flutter.vmService;
 
 import com.google.gson.JsonObject;
 import com.intellij.execution.ExecutionResult;
@@ -39,14 +39,14 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
 import io.flutter.run.FlutterLaunchMode;
-import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
-import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
-import io.flutter.server.vmService.frame.DartVmServiceSuspendContext;
+import io.flutter.vmService.frame.DartVmServiceEvaluator;
+import io.flutter.vmService.frame.DartVmServiceStackFrame;
+import io.flutter.vmService.frame.DartVmServiceSuspendContext;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.consumer.VMConsumer;
-import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.element.Event;
+import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -57,8 +57,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public class DartVmServiceDebugProcess extends XDebugProcess {

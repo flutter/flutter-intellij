@@ -13,7 +13,7 @@ import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.MainFile;
-import io.flutter.run.daemon.RunMode;
+import io.flutter.run.common.RunMode;
 import io.flutter.sdk.FlutterCommandStartResult;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.utils.ElementIO;

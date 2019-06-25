@@ -1,4 +1,4 @@
-package io.flutter.server.vmService;
+package io.flutter.vmService;
 
 import com.google.common.collect.Lists;
 import com.intellij.execution.ui.ConsoleViewContentType;
@@ -17,14 +17,14 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.impl.XDebugSessionImpl;
 import com.jetbrains.lang.dart.DartFileType;
 import io.flutter.run.daemon.FlutterApp;
-import io.flutter.server.vmService.frame.DartAsyncMarkerFrame;
-import io.flutter.server.vmService.frame.DartVmServiceEvaluator;
-import io.flutter.server.vmService.frame.DartVmServiceStackFrame;
-import io.flutter.server.vmService.frame.DartVmServiceValue;
+import io.flutter.vmService.frame.DartAsyncMarkerFrame;
+import io.flutter.vmService.frame.DartVmServiceEvaluator;
+import io.flutter.vmService.frame.DartVmServiceStackFrame;
+import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.*;
-import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.element.Stack;
+import org.dartlang.vm.service.element.*;
 import org.dartlang.vm.service.logging.Logging;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

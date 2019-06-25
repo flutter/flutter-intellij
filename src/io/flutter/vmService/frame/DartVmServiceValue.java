@@ -1,4 +1,4 @@
-package io.flutter.server.vmService.frame;
+package io.flutter.vmService.frame;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.openapi.application.ApplicationManager;
@@ -10,8 +10,8 @@ import com.intellij.xdebugger.frame.*;
 import com.intellij.xdebugger.frame.presentation.XKeywordValuePresentation;
 import com.intellij.xdebugger.frame.presentation.XNumericValuePresentation;
 import com.intellij.xdebugger.frame.presentation.XStringValuePresentation;
-import io.flutter.server.vmService.DartVmServiceDebugProcess;
-import io.flutter.server.vmService.VmServiceConsumers;
+import io.flutter.vmService.DartVmServiceDebugProcess;
+import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;

@@ -1,4 +1,4 @@
-package io.flutter.server.vmService;
+package io.flutter.vmService;
 
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.diagnostic.Logger;
@@ -15,8 +15,8 @@ import com.intellij.xdebugger.frame.XStackFrame;
 import com.intellij.xdebugger.frame.XSuspendContext;
 import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.ide.runner.DartExceptionBreakpointProperties;
-import io.flutter.server.vmService.frame.DartVmServiceSuspendContext;
-import io.flutter.server.vmService.frame.DartVmServiceValue;
+import io.flutter.vmService.frame.DartVmServiceSuspendContext;
+import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.vm.service.VmServiceListener;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
