@@ -21,7 +21,6 @@ import com.intellij.xdebugger.evaluation.XDebuggerEvaluator;
 import com.intellij.xdebugger.frame.XValue;
 import com.jetbrains.lang.dart.psi.*;
 import com.jetbrains.lang.dart.util.DartResolveUtil;
-import gnu.trove.THashSet;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import io.flutter.vmService.VmServiceWrapper;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -30,6 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -161,7 +161,7 @@ public class DartVmServiceEvaluator extends XDebuggerEvaluator {
 
   private LibraryRef findMatchingLibrary(Isolate isolate, List<VirtualFile> libraryFiles) {
     if (libraryFiles != null && !libraryFiles.isEmpty()) {
-      final Set<String> uris = new THashSet<>();
+      final Set<String> uris = new HashSet<>();
 
       for (VirtualFile libraryFile : libraryFiles) {
         uris.addAll(myDebugProcess.getUrisForFile(libraryFile));

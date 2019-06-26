@@ -20,7 +20,6 @@ import com.intellij.openapi.fileEditor.TextEditor;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.ui.EdtInvocationManager;
-import gnu.trove.TIntObjectHashMap;
 import io.flutter.utils.AsyncUtils;
 
 import javax.swing.Timer;
@@ -48,7 +47,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   public static final long IDLE_DELAY_MILISECONDS = 400;
 
   class StatsForReportKind {
-    final TIntObjectHashMap<SlidingWindowStats> data = new TIntObjectHashMap<>();
+    final Map<Integer, SlidingWindowStats> data = new HashMap<>();
     private int lastStartTime = -1;
     private int lastNonEmptyReportTime = -1;
   }
@@ -66,7 +65,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   private final Set<PerfModel> perfListeners = new HashSet<>();
 
   private final Map<TextEditor, EditorPerfModel> editorDecorations = new HashMap<>();
-  private final TIntObjectHashMap<Location> knownLocationIds = new TIntObjectHashMap<>();
+  private final Map<Integer, Location> knownLocationIds = new HashMap<>();
   private final SetMultimap<String, Location> locationsPerFile = HashMultimap.create();
   private final Map<PerfReportKind, StatsForReportKind> stats = new HashMap<>();
 
@@ -162,9 +161,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
         if (statsForReportKind.lastStartTime > startTimeMilis) {
           // We went backwards in time. There must have been a hot restart so
           // clear all old stats.
-          statsForReportKind.data.forEachValue((SlidingWindowStats entry) -> {
+          statsForReportKind.data.forEach((Integer id, SlidingWindowStats entry) -> {
             entry.clear();
-            return true;
           });
         }
         statsForReportKind.lastStartTime = startTimeMilis;
@@ -233,9 +231,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
   public void onNavigation() {
     synchronized (this) {
       for (StatsForReportKind statsForKind : stats.values()) {
-        statsForKind.data.forEachValue((SlidingWindowStats entry) -> {
+        statsForKind.data.forEach((Integer id, SlidingWindowStats entry) -> {
           entry.onNavigation();
-          return true;
         });
       }
     }
@@ -353,7 +350,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
       if (forKind == null) {
         continue;
       }
-      final TIntObjectHashMap<SlidingWindowStats> data = forKind.data;
+      final Map<Integer, SlidingWindowStats> data = forKind.data;
       for (Location location : locationsPerFile.get(path)) {
         final SlidingWindowStats entry = data.get(location.id);
         if (entry == null) {
@@ -501,7 +498,7 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
       final StatsForReportKind forKind = stats.get(kind);
       if (forKind != null) {
         final int time = forKind.lastNonEmptyReportTime;
-        forKind.data.forEachEntry((int locationId, SlidingWindowStats stats) -> {
+        forKind.data.forEach((Integer locationId, SlidingWindowStats stats) -> {
           for (PerfMetric metric : metrics) {
             if (stats.getValue(metric, time) > 0) {
               final Location location = knownLocationIds.get(locationId);
@@ -521,10 +518,8 @@ public class FlutterWidgetPerf implements Disposable, WidgetPerfListener {
                   location
                 ));
               }
-              return true;
             }
           }
-          return true;
         });
       }
     }

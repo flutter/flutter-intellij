@@ -11,7 +11,6 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.util.PathUtil;
 import com.jetbrains.lang.dart.ide.runner.util.DartTestLocationProvider;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import gnu.trove.TIntLongHashMap;
 import jetbrains.buildServer.messages.serviceMessages.ServiceMessageVisitor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -91,7 +90,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
   private String myLocation;
   private Key myCurrentOutputType;
   private ServiceMessageVisitor myCurrentVisitor;
-  private TIntLongHashMap myTestIdToTimestamp;
+  private Map<Integer, Long> myTestIdToTimestamp;
   private Map<Integer, Test> myTestData;
   private Map<Integer, Group> myGroupData;
   private Map<Integer, Suite> mySuiteData;
@@ -102,7 +101,7 @@ public class DartTestEventsConverterZ extends OutputToGeneralTestEventsConverter
                                   @NotNull final DartUrlResolver urlResolver) {
     super(testFrameworkName, consoleProperties);
     myUrlResolver = urlResolver;
-    myTestIdToTimestamp = new TIntLongHashMap();
+    myTestIdToTimestamp = new HashMap<>();
     myTestData = new HashMap<>();
     myGroupData = new HashMap<>();
     mySuiteData = new HashMap<>();

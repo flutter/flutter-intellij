@@ -17,8 +17,6 @@ import com.intellij.xdebugger.breakpoints.XBreakpointHandler;
 import com.intellij.xdebugger.breakpoints.XBreakpointProperties;
 import com.intellij.xdebugger.breakpoints.XLineBreakpoint;
 import com.jetbrains.lang.dart.ide.runner.DartLineBreakpointType;
-import gnu.trove.THashMap;
-import gnu.trove.THashSet;
 import org.dartlang.vm.service.element.Breakpoint;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,9 +27,9 @@ import static com.intellij.icons.AllIcons.Debugger.Db_invalid_breakpoint;
 public class DartVmServiceBreakpointHandler extends XBreakpointHandler<XLineBreakpoint<XBreakpointProperties>> {
 
   private final DartVmServiceDebugProcess myDebugProcess;
-  private final Set<XLineBreakpoint<XBreakpointProperties>> myXBreakpoints = new THashSet<>();
-  private final Map<String, IsolateBreakpointInfo> myIsolateInfo = new THashMap<>();
-  private final Map<String, XLineBreakpoint<XBreakpointProperties>> myVmBreakpointIdToXBreakpointMap = new THashMap<>();
+  private final Set<XLineBreakpoint<XBreakpointProperties>> myXBreakpoints = new HashSet<>();
+  private final Map<String, IsolateBreakpointInfo> myIsolateInfo = new HashMap<>();
+  private final Map<String, XLineBreakpoint<XBreakpointProperties>> myVmBreakpointIdToXBreakpointMap = new HashMap<>();
 
   public DartVmServiceBreakpointHandler(@NotNull final DartVmServiceDebugProcess debugProcess) {
     super(DartLineBreakpointType.class);
@@ -121,7 +119,7 @@ class IsolateBreakpointInfo {
   private final String myIsolateId;
   private final DartVmServiceDebugProcess myDebugProcess;
   private final List<String> myTemporaryVmBreakpointIds = new ArrayList<>();
-  private final Map<XLineBreakpoint<XBreakpointProperties>, Set<String>> myXBreakpointToVmBreakpointIdsMap = new THashMap<>();
+  private final Map<XLineBreakpoint<XBreakpointProperties>, Set<String>> myXBreakpointToVmBreakpointIdsMap = new HashMap<>();
 
   IsolateBreakpointInfo(@NotNull String isolateId, @NotNull DartVmServiceDebugProcess debugProcess) {
     this.myIsolateId = isolateId;

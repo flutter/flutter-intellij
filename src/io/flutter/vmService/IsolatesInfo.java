@@ -1,12 +1,12 @@
 package io.flutter.vmService;
 
-import gnu.trove.THashMap;
 import org.dartlang.vm.service.element.Isolate;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -50,7 +50,7 @@ public class IsolatesInfo {
     }
   }
 
-  private final Map<String, IsolateInfo> myIsolateIdToInfoMap = new THashMap<>();
+  private final Map<String, IsolateInfo> myIsolateIdToInfoMap = new HashMap<>();
 
   public synchronized boolean addIsolate(@NotNull final IsolateRef isolateRef) {
     if (myIsolateIdToInfoMap.containsKey(isolateRef.getId())) {
