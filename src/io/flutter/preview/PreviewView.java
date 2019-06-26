@@ -174,7 +174,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
     actionContainer = new QuickAssistAction("dart.assist.flutter.wrap.container", FlutterIcons.Container, "Wrap with Container");
     actionMoveUp = new QuickAssistAction("dart.assist.flutter.move.up", FlutterIcons.Up, "Move widget up");
     actionMoveDown = new QuickAssistAction("dart.assist.flutter.move.down", FlutterIcons.Down, "Move widget down");
-    actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Remove widget");
+    actionRemove = new QuickAssistAction("dart.assist.flutter.removeWidget", FlutterIcons.RemoveWidget, "Replace widget with its children");
     actionExtractMethod = new ExtractMethodAction();
     actionExtractWidget = new ExtractWidgetAction();
   }
