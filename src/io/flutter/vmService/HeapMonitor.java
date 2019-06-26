@@ -15,10 +15,7 @@ import org.dartlang.vm.service.consumer.VMConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -52,11 +49,13 @@ public class HeapMonitor {
     }
 
     JsonObject getAsJsonObject(String memberName) {
-      return json.get(memberName).getAsJsonObject();
+      final JsonElement element = json.get(memberName);
+      return element != null ? element.getAsJsonObject() : null;
     }
 
     Set<Map.Entry<String, JsonElement>> getEntries(String memberName) {
-      return getAsJsonObject(memberName).entrySet();
+      final JsonObject object = getAsJsonObject(memberName);
+      return object != null ? object.entrySet() : Collections.emptySet();
     }
   }
 
