@@ -29,10 +29,24 @@ public class Script extends Obj {
   }
 
   /**
+   * Can return <code>null</code>.
+   */
+  public int getColumnOffset() {
+    return json.get("columnOffset") == null ? -1 : json.get("columnOffset").getAsInt();
+  }
+
+  /**
    * The library which owns this script.
    */
   public LibraryRef getLibrary() {
     return new LibraryRef((JsonObject) json.get("library"));
+  }
+
+  /**
+   * Can return <code>null</code>.
+   */
+  public int getLineOffset() {
+    return json.get("lineOffset") == null ? -1 : json.get("lineOffset").getAsInt();
   }
 
   /**

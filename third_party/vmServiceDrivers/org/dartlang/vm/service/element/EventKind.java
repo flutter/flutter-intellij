@@ -79,6 +79,11 @@ public enum EventKind {
   IsolateUpdate,
 
   /**
+   * Event from dart:developer.log.
+   */
+  Logging,
+
+  /**
    * Indicates an isolate is not yet runnable. Only appears in an Isolate's pauseEvent. Never sent
    * over a stream.
    */
