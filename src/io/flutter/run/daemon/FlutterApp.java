@@ -31,6 +31,7 @@ import com.intellij.util.concurrency.AppExecutorUtil;
 import io.flutter.FlutterInitializer;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
+import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.logging.FlutterLog;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -82,6 +83,7 @@ public class FlutterApp {
   private @Nullable String myWsUrl;
   private @Nullable String myBaseUri;
   private @Nullable ConsoleView myConsole;
+  private FlutterConsoleLogManager myFlutterConsoleLogManager;
 
   private boolean isFlutterWeb = false;
 
@@ -647,6 +649,9 @@ public class FlutterApp {
     });
 
     listenersDispatcher.getMulticaster().notifyVmServiceAvailable(vmService);
+
+    // Init the app's FlutterConsoleLogManager.
+    getFlutterConsoleLogManager();
   }
 
   @Nullable
@@ -675,6 +680,13 @@ public class FlutterApp {
   @Nullable
   public Module getModule() {
     return myModule;
+  }
+
+  public FlutterConsoleLogManager getFlutterConsoleLogManager() {
+    if (myFlutterConsoleLogManager == null) {
+      myFlutterConsoleLogManager = new FlutterConsoleLogManager(this);
+    }
+    return myFlutterConsoleLogManager;
   }
 
   @Override

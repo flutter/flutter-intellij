@@ -103,7 +103,7 @@ public class LaunchState extends CommandLineState {
   @Override
   @Nullable
   protected ConsoleView createConsole(@NotNull final Executor executor) throws ExecutionException {
-    if (FlutterLog.isLoggingEnabled()) {
+    if (FlutterLog.useFlutterLogView()) {
       final FlutterApp app = FlutterApp.fromEnv(getEnvironment());
       assert app != null;
       return new FlutterLogView(app);
@@ -190,7 +190,6 @@ public class LaunchState extends CommandLineState {
     // Checks if this is a pub-based project.
     // TODO(djshuckerow): Refactor out pub-specific logic and provide bazel support.
     if (SdkRunConfig.class.isAssignableFrom(runConfig.getClass())) {
-
       final String filePath = ((SdkRunConfig)runConfig).getFields().getFilePath();
 
       if (filePath != null) {

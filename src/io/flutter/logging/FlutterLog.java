@@ -23,7 +23,6 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.VmServiceListenerAdapter;
 import io.flutter.vmService.ServiceExtensions;
-import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -34,10 +33,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class FlutterLog implements FlutterLogEntry.ContentListener {
   private static final Logger LOG = Logger.getInstance(FlutterLog.class);
-
-  // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
-  public static final String LOGGING_STREAM_ID_OLD = "_Logging";
-  public static final String LOGGING_STREAM_ID = "Logging";
 
   public interface Listener extends EventListener {
     void onEvent(@NotNull FlutterLogEntry entry);
@@ -90,7 +85,7 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
   private final List<FlutterLogEntry> entries = new ArrayList<>();
   private FlutterApp app;
 
-  public static boolean isLoggingEnabled() {
+  public static boolean useFlutterLogView() {
     return FlutterSettings.getInstance().useFlutterLogView();
   }
 
@@ -172,39 +167,21 @@ public class FlutterLog implements FlutterLogEntry.ContentListener {
 
   public void listenToVm(@NotNull VmService vmService) {
     // No-op if disabled.
-    if (!isLoggingEnabled()) return;
+    if (!useFlutterLogView()) {
+      return;
+    }
 
     logEntryParser.setVmServices(app, vmService);
 
-    // TODO(pq): consider moving into VMServiceManager to consolidate vm service listeners.
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
       public void received(String streamId, Event event) {
-        onVmServiceReceived(streamId, event);
-      }
-
-      @Override
-      public void connectionClosed() {
-        onVmConnectionClosed();
+        final List<FlutterLogEntry> entries = logEntryParser.parse(streamId, event);
+        if (entries != null) {
+          entries.forEach(FlutterLog.this::onEntry);
+        }
       }
     });
-
-    vmService.streamListen(LOGGING_STREAM_ID_OLD, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    vmService.streamListen(LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
-    // TODO(pq): listen for frame events (Flutter.FrameworkInitialization, Flutter.FirstFrame, Flutter.Frame, etc).
-  }
-
-  private void onVmServiceReceived(String id, Event event) {
-    final List<FlutterLogEntry> entries = logEntryParser.parse(id, event);
-    if (entries != null) {
-      entries.forEach(this::onEntry);
-    }
-  }
-
-  @SuppressWarnings("EmptyMethod")
-  private void onVmConnectionClosed() {
-    // TODO(pq): handle VM connection closed.
   }
 
   public void setFlutterApp(FlutterApp app) {
