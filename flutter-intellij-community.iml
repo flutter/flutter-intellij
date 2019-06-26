@@ -52,7 +52,6 @@
     <orderEntry type="library" exported="" name="Dart SDK" level="project" />
     <orderEntry type="library" exported="" name="Dart Packages" level="project" />
     <orderEntry type="library" name="miglayout-swing" level="project" />
-    <orderEntry type="library" name="netty-codec-http" level="project" />
     <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.0" level="project" />
     <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.0" level="project" />
