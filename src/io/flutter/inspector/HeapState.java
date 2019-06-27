@@ -15,6 +15,7 @@
  */
 package io.flutter.inspector;
 
+import com.google.gson.JsonElement;
 import io.flutter.vmService.HeapMonitor;
 import org.dartlang.vm.service.element.IsolateRef;
 import org.dartlang.vm.service.element.VM;
@@ -110,7 +111,8 @@ public class HeapState implements HeapMonitor.HeapListener {
       }
     }
 
-    rssBytes = vm.getJson().get("_currentRSS").getAsInt();
+    final JsonElement rss = vm.getJson().get("_currentRSS");
+    rssBytes = rss != null ? rss.getAsInt() : 0;
     heapMaxInBytes = total;
 
     addSample(new HeapMonitor.HeapSample(current, external, false));
