@@ -24,9 +24,6 @@ import com.intellij.openapi.application.ApplicationInfo;
 import com.intellij.ui.components.JBLayeredPane;
 import com.intellij.ui.components.JBScrollPane;
 import io.flutter.FlutterBundle;
-import io.flutter.module.FlutterProjectType;
-import io.flutter.module.settings.ProjectType;
-import io.flutter.sdk.FlutterSdk;
 import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -57,7 +54,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
   private JLabel myLanguageLabel;
-  private ProjectType myProjectTypeForm;
   private boolean hasEntered = false;
   private FocusListener focusListener;
 
@@ -156,16 +152,6 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
       myBindings.bindTwoWay(new SelectedProperty(myKotlinCheckBox), getModel().useKotlin());
       myBindings.bindTwoWay(new SelectedProperty(mySwiftCheckBox), getModel().useSwift());
     }
-    //noinspection OptionalGetWithoutIsPresent
-    FlutterProjectType projectType = getModel().projectType().get().get();
-    if (projectType == FlutterProjectType.APP) {
-      FlutterSdk sdk = FlutterSdk.forPath(getModel().flutterSdk().get());
-      if (sdk != null) {
-        myProjectTypeForm.setSdk(sdk);
-      }
-    }
-    myProjectTypeForm.getProjectTypeCombo().setSelectedItem(projectType);
-    myProjectTypeForm.getProjectTypeCombo().setVisible(false);
     hasEntered = true;
   }
 
