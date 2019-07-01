@@ -11,7 +11,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileEditor.TextEditor;
 import io.flutter.FlutterBundle;
 import io.flutter.inspector.DiagnosticsNode;
-import io.netty.util.collection.IntObjectHashMap;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
