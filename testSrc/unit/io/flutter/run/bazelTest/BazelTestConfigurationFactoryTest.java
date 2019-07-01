@@ -27,7 +27,7 @@ public class BazelTestConfigurationFactoryTest {
   public ProjectFixture projectFixture = Testing.makeEmptyModule();
 
   @Test
-  public void factoryIdAreCorrect() {
+  public void factoryIdsAreCorrect() {
     // Bazel code assumes the id of the factory as a precondition.
     assertThat(type.factory.getId(), equalTo("Flutter Test (Bazel)"));
     assertThat(type.watchFactory.getId(), equalTo("Watch Flutter Test (Bazel)"));

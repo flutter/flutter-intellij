@@ -28,13 +28,13 @@ public class BazelConfigurationFactoryTest {
   public ProjectFixture projectFixture = Testing.makeEmptyModule();
 
   @Test
-  public void factoryIdAreCorrect() {
+  public void factoryIdIsCorrect() {
     // Bazel code assumes the id of the factory as a precondition.
     assertThat(type.factory.getId(), equalTo("Flutter (Bazel)"));
   }
 
   @Test
-  public void factoryConfigTypesMatch() {
+  public void factoryConfigTypeMatches() {
     assertThat(type.getId(), equalTo("FlutterBazelRunConfigurationType"));
   }
 }
