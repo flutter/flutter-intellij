@@ -11,13 +11,12 @@ import com.intellij.util.PathUtil;
 import com.intellij.xdebugger.XDebuggerUtil;
 import com.intellij.xdebugger.XSourcePosition;
 import com.jetbrains.lang.dart.DartFileType;
-import gnu.trove.THashMap;
-import gnu.trove.TIntObjectHashMap;
 import io.flutter.vmService.DartVmServiceDebugProcess;
 import org.dartlang.vm.service.element.Script;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +35,7 @@ class ObservatoryFile {
    * Maps an observatory token id to its line and column.
    */
   @Nullable
-  private final TIntObjectHashMap<Position> positionMap;
+  private final Map<Integer, Position> positionMap;
 
   /**
    * User-visible source code downloaded from Observatory.
@@ -92,8 +91,8 @@ class ObservatoryFile {
    * <p>See <a href="https://github.com/dart-lang/vm_service_drivers/blob/master/dart/tool/service.md#scrip">docs</a>.
    */
   @NotNull
-  private static TIntObjectHashMap<Position> createPositionMap(@NotNull final List<List<Integer>> table) {
-    final TIntObjectHashMap<Position> result = new TIntObjectHashMap<>();
+  private static Map<Integer, Position> createPositionMap(@NotNull final List<List<Integer>> table) {
+    final Map<Integer, Position> result = new HashMap<>();
 
     for (List<Integer> line : table) {
       // Each line consists of a line number followed by (tokenId, columnNumber) pairs.
@@ -140,7 +139,7 @@ class ObservatoryFile {
      * A cache containing each file downloaded from Observatory. The key is a script id.
      * Each version of a file is stored as a separate entry.
      */
-    private final Map<String, ObservatoryFile> versions = new THashMap<>();
+    private final Map<String, ObservatoryFile> versions = new HashMap<>();
 
     Cache(@NotNull String isolateId, @NotNull DartVmServiceDebugProcess.ScriptProvider provider) {
       this.isolateId = isolateId;

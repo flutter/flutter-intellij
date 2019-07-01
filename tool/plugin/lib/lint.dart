@@ -74,6 +74,8 @@ class LintCommand extends Command {
   bool checkForBadImports() {
     final proscribedImports = [
       'com.android.annotations.NonNull',
+      'gnu.trove.',
+      'io.netty.',
       'javax.annotation.Nullable',
       'org.apache.commons.lang3.StringUtils',
       'org.apache.commons.lang3.builder.HashCodeBuilder',

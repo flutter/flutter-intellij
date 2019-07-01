@@ -33,7 +33,6 @@ import com.intellij.ui.paint.EffectPainter;
 import com.intellij.util.ui.JBInsets;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
-import gnu.trove.TIntIntHashMap;
 import org.intellij.lang.annotations.JdkConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -51,9 +50,7 @@ import java.awt.font.TextLayout;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.CharacterIterator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 /**
@@ -88,7 +85,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   private final List<SimpleTextAttributes> myAttributes;
 
   private List<Object> myFragmentTags = null;
-  private TIntIntHashMap myFragmentAlignment;
+  private Map<Integer, Integer> myFragmentAlignment;
 
   /**
    * Internal padding
@@ -117,7 +114,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   private int myMainTextLastIndex = -1;
 
-  private final TIntIntHashMap myFragmentPadding;
+  private final Map<Integer, Integer> myFragmentPadding;
 
   @JdkConstants.HorizontalAlignment private int myTextAlign = SwingConstants.LEFT;
 
@@ -135,8 +132,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     myIpad = new JBInsets(1, 2, 1, 2);
     myIconTextGap = JBUI.scale(2);
     myBorder = new MyBorder();
-    myFragmentPadding = new TIntIntHashMap(10);
-    myFragmentAlignment = new TIntIntHashMap(10);
+    myFragmentPadding = new HashMap<>(10);
+    myFragmentAlignment = new HashMap<>(10);
     setOpaque(true);
     updateUI();
   }

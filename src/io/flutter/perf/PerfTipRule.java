@@ -7,12 +7,12 @@ package io.flutter.perf;
 
 import com.google.common.base.Objects;
 import io.flutter.inspector.DiagnosticsNode;
-import io.netty.util.collection.IntObjectHashMap;
 
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Rule describing when to generate a performance tip.
@@ -127,7 +127,7 @@ public class PerfTipRule {
   }
 
 
-  boolean matches(SummaryStats summary, Collection<DiagnosticsNode> candidates, IntObjectHashMap<SummaryStats> statsInFile) {
+  boolean matches(SummaryStats summary, Collection<DiagnosticsNode> candidates, Map<Integer, SummaryStats> statsInFile) {
     if (!maybeMatches(summary)) {
       return false;
     }
@@ -150,7 +150,7 @@ public class PerfTipRule {
     return false;
   }
 
-  private boolean ancestorMatches(IntObjectHashMap<SummaryStats> statsInFile,
+  private boolean ancestorMatches(Map<Integer, SummaryStats> statsInFile,
                                   boolean patternIsStateful,
                                   DiagnosticsNode candidate,
                                   DiagnosticsNode parent) {
@@ -174,7 +174,7 @@ public class PerfTipRule {
   // TODO(jacobr): this method might be slow in degenerate cases if an extreme
   // number of locations in a source file match a rule. We could memoize match
   // counts to avoid a possible O(n^2) algorithm worst case.
-  private int countSubtreeMatches(DiagnosticsNode candidate, IntObjectHashMap<SummaryStats> statsInFile) {
+  private int countSubtreeMatches(DiagnosticsNode candidate, Map<Integer, SummaryStats> statsInFile) {
     final int id = candidate.getLocationId();
     int matches = 0;
     if (id >= 0) {

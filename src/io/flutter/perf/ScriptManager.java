@@ -10,8 +10,6 @@ import com.intellij.openapi.util.Ref;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.openapi.vfs.VirtualFileManager;
 import com.intellij.util.concurrency.Semaphore;
-import gnu.trove.THashMap;
-import gnu.trove.TIntObjectHashMap;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetIsolateConsumer;
 import org.dartlang.vm.service.consumer.GetLibraryConsumer;
@@ -35,7 +33,7 @@ class ScriptManager {
 
   private IsolateRef isolateRef;
   private final Map<String, Script> scriptMap = new HashMap<>();
-  private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> linesAndColumnsMap = new THashMap<>();
+  private final Map<String, Map<Integer, Pair<Integer, Integer>>> linesAndColumnsMap = new HashMap<>();
 
   public ScriptManager(@NotNull VmService vmService) {
     this.vmService = vmService;
@@ -137,7 +135,7 @@ class ScriptManager {
   }
 
   public Pair<Integer, Integer> getLineColumnPosForTokenPos(@NotNull ScriptRef scriptRef, int tokenPos) {
-    final TIntObjectHashMap<Pair<Integer, Integer>> map = linesAndColumnsMap.get(scriptRef.getId());
+    final Map<Integer, Pair<Integer, Integer>> map = linesAndColumnsMap.get(scriptRef.getId());
     return map == null ? null : map.get(tokenPos);
   }
 
@@ -168,14 +166,14 @@ class ScriptManager {
     return resultRef.get();
   }
 
-  private static TIntObjectHashMap<Pair<Integer, Integer>> createTokenPosToLineAndColumnMap(@Nullable final Script script) {
+  private static Map<Integer, Pair<Integer, Integer>> createTokenPosToLineAndColumnMap(@Nullable final Script script) {
     if (script == null) {
       return null;
     }
 
     // Each subarray consists of a line number followed by (tokenPos, columnNumber) pairs;
     // see https://github.com/dart-lang/vm_service_drivers/blob/master/dart/tool/service.md#script.
-    final TIntObjectHashMap<Pair<Integer, Integer>> result = new TIntObjectHashMap<>();
+    final Map<Integer, Pair<Integer, Integer>> result = new HashMap<>();
 
     for (List<Integer> lineAndPairs : script.getTokenPosTable()) {
       final Iterator<Integer> iterator = lineAndPairs.iterator();

@@ -11,7 +11,6 @@ import com.intellij.icons.AllIcons;
 import com.intellij.openapi.fileEditor.TextEditor;
 import io.flutter.FlutterBundle;
 import io.flutter.inspector.DiagnosticsNode;
-import io.netty.util.collection.IntObjectHashMap;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -143,12 +142,12 @@ public class WidgetPerfLinter {
 
   private ArrayList<PerfTip> computeMatches(ArrayList<PerfTipRule> candidateRules, ArrayList<FilePerfInfo> allFileStats) {
     final ArrayList<PerfTip> matches = new ArrayList<>();
-    final Map<PerfReportKind, IntObjectHashMap<SummaryStats>> maps = new HashMap<>();
+    final Map<PerfReportKind, Map<Integer, SummaryStats>> maps = new HashMap<>();
     for (FilePerfInfo fileStats : allFileStats) {
       for (SummaryStats stats : fileStats.getStats()) {
-        IntObjectHashMap<SummaryStats> map = maps.get(stats.getKind());
+        Map<Integer, SummaryStats> map = maps.get(stats.getKind());
         if (map == null) {
-          map = new IntObjectHashMap<>();
+          map = new HashMap<>();
           maps.put(stats.getKind(), map);
         }
         map.put(stats.getLocation().id, stats);
@@ -156,7 +155,7 @@ public class WidgetPerfLinter {
     }
 
     for (PerfTipRule rule : candidateRules) {
-      final IntObjectHashMap<SummaryStats> map = maps.get(rule.kind);
+      final Map<Integer, SummaryStats> map = maps.get(rule.kind);
       if (map != null) {
         final ArrayList<Location> matchingLocations = new ArrayList<>();
         for (FilePerfInfo fileStats : allFileStats) {

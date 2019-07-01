@@ -7,7 +7,6 @@ package io.flutter.inspector;
 
 import com.intellij.openapi.Disposable;
 import com.intellij.ui.components.JBScrollBar;
-import gnu.trove.THashSet;
 import io.flutter.utils.animation.Curve;
 import io.flutter.utils.animation.Curves;
 
@@ -17,6 +16,7 @@ import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -456,7 +456,7 @@ public class TreeScrollAnimator implements Disposable {
       return;
     }
 
-    this.targets = new THashSet<>(targets);
+    this.targets = new HashSet<>(targets);
 
     final long currentTime = System.currentTimeMillis();
 

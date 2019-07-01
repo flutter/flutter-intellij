@@ -53,8 +53,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.intellij.openapi.editor.markup.EffectType.*;
@@ -71,7 +71,7 @@ public class FlutterLogView extends JPanel implements ConsoleView, DataProvider,
   private static final float DATA_PANEL_SPLITTER_PROPORTION_DEFAULT = 0.60f;
 
   @NotNull
-  private static final Map<FlutterLog.Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
+  private static final Map<Level, TextAttributesKey> LOG_LEVEL_TEXT_ATTRIBUTES_KEY_MAP;
   @NotNull
   private static final Map<EffectType, Integer> EFFECT_TYPE_TEXT_STYLE_MAP;
   @NotNull

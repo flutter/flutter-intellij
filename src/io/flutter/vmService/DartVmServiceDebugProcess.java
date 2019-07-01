@@ -33,8 +33,6 @@ import com.jetbrains.lang.dart.ide.runner.actions.DartPopFrameAction;
 import com.jetbrains.lang.dart.ide.runner.base.DartDebuggerEditorsProvider;
 import com.jetbrains.lang.dart.ide.runner.server.OpenDartObservatoryUrlAction;
 import com.jetbrains.lang.dart.util.DartUrlResolver;
-import gnu.trove.THashMap;
-import gnu.trove.TIntObjectHashMap;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.ObservatoryConnector;
@@ -69,8 +67,8 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   @NotNull private final XBreakpointHandler[] myBreakpointHandlers;
   private final IsolatesInfo myIsolatesInfo;
   @NotNull private final Map<String, CompletableFuture<Object>> mySuspendedIsolateIds = Collections.synchronizedMap(new HashMap<>());
-  private final Map<String, LightVirtualFile> myScriptIdToContentMap = new THashMap<>();
-  private final Map<String, TIntObjectHashMap<Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap = new THashMap<>();
+  private final Map<String, LightVirtualFile> myScriptIdToContentMap = new HashMap<>();
+  private final Map<String, Map<Integer, Pair<Integer, Integer>>> myScriptIdToLinesAndColumnsMap = new HashMap<>();
   @Nullable private final VirtualFile myCurrentWorkingDirectory;
   @NotNull private final ObservatoryConnector myConnector;
   @NotNull private final ExecutionEnvironment executionEnvironment;
@@ -621,10 +619,10 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
   }
 
   @NotNull
-  private static TIntObjectHashMap<Pair<Integer, Integer>> createTokenPosToLineAndColumnMap(@NotNull final List<List<Integer>> tokenPosTable) {
+  private static Map<Integer, Pair<Integer, Integer>> createTokenPosToLineAndColumnMap(@NotNull final List<List<Integer>> tokenPosTable) {
     // Each subarray consists of a line number followed by (tokenPos, columnNumber) pairs
     // see https://github.com/dart-lang/vm_service_drivers/blob/master/dart/tool/service.md#script
-    final TIntObjectHashMap<Pair<Integer, Integer>> result = new TIntObjectHashMap<>();
+    final Map<Integer, Pair<Integer, Integer>> result = new HashMap<>();
 
     for (List<Integer> lineAndPairs : tokenPosTable) {
       final Iterator<Integer> iterator = lineAndPairs.iterator();
