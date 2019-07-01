@@ -61,8 +61,9 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     }
 
     @Override
-    public @NotNull String getId() {
-      return "No Watch";
+    @NotNull
+    public String getId() {
+      return FlutterBundle.message("runner.flutter.bazel.test.configuration.name");
     }
   }
 
@@ -80,7 +81,8 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
     public RunConfiguration createTemplateConfiguration(@NotNull Project project) {
       // This is always called first when loading a run config, even when it's a non-template config.
       // See RunManagerImpl.doCreateConfiguration
-      BazelTestConfig config = new BazelTestConfig(project, this, FlutterBundle.message("runner.flutter.bazel.test.configuration.name"));
+      BazelTestConfig config = new BazelTestConfig(
+        project, this, FlutterBundle.message("runner.flutter.bazel.watch.test.configuration.name"));
       config.setFields(new BazelTestFields(null, null, null, "--watch"));
       return config;
     }
@@ -97,7 +99,7 @@ public class FlutterBazelTestConfigurationType extends ConfigurationTypeBase {
 
     @Override
     public @NotNull String getId() {
-      return "Watch";
+      return FlutterBundle.message("runner.flutter.bazel.watch.test.configuration.name");
     }
   }
 }
