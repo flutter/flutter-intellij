@@ -15,36 +15,35 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * {@link IsolateRef} is a reference to an {@link Isolate} object.
+ * See getInstances.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class IsolateRef extends Response {
+public class InstanceSet extends Response {
 
-  public IsolateRef(JsonObject json) {
+  public InstanceSet(JsonObject json) {
     super(json);
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to load this isolate.
+   * An array of instances of the requested type.
    */
-  public String getId() {
-    return json.get("id").getAsString();
+  public ElementList<ObjRef> getInstances() {
+    return new ElementList<ObjRef>(json.get("instances").getAsJsonArray()) {
+      @Override
+      protected ObjRef basicGet(JsonArray array, int index) {
+        return new ObjRef(array.get(index).getAsJsonObject());
+      }
+    };
   }
 
   /**
-   * A name identifying this isolate. Not guaranteed to be unique.
+   * The number of instances of the requested type currently allocated.
    */
-  public String getName() {
-    return json.get("name").getAsString();
-  }
-
-  /**
-   * A numeric id for this isolate, represented as a string. Unique.
-   */
-  public String getNumber() {
-    return json.get("number").getAsString();
+  public int getTotalCount() {
+    return json.get("totalCount") == null ? -1 : json.get("totalCount").getAsInt();
   }
 }

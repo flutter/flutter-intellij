@@ -76,6 +76,14 @@ public class ServiceExtensions {
       "Disable Select Widget Mode",
       "Enable Select Widget Mode");
 
+  public static final ToggleableServiceExtensionDescription<Boolean> toggleShowStructuredErrors =
+    new ToggleableServiceExtensionDescription<>(
+      "ext.flutter.inspector.structuredErrors",
+      true,
+      false,
+      "Disable Showing Structured Errors",
+      "Show Structured Errors");
+
   public static final ToggleableServiceExtensionDescription<Boolean> trackRebuildWidgets =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.inspector.trackRebuildDirtyWidgets",
@@ -113,6 +121,7 @@ public class ServiceExtensions {
     slowAnimations,
     togglePlatformMode,
     toggleSelectWidgetMode,
+    toggleShowStructuredErrors,
     trackRebuildWidgets,
     trackRepaintWidgets);
 

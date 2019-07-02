@@ -16,35 +16,35 @@ package org.dartlang.vm.service.element;
 // This is a generated file.
 
 import com.google.gson.JsonObject;
+import java.util.List;
 
-/**
- * {@link IsolateRef} is a reference to an {@link Isolate} object.
- */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class IsolateRef extends Response {
+public class TimelineFlags extends Response {
 
-  public IsolateRef(JsonObject json) {
+  public TimelineFlags(JsonObject json) {
     super(json);
   }
 
   /**
-   * The id which is passed to the getIsolate RPC to load this isolate.
+   * The list of all available timeline streams.
    */
-  public String getId() {
-    return json.get("id").getAsString();
+  public List<String> getAvailableStreams() {
+    return getListString("availableStreams");
   }
 
   /**
-   * A name identifying this isolate. Not guaranteed to be unique.
+   * The list of timeline streams that are currently enabled.
    */
-  public String getName() {
-    return json.get("name").getAsString();
+  public List<String> getRecordedStreams() {
+    return getListString("recordedStreams");
   }
 
   /**
-   * A numeric id for this isolate, represented as a string. Unique.
+   * The name of the recorder currently in use. Recorder types include, but are not limited to:
+   * Callback, Endless, Fuchsia, Ring, Startup, and Systrace. Set to "null" if no recorder is
+   * currently set.
    */
-  public String getNumber() {
-    return json.get("number").getAsString();
+  public String getRecorderName() {
+    return json.get("recorderName").getAsString();
   }
 }

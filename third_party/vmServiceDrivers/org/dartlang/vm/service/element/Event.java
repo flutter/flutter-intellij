@@ -159,6 +159,17 @@ public class Event extends Response {
   }
 
   /**
+   * LogRecord data.
+   *
+   * This is provided for the Logging event.
+   *
+   * Can return <code>null</code>.
+   */
+  public LogRecord getLogRecord() {
+    return json.get("logRecord") == null ? null : new LogRecord((JsonObject) json.get("logRecord"));
+  }
+
+  /**
    * The RPC method that should be used to invoke the service.
    *
    * This is provided for the event kinds:

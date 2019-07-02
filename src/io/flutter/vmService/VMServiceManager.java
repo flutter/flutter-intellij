@@ -26,6 +26,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class VMServiceManager implements FlutterApp.FlutterAppListener {
+  // TODO(devoncarew): Remove on or after approx. Oct 1 2019.
+  public static final String LOGGING_STREAM_ID_OLD = "_Logging";
+
   @NotNull private final FlutterApp app;
   @NotNull private final HeapMonitor heapMonitor;
   @NotNull private final FlutterFramesMonitor flutterFramesMonitor;
@@ -48,7 +51,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
    * Temporarily stores service extensions that we need to add. We should not add extensions until the first frame event
    * has been received [firstFrameEventReceived].
    */
-  private List<String> pendingServiceExtensions = new ArrayList<>();
+  private final List<String> pendingServiceExtensions = new ArrayList<>();
 
   public VMServiceManager(@NotNull FlutterApp app, @NotNull VmService vmService) {
     this.app = app;
@@ -60,10 +63,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     this.polledCount = 0;
     flutterIsolateRefStream = new EventStream<>();
 
-    // The VM Service depends on events from the Extension event stream to
-    // determine when Flutter.Frame events are fired.
-    // Without the call to listen, events from the stream will not be sent.
+    // The VM Service depends on events from the Extension event stream to determine when Flutter.Frame
+    // events are fired. Without the call to listen, events from the stream will not be sent.
     vmService.streamListen(VmService.EXTENSION_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
+    vmService.streamListen(LOGGING_STREAM_ID_OLD, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+    vmService.streamListen(VmService.LOGGING_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
+
+    vmService.streamListen(VmService.GC_STREAM_ID, VmServiceConsumers.EMPTY_SUCCESS_CONSUMER);
 
     vmService.addVmServiceListener(new VmServiceListenerAdapter() {
       @Override
@@ -136,9 +143,9 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
       );
       flutterLibrary.eval("WidgetsBinding.instance.debugDidSendFirstFrameEvent", null, null).whenCompleteAsync((v, e) -> {
         // If there is an error we assume the first frame has been received.
-        boolean didSendFirstFrameEvent = e == null ||
-                                         v == null ||
-                                         Objects.equals(v.getValueAsString(), "true");
+        final boolean didSendFirstFrameEvent = e == null ||
+                                               v == null ||
+                                               Objects.equals(v.getValueAsString(), "true");
         if (didSendFirstFrameEvent) {
           onFrameEventReceived();
         }
@@ -256,11 +263,17 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
             final boolean enabled = value.equals(extension.getEnabledValue());
             setServiceExtensionState(name, enabled, value);
           }
+          break;
+        case "Flutter.Error":
+          app.getFlutterConsoleLogManager().handleFlutterErrorEvent(event);
+          break;
       }
     }
-
-    if (event.getKind() == EventKind.ServiceExtensionAdded) {
+    else if (event.getKind() == EventKind.ServiceExtensionAdded) {
       maybeAddServiceExtension(event.getExtensionRPC());
+    }
+    else if (StringUtil.equals(streamId, VmService.LOGGING_STREAM_ID) || StringUtil.equals(streamId, LOGGING_STREAM_ID_OLD)) {
+      app.getFlutterConsoleLogManager().handleLoggingEvent(event);
     }
 
     // Check to see if there's a new Flutter isolate.
@@ -445,7 +458,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
 
   public @NotNull
   StreamSubscription<Boolean> hasServiceExtension(String name, Consumer<Boolean> onData) {
-    EventStream<Boolean> stream = getStream(name, serviceExtensions);
+    final EventStream<Boolean> stream = getStream(name, serviceExtensions);
     return stream.listen(onData, true);
   }
 
@@ -482,7 +495,7 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   }
 
   public void setServiceExtensionState(String name, boolean enabled, Object value) {
-    EventStream<ServiceExtensionState> stream = getServiceExtensionState(name);
+    final EventStream<ServiceExtensionState> stream = getServiceExtensionState(name);
     stream.setValue(new ServiceExtensionState(enabled, value));
   }
 

@@ -25,10 +25,31 @@ public class AllocationProfile extends Response {
     super(json);
   }
 
-  public String getDateLastServiceGC() {
-    return json.get("dateLastServiceGC").getAsString();
+  /**
+   * The timestamp of the last accumulator reset.
+   *
+   * If the accumulators have not been reset, this field is not present.
+   *
+   * Can return <code>null</code>.
+   */
+  public int getDateLastAccumulatorReset() {
+    return json.get("dateLastAccumulatorReset") == null ? -1 : json.get("dateLastAccumulatorReset").getAsInt();
   }
 
+  /**
+   * The timestamp of the last manually triggered GC.
+   *
+   * If a GC has not been triggered manually, this field is not present.
+   *
+   * Can return <code>null</code>.
+   */
+  public int getDateLastServiceGC() {
+    return json.get("dateLastServiceGC") == null ? -1 : json.get("dateLastServiceGC").getAsInt();
+  }
+
+  /**
+   * Allocation information for all class types.
+   */
   public ElementList<ClassHeapStats> getMembers() {
     return new ElementList<ClassHeapStats>(json.get("members").getAsJsonArray()) {
       @Override
@@ -36,5 +57,12 @@ public class AllocationProfile extends Response {
         return new ClassHeapStats(array.get(index).getAsJsonObject());
       }
     };
+  }
+
+  /**
+   * Information about memory usage for the isolate.
+   */
+  public MemoryUsage getMemoryUsage() {
+    return new MemoryUsage((JsonObject) json.get("memoryUsage"));
   }
 }

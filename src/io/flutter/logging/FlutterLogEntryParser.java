@@ -8,7 +8,6 @@ package io.flutter.logging;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.UrlFilter;
 import com.intellij.execution.process.ProcessEvent;
@@ -32,6 +31,7 @@ import io.flutter.run.daemon.DaemonApi;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StdoutJsonParser;
 import io.flutter.vmService.HeapMonitor;
+import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
 import org.dartlang.vm.service.element.*;
@@ -103,29 +103,16 @@ public class FlutterLogEntryParser {
   private final StdoutJsonParser stdoutParser = new StdoutJsonParser();
 
   private List<FlutterLogEntry> parseLoggingEvent(@NotNull Event event) {
-    // TODO(pq): parse more robustly; consider more properties (error, stackTrace)
-    final JsonObject json = event.getJson();
-    final JsonObject logRecord = json.get("logRecord").getAsJsonObject();
-    final Instance message = new Instance(logRecord.getAsJsonObject().get("message").getAsJsonObject());
+    final LogRecord logRecord = event.getLogRecord();
+    final InstanceRef message = logRecord.getMessage();
 
     String category = LOG_CATEGORY;
-    final JsonObject loggerName = logRecord.getAsJsonObject().get("loggerName").getAsJsonObject();
-    if (loggerName != null) {
-      final String str = new Instance(loggerName).getValueAsString();
-      if (str != null && !str.isEmpty()) {
-        category = str;
-      }
+    final InstanceRef loggerName = logRecord.getLoggerName();
+    if (!loggerName.getValueAsString().isEmpty()) {
+      category = loggerName.getValueAsString();
     }
 
-    int level = UNDEFINED_LEVEL.value;
-    final JsonElement levelElement = logRecord.getAsJsonObject().get("level");
-    if (levelElement instanceof JsonPrimitive) {
-      final int setLevel = levelElement.getAsInt();
-      // only set level if defined
-      if (setLevel > 0) {
-        level = setLevel;
-      }
-    }
+    final int level = logRecord.getLevel() == -1 ? UNDEFINED_LEVEL.value : logRecord.getLevel();
 
     final FlutterDebugProcess debugProcess = getDebugProcess();
 
@@ -135,8 +122,8 @@ public class FlutterLogEntryParser {
     if (message.getValueAsStringIsTruncated()) {
       entry.setMessage(messageStr + "...");
       if (debugProcess != null) {
-        final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-        debugProcess.getVmServiceWrapper().getObject(isolate.getId(), message.getId(), new GetObjectAdapter() {
+        final IsolateRef isolateRef = event.getIsolate();
+        debugProcess.getVmServiceWrapper().getObject(isolateRef.getId(), message.getId(), new GetObjectAdapter() {
           @Override
           public void received(Obj response) {
             entry.setMessage(((Instance)response).getValueAsString());
@@ -146,14 +133,14 @@ public class FlutterLogEntryParser {
       }
     }
 
-    final Instance data = new Instance(logRecord.getAsJsonObject().get("error").getAsJsonObject());
+    final InstanceRef data = logRecord.getError();
     if (!data.getValueAsStringIsTruncated()) {
       entry.setData(data.getValueAsString());
     }
     else {
       if (debugProcess != null) {
-        final Isolate isolate = new Isolate(json.get("isolate").getAsJsonObject());
-        debugProcess.getVmServiceWrapper().getObject(isolate.getId(), data.getId(), new GetObjectAdapter() {
+        final IsolateRef isolateRef = event.getIsolate();
+        debugProcess.getVmServiceWrapper().getObject(isolateRef.getId(), data.getId(), new GetObjectAdapter() {
           @Override
           public void received(Obj response) {
             entry.setData(((Instance)response).getValueAsString());
@@ -220,14 +207,16 @@ public class FlutterLogEntryParser {
   }
 
   @Nullable
-  public List<FlutterLogEntry> parse(@Nullable String id, @Nullable Event event) {
-    if (id != null && event != null) {
-      switch (id) {
-        case FlutterLog.LOGGING_STREAM_ID:
-        case FlutterLog.LOGGING_STREAM_ID_OLD:
+  public List<FlutterLogEntry> parse(@Nullable String streamId, @Nullable Event event) {
+    if (streamId != null && event != null) {
+      switch (streamId) {
+        case VmService.LOGGING_STREAM_ID:
+        case VMServiceManager.LOGGING_STREAM_ID_OLD:
           return parseLoggingEvent(event);
+
         case VmService.GC_STREAM_ID:
           return parseGCEvent(event);
+
         case VmService.EXTENSION_STREAM_ID:
           return parseExtensionEvent(event);
       }
@@ -237,16 +226,16 @@ public class FlutterLogEntryParser {
   }
 
   private List<FlutterLogEntry> parseExtensionEvent(@NotNull Event event) {
-    final JsonPrimitive extensionKind = event.getJson().getAsJsonPrimitive("extensionKind");
-    if (Objects.equals(extensionKind.getAsString(), "Flutter.Error")) {
-      return parseFlutterError(event.getJson());
+    final String extensionKind = event.getExtensionKind();
+    if (Objects.equals(extensionKind, "Flutter.Error")) {
+      return parseFlutterError(event);
     }
     return null;
   }
 
-  private List<FlutterLogEntry> parseFlutterError(@NotNull JsonObject json) {
+  private List<FlutterLogEntry> parseFlutterError(@NotNull Event event) {
     final List<FlutterLogEntry> entries = new ArrayList<>();
-    final JsonElement extensionData = json.get("extensionData");
+    final JsonElement extensionData = event.getExtensionData().getJson();
     final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
     final String description = diagnosticsNode.toString();
     final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);

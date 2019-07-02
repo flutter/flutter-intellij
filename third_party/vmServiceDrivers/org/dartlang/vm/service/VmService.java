@@ -59,6 +59,8 @@ public class VmService extends VmServiceBase {
 
   public static final String ISOLATE_STREAM_ID = "Isolate";
 
+  public static final String LOGGING_STREAM_ID = "Logging";
+
   public static final String STDERR_STREAM_ID = "Stderr";
 
   public static final String STDOUT_STREAM_ID = "Stdout";
@@ -77,7 +79,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 15;
+  public static final int versionMinor = 20;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -151,11 +153,11 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * @undocumented
+   * Clears all VM timeline events.
    */
   public void clearVMTimeline(SuccessConsumer consumer) {
     final JsonObject params = new JsonObject();
-    request("_clearVMTimeline", params, consumer);
+    request("clearVMTimeline", params, consumer);
   }
 
   /**
@@ -226,30 +228,25 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * Valid values for [gc] are 'full'.
-   *
-   * @undocumented
+   * The [getAllocationProfile] RPC is used to retrieve allocation information for a given isolate.
    */
   public void getAllocationProfile(String isolateId, AllocationProfileConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
-    request("_getAllocationProfile", params, consumer);
+    request("getAllocationProfile", params, consumer);
   }
 
   /**
-   * Valid values for [gc] are 'full'.
-   *
-   * @undocumented
-   *
-   * @param gc This parameter is optional and may be null.
+   * The [getAllocationProfile] RPC is used to retrieve allocation information for a given isolate.
    * @param reset This parameter is optional and may be null.
+   * @param gc This parameter is optional and may be null.
    */
-  public void getAllocationProfile(String isolateId, String gc, Boolean reset, AllocationProfileConsumer consumer) {
+  public void getAllocationProfile(String isolateId, Boolean reset, Boolean gc, AllocationProfileConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
-    if (gc != null) params.addProperty("gc", gc);
     if (reset != null) params.addProperty("reset", reset);
-    request("_getAllocationProfile", params, consumer);
+    if (gc != null) params.addProperty("gc", gc);
+    request("getAllocationProfile", params, consumer);
   }
 
   /**
@@ -274,16 +271,14 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * Returns a ServiceObject (a specialization of an ObjRef).
-   *
-   * @undocumented
+   * The [getInstances] RPC is used to retrieve a set of instances which are of a specific type.
    */
-  public void getInstances(String isolateId, String classId, int limit, ObjRefConsumer consumer) {
+  public void getInstances(String isolateId, String objectId, int limit, InstanceSetConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
-    params.addProperty("classId", classId);
+    params.addProperty("objectId", objectId);
     params.addProperty("limit", limit);
-    request("_getInstances", params, consumer);
+    request("getInstances", params, consumer);
   }
 
   /**
@@ -293,6 +288,15 @@ public class VmService extends VmServiceBase {
     final JsonObject params = new JsonObject();
     params.addProperty("isolateId", isolateId);
     request("getIsolate", params, consumer);
+  }
+
+  /**
+   * The [getMemoryUsage] RPC is used to lookup an isolate's memory usage statistics by its [id].
+   */
+  public void getMemoryUsage(String isolateId, GetMemoryUsageConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("getMemoryUsage", params, consumer);
   }
 
   /**
@@ -378,11 +382,31 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * @undocumented
+   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events.
+   * @param timeOriginMicros This parameter is optional and may be null.
+   * @param timeExtentMicros This parameter is optional and may be null.
    */
-  public void getVMTimeline(ResponseConsumer consumer) {
+  public void getVMTimeline(Integer timeOriginMicros, Integer timeExtentMicros, TimelineConsumer consumer) {
     final JsonObject params = new JsonObject();
-    request("_getVMTimeline", params, consumer);
+    if (timeOriginMicros != null) params.addProperty("timeOriginMicros", timeOriginMicros);
+    if (timeExtentMicros != null) params.addProperty("timeExtentMicros", timeExtentMicros);
+    request("getVMTimeline", params, consumer);
+  }
+
+  /**
+   * The [getVMTimeline] RPC is used to retrieve an object which contains VM timeline events.
+   */
+  public void getVMTimeline(TimelineConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    request("getVMTimeline", params, consumer);
+  }
+
+  /**
+   * The [getVMTimelineFlags] RPC returns information about the current VM timeline configuration.
+   */
+  public void getVMTimelineFlags(TimelineFlagsConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    request("getVMTimelineFlags", params, consumer);
   }
 
   /**
@@ -582,12 +606,12 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * @undocumented
+   * The [setVMTimelineFlags] RPC is used to set which timeline streams are enabled.
    */
   public void setVMTimelineFlags(List<String> recordedStreams, SuccessConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.add("recordedStreams", convertIterableToJsonArray(recordedStreams));
-    request("_setVMTimelineFlags", params, consumer);
+    request("setVMTimelineFlags", params, consumer);
   }
 
   /**
@@ -697,6 +721,16 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof GetMemoryUsageConsumer) {
+      if (responseType.equals("MemoryUsage")) {
+        ((GetMemoryUsageConsumer) consumer).received(new MemoryUsage(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetMemoryUsageConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
     if (consumer instanceof GetObjectConsumer) {
       if (responseType.equals("Breakpoint")) {
         ((GetObjectConsumer) consumer).received(new Breakpoint(json));
@@ -751,6 +785,12 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof InstanceSetConsumer) {
+      if (responseType.equals("InstanceSet")) {
+        ((InstanceSetConsumer) consumer).received(new InstanceSet(json));
+        return;
+      }
+    }
     if (consumer instanceof InvokeConsumer) {
       if (responseType.equals("@Error")) {
         ((InvokeConsumer) consumer).received(new ErrorRef(json));
@@ -769,261 +809,9 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
-    if (consumer instanceof ObjRefConsumer) {
-      if (responseType.equals("@Class")) {
-        ((ObjRefConsumer) consumer).received(new ClassRef(json));
-        return;
-      }
-      if (responseType.equals("Code")) {
-        ((ObjRefConsumer) consumer).received(new Code(json));
-        return;
-      }
-      if (responseType.equals("@Code")) {
-        ((ObjRefConsumer) consumer).received(new CodeRef(json));
-        return;
-      }
-      if (responseType.equals("@Context")) {
-        ((ObjRefConsumer) consumer).received(new ContextRef(json));
-        return;
-      }
-      if (responseType.equals("@Error")) {
-        ((ObjRefConsumer) consumer).received(new ErrorRef(json));
-        return;
-      }
-      if (responseType.equals("@Field")) {
-        ((ObjRefConsumer) consumer).received(new FieldRef(json));
-        return;
-      }
-      if (responseType.equals("@Function")) {
-        ((ObjRefConsumer) consumer).received(new FuncRef(json));
-        return;
-      }
-      if (responseType.equals("@Instance")) {
-        ((ObjRefConsumer) consumer).received(new InstanceRef(json));
-        return;
-      }
-      if (responseType.equals("@Library")) {
-        ((ObjRefConsumer) consumer).received(new LibraryRef(json));
-        return;
-      }
-      if (responseType.equals("@Null")) {
-        ((ObjRefConsumer) consumer).received(new NullRef(json));
-        return;
-      }
-      if (responseType.equals("@Object")) {
-        ((ObjRefConsumer) consumer).received(new ObjRef(json));
-        return;
-      }
-      if (responseType.equals("@Script")) {
-        ((ObjRefConsumer) consumer).received(new ScriptRef(json));
-        return;
-      }
-      if (responseType.equals("@TypeArguments")) {
-        ((ObjRefConsumer) consumer).received(new TypeArgumentsRef(json));
-        return;
-      }
-    }
     if (consumer instanceof ReloadReportConsumer) {
       if (responseType.equals("ReloadReport")) {
         ((ReloadReportConsumer) consumer).received(new ReloadReport(json));
-        return;
-      }
-    }
-    if (consumer instanceof ResponseConsumer) {
-      if (responseType.equals("AllocationProfile")) {
-        ((ResponseConsumer) consumer).received(new AllocationProfile(json));
-        return;
-      }
-      if (responseType.equals("BoundVariable")) {
-        ((ResponseConsumer) consumer).received(new BoundVariable(json));
-        return;
-      }
-      if (responseType.equals("Breakpoint")) {
-        ((ResponseConsumer) consumer).received(new Breakpoint(json));
-        return;
-      }
-      if (responseType.equals("ClassHeapStats")) {
-        ((ResponseConsumer) consumer).received(new ClassHeapStats(json));
-        return;
-      }
-      if (responseType.equals("ClassList")) {
-        ((ResponseConsumer) consumer).received(new ClassList(json));
-        return;
-      }
-      if (responseType.equals("Class")) {
-        ((ResponseConsumer) consumer).received(new ClassObj(json));
-        return;
-      }
-      if (responseType.equals("@Class")) {
-        ((ResponseConsumer) consumer).received(new ClassRef(json));
-        return;
-      }
-      if (responseType.equals("Code")) {
-        ((ResponseConsumer) consumer).received(new Code(json));
-        return;
-      }
-      if (responseType.equals("@Code")) {
-        ((ResponseConsumer) consumer).received(new CodeRef(json));
-        return;
-      }
-      if (responseType.equals("Context")) {
-        ((ResponseConsumer) consumer).received(new Context(json));
-        return;
-      }
-      if (responseType.equals("@Context")) {
-        ((ResponseConsumer) consumer).received(new ContextRef(json));
-        return;
-      }
-      if (responseType.equals("Error")) {
-        ((ResponseConsumer) consumer).received(new ErrorObj(json));
-        return;
-      }
-      if (responseType.equals("@Error")) {
-        ((ResponseConsumer) consumer).received(new ErrorRef(json));
-        return;
-      }
-      if (responseType.equals("Event")) {
-        ((ResponseConsumer) consumer).received(new Event(json));
-        return;
-      }
-      if (responseType.equals("Field")) {
-        ((ResponseConsumer) consumer).received(new Field(json));
-        return;
-      }
-      if (responseType.equals("@Field")) {
-        ((ResponseConsumer) consumer).received(new FieldRef(json));
-        return;
-      }
-      if (responseType.equals("FlagList")) {
-        ((ResponseConsumer) consumer).received(new FlagList(json));
-        return;
-      }
-      if (responseType.equals("Frame")) {
-        ((ResponseConsumer) consumer).received(new Frame(json));
-        return;
-      }
-      if (responseType.equals("Function")) {
-        ((ResponseConsumer) consumer).received(new Func(json));
-        return;
-      }
-      if (responseType.equals("@Function")) {
-        ((ResponseConsumer) consumer).received(new FuncRef(json));
-        return;
-      }
-      if (responseType.equals("HeapSpace")) {
-        ((ResponseConsumer) consumer).received(new HeapSpace(json));
-        return;
-      }
-      if (responseType.equals("Instance")) {
-        ((ResponseConsumer) consumer).received(new Instance(json));
-        return;
-      }
-      if (responseType.equals("@Instance")) {
-        ((ResponseConsumer) consumer).received(new InstanceRef(json));
-        return;
-      }
-      if (responseType.equals("Isolate")) {
-        ((ResponseConsumer) consumer).received(new Isolate(json));
-        return;
-      }
-      if (responseType.equals("@Isolate")) {
-        ((ResponseConsumer) consumer).received(new IsolateRef(json));
-        return;
-      }
-      if (responseType.equals("Library")) {
-        ((ResponseConsumer) consumer).received(new Library(json));
-        return;
-      }
-      if (responseType.equals("@Library")) {
-        ((ResponseConsumer) consumer).received(new LibraryRef(json));
-        return;
-      }
-      if (responseType.equals("Message")) {
-        ((ResponseConsumer) consumer).received(new Message(json));
-        return;
-      }
-      if (responseType.equals("Null")) {
-        ((ResponseConsumer) consumer).received(new Null(json));
-        return;
-      }
-      if (responseType.equals("@Null")) {
-        ((ResponseConsumer) consumer).received(new NullRef(json));
-        return;
-      }
-      if (responseType.equals("Object")) {
-        ((ResponseConsumer) consumer).received(new Obj(json));
-        return;
-      }
-      if (responseType.equals("@Object")) {
-        ((ResponseConsumer) consumer).received(new ObjRef(json));
-        return;
-      }
-      if (responseType.equals("ReloadReport")) {
-        ((ResponseConsumer) consumer).received(new ReloadReport(json));
-        return;
-      }
-      if (responseType.equals("Response")) {
-        ((ResponseConsumer) consumer).received(new Response(json));
-        return;
-      }
-      if (responseType.equals("Script")) {
-        ((ResponseConsumer) consumer).received(new Script(json));
-        return;
-      }
-      if (responseType.equals("ScriptList")) {
-        ((ResponseConsumer) consumer).received(new ScriptList(json));
-        return;
-      }
-      if (responseType.equals("@Script")) {
-        ((ResponseConsumer) consumer).received(new ScriptRef(json));
-        return;
-      }
-      if (responseType.equals("Sentinel")) {
-        ((ResponseConsumer) consumer).received(new Sentinel(json));
-        return;
-      }
-      if (responseType.equals("SourceLocation")) {
-        ((ResponseConsumer) consumer).received(new SourceLocation(json));
-        return;
-      }
-      if (responseType.equals("SourceReport")) {
-        ((ResponseConsumer) consumer).received(new SourceReport(json));
-        return;
-      }
-      if (responseType.equals("Stack")) {
-        ((ResponseConsumer) consumer).received(new Stack(json));
-        return;
-      }
-      if (responseType.equals("Success")) {
-        ((ResponseConsumer) consumer).received(new Success(json));
-        return;
-      }
-      if (responseType.equals("TypeArguments")) {
-        ((ResponseConsumer) consumer).received(new TypeArguments(json));
-        return;
-      }
-      if (responseType.equals("@TypeArguments")) {
-        ((ResponseConsumer) consumer).received(new TypeArgumentsRef(json));
-        return;
-      }
-      if (responseType.equals("UnresolvedSourceLocation")) {
-        ((ResponseConsumer) consumer).received(new UnresolvedSourceLocation(json));
-        return;
-      }
-      if (responseType.equals("VM")) {
-        ((ResponseConsumer) consumer).received(new VM(json));
-        return;
-      }
-      if (responseType.equals("@VM")) {
-        ((ResponseConsumer) consumer).received(new VMRef(json));
-        return;
-      }
-      if (responseType.equals("Version")) {
-        ((ResponseConsumer) consumer).received(new Version(json));
-        return;
-      }
-      if (responseType.equals("_CpuProfile")) {
-        ((ResponseConsumer) consumer).received(new CpuProfile(json));
         return;
       }
     }
@@ -1048,6 +836,18 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof SuccessConsumer) {
       if (responseType.equals("Success")) {
         ((SuccessConsumer) consumer).received(new Success(json));
+        return;
+      }
+    }
+    if (consumer instanceof TimelineConsumer) {
+      if (responseType.equals("Timeline")) {
+        ((TimelineConsumer) consumer).received(new Timeline(json));
+        return;
+      }
+    }
+    if (consumer instanceof TimelineFlagsConsumer) {
+      if (responseType.equals("TimelineFlags")) {
+        ((TimelineFlagsConsumer) consumer).received(new TimelineFlags(json));
         return;
       }
     }
