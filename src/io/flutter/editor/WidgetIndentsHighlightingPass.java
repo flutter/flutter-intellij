@@ -425,12 +425,14 @@ public class WidgetIndentsHighlightingPass {
   private final Document myDocument;
   private final Project myProject;
   private final VirtualFile myFile;
+  private final boolean convertOffsets;
 
-  WidgetIndentsHighlightingPass(@NotNull Project project, @NotNull EditorEx editor) {
+  WidgetIndentsHighlightingPass(@NotNull Project project, @NotNull EditorEx editor, boolean convertOffsets) {
     this.myDocument = editor.getDocument();
     this.myEditor = editor;
     this.myProject = project;
     this.myFile = editor.getVirtualFile();
+    this.convertOffsets = convertOffsets;
   }
 
   private static void drawVerticalLineHelper(
@@ -524,8 +526,8 @@ public class WidgetIndentsHighlightingPass {
     setIndentsPassData(editor, null);
   }
 
-  public static void run(@NotNull Project project, @NotNull EditorEx editor, @NotNull FlutterOutline outline) {
-    final WidgetIndentsHighlightingPass widgetIndentsHighlightingPass = new WidgetIndentsHighlightingPass(project, editor);
+  public static void run(@NotNull Project project, @NotNull EditorEx editor, @NotNull FlutterOutline outline, boolean convertOffsets) {
+    final WidgetIndentsHighlightingPass widgetIndentsHighlightingPass = new WidgetIndentsHighlightingPass(project, editor, convertOffsets);
     widgetIndentsHighlightingPass.setOutline(outline);
   }
 
@@ -671,10 +673,28 @@ public class WidgetIndentsHighlightingPass {
     return DartAnalysisServerService.getInstance(myProject);
   }
 
+  /**
+   * All calls to convert offsets for indent highlighting must go through this
+   * method.
+   *
+   * Sometimes we need to use the raw offsets and sometimes we need
+   * to use the converted offsets depending on whether the FlutterOutline
+   * matches the current document or the expectations given by the
+   * @param node
+   * @return
+   */
+  int getConvertedOffset(FlutterOutline node) {
+    return getConvertedOffset(node.getOffset());
+  }
+
+  int getConvertedOffset(int offset) {
+    return convertOffsets ? getAnalysisService().getConvertedOffset(myFile, offset) : offset;
+  }
+
   private OutlineLocation computeLocation(FlutterOutline node) {
     assert (myDocument != null);
     final int documentLength = myDocument.getTextLength();
-    final int rawOffset = getAnalysisService().getConvertedOffset(myFile, node.getOffset());
+    final int rawOffset = getConvertedOffset(node);
     final int nodeOffset = min(rawOffset, documentLength);
     final int line = myDocument.getLineNumber(nodeOffset);
     final int lineStartOffset = myDocument.getLineStartOffset(line);
@@ -692,7 +712,7 @@ public class WidgetIndentsHighlightingPass {
       }
     }
 
-    return new OutlineLocation(node, line, column, indent, myFile, getAnalysisService());
+    return new OutlineLocation(node, line, column, indent, myFile, this);
   }
 
   private void buildWidgetDescriptors(

@@ -61,7 +61,7 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     int column,
     int indent,
     VirtualFile file,
-    DartAnalysisServerService analysisService
+    WidgetIndentsHighlightingPass pass
   ) {
     this.line = line;
     this.column = column;
@@ -76,8 +76,8 @@ public class OutlineLocation implements Comparable<OutlineLocation> {
     assert (column >= indent);
     assert (line >= 0);
     this.indent = indent;
-    this.offset = analysisService.getConvertedOffset(file, node.getOffset());
-    this.endOffset = analysisService.getConvertedOffset(file, node.getOffset() + node.getLength());
+    this.offset = pass.getConvertedOffset(node);
+    this.endOffset = pass.getConvertedOffset(node.getOffset() + node.getLength());
   }
 
   public void dispose() {

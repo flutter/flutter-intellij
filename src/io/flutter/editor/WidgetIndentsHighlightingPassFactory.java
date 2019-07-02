@@ -21,12 +21,12 @@ import com.intellij.openapi.editor.event.EditorEventMulticaster;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.fileEditor.*;
-import com.intellij.openapi.fileEditor.impl.FileOffsetsManager;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
@@ -230,7 +230,6 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
       updateActiveEditors();
     }
-
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
   }
 
@@ -290,7 +289,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   }
 
   void runWidgetIndentsPass(EditorEx editor, @NotNull FlutterOutline outline) {
-    if (editor.isDisposed()) {
+    if (editor.isDisposed() || project.isDisposed()) {
       // The editor might have been disposed before we got a new FlutterOutline.
       // It is safe to ignore it as it isn't relevant.
       return;
@@ -302,9 +301,14 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     }
     // If the editor and the outline have different lengths then
     // the outline is out of date and cannot safely be displayed.
-    final FileOffsetsManager offsetManager = FileOffsetsManager.getInstance();
     final DocumentEx document = editor.getDocument();
-    if (document.getTextLength() != offsetManager.getConvertedOffset(file, outline.getLength())) {
+    final int documentLength = document.getTextLength();
+    final int outlineLength = outline.getLength();
+    // TODO(jacobr): determine why we sometimes have to check against both the
+    // raw outlineLength and the converted outline length for things to work
+    // correctly on windows.
+    if (documentLength != outlineLength &&
+        documentLength != DartAnalysisServerService.getInstance(project).getConvertedOffset(file, outlineLength)) {
       // Outline is out of date. That is ok. Ignore it for now.
       // An up to date outline will probably arive shortly. Showing an
       // outline from data inconsistent with the current
@@ -312,8 +316,10 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       // instead
       return;
     }
-
-    WidgetIndentsHighlightingPass.run(project, editor, outline);
+    // We only need to convert offsets when the document and outline disagree
+    // on the document length.
+    final boolean convertOffsets = documentLength != outlineLength;
+    WidgetIndentsHighlightingPass.run(project, editor, outline, convertOffsets);
   }
 
   @Override
