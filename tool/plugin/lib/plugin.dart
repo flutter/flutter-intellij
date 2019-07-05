@@ -131,9 +131,8 @@ Future<File> genPluginXml(BuildSpec spec, String destDir, String path) async {
   dest.writeln(
       "<!-- Do not edit; instead, modify ${p.basename(templatePath)}, and run './bin/plugin generate'. -->");
   dest.writeln();
-  await new File(p.join(rootPath, 'resources', templatePath))
-      .openRead()
-      .transform(utf8.decoder)
+  await utf8.decoder
+      .bind(new File(p.join(rootPath, 'resources', templatePath)).openRead())
       .transform(new LineSplitter())
       .forEach((l) => dest.writeln(substituteTemplateVariables(l, spec)));
   await dest.close();

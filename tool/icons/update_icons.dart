@@ -39,7 +39,7 @@ void main() async {
 Future<String> downloadUrl(String url) async {
   HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(url));
   HttpClientResponse response = await request.close();
-  List<String> data = await response.transform(utf8.decoder).toList();
+  List<String> data = await utf8.decoder.bind(response).toList();
   return data.join('');
 }
 

@@ -46,7 +46,7 @@ colors() async {
   // Get color file from flutter.
   HttpClientRequest request = await new HttpClient().getUrl(Uri.parse(kUrl));
   HttpClientResponse response = await request.close();
-  List<String> data = await response.transform(utf8.decoder).toList();
+  List<String> data = await utf8.decoder.bind(response).toList();
 
   // Remove an import and define the Color class.
   String str = data.join('');
