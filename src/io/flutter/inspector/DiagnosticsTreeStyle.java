@@ -72,13 +72,15 @@ public enum DiagnosticsTreeStyle {
   singleLine,
 
   /**
-   * Render the tree on a single line with the name and value on separate
-   * lines.
+   * Render the tree on a single line with the name and value on separate lines.
    */
   indentedSingleLine,
 
   /**
-   *
+   * Render only the immediate properties of a node instead of the full tree.
+   * <p>
+   * As an example, DebugOverflowIndicator uses this style to display just the immediate children
+   * of a node.
    */
   shallow,
 

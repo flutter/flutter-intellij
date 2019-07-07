@@ -46,8 +46,7 @@ public class InspectorService implements Disposable {
   private final StreamSubscription<Boolean> setPubRootDirectoriesSubscription;
 
   /**
-   * Convenience ObjectGroup constructor for users who need to use
-   * DiagnosticsNode objects before the InspectorService is available.
+   * Convenience ObjectGroup constructor for users who need to use DiagnosticsNode objects before the InspectorService is available.
    */
   public static CompletableFuture<InspectorService.ObjectGroup> createGroup(
     @NotNull FlutterApp app, @NotNull FlutterDebugProcess debugProcess,

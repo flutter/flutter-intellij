@@ -235,8 +235,8 @@ public class FlutterLogEntryParser {
 
   private List<FlutterLogEntry> parseFlutterError(@NotNull Event event) {
     final List<FlutterLogEntry> entries = new ArrayList<>();
-    final JsonElement extensionData = event.getExtensionData().getJson();
-    final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
+    final ExtensionData extensionData = event.getExtensionData();
+    final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getJson().getAsJsonObject());
     final String description = diagnosticsNode.toString();
     final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
     entry.setKind(Kind.FLUTTER_ERROR);

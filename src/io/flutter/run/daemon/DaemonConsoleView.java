@@ -33,8 +33,9 @@ public class DaemonConsoleView extends ConsoleViewImpl {
    */
   public static void install(@NotNull CommandLineState launcher, @NotNull ExecutionEnvironment env, @NotNull VirtualFile workDir) {
     // Create our own console builder.
-    // We need to filter input to this console without affecting other consoles,
-    // so we cannot use a consoleFilterInputProvider.
+    //
+    // We need to filter input to this console without affecting other consoles, so we cannot use
+    // a consoleFilterInputProvider.
     final GlobalSearchScope searchScope = SearchScopeProvider.createSearchScope(env.getProject(), env.getRunProfile());
     final TextConsoleBuilder builder = new TextConsoleBuilderImpl(env.getProject(), searchScope) {
       @NotNull
