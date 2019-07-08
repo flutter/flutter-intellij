@@ -5,6 +5,7 @@
  */
 package io.flutter.run.bazel;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionBundle;
 import com.intellij.execution.configurations.ConfigurationFactory;
 import com.intellij.execution.configurations.ConfigurationTypeBase;
@@ -19,11 +20,13 @@ import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 
 public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
+  @VisibleForTesting
+  final Factory factory = new Factory(this);
 
   public FlutterBazelRunConfigurationType() {
     super("FlutterBazelRunConfigurationType", FlutterBundle.message("runner.flutter.bazel.configuration.name"),
           FlutterBundle.message("runner.flutter.bazel.configuration.description"), FlutterIcons.BazelRun);
-    addFactory(new Factory(this));
+    addFactory(factory);
   }
 
   /**
@@ -34,7 +37,8 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
            FlutterModuleUtils.isFlutterBazelProject(project);
   }
 
-  private static class Factory extends ConfigurationFactory {
+  @VisibleForTesting
+  static class Factory extends ConfigurationFactory {
     public Factory(FlutterBazelRunConfigurationType type) {
       super(type);
     }
@@ -77,6 +81,12 @@ public class FlutterBazelRunConfigurationType extends ConfigurationTypeBase {
     @Override
     public boolean isApplicable(@NotNull Project project) {
       return FlutterBazelRunConfigurationType.doShowBazelRunConfigurationForProject(project);
+    }
+
+    @Override
+    @NotNull
+    public String getId() {
+      return FlutterBundle.message("runner.flutter.bazel.configuration.name");
     }
   }
 }

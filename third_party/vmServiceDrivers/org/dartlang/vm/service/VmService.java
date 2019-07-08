@@ -79,7 +79,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 20;
+  public static final int versionMinor = 21;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -407,6 +407,17 @@ public class VmService extends VmServiceBase {
   public void getVMTimelineFlags(TimelineFlagsConsumer consumer) {
     final JsonObject params = new JsonObject();
     request("getVMTimelineFlags", params, consumer);
+  }
+
+  /**
+   * The [getVMTimelineMicros] RPC returns the current time stamp from the clock used by the
+   * timeline, similar to <code>Timeline.now</code>Timeline.now in
+   * <code>dart:developer</code>dart:developer and
+   * <code>Dart_TimelineGetMicros</code>Dart_TimelineGetMicros in the VM embedding API.
+   */
+  public void getVMTimelineMicros(TimestampConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    request("getVMTimelineMicros", params, consumer);
   }
 
   /**
@@ -848,6 +859,12 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof TimelineFlagsConsumer) {
       if (responseType.equals("TimelineFlags")) {
         ((TimelineFlagsConsumer) consumer).received(new TimelineFlags(json));
+        return;
+      }
+    }
+    if (consumer instanceof TimestampConsumer) {
+      if (responseType.equals("Timestamp")) {
+        ((TimestampConsumer) consumer).received(new Timestamp(json));
         return;
       }
     }
