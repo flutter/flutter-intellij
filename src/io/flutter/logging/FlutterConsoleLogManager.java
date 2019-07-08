@@ -6,6 +6,7 @@
 
 package io.flutter.logging;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -15,8 +16,6 @@ import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
-import io.flutter.run.daemon.FlutterApp;
-import io.flutter.vmService.ServiceExtensions;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -33,38 +32,29 @@ import java.util.concurrent.TimeUnit;
  * console.
  */
 public class FlutterConsoleLogManager {
-  private static final boolean SHOW_STRUCTURED_ERRORS = false;
+  public static final boolean SHOW_STRUCTURED_ERRORS = false;
 
   private static final ConsoleViewContentType SUBTLE_CONTENT_TYPE =
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
 
   private static QueueProcessor<Runnable> queue;
 
-  @NotNull final FlutterApp app;
+  @NotNull final VmService service;
+  @NotNull final ConsoleView console;
 
-  public FlutterConsoleLogManager(@NotNull FlutterApp app) {
-    this.app = app;
+  public FlutterConsoleLogManager(@NotNull VmService service, @NotNull ConsoleView console) {
+    this.service = service;
+    this.console = console;
 
     if (queue == null) {
       queue = QueueProcessor.createRunnableQueueProcessor();
-    }
-
-    if (SHOW_STRUCTURED_ERRORS) {
-      // Calling this will override the default Flutter stdout error display.
-      app.hasServiceExtension(ServiceExtensions.toggleShowStructuredErrors.getExtension(), (present) -> {
-        if (present) {
-          app.callBooleanExtension(ServiceExtensions.toggleShowStructuredErrors.getExtension(), true);
-        }
-      });
     }
   }
 
   public void handleFlutterErrorEvent(@NotNull Event event) {
     if (SHOW_STRUCTURED_ERRORS) {
-      assert app.getConsole() != null;
-
       // TODO(devoncarew): Pretty print the error (using the available console syling attributes).
-      app.getConsole().print(
+      console.print(
         event.getExtensionData().getJson().toString() + "\n",
         new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes()));
     }
@@ -74,13 +64,12 @@ public class FlutterConsoleLogManager {
     queue.add(() -> processLoggingEvent(event));
   }
 
-  private void processLoggingEvent(@NotNull Event event) {
+  @VisibleForTesting
+  public void processLoggingEvent(@NotNull Event event) {
     final LogRecord logRecord = event.getLogRecord();
     if (logRecord == null) return;
 
-    final VmService service = app.getVmService();
     final IsolateRef isolateRef = event.getIsolate();
-    assert (service != null);
 
     final InstanceRef message = logRecord.getMessage();
     @NotNull final InstanceRef loggerName = logRecord.getLoggerName();
@@ -88,9 +77,6 @@ public class FlutterConsoleLogManager {
     final String name = loggerName.getValueAsString().isEmpty() ? "log" : loggerName.getValueAsString();
     final String prefix = "[" + name + "] ";
     final String messageStr = getFullStringValue(service, isolateRef.getId(), message);
-
-    assert app.getConsole() != null;
-    final ConsoleView console = app.getConsole();
 
     console.print(prefix, SUBTLE_CONTENT_TYPE);
     console.print(messageStr + "\n", ConsoleViewContentType.NORMAL_OUTPUT);
@@ -169,11 +155,15 @@ public class FlutterConsoleLogManager {
   }
 
   private String stringValueFromStringRef(InstanceRef ref) {
-    return ref.getValueAsStringIsTruncated() ? ref.getValueAsString() + "..." : ref.getValueAsString();
+    return ref.getValueAsStringIsTruncated() ? formatTruncatedString(ref) : ref.getValueAsString();
   }
 
   private String stringValueFromStringRef(Instance instance) {
     return instance.getValueAsStringIsTruncated() ? instance.getValueAsString() + "..." : instance.getValueAsString();
+  }
+
+  private String formatTruncatedString(InstanceRef ref) {
+    return ref.getValueAsString() + "...";
   }
 
   private String getFullStringValue(@NotNull VmService service, String isolateId, @Nullable InstanceRef ref) {
@@ -189,7 +179,7 @@ public class FlutterConsoleLogManager {
     service.getObject(isolateId, ref.getId(), 0, ref.getLength(), new GetObjectConsumer() {
       @Override
       public void onError(RPCError error) {
-        result[0] = ref.getValueAsString() + "...";
+        result[0] = formatTruncatedString(ref);
         latch.countDown();
       }
 
@@ -199,7 +189,7 @@ public class FlutterConsoleLogManager {
           result[0] = stringValueFromStringRef((Instance)response);
         }
         else {
-          result[0] = ref.getValueAsString() + "...";
+          result[0] = formatTruncatedString(ref);
         }
 
         latch.countDown();
@@ -207,7 +197,7 @@ public class FlutterConsoleLogManager {
 
       @Override
       public void received(Sentinel response) {
-        result[0] = ref.getValueAsString() + "...";
+        result[0] = formatTruncatedString(ref);
         latch.countDown();
       }
     });
