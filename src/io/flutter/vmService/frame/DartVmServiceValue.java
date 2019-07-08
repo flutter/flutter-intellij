@@ -347,7 +347,7 @@ public class DartVmServiceValue extends XNamedValue {
 
   @Override
   public void computeChildren(@NotNull final XCompositeNode node) {
-    if (myInstanceRef.getKind() == InstanceKind.Null) {
+    if (myInstanceRef.isNull()) {
       node.addChildren(XValueChildrenList.EMPTY, true);
       return;
     }

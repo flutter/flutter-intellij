@@ -83,8 +83,7 @@ public class FlutterConsoleLogManager {
     @NotNull final InstanceRef error = logRecord.getError();
     @NotNull final InstanceRef stackTrace = logRecord.getStackTrace();
 
-    // TODO(devoncarew): Add an 'isNull' method to InstanceRef.
-    if (error.getKind() != InstanceKind.Null) {
+    if (!error.isNull()) {
       final String padding = StringUtil.repeat(" ", prefix.length());
 
       if (error.getKind() == InstanceKind.String) {
@@ -121,7 +120,7 @@ public class FlutterConsoleLogManager {
       }
     }
 
-    if (stackTrace.getKind() != InstanceKind.Null) {
+    if (!stackTrace.isNull()) {
       final String padding = StringUtil.repeat(" ", prefix.length());
       final String out = stackTrace.getValueAsString().trim();
 
@@ -133,7 +132,7 @@ public class FlutterConsoleLogManager {
 
   private void printStackTraceToConsole(
     @NotNull ConsoleView console, String padding, @NotNull InstanceRef stackTrace) {
-    if (stackTrace.getKind() == InstanceKind.Null) return;
+    if (stackTrace.isNull()) return;
 
     final String out = stackTrace.getValueAsString();
     console.print(

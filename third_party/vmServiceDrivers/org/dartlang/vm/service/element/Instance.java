@@ -424,4 +424,11 @@ public class Instance extends Obj {
     final JsonElement elem = json.get("valueAsStringIsTruncated");
     return elem != null ? elem.getAsBoolean() : false;
   }
+
+  /**
+   * Returns whether this instance represents null.
+   */
+  public boolean isNull() {
+    return getKind() == InstanceKind.Null;
+  }
 }
