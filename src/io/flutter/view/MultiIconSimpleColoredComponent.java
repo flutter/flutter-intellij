@@ -50,8 +50,8 @@ import java.awt.font.TextLayout;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.CharacterIterator;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 /**
  * This is high performance Swing component which represents
@@ -487,7 +487,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
       result += computeStringWidth(i, font);
 
-      final int fixedWidth = myFragmentPadding.get(i);
+      final int fixedWidth = myFragmentPadding.getOrDefault(i, 0);
       if (fixedWidth > 0 && result < fixedWidth) {
         result = fixedWidth;
       }
@@ -629,7 +629,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
         return i;
       }
       curX += curWidth;
-      final int fragmentPadding = myFragmentPadding.get(i);
+      final int fragmentPadding = myFragmentPadding.getOrDefault(i, 0);
       if (fragmentPadding > 0 && curX < fragmentPadding) {
         curX = fragmentPadding;
       }
@@ -820,7 +820,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       final SimpleTextAttributes attributes = myAttributes.get(i);
 
       Font font = g.getFont();
-      boolean isSmaller = attributes.isSmaller();
+      final boolean isSmaller = attributes.isSmaller();
       if (font.getStyle() != attributes.getFontStyle() || isSmaller != wasSmaller) { // derive font only if it is necessary
         font = font.deriveFont(attributes.getFontStyle(), isSmaller ? UIUtil.getFontSize(UIUtil.FontSize.SMALL) : baseSize);
       }
@@ -831,7 +831,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
       final float fragmentWidth = computeStringWidth(i, font);
 
-      final int fragmentPadding = myFragmentPadding.get(i);
+      final int fragmentPadding = myFragmentPadding.getOrDefault(i, 0);
 
       final Color bgColor = attributes.isSearchMatch() ? null : attributes.getBgColor();
       if ((attributes.isOpaque() || isOpaque()) && bgColor != null) {
@@ -848,7 +848,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       }
       g.setColor(color);
 
-      final int fragmentAlignment = myFragmentAlignment.get(i);
+      final int fragmentAlignment = myFragmentAlignment.getOrDefault(i, 0);
 
       final float endOffset;
       if (fragmentPadding > 0 &&
