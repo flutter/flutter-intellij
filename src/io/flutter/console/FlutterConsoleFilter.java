@@ -20,13 +20,8 @@ import com.intellij.openapi.roots.ModuleRootManager;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
-import io.flutter.FlutterConstants;
-import io.flutter.FlutterInitializer;
 import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
-import io.flutter.actions.RestartFlutterApp;
-import io.flutter.run.FlutterReloadManager;
-import io.flutter.run.daemon.FlutterApp;
 import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -115,11 +110,6 @@ public class FlutterConsoleFilter implements Filter {
       return getFlutterDoctorResult(line, entireLength - line.length());
     }
 
-    // Check for "restart" action in debugging output.
-    if (line.startsWith("you may need to restart the app")) {
-      return getRestartAppResult(line, entireLength - line.length());
-    }
-
     int lineNumber = 0;
     String pathPart = line.trim();
 
@@ -193,7 +183,7 @@ public class FlutterConsoleFilter implements Filter {
   private String findRelativePath(String threeSlashFileName) {
     final VirtualFile[] roots = ModuleRootManager.getInstance(module).getContentRoots();
     for (VirtualFile root : roots) {
-      String path = root.getPath();
+      final String path = root.getPath();
       int index = threeSlashFileName.indexOf(path);
       if (index > 0) {
         index += path.length();
@@ -208,33 +198,6 @@ public class FlutterConsoleFilter implements Filter {
     final int startOffset = lineStart + commandStart;
     final int commandLength = "flutter doctor".length();
     return new Result(startOffset, startOffset + commandLength, new FlutterDoctorHyperlinkInfo());
-  }
-
-  private static Result getRestartAppResult(final String line, final int lineStart) {
-    final int commandStart = line.indexOf("restart");
-    final int startOffset = lineStart + commandStart;
-    final int commandLength = "restart".length();
-    return new Result(startOffset, startOffset + commandLength, new RestartAppHyperlinkInfo());
-  }
-
-  private static class RestartAppHyperlinkInfo implements HyperlinkInfo {
-    @Override
-    public void navigate(final Project project) {
-      final FlutterSdk sdk = FlutterSdk.getFlutterSdk(project);
-      if (sdk == null) {
-        Messages.showErrorDialog(project, "Flutter SDK not found", "Error");
-        return;
-      }
-
-      final FlutterApp app = FlutterApp.firstFromProjectProcess(project);
-      if (app == null) {
-        Messages.showErrorDialog(project, "Running Flutter App not found", "Error");
-        return;
-      }
-
-      FlutterInitializer.sendAnalyticsAction(RestartFlutterApp.class.getSimpleName());
-      FlutterReloadManager.getInstance(project).saveAllAndRestart(app, FlutterConstants.RELOAD_REASON_MANUAL);
-    }
   }
 
   private static class FlutterDoctorHyperlinkInfo implements HyperlinkInfo {

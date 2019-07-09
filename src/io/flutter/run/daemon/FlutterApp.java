@@ -684,8 +684,20 @@ public class FlutterApp {
 
   public FlutterConsoleLogManager getFlutterConsoleLogManager() {
     if (myFlutterConsoleLogManager == null) {
-      myFlutterConsoleLogManager = new FlutterConsoleLogManager(this);
+      assert (getVmService() != null);
+      assert (getConsole() != null);
+      myFlutterConsoleLogManager = new FlutterConsoleLogManager(getVmService(), getConsole());
+
+      if (FlutterConsoleLogManager.SHOW_STRUCTURED_ERRORS) {
+        // Calling this will override the default Flutter stdout error display.
+        hasServiceExtension(ServiceExtensions.toggleShowStructuredErrors.getExtension(), (present) -> {
+          if (present) {
+            callBooleanExtension(ServiceExtensions.toggleShowStructuredErrors.getExtension(), true);
+          }
+        });
+      }
     }
+
     return myFlutterConsoleLogManager;
   }
 

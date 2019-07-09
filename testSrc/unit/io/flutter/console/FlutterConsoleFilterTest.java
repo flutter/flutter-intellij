@@ -18,7 +18,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
 public class FlutterConsoleFilterTest {
-
   @Rule
   public final ProjectFixture fixture = Testing.makeCodeInsightModule();
 
@@ -39,8 +38,8 @@ public class FlutterConsoleFilterTest {
 
   @Test
   public void checkTestFileUrlLink() {
-    String line = "#4      main.<anonymous closure> (file://" + appDir + "/widget_test.dart:23:18)\n";
-    Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, 659);
+    final String line = "#4      main.<anonymous closure> (file://" + appDir + "/widget_test.dart:23:18)\n";
+    final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, 659);
     assertNotNull(link);
   }
 }
