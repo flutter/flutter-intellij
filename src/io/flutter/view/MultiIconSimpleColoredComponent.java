@@ -33,6 +33,7 @@ import com.intellij.ui.paint.EffectPainter;
 import com.intellij.util.ui.JBInsets;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import gnu.trove.TIntIntHashMap;
 import org.intellij.lang.annotations.JdkConstants;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,8 +51,10 @@ import java.awt.font.TextLayout;
 import java.text.AttributedCharacterIterator;
 import java.text.AttributedString;
 import java.text.CharacterIterator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-import java.util.*;
 
 /**
  * This is high performance Swing component which represents
@@ -85,7 +88,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
   private final List<SimpleTextAttributes> myAttributes;
 
   private List<Object> myFragmentTags = null;
-  private Map<Integer, Integer> myFragmentAlignment;
+  private TIntIntHashMap myFragmentAlignment;
 
   /**
    * Internal padding
@@ -114,7 +117,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
   private int myMainTextLastIndex = -1;
 
-  private final Map<Integer, Integer> myFragmentPadding;
+  private final TIntIntHashMap myFragmentPadding;
 
   @JdkConstants.HorizontalAlignment private int myTextAlign = SwingConstants.LEFT;
 
@@ -132,8 +135,8 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
     myIpad = new JBInsets(1, 2, 1, 2);
     myIconTextGap = JBUI.scale(2);
     myBorder = new MyBorder();
-    myFragmentPadding = new HashMap<>(10);
-    myFragmentAlignment = new HashMap<>(10);
+    myFragmentPadding = new TIntIntHashMap(10);
+    myFragmentAlignment = new TIntIntHashMap(10);
     setOpaque(true);
     updateUI();
   }
@@ -487,7 +490,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
       result += computeStringWidth(i, font);
 
-      final int fixedWidth = myFragmentPadding.getOrDefault(i, 0);
+      final int fixedWidth = myFragmentPadding.get(i);
       if (fixedWidth > 0 && result < fixedWidth) {
         result = fixedWidth;
       }
@@ -629,7 +632,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
         return i;
       }
       curX += curWidth;
-      final int fragmentPadding = myFragmentPadding.getOrDefault(i, 0);
+      final int fragmentPadding = myFragmentPadding.get(i);
       if (fragmentPadding > 0 && curX < fragmentPadding) {
         curX = fragmentPadding;
       }
@@ -831,7 +834,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
 
       final float fragmentWidth = computeStringWidth(i, font);
 
-      final int fragmentPadding = myFragmentPadding.getOrDefault(i, 0);
+      final int fragmentPadding = myFragmentPadding.get(i);
 
       final Color bgColor = attributes.isSearchMatch() ? null : attributes.getBgColor();
       if ((attributes.isOpaque() || isOpaque()) && bgColor != null) {
@@ -848,7 +851,7 @@ public class MultiIconSimpleColoredComponent extends JComponent implements Acces
       }
       g.setColor(color);
 
-      final int fragmentAlignment = myFragmentAlignment.getOrDefault(i, 0);
+      final int fragmentAlignment = myFragmentAlignment.get(i);
 
       final float endOffset;
       if (fragmentPadding > 0 &&
