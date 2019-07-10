@@ -18,6 +18,7 @@ import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
+import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.VmServiceConsumers;
@@ -186,7 +187,7 @@ public class FlutterConsoleLogManager {
         final ArrayList<DiagnosticsNode> children = future.get();
 
         if (!isInChild && children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
-          final String childIndent = indent + "  ";
+          final String childIndent = getChildIndent(indent, property);
           for (DiagnosticsNode child : children) {
             printDiagnosticsNodeProperty(console, childIndent, child, contentType, false);
           }
@@ -198,7 +199,7 @@ public class FlutterConsoleLogManager {
           }
         }
         else {
-          final String childIndent = isInChild ? indent + "  " : "...  " + indent;
+          final String childIndent = isInChild ? getChildIndent(indent, property) : "...  " + indent;
 
           // For deep trees, we show the text as collapsed.
           for (DiagnosticsNode child : children) {
@@ -218,7 +219,7 @@ public class FlutterConsoleLogManager {
     }
     else {
       if (property.hasInlineProperties()) {
-        final String childIndent = indent + "  ";
+        final String childIndent = getChildIndent(indent, property);
         for (DiagnosticsNode childProperty : property.getInlineProperties()) {
           printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, isInChild);
         }
@@ -228,6 +229,15 @@ public class FlutterConsoleLogManager {
     // Print an extra line after the summary.
     if (property.getLevel() == DiagnosticLevel.summary) {
       console.print("\n", contentType);
+    }
+  }
+
+  private String getChildIndent(String indent, DiagnosticsNode property) {
+    if (property.getStyle() == DiagnosticsTreeStyle.flat) {
+      return indent;
+    }
+    else {
+      return indent + "  ";
     }
   }
 
