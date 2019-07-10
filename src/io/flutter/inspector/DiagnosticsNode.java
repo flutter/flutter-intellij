@@ -655,7 +655,7 @@ public class DiagnosticsNode {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, false, parent);
+          final DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, false, parent);
           child.setParent(this);
           nodes.add(child);
         }
