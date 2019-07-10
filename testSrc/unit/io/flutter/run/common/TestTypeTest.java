@@ -35,7 +35,7 @@ public class TestTypeTest extends AbstractDartElementTest {
                                              "  test('test 1', () {});\n" +
                                              "  testingWidgets('does not test widgets');\n" +
                                              "}";
-
+/*
   @Test
   public void shouldMatchGroup() throws Exception {
     run(() -> {
@@ -100,6 +100,7 @@ public class TestTypeTest extends AbstractDartElementTest {
 
     return groupIdentifier;
   }
+  */
 
   /**
    * Gets a specific test call.

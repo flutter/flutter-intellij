@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
  */
 public enum TestType {
   // Note that mapping elements to their most specific enclosing function call depends on the ordering from most to least specific.
-  SINGLE(AllIcons.RunConfigurations.TestState.Run, CommonTestConfigUtils.WIDGET_TEST_REGEX, "test"),
-  GROUP(AllIcons.RunConfigurations.TestState.Run_run, "group"),
+  SINGLE(AllIcons.RunConfigurations.TestState.Run),
+  GROUP(AllIcons.RunConfigurations.TestState.Run_run),
   /**
    * This {@link TestType} doesn't know how to detect main methods.
    * The logic to detect main methods is in {@link CommonTestConfigUtils}.
@@ -41,44 +41,14 @@ public enum TestType {
 
   @NotNull
   private final Icon myIcon;
-  private final List<String> myTestFunctionNames;
-  private final Pattern myTestFunctionRegex;
 
-  TestType(@NotNull Icon icon, String... testFunctionNames) {
-    this(icon, null, testFunctionNames);
-  }
-
-  TestType(@NotNull Icon icon, @Nullable Pattern testFunctionRegex, String... testFunctionNames) {
+  TestType(@NotNull Icon icon) {
     myIcon = icon;
-    myTestFunctionRegex = testFunctionRegex;
-    myTestFunctionNames = Arrays.asList(testFunctionNames);
-  }
-
-  @Nullable
-  public static DartCallExpression findTestCall(@NotNull PsiElement element) {
-    for (TestType type : TestType.values()) {
-      final DartCallExpression call = type.findCorrespondingCall(element);
-      if (call != null) return call;
-    }
-    return null;
   }
 
   @NotNull
   public Icon getIcon() {
     return myIcon;
-  }
-
-  /**
-   * Describes whether the given {@param element} matches one of the names this {@link TestType} is set up to look for.
-   * <p>
-   * Does not match the main function.
-   */
-  boolean matchesFunction(@NotNull DartCallExpression element) {
-    final boolean hasTestFunctionName = myTestFunctionNames.stream().anyMatch(name -> DartSyntax.isCallToFunctionNamed(element, name));
-    if (!hasTestFunctionName && myTestFunctionRegex != null) {
-      return DartSyntax.isCallToFunctionMatching(element, myTestFunctionRegex);
-    }
-    return hasTestFunctionName;
   }
 
   /**
@@ -92,22 +62,5 @@ public enum TestType {
     }
 
     return "Run Test";
-  }
-
-  /**
-   * Finds the closest corresponding test function of this {@link TestType} that encloses the given {@param element}.
-   */
-  @Nullable
-  public DartCallExpression findCorrespondingCall(@NotNull PsiElement element) {
-    for (String name : myTestFunctionNames) {
-      final DartCallExpression call = DartSyntax.findEnclosingFunctionCall(element, name);
-      if (call != null) {
-        return call;
-      }
-    }
-    if (myTestFunctionRegex != null) {
-      return DartSyntax.findEnclosingFunctionCall(element, myTestFunctionRegex);
-    }
-    return null;
   }
 }

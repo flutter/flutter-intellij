@@ -66,6 +66,25 @@ public class DartSyntax {
     return null; // not found
   }
 
+  /**
+   * Finds the closest named function call that encloses {@param elt}.
+   * @param elt
+   */
+  @Nullable
+  public static DartCallExpression findClosestEnclosingFunctionCall(@NotNull PsiElement elt) {
+    while (elt != null) {
+      if (elt instanceof DartCallExpression) {
+        final DartCallExpression call = (DartCallExpression)elt;
+        final String name = getCalledFunctionName(call);
+        if (name != null) {
+          return call;
+        }
+      }
+      elt = elt.getParent();
+    }
+    return null; // not found
+  }
+
   @Nullable
   public static DartNewExpression findEnclosingNewExpression(@NotNull PsiElement elt) {
     while (elt != null) {
