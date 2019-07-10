@@ -43,18 +43,12 @@ public class FlutterConsoleLogManager {
 
   public static final boolean SHOW_STRUCTURED_ERRORS = true;
 
-  // normal, subtle, bold, dark, red
-
-  private static final ConsoleViewContentType NORMAL_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
-  private static final ConsoleViewContentType ERROR_CONTENT_TYPE = ConsoleViewContentType.ERROR_OUTPUT;
   private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
     new ConsoleViewContentType("title", new SimpleTextAttributes(0, JBColor.yellow).toTextAttributes());
+  private static final ConsoleViewContentType NORMAL_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
   private static final ConsoleViewContentType SUBTLE_CONTENT_TYPE =
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
-  private static final ConsoleViewContentType BOLD_CONTENT_TYPE =
-    new ConsoleViewContentType("bold", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.toTextAttributes());
-  private static final ConsoleViewContentType DARK_CONTENT_TYPE =
-    new ConsoleViewContentType("dark", SimpleTextAttributes.DARK_TEXT.toTextAttributes());
+  private static final ConsoleViewContentType ERROR_CONTENT_TYPE = ConsoleViewContentType.ERROR_OUTPUT;
 
   final private CompletableFuture<InspectorService.ObjectGroup> objectGroup;
   private static QueueProcessor<Runnable> queue;
@@ -158,7 +152,7 @@ public class FlutterConsoleLogManager {
         contentType = ERROR_CONTENT_TYPE;
       }
       else if (property.getLevel() == DiagnosticLevel.summary) {
-        contentType = ERROR_CONTENT_TYPE; // NORMAL_CONTENT_TYPE;
+        contentType = ERROR_CONTENT_TYPE;
       }
       else if (property.getLevel() == DiagnosticLevel.hint) {
         contentType = NORMAL_CONTENT_TYPE;
