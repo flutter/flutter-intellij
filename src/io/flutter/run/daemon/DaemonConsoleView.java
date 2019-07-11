@@ -85,7 +85,6 @@ public class DaemonConsoleView extends ConsoleViewImpl {
         if (FlutterSettings.getInstance().isVerboseLogging()) {
           LOG.info(line.trim());
         }
-        return;
       }
       else {
         // We're seeing a spurious newline before some launches; this removes any single newline that occurred
