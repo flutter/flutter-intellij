@@ -921,6 +921,7 @@
                         overrides="false"/>
 
     <console.folding implementation="io.flutter.console.FlutterConsoleFolding"/>
+    <console.folding implementation="io.flutter.logging.FlutterConsoleLogFolding"/>
 
     <projectConfigurable groupId="language" instance="io.flutter.sdk.FlutterSettingsConfigurable"
                          id="flutter.settings" key="flutter.title" bundle="io.flutter.FlutterBundle" nonDefaultProject="true"/>
