@@ -6,7 +6,6 @@
 package io.flutter.logging;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.UrlFilter;

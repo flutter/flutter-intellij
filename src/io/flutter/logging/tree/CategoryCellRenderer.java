@@ -24,7 +24,7 @@ public class CategoryCellRenderer extends SimpleColoredRenderer implements Table
   @NotNull
   private final FlutterLogTree.EntryModel entryModel;
 
-  public CategoryCellRenderer(@NotNull FlutterLogTree.EntryModel entryModel){
+  public CategoryCellRenderer(@NotNull FlutterLogTree.EntryModel entryModel) {
     this.entryModel = entryModel;
   }
 
