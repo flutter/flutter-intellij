@@ -24,10 +24,12 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
+import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -45,7 +47,11 @@ public class FlutterConsoleLogManager {
   public static final boolean SHOW_STRUCTURED_ERRORS = true;
 
   private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
-    new ConsoleViewContentType("title", new SimpleTextAttributes(0, JBColor.yellow).toTextAttributes());
+    new ConsoleViewContentType("title",
+                               new SimpleTextAttributes(
+                                 SimpleTextAttributes.STYLE_PLAIN,
+                                 new JBColor(SimpleTextAttributes.DARK_TEXT.getFgColor(), new Color(138, 138, 0)))
+                                 .toTextAttributes());
   private static final ConsoleViewContentType NORMAL_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
   private static final ConsoleViewContentType SUBTLE_CONTENT_TYPE =
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
@@ -199,16 +205,18 @@ public class FlutterConsoleLogManager {
           }
         }
         else {
+          // For deep trees, we show the text as collapsed.
           final String childIndent = isInChild ? getChildIndent(indent, property) : "...  " + indent;
 
-          // For deep trees, we show the text as collapsed.
-          for (DiagnosticsNode child : children) {
-            printDiagnosticsNodeProperty(console, childIndent, child, contentType, true);
+          if (property.getStyle() != DiagnosticsTreeStyle.shallow) {
+            for (DiagnosticsNode child : children) {
+              printDiagnosticsNodeProperty(console, childIndent, child, contentType, true);
+            }
           }
 
           if (property.hasInlineProperties()) {
             for (DiagnosticsNode childProperty : property.getInlineProperties()) {
-              printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, isInChild);
+              printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, true);
             }
           }
         }
