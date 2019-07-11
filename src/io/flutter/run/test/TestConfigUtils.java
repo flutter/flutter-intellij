@@ -23,8 +23,7 @@ public class TestConfigUtils extends CommonTestConfigUtils {
     return instance;
   }
 
-  private TestConfigUtils() {
-  }
+  private TestConfigUtils() {}
 
   @Nullable
   @Override

@@ -1,0 +1,227 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+package io.flutter.editor.outline;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.editor.Editor;
+import com.intellij.openapi.editor.ex.EditorEx;
+import com.intellij.openapi.fileEditor.*;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
+import com.intellij.openapi.vfs.VirtualFile;
+import io.flutter.FlutterUtils;
+import io.flutter.dart.FlutterDartAnalysisServer;
+import io.flutter.dart.FlutterOutlineListener;
+import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
+import javax.annotation.concurrent.Immutable;
+import java.util.*;
+
+/**
+ * Service that watches the Flutter Outlines for all open Dart files.
+ */
+public class OpenEditorOutlineService implements Disposable {
+  private final Project project;
+  private final FlutterDartAnalysisServer analysisServer;
+
+  /**
+   * Outlines for the currently visible files.
+   */
+  private final Map<String, FlutterOutline> pathToOutline = new HashMap<>();
+  /**
+   * Outline listeners for the currently visible files.
+   */
+  private final Map<String, FlutterOutlineListener> outlineListeners = new HashMap<>();
+
+  /**
+   * List of listeners.
+   */
+  private final Set<Listener> listeners = new HashSet<>();
+
+  @NotNull
+  public static OpenEditorOutlineService getInstance(@NotNull final Project project) {
+    return ServiceManager.getService(project, OpenEditorOutlineService.class);
+  }
+
+  public OpenEditorOutlineService(Project project) {
+    this(project, FlutterDartAnalysisServer.getInstance(project));
+  }
+
+  @VisibleForTesting
+  OpenEditorOutlineService(Project project, FlutterDartAnalysisServer analysisServer) {
+    this.project = project;
+    this.analysisServer = analysisServer;
+    updateActiveEditors();
+    project.getMessageBus().connect(project).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
+      public void selectionChanged(@NotNull FileEditorManagerEvent event) {
+        updateActiveEditors();
+      }
+    });
+  }
+
+
+  /**
+   * Gets all of the {@link EditorEx} editors open to Dart files.
+   */
+  public List<EditorEx> getActiveDartEditors() {
+    if (project.isDisposed()) {
+      return Collections.emptyList();
+    }
+    final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
+    final List<EditorEx> dartEditors = new ArrayList<>();
+    for (FileEditor fileEditor : editors) {
+      if (!(fileEditor instanceof TextEditor)) continue;
+      final TextEditor textEditor = (TextEditor)fileEditor;
+      final Editor editor = textEditor.getEditor();
+      if (editor instanceof EditorEx) {
+        dartEditors.add((EditorEx)editor);
+      }
+    }
+    return dartEditors;
+  }
+
+  private void updateActiveEditors() {
+    if (project.isDisposed()) {
+      return;
+    }
+
+    final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
+    final VirtualFile[] files = FileEditorManager.getInstance(project).getSelectedFiles();
+
+    final Set<String> newPaths = new HashSet<>();
+    for (VirtualFile file : files) {
+      if (FlutterUtils.couldContainWidgets(file)) {
+        newPaths.add(file.getPath());
+      }
+    }
+
+    // Remove obsolete outline listeners.
+    final List<String> obsoletePaths = new ArrayList<>();
+    synchronized (outlineListeners) {
+      for (final String path : outlineListeners.keySet()) {
+        if (!newPaths.contains(path)) {
+          obsoletePaths.add(path);
+        }
+      }
+      for (final String path : obsoletePaths) {
+        final FlutterOutlineListener listener = outlineListeners.remove(path);
+        if (listener != null) {
+          analysisServer.removeOutlineListener(path, listener);
+        }
+      }
+
+      // Register new outline listeners.
+      for (final String path : newPaths) {
+        if (outlineListeners.containsKey(path)) continue;
+        final FlutterOutlineListener listener =
+          (filePath, outline, instrumentedCode) -> {
+            synchronized (outlineListeners) {
+              if (!outlineListeners.containsKey(path)) {
+                // The outline listener subscription was already cancelled.
+                return;
+              }
+            }
+            synchronized (pathToOutline) {
+              pathToOutline.put(path, outline);
+            }
+            notifyOutlineUpdated(path);
+          };
+        outlineListeners.put(path, listener);
+        analysisServer.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
+      }
+    }
+
+    synchronized (pathToOutline) {
+      for (final String path : obsoletePaths) {
+        // Clear the current outline as it may become out of date before the
+        // file is visible again.
+        pathToOutline.remove(path);
+      }
+    }
+    if (obsoletePaths.size() > 0 || newPaths.size() > 0) {
+      notifyEditorsUpdated();
+    }
+  }
+
+  private void notifyEditorsUpdated() {
+    for (Listener listener : listeners) {
+      listener.onEditorsChanged();
+    }
+  }
+
+  private void notifyOutlineUpdated(String path) {
+    for (Listener listener : listeners) {
+      listener.onOutlineChanged(path);
+    }
+  }
+
+  public void addListener(@NotNull Listener listener) {
+    listeners.add(listener);
+  }
+
+  public void removeListener(@NotNull Listener listener) {
+    listeners.remove(listener);
+  }
+
+  @Nullable
+  public FlutterOutline get(String path) {
+    return pathToOutline.get(path);
+  }
+
+  @Override
+  public void dispose() {
+    synchronized (outlineListeners) {
+      for (Map.Entry<String, FlutterOutlineListener> entry : outlineListeners.entrySet()) {
+        final String path = entry.getKey();
+        final FlutterOutlineListener listener = outlineListeners.remove(path);
+        if (listener != null) {
+          analysisServer.removeOutlineListener(path, listener);
+        }
+      }
+      outlineListeners.clear();
+    }
+    synchronized (pathToOutline) {
+      pathToOutline.clear();
+    }
+  }
+
+  /**
+   * Listener for changes to the active editors or open outlines.
+   */
+  public interface Listener {
+    /**
+     * Called on a change in the set of open editors.
+     */
+    void onEditorsChanged();
+
+    /**
+     * Called on a change in the outline of file {@param path}.
+     */
+    void onOutlineChanged(String path);
+  }
+
+
+  /**
+   * The cached {@link FlutterOutline} for some file.
+   *
+   * <p>
+   * Provides useful metadata for test identification.
+   */
+  @Immutable
+  public static class OutlineCache {
+    final String path;
+    final FlutterOutline outline;
+
+    public OutlineCache(String path, FlutterOutline outline) {
+      this.path = path;
+      this.outline = outline;
+    }
+  }
+}

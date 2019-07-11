@@ -991,6 +991,9 @@
     <component>
       <implementation-class>io.flutter.editor.WidgetIndentsHighlightingPassFactory</implementation-class>
     </component>
+    <component>
+      <implementation-class>io.flutter.editor.outline.OpenEditorOutlineService</implementation-class>
+    </component>
   </project-components>
 
   <!-- Dart Plugin extensions -->
