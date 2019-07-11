@@ -26,6 +26,11 @@ import java.util.*;
 
 /**
  * Service that watches the Flutter Outlines for all open Dart files.
+ *
+ * <p>
+ * This service works by listening to the {@link Project}'s MessageBus for {@link FileEditor}s that are
+ * added or removed. Using the set of currently active editor windows ({@link EditorEx}s), this service
+ * then subscribes to the {@link FlutterDartAnalysisServer} for updates to the {@link FlutterOutline} of each file.
  */
 public class OpenEditorOutlineService implements Disposable {
   private final Project project;

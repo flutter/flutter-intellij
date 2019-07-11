@@ -131,43 +131,14 @@ public abstract class CommonTestConfigUtils {
   @Nullable
   private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, Map<DartCallExpression, TestType> callToTestType) {
     while (element != null) {
-      final DartCallExpression call = (DartCallExpression)element;
-      if (callToTestType.containsKey(call)) {
-        return call;
+      if (element instanceof DartCallExpression) {
+        final DartCallExpression call = (DartCallExpression)element;
+        if (callToTestType.containsKey(call)) {
+          return call;
+        }
       }
       element = DartSyntax.findClosestEnclosingFunctionCall(element);
     }
     return null;
-  }
-
-  @Immutable
-  private static class OutlineCache {
-    @NotNull final PsiFile file;
-    final long lastUpdatedTimestamp;
-    @NotNull final Map<DartCallExpression, TestType> callToTestType;
-
-    private OutlineCache(@NotNull PsiFile file, long lastUpdatedTimestamp, @NotNull Map<DartCallExpression, TestType> callToTestType) {
-      this.file = file;
-      this.lastUpdatedTimestamp = lastUpdatedTimestamp;
-      this.callToTestType = callToTestType;
-    }
-
-    /**
-     * Determines if this cache is outdated based on:
-     *
-     * <p>
-     * <ul>
-     * <li>The cache is for a different psiFile than {@param psiFile}</li>
-     * <li>The cache has an older timestamp than the last time {@param psiFile} was updated</li>
-     * </ul>
-     *
-     * @return if this cache is outdated.
-     */
-    boolean isOutdated(@NotNull PsiFile psiFile) {
-      if (!Objects.equals(psiFile.getVirtualFile().getPath(), file.getVirtualFile().getPath())) {
-        return true;
-      }
-      return psiFile.getModificationStamp() > lastUpdatedTimestamp;
-    }
   }
 }
