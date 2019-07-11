@@ -32,7 +32,7 @@ public class StdoutJsonParser {
       if (!bufferIsJson && buffer.length() == 2 && buffer.charAt(0) == '[' && c == '{') {
         bufferIsJson = true;
       }
-      else if (bufferIsJson && c == ']' && possiblyTerminatesJson(string, i, buffer)) {
+      else if (bufferIsJson && c == ']' && possiblyTerminatesJson(buffer, string, i)) {
         flushLine();
       }
 
@@ -41,25 +41,27 @@ public class StdoutJsonParser {
       }
     }
 
-    // Eagerly flush if we are not within JSON so regular log text is written
-    // as soon as possible.
+    // Eagerly flush if we are not within JSON so regular log text is written as soon as possible.
     if (!bufferIsJson) {
+      flushLine();
+    }
+    else if (buffer.toString().endsWith("}]")) {
       flushLine();
     }
   }
 
-  private boolean possiblyTerminatesJson(String string, int stringIndex, StringBuilder output) {
+  private boolean possiblyTerminatesJson(StringBuilder output, String input, int inputIndex) {
     // This is an approximate approach to look for json message terminations inside of strings -
     // where the normally terminating eol gets separated from the json.
 
-    if (output.length() < 2 || stringIndex + 1 >= string.length()) {
+    if (output.length() < 2 || inputIndex + 1 >= input.length()) {
       return false;
     }
 
     // Look for '}', ']', and a letter
     final char prev = output.charAt(output.length() - 2);
     final char current = output.charAt(output.length() - 1);
-    final char next = string.charAt(stringIndex + 1);
+    final char next = input.charAt(inputIndex + 1);
 
     return prev == '}' && current == ']' && Character.isAlphabetic(next);
   }
