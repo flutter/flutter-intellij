@@ -134,13 +134,18 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   private void clearListeners() {
     synchronized (outlineListeners) {
-      for (Map.Entry<String, FlutterOutlineListener> entry : outlineListeners.entrySet()) {
-        final String path = entry.getKey();
-        final FlutterOutlineListener listener = outlineListeners.remove(path);
-        if (listener != null) {
-          flutterDartAnalysisService.removeOutlineListener(path, listener);
+      final Iterator<Map.Entry<String, FlutterOutlineListener>> entries = outlineListeners.entrySet().iterator();
+
+      while (entries.hasNext()) {
+        final Map.Entry<String, FlutterOutlineListener> entry = entries.next();
+
+        if (entry.getValue() != null) {
+          flutterDartAnalysisService.removeOutlineListener(entry.getKey(), entry.getValue());
         }
+
+        entries.remove();
       }
+
       outlineListeners.clear();
     }
     synchronized (currentOutlines) {
