@@ -29,6 +29,9 @@ public class FlutterErrorHelper {
   public static String getAnalyticsId(String errorSummary) {
     // "A RenderFlex overflowed by 1183 pixels on the right."
 
+    // TODO(devoncarew): Re-evaluate this normalization after we've implemented a kernel transformer
+    // for Flutter error description objects.
+
     // normalize to lower case
     String normalized = errorSummary.toLowerCase().trim();
 
