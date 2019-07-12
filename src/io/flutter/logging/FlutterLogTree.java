@@ -178,8 +178,7 @@ public class FlutterLogTree extends TreeTable {
     private final FlutterLog log;
     @NotNull
     private final Alarm uiThreadAlarm;
-    @NotNull
-    final Timer updateTimer;
+    @NotNull final Timer updateTimer;
 
     boolean autoScrollToEnd;
     // Cached for hide and restore.

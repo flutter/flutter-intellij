@@ -6,7 +6,6 @@
 
 package io.flutter.logging;
 
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.*;
 import com.intellij.execution.ui.ConsoleView;
@@ -16,6 +15,7 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
+import io.flutter.FlutterInitializer;
 import io.flutter.inspector.DiagnosticLevel;
 import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
@@ -85,7 +85,11 @@ public class FlutterConsoleLogManager {
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
-      // TODO(devoncarew): send analytics for the diagnosticsNode
+      // Send analytics for the diagnosticsNode.
+      final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
+      if (errorId != null) {
+        FlutterInitializer.getAnalytics().sendEvent("flutter-error", errorId);
+      }
 
       if (SHOW_STRUCTURED_ERRORS) {
         queue.add(() -> {
