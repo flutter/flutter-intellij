@@ -676,10 +676,11 @@ public class WidgetIndentsHighlightingPass {
   /**
    * All calls to convert offsets for indent highlighting must go through this
    * method.
-   *
+   * <p>
    * Sometimes we need to use the raw offsets and sometimes we need
    * to use the converted offsets depending on whether the FlutterOutline
    * matches the current document or the expectations given by the
+   *
    * @param node
    * @return
    */
