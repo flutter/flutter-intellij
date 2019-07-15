@@ -10,7 +10,10 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gson.*;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
+import com.intellij.ide.util.PropertiesComponent;
 import com.intellij.openapi.diagnostic.Logger;
+import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
+import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
@@ -46,6 +49,8 @@ public class FlutterConsoleLogManager {
 
   public static final boolean SHOW_STRUCTURED_ERRORS = true;
 
+  private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
+
   private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
     new ConsoleViewContentType("title",
                                new SimpleTextAttributes(
@@ -59,6 +64,20 @@ public class FlutterConsoleLogManager {
 
   final private CompletableFuture<InspectorService.ObjectGroup> objectGroup;
   private static QueueProcessor<Runnable> queue;
+
+  /**
+   * Set our preferred settings for the run console.
+   */
+  public static void initConsolePreferences() {
+    final PropertiesComponent properties = PropertiesComponent.getInstance();
+    if (!properties.getBoolean(consolePreferencesSetKey)) {
+      properties.setValue(consolePreferencesSetKey, true);
+
+      // Set our preferred default settings for console text wrapping.
+      final EditorSettingsExternalizable editorSettings = EditorSettingsExternalizable.getInstance();
+      editorSettings.setUseSoftWraps(true, SoftWrapAppliancePlaces.CONSOLE);
+    }
+  }
 
   @NotNull final VmService service;
   @NotNull final ConsoleView console;
