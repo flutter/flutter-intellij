@@ -81,7 +81,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     new OpenDartObservatoryUrlAction(null, () -> myVmConnected && !getSession().isStopped());
   private VmServiceWrapper myVmServiceWrapper;
   private String myLatestCurrentIsolateId;
-  private VmOpenSourceLocationListener myVmOpenSourceLocationListener;
 
   public DartVmServiceDebugProcess(@NotNull final ExecutionEnvironment executionEnvironment,
                                    @NotNull final XDebugSession session,
@@ -250,17 +249,15 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
       // "flutter run" has given us a websocket; we can assume it's ready immediately, because
       // "flutter run" has already connected to it.
       final VmService vmService;
-      final VmOpenSourceLocationListener vmOpenSourceLocationListener;
       try {
         vmService = VmService.connect(url);
-        vmOpenSourceLocationListener = VmOpenSourceLocationListener.connect(url);
       }
       catch (IOException | RuntimeException e) {
         onConnectFailed("Failed to connect to the VM observatory service at: " + url + "\n"
                         + e.toString() + "\n" + formatStackTraces(e));
         return;
       }
-      onConnectSucceeded(vmService, vmOpenSourceLocationListener);
+      onConnectSucceeded(vmService);
     });
   }
 
@@ -495,13 +492,11 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     getSession().stop();
   }
 
-  private void onConnectSucceeded(VmService vmService,
-                                  VmOpenSourceLocationListener vmOpenSourceLocationListener) {
+  private void onConnectSucceeded(VmService vmService) {
     final DartVmServiceListener vmServiceListener =
       new DartVmServiceListener(this, (DartVmServiceBreakpointHandler)myBreakpointHandlers[0]);
     final DartVmServiceBreakpointHandler breakpointHandler = (DartVmServiceBreakpointHandler)myBreakpointHandlers[0];
 
-    myVmOpenSourceLocationListener = vmOpenSourceLocationListener;
     myVmServiceWrapper = new VmServiceWrapper(this, vmService, vmServiceListener, myIsolatesInfo, breakpointHandler);
 
     final ScriptProvider provider =
@@ -556,8 +551,6 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     }
 
     vmService.addVmServiceListener(vmServiceListener);
-    myVmOpenSourceLocationListener.addListener(
-      this::onOpenSourceLocationRequest);
 
     myVmConnected = true;
     getSession().rebuildViews();
@@ -571,6 +564,7 @@ public class DartVmServiceDebugProcess extends XDebugProcess {
     return new ScriptRef(elt);
   }
 
+  // TODO(devoncarew): Re-implement this in terms of the generated vm service protocol library.
   private void onOpenSourceLocationRequest(@NotNull String isolateId, @NotNull String scriptId, int tokenPos) {
     myVmServiceWrapper.getObject(isolateId, scriptId, new GetObjectConsumer() {
       @Override
