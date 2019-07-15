@@ -22,6 +22,7 @@ import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
@@ -43,7 +44,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // widget indent guide lines after editing code containing guides.
   private static final boolean SIMULATE_SLOW_ANALYSIS_UPDATES = false;
 
-  private Project project;
+  final private Project project;
 
   private final OpenEditorOutlineService editorOutlineService;
   private final Listener settingsListener;
@@ -84,19 +85,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
       @Override
       public void onOutlineChanged(String path) {
-        ApplicationManager.getApplication().invokeLater(() -> {
-          // Find visible editors for the path. If the file is not actually
-          // being displayed on screen, there is no need to go through the
-          // work of updating the outline.
-          if (project.isDisposed()) {
-            return;
-          }
-          for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
-            if (!editor.isDisposed() && Objects.equals(editor.getVirtualFile().getCanonicalPath(), path)) {
-              runWidgetIndentsPass(editor, editorOutlineService.get(path));
-            }
-          }
-        });
+        updateEditors(path);
       }
     });
   }
@@ -104,12 +93,46 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private void syncSettings(FlutterSettings settings) {
     if (isShowBuildMethodGuides != settings.isShowBuildMethodGuides()) {
       isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
-      // QUESTION: Do we need this?
-      // updateActiveEditors();
-      // alternative: take the for (EditorEx : getActiveDartEditors()) loop above and update every editor.
+      updateAllEditors();
 
     }
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
+  }
+
+  // Updates the indent guides in a specific editor.
+  private void updateEditors(@NotNull final String path) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      // Find visible editors for the path. If the file is not actually
+      // being displayed on screen, there is no need to go through the
+      // work of updating the outline.
+      if (project.isDisposed()) {
+        return;
+      }
+      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+        final String filePath = editor.getVirtualFile().getCanonicalPath();
+        if (!editor.isDisposed() && Objects.equals(filePath, path)) {
+          runWidgetIndentsPass(editor, editorOutlineService.get(path));
+        }
+      }
+    });
+  }
+
+  // Updates all editors instead of just a specific editor.
+  private void updateAllEditors() {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      // Find visible editors for the path. If the file is not actually
+      // being displayed on screen, there is no need to go through the
+      // work of updating the outline.
+      if (project.isDisposed()) {
+        return;
+      }
+      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+        if (!editor.isDisposed()) {
+          final String filePath = editor.getVirtualFile().getCanonicalPath();
+          runWidgetIndentsPass(editor, editorOutlineService.get(filePath));
+        }
+      }
+    });
   }
 
   private void updateEditorSettings(EditorEx editor) {
@@ -168,7 +191,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       return;
     }
 
-    // QUESTION: why doesn't this check against isShowBuildMethodGuides ?
+    if (!isShowBuildMethodGuides) {
+      return;
+    }
 
     final VirtualFile file = editor.getVirtualFile();
     if (!FlutterUtils.couldContainWidgets(file)) {

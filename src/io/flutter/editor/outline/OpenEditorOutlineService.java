@@ -175,7 +175,7 @@ public class OpenEditorOutlineService implements Disposable {
     listeners.remove(listener);
   }
 
-  @Nullable
+  @NotNull
   public FlutterOutline get(String path) {
     return pathToOutline.get(path);
   }
@@ -210,23 +210,5 @@ public class OpenEditorOutlineService implements Disposable {
      * Called on a change in the outline of file {@param path}.
      */
     void onOutlineChanged(String path);
-  }
-
-
-  /**
-   * The cached {@link FlutterOutline} for some file.
-   *
-   * <p>
-   * Provides useful metadata for test identification.
-   */
-  @Immutable
-  public static class OutlineCache {
-    final String path;
-    final FlutterOutline outline;
-
-    public OutlineCache(String path, FlutterOutline outline) {
-      this.path = path;
-      this.outline = outline;
-    }
   }
 }
