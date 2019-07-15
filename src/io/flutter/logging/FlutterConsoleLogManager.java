@@ -49,6 +49,8 @@ public class FlutterConsoleLogManager {
 
   public static final boolean SHOW_STRUCTURED_ERRORS = true;
 
+  private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
+
   private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
     new ConsoleViewContentType("title",
                                new SimpleTextAttributes(
@@ -67,11 +69,9 @@ public class FlutterConsoleLogManager {
    * Set our preferred settings for the run console.
    */
   public static void initConsolePreferences() {
-    final String consolePreferencesSet = "io.flutter.console.preferencesSet";
-
     final PropertiesComponent properties = PropertiesComponent.getInstance();
-    if (!properties.getBoolean(consolePreferencesSet)) {
-      properties.setValue(consolePreferencesSet, true);
+    if (!properties.getBoolean(consolePreferencesSetKey)) {
+      properties.setValue(consolePreferencesSetKey, true);
 
       // Set our preferred default settings for console text wrapping.
       final EditorSettingsExternalizable editorSettings = EditorSettingsExternalizable.getInstance();
