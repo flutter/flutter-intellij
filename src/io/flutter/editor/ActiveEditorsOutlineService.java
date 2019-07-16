@@ -19,6 +19,7 @@ import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -173,13 +174,14 @@ public class ActiveEditorsOutlineService implements Disposable {
     listeners.remove(listener);
   }
 
-  @NotNull
+  @Nullable
   public FlutterOutline get(String path) {
     return pathToOutline.get(path);
   }
 
+  @Nullable
   public FlutterOutline get(VirtualFile file) {
-    return pathToOutline.get(file.getCanonicalPath());
+    return get(file.getCanonicalPath());
   }
 
   @Override

@@ -182,14 +182,16 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     return fliteredIndentsHighlightingPass;
   }
 
-  void runWidgetIndentsPass(EditorEx editor, @NotNull FlutterOutline outline) {
+  void runWidgetIndentsPass(EditorEx editor, FlutterOutline outline) {
     if (editor.isDisposed() || project.isDisposed()) {
       // The editor might have been disposed before we got a new FlutterOutline.
       // It is safe to ignore it as it isn't relevant.
       return;
     }
 
-    if (!isShowBuildMethodGuides) {
+    if (!isShowBuildMethodGuides || outline == null) {
+      // If build method guides are disabled or there is no outline to use in this pass,
+      // then do nothing.
       return;
     }
 
@@ -228,7 +230,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private class Listener implements FlutterSettings.Listener {
     @Override
     public void settingsChanged() {
-      if (project == null || project.isDisposed()) {
+      if (project.isDisposed()) {
         return;
       }
       final FlutterSettings settings = FlutterSettings.getInstance();
