@@ -5,6 +5,7 @@
  */
 package io.flutter.dart;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.google.dart.server.AnalysisServerListenerAdapter;
 import com.google.dart.server.ResponseListener;
@@ -36,14 +37,16 @@ public class FlutterDartAnalysisServer {
    */
   private final Map<String, List<String>> subscriptions = new HashMap<>();
 
-  private final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = new HashMap<>();
+  @VisibleForTesting
+  protected final Map<String, List<FlutterOutlineListener>> fileOutlineListeners = new HashMap<>();
 
   @NotNull
   public static FlutterDartAnalysisServer getInstance(@NotNull final Project project) {
     return ServiceManager.getService(project, FlutterDartAnalysisServer.class);
   }
 
-  private FlutterDartAnalysisServer(@NotNull Project project) {
+  @VisibleForTesting
+  public FlutterDartAnalysisServer(@NotNull Project project) {
     analysisService = DartPlugin.getInstance().getAnalysisService(project);
     analysisService.addResponseListener(new CompatibleResponseListener());
     analysisService.addAnalysisServerListener(new AnalysisServerListenerAdapter() {
