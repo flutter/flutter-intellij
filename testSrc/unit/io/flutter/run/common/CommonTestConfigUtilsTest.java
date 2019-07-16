@@ -7,8 +7,13 @@ package io.flutter.run.common;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.AbstractDartElementTest;
+import io.flutter.testing.ProjectFixture;
+import io.flutter.testing.Testing;
 import org.jetbrains.annotations.NotNull;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -18,7 +23,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Verifies that named test targets can be identified correctly as part of a group or as an individual test target.
  */
-public class TestTypeTest extends AbstractDartElementTest {
+public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
 
   private static final String fileContents = "void main() {\n" +
                                              "  group('group 0', () {\n" +
@@ -35,13 +40,24 @@ public class TestTypeTest extends AbstractDartElementTest {
                                              "  test('test 1', () {});\n" +
                                              "  testingWidgets('does not test widgets');\n" +
                                              "}";
-/*
+  CommonTestConfigUtils utils = new CommonTestConfigUtils() {
+    @Override
+    public TestType asTestCall(@NotNull PsiElement element) {
+      return null;
+    }
+  };
+
+  @Before
+  public void setUp() throws Exception {
+    Testing.runInWriteAction(() -> DartSdkLibUtil.enableDartSdk(fixture.getModule()));
+  }
+
   @Test
   public void shouldMatchGroup() throws Exception {
     run(() -> {
       final PsiElement group0 = getGroupCall();
-      assertThat(TestType.GROUP.findCorrespondingCall(group0), not(equalTo(null)));
-      assertThat(TestType.SINGLE.findCorrespondingCall(group0), equalTo(null));
+      assertThat(utils.asTestCall(group0), equalTo(TestType.GROUP));
+      assertThat(utils.findTestName(group0), equalTo("group 0"));
     });
   }
 
@@ -50,8 +66,8 @@ public class TestTypeTest extends AbstractDartElementTest {
   public void shouldMatchTest0() throws Exception {
     run(() -> {
       final PsiElement test0 = getTestCall("test", "test 0");
-      assertThat(TestType.GROUP.findCorrespondingCall(test0), not(equalTo(null)));
-      assertThat(TestType.SINGLE.findCorrespondingCall(test0), not(equalTo(null)));
+      assertThat(utils.asTestCall(test0), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(test0), equalTo("group 0"));
     });
   }
 
@@ -59,8 +75,8 @@ public class TestTypeTest extends AbstractDartElementTest {
   public void shouldMatchTestWidgets0() throws Exception {
     run(() -> {
       final PsiElement testWidgets0 = getTestCall("testWidgets", "test widgets 0");
-      assertThat(TestType.GROUP.findCorrespondingCall(testWidgets0), not(equalTo(null)));
-      assertThat(TestType.SINGLE.findCorrespondingCall(testWidgets0), not(equalTo(null)));
+      assertThat(utils.asTestCall(testWidgets0), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(testWidgets0), equalTo("test widgets 0"));
     });
   }
 
@@ -68,8 +84,8 @@ public class TestTypeTest extends AbstractDartElementTest {
   public void shouldMatchTestFooBarWidgets0() throws Exception {
     run(() -> {
       final PsiElement testFooBarWidgets0 = getTestCall("testFooBarWidgets", "test foobar widgets 0");
-      assertThat(TestType.GROUP.findCorrespondingCall(testFooBarWidgets0), not(equalTo(null)));
-      assertThat(TestType.SINGLE.findCorrespondingCall(testFooBarWidgets0), not(equalTo(null)));
+      assertThat(utils.asTestCall(testFooBarWidgets0), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(testFooBarWidgets0), equalTo("test foobar widgets 0"));
     });
   }
 
@@ -77,8 +93,8 @@ public class TestTypeTest extends AbstractDartElementTest {
   public void shouldMatchTest1() throws Exception {
     run(() -> {
       final PsiElement test1 = getTestCall("test", "test 1");
-      assertThat(TestType.GROUP.findCorrespondingCall(test1), equalTo(null));
-      assertThat(TestType.SINGLE.findCorrespondingCall(test1), not(equalTo(null)));
+      assertThat(utils.asTestCall(test1), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(test1), equalTo("test 1"));
     });
   }
 
@@ -86,8 +102,8 @@ public class TestTypeTest extends AbstractDartElementTest {
   public void shouldNotMatchTestingWidgets() throws Exception {
     run(() -> {
       final PsiElement testingWidgets = getTestCall("testingWidgets", "does not test widgets");
-      assertThat(TestType.GROUP.findCorrespondingCall(testingWidgets), equalTo(null));
-      assertThat(TestType.SINGLE.findCorrespondingCall(testingWidgets), equalTo(null));
+      assertThat(utils.asTestCall(testingWidgets), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(testingWidgets), equalTo("test 1"));
     });
   }
 
@@ -100,7 +116,6 @@ public class TestTypeTest extends AbstractDartElementTest {
 
     return groupIdentifier;
   }
-  */
 
   /**
    * Gets a specific test call.
