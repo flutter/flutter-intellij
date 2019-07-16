@@ -992,7 +992,7 @@
       <implementation-class>io.flutter.editor.WidgetIndentsHighlightingPassFactory</implementation-class>
     </component>
     <component>
-      <implementation-class>io.flutter.editor.outline.OpenEditorOutlineService</implementation-class>
+      <implementation-class>io.flutter.editor.ActiveEditorsOutlineService</implementation-class>
     </component>
   </project-components>
 

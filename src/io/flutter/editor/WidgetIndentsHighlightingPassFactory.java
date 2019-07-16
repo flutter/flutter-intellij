@@ -22,12 +22,10 @@ import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.EditorEx;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
-import io.flutter.editor.outline.OpenEditorOutlineService;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
@@ -46,7 +44,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   final private Project project;
 
-  private final OpenEditorOutlineService editorOutlineService;
+  private final ActiveEditorsOutlineService editorOutlineService;
   private final Listener settingsListener;
 
   // Current configuration settings used to display Widget Indent Guides cached
@@ -56,7 +54,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
     this.project = project;
-    this.editorOutlineService = OpenEditorOutlineService.getInstance(project);
+    this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
     this.settingsListener = new Listener();
 
     TextEditorHighlightingPassRegistrar.getInstance(project)
@@ -78,7 +76,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
     }, this);
 
-    editorOutlineService.addListener(new OpenEditorOutlineService.Listener() {
+    editorOutlineService.addListener(new ActiveEditorsOutlineService.Listener() {
       @Override
       public void onEditorsChanged() {
       }

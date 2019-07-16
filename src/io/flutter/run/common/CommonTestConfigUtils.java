@@ -13,14 +13,13 @@ import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
-import io.flutter.editor.outline.OpenEditorOutlineService;
+import io.flutter.editor.ActiveEditorsOutlineService;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.dartlang.analysis.server.protocol.Outline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.concurrent.Immutable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -53,7 +52,7 @@ public abstract class CommonTestConfigUtils {
    */
   protected Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
-    final FlutterOutline outline = OpenEditorOutlineService.getInstance(project).get(file.getVirtualFile().getPath());
+    final FlutterOutline outline = ActiveEditorsOutlineService.getInstance(project).get(file.getVirtualFile());
     final Map<DartCallExpression, TestType> callToTestType = new HashMap<>();
     if (outline != null) {
       visit(outline, callToTestType, file);
@@ -98,11 +97,7 @@ public abstract class CommonTestConfigUtils {
   protected TestType findNamedTestCall(@NotNull PsiElement element) {
     if (element instanceof DartCallExpression) {
       final DartCallExpression call = (DartCallExpression)element;
-      final Map<DartCallExpression, TestType> callToTestType = getTestsFromOutline(element.getContainingFile());
-
-      if (callToTestType.containsKey(call)) {
-        return callToTestType.get(call);
-      }
+      return getTestsFromOutline(element.getContainingFile()).get(call);
     }
     return null;
   }
@@ -114,9 +109,7 @@ public abstract class CommonTestConfigUtils {
   public String findTestName(@Nullable PsiElement elt) {
     if (elt == null) return null;
 
-    final Map<DartCallExpression, TestType> callToTestType = getTestsFromOutline(elt.getContainingFile());
-
-    final DartCallExpression call = findEnclosingTestCall(elt, callToTestType);
+    final DartCallExpression call = findEnclosingTestCall(elt, getTestsFromOutline(elt.getContainingFile()));
     if (call == null) return null;
 
     final DartStringLiteralExpression lit = DartSyntax.getArgument(call, 0, DartStringLiteralExpression.class);

@@ -3,7 +3,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-package io.flutter.editor.outline;
+package io.flutter.editor;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.Disposable;
@@ -20,19 +20,17 @@ import io.flutter.dart.FlutterOutlineListener;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
-import javax.annotation.concurrent.Immutable;
 import java.util.*;
 
 /**
- * Service that watches the Flutter Outlines for all open Dart files.
+ * Service that watches for {@link FlutterOutline}s for all active editors containing Dart files.
  *
  * <p>
  * This service works by listening to the {@link Project}'s MessageBus for {@link FileEditor}s that are
- * added or removed. Using the set of currently active editor windows ({@link EditorEx}s), this service
+ * added or removed. Using the set of currently active {@link EditorEx} editor windows, this service
  * then subscribes to the {@link FlutterDartAnalysisServer} for updates to the {@link FlutterOutline} of each file.
  */
-public class OpenEditorOutlineService implements Disposable {
+public class ActiveEditorsOutlineService implements Disposable {
   private final Project project;
   private final FlutterDartAnalysisServer analysisServer;
 
@@ -51,16 +49,16 @@ public class OpenEditorOutlineService implements Disposable {
   private final Set<Listener> listeners = new HashSet<>();
 
   @NotNull
-  public static OpenEditorOutlineService getInstance(@NotNull final Project project) {
-    return ServiceManager.getService(project, OpenEditorOutlineService.class);
+  public static ActiveEditorsOutlineService getInstance(@NotNull final Project project) {
+    return ServiceManager.getService(project, ActiveEditorsOutlineService.class);
   }
 
-  public OpenEditorOutlineService(Project project) {
+  public ActiveEditorsOutlineService(Project project) {
     this(project, FlutterDartAnalysisServer.getInstance(project));
   }
 
   @VisibleForTesting
-  OpenEditorOutlineService(Project project, FlutterDartAnalysisServer analysisServer) {
+  ActiveEditorsOutlineService(Project project, FlutterDartAnalysisServer analysisServer) {
     this.project = project;
     this.analysisServer = analysisServer;
     updateActiveEditors();
@@ -178,6 +176,10 @@ public class OpenEditorOutlineService implements Disposable {
   @NotNull
   public FlutterOutline get(String path) {
     return pathToOutline.get(path);
+  }
+
+  public FlutterOutline get(VirtualFile file) {
+    return pathToOutline.get(file.getCanonicalPath());
   }
 
   @Override
