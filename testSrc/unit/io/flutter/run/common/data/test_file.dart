@@ -1,0 +1,42 @@
+/*
+ * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:meta/meta.dart';
+
+/// Test data for the CommonTestConfigUtils test.
+/// The outline for this file is pretty-printed in flutter_outline.txt.
+///
+/// To update the outline, copy this file into a debugging IntelliJ instance,
+/// then set a breakpoint in the ActiveEditorsOutlineService's OutlineListener
+/// call, then look at the Flutter Outline for this file.
+void main() {
+  group('group 0', () {
+    test('test 0', () {
+      print('test contents');
+    });
+    testWidgets('test widgets 0', (tester) async {
+      print('test widgets contents');
+    });
+    nonTest('not a test');
+  });
+  test('test 1', () {});
+  nonGroup('Not a group', () {
+    g('Custom group', () {
+      t('A custom test');
+    });
+  });
+}
+
+@isTestGroup
+void g(String name, void Function() callback) {}
+
+@isTest
+void t(String name) {}
+
+void nonGroup(String name, void Function() callback) {}
+
+void nonTest(String name) {}

@@ -5,16 +5,31 @@
  */
 package io.flutter.run.common;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonReader;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.AbstractDartElementTest;
+import io.flutter.editor.ActiveEditorsOutlineService;
 import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
+import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.nio.Buffer;
+import java.nio.CharBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsNot.not;
@@ -25,30 +40,40 @@ import static org.junit.Assert.assertThat;
  */
 public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
 
-  private static final String fileContents = "void main() {\n" +
-                                             "  group('group 0', () {\n" +
-                                             "    test('test 0', () {\n" +
-                                             "      print('test contents');\n" +
-                                             "    });\n" +
-                                             "    testWidgets('test widgets 0', (tester) {\n" +
-                                             "      print('test widgets contents');\n" +
-                                             "    });\n" +
-                                             "    testFooBarWidgets('test foobar widgets 0', (testers) {\n" +
-                                             "      print('test foobar widgets contents');\n" +
-                                             "    });\n" +
-                                             "  });\n" +
-                                             "  test('test 1', () {});\n" +
-                                             "  testingWidgets('does not test widgets');\n" +
-                                             "}";
+  /**
+   * The outline of data/test_file.dart, read from data/flutter_outline.dart.
+   */
+  private FlutterOutline fileOutline;
+
+  /**
+   * The contents of data/test_file.dart.
+   */
+  private String fileContents;
+
   CommonTestConfigUtils utils = new CommonTestConfigUtils() {
     @Override
     public TestType asTestCall(@NotNull PsiElement element) {
       return null;
     }
+
+    @Override
+    protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
+      return new ActiveEditorsOutlineService(project) {
+        @Override
+        public @Nullable FlutterOutline get(String path) {
+          return fileOutline;
+        }
+      };
+    }
   };
 
   @Before
   public void setUp() throws Exception {
+    fileContents = new String(Files.readAllBytes(Paths.get("data/test_file.dart")));
+
+    final String outlineContents = new String(Files.readAllBytes(Paths.get("data/flutter_outline.dart")));
+    fileOutline = FlutterOutline.fromJson(new JsonParser().parse(outlineContents).getAsJsonObject());
+
     Testing.runInWriteAction(() -> DartSdkLibUtil.enableDartSdk(fixture.getModule()));
   }
 

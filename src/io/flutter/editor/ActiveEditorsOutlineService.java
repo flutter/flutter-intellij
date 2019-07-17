@@ -124,19 +124,8 @@ public class ActiveEditorsOutlineService implements Disposable {
       // Register new outline listeners.
       for (final String path : newPaths) {
         if (outlineListeners.containsKey(path)) continue;
-        final FlutterOutlineListener listener =
-          (filePath, outline, instrumentedCode) -> {
-            synchronized (outlineListeners) {
-              if (!outlineListeners.containsKey(path)) {
-                // The outline listener subscription was already cancelled.
-                return;
-              }
-            }
-            synchronized (pathToOutline) {
-              pathToOutline.put(path, outline);
-            }
-            notifyOutlineUpdated(path);
-          };
+        final FlutterOutlineListener listener = new OutlineListener();
+
         outlineListeners.put(path, listener);
         analysisServer.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
       }
@@ -214,5 +203,31 @@ public class ActiveEditorsOutlineService implements Disposable {
      * Called on a change in the outline of file {@param path}.
      */
     void onOutlineChanged(String path);
+  }
+
+  /**
+   * Listener called by the {@link FlutterDartAnalysisServer} when an open file's outline changes.
+   *
+   * <p>
+   * This class caches the updated outline inside {@code pathToOutline} for the file.
+   */
+  private class OutlineListener
+    implements FlutterOutlineListener {
+
+    @Override
+    public void outlineUpdated(@NotNull String path,
+                               @NotNull FlutterOutline outline,
+                               @Nullable String instrumentedCode) {
+      synchronized (outlineListeners) {
+        if (!outlineListeners.containsKey(path)) {
+          // The outline listener subscription was already cancelled.
+          return;
+        }
+      }
+      synchronized (pathToOutline) {
+        pathToOutline.put(path, outline);
+      }
+      notifyOutlineUpdated(path);
+    }
   }
 }
