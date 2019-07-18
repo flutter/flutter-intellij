@@ -105,10 +105,13 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   @Test
   public void shouldNotMatchNonTest() throws Exception {
     run(() -> {
-      // This test is finding the enclosing group.
       final PsiElement nonTest = getTestCallWithName("nonTest", "not a test");
+      // The test call site of nonTest is not a runnable test, so asTestCall should return null.
       assertThat(utils.asTestCall(nonTest), equalTo(null));
-      assertThat(utils.findTestName(nonTest), equalTo(null));
+      // Looking for the test that contains nonTest will find the test name of the enclosing group.
+      // findTestName is supposed to get the name of the enclosing runnable test, so we allow it to look farther up the tree to find
+      // the runnable test group.
+      assertThat(utils.findTestName(nonTest), equalTo("group 0"));
     });
   }
 

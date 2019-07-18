@@ -11,12 +11,12 @@ import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
+import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
-import org.dartlang.analysis.server.protocol.Outline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,27 +24,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
+import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_TEST;
+
 /**
  * Common utilities for processing Flutter tests.
  * <p>
  * This class is useful for identifying the {@link TestType} of different Dart objects
  */
 public abstract class CommonTestConfigUtils {
-  /**
-   * How the Dart Analysis Server identifies runnable tests in the {@link Outline} it generates.
-   */
-  private static final String UNIT_TEST_TEST = "UNIT_TEST_TEST";
-
-  /**
-   * How the Dart Analysis Server identifies runnable test groups in the {@link Outline} it generates.
-   */
-  private static final String UNIT_TEST_GROUP = "UNIT_TEST_GROUP";
 
   public static String convertHttpServiceProtocolToWs(String url) {
     return StringUtil.trimTrailing(
       url.replaceFirst("http:", "ws:"), '/') + "/ws";
   }
 
+  /**
+   * Determines if {@param element} is a test call and returns its type.
+   *
+   * <p>
+   * A test call is one of the following:
+   * <ul>
+   *   <li>{@link TestType.SINGLE} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_TEST}</li>
+   *   <li>{@link TestType.GROUP} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_GROUP}</li>
+   *   <li>{@link TestType.MAIN} if the call is a {@link DartFunctionDeclarationWithBodyOrNative} named "main" that includes test calls.</li>
+   * </ul>
+   *
+   * @return a {@link TestType} if {@param element} corresponds to a test call site, or null if {@param element} is not a test call site.
+   */
   public TestType asTestCall(@NotNull PsiElement element) {
     // Named tests.
     final TestType namedTestCall = findNamedTestCall(element);
