@@ -24,9 +24,9 @@ void main() {
     nonTest('not a test');
   });
   test('test 1', () {});
-  nonGroup('Not a group', () {
-    g('Custom group', () {
-      t('A custom test');
+  nonGroup('not a group', () {
+    g('custom group', () {
+      t('custom test');
     });
   });
 }

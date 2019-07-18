@@ -45,7 +45,15 @@ public abstract class CommonTestConfigUtils {
       url.replaceFirst("http:", "ws:"), '/') + "/ws";
   }
 
-  public abstract TestType asTestCall(@NotNull PsiElement element);
+  public TestType asTestCall(@NotNull PsiElement element) {
+    // Named tests.
+    final TestType namedTestCall = findNamedTestCall(element);
+    if (namedTestCall != null) return namedTestCall;
+
+    // Main.
+    if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
+    return null;
+  }
 
   /**
    * Gets the elements from the outline that are runnable tests.
@@ -129,6 +137,9 @@ public abstract class CommonTestConfigUtils {
         if (callToTestType.containsKey(call)) {
           return call;
         }
+        // If we found nothing, move up to the element's parent before finding the enclosing function call.
+        // This avoids an infinite loop found during testing.
+        element = element.getParent();
       }
       element = DartSyntax.findClosestEnclosingFunctionCall(element);
     }

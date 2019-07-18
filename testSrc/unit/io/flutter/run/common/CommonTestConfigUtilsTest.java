@@ -5,29 +5,22 @@
  */
 package io.flutter.run.common;
 
-import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonReader;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import io.flutter.AbstractDartElementTest;
+import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
-import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.Testing;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.nio.Buffer;
-import java.nio.CharBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -52,11 +45,6 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
 
   CommonTestConfigUtils utils = new CommonTestConfigUtils() {
     @Override
-    public TestType asTestCall(@NotNull PsiElement element) {
-      return null;
-    }
-
-    @Override
     protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
       return new ActiveEditorsOutlineService(project) {
         @Override
@@ -69,9 +57,9 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
 
   @Before
   public void setUp() throws Exception {
-    fileContents = new String(Files.readAllBytes(Paths.get("data/test_file.dart")));
+    fileContents = new String(Files.readAllBytes(Paths.get("testSrc/unit/io/flutter/run/common/data/test_file.dart")));
 
-    final String outlineContents = new String(Files.readAllBytes(Paths.get("data/flutter_outline.dart")));
+    final String outlineContents = new String(Files.readAllBytes(Paths.get("testSrc/unit/io/flutter/run/common/data/flutter_outline.txt")));
     fileOutline = FlutterOutline.fromJson(new JsonParser().parse(outlineContents).getAsJsonObject());
 
     Testing.runInWriteAction(() -> DartSdkLibUtil.enableDartSdk(fixture.getModule()));
@@ -80,7 +68,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   @Test
   public void shouldMatchGroup() throws Exception {
     run(() -> {
-      final PsiElement group0 = getGroupCall();
+      final PsiElement group0 = getTestCallWithName("group", "group 0");
       assertThat(utils.asTestCall(group0), equalTo(TestType.GROUP));
       assertThat(utils.findTestName(group0), equalTo("group 0"));
     });
@@ -90,72 +78,82 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   @Test
   public void shouldMatchTest0() throws Exception {
     run(() -> {
-      final PsiElement test0 = getTestCall("test", "test 0");
+      final PsiElement test0 = getTestCallWithName("test", "test 0");
       assertThat(utils.asTestCall(test0), equalTo(TestType.SINGLE));
-      assertThat(utils.findTestName(test0), equalTo("group 0"));
+      assertThat(utils.findTestName(test0), equalTo("test 0"));
     });
   }
 
   @Test
   public void shouldMatchTestWidgets0() throws Exception {
     run(() -> {
-      final PsiElement testWidgets0 = getTestCall("testWidgets", "test widgets 0");
+      final PsiElement testWidgets0 = getTestCallWithName("testWidgets", "test widgets 0");
       assertThat(utils.asTestCall(testWidgets0), equalTo(TestType.SINGLE));
       assertThat(utils.findTestName(testWidgets0), equalTo("test widgets 0"));
     });
   }
 
   @Test
-  public void shouldMatchTestFooBarWidgets0() throws Exception {
-    run(() -> {
-      final PsiElement testFooBarWidgets0 = getTestCall("testFooBarWidgets", "test foobar widgets 0");
-      assertThat(utils.asTestCall(testFooBarWidgets0), equalTo(TestType.SINGLE));
-      assertThat(utils.findTestName(testFooBarWidgets0), equalTo("test foobar widgets 0"));
-    });
-  }
-
-  @Test
   public void shouldMatchTest1() throws Exception {
     run(() -> {
-      final PsiElement test1 = getTestCall("test", "test 1");
+      final PsiElement test1 = getTestCallWithName("test", "test 1");
       assertThat(utils.asTestCall(test1), equalTo(TestType.SINGLE));
       assertThat(utils.findTestName(test1), equalTo("test 1"));
     });
   }
 
   @Test
-  public void shouldNotMatchTestingWidgets() throws Exception {
+  public void shouldNotMatchNonTest() throws Exception {
     run(() -> {
-      final PsiElement testingWidgets = getTestCall("testingWidgets", "does not test widgets");
-      assertThat(utils.asTestCall(testingWidgets), equalTo(TestType.SINGLE));
-      assertThat(utils.findTestName(testingWidgets), equalTo("test 1"));
+      // This test is finding the enclosing group.
+      final PsiElement nonTest = getTestCallWithName("nonTest", "not a test");
+      assertThat(utils.asTestCall(nonTest), equalTo(null));
+      assertThat(utils.findTestName(nonTest), equalTo(null));
     });
   }
 
-  @NotNull
-  private PsiElement getGroupCall() {
-    // Set up fake source code.
-    final PsiElement groupIdentifier = setUpDartElement(
-      fileContents, "group 0", LeafPsiElement.class);
-    assertThat(groupIdentifier, not(equalTo(null)));
+  @Test
+  public void shouldNotMatchNonGroup() throws Exception {
+    run(() -> {
+      final PsiElement nonGroup = getTestCallWithName("nonGroup", "not a group");
+      assertThat(utils.asTestCall(nonGroup), equalTo(null));
+      assertThat(utils.findTestName(nonGroup), equalTo(null));
+    });
+  }
 
-    return groupIdentifier;
+  @Test
+  public void shouldMatchCustomGroup() throws Exception {
+    run(() -> {
+      final PsiElement customGroup = getTestCallWithName("g", "custom group");
+      assertThat(utils.asTestCall(customGroup), equalTo(TestType.GROUP));
+      assertThat(utils.findTestName(customGroup), equalTo("custom group"));
+    });
+  }
+
+  @Test
+  public void shouldMatchCustomTest() throws Exception {
+    run(() -> {
+      final PsiElement customTest = getTestCallWithName("t", "custom test");
+      assertThat(utils.asTestCall(customTest), equalTo(TestType.SINGLE));
+      assertThat(utils.findTestName(customTest), equalTo("custom test"));
+    });
   }
 
   /**
-   * Gets a specific test call.
+   * Gets a specific test or test group call.
    *
    * @param functionName The name of the function being called, eg test() or testWidgets()
    * @param testName     The name of the test desired, such as 'test 0' or 'test widgets 0'
    * @return
    */
   @NotNull
-  private PsiElement getTestCall(String functionName, String testName) {
-    // Set up fake source code.
-    final PsiElement testIdentifier = setUpDartElement(
+  private DartCallExpression getTestCallWithName(String functionName, String testName) {
+    final PsiElement testIdentifier = setUpDartElement("lib/main.dart",
       fileContents, testName, LeafPsiElement.class);
     assertThat(testIdentifier, not(equalTo(null)));
 
-    return testIdentifier;
+    final DartCallExpression result = DartSyntax.findClosestEnclosingFunctionCall(testIdentifier);
+    assertThat(result, not(equalTo(null)));
+    return result;
   }
 }
