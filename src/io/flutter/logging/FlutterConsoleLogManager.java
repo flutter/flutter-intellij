@@ -15,7 +15,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import io.flutter.FlutterInitializer;
@@ -27,12 +26,10 @@ import io.flutter.run.daemon.FlutterApp;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
-import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -51,12 +48,7 @@ public class FlutterConsoleLogManager {
 
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
 
-  private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
-    new ConsoleViewContentType("title",
-                               new SimpleTextAttributes(
-                                 SimpleTextAttributes.STYLE_PLAIN,
-                                 new JBColor(SimpleTextAttributes.DARK_TEXT.getFgColor(), new Color(138, 138, 0)))
-                                 .toTextAttributes());
+  private static final ConsoleViewContentType TITLE_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
   private static final ConsoleViewContentType NORMAL_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
   private static final ConsoleViewContentType SUBTLE_CONTENT_TYPE =
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
@@ -126,8 +118,8 @@ public class FlutterConsoleLogManager {
     }
   }
 
-  private static final String errorSeparator =
-    "◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤";
+  private static final int errorSeparatorLength = 100;
+  private static final String errorSeparatorChar = "═";
 
   /**
    * Pretty print the error using the available console syling attributes.
@@ -135,11 +127,15 @@ public class FlutterConsoleLogManager {
   private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    final int targetLength = errorSeparator.length();
-    final String prefix = StringUtil.repeat("◢◤", (targetLength - description.length()) / 4);
-    final String suffix = StringUtil.repeat("◢◤", ((targetLength - (description.length() + prefix.length())) / 2));
+    // ╠═ ... ═╣, or, ╔═ ... ═╗, or, ═╣ ... ╠═, or, ═╡ ... ╞═
+    // TODO(devoncarew): Potentially change the error separator chars based on the error type (overflow, ...).
+    String titleLine = "╠═";
+    titleLine += StringUtil.repeat(errorSeparatorChar, Math.max(errorSeparatorLength - 4 - description.length(), 0) / 3);
+    titleLine += description;
+    titleLine += StringUtil.repeat(errorSeparatorChar, Math.max(errorSeparatorLength - 2 - titleLine.length(), 0));
+    titleLine += "═╣";
 
-    console.print("\n" + prefix + description + suffix + "\n", TITLE_CONTENT_TYPE);
+    console.print("\n" + titleLine + "\n", TITLE_CONTENT_TYPE);
 
     DiagnosticLevel lastLevel = null;
 
@@ -158,7 +154,7 @@ public class FlutterConsoleLogManager {
       printDiagnosticsNodeProperty(console, "", property, null, false);
     }
 
-    console.print(errorSeparator + "\n\n", TITLE_CONTENT_TYPE);
+    console.print(StringUtil.repeat(errorSeparatorChar, titleLine.length()) + "\n\n", TITLE_CONTENT_TYPE);
   }
 
   private void printDiagnosticsNodeProperty(ConsoleView console, String indent, DiagnosticsNode property,
