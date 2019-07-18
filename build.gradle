@@ -85,7 +85,6 @@ sourceSets {
 }
 
 test {
-  exclude "io/flutter/utils/EventStreamTest.class"
   ignoreFailures true
 }
 
