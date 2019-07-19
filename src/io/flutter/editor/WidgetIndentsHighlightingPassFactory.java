@@ -45,6 +45,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   private final Project project;
   private final ActiveEditorsOutlineService editorOutlineService;
   private final Listener settingsListener;
+  private final ActiveEditorsOutlineService.Listener outlineListener;
 
   // Current configuration settings used to display Widget Indent Guides cached
   // from the FlutterSettings class.
@@ -55,6 +56,16 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     this.project = project;
     this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
     this.settingsListener = new Listener();
+    this.outlineListener = new ActiveEditorsOutlineService.Listener() {
+      @Override
+      public void onEditorsChanged() {
+      }
+
+      @Override
+      public void onOutlineChanged(String path) {
+        updateEditors(path);
+      }
+    };
 
     TextEditorHighlightingPassRegistrar.getInstance(project)
       .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
@@ -75,18 +86,9 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
     }, this);
 
-    editorOutlineService.addListener(new ActiveEditorsOutlineService.Listener() {
-      @Override
-      public void onEditorsChanged() {
-      }
-
-      @Override
-      public void onOutlineChanged(String path) {
-        updateEditors(path);
-      }
-    });
+    editorOutlineService.addListener(outlineListener);
   }
-  
+
   /**
    * Updates all editors if the settings have changed.
    *
@@ -229,8 +231,10 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   @Override
   public void dispose() {
     FlutterSettings.getInstance().removeListener(settingsListener);
+    editorOutlineService.removeListener(outlineListener);
   }
 
+  // Listener that asks for another pass when the Flutter settings for indent highlighting change.
   private class Listener implements FlutterSettings.Listener {
     @Override
     public void settingsChanged() {
