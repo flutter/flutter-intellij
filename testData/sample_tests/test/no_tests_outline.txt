@@ -1,0 +1,40 @@
+{
+  "kind": "DART_ELEMENT",
+  "offset": 0,
+  "length": 841,
+  "dartElement": {
+    "kind": "COMPILATION_UNIT",
+    "name": "<unit>",
+    "location": {
+      "file": "test/no_tests.dart",
+      "offset": 0,
+      "length": 841,
+      "startLine": 1,
+      "startColumn": 1
+    },
+    "flags": 0
+  },
+  "children": [
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 206,
+      "length": 634,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "main",
+        "location": {
+          "file": "test/no_tests.dart",
+          "offset": 795,
+          "length": 4,
+          "startLine": 19,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "()",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    }
+  ],
+  "isWidgetClass": false
+}

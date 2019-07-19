@@ -5,6 +5,7 @@
  */
 package io.flutter.run.bazelTest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
@@ -16,7 +17,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class BazelTestConfigUtils extends CommonTestConfigUtils {
 
-  private BazelTestConfigUtils() {}
+  @VisibleForTesting
+  BazelTestConfigUtils() {}
 
   private static BazelTestConfigUtils instance;
   public static BazelTestConfigUtils getInstance() {

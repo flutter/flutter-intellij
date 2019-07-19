@@ -5,19 +5,17 @@
  */
 package io.flutter.run.common;
 
-import com.google.gson.JsonParser;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.impl.source.tree.LeafPsiElement;
+import com.intellij.psi.util.PsiTreeUtil;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
-import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
+import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import io.flutter.AbstractDartElementTest;
 import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
-import io.flutter.testing.Testing;
-import org.dartlang.analysis.server.protocol.FlutterOutline;
+import io.flutter.testing.FakeActiveEditorsOutlineService;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,17 +24,13 @@ import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
 /**
  * Verifies that named test targets can be identified correctly as part of a group or as an individual test target.
  */
 public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
-
-  /**
-   * The outline of data/test_file.dart, read from data/flutter_outline.dart.
-   */
-  private FlutterOutline fileOutline;
 
   /**
    * The contents of data/test_file.dart.
@@ -46,23 +40,13 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   CommonTestConfigUtils utils = new CommonTestConfigUtils() {
     @Override
     protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
-      return new ActiveEditorsOutlineService(project) {
-        @Override
-        public @Nullable FlutterOutline get(String path) {
-          return fileOutline;
-        }
-      };
+      return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/custom_outline.txt");
     }
   };
 
   @Before
   public void setUp() throws Exception {
-    fileContents = new String(Files.readAllBytes(Paths.get("testSrc/unit/io/flutter/run/common/data/test_file.dart")));
-
-    final String outlineContents = new String(Files.readAllBytes(Paths.get("testSrc/unit/io/flutter/run/common/data/flutter_outline.txt")));
-    fileOutline = FlutterOutline.fromJson(new JsonParser().parse(outlineContents).getAsJsonObject());
-
-    Testing.runInWriteAction(() -> DartSdkLibUtil.enableDartSdk(fixture.getModule()));
+    fileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/custom_test.dart")));
   }
 
   @Test
@@ -142,16 +126,51 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
     });
   }
 
+  @Test
+  public void shouldMatchMainWithTests() throws Exception {
+    final String simpleFileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/simple_test.dart")));
+    final CommonTestConfigUtils testConfigUtils = new CommonTestConfigUtils() {
+      @Override
+      protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
+        return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/simple_outline.txt");
+      }
+    };
+    run(() -> {
+      final PsiElement mainIdentifier = setUpDartElement(simpleFileContents, "main", LeafPsiElement.class);
+      final PsiElement main =
+        PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
+      assert main != null;
+      assertTrue(testConfigUtils.isMainFunctionDeclarationWithTests(main));
+    });
+  }
+
+  @Test
+  public void shouldNotMatchMainWithNoTests() throws Exception {
+    final String noTestsFileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/no_tests.dart")));
+    final CommonTestConfigUtils testConfigUtils = new CommonTestConfigUtils() {
+      @Override
+      protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
+        return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/no_tests_outline.txt");
+      }
+    };
+    run(() -> {
+      final PsiElement mainIdentifier = setUpDartElement(noTestsFileContents, "main", LeafPsiElement.class);
+      final PsiElement main =
+        PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
+      assert main != null;
+      assertFalse(testConfigUtils.isMainFunctionDeclarationWithTests(main));
+    });
+  }
+
   /**
    * Gets a specific test or test group call.
    *
    * @param functionName The name of the function being called, eg test() or testWidgets()
    * @param testName     The name of the test desired, such as 'test 0' or 'test widgets 0'
-   * @return
    */
   @NotNull
   private DartCallExpression getTestCallWithName(String functionName, String testName) {
-    final PsiElement testIdentifier = setUpDartElement("lib/main.dart",
+    final PsiElement testIdentifier = setUpDartElement("test/custom_test.dart",
       fileContents, testName, LeafPsiElement.class);
     assertThat(testIdentifier, not(equalTo(null)));
 

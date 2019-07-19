@@ -8,11 +8,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:meta/meta.dart';
 
 /// Test data for the CommonTestConfigUtils test.
-/// The outline for this file is pretty-printed in flutter_outline.txt.
+/// The outline for this file is pretty-printed in custom_outline.txt.
 ///
-/// To update the outline, copy this file into a debugging IntelliJ instance,
-/// then set a breakpoint in the ActiveEditorsOutlineService's OutlineListener
-/// call, then look at the Flutter Outline for this file.
+/// To update the outline, open this file in a debugging IntelliJ instance, then
+/// set a breakpoint in the ActiveEditorsOutlineService's OutlineListener call
+/// to `notifyOutlineUpdated`, then look at the Flutter Outline for this file.
+/// This will break at the outline and allow you to copy its json value.
+///
+/// You can pretty-print the json using the pretty_printer.dart script.
+// TODO: use an API on the Dart Analyzer to update this outline more easily.
 void main() {
   group('group 0', () {
     test('test 0', () {
