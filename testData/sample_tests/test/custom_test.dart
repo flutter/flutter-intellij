@@ -3,9 +3,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+import 'dart:async';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:meta/meta.dart';
+import 'package:test/test.dart';
 
 /// Test data for the CommonTestConfigUtils test.
 /// The outline for this file is pretty-printed in custom_outline.txt.
@@ -44,3 +45,9 @@ void t(String name) {}
 void nonGroup(String name, void Function() callback) {}
 
 void nonTest(String name) {}
+
+// This is a similar signature to the testWidgets method from Flutter.
+@isTest
+void testWidgets(String name, Future<void> test(Object tester)) {
+  test(null);
+}
