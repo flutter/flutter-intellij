@@ -107,17 +107,17 @@ public class Analytics {
   /**
    * Note: we never send the exception's message here - that can potentially contain PII.
    */
-  @SuppressWarnings("SameParameterValue")
   public void sendException(Throwable throwable, boolean isFatal) {
     final StringWriter stringWriter = new StringWriter();
     final PrintWriter printWriter = new PrintWriter(stringWriter);
 
-    printWriter.println(throwable.getClass().getName() + ":");
-    for (StackTraceElement element : throwable.getStackTrace()) {
-      printWriter.println(element.toString());
-    }
+    throwable.printStackTrace(printWriter);
 
-    String description = stringWriter.toString().trim();
+    sendException(stringWriter.toString().trim(), isFatal);
+  }
+
+  public void sendException(String throwableText, boolean isFatal) {
+    String description = throwableText;
     description = description.replaceAll("com.intellij.openapi.", "c.i.o.");
     description = description.replaceAll("com.intellij.", "c.i.");
     if (description.length() > maxExceptionLength) {
