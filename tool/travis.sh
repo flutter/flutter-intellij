@@ -6,7 +6,6 @@
 
 # Fast fail the script on failures.
 set -e
-set -x
 
 # Echo build info.
 echo $FLUTTER_SDK
@@ -15,7 +14,7 @@ flutter --version
 # Get packages for the top-level grind script utilities
 pub get
 
-# Set up the test data.
+# Get packages for the test data.
 (cd testData/sample_tests; pub get)
 
 # Set up the plugin tool.
