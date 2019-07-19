@@ -6,7 +6,6 @@
 package io.flutter.logging;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.intellij.execution.filters.Filter;
 import com.intellij.execution.filters.UrlFilter;
@@ -235,8 +234,8 @@ public class FlutterLogEntryParser {
 
   private List<FlutterLogEntry> parseFlutterError(@NotNull Event event) {
     final List<FlutterLogEntry> entries = new ArrayList<>();
-    final JsonElement extensionData = event.getExtensionData().getJson();
-    final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getAsJsonObject());
+    final ExtensionData extensionData = event.getExtensionData();
+    final DiagnosticsNode diagnosticsNode = parseDiagnosticsNode(extensionData.getJson().getAsJsonObject());
     final String description = diagnosticsNode.toString();
     final FlutterLogEntry entry = lineHandler.parseEntry(description, ERROR_CATEGORY, FlutterLog.Level.SEVERE.value);
     entry.setKind(Kind.FLUTTER_ERROR);

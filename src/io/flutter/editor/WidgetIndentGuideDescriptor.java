@@ -11,12 +11,12 @@ import java.util.ArrayList;
 
 /**
  * Analog to the IndentGuideDescriptor class from the regular FliteredIndentsHighlightingPass.
- *
+ * <p>
  * The core difference relative to IndentGuideDescriptor is this descriptor
  * tracks a list of child nodes to visualize the tree structure of a build
  * method. WidgetIndentsHighlightingPass will use this information to draw horizontal
  * lines to show part-child relationships.
- *
+ * <p>
  * Widget indent guides depend on the analysis service as the source of truth,
  * so more information has to be still accurate even after the document is
  * edited as there will be a slight delay before new analysis data is available.
@@ -29,7 +29,12 @@ public class WidgetIndentGuideDescriptor {
   public final int startLine;
   public final int endLine;
 
-  public WidgetIndentGuideDescriptor(WidgetIndentGuideDescriptor parent, int indentLevel, int startLine, int endLine, ArrayList<OutlineLocation> childLines, OutlineLocation widget) {
+  public WidgetIndentGuideDescriptor(WidgetIndentGuideDescriptor parent,
+                                     int indentLevel,
+                                     int startLine,
+                                     int endLine,
+                                     ArrayList<OutlineLocation> childLines,
+                                     OutlineLocation widget) {
     this.parent = parent;
     this.childLines = childLines;
     this.widget = widget;
@@ -52,7 +57,7 @@ public class WidgetIndentGuideDescriptor {
   /**
    * This method must be called to opt the indent guide into tracking
    * location changes due to document edits.
-   *
+   * <p>
    * If trackLocations is called on a descriptor, you must later call dispose
    * to stop listening for changes to the document once the descriptor is
    * obsolete.

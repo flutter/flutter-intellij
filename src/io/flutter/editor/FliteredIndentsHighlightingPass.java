@@ -59,7 +59,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
   private static final Key<Long> LAST_TIME_INDENTS_BUILT = Key.create("LAST_TIME_INDENTS_BUILT");
 
   private final EditorEx myEditor;
-  private final PsiFile  myFile;
+  private final PsiFile myFile;
 
   private volatile List<TextRange> myRanges = Collections.emptyList();
   private volatile List<IndentGuideDescriptor> myDescriptors = Collections.emptyList();
@@ -480,7 +480,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
         int offset = lineStart;
         int column = 0;
         outer:
-        while(offset < lineEnd) {
+        while (offset < lineEnd) {
           switch (myChars.charAt(offset)) {
             case ' ':
               column++;
@@ -526,7 +526,7 @@ public class FliteredIndentsHighlightingPass extends TextEditorHighlightingPass 
 
           for (int blankLine = startLine; blankLine < line; blankLine++) {
             assert lineIndents[blankLine] == -1;
-            lineIndents[blankLine] = - min(topIndent, indent);
+            lineIndents[blankLine] = -min(topIndent, indent);
           }
 
           //noinspection AssignmentToForLoopParameter

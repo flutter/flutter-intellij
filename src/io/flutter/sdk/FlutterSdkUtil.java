@@ -28,7 +28,7 @@ import io.flutter.dart.DartPlugin;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.utils.FlutterModuleUtils;
-import io.flutter.utils.System;
+import io.flutter.utils.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -300,7 +300,7 @@ public class FlutterSdkUtil {
    */
   @Nullable
   public static String locateSdkFromPath() {
-    final String flutterBinPath = System.which("flutter");
+    final String flutterBinPath = SystemUtils.which("flutter");
     if (flutterBinPath == null) {
       return null;
     }

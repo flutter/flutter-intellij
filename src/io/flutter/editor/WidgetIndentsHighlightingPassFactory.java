@@ -86,7 +86,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
     });
   }
-
+  
   /**
    * Updates all editors if the settings have changed.
    *

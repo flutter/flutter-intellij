@@ -686,7 +686,7 @@ public class FlutterApp {
     if (myFlutterConsoleLogManager == null) {
       assert (getVmService() != null);
       assert (getConsole() != null);
-      myFlutterConsoleLogManager = new FlutterConsoleLogManager(getVmService(), getConsole());
+      myFlutterConsoleLogManager = new FlutterConsoleLogManager(getVmService(), getConsole(), this);
 
       if (FlutterConsoleLogManager.SHOW_STRUCTURED_ERRORS) {
         // Calling this will override the default Flutter stdout error display.

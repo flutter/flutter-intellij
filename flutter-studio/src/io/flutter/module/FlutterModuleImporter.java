@@ -52,7 +52,7 @@ public class FlutterModuleImporter {
     assert (myModel.project().get().isPresent());
     Project androidProject = myModel.project().get().get();
     VirtualFile projectRoot = androidProject.getBaseDir();
-    myRelativePath = io.flutter.utils.System.findRelativePath(projectRoot.getParent(), moduleRoot, File.separatorChar);
+    myRelativePath = io.flutter.utils.SystemUtils.findRelativePath(projectRoot.getParent(), moduleRoot, File.separatorChar);
     if (myRelativePath == null) {
       showHowToEditDialog();
       return;

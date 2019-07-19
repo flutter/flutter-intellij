@@ -25,6 +25,7 @@ import io.flutter.analytics.ToolWindowTracker;
 import io.flutter.android.IntelliJAndroidSdk;
 import io.flutter.devtools.WebDevManager;
 import io.flutter.editor.FlutterSaveActionsManager;
+import io.flutter.logging.FlutterConsoleLogManager;
 import io.flutter.perf.FlutterWidgetPerfManager;
 import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
@@ -133,7 +134,7 @@ public class FlutterInitializer implements StartupActivity {
     }
 
     FlutterRunNotifications.init(project);
-    
+
     // Start the widget perf manager.
     FlutterWidgetPerfManager.init(project);
 
@@ -155,6 +156,9 @@ public class FlutterInitializer implements StartupActivity {
       Analytics.GROUP_DISPLAY_ID,
       NotificationDisplayType.STICKY_BALLOON,
       false);
+
+    // Set our preferred settings for the run console.
+    FlutterConsoleLogManager.initConsolePreferences();
 
     // Initialize analytics.
     final PropertiesComponent properties = PropertiesComponent.getInstance();

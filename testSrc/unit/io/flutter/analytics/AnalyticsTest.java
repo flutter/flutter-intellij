@@ -28,31 +28,31 @@ public class AnalyticsTest {
   }
 
   @Test
-  public void testSendScreenView() throws Exception {
+  public void testSendScreenView() {
     analytics.sendScreenView("testAnalyticsPage");
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
-  public void testSendEvent() throws Exception {
+  public void testSendEvent() {
     analytics.sendEvent("flutter", "doctor");
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
-  public void testSendTiming() throws Exception {
+  public void testSendTiming() {
     analytics.sendTiming("perf", "reloadTime", 100);
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
-  public void testSendException() throws Exception {
+  public void testSendException() {
     analytics.sendException(new UnsupportedOperationException("test operation"), true);
     assertEquals(1, transport.sentValues.size());
   }
 
   @Test
-  public void testOptOutDoesntSend() throws Exception {
+  public void testOptOutDoesntSend() {
     analytics.setCanSend(false);
     analytics.sendScreenView("testAnalyticsPage");
     assertEquals(0, transport.sentValues.size());

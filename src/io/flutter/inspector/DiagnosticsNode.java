@@ -209,12 +209,20 @@ public class DiagnosticsNode {
   }
 
   /**
+   * Whether to wrap text on onto multiple lines or not.
+   */
+  public boolean getAllowWrap() {
+    return getBooleanMember("allowWrap", true);
+  }
+
+  /**
    * Dart class defining the diagnostic node.
+   * <p>
    * For example, DiagnosticProperty<Color>, IntProperty, StringProperty, etc.
    * This should rarely be required except for cases where custom rendering is desired
    * of a specific Dart diagnostic class.
    */
-  String getType() {
+  public String getType() {
     return getStringMember("type");
   }
 
@@ -520,7 +528,12 @@ public class DiagnosticsNode {
     if (value instanceof JsonNull) {
       return defaultValue;
     }
-    return DiagnosticLevel.valueOf(value.getAsString());
+    try {
+      return DiagnosticLevel.valueOf(value.getAsString());
+    }
+    catch (IllegalArgumentException ignore) {
+      return defaultValue;
+    }
   }
 
   private DiagnosticsTreeStyle getStyleMember(String memberName, DiagnosticsTreeStyle defaultValue) {
@@ -642,7 +655,7 @@ public class DiagnosticsNode {
         final JsonArray jsonArray = json.get("children").getAsJsonArray();
         final ArrayList<DiagnosticsNode> nodes = new ArrayList<>();
         for (JsonElement element : jsonArray) {
-          DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, false, parent);
+          final DiagnosticsNode child = new DiagnosticsNode(element.getAsJsonObject(), inspectorService, app, false, parent);
           child.setParent(this);
           nodes.add(child);
         }
@@ -670,6 +683,14 @@ public class DiagnosticsNode {
   public InspectorInstanceRef getDartDiagnosticRef() {
     final JsonElement objectId = json.get("objectId");
     return new InspectorInstanceRef(objectId.isJsonNull() ? null : objectId.getAsString());
+  }
+
+  public boolean hasInlineProperties() {
+    if (!json.has("properties")) {
+      return false;
+    }
+    final JsonArray jsonArray = json.get("properties").getAsJsonArray();
+    return jsonArray.size() > 0;
   }
 
   /**

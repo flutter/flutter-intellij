@@ -20,7 +20,7 @@ import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class System {
+public class SystemUtils {
   /**
    * Locate a given command-line tool given its name.
    */
@@ -88,10 +88,10 @@ public class System {
       if (src == null) return null;
     }
 
-    VirtualFile commonAncestor = VfsUtilCore.getCommonAncestor(src, dst);
+    final VirtualFile commonAncestor = VfsUtilCore.getCommonAncestor(src, dst);
     if (commonAncestor == null) return null;
 
-    StringBuilder buffer = new StringBuilder();
+    final StringBuilder buffer = new StringBuilder();
 
     if (!Comparing.equal(src, commonAncestor)) {
       while (!Comparing.equal(src, commonAncestor)) {

@@ -86,9 +86,8 @@ public class StdoutJsonParserTest {
     final StdoutJsonParser parser = new StdoutJsonParser();
     parser.appendOutput("hello\n");
     parser.appendOutput("there\n");
-    parser.appendOutput("[{'foo':");
-    parser.appendOutput("[{'bar':'baz'}]");
-    // The JSON has not yet terminated with an \n.
+    parser.appendOutput("[{'bar':'baz'");
+    // The JSON has not yet terminated with a '}]' sequence.
 
     assertArrayEquals(
       "validating parser results",
