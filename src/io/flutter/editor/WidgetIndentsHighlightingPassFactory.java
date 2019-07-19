@@ -42,8 +42,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // widget indent guide lines after editing code containing guides.
   private static final boolean SIMULATE_SLOW_ANALYSIS_UPDATES = false;
 
-  final private Project project;
-
+  private final Project project;
   private final ActiveEditorsOutlineService editorOutlineService;
   private final Listener settingsListener;
 
@@ -88,11 +87,16 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     });
   }
 
+  /**
+   * Updates all editors if the settings have changed.
+   *
+   * <p>
+   * This is useful for adding the guides in after they were turned on from the settings menu.
+   */
   private void syncSettings(FlutterSettings settings) {
     if (isShowBuildMethodGuides != settings.isShowBuildMethodGuides()) {
       isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
       updateAllEditors();
-
     }
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
   }

@@ -30,6 +30,13 @@ import java.util.*;
  * This service works by listening to the {@link Project}'s MessageBus for {@link FileEditor}s that are
  * added or removed. Using the set of currently active {@link EditorEx} editor windows, this service
  * then subscribes to the {@link FlutterDartAnalysisServer} for updates to the {@link FlutterOutline} of each file.
+ *
+ * <p>
+ * This class provides a {@link Listener} that notifies consumers when
+ * <ul>
+ * <li>The collection of currently active editors has changed</li>
+ * <li>Each outline for a currently active editor has updated.</li>
+ * </ul>
  */
 public class ActiveEditorsOutlineService implements Disposable {
   private final Project project;
@@ -163,11 +170,21 @@ public class ActiveEditorsOutlineService implements Disposable {
     listeners.remove(listener);
   }
 
+  /**
+   * Gets the most up-to-date {@link FlutterOutline} for the file at {@param path}.
+   *
+   * <p>
+   * Note that {@link ActiveEditorsOutlineService#get(VirtualFile)} is a convenience method that gets the outline based on the
+   * {@link VirtualFile} directly.
+   */
   @Nullable
   public FlutterOutline get(String path) {
     return pathToOutline.get(path);
   }
 
+  /**
+   * Gets the most up-to-date {@link FlutterOutline} for the {@param file}.
+   */
   @Nullable
   public FlutterOutline get(VirtualFile file) {
     return get(file.getCanonicalPath());
@@ -195,12 +212,18 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   public interface Listener {
     /**
-     * Called on a change in the set of open editors.
+     * Called on a change in the collection of open editors.
+     *
+     * <p>
+     * The list of currently active editors is available from the method {@link ActiveEditorsOutlineService#getActiveDartEditors()}.
      */
     void onEditorsChanged();
 
     /**
-     * Called on a change in the outline of file {@param path}.
+     * Called on a change in the {@link FlutterOutline} of file at {@param path}.
+     *
+     * <p>
+     * The most up-to-date outline is available from the method {@link ActiveEditorsOutlineService#get(String)}.
      */
     void onOutlineChanged(String path);
   }
@@ -209,7 +232,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    * Listener called by the {@link FlutterDartAnalysisServer} when an open file's outline changes.
    *
    * <p>
-   * This class caches the updated outline inside {@code pathToOutline} for the file.
+   * This class caches the updated outline inside {@link ActiveEditorsOutlineService#pathToOutline} for the file.
    */
   private class OutlineListener
     implements FlutterOutlineListener {

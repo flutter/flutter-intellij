@@ -45,9 +45,9 @@ public abstract class CommonTestConfigUtils {
    * <p>
    * A test call is one of the following:
    * <ul>
-   *   <li>{@link TestType.SINGLE} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_TEST}</li>
-   *   <li>{@link TestType.GROUP} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_GROUP}</li>
-   *   <li>{@link TestType.MAIN} if the call is a {@link DartFunctionDeclarationWithBodyOrNative} named "main" that includes test calls.</li>
+   * <li>{@link TestType.SINGLE} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_TEST}</li>
+   * <li>{@link TestType.GROUP} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_GROUP}</li>
+   * <li>{@link TestType.MAIN} if the call is a {@link DartFunctionDeclarationWithBodyOrNative} named "main" that includes test calls.</li>
    * </ul>
    *
    * @return a {@link TestType} if {@param element} corresponds to a test call site, or null if {@param element} is not a test call site.
@@ -75,6 +75,9 @@ public abstract class CommonTestConfigUtils {
     return callToTestType;
   }
 
+  /**
+   * Traverses the {@param outline} tree and adds to {@param callToTestType } the {@link DartCallExpression}s that are tests or test groups.
+   */
   private void visit(@NotNull FlutterOutline outline, @NotNull Map<DartCallExpression, TestType> callToTestType, @NotNull PsiFile file) {
     @NotNull final PsiElement element = Objects.requireNonNull(file.findElementAt(outline.getOffset()));
     if (outline.getDartElement() != null) {
@@ -136,6 +139,9 @@ public abstract class CommonTestConfigUtils {
     return StringEscapeUtils.unescapeJava(name);
   }
 
+  /**
+   * Finds the {@link DartCallExpression} in the key set of {@param callToTestType} and also the closest parent of {@param element}.
+   */
   @Nullable
   private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, Map<DartCallExpression, TestType> callToTestType) {
     while (element != null) {

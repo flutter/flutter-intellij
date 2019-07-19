@@ -79,7 +79,7 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(listener.editorsChanged, equalTo(1));
   }
 
-  // TODO(djshuckerow): we have no way of writing a test that includes calls from the Dart Analysis Server.  Instead, the tests
+  // NOTE: we have no simple way of writing a test that includes calls from the Dart Analysis Server.  Instead, the tests
   // below mock out the behavior by notifying the Flutter Dart Analysis Server's listeners of changes when the DAS should do this.
 
   @Test
@@ -147,7 +147,7 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(listener.editorsChanged, equalTo(2));
 
 
-    // TODO(djshuckerow): We can't test what happens when closing an editor: CodeInsightTestFixture always has one open editor.
+    // NOTE: We can't test what happens when closing an editor because CodeInsightTestFixture always has one open editor.
 
     Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
     final EditorTestFixture editorTestFixtureThree = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());

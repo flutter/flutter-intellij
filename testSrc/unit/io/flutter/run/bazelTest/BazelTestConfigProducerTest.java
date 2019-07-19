@@ -59,7 +59,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
       // Set up the configuration producer.
       final ConfigurationContext context = getMainContext();
       final BazelTestConfig config = getEmptyBazelTestConfig();
-      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, true);
+      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, true, bazelTestConfigUtils);
 
       // Produce and check a run configuration.
       final boolean result = testConfigProducer.setupConfigurationFromContext(config, context, new Ref<>());
@@ -76,7 +76,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
       // Set up the configuration producer.
       final ConfigurationContext context = getTest1Context();
       final BazelTestConfig config = getEmptyBazelTestConfig();
-      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, true);
+      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, true, bazelTestConfigUtils);
 
       // Produce and check a run configuration.
       final boolean result = testConfigProducer.setupConfigurationFromContext(config, context, new Ref<>());
@@ -94,7 +94,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
       // Set up the configuration producer.
       final ConfigurationContext context = getTest1Context();
       final BazelTestConfig config = getEmptyBazelTestConfig();
-      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(false, true);
+      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(false, true, bazelTestConfigUtils);
 
       // Produce and check a run configuration.
       final boolean result = testConfigProducer.setupConfigurationFromContext(config, context, new Ref<>());
@@ -111,7 +111,7 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
       // Set up the configuration producer.
       final ConfigurationContext context = getTest1Context();
       final BazelTestConfig config = getEmptyBazelTestConfig();
-      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, false);
+      final BazelTestConfigProducer testConfigProducer = new TestBazelConfigProducer(true, false, bazelTestConfigUtils);
 
       // Produce and check a run configuration.
       final boolean result = testConfigProducer.setupConfigurationFromContext(config, context, new Ref<>());
@@ -154,8 +154,9 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
     final boolean hasValidTestFile;
 
     TestBazelConfigProducer(boolean hasWorkspace,
-                            boolean hasValidTestFile) {
-      super(BazelTestConfigUtils.getInstance());
+                            boolean hasValidTestFile,
+                            BazelTestConfigUtils bazelTestConfigUtils) {
+      super(bazelTestConfigUtils);
       fs = new MockVirtualFileSystem();
       fs.file("/workspace/WORKSPACE", "");
       fakeWorkspace = Workspace.forTest(

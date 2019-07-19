@@ -67,21 +67,21 @@ public class DartSyntax {
   }
 
   /**
-   * Finds the closest named function call that encloses {@param elt}.
+   * Finds the closest named function call that encloses {@param element}.
    *
-   * @param elt
+   * @param element
    */
   @Nullable
-  public static DartCallExpression findClosestEnclosingFunctionCall(@NotNull PsiElement elt) {
-    while (elt != null) {
-      if (elt instanceof DartCallExpression) {
-        final DartCallExpression call = (DartCallExpression)elt;
+  public static DartCallExpression findClosestEnclosingFunctionCall(@NotNull PsiElement element) {
+    while (element != null) {
+      if (element instanceof DartCallExpression) {
+        final DartCallExpression call = (DartCallExpression)element;
         final String name = getCalledFunctionName(call);
         if (name != null) {
           return call;
         }
       }
-      elt = elt.getParent();
+      element = element.getParent();
     }
     return null; // not found
   }
