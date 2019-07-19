@@ -61,7 +61,9 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
       return;
     }
 
-    String stackTrace = null, errorMessage = null;
+    String stackTrace = null;
+    String errorMessage = null;
+
     for (IdeaLoggingEvent event : events) {
       String stackTraceText = event.getThrowableText();
       if (stackTraceText.startsWith(COMPLETION_EXCEPTION_PREFIX)) {
@@ -163,8 +165,6 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
           builder.append(event.getThrowableText().trim()).append("\n");
           builder.append("```\n");
           builder.append("\n");
-
-          FlutterInitializer.getAnalytics().sendException(event.getThrowable(), false);
         }
       }
     }
@@ -179,12 +179,15 @@ public class FlutterErrorReportSubmitter extends ErrorReportSubmitter {
       builder.append("\n");
     }
 
+    for (IdeaLoggingEvent event : events) {
+      FlutterInitializer.getAnalytics().sendException(event.getThrowableText(), false);
+    }
+
     final String text = builder.toString().trim() + "\n";
 
     // Create scratch file.
     final ScratchRootType scratchRoot = ScratchRootType.getInstance();
-    final VirtualFile file = scratchRoot.createScratchFile(
-      project, "bug-report.md", Language.ANY, text);
+    final VirtualFile file = scratchRoot.createScratchFile(project, "bug-report.md", Language.ANY, text);
 
     if (file == null) {
       fail(consumer);
