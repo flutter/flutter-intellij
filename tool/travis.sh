@@ -16,7 +16,7 @@ flutter --version
 pub get
 
 # Set up the test data.
-# (cd testData/sample_tests; pub get)
+(cd testData/sample_tests; pub get)
 
 # Set up the plugin tool.
 (cd tool/plugin; pub get)
