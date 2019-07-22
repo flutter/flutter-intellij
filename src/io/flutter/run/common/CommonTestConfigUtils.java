@@ -67,7 +67,7 @@ public abstract class CommonTestConfigUtils {
    */
   protected Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
-    final FlutterOutline outline = getActiveEditorsOutlineService(project).get(file.getVirtualFile());
+    final FlutterOutline outline = getActiveEditorsOutlineService(project).request(file.getVirtualFile());
     final Map<DartCallExpression, TestType> callToTestType = new HashMap<>();
     if (outline != null) {
       visit(outline, callToTestType, file);

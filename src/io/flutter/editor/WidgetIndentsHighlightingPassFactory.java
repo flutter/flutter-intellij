@@ -56,16 +56,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     this.project = project;
     this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
     this.settingsListener = new Listener();
-    this.outlineListener = new ActiveEditorsOutlineService.Listener() {
-      @Override
-      public void onEditorsChanged() {
-      }
-
-      @Override
-      public void onOutlineChanged(String path) {
-        updateEditors(path);
-      }
-    };
+    this.outlineListener = (path, outline) -> updateEditors(path);
 
     TextEditorHighlightingPassRegistrar.getInstance(project)
       .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);

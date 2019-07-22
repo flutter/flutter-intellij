@@ -7,6 +7,7 @@ package io.flutter.testing;
 
 import com.google.gson.JsonParser;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.editor.ActiveEditorsOutlineService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.Nullable;
@@ -44,6 +45,12 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
   @Nullable
   @Override
   public FlutterOutline get(String path) {
+    return flutterOutline;
+  }
+
+  @Nullable
+  @Override
+  public FlutterOutline request(VirtualFile file) {
     return flutterOutline;
   }
 }

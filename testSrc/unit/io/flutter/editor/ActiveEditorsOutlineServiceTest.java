@@ -9,6 +9,7 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.EditorTestFixture;
@@ -25,8 +26,11 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -39,10 +43,13 @@ public class ActiveEditorsOutlineServiceTest {
                                              "}";
 
   // The outline service doesn't care too much what the outline's contents are, only that the outlines update.
+  // However, the request method uses the outline's length to determine if the outline is up-to-date.
   private static final FlutterOutline firstFlutterOutline =
     new FlutterOutline("First", 0, 0, 0, 0, "", null, null, null, null, null, null, 1, false, null, null, null, null);
   private static final FlutterOutline secondFlutterOutline =
     new FlutterOutline("Second", 0, 0, 0, 0, "", null, null, null, null, null, null, 2, false, null, null, null, null);
+  private static final FlutterOutline outlineWithCorrectLength =
+    new FlutterOutline("Third", 0, fileContents.length(), 0, 0, "", null, null, null, null, null, null, 3, false, null, null, null, null);
 
   @Rule
   public final AdaptedFixture<CodeInsightTestFixture> testFixture = new Fixture();
@@ -56,8 +63,12 @@ public class ActiveEditorsOutlineServiceTest {
   @Before
   public void setUp() {
     flutterDas = new TestFlutterDartAnalysisServer(getProject());
-    service =
-      new ActiveEditorsOutlineService(getProject(), flutterDas);
+    service = new ActiveEditorsOutlineService(getProject(), flutterDas) {
+      @Override
+      protected PsiFile getPsiFile(VirtualFile file) {
+        return mainFile;
+      }
+    };
     listener = new Listener();
     service.addListener(listener);
     mainFile = getFixture().addFileToProject("lib/main.dart", fileContents);
@@ -67,16 +78,6 @@ public class ActiveEditorsOutlineServiceTest {
   @After
   public void tearDown() {
     service.dispose();
-  }
-
-  @Test
-  public void notifiesWhenEditorsChange() throws Exception {
-    assertThat(listener.editorsChanged, equalTo(0));
-
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = getFixture().getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
-    assertThat(listener.editorsChanged, equalTo(1));
   }
 
   // NOTE: we have no simple way of writing a test that includes calls from the Dart Analysis Server.  Instead, the tests
@@ -97,21 +98,18 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
     assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
-    assertThat(listener.editorsChanged, equalTo(1));
 
     // Move the caret inside of the name of the test group.
     Testing.runOnDispatchThread(() -> editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(1, 10)));
 
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
     assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
-    assertThat(listener.editorsChanged, equalTo(1));
 
     Testing.runOnDispatchThread(() -> editorTestFixture.type("longer name"));
     flutterDas.updateOutline(mainFile.getVirtualFile().getCanonicalPath(), secondFlutterOutline);
 
     assertThat(listener.outlineChanged.get(mainPath), equalTo(2));
     assertThat(service.get(mainPath), equalTo(secondFlutterOutline));
-    assertThat(listener.editorsChanged, equalTo(1));
   }
 
   @Test
@@ -129,7 +127,6 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
     assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
-    assertThat(listener.editorsChanged, equalTo(1));
 
     // Open another file.
     final PsiFile fileTwo = getFixture().addFileToProject("lib/main_two.dart", fileContents);
@@ -144,8 +141,6 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(service.get(fileTwoPath), equalTo(secondFlutterOutline));
     // The main file has been closed, so it is no longer there.
     assertThat(service.get(mainPath), equalTo(null));
-    assertThat(listener.editorsChanged, equalTo(2));
-
 
     // NOTE: We can't test what happens when closing an editor because CodeInsightTestFixture always has one open editor.
 
@@ -158,7 +153,75 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
     // Now file two is closed.
     assertThat(service.get(fileTwoPath), equalTo(null));
-    assertThat(listener.editorsChanged, equalTo(3));
+  }
+
+  @Test
+  public void requestReturnsImmediatelyIfTheOutlineHasTheCorrectLength() throws Exception {
+    assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
+    assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
+    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.editorsChanged, equalTo(0));
+
+    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = getFixture().getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
+
+    assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
+    assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
+    assertThat(service.request(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
+  }
+
+  @Test
+  public void requestWaitsForAnUpdatedOutlineIfNeeded() throws Exception {
+    assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
+    assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
+    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.editorsChanged, equalTo(0));
+
+    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = getFixture().getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+
+    flutterDas.updateOutline(mainPath, firstFlutterOutline);
+
+    assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
+    assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
+    // TODO(djshuckerow): Run this in a fake async executor so that the test doesn't slow travis down.
+    final long now = Instant.now().toEpochMilli();
+    assertThat(service.request(mainFile.getVirtualFile()), equalTo(firstFlutterOutline));
+    final long after = Instant.now().toEpochMilli();
+    assertThat(after - now >= 500, equalTo(true));
+  }
+
+  @Test
+  public void requestWaitsForAnUpdatedOutlineAndUpdates() throws Exception {
+    assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
+    assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
+    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.editorsChanged, equalTo(0));
+
+    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = getFixture().getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+
+    flutterDas.updateOutline(mainPath, firstFlutterOutline);
+
+    assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
+    assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
+    // Set up a timer to change the outline in 100 milliseconds, before the request times out at 1000 milliseconds.
+    final Timer timer = new Timer();
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
+      }
+    }, 100);
+    // TODO(djshuckerow): Run this in a fake async executor so that the test doesn't slow travis down.
+    final long now = Instant.now().toEpochMilli();
+    assertThat(service.request(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
+    final long after = Instant.now().toEpochMilli();
+    assertThat(after - now >= 100, equalTo(true));
   }
 
   private class Listener implements ActiveEditorsOutlineService.Listener {
@@ -166,12 +229,7 @@ public class ActiveEditorsOutlineServiceTest {
     final Map<String, Integer> outlineChanged = new HashMap<>();
 
     @Override
-    public void onEditorsChanged() {
-      editorsChanged++;
-    }
-
-    @Override
-    public void onOutlineChanged(String path) {
+    public void onOutlineChanged(String path, FlutterOutline outline) {
       final Integer changes = outlineChanged.get(path);
       outlineChanged.put(path, changes == null ? 1 : changes + 1);
     }

@@ -14,6 +14,9 @@ import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
@@ -22,6 +25,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Service that watches for {@link FlutterOutline}s for all active editors containing Dart files.
@@ -39,6 +46,11 @@ import java.util.*;
  * </ul>
  */
 public class ActiveEditorsOutlineService implements Disposable {
+  /**
+   * How long for {@link #request} to wait for a new {@link FlutterOutline} to become available before it times out.
+   */
+  private static final long TIMEOUT_MILLIS = 1000;
+
   private final Project project;
   private final FlutterDartAnalysisServer analysisServer;
 
@@ -108,7 +120,7 @@ public class ActiveEditorsOutlineService implements Disposable {
 
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
-      if (FlutterUtils.couldContainWidgets(file)) {
+      if (FlutterUtils.isDartFile(file)) {
         newPaths.add(file.getPath());
       }
     }
@@ -145,20 +157,11 @@ public class ActiveEditorsOutlineService implements Disposable {
         pathToOutline.remove(path);
       }
     }
-    if (obsoletePaths.size() > 0 || newPaths.size() > 0) {
-      notifyEditorsUpdated();
-    }
-  }
-
-  private void notifyEditorsUpdated() {
-    for (Listener listener : listeners) {
-      listener.onEditorsChanged();
-    }
   }
 
   private void notifyOutlineUpdated(String path) {
     for (Listener listener : listeners) {
-      listener.onOutlineChanged(path);
+      listener.onOutlineChanged(path, get(path));
     }
   }
 
@@ -186,8 +189,61 @@ public class ActiveEditorsOutlineService implements Disposable {
    * Gets the most up-to-date {@link FlutterOutline} for the {@param file}.
    */
   @Nullable
-  public FlutterOutline get(VirtualFile file) {
-    return get(file.getCanonicalPath());
+  public FlutterOutline get(@NotNull VirtualFile file) {
+    return pathToOutline.get(file.getCanonicalPath());
+  }
+
+  /**
+   * Gets the up-to-date {@link FlutterOutline} for the {@param file}.
+   *
+   * <p>
+   * If the cached outline is not updated yet, will request an updated outline from the analysis service.
+   */
+  public FlutterOutline request(@NotNull VirtualFile file) {
+    if (isUpToDate(file)) {
+      return get(file);
+    }
+    final String path = file.getCanonicalPath();
+    // If we haven't gotten any data, set up a temporary listener for this file, and wait for a response.
+    // We block to wait with a Lock.
+    final Lock lock = new ReentrantLock();
+    final Condition notLoaded = lock.newCondition();
+    lock.lock();
+    final Listener listener = (p, o) -> {
+      if (p.equals(path)) {
+        notLoaded.signal();
+      }
+    };
+    addListener(listener);
+    try {
+      notLoaded.await(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+    }
+    catch (InterruptedException ignored) {
+      // The thread was interrupted while waiting for the load.
+    }
+    finally {
+      lock.unlock();
+      removeListener(listener);
+    }
+    // Return the new value, which either:
+    //  - is updated, and the listener unlocked the request
+    //  - is outdated but the listener timed out waiting for a response.
+    return get(path);
+  }
+
+  private boolean isUpToDate(@NotNull VirtualFile file) {
+    final FlutterOutline outline = get(file);
+    final PsiFile psiFile = getPsiFile(file);
+    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(project);
+    return psiFile != null && outline != null && (
+      psiFile.getTextLength() == outline.getLength()
+      || psiFile.getTextLength() == das.getConvertedOffset(file, outline.getLength())
+    );
+  }
+
+  @VisibleForTesting
+  protected PsiFile getPsiFile(VirtualFile file) {
+    return PsiManager.getInstance(project).findFile(file);
   }
 
   @Override
@@ -211,21 +267,11 @@ public class ActiveEditorsOutlineService implements Disposable {
    * Listener for changes to the active editors or open outlines.
    */
   public interface Listener {
-    /**
-     * Called on a change in the collection of open editors.
-     *
-     * <p>
-     * The list of currently active editors is available from the method {@link ActiveEditorsOutlineService#getActiveDartEditors()}.
-     */
-    void onEditorsChanged();
 
     /**
      * Called on a change in the {@link FlutterOutline} of file at {@param path}.
-     *
-     * <p>
-     * The most up-to-date outline is available from the method {@link ActiveEditorsOutlineService#get(String)}.
      */
-    void onOutlineChanged(String path);
+    void onOutlineChanged(String path, FlutterOutline outline);
   }
 
   /**
@@ -249,8 +295,8 @@ public class ActiveEditorsOutlineService implements Disposable {
       }
       synchronized (pathToOutline) {
         pathToOutline.put(path, outline);
+        notifyOutlineUpdated(path);
       }
-      notifyOutlineUpdated(path);
     }
   }
 }
