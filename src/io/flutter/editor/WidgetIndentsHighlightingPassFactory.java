@@ -94,12 +94,11 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
   }
 
-  // Updates the indent guides in a specific editor.
+  /**
+   * Updates the indent guides in the editor for the file at {@param path}.
+   */
   private void updateEditors(@NotNull final String path) {
     ApplicationManager.getApplication().invokeLater(() -> {
-      // Find visible editors for the path. If the file is not actually
-      // being displayed on screen, there is no need to go through the
-      // work of updating the outline.
       if (project.isDisposed()) {
         return;
       }

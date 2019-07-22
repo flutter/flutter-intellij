@@ -10,6 +10,7 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.vfs.VirtualFile;
 import io.flutter.editor.ActiveEditorsOutlineService;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.junit.Assert;
 
@@ -44,13 +45,13 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
 
   @Nullable
   @Override
-  public FlutterOutline get(String path) {
+  protected FlutterOutline get(String path) {
     return flutterOutline;
   }
 
   @Nullable
   @Override
-  public FlutterOutline request(VirtualFile file) {
+  public FlutterOutline request(@NotNull VirtualFile file) {
     return flutterOutline;
   }
 }

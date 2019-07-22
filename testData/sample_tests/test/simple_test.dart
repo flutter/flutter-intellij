@@ -14,7 +14,8 @@ import'package:test/test.dart';
 /// to `notifyOutlineUpdated`, then look at the Flutter Outline for this file.
 /// This will break at the outline and allow you to copy its json value.
 ///
-/// You can pretty-print the json using the pretty_printer.dart script.
+/// You can pretty-print the json using the pretty_print.dart script at
+/// testData/sample_tests/bin/pretty_print.dart.
 // TODO: use an API on the Dart Analyzer to update this outline more easily.
 void main() {
   test('test 1', () {});

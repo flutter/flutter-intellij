@@ -13,11 +13,9 @@ import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.EditorTestFixture;
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture;
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory;
 import io.flutter.dart.FlutterDartAnalysisServer;
 import io.flutter.dart.FlutterOutlineListener;
-import io.flutter.testing.AdaptedFixture;
+import io.flutter.testing.CodeInsightProjectFixture;
 import io.flutter.testing.Testing;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
@@ -52,8 +50,11 @@ public class ActiveEditorsOutlineServiceTest {
     new FlutterOutline("Third", 0, fileContents.length(), 0, 0, "", null, null, null, null, null, null, 3, false, null, null, null, null);
 
   @Rule
-  public final AdaptedFixture<CodeInsightTestFixture> testFixture = new Fixture();
+  public final CodeInsightProjectFixture projectFixture = Testing.makeCodeInsightModule();
 
+  CodeInsightTestFixture innerFixture;
+  Project project;
+  Module module;
   ActiveEditorsOutlineService service;
   Listener listener;
   TestFlutterDartAnalysisServer flutterDas;
@@ -62,8 +63,10 @@ public class ActiveEditorsOutlineServiceTest {
 
   @Before
   public void setUp() {
-    flutterDas = new TestFlutterDartAnalysisServer(getProject());
-    service = new ActiveEditorsOutlineService(getProject(), flutterDas) {
+    innerFixture = projectFixture.getInner();
+    project = projectFixture.getProject();
+    flutterDas = new TestFlutterDartAnalysisServer(project);
+    service = new ActiveEditorsOutlineService(project, flutterDas) {
       @Override
       protected PsiFile getPsiFile(VirtualFile file) {
         return mainFile;
@@ -71,7 +74,7 @@ public class ActiveEditorsOutlineServiceTest {
     };
     listener = new Listener();
     service.addListener(listener);
-    mainFile = getFixture().addFileToProject("lib/main.dart", fileContents);
+    mainFile = innerFixture.addFileToProject("lib/main.dart", fileContents);
     mainPath = mainFile.getVirtualFile().getCanonicalPath();
   }
 
@@ -87,84 +90,83 @@ public class ActiveEditorsOutlineServiceTest {
   public void notifiesWhenOutlinesChange() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.mostRecentOutline, equalTo(null));
     assertThat(listener.editorsChanged, equalTo(0));
 
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = getFixture().getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = innerFixture.getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
     flutterDas.updateOutline(mainPath, firstFlutterOutline);
 
     assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
+    assertThat(listener.mostRecentOutline, equalTo(firstFlutterOutline));
 
     // Move the caret inside of the name of the test group.
     Testing.runOnDispatchThread(() -> editor.getCaretModel().moveToLogicalPosition(new LogicalPosition(1, 10)));
 
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
+    assertThat(listener.mostRecentOutline, equalTo(firstFlutterOutline));
 
     Testing.runOnDispatchThread(() -> editorTestFixture.type("longer name"));
     flutterDas.updateOutline(mainFile.getVirtualFile().getCanonicalPath(), secondFlutterOutline);
 
     assertThat(listener.outlineChanged.get(mainPath), equalTo(2));
-    assertThat(service.get(mainPath), equalTo(secondFlutterOutline));
+    assertThat(listener.mostRecentOutline, equalTo(secondFlutterOutline));
   }
 
   @Test
   public void notifiesOutlineChangedWhenOpeningAndClosingFiles() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.mostRecentOutline, equalTo(null));
     assertThat(listener.editorsChanged, equalTo(0));
 
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = getFixture().getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = innerFixture.getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
     flutterDas.updateOutline(mainPath, firstFlutterOutline);
 
     assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
+    assertThat(listener.mostRecentPath, equalTo(mainPath));
+    assertThat(listener.mostRecentOutline, equalTo(firstFlutterOutline));
 
     // Open another file.
-    final PsiFile fileTwo = getFixture().addFileToProject("lib/main_two.dart", fileContents);
+    final PsiFile fileTwo = innerFixture.addFileToProject("lib/main_two.dart", fileContents);
     final String fileTwoPath = fileTwo.getVirtualFile().getCanonicalPath();
-    final EditorTestFixture editorTestFixtureTwo = new EditorTestFixture(getProject(), editor, fileTwo.getVirtualFile());
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(fileTwo.getVirtualFile()));
+    final EditorTestFixture editorTestFixtureTwo = new EditorTestFixture(project, editor, fileTwo.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(fileTwo.getVirtualFile()));
     flutterDas.updateOutline(fileTwoPath, secondFlutterOutline);
 
     assertThat(listener.outlineChanged.keySet(), hasItem(fileTwoPath));
     assertThat(listener.outlineChanged.get(fileTwoPath), equalTo(1));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    assertThat(service.get(fileTwoPath), equalTo(secondFlutterOutline));
-    // The main file has been closed, so it is no longer there.
-    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.mostRecentPath, equalTo(fileTwoPath));
+    assertThat(listener.mostRecentOutline, equalTo(secondFlutterOutline));
 
     // NOTE: We can't test what happens when closing an editor because CodeInsightTestFixture always has one open editor.
 
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final EditorTestFixture editorTestFixtureThree = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
+    final EditorTestFixture editorTestFixtureThree = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
     flutterDas.updateOutline(mainPath, firstFlutterOutline);
 
     assertThat(listener.outlineChanged.get(fileTwoPath), equalTo(1));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(2));
-    assertThat(service.get(mainPath), equalTo(firstFlutterOutline));
-    // Now file two is closed.
-    assertThat(service.get(fileTwoPath), equalTo(null));
+    assertThat(listener.mostRecentPath, equalTo(mainPath));
+    assertThat(listener.mostRecentOutline, equalTo(firstFlutterOutline));
   }
 
   @Test
   public void requestReturnsImmediatelyIfTheOutlineHasTheCorrectLength() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.mostRecentOutline, equalTo(null));
     assertThat(listener.editorsChanged, equalTo(0));
 
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = getFixture().getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = innerFixture.getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
     flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
 
     assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
@@ -176,12 +178,12 @@ public class ActiveEditorsOutlineServiceTest {
   public void requestWaitsForAnUpdatedOutlineIfNeeded() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.mostRecentOutline, equalTo(null));
     assertThat(listener.editorsChanged, equalTo(0));
 
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = getFixture().getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = innerFixture.getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
 
     flutterDas.updateOutline(mainPath, firstFlutterOutline);
 
@@ -198,12 +200,12 @@ public class ActiveEditorsOutlineServiceTest {
   public void requestWaitsForAnUpdatedOutlineAndUpdates() throws Exception {
     assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(service.get(mainPath), equalTo(null));
+    assertThat(listener.mostRecentOutline, equalTo(null));
     assertThat(listener.editorsChanged, equalTo(0));
 
-    Testing.runOnDispatchThread(() -> getFixture().openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = getFixture().getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(getProject(), editor, mainFile.getVirtualFile());
+    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
+    final Editor editor = innerFixture.getEditor();
+    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
 
     flutterDas.updateOutline(mainPath, firstFlutterOutline);
 
@@ -227,34 +229,16 @@ public class ActiveEditorsOutlineServiceTest {
   private class Listener implements ActiveEditorsOutlineService.Listener {
     int editorsChanged = 0;
     final Map<String, Integer> outlineChanged = new HashMap<>();
+    FlutterOutline mostRecentOutline = null;
+    String mostRecentPath = null;
 
     @Override
     public void onOutlineChanged(String path, FlutterOutline outline) {
       final Integer changes = outlineChanged.get(path);
       outlineChanged.put(path, changes == null ? 1 : changes + 1);
+      mostRecentPath = path;
+      mostRecentOutline = outline;
     }
-  }
-
-  private static class Fixture extends AdaptedFixture<CodeInsightTestFixture> {
-    Fixture() {
-      super((x) -> {
-        final IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
-        final IdeaProjectTestFixture light = factory.createLightFixtureBuilder().getFixture();
-        return factory.createCodeInsightFixture(light);
-      }, false);
-    }
-  }
-
-  private CodeInsightTestFixture getFixture() {
-    return testFixture.getInner();
-  }
-
-  private Project getProject() {
-    return testFixture.getInner().getProject();
-  }
-
-  private Module getModule() {
-    return testFixture.getInner().getModule();
   }
 
   private static class TestFlutterDartAnalysisServer extends FlutterDartAnalysisServer {

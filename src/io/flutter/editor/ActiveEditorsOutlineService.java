@@ -175,35 +175,30 @@ public class ActiveEditorsOutlineService implements Disposable {
 
   /**
    * Gets the most up-to-date {@link FlutterOutline} for the file at {@param path}.
-   *
-   * <p>
-   * Note that {@link ActiveEditorsOutlineService#get(VirtualFile)} is a convenience method that gets the outline based on the
-   * {@link VirtualFile} directly.
    */
+  @VisibleForTesting
   @Nullable
-  public FlutterOutline get(String path) {
+  protected FlutterOutline get(String path) {
     return pathToOutline.get(path);
-  }
-
-  /**
-   * Gets the most up-to-date {@link FlutterOutline} for the {@param file}.
-   */
-  @Nullable
-  public FlutterOutline get(@NotNull VirtualFile file) {
-    return pathToOutline.get(file.getCanonicalPath());
   }
 
   /**
    * Gets the up-to-date {@link FlutterOutline} for the {@param file}.
    *
    * <p>
-   * If the cached outline is not updated yet, will request an updated outline from the analysis service.
+   * If the cached outline is not updated yet, will request an updated outline from the analysis service. The request
+   * will time out and complete after {@link #TIMEOUT_MILLIS} milliseconds pass.
+   *
+   * <p>
+   * Note that in general, it is preferable to just listen for {@link FlutterOutline} updates with a {@link Listener}.
+   * However, in cases like the {@link io.flutter.run.common.CommonTestConfigUtils}, where it is impossible to request
+   * that IntelliJ update the test line markers, it is necessary to make this request instead.
    */
   public FlutterOutline request(@NotNull VirtualFile file) {
-    if (isUpToDate(file)) {
-      return get(file);
-    }
     final String path = file.getCanonicalPath();
+    if (isUpToDate(file)) {
+      return get(path);
+    }
     // If we haven't gotten any data, set up a temporary listener for this file, and wait for a response.
     // We block to wait with a Lock.
     final Lock lock = new ReentrantLock();
@@ -232,7 +227,7 @@ public class ActiveEditorsOutlineService implements Disposable {
   }
 
   private boolean isUpToDate(@NotNull VirtualFile file) {
-    final FlutterOutline outline = get(file);
+    final FlutterOutline outline = get(file.getCanonicalPath());
     final PsiFile psiFile = getPsiFile(file);
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(project);
     return psiFile != null && outline != null && (
@@ -280,7 +275,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    * <p>
    * This class caches the updated outline inside {@link ActiveEditorsOutlineService#pathToOutline} for the file.
    */
-  private class OutlineListener
+  private class OutlineListener/// You can pretty-print the json using the pretty_printer.dart script.
     implements FlutterOutlineListener {
 
     @Override
@@ -295,7 +290,7 @@ public class ActiveEditorsOutlineService implements Disposable {
       }
       synchronized (pathToOutline) {
         pathToOutline.put(path, outline);
-        notifyOutlineUpdated(path);
+          notifyOutlineUpdated(path);
       }
     }
   }
