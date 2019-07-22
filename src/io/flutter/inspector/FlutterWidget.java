@@ -159,7 +159,7 @@ public class FlutterWidget {
 
     private void init() {
       try {
-        // Local copy of: https://github.com/flutter/website/tree/master/_data/catalog/widget.json
+        // Local copy of: https://github.com/flutter/website/blob/master/src/_data/catalog/widgets.json
         final URL resource = getClass().getResource("widgets.json");
         final byte[] contentBytes = ByteStreams.toByteArray((InputStream)resource.getContent());
         final String content = new String(contentBytes, Charsets.UTF_8);
