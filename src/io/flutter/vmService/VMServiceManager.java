@@ -258,11 +258,16 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
           final String name = extensionData.get("extension").getAsString();
           final String valueFromJson = extensionData.get("value").getAsString();
 
-          final ToggleableServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsWhitelist.get(name);
+          final ServiceExtensionDescription extension = ServiceExtensions.toggleableExtensionsWhitelist.get(name);
           if (extension != null) {
             final Object value = getExtensionValueFromEventJson(name, valueFromJson);
-            final boolean enabled = value.equals(extension.getEnabledValue());
-            setServiceExtensionState(name, enabled, value);
+            if (extension instanceof ToggleableServiceExtensionDescription) {
+              final ToggleableServiceExtensionDescription toggleableExtension = (ToggleableServiceExtensionDescription)extension;
+              setServiceExtensionState(name, value.equals(toggleableExtension.getEnabledValue()), value);
+            }
+            else {
+              setServiceExtensionState(name, true, value);
+            }
           }
           break;
         case "Flutter.Error":
@@ -303,13 +308,13 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   }
 
   private Object getExtensionValueFromEventJson(String name, String valueFromJson) {
-    final Object enabledValue =
-      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
+    final Object sampleValue =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValues().get(0);
 
-    if (enabledValue instanceof Boolean) {
+    if (sampleValue instanceof Boolean) {
       return valueFromJson.equals("true");
     }
-    else if (enabledValue instanceof Double) {
+    else if (sampleValue instanceof Double) {
       return Double.valueOf(valueFromJson);
     }
     else {
@@ -370,22 +375,22 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     if (!ServiceExtensions.toggleableExtensionsWhitelist.containsKey(name)) {
       return;
     }
-    final Object enabledValue =
-      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue();
+    final Object sampleValue =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValues().get(0);
 
     final CompletableFuture<JsonObject> response = app.callServiceExtension(name);
     response.thenApply(obj -> {
       Object value = null;
       if (obj != null) {
-        if (enabledValue instanceof Boolean) {
+        if (sampleValue instanceof Boolean) {
           value = obj.get("enabled").getAsString().equals("true");
           maybeRestoreExtension(name, value);
         }
-        else if (enabledValue instanceof String) {
+        else if (sampleValue instanceof String) {
           value = obj.get("value").getAsString();
           maybeRestoreExtension(name, value);
         }
-        else if (enabledValue instanceof Double) {
+        else if (sampleValue instanceof Double) {
           value = Double.parseDouble(obj.get("value").getAsString());
           maybeRestoreExtension(name, value);
         }
@@ -395,7 +400,14 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   }
 
   private void maybeRestoreExtension(String name, Object value) {
-    if (value.equals(ServiceExtensions.toggleableExtensionsWhitelist.get(name).getEnabledValue())) {
+    if (ServiceExtensions.toggleableExtensionsWhitelist.get(name) instanceof ToggleableServiceExtensionDescription) {
+      final ToggleableServiceExtensionDescription extensionDescription =
+        (ToggleableServiceExtensionDescription)ServiceExtensions.toggleableExtensionsWhitelist.get(name);
+      if (value.equals(extensionDescription.getEnabledValue())) {
+        setServiceExtensionState(name, true, value);
+      }
+    }
+    else {
       setServiceExtensionState(name, true, value);
     }
   }

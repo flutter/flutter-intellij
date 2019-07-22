@@ -5,39 +5,44 @@
  */
 package io.flutter.vmService;
 
-public class ToggleableServiceExtensionDescription<T> {
-  private final String extension;
-  private final T enabledValue;
-  private final T disabledValue;
-  private final String enabledText;
-  private final String disabledText;
+import java.util.ArrayList;
+import java.util.Arrays;
 
+public class ToggleableServiceExtensionDescription<T> extends ServiceExtensionDescription {
   public ToggleableServiceExtensionDescription(
-    String extension, T enabledValue, T disabledValue, String enabledText, String disabledText) {
-    this.extension = extension;
-    this.enabledValue = enabledValue;
-    this.disabledValue = disabledValue;
-    this.enabledText = enabledText;
-    this.disabledText = disabledText;
+    String extension,
+    String description,
+    T enabledValue,
+    T disabledValue,
+    String enabledText,
+    String disabledText
+  ) {
+    super(extension,
+          description,
+          new ArrayList<>(Arrays.asList(enabledValue, disabledValue)),
+          new ArrayList<>(Arrays.asList(enabledText, disabledText)));
   }
 
-  public String getExtension() {
-    return extension;
-  }
+  static int enabledIndex = 0;
+  static int disabledIndex = 1;
 
   public T getEnabledValue() {
-    return enabledValue;
+    @SuppressWarnings("unchecked") final ArrayList<T> values = (ArrayList<T>)super.getValues();
+    return values.get(enabledIndex);
   }
 
   public T getDisabledValue() {
-    return disabledValue;
+    @SuppressWarnings("unchecked") final ArrayList<T> values = (ArrayList<T>)super.getValues();
+    return values.get(disabledIndex);
   }
 
   public String getEnabledText() {
-    return enabledText;
+    @SuppressWarnings("unchecked") final ArrayList<String> tooltips = (ArrayList<String>)super.getTooltips();
+    return tooltips.get(enabledIndex);
   }
 
   public String getDisabledText() {
-    return disabledText;
+    @SuppressWarnings("unchecked") final ArrayList<String> values = (ArrayList<String>)super.getTooltips();
+    return values.get(disabledIndex);
   }
 }
