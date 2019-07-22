@@ -45,13 +45,7 @@ public class FakeActiveEditorsOutlineService extends ActiveEditorsOutlineService
 
   @Nullable
   @Override
-  protected FlutterOutline get(String path) {
-    return flutterOutline;
-  }
-
-  @Nullable
-  @Override
-  public FlutterOutline request(@NotNull VirtualFile file) {
+  public FlutterOutline get(String path) {
     return flutterOutline;
   }
 }

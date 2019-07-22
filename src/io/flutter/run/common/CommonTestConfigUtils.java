@@ -6,10 +6,18 @@
 package io.flutter.run.common;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiManager;
+import com.intellij.psi.impl.PsiModificationTrackerImpl;
+import com.intellij.psi.impl.source.resolve.ResolveCache;
+import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
 import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
@@ -68,39 +76,16 @@ public abstract class CommonTestConfigUtils {
    */
   protected Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
-    final FlutterOutline outline = getActiveEditorsOutlineService(project).request(file.getVirtualFile());
+    final FlutterOutline outline = getActiveEditorsOutlineService(project).get(file.getVirtualFile());
+    // If the outline is outdated, then request a new pass to generate line markers.
+    if (isOutdated(project, file, outline)) {
+      forceFileAnnotation(project, file.getVirtualFile());
+    }
     final Map<DartCallExpression, TestType> callToTestType = new HashMap<>();
     if (outline != null) {
       visit(outline, callToTestType, file);
     }
     return callToTestType;
-  }
-
-  /**
-   * Traverses the {@param outline} tree and adds to {@param callToTestType } the {@link DartCallExpression}s that are tests or test groups.
-   */
-  private void visit(@NotNull FlutterOutline outline, @NotNull Map<DartCallExpression, TestType> callToTestType, @NotNull PsiFile file) {
-    @NotNull final PsiElement element = Objects.requireNonNull(file.findElementAt(outline.getOffset()));
-    if (outline.getDartElement() != null) {
-      switch (outline.getDartElement().getKind()) {
-        case UNIT_TEST_GROUP:
-          // We found a test group.
-          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element), TestType.GROUP);
-          break;
-        case UNIT_TEST_TEST:
-          // We found a unit test.
-          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element), TestType.SINGLE);
-          break;
-        default:
-          // We found no test.
-          break;
-      }
-    }
-    if (outline.getChildren() != null) {
-      for (FlutterOutline child : outline.getChildren()) {
-        visit(child, callToTestType, file);
-      }
-    }
   }
 
   @VisibleForTesting
@@ -163,5 +148,68 @@ public abstract class CommonTestConfigUtils {
   @VisibleForTesting
   protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
     return ActiveEditorsOutlineService.getInstance(project);
+  }
+
+  /**
+   * Checks that the outline and file match.
+   *
+   * <p>
+   * An outline and file match if they have the same length.
+   */
+  private boolean isOutdated(@NotNull Project project, @NotNull PsiFile file, @Nullable FlutterOutline outline) {
+    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(project);
+    if (outline == null) {
+      return true;
+    }
+    return file.getTextLength() != outline.getLength()
+           && file.getTextLength() != das.getConvertedOffset(file.getVirtualFile(), outline.getLength());
+  }
+
+  /**
+   * Forces IntelliJ to recompute line markers and other file annotations.
+   */
+  // TODO(djshuckerow): this can be merged with the Dart plugin's forceFileAnnotation:
+  // https://github.com/JetBrains/intellij-plugins/blob/master/Dart/src/com/jetbrains/lang/dart/analyzer/DartServerData.java#L300
+  private void forceFileAnnotation(@NotNull final Project project, @Nullable final VirtualFile file) {
+    if (file != null) {
+      // It's ok to call DaemonCodeAnalyzer.restart() right in this thread, without invokeLater(),
+      // but it will cache RemoteAnalysisServerImpl$ServerResponseReaderThread in FileStatusMap.threads and as a result,
+      // DartAnalysisServerService.myProject will be leaked in tests
+      ApplicationManager.getApplication()
+        .invokeLater(
+          () -> {
+            DaemonCodeAnalyzer.getInstance(project).restart();
+          },
+          ModalityState.NON_MODAL,
+          project.getDisposed()
+        );
+    }
+  }
+
+  /**
+   * Traverses the {@param outline} tree and adds to {@param callToTestType } the {@link DartCallExpression}s that are tests or test groups.
+   */
+  private void visit(@NotNull FlutterOutline outline, @NotNull Map<DartCallExpression, TestType> callToTestType, @NotNull PsiFile file) {
+    @NotNull final PsiElement element = Objects.requireNonNull(file.findElementAt(outline.getOffset()));
+    if (outline.getDartElement() != null) {
+      switch (outline.getDartElement().getKind()) {
+        case UNIT_TEST_GROUP:
+          // We found a test group.
+          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element), TestType.GROUP);
+          break;
+        case UNIT_TEST_TEST:
+          // We found a unit test.
+          callToTestType.put(DartSyntax.findClosestEnclosingFunctionCall(element), TestType.SINGLE);
+          break;
+        default:
+          // We found no test.
+          break;
+      }
+    }
+    if (outline.getChildren() != null) {
+      for (FlutterOutline child : outline.getChildren()) {
+        visit(child, callToTestType, file);
+      }
+    }
   }
 }

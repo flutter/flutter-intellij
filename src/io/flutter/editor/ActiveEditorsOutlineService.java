@@ -46,10 +46,6 @@ import java.util.concurrent.locks.ReentrantLock;
  * </ul>
  */
 public class ActiveEditorsOutlineService implements Disposable {
-  /**
-   * How long for {@link #request} to wait for a new {@link FlutterOutline} to become available before it times out.
-   */
-  private static final long TIMEOUT_MILLIS = 1000;
 
   private final Project project;
   private final FlutterDartAnalysisServer analysisServer;
@@ -176,64 +172,17 @@ public class ActiveEditorsOutlineService implements Disposable {
   /**
    * Gets the most up-to-date {@link FlutterOutline} for the file at {@param path}.
    */
-  @VisibleForTesting
   @Nullable
-  protected FlutterOutline get(String path) {
+  public FlutterOutline get(String path) {
     return pathToOutline.get(path);
   }
 
   /**
-   * Gets the up-to-date {@link FlutterOutline} for the {@param file}.
-   *
-   * <p>
-   * If the cached outline is not updated yet, will request an updated outline from the analysis service. The request
-   * will time out and complete after {@link #TIMEOUT_MILLIS} milliseconds pass.
-   *
-   * <p>
-   * Note that in general, it is preferable to just listen for {@link FlutterOutline} updates with a {@link Listener}.
-   * However, in cases like the {@link io.flutter.run.common.CommonTestConfigUtils}, where it is impossible to request
-   * that IntelliJ update the test line markers, it is necessary to make this request instead.
+   * Gets the most up-to-date {@link FlutterOutline} for {@param file}.
    */
-  public FlutterOutline request(@NotNull VirtualFile file) {
-    final String path = file.getCanonicalPath();
-    if (isUpToDate(file)) {
-      return get(path);
-    }
-    // If we haven't gotten any data, set up a temporary listener for this file, and wait for a response.
-    // We block to wait with a Lock.
-    final Lock lock = new ReentrantLock();
-    final Condition notLoaded = lock.newCondition();
-    lock.lock();
-    final Listener listener = (p, o) -> {
-      if (p.equals(path)) {
-        notLoaded.signal();
-      }
-    };
-    addListener(listener);
-    try {
-      notLoaded.await(TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
-    }
-    catch (InterruptedException ignored) {
-      // The thread was interrupted while waiting for the load.
-    }
-    finally {
-      lock.unlock();
-      removeListener(listener);
-    }
-    // Return the new value, which either:
-    //  - is updated, and the listener unlocked the request
-    //  - is outdated but the listener timed out waiting for a response.
-    return get(path);
-  }
-
-  private boolean isUpToDate(@NotNull VirtualFile file) {
-    final FlutterOutline outline = get(file.getCanonicalPath());
-    final PsiFile psiFile = getPsiFile(file);
-    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(project);
-    return psiFile != null && outline != null && (
-      psiFile.getTextLength() == outline.getLength()
-      || psiFile.getTextLength() == das.getConvertedOffset(file, outline.getLength())
-    );
+  @Nullable
+  public FlutterOutline get(@NotNull VirtualFile file) {
+    return get(file.getCanonicalPath());
   }
 
   @VisibleForTesting

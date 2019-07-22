@@ -171,7 +171,7 @@ public class ActiveEditorsOutlineServiceTest {
 
     assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    assertThat(service.request(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
+    assertThat(service.get(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
   }
 
   @Test
@@ -191,7 +191,7 @@ public class ActiveEditorsOutlineServiceTest {
     assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
     // TODO(djshuckerow): Run this in a fake async executor so that the test doesn't slow travis down.
     final long now = Instant.now().toEpochMilli();
-    assertThat(service.request(mainFile.getVirtualFile()), equalTo(firstFlutterOutline));
+    assertThat(service.get(mainFile.getVirtualFile()), equalTo(firstFlutterOutline));
     final long after = Instant.now().toEpochMilli();
     assertThat(after - now >= 500, equalTo(true));
   }
@@ -221,7 +221,7 @@ public class ActiveEditorsOutlineServiceTest {
     }, 100);
     // TODO(djshuckerow): Run this in a fake async executor so that the test doesn't slow travis down.
     final long now = Instant.now().toEpochMilli();
-    assertThat(service.request(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
+    assertThat(service.get(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
     final long after = Instant.now().toEpochMilli();
     assertThat(after - now >= 100, equalTo(true));
   }
