@@ -16,6 +16,7 @@ import com.jetbrains.lang.dart.psi.DartStringLiteralExpression;
 import io.flutter.dart.DartSyntax;
 import io.flutter.editor.ActiveEditorsOutlineService;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.dartlang.analysis.server.protocol.ElementKind;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,9 +46,9 @@ public abstract class CommonTestConfigUtils {
    * <p>
    * A test call is one of the following:
    * <ul>
-   * <li>{@link TestType.SINGLE} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_TEST}</li>
-   * <li>{@link TestType.GROUP} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link UNIT_TEST_GROUP}</li>
-   * <li>{@link TestType.MAIN} if the call is a {@link DartFunctionDeclarationWithBodyOrNative} named "main" that includes test calls.</li>
+   * <li>{@link TestType#SINGLE} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link ElementKind#UNIT_TEST_TEST}</li>
+   * <li>{@link TestType#GROUP} if the call is a {@link DartCallExpression} marked by the {@link FlutterOutline} as {@link ElementKind#UNIT_TEST_GROUP}</li>
+   * <li>{@link TestType#MAIN} if the call is a {@link DartFunctionDeclarationWithBodyOrNative} named "main" that includes test calls.</li>
    * </ul>
    *
    * @return a {@link TestType} if {@param element} corresponds to a test call site, or null if {@param element} is not a test call site.
