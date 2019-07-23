@@ -95,7 +95,7 @@ public class EventStreamTest {
       eventStream.setValue(200);
       eventStream.setValue(200);
     });
-    checkLog("42", "100", "100", "100", "200", "200");
+    checkLog("42", "200");
   }
 
   @Test
@@ -107,7 +107,7 @@ public class EventStreamTest {
       eventStream.setValue(100);
       eventStream.setValue(200);
     });
-    checkLog("null", "100", "200");
+    checkLog("null", "200");
   }
 
   @Test

@@ -5,39 +5,44 @@
  */
 package io.flutter.vmService;
 
-public class ToggleableServiceExtensionDescription<T> {
-  private final String extension;
-  private final T enabledValue;
-  private final T disabledValue;
-  private final String enabledText;
-  private final String disabledText;
+import java.util.Arrays;
+import java.util.List;
 
+public class ToggleableServiceExtensionDescription<T> extends ServiceExtensionDescription {
   public ToggleableServiceExtensionDescription(
-    String extension, T enabledValue, T disabledValue, String enabledText, String disabledText) {
-    this.extension = extension;
-    this.enabledValue = enabledValue;
-    this.disabledValue = disabledValue;
-    this.enabledText = enabledText;
-    this.disabledText = disabledText;
+    String extension,
+    String description,
+    T enabledValue,
+    T disabledValue,
+    String enabledText,
+    String disabledText
+  ) {
+    super(extension,
+          description,
+          Arrays.asList(enabledValue, disabledValue),
+          Arrays.asList(enabledText, disabledText));
   }
 
-  public String getExtension() {
-    return extension;
-  }
+  static int enabledIndex = 0;
+  static int disabledIndex = 1;
 
   public T getEnabledValue() {
-    return enabledValue;
+    @SuppressWarnings("unchecked") final List<T> values = super.getValues();
+    return values.get(enabledIndex);
   }
 
   public T getDisabledValue() {
-    return disabledValue;
+    @SuppressWarnings("unchecked") final List<T> values = super.getValues();
+    return values.get(disabledIndex);
   }
 
   public String getEnabledText() {
-    return enabledText;
+    @SuppressWarnings("unchecked") final List<String> tooltips = super.getTooltips();
+    return tooltips.get(enabledIndex);
   }
 
   public String getDisabledText() {
-    return disabledText;
+    @SuppressWarnings("unchecked") final List<String> tooltips = super.getTooltips();
+    return tooltips.get(disabledIndex);
   }
 }
