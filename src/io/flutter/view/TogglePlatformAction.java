@@ -19,15 +19,19 @@ import io.flutter.vmService.ServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.List;
 
 class TogglePlatformAction extends ToolbarComboBoxAction {
   private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
+  private PlatformTarget selectedPlatform;
+
   public TogglePlatformAction(@NotNull AppState appState, @NotNull FlutterApp app) {
     super();
     this.app = app;
+    setSmallVariant(false);
     myActionGroup = createPopupActionGroup(appState, app);
   }
 
@@ -39,7 +43,17 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
 
   @Override
   public final void update(AnActionEvent e) {
-    e.getPresentation().setText("Target Platform");
+    app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
+      selectedPlatform = PlatformTarget.valueOf((String)state.getValue());
+    }, true);
+
+    String selectorText = "Platform:";
+    if (selectedPlatform != null) {
+      final int platformIndex = extensionDescription.getValues().indexOf(selectedPlatform.name());
+      selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
+    }
+
+    e.getPresentation().setText(selectorText);
     e.getPresentation().setDescription(extensionDescription.getDescription());
     e.getPresentation().setEnabled(app.isSessionActive());
   }
@@ -106,10 +120,6 @@ class PlatformTargetAction extends FlutterViewAction implements Toggleable, Disp
         extensionDescription.getExtension(),
         true,
         platformTarget.name());
-
-      app.getConsole().print(
-        FlutterBundle.message("flutter.view.togglePlatform.output", platformTarget.name()),
-        ConsoleViewContentType.SYSTEM_OUTPUT);
     }
   }
 

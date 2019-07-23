@@ -308,13 +308,13 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
   }
 
   private Object getExtensionValueFromEventJson(String name, String valueFromJson) {
-    final Object sampleValue =
-      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValues().get(0);
+    final Class valueClass =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValueClass();
 
-    if (sampleValue instanceof Boolean) {
+    if (valueClass == Boolean.class) {
       return valueFromJson.equals("true");
     }
-    else if (sampleValue instanceof Double) {
+    else if (valueClass == Double.class) {
       return Double.valueOf(valueFromJson);
     }
     else {
@@ -375,22 +375,22 @@ public class VMServiceManager implements FlutterApp.FlutterAppListener {
     if (!ServiceExtensions.toggleableExtensionsWhitelist.containsKey(name)) {
       return;
     }
-    final Object sampleValue =
-      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValues().get(0);
+    final Class valueClass =
+      ServiceExtensions.toggleableExtensionsWhitelist.get(name).getValueClass();
 
     final CompletableFuture<JsonObject> response = app.callServiceExtension(name);
     response.thenApply(obj -> {
       Object value = null;
       if (obj != null) {
-        if (sampleValue instanceof Boolean) {
+        if (valueClass == Boolean.class) {
           value = obj.get("enabled").getAsString().equals("true");
           maybeRestoreExtension(name, value);
         }
-        else if (sampleValue instanceof String) {
+        else if (valueClass == String.class) {
           value = obj.get("value").getAsString();
           maybeRestoreExtension(name, value);
         }
-        else if (sampleValue instanceof Double) {
+        else if (valueClass == Double.class) {
           value = Double.parseDouble(obj.get("value").getAsString());
           maybeRestoreExtension(name, value);
         }

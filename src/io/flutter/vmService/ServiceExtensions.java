@@ -5,7 +5,6 @@
  */
 package io.flutter.vmService;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +70,8 @@ public class ServiceExtensions {
     new ServiceExtensionDescription<>(
       "ext.flutter.platformOverride",
       "Override Target Platform",
-      new ArrayList<>(Arrays.asList("iOS", "android", "fuchsia")),
-      new ArrayList<>(Arrays.asList("Platform: iOS", "Platform: Android", "Platform: Fuchsia")));
+      Arrays.asList("iOS", "android", "fuchsia"),
+      Arrays.asList("Platform: iOS", "Platform: Android", "Platform: Fuchsia"));
 
   public static final ToggleableServiceExtensionDescription<Boolean> toggleSelectWidgetMode =
     new ToggleableServiceExtensionDescription<>(

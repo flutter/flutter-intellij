@@ -5,16 +5,16 @@
  */
 package io.flutter.vmService;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public class ServiceExtensionDescription<T> {
   private final String extension;
   private final String description;
-  private final ArrayList<T> values;
-  private final ArrayList<String> tooltips;
+  private final List<T> values;
+  private final List<String> tooltips;
 
   public ServiceExtensionDescription(
-    String extension, String description, ArrayList<T> values, ArrayList<String> tooltips) {
+    String extension, String description, List<T> values, List<String> tooltips) {
     this.extension = extension;
     this.description = description;
     this.values = values;
@@ -29,11 +29,15 @@ public class ServiceExtensionDescription<T> {
     return description;
   }
 
-  public ArrayList<T> getValues() {
+  public List<T> getValues() {
     return values;
   }
 
-  public ArrayList<String> getTooltips() {
+  public List<String> getTooltips() {
     return tooltips;
+  }
+
+  public Class getValueClass() {
+    return values.get(0).getClass();
   }
 }
