@@ -79,11 +79,8 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
 
   private static final Logger LOG = Logger.getInstance(FlutterView.class);
 
-  private static class PerAppState {
-    ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
+  private static class PerAppState extends AppState {
     ArrayList<InspectorPanel> inspectorPanels = new ArrayList<>();
-    JBRunnerTabs tabs;
-    Content content;
     boolean sendRestartNotificationOnNextFrame = false;
   }
 
@@ -182,26 +179,24 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
                                            Disposable parentDisposable,
                                            InspectorService inspectorService) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
-    toolbarGroup.add(registerAction(new ToggleInspectModeAction(app)));
+    final PerAppState state = getOrCreateStateForApp(app);
+
+    toolbarGroup.add(state.registerAction(new ToggleInspectModeAction(app)));
     if (inspectorService != null) {
       toolbarGroup.addSeparator();
-      toolbarGroup.add(registerAction(new ForceRefreshAction(app, inspectorService)));
+      toolbarGroup.add(state.registerAction(new ForceRefreshAction(app, inspectorService)));
     }
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
-    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
+    toolbarGroup.add(state.registerAction(new PerformanceOverlayAction(app)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new DebugPaintAction(app)));
-    toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
+    toolbarGroup.add(state.registerAction(new DebugPaintAction(app)));
+    toolbarGroup.add(state.registerAction(new ShowPaintBaselinesAction(app, true)));
     toolbarGroup.addSeparator();
-    toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
+    toolbarGroup.add(state.registerAction(new TimeDilationAction(app, true)));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(new TogglePlatformAction(getOrCreateStateForApp(app), app));
 
     return toolbarGroup;
-  }
-
-  FlutterViewAction registerAction(FlutterViewAction action) {
-    getOrCreateStateForApp(action.app).flutterViewActions.add(action);
-    return action;
   }
 
   private PerAppState getStateForApp(FlutterApp app) {
@@ -254,7 +249,7 @@ public class FlutterView implements PersistentStateComponent<FlutterViewState>, 
     final DefaultActionGroup toolbarGroup = createToolbar(toolWindow, app, runnerTabs, inspectorService);
     toolWindowPanel.setToolbar(ActionManager.getInstance().createActionToolbar("FlutterViewToolbar", toolbarGroup, true).getComponent());
 
-    toolbarGroup.add(new OverflowAction(this, app));
+    toolbarGroup.add(new OverflowAction(getOrCreateStateForApp(app), this, app));
 
     final ActionToolbar toolbar = ActionManager.getInstance().createActionToolbar("InspectorToolbar", toolbarGroup, true);
     final JComponent toolbarComponent = toolbar.getComponent();
@@ -754,11 +749,11 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
   private final @NotNull FlutterApp app;
   private final DefaultActionGroup myActionGroup;
 
-  public OverflowAction(@NotNull FlutterView view, @NotNull FlutterApp app) {
+  public OverflowAction(@NotNull AppState appState, @NotNull FlutterView view, @NotNull FlutterApp app) {
     super();
 
     this.app = app;
-    myActionGroup = createPopupActionGroup(view, app);
+    myActionGroup = createPopupActionGroup(appState, view, app);
   }
 
   @NotNull
@@ -773,21 +768,32 @@ class OverflowAction extends ToolbarComboBoxAction implements RightAlignedToolba
     e.getPresentation().setEnabled(app.isSessionActive());
   }
 
-  private static DefaultActionGroup createPopupActionGroup(FlutterView view, FlutterApp app) {
+  private static DefaultActionGroup createPopupActionGroup(AppState appState, FlutterView view, FlutterApp app) {
     final DefaultActionGroup group = new DefaultActionGroup();
 
-    group.add(view.registerAction(new RepaintRainbowAction(app)));
+    group.add(appState.registerAction(new RepaintRainbowAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new ShowDebugBannerAction(app)));
+    group.add(appState.registerAction(new ShowDebugBannerAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
-    group.add(view.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
+    group.add(appState.registerAction(new AutoHorizontalScrollAction(app, view.shouldAutoHorizontalScroll)));
+    group.add(appState.registerAction(new HighlightNodesShownInBothTrees(app, view.highlightNodesShownInBothTrees)));
     group.addSeparator();
-    group.add(view.registerAction(new FlutterViewDevToolsAction(app)));
+    group.add(appState.registerAction(new FlutterViewDevToolsAction(app)));
     group.addSeparator();
-    group.add(view.registerAction(new OpenTimelineViewAction(app)));
-    group.add(view.registerAction(new OpenObservatoryAction(app)));
+    group.add(appState.registerAction(new OpenTimelineViewAction(app)));
+    group.add(appState.registerAction(new OpenObservatoryAction(app)));
 
     return group;
+  }
+}
+
+class AppState {
+  ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
+  JBRunnerTabs tabs;
+  Content content;
+
+  FlutterViewAction registerAction(FlutterViewAction action) {
+    flutterViewActions.add(action);
+    return action;
   }
 }

@@ -15,6 +15,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> debugAllowBanner =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.debugAllowBanner",
+      "Debug Banner",
       true,
       false,
       "Hide Debug Mode Banner",
@@ -23,6 +24,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> debugPaint =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.debugPaint",
+      "Debug Paint",
       true,
       false,
       "Hide Debug Paint",
@@ -31,6 +33,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> debugPaintBaselines =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.debugPaintBaselinesEnabled",
+      "Paint Baselines",
       true,
       false,
       "Hide Paint Baselines",
@@ -39,6 +42,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> performanceOverlay =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.showPerformanceOverlay",
+      "Performance Overlay",
       true,
       false,
       "Hide Performance Overlay",
@@ -47,6 +51,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> repaintRainbow =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.repaintRainbow",
+      "Repaint Rainbow",
       true,
       false,
       "Hide Repaint Rainbow",
@@ -55,22 +60,23 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Double> slowAnimations =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.timeDilation",
+      "Slow Animations",
       5.0,
       1.0,
       "Disable Slow Animations",
       "Enable Slow Animations");
 
-  public static final ToggleableServiceExtensionDescription<String> togglePlatformMode =
-    new ToggleableServiceExtensionDescription<>(
+  public static final ServiceExtensionDescription<String> togglePlatformMode =
+    new ServiceExtensionDescription<>(
       "ext.flutter.platformOverride",
-      "iOS",
-      "android",
-      "Toggle Platform",
-      "Toggle Platform");
+      "Override Target Platform",
+      Arrays.asList("iOS", "android", "fuchsia"),
+      Arrays.asList("Platform: iOS", "Platform: Android", "Platform: Fuchsia"));
 
   public static final ToggleableServiceExtensionDescription<Boolean> toggleSelectWidgetMode =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.inspector.show",
+      "Select Widget Mode",
       true,
       false,
       "Disable Select Widget Mode",
@@ -79,6 +85,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> toggleShowStructuredErrors =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.inspector.structuredErrors",
+      "Structured Errors",
       true,
       false,
       "Disable Showing Structured Errors",
@@ -87,6 +94,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> trackRebuildWidgets =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.inspector.trackRebuildDirtyWidgets",
+      "Track Widget Rebuilds",
       true,
       false,
       "Do Not Track Widget Rebuilds",
@@ -95,6 +103,7 @@ public class ServiceExtensions {
   public static final ToggleableServiceExtensionDescription<Boolean> trackRepaintWidgets =
     new ToggleableServiceExtensionDescription<>(
       "ext.flutter.inspector.trackRepaintWidgets",
+      "Track Widget Repaints",
       true,
       false,
       "Do Not Track Widget Repaints",
@@ -112,7 +121,7 @@ public class ServiceExtensions {
   public static final String loggingChannels = "ext.flutter.logs.loggingChannels";
   public static final String designerRender = "ext.flutter.designer.render";
 
-  static final List<ToggleableServiceExtensionDescription> toggleableExtensionDescriptions = Arrays.asList(
+  static final List<ServiceExtensionDescription> toggleableExtensionDescriptions = Arrays.asList(
     debugAllowBanner,
     debugPaint,
     debugPaintBaselines,
@@ -125,9 +134,9 @@ public class ServiceExtensions {
     trackRebuildWidgets,
     trackRepaintWidgets);
 
-  public static final Map<String, ToggleableServiceExtensionDescription> toggleableExtensionsWhitelist =
+  public static final Map<String, ServiceExtensionDescription> toggleableExtensionsWhitelist =
     toggleableExtensionDescriptions.stream().collect(
       Collectors.toMap(
-        ToggleableServiceExtensionDescription::getExtension,
+        ServiceExtensionDescription::getExtension,
         extensionDescription -> extensionDescription));
 }

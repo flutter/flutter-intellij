@@ -5,24 +5,84 @@
  */
 package io.flutter.view;
 
-import com.intellij.execution.ui.ConsoleViewContentType;
-import com.intellij.icons.AllIcons;
+import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import io.flutter.FlutterBundle;
+import com.intellij.openapi.actionSystem.DefaultActionGroup;
+import com.intellij.openapi.actionSystem.Toggleable;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.utils.StreamSubscription;
+import io.flutter.vmService.ServiceExtensionState;
 import io.flutter.vmService.ServiceExtensions;
-import io.flutter.vmService.ToggleableServiceExtensionDescription;
+import io.flutter.vmService.ServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.concurrent.CompletableFuture;
+import javax.swing.*;
 
-class TogglePlatformAction extends FlutterViewAction {
-  private static final ToggleableServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
-  private Boolean isCurrentlyAndroid;
-  CompletableFuture<Boolean> cachedHasExtensionFuture;
+class TogglePlatformAction extends ToolbarComboBoxAction {
+  private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
+  private final @NotNull FlutterApp app;
+  private final @NotNull AppState appState;
+  private final DefaultActionGroup myActionGroup;
+  private final FlutterViewAction fuchsiaAction;
 
-  TogglePlatformAction(@NotNull FlutterApp app) {
-    super(app, extensionDescription.getDisabledText(), null, AllIcons.RunConfigurations.Application);
+  private PlatformTarget selectedPlatform;
+
+  public TogglePlatformAction(@NotNull AppState appState, @NotNull FlutterApp app) {
+    super();
+    this.app = app;
+    this.appState = appState;
+    setSmallVariant(false);
+    myActionGroup = createPopupActionGroup(appState, app);
+    fuchsiaAction = new PlatformTargetAction(app, PlatformTarget.fuchsia);
+  }
+
+  @NotNull
+  @Override
+  protected DefaultActionGroup createPopupActionGroup(JComponent button) {
+    return myActionGroup;
+  }
+
+  @Override
+  public final void update(AnActionEvent e) {
+    app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
+      selectedPlatform = PlatformTarget.valueOf((String)state.getValue());
+    }, true);
+
+    String selectorText = "Platform:";
+    if (selectedPlatform != null) {
+      if (selectedPlatform == PlatformTarget.fuchsia && !appState.flutterViewActions.contains(fuchsiaAction)) {
+        myActionGroup.add(appState.registerAction(fuchsiaAction));
+      }
+
+      final int platformIndex = extensionDescription.getValues().indexOf(selectedPlatform.name());
+      selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
+    }
+
+    e.getPresentation().setText(selectorText);
+    e.getPresentation().setDescription(extensionDescription.getDescription());
+    e.getPresentation().setEnabled(app.isSessionActive());
+  }
+
+  private static DefaultActionGroup createPopupActionGroup(AppState appState, FlutterApp app) {
+    final DefaultActionGroup group = new DefaultActionGroup();
+    group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.android)));
+    group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.iOS)));
+    return group;
+  }
+}
+
+class PlatformTargetAction extends FlutterViewAction implements Toggleable, Disposable {
+  private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
+  private final PlatformTarget platformTarget;
+  private StreamSubscription<ServiceExtensionState> currentValueSubscription;
+  private boolean selected = false;
+
+  PlatformTargetAction(@NotNull FlutterApp app, PlatformTarget platformTarget) {
+    super(app,
+          platformTarget.toString(),
+          extensionDescription.getDescription(),
+          null);
+    this.platformTarget = platformTarget;
   }
 
   @Override
@@ -36,34 +96,54 @@ class TogglePlatformAction extends FlutterViewAction {
     app.hasServiceExtension(extensionDescription.getExtension(), (enabled) -> {
       e.getPresentation().setEnabled(app.isSessionActive() && enabled);
     });
+
+    e.getPresentation().putClientProperty(SELECTED_PROPERTY, selected);
+
+    if (currentValueSubscription == null) {
+      currentValueSubscription =
+        app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
+          this.setSelected(e, state);
+        }, true);
+    }
+  }
+
+  @Override
+  public void dispose() {
+    if (currentValueSubscription != null) {
+      currentValueSubscription.dispose();
+      currentValueSubscription = null;
+    }
   }
 
   @Override
   public void perform(AnActionEvent event) {
     if (app.isSessionActive()) {
-      app.togglePlatform().thenAccept(isAndroid -> {
-        if (isAndroid == null) {
-          return;
-        }
+      app.togglePlatform(platformTarget.name());
 
-        app.togglePlatform(!isAndroid).thenAccept(isNowAndroid -> {
-          if (app.getConsole() != null && isNowAndroid != null) {
-            isCurrentlyAndroid = isNowAndroid;
+      app.getVMServiceManager().setServiceExtensionState(
+        extensionDescription.getExtension(),
+        true,
+        platformTarget.name());
+    }
+  }
 
-            app.getConsole().print(
-              FlutterBundle.message("flutter.view.togglePlatform.output",
-                                    isNowAndroid ? "Android" : "iOS"),
-              ConsoleViewContentType.SYSTEM_OUTPUT);
+  public void setSelected(@NotNull AnActionEvent event, ServiceExtensionState state) {
+    final boolean selected = state.getValue().equals(platformTarget.name());
+    this.selected = selected;
+    event.getPresentation().putClientProperty(SELECTED_PROPERTY, selected);
+  }
+}
 
-            app.getVMServiceManager().setServiceExtensionState(
-              extensionDescription.getExtension(),
-              true,
-              isNowAndroid
-              ? extensionDescription.getDisabledValue()
-              : extensionDescription.getEnabledValue());
-          }
-        });
-      });
+enum PlatformTarget {
+  iOS,
+  android {
+    public String toString() {
+      return "Android";
+    }
+  },
+  fuchsia {
+    public String toString() {
+      return "Fuchsia";
     }
   }
 }

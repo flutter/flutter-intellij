@@ -234,12 +234,13 @@ public class FlutterPerfView implements Disposable {
                                            Disposable parentDisposable) {
     final DefaultActionGroup toolbarGroup = new DefaultActionGroup();
     toolbarGroup.add(registerAction(new PerformanceOverlayAction(app)));
-    toolbarGroup.add(registerAction(new TogglePlatformAction(app)));
     toolbarGroup.addSeparator();
     toolbarGroup.add(registerAction(new DebugPaintAction(app)));
     toolbarGroup.add(registerAction(new ShowPaintBaselinesAction(app, true)));
     toolbarGroup.addSeparator();
     toolbarGroup.add(registerAction(new TimeDilationAction(app, true)));
+    toolbarGroup.addSeparator();
+    toolbarGroup.add(new TogglePlatformAction(getOrCreateStateForApp(app), app));
 
     return toolbarGroup;
   }
@@ -360,11 +361,7 @@ public class FlutterPerfView implements Disposable {
     return perAppViewState.computeIfAbsent(app, k -> new PerfViewAppState());
   }
 
-  private static class PerfViewAppState {
-    @Nullable Content content;
+  private static class PerfViewAppState extends AppState {
     @Nullable Disposable disposable;
-    JBRunnerTabs tabs;
-    // TODO(devoncarew): We never query flutterViewActions.
-    ArrayList<FlutterViewAction> flutterViewActions = new ArrayList<>();
   }
 }

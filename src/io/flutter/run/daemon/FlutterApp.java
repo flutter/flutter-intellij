@@ -428,7 +428,7 @@ public class FlutterApp {
     return future;
   }
 
-  public CompletableFuture<Boolean> togglePlatform() {
+  public CompletableFuture<String> togglePlatform() {
     if (myAppId == null) {
       FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
@@ -437,22 +437,22 @@ public class FlutterApp {
     final CompletableFuture<JsonObject> result = callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension());
     return result.thenApply(obj -> {
       //noinspection CodeBlock2Expr
-      return obj != null && "android".equals(obj.get("value").getAsString());
+      return obj.get("value").getAsString();
     });
   }
 
-  public CompletableFuture<Boolean> togglePlatform(boolean showAndroid) {
+  public CompletableFuture<String> togglePlatform(String platform) {
     if (myAppId == null) {
       FlutterUtils.warn(LOG, "cannot invoke togglePlatform on Flutter app because app id is not set");
       return CompletableFuture.completedFuture(null);
     }
 
     final Map<String, Object> params = new HashMap<>();
-    params.put("value", showAndroid ? "android" : "iOS");
+    params.put("value", platform);
     return callServiceExtension(ServiceExtensions.togglePlatformMode.getExtension(), params)
       .thenApply(obj -> {
         //noinspection CodeBlock2Expr
-        return obj != null && "android".equals(obj.get("value").getAsString());
+        return obj != null ? obj.get("value").getAsString() : null;
       });
   }
 
