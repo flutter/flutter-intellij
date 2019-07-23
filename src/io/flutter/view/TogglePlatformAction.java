@@ -5,12 +5,10 @@
  */
 package io.flutter.view;
 
-import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.DefaultActionGroup;
 import com.intellij.openapi.actionSystem.Toggleable;
-import io.flutter.FlutterBundle;
 import io.flutter.run.daemon.FlutterApp;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.vmService.ServiceExtensionState;
@@ -19,20 +17,23 @@ import io.flutter.vmService.ServiceExtensionDescription;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.util.List;
 
 class TogglePlatformAction extends ToolbarComboBoxAction {
   private static final ServiceExtensionDescription extensionDescription = ServiceExtensions.togglePlatformMode;
   private final @NotNull FlutterApp app;
+  private final @NotNull AppState appState;
   private final DefaultActionGroup myActionGroup;
+  private final FlutterViewAction fuchsiaAction;
 
   private PlatformTarget selectedPlatform;
 
   public TogglePlatformAction(@NotNull AppState appState, @NotNull FlutterApp app) {
     super();
     this.app = app;
+    this.appState = appState;
     setSmallVariant(false);
     myActionGroup = createPopupActionGroup(appState, app);
+    fuchsiaAction = new PlatformTargetAction(app, PlatformTarget.fuchsia);
   }
 
   @NotNull
@@ -49,6 +50,10 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
 
     String selectorText = "Platform:";
     if (selectedPlatform != null) {
+      if (selectedPlatform == PlatformTarget.fuchsia && !appState.flutterViewActions.contains(fuchsiaAction)) {
+        myActionGroup.add(appState.registerAction(fuchsiaAction));
+      }
+
       final int platformIndex = extensionDescription.getValues().indexOf(selectedPlatform.name());
       selectorText = (String)extensionDescription.getTooltips().get(platformIndex);
     }
@@ -62,7 +67,6 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
     final DefaultActionGroup group = new DefaultActionGroup();
     group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.android)));
     group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.iOS)));
-    group.add(appState.registerAction(new PlatformTargetAction(app, PlatformTarget.fuchsia)));
     return group;
   }
 }
