@@ -44,15 +44,15 @@ public class FlutterSurveyNotifications {
   private static final String SURVEY_TAKEN = "io.flutter.survey.2019.q3.alreadyTaken";
   private static final String SURVEY_URL = "https://google.qualtrics.com/jfe/form/SV_3kiGXYfYOfXUjB3?Source=IntelliJ&ClientID=";
 
-  private static long SURVEY_START;
-  private static long SURVEY_END;
+  private static long SURVEY_START_MS_EPOCH;
+  private static long SURVEY_END_MS_EPOCH;
 
   static {
     final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
     dateFormat.setTimeZone(TimeZone.getTimeZone("PST"));
     try {
-      SURVEY_START = dateFormat.parse("2019/08/12 9:00").getTime();
-      SURVEY_END = dateFormat.parse("2019/08/24 18:00").getTime();
+      SURVEY_START_MS_EPOCH = dateFormat.parse("2019/08/12 9:00").getTime();
+      SURVEY_END_MS_EPOCH = dateFormat.parse("2019/08/24 18:00").getTime();
     }
     catch (ParseException e) {
       // Shouldn't happen.
@@ -61,7 +61,7 @@ public class FlutterSurveyNotifications {
 
   private static boolean isSurveyOpen() {
     final long now = System.currentTimeMillis();
-    return now >= SURVEY_START && now <= SURVEY_END;
+    return now >= SURVEY_START_MS_EPOCH && now <= SURVEY_END_MS_EPOCH;
   }
 
   interface FlutterSurveyNotifier {
