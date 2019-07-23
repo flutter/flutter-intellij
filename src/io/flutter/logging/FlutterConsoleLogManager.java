@@ -48,7 +48,8 @@ public class FlutterConsoleLogManager {
 
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
 
-  private static final ConsoleViewContentType TITLE_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
+  private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
+    new ConsoleViewContentType("title", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.toTextAttributes());
   private static final ConsoleViewContentType NORMAL_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
   private static final ConsoleViewContentType SUBTLE_CONTENT_TYPE =
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
@@ -96,6 +97,14 @@ public class FlutterConsoleLogManager {
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
+      final int errorsSinceReload;
+      if (jsonObject.has("errorsSinceReload")) {
+        errorsSinceReload = jsonObject.get("errorsSinceReload").getAsInt();
+      }
+      else {
+        errorsSinceReload = 0;
+      }
+
       // Send analytics for the diagnosticsNode.
       final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
       if (errorId != null) {
@@ -105,7 +114,7 @@ public class FlutterConsoleLogManager {
       if (SHOW_STRUCTURED_ERRORS) {
         queue.add(() -> {
           try {
-            processFlutterErrorEvent(diagnosticsNode);
+            processFlutterErrorEvent(diagnosticsNode, errorsSinceReload);
           }
           catch (Throwable t) {
             LOG.warn(t);
@@ -124,37 +133,115 @@ public class FlutterConsoleLogManager {
   /**
    * Pretty print the error using the available console syling attributes.
    */
-  private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
+  private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode, int errorsSinceReload) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    // ╠═ ... ═╣, or, ╔═ ... ═╗, or, ═╣ ... ╠═, or, ═╡ ... ╞═
+    final boolean terseError = errorsSinceReload != 0;
+
     // TODO(devoncarew): Potentially change the error separator chars based on the error type (overflow, ...).
-    String titleLine = "╠═";
-    titleLine += StringUtil.repeat(errorSeparatorChar, Math.max(errorSeparatorLength - 4 - description.length(), 0) / 3);
-    titleLine += description;
-    titleLine += StringUtil.repeat(errorSeparatorChar, Math.max(errorSeparatorLength - 2 - titleLine.length(), 0));
-    titleLine += "═╣";
+    final String prefix = "════════";
+    final String suffix = "══";
 
-    console.print("\n" + titleLine + "\n", TITLE_CONTENT_TYPE);
-
-    DiagnosticLevel lastLevel = null;
+    console.print("\n" + prefix, TITLE_CONTENT_TYPE);
+    console.print(description, NORMAL_CONTENT_TYPE);
+    console.print(
+      StringUtil.repeat(errorSeparatorChar, Math.max(errorSeparatorLength - prefix.length() - description.length() - suffix.length(), 0)),
+      TITLE_CONTENT_TYPE);
+    console.print(suffix + "\n", TITLE_CONTENT_TYPE);
 
     // TODO(devoncarew): Create a hyperlink to a widget - ala 'widget://inspector-1347'.
 
-    for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
-      // Add blank line between hint and non-hint properties.
-      if (lastLevel != null && lastLevel != property.getLevel()) {
-        if (lastLevel == DiagnosticLevel.hint || property.getLevel() == DiagnosticLevel.hint) {
-          console.print("\n", NORMAL_CONTENT_TYPE);
-        }
+    if (terseError) {
+      for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
+        printTerseNodeProperty(console, "", property);
       }
+    }
+    else {
+      DiagnosticLevel lastLevel = null;
 
-      lastLevel = property.getLevel();
+      for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
+        // Add blank line between hint and non-hint properties.
+        if (lastLevel != null && lastLevel != property.getLevel()) {
+          if (lastLevel == DiagnosticLevel.hint || property.getLevel() == DiagnosticLevel.hint) {
+            console.print("\n", NORMAL_CONTENT_TYPE);
+          }
+        }
 
-      printDiagnosticsNodeProperty(console, "", property, null, false);
+        lastLevel = property.getLevel();
+
+        printDiagnosticsNodeProperty(console, "", property, null, false);
+      }
     }
 
-    console.print(StringUtil.repeat(errorSeparatorChar, titleLine.length()) + "\n\n", TITLE_CONTENT_TYPE);
+    console.print(StringUtil.repeat(errorSeparatorChar, errorSeparatorLength) + "\n\n", TITLE_CONTENT_TYPE);
+  }
+
+  private void printTerseNodeProperty(ConsoleView console, String indent, DiagnosticsNode property) {
+    boolean skip = true;
+
+    if (property.getLevel() == DiagnosticLevel.summary) {
+      skip = false;
+    }
+    else if (property.hasChildren()) {
+      try {
+        final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
+        final ArrayList<DiagnosticsNode> children = future.get();
+        if (children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
+          skip = false;
+        }
+      }
+      catch (InterruptedException | ExecutionException e) {
+        LOG.warn(e);
+      }
+    }
+
+    if (skip) {
+      return;
+    }
+
+    final ConsoleViewContentType contentType = getContentTypeFor(property.getLevel());
+
+    console.print(indent, contentType);
+
+    if (property.getShowName()) {
+      console.print(property.getName(), contentType);
+
+      if (property.getShowSeparator()) {
+        console.print(property.getSeparator() + " ", contentType);
+      }
+    }
+
+    final String description = property.getDescription() == null ? "" : property.getDescription();
+    console.print(description + "\n", contentType);
+
+    if (property.hasChildren()) {
+      try {
+        final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
+        final ArrayList<DiagnosticsNode> children = future.get();
+
+        final String childIndent = getChildIndent(indent, property);
+        for (DiagnosticsNode child : children) {
+          printDiagnosticsNodeProperty(console, childIndent, child, contentType, false);
+        }
+
+        if (property.hasInlineProperties()) {
+          for (DiagnosticsNode childProperty : property.getInlineProperties()) {
+            printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, false);
+          }
+        }
+      }
+      catch (InterruptedException | ExecutionException e) {
+        LOG.warn(e);
+      }
+    }
+    else {
+      if (property.hasInlineProperties()) {
+        final String childIndent = getChildIndent(indent, property);
+        for (DiagnosticsNode childProperty : property.getInlineProperties()) {
+          printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, false);
+        }
+      }
+    }
   }
 
   private void printDiagnosticsNodeProperty(ConsoleView console, String indent, DiagnosticsNode property,
@@ -162,11 +249,6 @@ public class FlutterConsoleLogManager {
                                             boolean isInChild) {
     // TODO(devoncarew): Change the error message display in the framework.
     if (property.getDescription() != null && property.getLevel() == DiagnosticLevel.info) {
-      // Elide framework '◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤...' lines.
-      if (property.getDescription().startsWith("◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤")) {
-        return;
-      }
-
       // Elide framework blank styling lines.
       if (StringUtil.equals("ErrorSpacer", property.getType())) {
         return;
@@ -174,43 +256,28 @@ public class FlutterConsoleLogManager {
     }
 
     if (contentType == null) {
-      if (property.getLevel() == DiagnosticLevel.error) {
-        contentType = ERROR_CONTENT_TYPE;
-      }
-      else if (property.getLevel() == DiagnosticLevel.summary) {
-        contentType = ERROR_CONTENT_TYPE;
-      }
-      else if (property.getLevel() == DiagnosticLevel.hint) {
-        contentType = NORMAL_CONTENT_TYPE;
-      }
-      else {
-        contentType = SUBTLE_CONTENT_TYPE;
-      }
+      contentType = getContentTypeFor(property.getLevel());
     }
 
     console.print(indent, contentType);
 
     if (property.getShowName()) {
       console.print(property.getName(), contentType);
-    }
-    if (property.getShowName() && property.getShowSeparator()) {
-      console.print(property.getSeparator() + " ", contentType);
+
+      if (property.getShowSeparator()) {
+        console.print(property.getSeparator() + " ", contentType);
+      }
     }
 
-    // Print the description.
-    if (property.getDescription() != null) {
-      final String description = property.getDescription();
-      console.print(description + "\n", contentType);
-    }
-    else {
-      console.print("\n", contentType);
-    }
+    final String description = property.getDescription() == null ? "" : property.getDescription();
+    console.print(description + "\n", contentType);
 
     if (property.hasChildren()) {
       try {
         final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
         final ArrayList<DiagnosticsNode> children = future.get();
 
+        // Don't collapse children if it's just a flat list of children.
         if (!isInChild && children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
           final String childIndent = getChildIndent(indent, property);
           for (DiagnosticsNode child : children) {
@@ -277,6 +344,21 @@ public class FlutterConsoleLogManager {
         LOG.warn(t);
       }
     });
+  }
+
+  private ConsoleViewContentType getContentTypeFor(DiagnosticLevel level) {
+    if (level == DiagnosticLevel.error) {
+      return ERROR_CONTENT_TYPE;
+    }
+    else if (level == DiagnosticLevel.summary) {
+      return ERROR_CONTENT_TYPE;
+    }
+    else if (level == DiagnosticLevel.hint) {
+      return NORMAL_CONTENT_TYPE;
+    }
+    else {
+      return SUBTLE_CONTENT_TYPE;
+    }
   }
 
   @VisibleForTesting
