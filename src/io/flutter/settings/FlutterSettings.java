@@ -28,6 +28,7 @@ public class FlutterSettings {
   private static final String disableTrackWidgetCreationKey = "io.flutter.disableTrackWidgetCreation";
   private static final String useFlutterLogView = "io.flutter.useLogView";
   private static final String showWebDesktopDevices = "io.flutter.showWebDesktopDevices";
+  private static final String showStructuredErrors = "io.flutter.showStructuredErrors";
 
   /**
    * The Dart plugin uses this registry key to avoid bazel users getting their settings overridden on projects that include a
@@ -112,6 +113,9 @@ public class FlutterSettings {
 
     if (isShowWebDesktopDevices()) {
       analytics.sendEvent("settings", afterLastPeriod(showWebDesktopDevices));
+    }
+    if (isShowStructuredErrors()) {
+      analytics.sendEvent("settings", afterLastPeriod(showStructuredErrors));
     }
     if (useFlutterLogView()) {
       analytics.sendEvent("settings", afterLastPeriod(useFlutterLogView));
@@ -215,6 +219,16 @@ public class FlutterSettings {
 
   public void setShowWebDesktopDevices(boolean value) {
     getPropertiesComponent().setValue(showWebDesktopDevices, value, false);
+
+    fireEvent();
+  }
+
+  public boolean isShowStructuredErrors() {
+    return getPropertiesComponent().getBoolean(showStructuredErrors, false);
+  }
+
+  public void setShowStructuredErrors(boolean value) {
+    getPropertiesComponent().setValue(showStructuredErrors, value, false);
 
     fireEvent();
   }

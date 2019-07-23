@@ -24,6 +24,7 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.inspector.DiagnosticsTreeStyle;
 import io.flutter.inspector.InspectorService;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.settings.FlutterSettings;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
@@ -46,8 +47,6 @@ import java.util.concurrent.TimeUnit;
  */
 public class FlutterConsoleLogManager {
   private static final Logger LOG = Logger.getInstance(FlutterConsoleLogManager.class);
-
-  public static final boolean SHOW_STRUCTURED_ERRORS = true;
 
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
 
@@ -88,10 +87,8 @@ public class FlutterConsoleLogManager {
     this.console = console;
     this.app = app;
 
-    if (SHOW_STRUCTURED_ERRORS) {
-      assert (app.getFlutterDebugProcess() != null);
-      objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), service, "console-group");
-    }
+    assert (app.getFlutterDebugProcess() != null);
+    objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), service, "console-group");
 
     if (queue == null) {
       queue = QueueProcessor.createRunnableQueueProcessor();
@@ -110,7 +107,7 @@ public class FlutterConsoleLogManager {
         FlutterInitializer.getAnalytics().sendEvent("flutter-error", errorId);
       }
 
-      if (SHOW_STRUCTURED_ERRORS) {
+      if (FlutterSettings.getInstance().isShowStructuredErrors()) {
         queue.add(() -> {
           try {
             processFlutterErrorEvent(diagnosticsNode);
