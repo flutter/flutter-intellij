@@ -29,6 +29,7 @@ import io.flutter.FlutterUtils;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -56,7 +57,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     this.project = project;
     this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
     this.settingsListener = new Listener();
-    this.outlineListener = (path, outline) -> updateEditors(path);
+    this.outlineListener = this::updateEditor;
 
     TextEditorHighlightingPassRegistrar.getInstance(project)
       .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
@@ -97,7 +98,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   /**
    * Updates the indent guides in the editor for the file at {@param path}.
    */
-  private void updateEditors(@NotNull final String path) {
+  private void updateEditor(@NotNull final String path, @Nullable FlutterOutline outline) {
     ApplicationManager.getApplication().invokeLater(() -> {
       if (project.isDisposed()) {
         return;
@@ -105,7 +106,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
         final String filePath = editor.getVirtualFile().getCanonicalPath();
         if (!editor.isDisposed() && Objects.equals(filePath, path)) {
-          runWidgetIndentsPass(editor, editorOutlineService.get(path));
+          runWidgetIndentsPass(editor, outline);
         }
       }
     });
@@ -122,8 +123,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
       for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
         if (!editor.isDisposed()) {
-          final String filePath = editor.getVirtualFile().getCanonicalPath();
-          runWidgetIndentsPass(editor, editorOutlineService.get(filePath));
+          runWidgetIndentsPass(editor, editorOutlineService.get(editor.getVirtualFile().getCanonicalPath()));
         }
       }
     });
@@ -166,8 +166,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
       return fliteredIndentsHighlightingPass;
     }
-    final String path = virtualFile.getPath();
-    final FlutterOutline outline = editorOutlineService.get(path);
+    final FlutterOutline outline = editorOutlineService.get(virtualFile.getCanonicalPath());
 
     if (outline != null) {
       updateEditorSettings(editor);

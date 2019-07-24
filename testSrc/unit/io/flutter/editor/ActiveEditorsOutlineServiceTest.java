@@ -19,16 +19,14 @@ import io.flutter.testing.CodeInsightProjectFixture;
 import io.flutter.testing.Testing;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
@@ -155,29 +153,17 @@ public class ActiveEditorsOutlineServiceTest {
   }
 
   @Test
-  public void requestReturnsImmediatelyIfTheOutlineHasTheCorrectLength() throws Exception {
-    assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
-    assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(listener.mostRecentOutline, equalTo(null));
-    assertThat(listener.editorsChanged, equalTo(0));
-
-    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = innerFixture.getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
-    flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
-
-    assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
-    assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    assertThat(service.get(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
-  }
-
-  @Test
-  public void isOutdatedDeterminesOutlineValidityWithLengths() throws Exception {
+  public void getIfUpdatedDeterminesOutlineValidity() throws Exception {
     Testing.runOnDispatchThread(() -> {
-      assertTrue(service.isOutdated(null, mainFile));
-      assertTrue(service.isOutdated(firstFlutterOutline, mainFile));
-      assertTrue(service.isOutdated(secondFlutterOutline, mainFile));
-      assertFalse(service.isOutdated(outlineWithCorrectLength, mainFile));
+      innerFixture.openFileInEditor(mainFile.getVirtualFile());
+      assertThat(service.getIfUpdated(mainFile), nullValue());
+      flutterDas.updateOutline(mainPath, firstFlutterOutline);
+      assertThat(service.getIfUpdated(mainFile), nullValue());
+      flutterDas.updateOutline(mainPath, secondFlutterOutline);
+      assertThat(service.getIfUpdated(mainFile), nullValue());
+      flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
+      assertThat(service.getIfUpdated(mainFile), equalTo(outlineWithCorrectLength));
+
     });
   }
 
@@ -188,7 +174,7 @@ public class ActiveEditorsOutlineServiceTest {
     String mostRecentPath = null;
 
     @Override
-    public void onOutlineChanged(String path, FlutterOutline outline) {
+    public void onOutlineChanged(@NotNull String path, FlutterOutline outline) {
       final Integer changes = outlineChanged.get(path);
       outlineChanged.put(path, changes == null ? 1 : changes + 1);
       mostRecentPath = path;
@@ -202,7 +188,7 @@ public class ActiveEditorsOutlineServiceTest {
       super(project);
     }
 
-    void updateOutline(String path, FlutterOutline outline) {
+    void updateOutline(@NotNull String path, @NotNull FlutterOutline outline) {
       for (FlutterOutlineListener listener : fileOutlineListeners.get(path)) {
         listener.outlineUpdated(path, outline, null);
       }

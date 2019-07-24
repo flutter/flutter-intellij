@@ -77,16 +77,15 @@ public abstract class CommonTestConfigUtils {
     if (service == null) {
       return new HashMap<>();
     }
-    final FlutterOutline outline = service.get(file.getVirtualFile());
+    final FlutterOutline outline = service.getIfUpdated(file);
     // If the outline is outdated, then request a new pass to generate line markers.
-    if (service.isOutdated(outline, file)) {
+    if (outline == null) {
       service.addListener(forFile(file));
       return new HashMap<>();
     }
+    // Visit the fields on the outline to get which calls are actual named tests.
     final Map<DartCallExpression, TestType> callToTestType = new HashMap<>();
-    if (outline != null) {
-      visit(outline, callToTestType, file);
-    }
+    visit(outline, callToTestType, file);
     return callToTestType;
   }
 

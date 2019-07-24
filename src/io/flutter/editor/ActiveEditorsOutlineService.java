@@ -15,7 +15,6 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
 import io.flutter.dart.FlutterDartAnalysisServer;
@@ -25,10 +24,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Service that watches for {@link FlutterOutline}s for all active editors containing Dart files.
@@ -171,6 +166,9 @@ public class ActiveEditorsOutlineService implements Disposable {
 
   /**
    * Gets the most up-to-date {@link FlutterOutline} for the file at {@param path}.
+   *
+   * <p>
+   * To get an outline that is guaranteed in-sync with the file it outlines, see {@link #getIfUpdated}.
    */
   @Nullable
   public FlutterOutline get(String path) {
@@ -178,11 +176,18 @@ public class ActiveEditorsOutlineService implements Disposable {
   }
 
   /**
-   * Gets the most up-to-date {@link FlutterOutline} for {@param file}.
+   * Gets the {@link FlutterOutline} for {@param file} if and only if the outline is up to date with the file.
+   *
+   * <p>
+   * Returns null if the file is out of date.
    */
   @Nullable
-  public FlutterOutline get(@NotNull VirtualFile file) {
-    return get(file.getCanonicalPath());
+  public FlutterOutline getIfUpdated(@NotNull PsiFile file) {
+    final FlutterOutline outline = get(file.getVirtualFile().getCanonicalPath());
+    if (isOutdated(outline, file)) {
+      return null;
+    }
+    return outline;
   }
 
 
@@ -192,7 +197,7 @@ public class ActiveEditorsOutlineService implements Disposable {
    * <p>
    * An outline and file match if they have the same length.
    */
-  public boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
+  private boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
     final DartAnalysisServerService das = DartAnalysisServerService.getInstance(file.getProject());
     if (outline == null) {
       return true;
@@ -250,7 +255,7 @@ public class ActiveEditorsOutlineService implements Disposable {
       }
       synchronized (pathToOutline) {
         pathToOutline.put(path, outline);
-          notifyOutlineUpdated(path);
+        notifyOutlineUpdated(path);
       }
     }
   }
