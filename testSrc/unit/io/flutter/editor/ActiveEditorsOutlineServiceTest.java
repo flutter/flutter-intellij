@@ -30,7 +30,9 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 public class ActiveEditorsOutlineServiceTest {
@@ -66,12 +68,7 @@ public class ActiveEditorsOutlineServiceTest {
     innerFixture = projectFixture.getInner();
     project = projectFixture.getProject();
     flutterDas = new TestFlutterDartAnalysisServer(project);
-    service = new ActiveEditorsOutlineService(project, flutterDas) {
-      @Override
-      protected PsiFile getPsiFile(VirtualFile file) {
-        return mainFile;
-      }
-    };
+    service = new ActiveEditorsOutlineService(project, flutterDas);
     listener = new Listener();
     service.addListener(listener);
     mainFile = innerFixture.addFileToProject("lib/main.dart", fileContents);
@@ -175,55 +172,13 @@ public class ActiveEditorsOutlineServiceTest {
   }
 
   @Test
-  public void requestWaitsForAnUpdatedOutlineIfNeeded() throws Exception {
-    assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
-    assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(listener.mostRecentOutline, equalTo(null));
-    assertThat(listener.editorsChanged, equalTo(0));
-
-    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = innerFixture.getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
-
-    flutterDas.updateOutline(mainPath, firstFlutterOutline);
-
-    assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
-    assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    // TODO(djshuckerow): Run this in a fake async executor so that the test doesn't slow travis down.
-    final long now = Instant.now().toEpochMilli();
-    assertThat(service.get(mainFile.getVirtualFile()), equalTo(firstFlutterOutline));
-    final long after = Instant.now().toEpochMilli();
-    assertThat(after - now >= 500, equalTo(true));
-  }
-
-  @Test
-  public void requestWaitsForAnUpdatedOutlineAndUpdates() throws Exception {
-    assertThat(listener.outlineChanged.keySet(), not(hasItem(mainPath)));
-    assertThat(listener.outlineChanged.get(mainPath), equalTo(null));
-    assertThat(listener.mostRecentOutline, equalTo(null));
-    assertThat(listener.editorsChanged, equalTo(0));
-
-    Testing.runOnDispatchThread(() -> innerFixture.openFileInEditor(mainFile.getVirtualFile()));
-    final Editor editor = innerFixture.getEditor();
-    final EditorTestFixture editorTestFixture = new EditorTestFixture(project, editor, mainFile.getVirtualFile());
-
-    flutterDas.updateOutline(mainPath, firstFlutterOutline);
-
-    assertThat(listener.outlineChanged.keySet(), hasItem(mainPath));
-    assertThat(listener.outlineChanged.get(mainPath), equalTo(1));
-    // Set up a timer to change the outline in 100 milliseconds, before the request times out at 1000 milliseconds.
-    final Timer timer = new Timer();
-    timer.schedule(new TimerTask() {
-      @Override
-      public void run() {
-        flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
-      }
-    }, 100);
-    // TODO(djshuckerow): Run this in a fake async executor so that the test doesn't slow travis down.
-    final long now = Instant.now().toEpochMilli();
-    assertThat(service.get(mainFile.getVirtualFile()), equalTo(outlineWithCorrectLength));
-    final long after = Instant.now().toEpochMilli();
-    assertThat(after - now >= 100, equalTo(true));
+  public void isOutdatedDeterminesOutlineValidityWithLengths() throws Exception {
+    Testing.runOnDispatchThread(() -> {
+      assertTrue(service.isOutdated(null, mainFile));
+      assertTrue(service.isOutdated(firstFlutterOutline, mainFile));
+      assertTrue(service.isOutdated(secondFlutterOutline, mainFile));
+      assertFalse(service.isOutdated(outlineWithCorrectLength, mainFile));
+    });
   }
 
   private class Listener implements ActiveEditorsOutlineService.Listener {

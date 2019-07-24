@@ -45,7 +45,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   public void setUp() throws Exception {
     fileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.CUSTOM_TEST_PATH)));
     service = new FakeActiveEditorsOutlineService(fixture.getProject(), FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
-    new CommonTestConfigUtils() {
+    utils = new CommonTestConfigUtils() {
       @Override
       protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
         return service;

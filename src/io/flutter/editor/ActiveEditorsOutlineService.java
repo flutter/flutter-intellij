@@ -185,9 +185,20 @@ public class ActiveEditorsOutlineService implements Disposable {
     return get(file.getCanonicalPath());
   }
 
-  @VisibleForTesting
-  protected PsiFile getPsiFile(VirtualFile file) {
-    return PsiManager.getInstance(project).findFile(file);
+
+  /**
+   * Checks that the {@param outline} matches the current version of {@param file}.
+   *
+   * <p>
+   * An outline and file match if they have the same length.
+   */
+  public boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
+    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(file.getProject());
+    if (outline == null) {
+      return true;
+    }
+    return file.getTextLength() != outline.getLength()
+           && file.getTextLength() != das.getConvertedOffset(file.getVirtualFile(), outline.getLength());
   }
 
   @Override

@@ -79,7 +79,7 @@ public abstract class CommonTestConfigUtils {
     }
     final FlutterOutline outline = service.get(file.getVirtualFile());
     // If the outline is outdated, then request a new pass to generate line markers.
-    if (isOutdated(outline, file)) {
+    if (service.isOutdated(outline, file)) {
       service.addListener(forFile(file));
       return new HashMap<>();
     }
@@ -151,21 +151,6 @@ public abstract class CommonTestConfigUtils {
   @Nullable
   protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
     return ActiveEditorsOutlineService.getInstance(project);
-  }
-
-  /**
-   * Checks that the {@param outline} matches the current version of {@param file}.
-   *
-   * <p>
-   * An outline and file match if they have the same length.
-   */
-  private boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
-    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(file.getProject());
-    if (outline == null) {
-      return true;
-    }
-    return file.getTextLength() != outline.getLength()
-           && file.getTextLength() != das.getConvertedOffset(file.getVirtualFile(), outline.getLength());
   }
 
   /**

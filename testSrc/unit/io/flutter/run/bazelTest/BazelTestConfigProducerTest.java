@@ -44,13 +44,13 @@ public class BazelTestConfigProducerTest extends AbstractDartElementTest {
   private final BazelTestConfigUtils bazelTestConfigUtils = new BazelTestConfigUtils() {
     @Override
     protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
-      return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/simple_outline.txt");
+      return new FakeActiveEditorsOutlineService(project, FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
     }
   };
 
   @Before
   public void setUp() throws IOException {
-    fileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/simple_test.dart")));
+    fileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.SIMPLE_TEST_PATH)));
   }
 
   @Test
