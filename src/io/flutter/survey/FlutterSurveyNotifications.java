@@ -38,11 +38,11 @@ public class FlutterSurveyNotifications {
   private static final String FLUTTER_LAST_SURVEY_CHECK_KEY = "FLUTTER_LAST_SURVEY_CHECK_KEY";
   private static final long CHECK_INTERVAL_IN_MS = TimeUnit.HOURS.toMillis(40);
 
-  private static final String SURVEY_ACTION_TEXT = "Take Flutter Q3 Survey";
+  private static final String SURVEY_ACTION_TEXT = "Take survey";
   private static final String SURVEY_TITLE = "Help improve Flutter! Take our Q3 survey.";
 
   private static final String SURVEY_TAKEN = "io.flutter.survey.2019.q3.alreadyTaken";
-  private static final String SURVEY_URL = "https://google.qualtrics.com/jfe/form/SV_3kiGXYfYOfXUjB3?Source=IntelliJ&ClientID=";
+  private static final String SURVEY_URL = "https://google.qualtrics.com/jfe/form/SV_3kiGXYfYOfXUjB3?Source=IntelliJ";
 
   private static long SURVEY_START_MS_EPOCH;
   private static long SURVEY_END_MS_EPOCH;
@@ -136,7 +136,7 @@ public class FlutterSurveyNotifications {
         // Add a client ID if analytics have been opted into.
         if (reportAnalytics) {
           final String clientId = FlutterInitializer.getAnalytics().getClientId();
-          url += clientId;
+          url += ("&ClientID=" + clientId);
         }
 
         BrowserUtil.browse(url);
