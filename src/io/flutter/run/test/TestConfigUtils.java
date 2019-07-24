@@ -30,15 +30,10 @@ public class TestConfigUtils extends CommonTestConfigUtils {
   @Override
   public TestType asTestCall(@NotNull PsiElement element) {
     final DartFile file = FlutterUtils.getDartFile(element);
-    if (FlutterUtils.isInTestDir(file) && FlutterUtils.isInFlutterProject(element)) {
-      // Named tests.
-      final TestType namedTestCall = findNamedTestCall(element);
-      if (namedTestCall != null) return namedTestCall;
-
-      // Main.
-      if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
+    if (!FlutterUtils.isInTestDir(file) || !FlutterUtils.isInFlutterProject(element)) {
+      return null;
     }
 
-    return null;
+    return super.asTestCall(element);
   }
 }

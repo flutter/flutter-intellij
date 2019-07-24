@@ -37,16 +37,16 @@ public class Testing {
    *
    * <p>(No modules are allowed.)
    */
-  public static ProjectFixture makeEmptyProject() {
-    return new ProjectFixture(
+  public static IdeaProjectFixture makeEmptyProject() {
+    return new IdeaProjectFixture(
       (x) -> IdeaTestFixtureFactory.getFixtureFactory().createLightFixtureBuilder().getFixture(), true);
   }
 
   /**
    * Creates a "heavy" test fixture containing a Project with an empty Module.
    */
-  public static ProjectFixture makeEmptyModule() {
-    return new ProjectFixture((String testClassName) -> {
+  public static IdeaProjectFixture makeEmptyModule() {
+    return new IdeaProjectFixture((String testClassName) -> {
       final TestFixtureBuilder<IdeaProjectTestFixture> builder =
         IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(testClassName);
       builder.addModule(EmptyModuleFixtureBuilder.class);
@@ -54,8 +54,8 @@ public class Testing {
     }, true);
   }
 
-  public static ProjectFixture makeCodeInsightModule() {
-    return new ProjectFixture((x) -> {
+  public static CodeInsightProjectFixture makeCodeInsightModule() {
+    return new CodeInsightProjectFixture((x) -> {
       final IdeaTestFixtureFactory factory = IdeaTestFixtureFactory.getFixtureFactory();
       final IdeaProjectTestFixture light = factory.createLightFixtureBuilder().getFixture();
       return factory.createCodeInsightFixture(light);

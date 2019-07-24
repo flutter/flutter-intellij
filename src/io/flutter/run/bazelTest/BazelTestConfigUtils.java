@@ -5,6 +5,7 @@
  */
 package io.flutter.run.bazelTest;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.psi.PsiElement;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.FlutterUtils;
@@ -16,7 +17,8 @@ import org.jetbrains.annotations.Nullable;
 
 public class BazelTestConfigUtils extends CommonTestConfigUtils {
 
-  private BazelTestConfigUtils() {}
+  @VisibleForTesting
+  BazelTestConfigUtils() {}
 
   private static BazelTestConfigUtils instance;
   public static BazelTestConfigUtils getInstance() {
@@ -36,13 +38,6 @@ public class BazelTestConfigUtils extends CommonTestConfigUtils {
   public TestType asTestCall(@NotNull PsiElement element) {
     if (!isBazelFlutterCode(FlutterUtils.getDartFile(element))) return null;
 
-    // Check if the test call is a named test or group.
-    final TestType namedTestCall = findNamedTestCall(element);
-    if (namedTestCall != null) return namedTestCall;
-
-    // Check if the test call is a test main method.
-    if (isMainFunctionDeclarationWithTests(element)) return TestType.MAIN;
-
-    return null;
+    return super.asTestCall(element);
   }
 }

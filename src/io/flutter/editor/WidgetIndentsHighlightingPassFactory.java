@@ -20,21 +20,18 @@ import com.intellij.openapi.editor.event.CaretListener;
 import com.intellij.openapi.editor.event.EditorEventMulticaster;
 import com.intellij.openapi.editor.ex.DocumentEx;
 import com.intellij.openapi.editor.ex.EditorEx;
-import com.intellij.openapi.fileEditor.*;
 import com.intellij.openapi.progress.ProgressIndicator;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import io.flutter.FlutterUtils;
-import io.flutter.dart.FlutterDartAnalysisServer;
-import io.flutter.dart.FlutterOutlineListener;
 import io.flutter.settings.FlutterSettings;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
+import java.util.Objects;
 
 /**
  * Factory that drives all rendering of widget indents.
@@ -46,50 +43,24 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
   // widget indent guide lines after editing code containing guides.
   private static final boolean SIMULATE_SLOW_ANALYSIS_UPDATES = false;
 
-  private Project project;
-  private final FlutterDartAnalysisServer flutterDartAnalysisService;
-  /**
-   * Outlines for the currently visible files.
-   */
-  private final Map<String, FlutterOutline> currentOutlines;
-  /**
-   * Outline listeners for the currently visible files.
-   */
-  private final Map<String, FlutterOutlineListener> outlineListeners = new HashMap<>();
+  private final Project project;
+  private final ActiveEditorsOutlineService editorOutlineService;
+  private final Listener settingsListener;
+  private final ActiveEditorsOutlineService.Listener outlineListener;
 
   // Current configuration settings used to display Widget Indent Guides cached
   // from the FlutterSettings class.
   private boolean isShowMultipleChildrenGuides;
   private boolean isShowBuildMethodGuides;
 
-  private final FlutterSettings.Listener settingsListener = () -> {
-    if (project == null || project.isDisposed()) {
-      return;
-    }
-    final FlutterSettings settings = FlutterSettings.getInstance();
-    // Skip if none of the settings that impact Widget Idents were changed.
-    if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
-        isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides()) {
-      // Change doesn't matter for us.
-      return;
-    }
-    syncSettings(settings);
-
-    for (EditorEx editor : getActiveDartEditors()) {
-      updateEditorSettings(editor);
-      // To be safe, avoid rendering artfacts when settings were changed
-      // that only impacted rendering.
-      editor.repaint(0, editor.getDocument().getTextLength());
-    }
-  };
-
-  public WidgetIndentsHighlightingPassFactory(Project project) {
+  public WidgetIndentsHighlightingPassFactory(@NotNull Project project) {
     this.project = project;
+    this.editorOutlineService = ActiveEditorsOutlineService.getInstance(project);
+    this.settingsListener = new Listener();
+    this.outlineListener = this::updateEditor;
 
     TextEditorHighlightingPassRegistrar.getInstance(project)
       .registerTextEditorHighlightingPass(this, TextEditorHighlightingPassRegistrar.Anchor.AFTER, Pass.UPDATE_FOLDING, false, false);
-    currentOutlines = new HashMap<>();
-    flutterDartAnalysisService = FlutterDartAnalysisServer.getInstance(project);
 
     syncSettings(FlutterSettings.getInstance());
     FlutterSettings.getInstance().addListener(settingsListener);
@@ -107,135 +78,55 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       }
     }, this);
 
-    updateActiveEditors();
-    project.getMessageBus().connect(project).subscribe(FileEditorManagerListener.FILE_EDITOR_MANAGER, new FileEditorManagerListener() {
-      public void selectionChanged(@NotNull FileEditorManagerEvent event) {
-        updateActiveEditors();
+    editorOutlineService.addListener(outlineListener);
+  }
+
+  /**
+   * Updates all editors if the settings have changed.
+   *
+   * <p>
+   * This is useful for adding the guides in after they were turned on from the settings menu.
+   */
+  private void syncSettings(FlutterSettings settings) {
+    if (isShowBuildMethodGuides != settings.isShowBuildMethodGuides()) {
+      isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
+      updateAllEditors();
+    }
+    isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
+  }
+
+  /**
+   * Updates the indent guides in the editor for the file at {@param path}.
+   */
+  private void updateEditor(@NotNull final String path, @Nullable FlutterOutline outline) {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      if (project.isDisposed()) {
+        return;
+      }
+      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+        final String filePath = editor.getVirtualFile().getCanonicalPath();
+        if (!editor.isDisposed() && Objects.equals(filePath, path)) {
+          runWidgetIndentsPass(editor, outline);
+        }
       }
     });
   }
 
-  List<EditorEx> getActiveDartEditors() {
-    if (project.isDisposed()) {
-      return Collections.emptyList();
-    }
-    final FileEditor[] editors = FileEditorManager.getInstance(project).getSelectedEditors();
-    final List<EditorEx> dartEditors = new ArrayList<>();
-    for (FileEditor fileEditor : editors) {
-      if (!(fileEditor instanceof TextEditor)) continue;
-      final TextEditor textEditor = (TextEditor)fileEditor;
-      final Editor editor = textEditor.getEditor();
-      if (editor instanceof EditorEx) {
-        dartEditors.add((EditorEx)editor);
+  // Updates all editors instead of just a specific editor.
+  private void updateAllEditors() {
+    ApplicationManager.getApplication().invokeLater(() -> {
+      // Find visible editors for the path. If the file is not actually
+      // being displayed on screen, there is no need to go through the
+      // work of updating the outline.
+      if (project.isDisposed()) {
+        return;
       }
-    }
-    return dartEditors;
-  }
-
-  private void clearListeners() {
-    synchronized (outlineListeners) {
-      final Iterator<Map.Entry<String, FlutterOutlineListener>> entries = outlineListeners.entrySet().iterator();
-
-      while (entries.hasNext()) {
-        final Map.Entry<String, FlutterOutlineListener> entry = entries.next();
-
-        if (entry.getValue() != null) {
-          flutterDartAnalysisService.removeOutlineListener(entry.getKey(), entry.getValue());
-        }
-
-        entries.remove();
-      }
-
-      outlineListeners.clear();
-    }
-    synchronized (currentOutlines) {
-      currentOutlines.clear();
-    }
-  }
-
-  private void updateActiveEditors() {
-    if (project.isDisposed()) {
-      return;
-    }
-
-    if (!FlutterSettings.getInstance().isShowBuildMethodGuides()) {
-      clearListeners();
-      return;
-    }
-
-    final VirtualFile[] selectedFiles = FileEditorManager.getInstance(project).getSelectedFiles();
-    final VirtualFile[] files = FileEditorManager.getInstance(project).getSelectedFiles();
-
-    final Set<String> newPaths = new HashSet<>();
-    for (VirtualFile file : files) {
-      if (FlutterUtils.couldContainWidgets(file)) {
-        newPaths.add(file.getPath());
-      }
-    }
-
-    // Remove obsolete outline listeners.
-    final List<String> obsoletePaths = new ArrayList<>();
-    synchronized (outlineListeners) {
-      for (final String path : outlineListeners.keySet()) {
-        if (!newPaths.contains(path)) {
-          obsoletePaths.add(path);
+      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+        if (!editor.isDisposed()) {
+          runWidgetIndentsPass(editor, editorOutlineService.get(editor.getVirtualFile().getCanonicalPath()));
         }
       }
-      for (final String path : obsoletePaths) {
-        final FlutterOutlineListener listener = outlineListeners.remove(path);
-        if (listener != null) {
-          flutterDartAnalysisService.removeOutlineListener(path, listener);
-        }
-      }
-
-      // Register new outline listeners.
-      for (final String path : newPaths) {
-        if (outlineListeners.containsKey(path)) continue;
-        final FlutterOutlineListener listener =
-          (filePath, outline, instrumentedCode) -> {
-            synchronized (outlineListeners) {
-              if (!outlineListeners.containsKey(path)) {
-                // The outline listener subscription was already cancelled.
-                return;
-              }
-            }
-            synchronized (currentOutlines) {
-              currentOutlines.put(path, outline);
-            }
-            ApplicationManager.getApplication().invokeLater(() -> {
-              // Find visible editors for the path. If the file is not actually
-              // being displayed on screen, there is no need to go through the
-              // work of updating the outline.
-              if (project.isDisposed()) {
-                return;
-              }
-              for (EditorEx editor : getActiveDartEditors()) {
-                if (!editor.isDisposed() && Objects.equals(editor.getVirtualFile().getCanonicalPath(), path)) {
-                  runWidgetIndentsPass(editor, outline);
-                }
-              }
-            });
-          };
-        outlineListeners.put(path, listener);
-        flutterDartAnalysisService.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
-      }
-    }
-
-    synchronized (currentOutlines) {
-      for (final String path : obsoletePaths) {
-        // Clear the current outline as it may become out of date before the
-        // file is visible again.
-        currentOutlines.remove(path);
-      }
-    }
-  }
-
-  private void syncSettings(FlutterSettings settings) {
-    if (isShowBuildMethodGuides != settings.isShowBuildMethodGuides()) {
-      isShowBuildMethodGuides = settings.isShowBuildMethodGuides();
-      updateActiveEditors();
-    }
-    isShowMultipleChildrenGuides = settings.isShowMultipleChildrenGuides() && isShowBuildMethodGuides;
+    });
   }
 
   private void updateEditorSettings(EditorEx editor) {
@@ -254,9 +145,7 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
       if (e instanceof EditorEx) {
         // Cleanup highlighters from the widget indents pass if it was
         // previously enabled.
-        ApplicationManager.getApplication().invokeLater(() -> {
-          WidgetIndentsHighlightingPass.cleanupHighlighters(e);
-        });
+        ApplicationManager.getApplication().invokeLater(() -> WidgetIndentsHighlightingPass.cleanupHighlighters(e));
       }
 
       // Return a placeholder editor highlighting pass. The user will get the
@@ -277,26 +166,27 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
     if (!FlutterUtils.couldContainWidgets(virtualFile)) {
       return fliteredIndentsHighlightingPass;
     }
-    final String path = virtualFile.getPath();
-    final FlutterOutline outline;
-    synchronized (currentOutlines) {
-      outline = currentOutlines.get(path);
-    }
+    final FlutterOutline outline = editorOutlineService.get(virtualFile.getCanonicalPath());
+
     if (outline != null) {
       updateEditorSettings(editor);
-      ApplicationManager.getApplication().invokeLater(() -> {
-        runWidgetIndentsPass(editor, outline);
-      });
+      ApplicationManager.getApplication().invokeLater(() -> runWidgetIndentsPass(editor, outline));
     }
     // Return the indent pass rendering regular indent guides with guides that
     // intersect with the widget guides filtered out.
     return fliteredIndentsHighlightingPass;
   }
 
-  void runWidgetIndentsPass(EditorEx editor, @NotNull FlutterOutline outline) {
+  void runWidgetIndentsPass(EditorEx editor, FlutterOutline outline) {
     if (editor.isDisposed() || project.isDisposed()) {
       // The editor might have been disposed before we got a new FlutterOutline.
       // It is safe to ignore it as it isn't relevant.
+      return;
+    }
+
+    if (!isShowBuildMethodGuides || outline == null) {
+      // If build method guides are disabled or there is no outline to use in this pass,
+      // then do nothing.
       return;
     }
 
@@ -329,8 +219,33 @@ public class WidgetIndentsHighlightingPassFactory implements TextEditorHighlight
 
   @Override
   public void dispose() {
-    clearListeners();
     FlutterSettings.getInstance().removeListener(settingsListener);
+    editorOutlineService.removeListener(outlineListener);
+  }
+
+  // Listener that asks for another pass when the Flutter settings for indent highlighting change.
+  private class Listener implements FlutterSettings.Listener {
+    @Override
+    public void settingsChanged() {
+      if (project.isDisposed()) {
+        return;
+      }
+      final FlutterSettings settings = FlutterSettings.getInstance();
+      // Skip if none of the settings that impact Widget Idents were changed.
+      if (isShowBuildMethodGuides == settings.isShowBuildMethodGuides() &&
+          isShowMultipleChildrenGuides == settings.isShowMultipleChildrenGuides()) {
+        // Change doesn't matter for us.
+        return;
+      }
+      syncSettings(settings);
+
+      for (EditorEx editor : editorOutlineService.getActiveDartEditors()) {
+        updateEditorSettings(editor);
+        // To be safe, avoid rendering artfacts when settings were changed
+        // that only impacted rendering.
+        editor.repaint(0, editor.getDocument().getTextLength());
+      }
+    }
   }
 }
 

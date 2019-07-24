@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 
 public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
   public static final FlutterTestLocationProvider INSTANCE = new FlutterTestLocationProvider();
+  private final TestConfigUtils testConfigUtils = TestConfigUtils.getInstance();
 
   @Nullable
   @Override
@@ -32,6 +33,6 @@ public class FlutterTestLocationProvider extends DartTestLocationProviderZ {
 
   @Override
   protected boolean isTest(@NotNull DartCallExpression expression) {
-    return super.isTest(expression) || TestConfigUtils.WIDGET_TEST_REGEX.matcher(expression.getExpression().getText()).matches();
+    return super.isTest(expression) || testConfigUtils.asTestCall(expression) != null;
   }
 }

@@ -1,0 +1,254 @@
+{
+  "kind": "DART_ELEMENT",
+  "offset": 0,
+  "length": 1597,
+  "dartElement": {
+    "kind": "COMPILATION_UNIT",
+    "name": "<unit>",
+    "location": {
+      "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+      "offset": 0,
+      "length": 1597,
+      "startLine": 1,
+      "startColumn": 1
+    },
+    "flags": 0
+  },
+  "children": [
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 261,
+      "length": 991,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "main",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+          "offset": 905,
+          "length": 4,
+          "startLine": 22,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "()",
+        "returnType": "void"
+      },
+      "children": [
+        {
+          "kind": "DART_ELEMENT",
+          "offset": 916,
+          "length": 212,
+          "dartElement": {
+            "kind": "UNIT_TEST_GROUP",
+            "name": "group(\"group 0\")",
+            "location": {
+              "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+              "offset": 916,
+              "length": 5,
+              "startLine": 23,
+              "startColumn": 3
+            },
+            "flags": 0
+          },
+          "children": [
+            {
+              "kind": "DART_ELEMENT",
+              "offset": 942,
+              "length": 56,
+              "dartElement": {
+                "kind": "UNIT_TEST_TEST",
+                "name": "test(\"test 0\")",
+                "location": {
+                  "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+                  "offset": 942,
+                  "length": 4,
+                  "startLine": 24,
+                  "startColumn": 5
+                },
+                "flags": 0
+              },
+              "isWidgetClass": false
+            },
+            {
+              "kind": "DART_ELEMENT",
+              "offset": 1004,
+              "length": 91,
+              "dartElement": {
+                "kind": "UNIT_TEST_TEST",
+                "name": "testWidgets(\"test widgets 0\")",
+                "location": {
+                  "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+                  "offset": 1004,
+                  "length": 11,
+                  "startLine": 27,
+                  "startColumn": 5
+                },
+                "flags": 0
+              },
+              "isWidgetClass": false
+            }
+          ],
+          "isWidgetClass": false
+        },
+        {
+          "kind": "DART_ELEMENT",
+          "offset": 1132,
+          "length": 21,
+          "dartElement": {
+            "kind": "UNIT_TEST_TEST",
+            "name": "test(\"test 1\")",
+            "location": {
+              "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+              "offset": 1132,
+              "length": 4,
+              "startLine": 32,
+              "startColumn": 3
+            },
+            "flags": 0
+          },
+          "isWidgetClass": false
+        },
+        {
+          "kind": "DART_ELEMENT",
+          "offset": 1190,
+          "length": 53,
+          "dartElement": {
+            "kind": "UNIT_TEST_GROUP",
+            "name": "g(\"custom group\")",
+            "location": {
+              "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+              "offset": 1190,
+              "length": 1,
+              "startLine": 34,
+              "startColumn": 5
+            },
+            "flags": 0
+          },
+          "children": [
+            {
+              "kind": "DART_ELEMENT",
+              "offset": 1219,
+              "length": 16,
+              "dartElement": {
+                "kind": "UNIT_TEST_TEST",
+                "name": "t(\"custom test\")",
+                "location": {
+                  "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+                  "offset": 1219,
+                  "length": 1,
+                  "startLine": 35,
+                  "startColumn": 7
+                },
+                "flags": 0
+              },
+              "isWidgetClass": false
+            }
+          ],
+          "isWidgetClass": false
+        }
+      ],
+      "isWidgetClass": false
+    },
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 1254,
+      "length": 61,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "g",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+          "offset": 1272,
+          "length": 1,
+          "startLine": 41,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "(String name, void Function() callback)",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    },
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 1317,
+      "length": 30,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "t",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+          "offset": 1330,
+          "length": 1,
+          "startLine": 44,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "(String name)",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    },
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 1349,
+      "length": 55,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "nonGroup",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+          "offset": 1354,
+          "length": 8,
+          "startLine": 46,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "(String name, void Function() callback)",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    },
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 1406,
+      "length": 28,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "nonTest",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+          "offset": 1411,
+          "length": 7,
+          "startLine": 48,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "(String name)",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    },
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 1507,
+      "length": 89,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "testWidgets",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/custom_test.dart",
+          "offset": 1520,
+          "length": 11,
+          "startLine": 52,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "(String name, Future<void> test(Object tester))",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    }
+  ],
+  "isWidgetClass": false
+}

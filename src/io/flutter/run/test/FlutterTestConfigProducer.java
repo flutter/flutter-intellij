@@ -93,7 +93,7 @@ public class FlutterTestConfigProducer extends RunConfigurationProducer<TestConf
     final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(context, false, false);
     if (candidate == null) return null;
 
-    return FlutterUtils.isInTestDir(file) ?  candidate : null;
+    return FlutterUtils.isInTestDir(file) ? candidate : null;
   }
 
   private boolean setupForDirectory(TestConfig config, PsiDirectory dir) {

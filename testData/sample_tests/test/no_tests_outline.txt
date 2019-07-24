@@ -1,0 +1,40 @@
+{
+  "kind": "DART_ELEMENT",
+  "offset": 0,
+  "length": 857,
+  "dartElement": {
+    "kind": "COMPILATION_UNIT",
+    "name": "<unit>",
+    "location": {
+      "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/no_tests.dart",
+      "offset": 0,
+      "length": 857,
+      "startLine": 1,
+      "startColumn": 1
+    },
+    "flags": 0
+  },
+  "children": [
+    {
+      "kind": "DART_ELEMENT",
+      "offset": 173,
+      "length": 683,
+      "dartElement": {
+        "kind": "FUNCTION",
+        "name": "main",
+        "location": {
+          "file": "/usr/local/google/home/djshuckerow/Code/github.com/DaveShuckerow/flutter-intellij/testData/sample_tests/test/no_tests.dart",
+          "offset": 811,
+          "length": 4,
+          "startLine": 18,
+          "startColumn": 6
+        },
+        "flags": 8,
+        "parameters": "()",
+        "returnType": "void"
+      },
+      "isWidgetClass": false
+    }
+  ],
+  "isWidgetClass": false
+}

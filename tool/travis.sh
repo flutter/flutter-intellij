@@ -14,6 +14,9 @@ flutter --version
 # Get packages for the top-level grind script utilities
 pub get
 
+# Get packages for the test data.
+(cd testData/sample_tests; pub get)
+
 # Set up the plugin tool.
 (cd tool/plugin; pub get)
 

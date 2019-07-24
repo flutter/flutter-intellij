@@ -20,7 +20,7 @@ public class AdaptedFixture<T extends IdeaTestFixture> implements TestRule {
   private final boolean runOnDispatchThread;
   private T inner;
 
-  AdaptedFixture(Factory<T> factory, boolean runOnDispatchThread) {
+  public AdaptedFixture(Factory<T> factory, boolean runOnDispatchThread) {
     this.factory = factory;
     this.runOnDispatchThread = runOnDispatchThread;
   }
