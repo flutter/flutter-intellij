@@ -173,7 +173,7 @@ public class FlutterConsoleLogManager {
       }
     }
 
-    console.print(StringUtil.repeat(errorSeparatorChar, errorSeparatorLength) + "\n\n", TITLE_CONTENT_TYPE);
+    console.print(StringUtil.repeat(errorSeparatorChar, errorSeparatorLength) + "\n", TITLE_CONTENT_TYPE);
   }
 
   private void printTerseNodeProperty(ConsoleView console, String indent, DiagnosticsNode property) {
@@ -256,7 +256,11 @@ public class FlutterConsoleLogManager {
     console.print(description + "\n", contentType);
 
     if (property.hasInlineProperties()) {
-      final String childIndent = getChildIndent(indent, property);
+      String childIndent = getChildIndent(indent, property);
+      if (property.getStyle() == DiagnosticsTreeStyle.shallow && !indent.startsWith("...")) {
+        // Render properties of shallow nodes as collapesed.
+        childIndent = "...  " + indent;
+      }
       for (DiagnosticsNode childProperty : property.getInlineProperties()) {
         printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, isInChild);
       }
