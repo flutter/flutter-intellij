@@ -64,6 +64,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
   private JCheckBox myOrganizeImportsOnSaveCheckBox;
   private JCheckBox myDisableTrackWidgetCreationCheckBox;
   private JCheckBox myShowWebDevicesCheckBox;
+  private JCheckBox myShowStructuredErrors;
   private JCheckBox myUseLogViewCheckBox;
   private JCheckBox mySyncAndroidLibrariesCheckBox;
 
@@ -215,6 +216,9 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     if (settings.isShowWebDesktopDevices() != myShowWebDevicesCheckBox.isSelected()) {
       return true;
     }
+    if (settings.isShowStructuredErrors() != myShowStructuredErrors.isSelected()) {
+      return true;
+    }
     if (settings.useFlutterLogView() != myUseLogViewCheckBox.isSelected()) {
       return true;
     }
@@ -276,6 +280,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
     settings.setShowClosingLabels(myShowClosingLabels.isSelected());
     settings.setShowWebDesktopDevices(myShowWebDevicesCheckBox.isSelected());
     settings.setUseFlutterLogView(myUseLogViewCheckBox.isSelected());
+    settings.setShowStructuredErrors(myShowStructuredErrors.isSelected());
     settings.setOpenInspectorOnAppLaunch(myOpenInspectorOnAppLaunchCheckBox.isSelected());
     settings.setDisableTrackWidgetCreation(myDisableTrackWidgetCreationCheckBox.isSelected());
     settings.setVerboseLogging(myEnableVerboseLoggingCheckBox.isSelected());
@@ -320,6 +325,7 @@ public class FlutterSettingsConfigurable implements SearchableConfigurable {
 
     myShowWebDevicesCheckBox.setSelected(settings.isShowWebDesktopDevices());
     myUseLogViewCheckBox.setSelected(settings.useFlutterLogView());
+    myShowStructuredErrors.setSelected(settings.isShowStructuredErrors());
     myOpenInspectorOnAppLaunchCheckBox.setSelected(settings.isOpenInspectorOnAppLaunch());
     myDisableTrackWidgetCreationCheckBox.setSelected(settings.isDisableTrackWidgetCreation());
     myEnableVerboseLoggingCheckBox.setSelected(settings.isVerboseLogging());
