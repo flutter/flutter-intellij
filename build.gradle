@@ -73,13 +73,28 @@ dependencies {
 
 /* Need to swizzle source and resource paths to match standard or buildPlugin does nothing. */
 sourceSets {
-  main.java.srcDirs = ["src/main/java","gen","third_party/vmServiceDrivers","src/main/resources"]
+  main.java.srcDirs = [
+    "src/main/java",
+    "gen",
+    "third_party/vmServiceDrivers",
+    "src/main/resources"
+  ]
   test {
     java {
-      srcDirs = ["testSrc/unit","src/main/java","gen","third_party/vmServiceDrivers"]
+      srcDirs = [
+        "gen",
+        "src/main/java",
+        "testSrc/unit",
+        "third_party/vmServiceDrivers"
+      ]
     }
     resources {
-      srcDirs = ["testData/unit","resources","src"]
+      srcDirs = [
+        "resources",
+        "src",
+        "testData/unit",
+        "testSrc/unit"
+      ]
     }
   }
 }
