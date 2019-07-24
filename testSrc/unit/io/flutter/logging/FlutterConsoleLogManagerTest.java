@@ -12,7 +12,9 @@ import com.intellij.execution.process.ProcessHandler;
 import com.intellij.execution.ui.ConsoleView;
 import com.intellij.execution.ui.ConsoleViewContentType;
 import com.intellij.openapi.actionSystem.AnAction;
+import io.flutter.run.FlutterDebugProcess;
 import io.flutter.run.daemon.FlutterApp;
+import io.flutter.vmService.VMServiceManager;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.element.Event;
 import org.jetbrains.annotations.NotNull;
@@ -29,8 +31,7 @@ public class FlutterConsoleLogManagerTest {
   @Test
   public void testBasicLogging() {
     final ConsoleViewMock console = new ConsoleViewMock();
-    final FlutterConsoleLogManager logManager =
-      new FlutterConsoleLogManager(PowerMockito.mock(VmService.class), console, createFlutterApp());
+    final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
     final Event event = new Event(new JsonParser().parse(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_1.json"))).getAsJsonObject());
 
@@ -42,8 +43,7 @@ public class FlutterConsoleLogManagerTest {
   @Test
   public void testNoLoggerName() {
     final ConsoleViewMock console = new ConsoleViewMock();
-    final FlutterConsoleLogManager logManager =
-      new FlutterConsoleLogManager(PowerMockito.mock(VmService.class), console, createFlutterApp());
+    final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
     final Event event = new Event(new JsonParser().parse(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_2.json"))).getAsJsonObject());
 
@@ -55,8 +55,7 @@ public class FlutterConsoleLogManagerTest {
   @Test
   public void testWithError() {
     final ConsoleViewMock console = new ConsoleViewMock();
-    final FlutterConsoleLogManager logManager =
-      new FlutterConsoleLogManager(PowerMockito.mock(VmService.class), console, createFlutterApp());
+    final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
     final Event event = new Event(new JsonParser().parse(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_3.json"))).getAsJsonObject());
 
@@ -68,8 +67,7 @@ public class FlutterConsoleLogManagerTest {
   @Test
   public void testWithStacktrace() {
     final ConsoleViewMock console = new ConsoleViewMock();
-    final FlutterConsoleLogManager logManager =
-      new FlutterConsoleLogManager(PowerMockito.mock(VmService.class), console, createFlutterApp());
+    final FlutterConsoleLogManager logManager = new FlutterConsoleLogManager(console, createFlutterApp());
     final Event event = new Event(new JsonParser().parse(
       new InputStreamReader(FlutterConsoleLogManagerTest.class.getResourceAsStream("console_log_4.json"))).getAsJsonObject());
 
@@ -98,7 +96,13 @@ public class FlutterConsoleLogManagerTest {
   }
 
   private FlutterApp createFlutterApp() {
-    return PowerMockito.mock(FlutterApp.class);
+    final FlutterApp app = PowerMockito.mock(FlutterApp.class);
+
+    PowerMockito.when(app.getVmService()).thenAnswer(mock -> PowerMockito.mock(VmService.class));
+    PowerMockito.when(app.getFlutterDebugProcess()).thenAnswer(mock -> PowerMockito.mock(FlutterDebugProcess.class));
+    PowerMockito.when(app.getVMServiceManager()).thenAnswer(mock -> PowerMockito.mock(VMServiceManager.class));
+
+    return app;
   }
 }
 
