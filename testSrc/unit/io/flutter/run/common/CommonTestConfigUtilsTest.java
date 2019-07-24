@@ -19,6 +19,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
@@ -37,16 +38,19 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
    */
   private String fileContents;
 
-  CommonTestConfigUtils utils = new CommonTestConfigUtils() {
-    @Override
-    protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
-      return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/custom_outline.txt");
-    }
-  };
+  CommonTestConfigUtils utils;
+  FakeActiveEditorsOutlineService service;
 
   @Before
   public void setUp() throws Exception {
-    fileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/custom_test.dart")));
+    fileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.CUSTOM_TEST_PATH)));
+    service = new FakeActiveEditorsOutlineService(fixture.getProject(), FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
+    new CommonTestConfigUtils() {
+      @Override
+      protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
+        return service;
+      }
+    };
   }
 
   @Test
@@ -128,11 +132,39 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
 
   @Test
   public void shouldMatchMainWithTests() throws Exception {
-    final String simpleFileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/simple_test.dart")));
+    final String simpleFileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.SIMPLE_TEST_PATH)));
+    service.loadOutline(FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
+    run(() -> {
+      final PsiElement mainIdentifier = setUpDartElement(simpleFileContents, "main", LeafPsiElement.class);
+      final PsiElement main =
+        PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
+      assert main != null;
+      assertTrue(utils.isMainFunctionDeclarationWithTests(main));
+    });
+  }
+
+  @Test
+  public void shouldNotMatchMainWithNoTests() throws Exception {
+    final String noTestsFileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.NO_TESTS_PATH)));
+    service.loadOutline(FakeActiveEditorsOutlineService.NO_TESTS_OUTLINE_PATH);
+    run(() -> {
+      final PsiElement mainIdentifier = setUpDartElement(noTestsFileContents, "main", LeafPsiElement.class);
+      final PsiElement main =
+        PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
+      assert main != null;
+      assertFalse(utils.isMainFunctionDeclarationWithTests(main));
+    });
+  }
+
+  @Test
+  public void shouldUpdateIfTheOutlineAndFileDoNotMatch() throws Exception {
+    final String simpleFileContents = new String(Files.readAllBytes(Paths.get(FakeActiveEditorsOutlineService.SIMPLE_TEST_PATH)));
+    // Start the service off with the wrong outline, then update it to the correct one later.
+    service.loadOutline(FakeActiveEditorsOutlineService.CUSTOM_OUTLINE_PATH);
     final CommonTestConfigUtils testConfigUtils = new CommonTestConfigUtils() {
       @Override
       protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
-        return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/simple_outline.txt");
+        return service;
       }
     };
     run(() -> {
@@ -140,25 +172,11 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
       final PsiElement main =
         PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
       assert main != null;
-      assertTrue(testConfigUtils.isMainFunctionDeclarationWithTests(main));
-    });
-  }
-
-  @Test
-  public void shouldNotMatchMainWithNoTests() throws Exception {
-    final String noTestsFileContents = new String(Files.readAllBytes(Paths.get("testData/sample_tests/test/no_tests.dart")));
-    final CommonTestConfigUtils testConfigUtils = new CommonTestConfigUtils() {
-      @Override
-      protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
-        return new FakeActiveEditorsOutlineService(project, "testData/sample_tests/test/no_tests_outline.txt");
-      }
-    };
-    run(() -> {
-      final PsiElement mainIdentifier = setUpDartElement(noTestsFileContents, "main", LeafPsiElement.class);
-      final PsiElement main =
-        PsiTreeUtil.findFirstParent(mainIdentifier, element -> element instanceof DartFunctionDeclarationWithBodyOrNative);
-      assert main != null;
       assertFalse(testConfigUtils.isMainFunctionDeclarationWithTests(main));
+
+      service.loadOutline(FakeActiveEditorsOutlineService.SIMPLE_OUTLINE_PATH);
+
+      assertTrue(testConfigUtils.isMainFunctionDeclarationWithTests(main));
     });
   }
 

@@ -11,12 +11,8 @@ import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiManager;
-import com.intellij.psi.impl.PsiModificationTrackerImpl;
-import com.intellij.psi.impl.source.resolve.ResolveCache;
 import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.psi.DartCallExpression;
 import com.jetbrains.lang.dart.psi.DartFunctionDeclarationWithBodyOrNative;
@@ -74,12 +70,18 @@ public abstract class CommonTestConfigUtils {
   /**
    * Gets the elements from the outline that are runnable tests.
    */
+  @NotNull
   protected Map<DartCallExpression, TestType> getTestsFromOutline(@NotNull PsiFile file) {
     final Project project = file.getProject();
-    final FlutterOutline outline = getActiveEditorsOutlineService(project).get(file.getVirtualFile());
+    final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(project);
+    if (service == null) {
+      return new HashMap<>();
+    }
+    final FlutterOutline outline = service.get(file.getVirtualFile());
     // If the outline is outdated, then request a new pass to generate line markers.
-    if (isOutdated(project, file, outline)) {
-      forceFileAnnotation(project, file.getVirtualFile());
+    if (isOutdated(outline, file)) {
+      service.addListener(forFile(file));
+      return new HashMap<>();
     }
     final Map<DartCallExpression, TestType> callToTestType = new HashMap<>();
     if (outline != null) {
@@ -129,7 +131,7 @@ public abstract class CommonTestConfigUtils {
    * Finds the {@link DartCallExpression} in the key set of {@param callToTestType} and also the closest parent of {@param element}.
    */
   @Nullable
-  private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, Map<DartCallExpression, TestType> callToTestType) {
+  private DartCallExpression findEnclosingTestCall(@NotNull PsiElement element, @NotNull Map<DartCallExpression, TestType> callToTestType) {
     while (element != null) {
       if (element instanceof DartCallExpression) {
         final DartCallExpression call = (DartCallExpression)element;
@@ -146,44 +148,24 @@ public abstract class CommonTestConfigUtils {
   }
 
   @VisibleForTesting
+  @Nullable
   protected ActiveEditorsOutlineService getActiveEditorsOutlineService(@NotNull Project project) {
     return ActiveEditorsOutlineService.getInstance(project);
   }
 
   /**
-   * Checks that the outline and file match.
+   * Checks that the {@param outline} matches the current version of {@param file}.
    *
    * <p>
    * An outline and file match if they have the same length.
    */
-  private boolean isOutdated(@NotNull Project project, @NotNull PsiFile file, @Nullable FlutterOutline outline) {
-    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(project);
+  private boolean isOutdated(@Nullable FlutterOutline outline, @NotNull PsiFile file) {
+    final DartAnalysisServerService das = DartAnalysisServerService.getInstance(file.getProject());
     if (outline == null) {
       return true;
     }
     return file.getTextLength() != outline.getLength()
            && file.getTextLength() != das.getConvertedOffset(file.getVirtualFile(), outline.getLength());
-  }
-
-  /**
-   * Forces IntelliJ to recompute line markers and other file annotations.
-   */
-  // TODO(djshuckerow): this can be merged with the Dart plugin's forceFileAnnotation:
-  // https://github.com/JetBrains/intellij-plugins/blob/master/Dart/src/com/jetbrains/lang/dart/analyzer/DartServerData.java#L300
-  private void forceFileAnnotation(@NotNull final Project project, @Nullable final VirtualFile file) {
-    if (file != null) {
-      // It's ok to call DaemonCodeAnalyzer.restart() right in this thread, without invokeLater(),
-      // but it will cache RemoteAnalysisServerImpl$ServerResponseReaderThread in FileStatusMap.threads and as a result,
-      // DartAnalysisServerService.myProject will be leaked in tests
-      ApplicationManager.getApplication()
-        .invokeLater(
-          () -> {
-            DaemonCodeAnalyzer.getInstance(project).restart();
-          },
-          ModalityState.NON_MODAL,
-          project.getDisposed()
-        );
-    }
   }
 
   /**
@@ -210,6 +192,61 @@ public abstract class CommonTestConfigUtils {
       for (FlutterOutline child : outline.getChildren()) {
         visit(child, callToTestType, file);
       }
+    }
+  }
+
+  /**
+   * The cache of listeners for the path of each {@link PsiFile} that has an outded {@link FlutterOutline}.
+   */
+  private static final Map<String, LineMarkerUpdatingListener> listenerCache = new HashMap<>();
+
+  LineMarkerUpdatingListener forFile(@NotNull final PsiFile file) {
+    final String path = file.getVirtualFile().getCanonicalPath();
+    final ActiveEditorsOutlineService service = getActiveEditorsOutlineService(file.getProject());
+    if (!listenerCache.containsKey(path) && service != null) {
+      listenerCache.put(path, new LineMarkerUpdatingListener(file.getProject(), service));
+    }
+    return listenerCache.get(path);
+  }
+
+  /**
+   * {@link ActiveEditorsOutlineService.Listener} that forces IntelliJ to recompute line markers and other file annotations when the
+   * {@link FlutterOutline} updates.
+   *
+   * <p>
+   * Used to ensure that we don't get stuck with out-of-date line markers.
+   */
+  private static class LineMarkerUpdatingListener
+    implements ActiveEditorsOutlineService.Listener {
+    @NotNull final Project project;
+    @NotNull final ActiveEditorsOutlineService service;
+
+
+    private LineMarkerUpdatingListener(@NotNull Project project, @NotNull ActiveEditorsOutlineService service) {
+      this.project = project;
+      this.service = service;
+    }
+
+    @Override
+    public void onOutlineChanged(@NotNull String path, @Nullable FlutterOutline outline) {
+      forceFileAnnotation();
+      service.removeListener(this);
+    }
+
+    // TODO(djshuckerow): this can be merged with the Dart plugin's forceFileAnnotation:
+    // https://github.com/JetBrains/intellij-plugins/blob/master/Dart/src/com/jetbrains/lang/dart/analyzer/DartServerData.java#L300
+    private void forceFileAnnotation() {
+      // It's ok to call DaemonCodeAnalyzer.restart() right in this thread, without invokeLater(),
+      // but it will cache RemoteAnalysisServerImpl$ServerResponseReaderThread in FileStatusMap.threads and as a result,
+      // DartAnalysisServerService.myProject will be leaked in tests
+      ApplicationManager.getApplication()
+        .invokeLater(
+          () -> {
+            DaemonCodeAnalyzer.getInstance(project).restart();
+          },
+          ModalityState.NON_MODAL,
+          project.getDisposed()
+        );
     }
   }
 }

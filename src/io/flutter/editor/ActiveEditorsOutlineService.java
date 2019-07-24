@@ -215,7 +215,7 @@ public class ActiveEditorsOutlineService implements Disposable {
     /**
      * Called on a change in the {@link FlutterOutline} of file at {@param path}.
      */
-    void onOutlineChanged(String path, FlutterOutline outline);
+    void onOutlineChanged(@NotNull String path, @Nullable FlutterOutline outline);
   }
 
   /**
