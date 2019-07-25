@@ -18,34 +18,28 @@ import com.intellij.util.ui.UIUtil;
 import icons.FlutterIcons;
 import io.flutter.FlutterMessages;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.List;
 
 public class FlutterSampleActionsPanel extends JPanel {
-
-  // Enable to run local main.
-  private static final boolean TESTING_LOCALLY = false;
-
   protected final JBLabel myLabel = new JBLabel();
   protected final JBLabel goLink;
 
   @NotNull private final List<FlutterSample> samples;
-  @Nullable private final Project project;
+  @NotNull private final Project project;
   protected Color myBackgroundColor;
   protected ColorKey myBackgroundColorKey;
 
   final JEditorPane descriptionText;
 
   // Combo or label.
-  JComponent sampleSelector;
+  private final JComponent sampleSelector;
 
-  FlutterSampleActionsPanel(@NotNull List<FlutterSample> samples, @Nullable Project project) {
+  FlutterSampleActionsPanel(@NotNull List<FlutterSample> samples, @NotNull Project project) {
     super(new BorderLayout());
     this.samples = samples;
     this.project = project;
@@ -53,7 +47,7 @@ public class FlutterSampleActionsPanel extends JPanel {
     myBackgroundColorKey = EditorColors.GUTTER_BACKGROUND;
 
     myLabel.setIcon(FlutterIcons.Flutter);
-    myLabel.setText("Open sample project:");
+    myLabel.setText("Open widget sample:");
     myLabel.setBorder(JBUI.Borders.emptyRight(5));
 
     goLink = createLinkLabel("Go...", this::doCreate);
@@ -92,14 +86,13 @@ public class FlutterSampleActionsPanel extends JPanel {
     return label;
   }
 
-  JComponent setupSelectorComponent() {
+  private JComponent setupSelectorComponent() {
     if (samples.size() == 1) {
       return new JBLabel(samples.get(0).getDisplayLabel());
     }
 
     final FlutterSampleComboBox sampleCombo = new FlutterSampleComboBox(samples);
     sampleCombo.addActionListener(e -> updateSelection(sampleCombo.getSelectedItem()));
-
     return sampleCombo;
   }
 
@@ -133,10 +126,6 @@ public class FlutterSampleActionsPanel extends JPanel {
 
   @Override
   public Color getBackground() {
-    if (TESTING_LOCALLY) {
-      return UIUtil.getToolTipBackground();
-    }
-
     final EditorColorsScheme globalScheme = EditorColorsManager.getInstance().getGlobalScheme();
     if (myBackgroundColor != null) return myBackgroundColor;
     if (myBackgroundColorKey != null) {
@@ -153,41 +142,10 @@ public class FlutterSampleActionsPanel extends JPanel {
   }
 
   private void doCreate() {
-    // For testing.
-    if (project == null) {
-      if (!TESTING_LOCALLY) {
-        FlutterMessages.showError("Sample Project Creation", "Error: null project");
-      }
-      return;
-    }
     final FlutterSample sample = getSelectedSample();
     final String status = FlutterSampleManager.createSampleProject(sample, project);
     if (status != null) {
-      FlutterMessages.showError("Sample Project Creation", "Error: " + status);
+      FlutterMessages.showError("Widget Sample Error", "Error: " + status);
     }
-  }
-
-  // For testing.
-  public static void main(String[] args) {
-    if (!TESTING_LOCALLY) {
-      throw new IllegalStateException("Set TESTING_LOCALLY and re-run.");
-    }
-
-    final List<FlutterSample> samples = Arrays.asList(
-      new FlutterSample(
-        "foo", "baz", "baz", "baz", "baz", "This sample shows creation of a [Card] widget that shows album information\nand two actions."
-      )
-      ,
-      new FlutterSample(
-        "bar", "baz", "baz", "baz", "baz", "This sample shows how to use [onDeleted] to remove an entry when the\ndelete button is tapped."
-      )
-    );
-
-    final FlutterSampleActionsPanel panel = new FlutterSampleActionsPanel(samples, null);
-    final JFrame frame = new JFrame("BorderLayoutDemo");
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    frame.add(panel);
-    frame.pack();
-    frame.setVisible(true);
   }
 }
