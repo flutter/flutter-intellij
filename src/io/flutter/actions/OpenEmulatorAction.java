@@ -19,9 +19,9 @@ import static java.util.stream.Collectors.toList;
 public class OpenEmulatorAction extends AnAction {
   /**
    * Retrieve a list of {@link OpenEmulatorAction}s.
-   *
-   * This list of based of of cached information from the {@link AndroidEmulatorManager}. Callers who
-   * wanted notifications for updates should listen the {@link AndroidEmulatorManager}for changes
+   * <p>
+   * This list is based off of cached information from the {@link AndroidEmulatorManager} class. Callers
+   * who wanted notifications for updates should listen the {@link AndroidEmulatorManager} for changes
    * to the list of emulators.
    */
   public static List<OpenEmulatorAction> getEmulatorActions(Project project) {

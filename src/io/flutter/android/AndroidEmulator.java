@@ -79,12 +79,7 @@ public class AndroidEmulator {
 
   @Override
   public boolean equals(Object obj) {
-    if (!(obj instanceof AndroidEmulator)) {
-      return false;
-    }
-
-    final AndroidEmulator other = (AndroidEmulator)obj;
-    return other.id.equals(id);
+    return obj instanceof AndroidEmulator && ((AndroidEmulator)obj).id.equals(id);
   }
 
   @Override
