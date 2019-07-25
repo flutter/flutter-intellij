@@ -7,18 +7,19 @@ package io.flutter.utils;
 
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
-import com.intellij.execution.process.OSProcessHandler;
-import com.intellij.execution.process.ProcessAdapter;
-import com.intellij.execution.process.ProcessEvent;
-import com.intellij.execution.process.ProcessOutputTypes;
+import com.intellij.execution.process.*;
+import com.intellij.execution.util.ExecUtil;
 import com.intellij.openapi.util.Comparing;
 import com.intellij.openapi.util.Key;
 import com.intellij.openapi.util.SystemInfo;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import com.intellij.util.concurrency.AppExecutorUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.CompletableFuture;
 
 public class SystemUtils {
   /**
@@ -65,9 +66,30 @@ public class SystemUtils {
   }
 
   /**
+   * Execute the given command line, and return the process output as one result in a future.
+   * <p>
+   * This is a non-blocking equivalient to {@link ExecUtil#execAndGetOutput(GeneralCommandLine)}.
+   */
+  public static CompletableFuture<ProcessOutput> execAndGetOutput(GeneralCommandLine cmd) {
+    final CompletableFuture<ProcessOutput> future = new CompletableFuture<>();
+
+    AppExecutorUtil.getAppExecutorService().submit(() -> {
+      try {
+        final ProcessOutput output = ExecUtil.execAndGetOutput(cmd);
+        future.complete(output);
+      }
+      catch (ExecutionException e) {
+        future.completeExceptionally(e);
+      }
+    });
+
+    return future;
+  }
+
+  /**
    * Copied from VfsUtilCore because we need to build for 2017.3 (see below, @since).
    * TODO(anyone): Delete this method after 2017.3 is no longer supported (i.e. when AS 3.2 is stable).
-   *
+   * <p>
    * Returns the relative path from one virtual file to another.
    * If {@code src} is a file, the path is calculated from its parent directory.
    *

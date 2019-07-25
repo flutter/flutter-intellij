@@ -5,14 +5,13 @@
  */
 package io.flutter.sdk;
 
-import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.process.OSProcessUtil;
 import com.intellij.execution.process.ProcessInfo;
 import com.intellij.execution.process.ProcessOutput;
-import com.intellij.execution.util.ExecUtil;
 import io.flutter.FlutterBundle;
 import io.flutter.FlutterMessages;
+import io.flutter.utils.SystemUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,14 +29,20 @@ public class XcodeUtils {
     return false;
   }
 
-  public static int openSimulator(String... additionalArgs) {
+  /**
+   * Open the iOS simulator.
+   * <p>
+   * If there's an error opening the simulator, display that to the user via
+   * {@link FlutterMessages#showError(String, String)}.
+   */
+  public static void openSimulator(String... additionalArgs) {
     final List<String> params = new ArrayList<>(Arrays.asList(additionalArgs));
     params.add("-a");
     params.add("Simulator.app");
 
-    try {
-      final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(params);
-      final ProcessOutput output = ExecUtil.execAndGetOutput(cmd);
+    final GeneralCommandLine cmd = new GeneralCommandLine().withExePath("open").withParameters(params);
+
+    SystemUtils.execAndGetOutput(cmd).thenAccept((ProcessOutput output) -> {
       if (output.getExitCode() != 0) {
         final StringBuilder textBuffer = new StringBuilder();
         if (!output.getStdout().isEmpty()) {
@@ -49,20 +54,16 @@ public class XcodeUtils {
           }
           textBuffer.append(output.getStderr());
         }
-        
+
         final String eventText = textBuffer.toString();
         final String msg = !eventText.isEmpty() ? eventText : "Process error - exit code: (" + output.getExitCode() + ")";
         FlutterMessages.showError("Error Opening Simulator", msg);
       }
-
-      return output.getExitCode();
-    }
-    catch (ExecutionException e) {
+    }).exceptionally(throwable -> {
       FlutterMessages.showError(
         "Error Opening Simulator",
-        FlutterBundle.message("flutter.command.exception.message", e.getMessage()));
-    }
-
-    return 1;
+        FlutterBundle.message("flutter.command.exception.message", throwable.getMessage()));
+      return null;
+    });
   }
 }

@@ -9,23 +9,25 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.project.Project;
 import io.flutter.android.AndroidEmulator;
-import io.flutter.android.AndroidSdk;
+import io.flutter.sdk.AndroidEmulatorManager;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
 
 public class OpenEmulatorAction extends AnAction {
+  /**
+   * Retrieve a list of {@link OpenEmulatorAction}s.
+   * <p>
+   * This list is based off of cached information from the {@link AndroidEmulatorManager} class. Callers
+   * who wanted notifications for updates should listen the {@link AndroidEmulatorManager} for changes
+   * to the list of emulators.
+   */
   public static List<OpenEmulatorAction> getEmulatorActions(Project project) {
-    final AndroidSdk sdk = AndroidSdk.createFromProject(project);
-    if (sdk == null) {
-      return Collections.emptyList();
-    }
+    final AndroidEmulatorManager emulatorManager = AndroidEmulatorManager.getInstance(project);
 
-    final List<AndroidEmulator> emulators = sdk.getEmulators();
-    emulators.sort((emulator1, emulator2) -> emulator1.getName().compareToIgnoreCase(emulator2.getName()));
+    final List<AndroidEmulator> emulators = emulatorManager.getCachedEmulators();
     return emulators.stream().map(OpenEmulatorAction::new).collect(toList());
   }
 

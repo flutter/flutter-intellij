@@ -76,4 +76,14 @@ public class AndroidEmulator {
       FlutterMessages.showError("Error Opening Emulator", e.toString());
     }
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    return obj instanceof AndroidEmulator && ((AndroidEmulator)obj).id.equals(id);
+  }
+
+  @Override
+  public int hashCode() {
+    return id.hashCode();
+  }
 }
