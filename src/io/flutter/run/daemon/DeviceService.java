@@ -19,6 +19,7 @@ import io.flutter.FlutterMessages;
 import io.flutter.FlutterUtils;
 import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterDevice;
+import io.flutter.sdk.AndroidEmulatorManager;
 import io.flutter.sdk.FlutterSdkManager;
 import io.flutter.utils.Refreshable;
 import org.jetbrains.annotations.NotNull;
@@ -220,6 +221,10 @@ public class DeviceService {
     if (request.isCancelled()) {
       return previous;
     }
+
+    // When starting the device daemon, also refresh the list of AndroidEmulators.
+    final AndroidEmulatorManager emulatorManager = AndroidEmulatorManager.getInstance(project);
+    emulatorManager.refresh();
 
     try {
       return nextCommand.start(request::isCancelled, this::refreshDeviceSelection, this::daemonStopped);

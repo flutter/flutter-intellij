@@ -101,8 +101,8 @@ public class AndroidSdk {
       });
       process.startNotify();
 
-      // We wait a maximum of 2000ms.
-      if (!process.waitFor(2000)) {
+      // We wait a maximum of 10s.
+      if (!process.waitFor(10000)) {
         return Collections.emptyList();
       }
 

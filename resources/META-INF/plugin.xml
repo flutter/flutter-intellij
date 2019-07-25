@@ -915,6 +915,7 @@
     <directoryProjectGenerator implementation="io.flutter.module.FlutterSmallIDEProjectGenerator"/>
 
     <projectService serviceImplementation="io.flutter.sdk.FlutterSdkManager"/>
+    <projectService serviceImplementation="io.flutter.sdk.AndroidEmulatorManager"/>
 
     <applicationService serviceInterface="io.flutter.settings.FlutterSettings"
                         serviceImplementation="io.flutter.settings.FlutterSettings"

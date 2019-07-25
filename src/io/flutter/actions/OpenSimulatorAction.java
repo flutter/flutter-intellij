@@ -14,6 +14,7 @@ public class OpenSimulatorAction extends AnAction {
   final boolean enabled;
 
   public OpenSimulatorAction(boolean enabled) {
+    //noinspection DialogTitleCapitalization
     super("Open iOS Simulator");
 
     this.enabled = enabled;
@@ -26,15 +27,15 @@ public class OpenSimulatorAction extends AnAction {
 
   @Override
   public void actionPerformed(@NotNull AnActionEvent event) {
-    // Check to see if the simulator is already running.
-    // If it is, and we're here, that means there are no running devices and we want
-    // to issue an extra call to start (w/ `-n`) to load a new simulator.
-    if (XcodeUtils.isSimulatorRunning()) {
-      if (XcodeUtils.openSimulator("-n") != 0) {
-        // No point in trying if we errored.
-        return;
-      }
-    }
+    // Check to see if the simulator is already running. If it is, and we're here, that means there are
+    // no running devices and we want to issue an extra call to start (w/ `-n`) to load a new simulator.
+    // TODO(devoncarew): Determine if we need to support this code path.
+    //if (XcodeUtils.isSimulatorRunning()) {
+    //  if (XcodeUtils.openSimulator("-n") != 0) {
+    //    // No point in trying if we errored.
+    //    return;
+    //  }
+    //}
 
     XcodeUtils.openSimulator();
   }

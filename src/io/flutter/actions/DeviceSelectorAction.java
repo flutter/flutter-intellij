@@ -17,6 +17,7 @@ import io.flutter.FlutterBundle;
 import io.flutter.FlutterUtils;
 import io.flutter.run.FlutterDevice;
 import io.flutter.run.daemon.DeviceService;
+import io.flutter.sdk.AndroidEmulatorManager;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,6 +66,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
       Disposer.register(project, () -> knownProjects.remove(project));
 
       DeviceService.getInstance(project).addListener(() -> update(project, e.getPresentation()));
+
+      // Listen for android device changes, and rebuild the menu if necessary.
+      AndroidEmulatorManager.getInstance(project).addListener(() -> update(project, e.getPresentation()));
+
       update(project, e.getPresentation());
     }
   }
@@ -97,10 +102,10 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
   private void updateActions(@NotNull Project project, Presentation presentation) {
     actions.clear();
 
-    final DeviceService service = DeviceService.getInstance(project);
+    final DeviceService deviceService = DeviceService.getInstance(project);
 
-    final FlutterDevice selectedDevice = service.getSelectedDevice();
-    final Collection<FlutterDevice> devices = service.getConnectedDevices();
+    final FlutterDevice selectedDevice = deviceService.getSelectedDevice();
+    final Collection<FlutterDevice> devices = deviceService.getConnectedDevices();
 
     selectedDeviceAction = null;
 
@@ -143,15 +148,17 @@ public class DeviceSelectorAction extends ComboBoxAction implements DumbAware {
     }
 
     if (devices.isEmpty()) {
-      final boolean isLoading = service.getStatus() == DeviceService.State.LOADING;
+      final boolean isLoading = deviceService.getStatus() == DeviceService.State.LOADING;
       if (isLoading) {
         presentation.setText(FlutterBundle.message("devicelist.loading"));
       }
       else {
+        //noinspection DialogTitleCapitalization
         presentation.setText("<no devices>");
       }
     }
     else if (selectedDevice == null) {
+      //noinspection DialogTitleCapitalization
       presentation.setText("<no device selected>");
     }
   }
