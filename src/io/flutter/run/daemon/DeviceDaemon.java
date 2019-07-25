@@ -23,7 +23,6 @@ import io.flutter.bazel.WorkspaceCache;
 import io.flutter.run.FlutterDevice;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.sdk.FlutterSdkUtil;
-import io.flutter.settings.FlutterSettings;
 import io.flutter.utils.FlutterModuleUtils;
 import io.flutter.utils.MostlySilentOsProcessHandler;
 import org.jetbrains.annotations.NotNull;
@@ -294,10 +293,6 @@ class DeviceDaemon {
       result.setCharset(CharsetToolkit.UTF8_CHARSET);
       result.setExePath(FileUtil.toSystemDependentName(command));
       result.withEnvironment(FlutterSdkUtil.FLUTTER_HOST_ENV, FlutterSdkUtil.getFlutterHostEnvValue());
-      if (FlutterSettings.getInstance().isShowWebDesktopDevices()) {
-        result.withEnvironment("ENABLE_FLUTTER_DESKTOP", "true");
-        result.withEnvironment("FLUTTER_WEB", "true");
-      }
       if (androidHome != null) {
         result.withEnvironment("ANDROID_HOME", androidHome);
       }
