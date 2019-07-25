@@ -100,7 +100,8 @@ sourceSets {
 }
 
 test {
-  ignoreFailures true
+  // Uncomment this line to disable tests on the bots.
+  //ignoreFailures true
 }
 
 /* This fails in a way that suggests internal version skew at JetBrains. */

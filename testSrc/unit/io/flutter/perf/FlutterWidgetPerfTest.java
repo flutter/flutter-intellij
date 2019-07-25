@@ -23,6 +23,7 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -318,6 +319,7 @@ class MockTextEditor implements TextEditor {
   }
 }
 
+@Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
 public class FlutterWidgetPerfTest {
   @Test
   public void testFileStatsCalculation() throws InterruptedException, ExecutionException {
