@@ -82,13 +82,15 @@ public class FlutterConsoleLogManager {
   @NotNull final ConsoleView console;
   @NotNull final FlutterApp app;
 
-  public FlutterConsoleLogManager(@NotNull VmService service, @NotNull ConsoleView console, @NotNull FlutterApp app) {
-    this.service = service;
+  public FlutterConsoleLogManager(@NotNull ConsoleView console, @NotNull FlutterApp app) {
     this.console = console;
     this.app = app;
 
+    assert (app.getVmService() != null);
+    this.service = app.getVmService();
+
     assert (app.getFlutterDebugProcess() != null);
-    objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), service, "console-group");
+    objectGroup = InspectorService.createGroup(app, app.getFlutterDebugProcess(), app.getVmService(), "console-group");
 
     if (queue == null) {
       queue = QueueProcessor.createRunnableQueueProcessor();
