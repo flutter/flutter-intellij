@@ -5,7 +5,6 @@
  */
 package io.flutter;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
@@ -19,6 +18,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
@@ -35,8 +35,11 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.IOException;
 import java.util.List;
-import java.util.regex.Matcher;
+import java.util.Map;
+import java.util.Objects;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.SystemIndependent;
@@ -46,11 +49,6 @@ import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
@@ -82,7 +80,7 @@ public class FlutterUtils {
     }
     // TODO(jacobr): we might also want to filter for files not under the
     // current project root.
-    return file != null && FlutterUtils.isDartFile(file);
+    return file != null && isDartFile(file);
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
@@ -149,7 +147,7 @@ public class FlutterUtils {
    * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
    */
   public static boolean isInFlutterProject(@NotNull PsiElement element) {
-    final Module module = ModuleUtil.findModuleForPsiElement(element);
+    final Module module = ModuleUtilCore.findModuleForPsiElement(element);
     return module != null && FlutterModuleUtils.declaresFlutter(module);
   }
 
@@ -450,11 +448,6 @@ public class FlutterUtils {
   public static boolean isAndroidxProject(@NotNull Project project) {
     @SystemIndependent String basePath = project.getBasePath();
     assert basePath != null;
-    return isAndroidxProjectDir(basePath);
-  }
-
-  @VisibleForTesting
-  public static boolean isAndroidxProjectDir(@NotNull @SystemIndependent String basePath) {
     VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
     assert projectDir != null;
     VirtualFile androidDir = getFlutterManagedAndroidDir(projectDir);
@@ -478,7 +471,8 @@ public class FlutterUtils {
           }
         }
       }
-    } catch (IOException e) {
+    }
+    catch (IOException e) {
       return false;
     }
     return false;

@@ -6,9 +6,7 @@
 package io.flutter.module.settings;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
-import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.UIUtil;
@@ -16,13 +14,11 @@ import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import org.jetbrains.annotations.NotNull;
-
-import javax.swing.*;
-import javax.swing.event.DocumentEvent;
 import java.awt.event.ItemEvent;
+import java.util.function.Supplier;
+import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class FlutterCreateAdditionalSettingsFields {
   private final FlutterCreateAdditionalSettings settings;

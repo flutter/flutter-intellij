@@ -26,7 +26,6 @@ import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBLayeredPane;
 import com.intellij.ui.components.JBScrollPane;
 import io.flutter.FlutterBundle;
-import io.flutter.FlutterUtils;
 import io.flutter.sdk.FlutterSdk;
 import java.awt.Container;
 import java.awt.event.FocusAdapter;

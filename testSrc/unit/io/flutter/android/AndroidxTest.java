@@ -48,13 +48,13 @@ public class AndroidxTest {
   }
 
   @Test
-  public void androidxOldAppRecognized() throws Exception {
+  public void androidxOldAppRecognized() {
     createTestHarness("android", null, ANDROIDX_PROPERTIES);
     assertTrue(FlutterUtils.isAndroidxProject(fixture.getProject()));
   }
 
   @Test
-  public void androidxOldModuleRecognized() throws Exception {
+  public void androidxOldModuleRecognized() {
     createTestHarness(".android", null, ANDROIDX_PROPERTIES);
     assertTrue(FlutterUtils.isAndroidxProject(fixture.getProject()));
   }
@@ -66,7 +66,7 @@ public class AndroidxTest {
   }
 
   @Test
-  public void androidxOldPluginRecognized() throws Exception {
+  public void androidxOldPluginRecognized() {
     createTestHarness("example/android", null, ANDROIDX_PROPERTIES);
     assertTrue(FlutterUtils.isAndroidxProject(fixture.getProject()));
   }
@@ -78,13 +78,13 @@ public class AndroidxTest {
   }
 
   @Test
-  public void androidxAppRecognized() throws Exception {
+  public void androidxAppRecognized() {
     createTestHarness("android", FlutterProjectType.APP, ANDROIDX_PROPERTIES);
     assertTrue(FlutterUtils.isAndroidxProject(fixture.getProject()));
   }
 
   @Test
-  public void androidxModuleRecognized() throws Exception {
+  public void androidxModuleRecognized() {
     createTestHarness(".android", FlutterProjectType.MODULE, ANDROIDX_PROPERTIES);
     assertTrue(FlutterUtils.isAndroidxProject(fixture.getProject()));
   }
@@ -96,7 +96,7 @@ public class AndroidxTest {
   }
 
   @Test
-  public void androidxPluginRecognized() throws Exception {
+  public void androidxPluginRecognized() {
     createTestHarness("example/android", FlutterProjectType.PLUGIN, ANDROIDX_PROPERTIES);
     assertTrue(FlutterUtils.isAndroidxProject(fixture.getProject()));
   }
