@@ -15,7 +15,6 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.editor.ex.EditorSettingsExternalizable;
 import com.intellij.openapi.editor.impl.softwrap.SoftWrapAppliancePlaces;
 import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.ui.JBColor;
 import com.intellij.ui.SimpleTextAttributes;
 import com.intellij.util.concurrency.QueueProcessor;
 import io.flutter.FlutterInitializer;
@@ -28,17 +27,14 @@ import io.flutter.settings.FlutterSettings;
 import io.flutter.vmService.VmServiceConsumers;
 import org.dartlang.vm.service.VmService;
 import org.dartlang.vm.service.consumer.GetObjectConsumer;
-import org.dartlang.vm.service.element.Event;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -51,11 +47,7 @@ public class FlutterConsoleLogManager {
   private static final String consolePreferencesSetKey = "io.flutter.console.preferencesSet";
 
   private static final ConsoleViewContentType TITLE_CONTENT_TYPE =
-    new ConsoleViewContentType("title",
-                               new SimpleTextAttributes(
-                                 SimpleTextAttributes.STYLE_PLAIN,
-                                 new JBColor(SimpleTextAttributes.DARK_TEXT.getFgColor(), new Color(138, 138, 0)))
-                                 .toTextAttributes());
+    new ConsoleViewContentType("title", SimpleTextAttributes.REGULAR_BOLD_ATTRIBUTES.toTextAttributes());
   private static final ConsoleViewContentType NORMAL_CONTENT_TYPE = ConsoleViewContentType.NORMAL_OUTPUT;
   private static final ConsoleViewContentType SUBTLE_CONTENT_TYPE =
     new ConsoleViewContentType("subtle", SimpleTextAttributes.GRAY_ATTRIBUTES.toTextAttributes());
@@ -103,6 +95,14 @@ public class FlutterConsoleLogManager {
       final JsonObject jsonObject = extensionData.getJson().getAsJsonObject();
       final DiagnosticsNode diagnosticsNode = new DiagnosticsNode(jsonObject, objectGroup, app, false, null);
 
+      final int errorsSinceReload;
+      if (jsonObject.has("errorsSinceReload")) {
+        errorsSinceReload = jsonObject.get("errorsSinceReload").getAsInt();
+      }
+      else {
+        errorsSinceReload = 0;
+      }
+
       // Send analytics for the diagnosticsNode.
       final String errorId = FlutterErrorHelper.getAnalyticsId(diagnosticsNode);
       if (errorId != null) {
@@ -112,7 +112,7 @@ public class FlutterConsoleLogManager {
       if (FlutterSettings.getInstance().isShowStructuredErrors()) {
         queue.add(() -> {
           try {
-            processFlutterErrorEvent(diagnosticsNode);
+            processFlutterErrorEvent(diagnosticsNode, errorsSinceReload);
           }
           catch (Throwable t) {
             LOG.warn(t);
@@ -125,39 +125,108 @@ public class FlutterConsoleLogManager {
     }
   }
 
-  private static final String errorSeparator =
-    "◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤";
+  private static final int errorSeparatorLength = 100;
+  private static final String errorSeparatorChar = "═";
+
+  private static final ArrayList<DiagnosticsNode> emptyList = new ArrayList<>();
 
   /**
    * Pretty print the error using the available console syling attributes.
    */
-  private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode) {
+  private void processFlutterErrorEvent(@NotNull DiagnosticsNode diagnosticsNode, int errorsSinceReload) {
     final String description = " " + diagnosticsNode.toString() + " ";
 
-    final int targetLength = errorSeparator.length();
-    final String prefix = StringUtil.repeat("◢◤", (targetLength - description.length()) / 4);
-    final String suffix = StringUtil.repeat("◢◤", ((targetLength - (description.length() + prefix.length())) / 2));
+    final boolean terseError = errorsSinceReload != 0;
 
-    console.print("\n" + prefix + description + suffix + "\n", TITLE_CONTENT_TYPE);
+    // TODO(devoncarew): Potentially change the error separator chars based on the error type (overflow, ...).
+    final String prefix = "════════";
+    final String multiplicity = errorsSinceReload == 0 ? "" : (" (" + (errorsSinceReload + 1) + ")");
+    final String suffix = "══";
 
-    DiagnosticLevel lastLevel = null;
+    console.print("\n" + prefix, TITLE_CONTENT_TYPE);
+    console.print(multiplicity + description, NORMAL_CONTENT_TYPE);
+    console.print(
+      StringUtil.repeat(errorSeparatorChar, Math.max(
+        errorSeparatorLength - prefix.length() - multiplicity.length() - description.length() - suffix.length(), 0)),
+      TITLE_CONTENT_TYPE);
+    console.print(suffix + "\n", TITLE_CONTENT_TYPE);
 
     // TODO(devoncarew): Create a hyperlink to a widget - ala 'widget://inspector-1347'.
 
-    for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
-      // Add blank line between hint and non-hint properties.
-      if (lastLevel != null && lastLevel != property.getLevel()) {
-        if (lastLevel == DiagnosticLevel.hint || property.getLevel() == DiagnosticLevel.hint) {
-          console.print("\n", NORMAL_CONTENT_TYPE);
-        }
+    if (terseError) {
+      for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
+        printTerseNodeProperty(console, "", property);
       }
+    }
+    else {
+      DiagnosticLevel lastLevel = null;
 
-      lastLevel = property.getLevel();
+      for (DiagnosticsNode property : diagnosticsNode.getInlineProperties()) {
+        // Add blank line between hint and non-hint properties.
+        if (lastLevel != property.getLevel()) {
+          if (lastLevel == DiagnosticLevel.hint || property.getLevel() == DiagnosticLevel.hint) {
+            console.print("\n", NORMAL_CONTENT_TYPE);
+          }
+        }
 
-      printDiagnosticsNodeProperty(console, "", property, null, false);
+        lastLevel = property.getLevel();
+
+        printDiagnosticsNodeProperty(console, "", property, null, false);
+      }
     }
 
-    console.print(errorSeparator + "\n\n", TITLE_CONTENT_TYPE);
+    console.print(StringUtil.repeat(errorSeparatorChar, errorSeparatorLength) + "\n", TITLE_CONTENT_TYPE);
+  }
+
+  private void printTerseNodeProperty(ConsoleView console, String indent, DiagnosticsNode property) {
+    boolean skip = true;
+
+    if (property.getLevel() == DiagnosticLevel.summary) {
+      skip = false;
+    }
+    else if (property.hasChildren()) {
+      final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
+      final ArrayList<DiagnosticsNode> children = future.getNow(emptyList);
+      if (children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
+        skip = false;
+      }
+    }
+
+    if (skip) {
+      return;
+    }
+
+    final ConsoleViewContentType contentType = getContentTypeFor(property.getLevel());
+
+    console.print(indent, contentType);
+
+    if (property.getShowName()) {
+      console.print(property.getName(), contentType);
+
+      if (property.getShowSeparator()) {
+        console.print(property.getSeparator() + " ", contentType);
+      }
+    }
+
+    final String description = property.getDescription() == null ? "" : property.getDescription();
+    console.print(description + "\n", contentType);
+
+    final String childIndent = getChildIndent(indent, property);
+
+    if (property.hasInlineProperties()) {
+      for (DiagnosticsNode childProperty : property.getInlineProperties()) {
+        printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, false);
+      }
+    }
+
+    if (property.hasChildren()) {
+      final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
+      final ArrayList<DiagnosticsNode> children = future.getNow(emptyList);
+
+      for (DiagnosticsNode child : children) {
+        printDiagnosticsNodeProperty(console, childIndent, child, contentType, false);
+      }
+    }
   }
 
   private void printDiagnosticsNodeProperty(ConsoleView console, String indent, DiagnosticsNode property,
@@ -165,11 +234,6 @@ public class FlutterConsoleLogManager {
                                             boolean isInChild) {
     // TODO(devoncarew): Change the error message display in the framework.
     if (property.getDescription() != null && property.getLevel() == DiagnosticLevel.info) {
-      // Elide framework '◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤...' lines.
-      if (property.getDescription().startsWith("◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤◢◤")) {
-        return;
-      }
-
       // Elide framework blank styling lines.
       if (StringUtil.equals("ErrorSpacer", property.getType())) {
         return;
@@ -177,81 +241,52 @@ public class FlutterConsoleLogManager {
     }
 
     if (contentType == null) {
-      if (property.getLevel() == DiagnosticLevel.error) {
-        contentType = ERROR_CONTENT_TYPE;
-      }
-      else if (property.getLevel() == DiagnosticLevel.summary) {
-        contentType = ERROR_CONTENT_TYPE;
-      }
-      else if (property.getLevel() == DiagnosticLevel.hint) {
-        contentType = NORMAL_CONTENT_TYPE;
-      }
-      else {
-        contentType = SUBTLE_CONTENT_TYPE;
-      }
+      contentType = getContentTypeFor(property.getLevel());
     }
 
     console.print(indent, contentType);
 
     if (property.getShowName()) {
       console.print(property.getName(), contentType);
-    }
-    if (property.getShowName() && property.getShowSeparator()) {
-      console.print(property.getSeparator() + " ", contentType);
+
+      if (property.getShowSeparator()) {
+        console.print(property.getSeparator() + " ", contentType);
+      }
     }
 
-    // Print the description.
-    if (property.getDescription() != null) {
-      final String description = property.getDescription();
-      console.print(description + "\n", contentType);
-    }
-    else {
-      console.print("\n", contentType);
+    final String description = property.getDescription() == null ? "" : property.getDescription();
+    console.print(description + "\n", contentType);
+
+    if (property.hasInlineProperties()) {
+      String childIndent = getChildIndent(indent, property);
+      if (property.getStyle() == DiagnosticsTreeStyle.shallow && !indent.startsWith("...")) {
+        // Render properties of shallow nodes as collapesed.
+        childIndent = "...  " + indent;
+      }
+      for (DiagnosticsNode childProperty : property.getInlineProperties()) {
+        printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, isInChild);
+      }
     }
 
     if (property.hasChildren()) {
-      try {
-        final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
-        final ArrayList<DiagnosticsNode> children = future.get();
+      final CompletableFuture<ArrayList<DiagnosticsNode>> future = property.getChildren();
+      final ArrayList<DiagnosticsNode> children = future.getNow(emptyList);
 
-        if (!isInChild && children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
-          final String childIndent = getChildIndent(indent, property);
-          for (DiagnosticsNode child : children) {
-            printDiagnosticsNodeProperty(console, childIndent, child, contentType, false);
-          }
-
-          if (property.hasInlineProperties()) {
-            for (DiagnosticsNode childProperty : property.getInlineProperties()) {
-              printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, false);
-            }
-          }
+      // Don't collapse children if it's just a flat list of children.
+      if (!isInChild && children.stream().noneMatch(DiagnosticsNode::hasChildren)) {
+        final String childIndent = getChildIndent(indent, property);
+        for (DiagnosticsNode child : children) {
+          printDiagnosticsNodeProperty(console, childIndent, child, contentType, false);
         }
-        else {
+      }
+      else {
+        if (property.getStyle() != DiagnosticsTreeStyle.shallow) {
           // For deep trees, we show the text as collapsed.
           final String childIndent = isInChild ? getChildIndent(indent, property) : "...  " + indent;
 
-          if (property.getStyle() != DiagnosticsTreeStyle.shallow) {
-            for (DiagnosticsNode child : children) {
-              printDiagnosticsNodeProperty(console, childIndent, child, contentType, true);
-            }
+          for (DiagnosticsNode child : children) {
+            printDiagnosticsNodeProperty(console, childIndent, child, contentType, true);
           }
-
-          if (property.hasInlineProperties()) {
-            for (DiagnosticsNode childProperty : property.getInlineProperties()) {
-              printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, true);
-            }
-          }
-        }
-      }
-      catch (InterruptedException | ExecutionException e) {
-        LOG.warn(e);
-      }
-    }
-    else {
-      if (property.hasInlineProperties()) {
-        final String childIndent = getChildIndent(indent, property);
-        for (DiagnosticsNode childProperty : property.getInlineProperties()) {
-          printDiagnosticsNodeProperty(console, childIndent, childProperty, contentType, isInChild);
         }
       }
     }
@@ -280,6 +315,18 @@ public class FlutterConsoleLogManager {
         LOG.warn(t);
       }
     });
+  }
+
+  private ConsoleViewContentType getContentTypeFor(DiagnosticLevel level) {
+    switch (level) {
+      case error:
+      case summary:
+        return ERROR_CONTENT_TYPE;
+      case hint:
+        return NORMAL_CONTENT_TYPE;
+      default:
+        return SUBTLE_CONTENT_TYPE;
+    }
   }
 
   @VisibleForTesting
