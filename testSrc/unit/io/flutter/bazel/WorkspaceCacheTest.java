@@ -68,6 +68,7 @@ public class WorkspaceCacheTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void shouldDetectModuleRootChange() throws Exception {
     checkWorkspaceExists();
     removeContentRoot();
