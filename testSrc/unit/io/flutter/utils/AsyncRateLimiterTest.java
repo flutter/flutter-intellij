@@ -28,7 +28,6 @@ public class AsyncRateLimiterTest {
 
   private final List<String> logEntries = new ArrayList<>();
 
-  private int futureCompleteDelay = 0;
   private static final double TEST_FRAMES_PER_SECOND = 10.0;
   private static final long MS_PER_EVENT = (long)(1000.0 / TEST_FRAMES_PER_SECOND);
 
@@ -103,7 +102,11 @@ public class AsyncRateLimiterTest {
 
     // First event should occur immediately so don't count it.
     final double requestsPerSecond = (expectedEvents - 1) / (delta * 0.001);
-    assertTrue("Requests per second does not exceed limit. Actual: " + requestsPerSecond, requestsPerSecond <= TEST_FRAMES_PER_SECOND);
+
+    // Use an epsilon of 10% for comparisons to TEST_FRAMES_PER_SECOND.
+    assertTrue("Requests per second does not exceed limit. Actual: " + requestsPerSecond,
+               requestsPerSecond <= (TEST_FRAMES_PER_SECOND * 1.1));
+
     // We use a large delta so that tests run under load do not result in flakes.
     assertTrue("Requests per second within 3 fps of rate limit:", requestsPerSecond + 3.0 > TEST_FRAMES_PER_SECOND);
   }
