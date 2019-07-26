@@ -6,6 +6,9 @@
 package io.flutter.module.settings;
 
 import com.intellij.ide.util.projectWizard.SettingsStep;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.roots.ModifiableRootModel;
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.util.PlatformUtils;
 import com.intellij.util.ui.UIUtil;
@@ -13,6 +16,8 @@ import io.flutter.FlutterBundle;
 import io.flutter.module.FlutterProjectType;
 import io.flutter.sdk.FlutterCreateAdditionalSettings;
 import io.flutter.sdk.FlutterSdk;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -27,18 +32,25 @@ public class FlutterCreateAdditionalSettingsFields {
   private final RadiosForm iosLanguageRadios;
   private final ProjectType projectTypeForm;
   private final FlutterCreateParams createParams;
+  private final Project project;
 
   public FlutterCreateAdditionalSettingsFields() {
-    this(new FlutterCreateAdditionalSettings(), null);
+    this(new FlutterCreateAdditionalSettings(), null, null);
   }
 
-  public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings, FlutterSdk sdk) {
+  public FlutterCreateAdditionalSettingsFields(FlutterCreateAdditionalSettings additionalSettings,
+                                               Supplier<? extends FlutterSdk> getSdk,
+                                               Project hostProject) {
     settings = additionalSettings;
+    project = hostProject;
 
-    projectTypeForm = new ProjectType(sdk);
+    projectTypeForm = new ProjectType(getSdk);
     projectTypeForm.addListener(e -> {
-      settings.setType(projectTypeForm.getType());
-      changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
+      if (e.getStateChange() == ItemEvent.SELECTED) {
+        settings.setType(projectTypeForm.getType());
+        projectTypeForm.adjustAndroidX(project);
+        changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
+      }
     });
 
     orgField = new JTextField();
@@ -111,6 +123,7 @@ public class FlutterCreateAdditionalSettingsFields {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setType(projectTypeForm.getType())
+      .setAndroidX(projectTypeForm.getType() != FlutterProjectType.PACKAGE && projectTypeForm.getAndroidxCheckbox().isSelected())
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
       .setSwift(iosLanguageRadios.isRadio2Selected() ? true : null)
@@ -120,5 +133,9 @@ public class FlutterCreateAdditionalSettingsFields {
 
   public FlutterCreateAdditionalSettings getSettings() {
     return settings;
+  }
+
+  public void update() {
+    projectTypeForm.adjustAndroidX(project);
   }
 }

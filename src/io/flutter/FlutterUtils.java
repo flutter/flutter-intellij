@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
@@ -21,7 +22,9 @@ import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -32,8 +35,11 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
+import java.util.List;
+import java.util.regex.Matcher;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.SystemIndependent;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -439,5 +445,89 @@ public class FlutterUtils {
     catch (Exception e) {
       return null;
     }
+  }
+
+  public static boolean isAndroidxProject(@NotNull Project project) {
+    @SystemIndependent String basePath = project.getBasePath();
+    assert basePath != null;
+    return isAndroidxProjectDir(basePath);
+  }
+
+  @VisibleForTesting
+  public static boolean isAndroidxProjectDir(@NotNull @SystemIndependent String basePath) {
+    VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
+    assert projectDir != null;
+    VirtualFile androidDir = getFlutterManagedAndroidDir(projectDir);
+    if (androidDir == null) {
+      return false;
+    }
+    VirtualFile properties = androidDir.findChild("gradle.properties");
+    if (properties == null) {
+      return false;
+    }
+    try {
+      List<String> lines = FileUtil.loadLines(properties.getPath(), "UTF-8");
+      for (String line : lines) {
+        if (line.trim().isEmpty() || line.startsWith("#")) continue;
+        int equalsIndex = line.indexOf('=');
+        if (equalsIndex > 0 && equalsIndex < line.length() - 1) {
+          String key = line.substring(0, equalsIndex).trim();
+          if ("android.useAndroidX".equals(key)) {
+            String value = line.substring(equalsIndex + 1).trim();
+            return Boolean.parseBoolean(value);
+          }
+        }
+      }
+    } catch (IOException e) {
+      return false;
+    }
+    return false;
+  }
+
+  @Nullable
+  private static VirtualFile getFlutterManagedAndroidDir(VirtualFile dir) {
+    VirtualFile meta = dir.findChild(".metadata");
+    if (meta != null) {
+      try {
+        List<String> lines = FileUtil.loadLines(meta.getPath(), "UTF-8");
+        for (String line : lines) {
+          if (line.trim().isEmpty() || line.startsWith("#")) continue;
+          int colonIndex = line.indexOf(':');
+          if (colonIndex > 0 && colonIndex < line.length() - 1) {
+            String key = line.substring(0, colonIndex).trim();
+            if ("project_type".equals(key)) {
+              String value = line.substring(colonIndex + 1).trim();
+              switch (value) {
+                case "app":
+                  return dir.findChild("android");
+                case "module":
+                  return dir.findChild(".android");
+                case "package":
+                  return null;
+                case "plugin":
+                  return dir.findFileByRelativePath("example/android");
+              }
+            }
+          }
+        }
+      }
+      catch (IOException e) {
+        // fall thru
+      }
+    }
+    VirtualFile android;
+    android = dir.findChild(".android");
+    if (android != null) {
+      return android;
+    }
+    android = dir.findChild("android");
+    if (android != null) {
+      return android;
+    }
+    android = dir.findFileByRelativePath("example/android");
+    if (android != null) {
+      return android;
+    }
+    return null;
   }
 }
