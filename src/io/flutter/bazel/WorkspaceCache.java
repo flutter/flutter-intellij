@@ -48,7 +48,8 @@ public class WorkspaceCache {
       if (prevWatch != null) prevWatch.unsubscribe();
     });
 
-    ProjectWatch.subscribe(project, this::refreshAsync); // Detect module root changes.
+    // Detect module root changes.
+    ProjectWatch.subscribe(project, this::refreshAsync);
 
     // Load initial value.
     refreshAsync();

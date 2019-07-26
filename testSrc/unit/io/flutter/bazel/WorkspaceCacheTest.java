@@ -12,13 +12,12 @@ import io.flutter.testing.ProjectFixture;
 import io.flutter.testing.TestDir;
 import io.flutter.testing.Testing;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 
 import static junit.framework.TestCase.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class WorkspaceCacheTest {
 
@@ -45,6 +44,7 @@ public class WorkspaceCacheTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void shouldDetectConfigFileChanges() throws Exception {
     // This test causes stack traces to be logged at shutdown in local history: "Recursive records found".
     // (Unknown cause.)
@@ -66,8 +66,9 @@ public class WorkspaceCacheTest {
     tmp.deleteFile(configPath);
     checkNoConfig();
   }
-  
+
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void shouldDetectModuleRootChange() throws Exception {
     checkWorkspaceExists();
     removeContentRoot();

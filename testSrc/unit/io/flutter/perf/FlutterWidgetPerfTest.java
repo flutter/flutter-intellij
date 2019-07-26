@@ -23,6 +23,7 @@ import io.flutter.inspector.DiagnosticsNode;
 import io.flutter.run.daemon.FlutterApp;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.swing.*;
@@ -320,6 +321,7 @@ class MockTextEditor implements TextEditor {
 
 public class FlutterWidgetPerfTest {
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testFileStatsCalculation() throws InterruptedException, ExecutionException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
@@ -334,17 +336,20 @@ public class FlutterWidgetPerfTest {
       },
       path -> new FakeFileLocationMapper()
     );
-    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
+                                               "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
 
     // Simulate 60fps for 2 seconds.
     for (int frame = 1; frame <= 120; frame++) {
       final long startTime = 1000 + frame * 1000 * 1000 / 60;
-      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" + startTime + ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" +
+                                                                         startTime +
+                                                                         ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
     }
     final Set<TextEditor> textEditors = new HashSet<>();
     final TextEditor clockTextEditor = new MockTextEditor("/sample/project/clock.dart");
     textEditors.add(clockTextEditor);
-     flutterWidgetPerf.showFor(textEditors);
+    flutterWidgetPerf.showFor(textEditors);
     assertEquals(perfModels.size(), 1);
     MockEditorPerfModel clockModel = perfModels.get("/sample/project/clock.dart");
     assertEquals(clockModel.getTextEditor(), clockTextEditor);
@@ -391,8 +396,10 @@ public class FlutterWidgetPerfTest {
 
     perfModels.clear();
     // Add events with both rebuilds and repaints.
-    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":19687239,\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
-    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.repaint, "{\"startTime\":19687239,\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
+                                               "{\"startTime\":19687239,\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.repaint,
+                                               "{\"startTime\":19687239,\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
 
     flutterWidgetPerf.showFor(textEditors);
 
@@ -452,6 +459,7 @@ public class FlutterWidgetPerfTest {
   }
 
   @Test
+  @Ignore("https://github.com/flutter/flutter-intellij/issues/3583")
   public void testOverallStatsCalculation() throws InterruptedException, ExecutionException {
     final MockWidgetPerfProvider widgetPerfProvider = new MockWidgetPerfProvider();
 
@@ -461,15 +469,18 @@ public class FlutterWidgetPerfTest {
       textEditor -> null,
       path -> new FakeFileLocationMapper()
     );
-    MockPerfModel perfModel = new MockPerfModel();
+    final MockPerfModel perfModel = new MockPerfModel();
     flutterWidgetPerf.addPerfListener(perfModel);
 
-    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
+    widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild,
+                                               "{\"startTime\":1000,\"events\":[1,1,2,1,3,1,4,1,6,1,10,4,11,4,12,4,13,1,14,1,95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1],\"newLocations\":{\"file:///sample/project/main.dart\":[1,11,14,2,18,16,3,23,17,4,40,16,6,46,16,10,69,9,11,70,9,12,71,18,13,41,19,14,42,20,95,51,58],\"file:///sample/project/clock.dart\":[96,33,12,97,52,12,100,53,16,102,54,14,104,55,17,105,34,15,106,35,16]}}");
 
     // Simulate 60fps for 2 seconds.
     for (int frame = 1; frame <= 120; frame++) {
       final long startTime = 1000 + frame * 1000 * 1000 / 60;
-      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" + startTime + ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
+      widgetPerfProvider.simulateWidgetPerfEvent(PerfReportKind.rebuild, "{\"startTime\":" +
+                                                                         startTime +
+                                                                         ",\"events\":[95,1,96,1,97,6,100,6,102,6,104,6,105,1,106,1]}");
     }
     final ArrayList<PerfMetric> lastFrameOnly = new ArrayList<>();
     lastFrameOnly.add(PerfMetric.lastFrame);
