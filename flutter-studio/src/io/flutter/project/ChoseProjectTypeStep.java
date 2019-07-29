@@ -5,6 +5,9 @@
  */
 package io.flutter.project;
 
+import static com.android.tools.idea.wizard.WizardConstants.DEFAULT_GALLERY_THUMBNAIL_SIZE;
+import static org.jetbrains.android.util.AndroidBundle.message;
+
 import com.android.tools.adtui.ASGallery;
 import com.android.tools.adtui.util.FormScalingUtil;
 import com.android.tools.idea.npw.module.ModuleGalleryEntry;
@@ -19,20 +22,20 @@ import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.containers.HashMap;
 import io.flutter.module.FlutterDescriptionProvider;
 import io.flutter.module.FlutterDescriptionProvider.FlutterGalleryEntry;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import javax.accessibility.AccessibleContext;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
-import static com.android.tools.idea.wizard.WizardConstants.DEFAULT_GALLERY_THUMBNAIL_SIZE;
-import static org.jetbrains.android.util.AndroidBundle.message;
+import javax.accessibility.AccessibleContext;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
   private static final Logger LOG = Logger.getInstance(ChoseProjectTypeStep.class);
@@ -70,17 +73,16 @@ public class ChoseProjectTypeStep extends ModelWizardStep<FlutterProjectModel> {
       if (e.getValueIsAdjusting()) {
         return;
       }
-      toggleLabel(e.getFirstIndex());
-      toggleLabel(e.getLastIndex());
+      for (JLabel label : helpLabels) {
+        label.setEnabled(false);
+      }
+      if (myProjectTypeGallery.getSelectedIndex() >= 0) {
+        helpLabels[myProjectTypeGallery.getSelectedIndex()].setEnabled(true);
+      }
     });
-    toggleLabel(0); // Already selected.
 
     myRootPanel.add(section);
     FormScalingUtil.scaleComponentTree(this.getClass(), myRootPanel);
-  }
-
-  private void toggleLabel(int index) {
-    helpLabels[index].setEnabled(!helpLabels[index].isEnabled());
   }
 
   @NotNull
