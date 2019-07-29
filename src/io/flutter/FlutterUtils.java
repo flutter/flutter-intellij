@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
@@ -17,12 +18,10 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
-import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.util.text.StringUtil;
 import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
@@ -36,9 +35,10 @@ import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
 import java.io.IOException;
-import java.util.List;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -454,26 +454,20 @@ public class FlutterUtils {
     if (androidDir == null) {
       return false;
     }
-    VirtualFile properties = androidDir.findChild("gradle.properties");
-    if (properties == null) {
+    VirtualFile propFile = androidDir.findChild("gradle.properties");
+    if (propFile == null) {
       return false;
     }
+    Properties properties = new Properties();
     try {
-      List<String> lines = FileUtil.loadLines(properties.getPath(), "UTF-8");
-      for (String line : lines) {
-        if (line.trim().isEmpty() || line.startsWith("#")) continue;
-        int equalsIndex = line.indexOf('=');
-        if (equalsIndex > 0 && equalsIndex < line.length() - 1) {
-          String key = line.substring(0, equalsIndex).trim();
-          if ("android.useAndroidX".equals(key)) {
-            String value = line.substring(equalsIndex + 1).trim();
-            return Boolean.parseBoolean(value);
-          }
-        }
-      }
+      properties.load(new InputStreamReader(propFile.getInputStream(), Charsets.UTF_8));
     }
-    catch (IOException e) {
+    catch (IOException ex) {
       return false;
+    }
+    String value = properties.getProperty("android.useAndroidX");
+    if (value != null) {
+      return Boolean.parseBoolean(value);
     }
     return false;
   }
@@ -483,26 +477,18 @@ public class FlutterUtils {
     VirtualFile meta = dir.findChild(".metadata");
     if (meta != null) {
       try {
-        List<String> lines = FileUtil.loadLines(meta.getPath(), "UTF-8");
-        for (String line : lines) {
-          if (line.trim().isEmpty() || line.startsWith("#")) continue;
-          int colonIndex = line.indexOf(':');
-          if (colonIndex > 0 && colonIndex < line.length() - 1) {
-            String key = line.substring(0, colonIndex).trim();
-            if ("project_type".equals(key)) {
-              String value = line.substring(colonIndex + 1).trim();
-              switch (value) {
-                case "app":
-                  return dir.findChild("android");
-                case "module":
-                  return dir.findChild(".android");
-                case "package":
-                  return null;
-                case "plugin":
-                  return dir.findFileByRelativePath("example/android");
-              }
-            }
-          }
+        Properties properties = new Properties();
+        properties.load(new InputStreamReader(meta.getInputStream(), Charsets.UTF_8));
+        String value = properties.getProperty("project_type");
+        switch (value) {
+          case "app":
+            return dir.findChild("android");
+          case "module":
+            return dir.findChild(".android");
+          case "package":
+            return null;
+          case "plugin":
+            return dir.findFileByRelativePath("example/android");
         }
       }
       catch (IOException e) {

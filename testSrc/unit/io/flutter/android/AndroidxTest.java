@@ -38,6 +38,11 @@ public class AndroidxTest {
     "android.useAndroidX=true\n" +
     "android.enableJetifier=true";
 
+  private static final String NON_STANDARD_PROPERTIES =
+    "# comment\n" +
+    "android.useAndroidX=\\\n" +
+    "  true\n";
+
   @Rule
   public final ProjectFixture fixture = Testing.makeEmptyModule();
 
@@ -107,6 +112,13 @@ public class AndroidxTest {
     assertFalse(result);
   }
 
+  @Test
+  public void userEditsAreValid() {
+    createTestHarness("android", FlutterProjectType.APP, NON_STANDARD_PROPERTIES);
+    boolean result = FlutterUtils.isAndroidxProject(fixture.getProject());
+    assertTrue(result);
+  }
+
   private void createTestHarness(@NotNull String androidPath, @Nullable FlutterProjectType type, @NotNull String propertiesContent) {
     @SystemIndependent String basePath = fixture.getProject().getBasePath();
     VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
@@ -150,7 +162,7 @@ public class AndroidxTest {
             }
           }
           catch (IOException x) {
-            System.out.println(x.getMessage());
+            fail(x.getMessage());
           }
         });
       });

@@ -9,11 +9,10 @@ package io.flutter.sdk;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterSdkVersion {
   /**
@@ -23,7 +22,7 @@ public class FlutterSdkVersion {
 
   /**
    * The minimum version we suggest people use to enable track-widget-creation.
-   *
+   * <p>
    * Before this version there were issues if you ran the app from the command
    * line without the flag after running
    */
@@ -95,7 +94,7 @@ public class FlutterSdkVersion {
   }
 
   public boolean isAndroidxSupported() {
-    assert (MIN_ANDROIDX_SDK.version != null);
+    //noinspection ConstantConditions
     return version != null && version.compareTo(MIN_ANDROIDX_SDK.version) >= 0;
   }
 

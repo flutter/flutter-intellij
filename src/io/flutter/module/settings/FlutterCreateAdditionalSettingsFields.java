@@ -44,7 +44,7 @@ public class FlutterCreateAdditionalSettingsFields {
     projectTypeForm.addListener(e -> {
       if (e.getStateChange() == ItemEvent.SELECTED) {
         settings.setType(projectTypeForm.getType());
-        projectTypeForm.adjustAndroidX(project);
+        projectTypeForm.computeAndroidXAvailability(project);
         changeVisibility(projectTypeForm.getType() != FlutterProjectType.PACKAGE);
       }
     });
@@ -119,6 +119,7 @@ public class FlutterCreateAdditionalSettingsFields {
     return new FlutterCreateAdditionalSettings.Builder()
       .setDescription(!descriptionField.getText().trim().isEmpty() ? descriptionField.getText().trim() : null)
       .setType(projectTypeForm.getType())
+      // Packages are pure Dart code, no iOS or Android modules.
       .setAndroidX(projectTypeForm.getType() != FlutterProjectType.PACKAGE && projectTypeForm.getAndroidxCheckbox().isSelected())
       .setKotlin(androidLanguageRadios.isRadio2Selected() ? true : null)
       .setOrg(!orgField.getText().trim().isEmpty() ? orgField.getText().trim() : null)
@@ -132,6 +133,6 @@ public class FlutterCreateAdditionalSettingsFields {
   }
 
   public void update() {
-    projectTypeForm.adjustAndroidX(project);
+    projectTypeForm.computeAndroidXAvailability(project);
   }
 }

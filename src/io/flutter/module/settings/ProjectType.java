@@ -31,7 +31,7 @@ public class ProjectType {
     private FlutterProjectType mySelected;
 
     private ProjectTypeComboBoxModel() {
-      // TODO Remove this filter in 2019Q4, assuming add-to-app is complete then.
+      // TODO(messick) Remove this filter in 2019Q4, assuming add-to-app is complete then.
       if (System.getProperty("flutter.experimental.modules", null) == null) {
         myList.remove(FlutterProjectType.MODULE);
         myList.remove(FlutterProjectType.IMPORT);
@@ -76,7 +76,7 @@ public class ProjectType {
 
   public ProjectType(@Nullable Supplier<? extends FlutterSdk> getSdk) {
     this.getSdk = getSdk;
-    adjustAndroidX();
+    computeAndroidXAvailability();
   }
 
   @SuppressWarnings("unused")
@@ -112,7 +112,7 @@ public class ProjectType {
 
   public void setSdk(@NotNull Supplier<? extends FlutterSdk> sdk) {
     this.getSdk = sdk;
-    adjustAndroidX();
+    computeAndroidXAvailability();
   }
 
   public void addListener(ItemListener listener) {
@@ -125,15 +125,15 @@ public class ProjectType {
     }
   }
 
-  public void adjustAndroidX(@Nullable Project project) {
+  public void computeAndroidXAvailability(@Nullable Project project) {
     if (project != null) {
       androidxCheckbox.setVisible(false);
       androidxCheckbox.setSelected(FlutterUtils.isAndroidxProject(project));
     }
-    adjustAndroidX();
+    computeAndroidXAvailability();
   }
 
-  public void adjustAndroidX() {
+  private void computeAndroidXAvailability() {
     if (!androidxCheckbox.isVisible()) {
       return;
     }
