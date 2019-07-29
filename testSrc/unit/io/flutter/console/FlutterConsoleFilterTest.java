@@ -42,4 +42,11 @@ public class FlutterConsoleFilterTest {
     final Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, 659);
     assertNotNull(link);
   }
+
+  @Test
+  public void checkLaunchingLink() {
+    String line = "Launching test/widget_test.dart on Android SDK built for x86 in debug mode...\n";
+    Filter.Result link = new FlutterConsoleFilter(fixture.getModule()).applyFilter(line, line.length());
+    assertNotNull(link);
+  }
 }
