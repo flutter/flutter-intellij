@@ -112,6 +112,9 @@ public class FlutterConsoleFilter implements Filter {
 
     int lineNumber = 0;
     String pathPart = line.trim();
+    VirtualFile file = null;
+    int lineStart = -1;
+    int highlightLength = 0;
 
     // Check for, e.g.,
     //   * "Launching lib/main.dart"
@@ -120,6 +123,11 @@ public class FlutterConsoleFilter implements Filter {
       final String[] parts = pathPart.split(" ");
       if (parts.length > 1) {
         pathPart = parts[1];
+        file = fileAtPath(pathPart);
+        if (file != null) {
+          lineStart = line.indexOf(pathPart);
+          highlightLength = pathPart.length();
+        }
       }
     }
 
@@ -127,8 +135,6 @@ public class FlutterConsoleFilter implements Filter {
     //    * "  • MyApp.xzzzz (lib/main.dart:6)"
     //    * "  • _MyHomePageState._incrementCounter (lib/main.dart:49)"
     final String[] parts = pathPart.split(" ");
-    int lineStart = -1;
-    int highlightLength = 0;
     for (String part : parts) {
       // "(lib/main.dart:49)"
       if (part.startsWith("(") && part.endsWith(")")) {
@@ -167,7 +173,9 @@ public class FlutterConsoleFilter implements Filter {
       }
     }
 
-    final VirtualFile file = fileAtPath(pathPart);
+    if (file == null) {
+      file = fileAtPath(pathPart);
+    }
     if (file != null) {
       // "open ios/Runner.xcworkspace"
       final boolean openAsExternalFile = FlutterUtils.isXcodeFileName(pathPart);
