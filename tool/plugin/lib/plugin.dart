@@ -604,6 +604,14 @@ class BuildCommand extends ProductCommand {
           'return IconUtil.toImage(FlutterIcons.AndroidStudioNewModule);',
         );
         processedFile.writeAsStringSync(source);
+
+        processedFile = File(
+            'flutter-studio/src/io/flutter/actions/OpenAndroidModule.java');
+        source = processedFile.readAsStringSync();
+        files[processedFile] = source;
+        source = source.replaceAll('importProjectCore', 'importProject');
+        processedFile.writeAsStringSync(source);
+
       }
       if (!spec.version.startsWith('3.5') && !spec.version.startsWith('3.6') && !(spec.version == '2019.1.2')) {
         log('spec.version: ${spec.version}');
