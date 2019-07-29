@@ -34,7 +34,8 @@ sourceSets {
 
 intellij {
   // Check versions at https://plugins.jetbrains.com/plugin/11114-test-gui-framework/
-  plugins 'com.intellij.testGuiFramework:0.10.1@nightly', 'Dart:192.5728.12', 'io.flutter:SNAPSHOT'  if (System.getProperty("idea.gui.test.alternativeIdePath") != null) {
+  plugins 'com.intellij.testGuiFramework:0.10.1@nightly', 'Dart:192.5728.12', 'io.flutter:SNAPSHOT'
+  if (System.getProperty("idea.gui.test.alternativeIdePath") != null) {
     alternativeIdePath System.getProperty("idea.gui.test.alternativeIdePath")
   }
   updateSinceUntilBuild false
