@@ -1,6 +1,6 @@
 ## 38.0
 - Add AndroidX option to new project wizards (#3705)
-- Fix break due to Android Studio 3.6 API change. (#3712)
+- Fix break due to Android Studio 3.6 API change (#3712)
 - Fix logger npe (#3711)
 - Integration test update (#3710)
 - Fix highlighting of project descriptions (#3709)
@@ -13,10 +13,10 @@
 - Use DAS test annotations to flag runnable tests (#3662)
 - Add short-lived prompt for Q3 user survey (#3691)
 - Add a user preference to opt-in to showing structured errors (#3692)
-- Add target platform selector for togglePlatform service extension. (#3688)
+- Add target platform selector for togglePlatform service extension (#3688)
 - Update the widgets.json catalog file (#3687)
-- Restore stack traces in generated error reports. (#3685)
-- Make the event stream tests pass and re-enable them. (#3684)
+- Restore stack traces in generated error reports (#3685)
+- Make the event stream tests pass and re-enable them (#3684)
 - Init default settings for the run console text wrapping (#3661)
 - Send flutter.error analytics (#3659)
 - Remove extra console whitespace (#3660)
@@ -28,7 +28,7 @@
 - Fix per SDK Stream<Uint8List> breaking changes (#3640)
 - Fix New Pproject Wizard (#3631)
 - Adjust the text for the desktop/web device preference (#3629)
-- Issue 3615. Fix message for 'Remove widget'. (#3622)
+- Issue 3615. Fix message for 'Remove widget' (#3622)
 - Support showing desktop and web devices (#3618)
 
 ## 37.0
