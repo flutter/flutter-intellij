@@ -9,11 +9,10 @@ package io.flutter.sdk;
 import com.google.common.annotations.VisibleForTesting;
 import com.intellij.openapi.util.Version;
 import com.intellij.openapi.vfs.VirtualFile;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FlutterSdkVersion {
   /**
@@ -23,11 +22,16 @@ public class FlutterSdkVersion {
 
   /**
    * The minimum version we suggest people use to enable track-widget-creation.
-   *
+   * <p>
    * Before this version there were issues if you ran the app from the command
    * line without the flag after running
    */
   private static final FlutterSdkVersion MIN_SAFE_TRACK_WIDGET_CREATION_SDK = new FlutterSdkVersion("0.10.2");
+
+  /**
+   * The version of the stable channel that suppoorts --androidx in the create command.
+   */
+  private static final FlutterSdkVersion MIN_ANDROIDX_SDK = new FlutterSdkVersion("1.7.8");
 
   @Nullable
   private final Version version;
@@ -87,6 +91,11 @@ public class FlutterSdkVersion {
   public boolean isTrackWidgetCreationRecommended() {
     assert (MIN_SAFE_TRACK_WIDGET_CREATION_SDK.version != null);
     return version != null && version.compareTo(MIN_SAFE_TRACK_WIDGET_CREATION_SDK.version) >= 0;
+  }
+
+  public boolean isAndroidxSupported() {
+    //noinspection ConstantConditions
+    return version != null && version.compareTo(MIN_ANDROIDX_SDK.version) >= 0;
   }
 
   public boolean flutterTestSupportsMachineMode() {

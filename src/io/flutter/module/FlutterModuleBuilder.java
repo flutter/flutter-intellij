@@ -52,10 +52,16 @@ public class FlutterModuleBuilder extends ModuleBuilder {
 
   private FlutterModuleWizardStep myStep;
   private FlutterCreateAdditionalSettingsFields mySettingsFields;
+  private Project myProject;
 
   @Override
   public String getName() {
     return getPresentableName();
+  }
+
+  @Nullable
+  public Project getProject() {
+    return myProject; // Non-null when creating a module.
   }
 
   @Override
@@ -255,8 +261,11 @@ public class FlutterModuleBuilder extends ModuleBuilder {
   @Nullable
   @Override
   public ModuleWizardStep getCustomOptionsStep(final WizardContext context, final Disposable parentDisposable) {
+    if (!context.isCreatingNewProject()) {
+      myProject = context.getProject();
+    }
     myStep = new FlutterModuleWizardStep(context);
-    mySettingsFields = new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings(), myStep.getFlutterSdk());
+    mySettingsFields = new FlutterCreateAdditionalSettingsFields(new FlutterCreateAdditionalSettings(), this::getFlutterSdk, myProject);
     Disposer.register(parentDisposable, myStep);
     return myStep;
   }
@@ -304,7 +313,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     combo.setItem(s);
   }
 
-  public static class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
+  public class FlutterModuleWizardStep extends ModuleWizardStep implements Disposable {
     private final FlutterGeneratorPeer myPeer;
 
     public FlutterModuleWizardStep(@NotNull WizardContext context) {
@@ -326,6 +335,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
       final boolean valid = myPeer.validate();
       if (valid) {
         myPeer.apply();
+        mySettingsFields.update();
       }
       return valid;
     }
@@ -335,7 +345,7 @@ public class FlutterModuleBuilder extends ModuleBuilder {
     }
 
     @Nullable
-    private FlutterSdk getFlutterSdk() {
+    FlutterSdk getFlutterSdk() {
       final String sdkPath = myPeer.getSdkComboPath();
 
       // Ensure the local filesystem has caught up to external processes (e.g., git clone).

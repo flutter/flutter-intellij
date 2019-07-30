@@ -21,9 +21,12 @@ import com.android.tools.idea.ui.wizard.StudioWizardStepPanel;
 import com.android.tools.idea.wizard.model.ModelWizard;
 import com.android.tools.idea.wizard.model.ModelWizardStep;
 import com.intellij.openapi.application.ApplicationInfo;
+import com.intellij.openapi.project.Project;
+import com.intellij.ui.components.JBLabel;
 import com.intellij.ui.components.JBLayeredPane;
 import com.intellij.ui.components.JBScrollPane;
 import io.flutter.FlutterBundle;
+import io.flutter.sdk.FlutterSdk;
 import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
@@ -54,6 +57,8 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
   private JCheckBox myKotlinCheckBox;
   private JCheckBox mySwiftCheckBox;
   private JLabel myLanguageLabel;
+  private JCheckBox myUseAndroidxCheckBox;
+  private JBLabel myAndroidXLabel;
   private boolean hasEntered = false;
   private FocusListener focusListener;
 
@@ -144,13 +149,23 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
       myLanguageLabel.setVisible(false);
       myKotlinCheckBox.setVisible(false);
       mySwiftCheckBox.setVisible(false);
+      myAndroidXLabel.setVisible(false);
+      myUseAndroidxCheckBox.setVisible(false);
     }
     else {
+      Project project = getModel().project().getValueOrNull();
+      FlutterSdk sdk = FlutterSdk.forPath(getModel().flutterSdk().get());
+      boolean enableAndroidX = project == null && sdk != null && sdk.getVersion().isAndroidxSupported();
       myLanguageLabel.setVisible(true);
       myKotlinCheckBox.setVisible(true);
       mySwiftCheckBox.setVisible(true);
+      myAndroidXLabel.setVisible(enableAndroidX);
+      myUseAndroidxCheckBox.setVisible(enableAndroidX);
       myBindings.bindTwoWay(new SelectedProperty(myKotlinCheckBox), getModel().useKotlin());
       myBindings.bindTwoWay(new SelectedProperty(mySwiftCheckBox), getModel().useSwift());
+      if (enableAndroidX) {
+        myBindings.bindTwoWay(new SelectedProperty(myUseAndroidxCheckBox), getModel().useAndroidX());
+      }
     }
     hasEntered = true;
   }

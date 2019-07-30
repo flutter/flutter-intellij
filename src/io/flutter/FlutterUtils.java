@@ -5,6 +5,7 @@
  */
 package io.flutter;
 
+import com.google.common.base.Charsets;
 import com.intellij.execution.ExecutionException;
 import com.intellij.execution.configurations.GeneralCommandLine;
 import com.intellij.execution.util.ExecUtil;
@@ -17,11 +18,12 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
-import com.intellij.openapi.module.ModuleUtil;
+import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.util.text.StringUtil;
+import com.intellij.openapi.vfs.LocalFileSystem;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
@@ -32,19 +34,21 @@ import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
 import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.regex.Pattern;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.SystemIndependent;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
-
-import java.io.IOException;
-import java.util.Map;
-import java.util.Objects;
-import java.util.regex.Pattern;
 
 public class FlutterUtils {
   private static final Pattern VALID_ID = Pattern.compile("[_a-zA-Z$][_a-zA-Z0-9$]*");
@@ -76,7 +80,7 @@ public class FlutterUtils {
     }
     // TODO(jacobr): we might also want to filter for files not under the
     // current project root.
-    return file != null && FlutterUtils.isDartFile(file);
+    return file != null && isDartFile(file);
   }
 
   public static boolean isDartFile(@NotNull VirtualFile file) {
@@ -143,7 +147,7 @@ public class FlutterUtils {
    * Test if the given element is contained in a module with a pub root that declares a flutter dependency.
    */
   public static boolean isInFlutterProject(@NotNull PsiElement element) {
-    final Module module = ModuleUtil.findModuleForPsiElement(element);
+    final Module module = ModuleUtilCore.findModuleForPsiElement(element);
     return module != null && FlutterModuleUtils.declaresFlutter(module);
   }
 
@@ -439,5 +443,71 @@ public class FlutterUtils {
     catch (Exception e) {
       return null;
     }
+  }
+
+  public static boolean isAndroidxProject(@NotNull Project project) {
+    @SystemIndependent String basePath = project.getBasePath();
+    assert basePath != null;
+    VirtualFile projectDir = LocalFileSystem.getInstance().findFileByPath(basePath);
+    assert projectDir != null;
+    VirtualFile androidDir = getFlutterManagedAndroidDir(projectDir);
+    if (androidDir == null) {
+      return false;
+    }
+    VirtualFile propFile = androidDir.findChild("gradle.properties");
+    if (propFile == null) {
+      return false;
+    }
+    Properties properties = new Properties();
+    try {
+      properties.load(new InputStreamReader(propFile.getInputStream(), Charsets.UTF_8));
+    }
+    catch (IOException ex) {
+      return false;
+    }
+    String value = properties.getProperty("android.useAndroidX");
+    if (value != null) {
+      return Boolean.parseBoolean(value);
+    }
+    return false;
+  }
+
+  @Nullable
+  private static VirtualFile getFlutterManagedAndroidDir(VirtualFile dir) {
+    VirtualFile meta = dir.findChild(".metadata");
+    if (meta != null) {
+      try {
+        Properties properties = new Properties();
+        properties.load(new InputStreamReader(meta.getInputStream(), Charsets.UTF_8));
+        String value = properties.getProperty("project_type");
+        switch (value) {
+          case "app":
+            return dir.findChild("android");
+          case "module":
+            return dir.findChild(".android");
+          case "package":
+            return null;
+          case "plugin":
+            return dir.findFileByRelativePath("example/android");
+        }
+      }
+      catch (IOException e) {
+        // fall thru
+      }
+    }
+    VirtualFile android;
+    android = dir.findChild(".android");
+    if (android != null) {
+      return android;
+    }
+    android = dir.findChild("android");
+    if (android != null) {
+      return android;
+    }
+    android = dir.findFileByRelativePath("example/android");
+    if (android != null) {
+      return android;
+    }
+    return null;
   }
 }
