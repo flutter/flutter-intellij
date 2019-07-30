@@ -375,6 +375,7 @@ public class FlutterConsoleLogManager {
         service.invoke(
           isolateRef.getId(), error.getId(),
           "toString", Collections.emptyList(),
+          true,
           new VmServiceConsumers.InvokeConsumerWrapper() {
             @Override
             public void received(InstanceRef response) {
