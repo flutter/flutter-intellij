@@ -23,7 +23,7 @@
       "untilBuild": "191.7478"
     },
     {
-      "comments": "IntelliJ 2019.1.3, Android Studio 3.5 beta 5, Android Studio 3.6 canary 3",
+      "comments": "IntelliJ 2019.1.3, Android Studio 3.5 RC, Android Studio 3.6 canary 5",
       "name": "IntelliJ 2019.1.3",
       "version": "3.5",
       "ijVersion": "2019.1.3",
@@ -34,8 +34,8 @@
       "untilBuild": "191.*"
     },
     {
-      "comments": "IntelliJ 2019.2 EAP",
-      "name": "IntelliJ 2019.2 EAP",
+      "comments": "IntelliJ 2019.2",
+      "name": "IntelliJ 2019.2",
       "version": "2019.2",
       "isTestTarget": "true",
       "ideaProduct": "ideaIC",
