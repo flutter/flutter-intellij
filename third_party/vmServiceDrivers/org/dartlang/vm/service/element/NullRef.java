@@ -30,6 +30,7 @@ public class NullRef extends InstanceRef {
   /**
    * Always 'null'.
    */
+  @Override
   public String getValueAsString() {
     return json.get("valueAsString").getAsString();
   }

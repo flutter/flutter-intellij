@@ -67,7 +67,14 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public Breakpoint getBreakpoint() {
-    return json.get("breakpoint") == null ? null : new Breakpoint((JsonObject) json.get("breakpoint"));
+    JsonObject obj = (JsonObject) json.get("breakpoint");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new Breakpoint(obj);
   }
 
   /**
@@ -87,7 +94,9 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public InstanceRef getException() {
-    return json.get("exception") == null ? null : new InstanceRef((JsonObject) json.get("exception"));
+    JsonObject obj = (JsonObject) json.get("exception");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
   }
 
   /**
@@ -98,7 +107,14 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public ExtensionData getExtensionData() {
-    return json.get("extensionData") == null ? null : new ExtensionData((JsonObject) json.get("extensionData"));
+    JsonObject obj = (JsonObject) json.get("extensionData");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ExtensionData(obj);
   }
 
   /**
@@ -124,6 +140,18 @@ public class Event extends Response {
   }
 
   /**
+   * The name of the changed flag.
+   *
+   * This is provided for the event kinds:
+   *  - VMFlagUpdate
+   *
+   * Can return <code>null</code>.
+   */
+  public String getFlag() {
+    return json.get("flag") == null ? null : json.get("flag").getAsString();
+  }
+
+  /**
    * The argument passed to dart:developer.inspect.
    *
    * This is provided for the Inspect event.
@@ -131,19 +159,28 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public InstanceRef getInspectee() {
-    return json.get("inspectee") == null ? null : new InstanceRef((JsonObject) json.get("inspectee"));
+    JsonObject obj = (JsonObject) json.get("inspectee");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
   }
 
   /**
    * The isolate with which this event is associated.
    *
    * This is provided for all event kinds except for:
-   *  - VMUpdate
+   *  - VMUpdate, VMFlagUpdate
    *
    * Can return <code>null</code>.
    */
   public IsolateRef getIsolate() {
-    return json.get("isolate") == null ? null : new IsolateRef((JsonObject) json.get("isolate"));
+    JsonObject obj = (JsonObject) json.get("isolate");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new IsolateRef(obj);
   }
 
   /**
@@ -166,7 +203,14 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public LogRecord getLogRecord() {
-    return json.get("logRecord") == null ? null : new LogRecord((JsonObject) json.get("logRecord"));
+    JsonObject obj = (JsonObject) json.get("logRecord");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new LogRecord(obj);
   }
 
   /**
@@ -180,6 +224,18 @@ public class Event extends Response {
    */
   public String getMethod() {
     return json.get("method") == null ? null : json.get("method").getAsString();
+  }
+
+  /**
+   * The new value of the changed flag.
+   *
+   * This is provided for the event kinds:
+   *  - VMFlagUpdate
+   *
+   * Can return <code>null</code>.
+   */
+  public String getNewValue() {
+    return json.get("newValue") == null ? null : json.get("newValue").getAsString();
   }
 
   /**
@@ -275,18 +331,32 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public Frame getTopFrame() {
-    return json.get("topFrame") == null ? null : new Frame((JsonObject) json.get("topFrame"));
+    JsonObject obj = (JsonObject) json.get("topFrame");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new Frame(obj);
   }
 
   /**
    * The vm with which this event is associated.
    *
    * This is provided for the event kind:
-   *  - VMUpdate
+   *  - VMUpdate, VMFlagUpdate
    *
    * Can return <code>null</code>.
    */
   public VMRef getVm() {
-    return json.get("vm") == null ? null : new VMRef((JsonObject) json.get("vm"));
+    JsonObject obj = (JsonObject) json.get("vm");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new VMRef(obj);
   }
 }

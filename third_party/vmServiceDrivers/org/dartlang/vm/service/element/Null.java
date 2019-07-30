@@ -30,6 +30,7 @@ public class Null extends Instance {
   /**
    * Always 'null'.
    */
+  @Override
   public String getValueAsString() {
     return json.get("valueAsString").getAsString();
   }

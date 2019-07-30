@@ -16,7 +16,6 @@ package org.dartlang.vm.service.element;
 // This is a generated file.
 
 import com.google.gson.JsonObject;
-import java.util.List;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 public class ClassHeapStats extends Response {
@@ -59,21 +58,5 @@ public class ClassHeapStats extends Response {
    */
   public int getInstancesCurrent() {
     return json.get("instancesCurrent") == null ? -1 : json.get("instancesCurrent").getAsInt();
-  }
-
-  public List<Integer> getNew() {
-    return getListInt("new");
-  }
-
-  public List<Integer> getOld() {
-    return getListInt("old");
-  }
-
-  public int getPromotedBytes() {
-    return json.get("promotedBytes") == null ? -1 : json.get("promotedBytes").getAsInt();
-  }
-
-  public int getPromotedInstances() {
-    return json.get("promotedInstances") == null ? -1 : json.get("promotedInstances").getAsInt();
   }
 }

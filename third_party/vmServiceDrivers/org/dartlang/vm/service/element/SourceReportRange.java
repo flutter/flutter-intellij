@@ -43,7 +43,14 @@ public class SourceReportRange extends Element {
    * Can return <code>null</code>.
    */
   public SourceReportCoverage getCoverage() {
-    return json.get("coverage") == null ? null : new SourceReportCoverage((JsonObject) json.get("coverage"));
+    JsonObject obj = (JsonObject) json.get("coverage");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new SourceReportCoverage(obj);
   }
 
   /**
@@ -60,7 +67,14 @@ public class SourceReportRange extends Element {
    * Can return <code>null</code>.
    */
   public ErrorRef getError() {
-    return json.get("error") == null ? null : new ErrorRef((JsonObject) json.get("error"));
+    JsonObject obj = (JsonObject) json.get("error");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ErrorRef(obj);
   }
 
   /**

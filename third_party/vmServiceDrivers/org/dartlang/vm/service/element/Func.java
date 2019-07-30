@@ -33,7 +33,14 @@ public class Func extends Obj {
    * Can return <code>null</code>.
    */
   public CodeRef getCode() {
-    return json.get("code") == null ? null : new CodeRef((JsonObject) json.get("code"));
+    JsonObject obj = (JsonObject) json.get("code");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new CodeRef(obj);
   }
 
   /**
@@ -42,7 +49,14 @@ public class Func extends Obj {
    * Can return <code>null</code>.
    */
   public SourceLocation getLocation() {
-    return json.get("location") == null ? null : new SourceLocation((JsonObject) json.get("location"));
+    JsonObject obj = (JsonObject) json.get("location");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new SourceLocation(obj);
   }
 
   /**
