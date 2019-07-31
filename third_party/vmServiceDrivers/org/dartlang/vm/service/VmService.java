@@ -79,7 +79,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 24;
+  public static final int versionMinor = 25;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -239,7 +239,20 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getInstances] RPC is used to retrieve a set of instances which are of a specific type.
+   * Returns a set of inbound references to the object specified by [targetId]. Up to [limit]
+   * references will be returned.
+   */
+  public void getInboundReferences(String isolateId, String targetId, int limit, GetInboundReferencesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("targetId", targetId);
+    params.addProperty("limit", limit);
+    request("getInboundReferences", params, consumer);
+  }
+
+  /**
+   * The [getInstances] RPC is used to retrieve a set of instances which are of a specific class.
+   * This does not include instances of subclasses of the given class.
    */
   public void getInstances(String isolateId, String objectId, int limit, InstanceSetConsumer consumer) {
     final JsonObject params = new JsonObject();
@@ -289,6 +302,18 @@ public class VmService extends VmServiceBase {
     if (offset != null) params.addProperty("offset", offset);
     if (count != null) params.addProperty("count", count);
     request("getObject", params, consumer);
+  }
+
+  /**
+   * The [getRetainingPath] RPC is used to lookup a path from an object specified by [targetId] to
+   * a GC root (i.e., the object which is preventing this object from being garbage collected).
+   */
+  public void getRetainingPath(String isolateId, String targetId, int limit, RetainingPathConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("targetId", targetId);
+    params.addProperty("limit", limit);
+    request("getRetainingPath", params, consumer);
   }
 
   /**
@@ -673,6 +698,16 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
+    if (consumer instanceof GetInboundReferencesConsumer) {
+      if (responseType.equals("InboundReferences")) {
+        ((GetInboundReferencesConsumer) consumer).received(new InboundReferences(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetInboundReferencesConsumer) consumer).received(new Sentinel(json));
+        return;
+      }
+    }
     if (consumer instanceof GetIsolateConsumer) {
       if (responseType.equals("Isolate")) {
         ((GetIsolateConsumer) consumer).received(new Isolate(json));
@@ -774,6 +809,12 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof ReloadReportConsumer) {
       if (responseType.equals("ReloadReport")) {
         ((ReloadReportConsumer) consumer).received(new ReloadReport(json));
+        return;
+      }
+    }
+    if (consumer instanceof RetainingPathConsumer) {
+      if (responseType.equals("RetainingPath")) {
+        ((RetainingPathConsumer) consumer).received(new RetainingPath(json));
         return;
       }
     }
