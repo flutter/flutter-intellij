@@ -74,6 +74,7 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
     FlutterProjectModel model = getModel();
     myKotlinCheckBox.setText(FlutterBundle.message("module.wizard.language.name_kotlin"));
     mySwiftCheckBox.setText(FlutterBundle.message("module.wizard.language.name_swift"));
+    myBindings.bindTwoWay(new SelectedProperty(myUseAndroidxCheckBox), getModel().useAndroidX());
 
     TextProperty packageNameText = new TextProperty(myPackageName);
 
@@ -140,6 +141,14 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
 
   @Override
   protected void onEntering() {
+    Project project = getModel().project().getValueOrNull();
+    FlutterSdk sdk = FlutterSdk.forPath(getModel().flutterSdk().get());
+    boolean enableAndroidX = project == null && sdk != null && sdk.getVersion().isAndroidxSupported();
+    if (myAndroidXLabel.isVisible() != enableAndroidX) {
+      myAndroidXLabel.setVisible(enableAndroidX);
+      myUseAndroidxCheckBox.setVisible(enableAndroidX);
+      myRootPanel.doLayout();
+    }
     if (hasEntered) {
       return;
     }
@@ -149,23 +158,13 @@ public class FlutterSettingsStep extends ModelWizardStep<FlutterProjectModel> {
       myLanguageLabel.setVisible(false);
       myKotlinCheckBox.setVisible(false);
       mySwiftCheckBox.setVisible(false);
-      myAndroidXLabel.setVisible(false);
-      myUseAndroidxCheckBox.setVisible(false);
     }
     else {
-      Project project = getModel().project().getValueOrNull();
-      FlutterSdk sdk = FlutterSdk.forPath(getModel().flutterSdk().get());
-      boolean enableAndroidX = project == null && sdk != null && sdk.getVersion().isAndroidxSupported();
       myLanguageLabel.setVisible(true);
       myKotlinCheckBox.setVisible(true);
       mySwiftCheckBox.setVisible(true);
-      myAndroidXLabel.setVisible(enableAndroidX);
-      myUseAndroidxCheckBox.setVisible(enableAndroidX);
       myBindings.bindTwoWay(new SelectedProperty(myKotlinCheckBox), getModel().useKotlin());
       myBindings.bindTwoWay(new SelectedProperty(mySwiftCheckBox), getModel().useSwift());
-      if (enableAndroidX) {
-        myBindings.bindTwoWay(new SelectedProperty(myUseAndroidxCheckBox), getModel().useAndroidX());
-      }
     }
     hasEntered = true;
   }

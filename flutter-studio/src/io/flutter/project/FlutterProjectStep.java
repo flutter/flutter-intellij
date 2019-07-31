@@ -295,6 +295,7 @@ public class FlutterProjectStep extends SkippableWizardStep<FlutterProjectModel>
   @Override
   protected void onEntering() {
     getModel().projectType().set(myProjectType);
+    myFlutterSdkPath.getComboBox().getEditor().setItem(getModel().flutterSdk());
     if (hasEntered) {
       return;
     }
