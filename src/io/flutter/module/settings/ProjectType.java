@@ -138,7 +138,8 @@ public class ProjectType {
       return;
     }
     assert getSdk != null;
-    if (getSdk.get().getVersion().isAndroidxSupported() && getType() != FlutterProjectType.PACKAGE) {
+    FlutterSdk sdk = getSdk.get();
+    if (sdk != null && sdk.getVersion().isAndroidxSupported() && getType() != FlutterProjectType.PACKAGE) {
       // It would be nice to save and restore the selection based on current state when the Prev/Next buttons
       // are used. The wizard doesn't provide navigation hooks to do that. This does the right thing when
       // switching project types.
