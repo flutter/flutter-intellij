@@ -5,8 +5,13 @@
  */
 package io.flutter.utils;
 
+import static io.flutter.ProjectOpenActivity.FLUTTER_PROJECT_TYPE;
+
 import com.intellij.lang.java.JavaParserDefinition;
 import com.intellij.lexer.Lexer;
+import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectType;
+import com.intellij.openapi.project.ProjectTypeService;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.tree.java.IKeywordElementType;
@@ -113,5 +118,14 @@ public class AndroidUtils {
       return "The character '" + c + "' is not allowed in Android application package names";
     }
     return hasSep || !requiresSeparator ? null : "The package must have at least one '.' separator";
+  }
+
+  public static boolean isAndroidProject(@Nullable Project project) {
+    // Note: IntelliJ does not set the project type. When a Flutter module is added to an
+    // IntelliJ-created Android project we need to set it. We need to allow an alternative
+    // name. GradleResourceCompilerConfigurationGenerator depends on "Android".
+    // TODO(messick) Recognize native Android Studio and IntelliJ Android projects.
+    ProjectType projectType = ProjectTypeService.getProjectType(project);
+    return projectType != null && "Android".equals(projectType.getId());
   }
 }

@@ -22,6 +22,7 @@ import io.flutter.pub.PubRoot;
 import io.flutter.pub.PubRoots;
 import io.flutter.sdk.FlutterSdk;
 import io.flutter.settings.FlutterSettings;
+import io.flutter.utils.AndroidUtils;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -48,6 +49,9 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
     if (!FlutterModuleUtils.declaresFlutter(project)) {
       return;
     }
+    if (AndroidUtils.isAndroidProject(project)) {
+      maybeAddGradleSyncListener(project);
+    }
 
     final FlutterSdk sdk = FlutterSdk.getIncomplete(project);
     if (sdk == null) {
@@ -65,9 +69,10 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
         Notifications.Bus.notify(new PackagesOutOfDateNotification(project, pubRoot));
       }
     }
-    if (!FLUTTER_PROJECT_TYPE.equals(ProjectTypeService.getProjectType(project))) {
-      ProjectTypeService.setProjectType(project, FLUTTER_PROJECT_TYPE);
-    }
+  }
+
+  private static void maybeAddGradleSyncListener(@NotNull Project project) {
+
   }
 
   private static class PackagesOutOfDateNotification extends Notification {
