@@ -22,12 +22,8 @@ before_install:
 before_script:
   - git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
   - export PATH="$PATH":`pwd`/../flutter/bin:`pwd`/../flutter/bin/cache/dart-sdk/bin
-  - echo "travis_fold:start:flutter_config"
   - flutter config --no-analytics
-  - echo "travis_fold:end:flutter_config"
-  - echo "travis_fold:start:flutter_doctor"
   - flutter doctor
-  - echo "travis_fold:end:flutter_doctor"
   - export FLUTTER_SDK=`pwd`/../flutter
 
 # execution

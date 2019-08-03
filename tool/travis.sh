@@ -13,17 +13,18 @@ flutter --version
 
 # Get packages for the top-level grind script utilities
 echo "travis_fold:start:pub_get"
+echo "pub get `pwd`"
 pub get
 echo "travis_fold:end:pub_get"
 
 # Get packages for the test data.
 echo "travis_fold:start:pub_get"
-(cd testData/sample_tests; pub get)
+(cd testData/sample_tests; echo "pub get `pwd`"; pub get)
 echo "travis_fold:end:pub_get"
 
 # Set up the plugin tool.
 echo "travis_fold:start:pub_get"
-(cd tool/plugin; pub get)
+(cd tool/plugin; echo "pub get `pwd`"; pub get)
 echo "travis_fold:end:pub_get"
 
 if [ "$DART_BOT" = true ] ; then
