@@ -30,7 +30,9 @@ echo "travis_fold:end:pub_get"
 if [ "$DART_BOT" = true ] ; then
 
   # analyze the Dart code in the repo
+  echo "travis_fold:start:activate_tuneup"
   pub global activate tuneup
+  echo "travis_fold:end:activate_tuneup"
   pub global run tuneup
 
   # ensure that the edits have been applied to template files (and their target
