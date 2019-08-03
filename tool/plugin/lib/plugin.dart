@@ -263,8 +263,8 @@ Future<int> removeAll(String dir) async {
   return await exec('rm', args);
 }
 
-void separator(String name) {
-  log('');
+void separator(String name, {bool suppressNewline = false}) {
+  if (!suppressNewline) log('');
   log('$name:', indent: false);
 }
 
@@ -401,7 +401,7 @@ class ArtifactManager {
   }
 
   Future<int> provision({bool rebuildCache = false}) async {
-    separator('Getting artifacts');
+    separator('Getting artifacts', suppressNewline: isOnTravis);
     createDir('artifacts');
 
     var result = 0;
