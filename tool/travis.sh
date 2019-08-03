@@ -12,15 +12,22 @@ echo $FLUTTER_SDK
 flutter --version
 
 # Get packages for the top-level grind script utilities
+echo "travis_fold:start:pub_get"
 pub get
+echo "travis_fold:end:pub_get"
 
 # Get packages for the test data.
+echo "travis_fold:start:pub_get"
 (cd testData/sample_tests; pub get)
+echo "travis_fold:end:pub_get"
 
 # Set up the plugin tool.
+echo "travis_fold:start:pub_get"
 (cd tool/plugin; pub get)
+echo "travis_fold:end:pub_get"
 
 if [ "$DART_BOT" = true ] ; then
+
   # analyze the Dart code in the repo
   pub global activate tuneup
   pub global run tuneup
@@ -39,17 +46,21 @@ if [ "$DART_BOT" = true ] ; then
   (cd tool/plugin; dart test/plugin_test.dart)
 
 elif [ "$CHECK_BOT" = true ] ; then
+
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
 
 elif [ "$UNIT_TEST_BOT" = true ] ; then
+
   # Run unit tests.
   ./gradlew -s test
 
 else
+
   # Run some validations on the repo code.
   ./bin/plugin lint
 
   # Run the build.
   ./bin/plugin build --only-version=$IDEA_VERSION
+
 fi
