@@ -19,14 +19,12 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Verifies that named test targets can be identified correctly as part of a group or as an individual test target.
@@ -189,7 +187,7 @@ public class CommonTestConfigUtilsTest extends AbstractDartElementTest {
   @NotNull
   private DartCallExpression getTestCallWithName(String functionName, String testName) {
     final PsiElement testIdentifier = setUpDartElement("test/custom_test.dart",
-      fileContents, testName, LeafPsiElement.class);
+                                                       fileContents, testName, LeafPsiElement.class);
     assertThat(testIdentifier, not(equalTo(null)));
 
     final DartCallExpression result = DartSyntax.findClosestEnclosingFunctionCall(testIdentifier);

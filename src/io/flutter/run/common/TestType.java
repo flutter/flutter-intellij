@@ -7,16 +7,10 @@ package io.flutter.run.common;
 
 import com.intellij.icons.AllIcons;
 import com.intellij.psi.PsiElement;
-import com.jetbrains.lang.dart.psi.DartCallExpression;
-import io.flutter.dart.DartSyntax;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * Different scopes of test that can be run on a Flutter app.
