@@ -15,28 +15,28 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
+/**
+ * See getInboundReferences.
+ */
 @SuppressWarnings({"WeakerAccess", "unused"})
-public class CodeRegion extends Element {
+public class InboundReferences extends Response {
 
-  public CodeRegion(JsonObject json) {
+  public InboundReferences(JsonObject json) {
     super(json);
   }
 
-  public CodeRef getCode() {
-    return new CodeRef((JsonObject) json.get("code"));
-  }
-
-  public int getExclusiveTicks() {
-    return json.get("exclusiveTicks") == null ? -1 : json.get("exclusiveTicks").getAsInt();
-  }
-
-  public int getInclusiveTicks() {
-    return json.get("inclusiveTicks") == null ? -1 : json.get("inclusiveTicks").getAsInt();
-  }
-
-  public String getKind() {
-    return json.get("kind").getAsString();
+  /**
+   * An array of inbound references to an object.
+   */
+  public ElementList<InboundReference> getReferences() {
+    return new ElementList<InboundReference>(json.get("references").getAsJsonArray()) {
+      @Override
+      protected InboundReference basicGet(JsonArray array, int index) {
+        return new InboundReference(array.get(index).getAsJsonObject());
+      }
+    };
   }
 }

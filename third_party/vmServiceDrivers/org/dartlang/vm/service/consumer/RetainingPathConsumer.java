@@ -15,10 +15,10 @@ package org.dartlang.vm.service.consumer;
 
 // This is a generated file.
 
-import org.dartlang.vm.service.element.CpuProfile;
+import org.dartlang.vm.service.element.RetainingPath;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-public interface CpuProfileConsumer extends Consumer {
+public interface RetainingPathConsumer extends Consumer {
 
-  void received(CpuProfile response);
+  void received(RetainingPath response);
 }

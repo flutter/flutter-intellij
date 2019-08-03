@@ -15,10 +15,13 @@ package org.dartlang.vm.service.consumer;
 
 // This is a generated file.
 
-import org.dartlang.vm.service.element.ObjRef;
+import org.dartlang.vm.service.element.InboundReferences;
+import org.dartlang.vm.service.element.Sentinel;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-public interface ObjRefConsumer extends Consumer {
+public interface GetInboundReferencesConsumer extends Consumer {
 
-  void received(ObjRef response);
+  void received(InboundReferences response);
+
+  void received(Sentinel response);
 }

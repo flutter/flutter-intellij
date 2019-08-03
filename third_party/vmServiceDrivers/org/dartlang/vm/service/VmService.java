@@ -61,6 +61,8 @@ public class VmService extends VmServiceBase {
 
   public static final String LOGGING_STREAM_ID = "Logging";
 
+  public static final String SERVICE_STREAM_ID = "Service";
+
   public static final String STDERR_STREAM_ID = "Stderr";
 
   public static final String STDOUT_STREAM_ID = "Stdout";
@@ -68,8 +70,6 @@ public class VmService extends VmServiceBase {
   public static final String TIMELINE_STREAM_ID = "Timeline";
 
   public static final String VM_STREAM_ID = "VM";
-
-  public static final String SERVICE_STREAM_ID = "_Service";
 
   /**
    * The major version number of the protocol supported by this client.
@@ -79,7 +79,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 21;
+  public static final int versionMinor = 25;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -144,31 +144,11 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * @undocumented
-   */
-  public void clearCpuProfile(String isolateId, SuccessConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    request("_clearCpuProfile", params, consumer);
-  }
-
-  /**
    * Clears all VM timeline events.
    */
   public void clearVMTimeline(SuccessConsumer consumer) {
     final JsonObject params = new JsonObject();
     request("clearVMTimeline", params, consumer);
-  }
-
-  /**
-   * Trigger a full GC, collecting all unreachable or weakly reachable objects.
-   *
-   * @undocumented
-   */
-  public void collectAllGarbage(String isolateId, SuccessConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    request("_collectAllGarbage", params, consumer);
   }
 
   /**
@@ -250,18 +230,6 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * [tags] is one of UserVM, UserOnly, VMUser, VMOnly, or None.
-   *
-   * @undocumented
-   */
-  public void getCpuProfile(String isolateId, String tags, CpuProfileConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    params.addProperty("tags", tags);
-    request("_getCpuProfile", params, consumer);
-  }
-
-  /**
    * The [getFlagList] RPC returns a list of all command line flags in the VM along with their
    * current values.
    */
@@ -271,7 +239,20 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * The [getInstances] RPC is used to retrieve a set of instances which are of a specific type.
+   * Returns a set of inbound references to the object specified by [targetId]. Up to [limit]
+   * references will be returned.
+   */
+  public void getInboundReferences(String isolateId, String targetId, int limit, GetInboundReferencesConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("targetId", targetId);
+    params.addProperty("limit", limit);
+    request("getInboundReferences", params, consumer);
+  }
+
+  /**
+   * The [getInstances] RPC is used to retrieve a set of instances which are of a specific class.
+   * This does not include instances of subclasses of the given class.
    */
   public void getInstances(String isolateId, String objectId, int limit, InstanceSetConsumer consumer) {
     final JsonObject params = new JsonObject();
@@ -321,6 +302,18 @@ public class VmService extends VmServiceBase {
     if (offset != null) params.addProperty("offset", offset);
     if (count != null) params.addProperty("count", count);
     request("getObject", params, consumer);
+  }
+
+  /**
+   * The [getRetainingPath] RPC is used to lookup a path from an object specified by [targetId] to
+   * a GC root (i.e., the object which is preventing this object from being garbage collected).
+   */
+  public void getRetainingPath(String isolateId, String targetId, int limit, RetainingPathConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    params.addProperty("targetId", targetId);
+    params.addProperty("limit", limit);
+    request("getRetainingPath", params, consumer);
   }
 
   /**
@@ -480,13 +473,15 @@ public class VmService extends VmServiceBase {
   }
 
   /**
-   * @undocumented
+   * Registers a service that can be invoked by other VM service clients, where
+   * <code>service</code>service is the name of the service to advertise and
+   * <code>alias</code>alias is an alternative name for the registered service.
    */
   public void registerService(String service, String alias, SuccessConsumer consumer) {
     final JsonObject params = new JsonObject();
     params.addProperty("service", service);
     params.addProperty("alias", alias);
-    request("_registerService", params, consumer);
+    request("registerService", params, consumer);
   }
 
   /**
@@ -523,19 +518,6 @@ public class VmService extends VmServiceBase {
     params.addProperty("isolateId", isolateId);
     params.addProperty("breakpointId", breakpointId);
     request("removeBreakpoint", params, consumer);
-  }
-
-  /**
-   * [roots] is one of User or VM. The results are returned as a stream of [_Graph] events.
-   *
-   * @undocumented
-   */
-  public void requestHeapSnapshot(String isolateId, String roots, boolean collectGarbage, SuccessConsumer consumer) {
-    final JsonObject params = new JsonObject();
-    params.addProperty("isolateId", isolateId);
-    params.addProperty("roots", roots);
-    params.addProperty("collectGarbage", collectGarbage);
-    request("_requestHeapSnapshot", params, consumer);
   }
 
   /**
@@ -674,12 +656,6 @@ public class VmService extends VmServiceBase {
         return;
       }
     }
-    if (consumer instanceof CpuProfileConsumer) {
-      if (responseType.equals("_CpuProfile")) {
-        ((CpuProfileConsumer) consumer).received(new CpuProfile(json));
-        return;
-      }
-    }
     if (consumer instanceof EvaluateConsumer) {
       if (responseType.equals("@Error")) {
         ((EvaluateConsumer) consumer).received(new ErrorRef(json));
@@ -719,6 +695,16 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof FlagListConsumer) {
       if (responseType.equals("FlagList")) {
         ((FlagListConsumer) consumer).received(new FlagList(json));
+        return;
+      }
+    }
+    if (consumer instanceof GetInboundReferencesConsumer) {
+      if (responseType.equals("InboundReferences")) {
+        ((GetInboundReferencesConsumer) consumer).received(new InboundReferences(json));
+        return;
+      }
+      if (responseType.equals("Sentinel")) {
+        ((GetInboundReferencesConsumer) consumer).received(new Sentinel(json));
         return;
       }
     }
@@ -823,6 +809,12 @@ public class VmService extends VmServiceBase {
     if (consumer instanceof ReloadReportConsumer) {
       if (responseType.equals("ReloadReport")) {
         ((ReloadReportConsumer) consumer).received(new ReloadReport(json));
+        return;
+      }
+    }
+    if (consumer instanceof RetainingPathConsumer) {
+      if (responseType.equals("RetainingPath")) {
+        ((RetainingPathConsumer) consumer).received(new RetainingPath(json));
         return;
       }
     }

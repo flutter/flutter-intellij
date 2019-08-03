@@ -38,7 +38,14 @@ public class Obj extends Response {
    * Can return <code>null</code>.
    */
   public ClassRef getClassRef() {
-    return json.get("class") == null ? null : new ClassRef((JsonObject) json.get("class"));
+    JsonObject obj = (JsonObject) json.get("class");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new ClassRef(obj);
   }
 
   /**

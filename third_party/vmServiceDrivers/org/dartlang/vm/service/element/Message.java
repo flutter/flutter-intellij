@@ -34,7 +34,14 @@ public class Message extends Response {
    * Can return <code>null</code>.
    */
   public FuncRef getHandler() {
-    return json.get("handler") == null ? null : new FuncRef((JsonObject) json.get("handler"));
+    JsonObject obj = (JsonObject) json.get("handler");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new FuncRef(obj);
   }
 
   /**
@@ -51,7 +58,14 @@ public class Message extends Response {
    * Can return <code>null</code>.
    */
   public SourceLocation getLocation() {
-    return json.get("location") == null ? null : new SourceLocation((JsonObject) json.get("location"));
+    JsonObject obj = (JsonObject) json.get("location");
+    if (obj == null) return null;
+    final String type = json.get("type").getAsString();
+    if ("Instance".equals(type) || "@Instance".equals(type)) {
+      final String kind = json.get("kind").getAsString();
+      if ("Null".equals(kind)) return null;
+    }
+    return new SourceLocation(obj);
   }
 
   /**

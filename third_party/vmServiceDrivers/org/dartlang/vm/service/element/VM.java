@@ -59,6 +59,13 @@ public class VM extends Response {
   }
 
   /**
+   * The operating system we are running on.
+   */
+  public String getOperatingSystem() {
+    return json.get("operatingSystem").getAsString();
+  }
+
+  /**
    * The process id for the VM.
    */
   public int getPid() {

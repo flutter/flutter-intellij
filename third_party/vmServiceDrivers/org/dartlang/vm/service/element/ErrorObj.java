@@ -34,7 +34,9 @@ public class ErrorObj extends Obj {
    * Can return <code>null</code>.
    */
   public InstanceRef getException() {
-    return json.get("exception") == null ? null : new InstanceRef((JsonObject) json.get("exception"));
+    JsonObject obj = (JsonObject) json.get("exception");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
   }
 
   /**
@@ -62,6 +64,8 @@ public class ErrorObj extends Obj {
    * Can return <code>null</code>.
    */
   public InstanceRef getStacktrace() {
-    return json.get("stacktrace") == null ? null : new InstanceRef((JsonObject) json.get("stacktrace"));
+    JsonObject obj = (JsonObject) json.get("stacktrace");
+    if (obj == null) return null;
+    return new InstanceRef(obj);
   }
 }

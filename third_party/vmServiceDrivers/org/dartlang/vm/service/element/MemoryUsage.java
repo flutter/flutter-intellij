@@ -18,7 +18,7 @@ package org.dartlang.vm.service.element;
 import com.google.gson.JsonObject;
 
 /**
- * An {@link MemoryUsage} object provides heap usage information for a specific isolate at a given
+ * A {@link MemoryUsage} object provides heap usage information for a specific isolate at a given
  * point in time.
  */
 @SuppressWarnings({"WeakerAccess", "unused"})
