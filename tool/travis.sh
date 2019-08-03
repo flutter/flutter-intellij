@@ -31,6 +31,7 @@ if [ "$DART_BOT" = true ] ; then
 
   # analyze the Dart code in the repo
   echo "travis_fold:start:activate_tuneup"
+  echo "pub global activate tuneup"
   pub global activate tuneup
   echo "travis_fold:end:activate_tuneup"
   pub global run tuneup
@@ -50,6 +51,9 @@ if [ "$DART_BOT" = true ] ; then
 
 elif [ "$CHECK_BOT" = true ] ; then
 
+  # Run some validations on the repo code.
+  ./bin/plugin lint
+
   # Check plugin-referenced urls for liveness.
   dart tool/grind.dart check-urls
 
@@ -59,9 +63,6 @@ elif [ "$UNIT_TEST_BOT" = true ] ; then
   ./gradlew -s test
 
 else
-
-  # Run some validations on the repo code.
-  ./bin/plugin lint
 
   # Run the build.
   ./bin/plugin build --only-version=$IDEA_VERSION

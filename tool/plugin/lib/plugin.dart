@@ -558,11 +558,18 @@ class BuildCommand extends ProductCommand {
         if (isForIntelliJ && spec.isAndroidStudio) continue;
       }
 
+      if (isOnTravis) {
+        print('travis_fold:start:provision_artifacts');
+      }
       result = await spec.artifacts.provision(
-          rebuildCache:
-              isReleaseMode || argResults['unpack'] || buildSpecs.length > 1);
+        rebuildCache:
+            isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
+      );
+      if (isOnTravis) {
+        print('travis_fold:end:provision_artifacts');
+      }
       if (result != 0) {
-        return new Future(() => result);
+        return result;
       }
 
       separator('Building flutter-intellij.jar');
@@ -611,9 +618,10 @@ class BuildCommand extends ProductCommand {
         files[processedFile] = source;
         source = source.replaceAll('importProjectCore', 'importProject');
         processedFile.writeAsStringSync(source);
-
       }
-      if (!spec.version.startsWith('3.5') && !spec.version.startsWith('3.6') && !(spec.version == '2019.1.2')) {
+      if (!spec.version.startsWith('3.5') &&
+          !spec.version.startsWith('3.6') &&
+          !(spec.version == '2019.1.2')) {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
@@ -663,7 +671,7 @@ class BuildCommand extends ProductCommand {
         }
       }
       if (result != 0) {
-        return new Future(() => result);
+        return result;
       }
 
       // create the jars
@@ -684,7 +692,7 @@ class BuildCommand extends ProductCommand {
             'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
         if (result != 0) {
           log('jar failed: ${result.toString()}');
-          return new Future(() => result);
+          return result;
         }
       }
 
@@ -692,7 +700,7 @@ class BuildCommand extends ProductCommand {
       result = await zip('build/flutter-intellij', releasesFilePath(spec));
       if (result != 0) {
         log('zip failed: ${result.toString()}');
-        return new Future(() => result);
+        return result;
       }
       if (spec.copyIjVersion && !isReleaseMode) {
         _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
@@ -1130,4 +1138,8 @@ class TestCommand extends ProductCommand {
   Future<int> _runIntegrationTests() async {
     throw 'integration test execution not yet implemented';
   }
+}
+
+bool get isOnTravis {
+  return Platform.environment.containsKey('TRAVIS');
 }
