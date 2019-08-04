@@ -264,7 +264,7 @@ Future<int> removeAll(String dir) async {
   return await exec('rm', args);
 }
 
-final Ansi ansi = new Ansi(Ansi.terminalSupportsAnsi);
+final Ansi ansi = new Ansi(true);
 
 void separator(String name, {bool suppressNewline = false}) {
   if (!suppressNewline) {
