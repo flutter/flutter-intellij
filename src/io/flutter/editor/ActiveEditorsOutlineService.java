@@ -6,6 +6,7 @@
 package io.flutter.editor;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Lists;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.editor.Editor;
@@ -80,7 +81,6 @@ public class ActiveEditorsOutlineService implements Disposable {
     });
   }
 
-
   /**
    * Gets all of the {@link EditorEx} editors open to Dart files.
    */
@@ -151,7 +151,7 @@ public class ActiveEditorsOutlineService implements Disposable {
   }
 
   private void notifyOutlineUpdated(String path) {
-    for (Listener listener : listeners) {
+    for (Listener listener : Lists.newArrayList(listeners)) {
       listener.onOutlineChanged(path, get(path));
     }
   }
@@ -166,7 +166,6 @@ public class ActiveEditorsOutlineService implements Disposable {
 
   /**
    * Gets the most up-to-date {@link FlutterOutline} for the file at {@param path}.
-   *
    * <p>
    * To get an outline that is guaranteed in-sync with the file it outlines, see {@link #getIfUpdated}.
    */
