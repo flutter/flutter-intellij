@@ -268,7 +268,7 @@ final Ansi ansi = new Ansi(true);
 
 void separator(String name) {
   log('');
-  log('${ansi.yellow}$name${ansi.none}', indent: false);
+  log('${ansi.yellow}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
 String substituteTemplateVariables(String line, BuildSpec spec) {
@@ -703,7 +703,8 @@ class BuildCommand extends ProductCommand {
         _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
             filename: 'flutter-intellij.zip');
       }
-      separator('BUILT');
+
+      separator('Built artifact');
       log('${releasesFilePath(spec)}');
     }
 
