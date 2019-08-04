@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
+import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
 import 'package:markdown/markdown.dart';
 import 'package:path/path.dart' as p;
@@ -263,9 +264,14 @@ Future<int> removeAll(String dir) async {
   return await exec('rm', args);
 }
 
+final Ansi ansi = new Ansi(Ansi.terminalSupportsAnsi);
+
 void separator(String name, {bool suppressNewline = false}) {
-  if (!suppressNewline) log('');
-  log('$name:', indent: false);
+  if (!suppressNewline) {
+    log('');
+  }
+
+  log('${ansi.yellow}$name:${ansi.none}', indent: false);
 }
 
 String substituteTemplateVariables(String line, BuildSpec spec) {
