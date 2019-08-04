@@ -266,12 +266,9 @@ Future<int> removeAll(String dir) async {
 
 final Ansi ansi = new Ansi(true);
 
-void separator(String name, {bool suppressNewline = false}) {
-  if (!suppressNewline) {
-    log('');
-  }
-
-  log('${ansi.yellow}$name:${ansi.none}', indent: false);
+void separator(String name) {
+  log('');
+  log('${ansi.yellow}$name${ansi.none}', indent: false);
 }
 
 String substituteTemplateVariables(String line, BuildSpec spec) {
@@ -407,7 +404,7 @@ class ArtifactManager {
   }
 
   Future<int> provision({bool rebuildCache = false}) async {
-    separator('Getting artifacts', suppressNewline: isOnTravis);
+    separator('Getting artifacts');
     createDir('artifacts');
 
     var result = 0;
@@ -564,16 +561,10 @@ class BuildCommand extends ProductCommand {
         if (isForIntelliJ && spec.isAndroidStudio) continue;
       }
 
-      if (isOnTravis) {
-        print('travis_fold:start:provision_artifacts');
-      }
       result = await spec.artifacts.provision(
         rebuildCache:
             isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
       );
-      if (isOnTravis) {
-        print('travis_fold:end:provision_artifacts');
-      }
       if (result != 0) {
         return result;
       }
@@ -1144,8 +1135,4 @@ class TestCommand extends ProductCommand {
   Future<int> _runIntegrationTests() async {
     throw 'integration test execution not yet implemented';
   }
-}
-
-bool get isOnTravis {
-  return Platform.environment.containsKey('TRAVIS');
 }
