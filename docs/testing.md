@@ -17,7 +17,8 @@ Pre-reqs: Run through the [flutter setup](https://flutter.io/docs/get-started/in
 
 ## Project Creation
 
-Validate basic project creation.
+Validate basic project creation. Find your other.xml and remove FLUTTER_SDK_KNOWN_PATHS and remove `flutter` from your PATH.
+This might require a reboot. Start from the Welcome screen at least once.
 
 * Create a **simple project** (`File > New > Project...`, pick `Flutter`; on Android Studio, `File > New > New Flutter Project...`).
   * (select an `Application` type project)
