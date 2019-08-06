@@ -31,6 +31,8 @@ class LintCommand extends Command {
   }
 
   void printApiUsage() {
+    separator('Dart plugin API usage');
+
     final result = Process.runSync(
       'git',
       // Note: extra quotes added so grep doesn't match this file.
@@ -72,6 +74,8 @@ class LintCommand extends Command {
 
   /// Return `true` if an import violation was found.
   bool checkForBadImports() {
+    separator('Check for bad imports');
+
     final proscribedImports = [
       'com.android.annotations.NonNull',
       'io.netty.',

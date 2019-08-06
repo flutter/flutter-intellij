@@ -7,6 +7,7 @@ environment:
 
 dependencies:
   args: ^1.0.0
+  cli_util: ^0.1.0
   git: ^0.5.1
   markdown: ^2.0.0
   path: ^1.6.2

@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
+import 'package:cli_util/cli_logging.dart';
 import 'package:git/git.dart';
 import 'package:markdown/markdown.dart';
 import 'package:path/path.dart' as p;
@@ -263,9 +264,11 @@ Future<int> removeAll(String dir) async {
   return await exec('rm', args);
 }
 
+final Ansi ansi = new Ansi(true);
+
 void separator(String name) {
   log('');
-  log('$name:', indent: false);
+  log('${ansi.yellow}${ansi.bold}$name${ansi.none}', indent: false);
 }
 
 String substituteTemplateVariables(String line, BuildSpec spec) {
@@ -559,10 +562,11 @@ class BuildCommand extends ProductCommand {
       }
 
       result = await spec.artifacts.provision(
-          rebuildCache:
-              isReleaseMode || argResults['unpack'] || buildSpecs.length > 1);
+        rebuildCache:
+            isReleaseMode || argResults['unpack'] || buildSpecs.length > 1,
+      );
       if (result != 0) {
-        return new Future(() => result);
+        return result;
       }
 
       separator('Building flutter-intellij.jar');
@@ -611,9 +615,10 @@ class BuildCommand extends ProductCommand {
         files[processedFile] = source;
         source = source.replaceAll('importProjectCore', 'importProject');
         processedFile.writeAsStringSync(source);
-
       }
-      if (!spec.version.startsWith('3.5') && !spec.version.startsWith('3.6') && !(spec.version == '2019.1.2')) {
+      if (!spec.version.startsWith('3.5') &&
+          !spec.version.startsWith('3.6') &&
+          !(spec.version == '2019.1.2')) {
         log('spec.version: ${spec.version}');
         processedFile = File(
             'flutter-studio/src/io/flutter/project/FlutterProjectModel.java');
@@ -663,7 +668,7 @@ class BuildCommand extends ProductCommand {
         }
       }
       if (result != 0) {
-        return new Future(() => result);
+        return result;
       }
 
       // create the jars
@@ -684,7 +689,7 @@ class BuildCommand extends ProductCommand {
             'build/studio', 'build/flutter-intellij/lib/flutter-studio.jar');
         if (result != 0) {
           log('jar failed: ${result.toString()}');
-          return new Future(() => result);
+          return result;
         }
       }
 
@@ -692,13 +697,14 @@ class BuildCommand extends ProductCommand {
       result = await zip('build/flutter-intellij', releasesFilePath(spec));
       if (result != 0) {
         log('zip failed: ${result.toString()}');
-        return new Future(() => result);
+        return result;
       }
       if (spec.copyIjVersion && !isReleaseMode) {
         _copyFile(File(releasesFilePath(spec)), Directory(ijVersionPath(spec)),
             filename: 'flutter-intellij.zip');
       }
-      separator('BUILT');
+
+      separator('Built artifact');
       log('${releasesFilePath(spec)}');
     }
 
