@@ -16,6 +16,8 @@
       <excludeFolder url="file://$MODULE_DIR$/artifacts" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/src/main" />
+      <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/testData/sample_tests/build" />
       <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/tool/icon_generator/build" />
@@ -55,5 +57,8 @@
     <orderEntry type="library" name="commons-io" level="project" />
     <orderEntry type="library" name="org.powermock:powermock-module-junit4:2.0.0" level="project" />
     <orderEntry type="library" name="org.powermock:powermock-api-mockito2:2.0.0" level="project" />
+    <orderEntry type="module" module-name="intellij.android.core" />
+    <orderEntry type="module" module-name="intellij.platform.externalSystem" />
+    <orderEntry type="module" module-name="intellij.gradle.common" />
   </component>
 </module>

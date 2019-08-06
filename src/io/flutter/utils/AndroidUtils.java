@@ -5,23 +5,54 @@
  */
 package io.flutter.utils;
 
-import static io.flutter.ProjectOpenActivity.FLUTTER_PROJECT_TYPE;
-
+import com.android.tools.idea.gradle.project.build.BuildContext;
+import com.android.tools.idea.gradle.project.build.BuildStatus;
+import com.android.tools.idea.gradle.project.build.GradleBuildListener;
+import com.android.tools.idea.gradle.project.build.GradleBuildState;
+import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
+import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.lang.java.JavaParserDefinition;
 import com.intellij.lexer.Lexer;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.externalSystem.model.DataNode;
+import com.intellij.openapi.externalSystem.model.ExternalProjectInfo;
+import com.intellij.openapi.externalSystem.model.ProjectKeys;
+import com.intellij.openapi.externalSystem.model.project.ModuleData;
+import com.intellij.openapi.externalSystem.model.project.ProjectData;
+import com.intellij.openapi.externalSystem.model.task.TaskData;
+import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
+import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
+import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.JavaTokenType;
 import com.intellij.psi.tree.java.IKeywordElementType;
+import com.intellij.util.containers.ContainerUtil;
+import com.intellij.util.containers.MultiMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
+import org.jetbrains.plugins.gradle.settings.GradleSettings;
+import org.jetbrains.plugins.gradle.util.GradleConstants;
+
+import java.util.Map;
+
+import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
+import static com.intellij.openapi.util.text.StringUtil.isNotEmpty;
 
 // based on: org.jetbrains.android.util.AndroidUtils
 public class AndroidUtils {
 
   private static final Lexer JAVA_LEXER = JavaParserDefinition.createLexer(LanguageLevel.JDK_1_5);
+
+  // Flutter internal implementation dependencies.
+  private static String FLUTTER_MODULE_NAME = ":flutter:";
+  private static String FLUTTER_TASK_PREFIX = "compileflutter";
+
 
   /**
    * Validates a potential package name and returns null if the package name is valid, and otherwise
@@ -127,5 +158,107 @@ public class AndroidUtils {
     // TODO(messick) Recognize native Android Studio and IntelliJ Android projects.
     ProjectType projectType = ProjectTypeService.getProjectType(project);
     return projectType != null && "Android".equals(projectType.getId());
+  }
+
+  public static void addGradleListeners(@NotNull Project project) {
+    GradleSyncState.subscribe(project, new GradleSyncListener() {
+      @Override
+      public void syncSucceeded(@NotNull Project project) {
+        Map<ProjectData, MultiMap<String, String>> tasks = getTasksMap(project);
+        @NotNull String projectName = project.getName();
+        for (ProjectData projectData : tasks.keySet()) {
+          String dataName = projectData.getExternalName();
+          if (projectName.equals(dataName)) {
+            MultiMap<String, String> map = tasks.get(projectData);
+            if (map.containsKey(FLUTTER_MODULE_NAME)) {
+              if (map.get(FLUTTER_MODULE_NAME).parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
+                ApplicationManager.getApplication().invokeLater(() -> AndroidUtils.enableCoEditing(project));
+              }
+            }
+          }
+        }
+      }
+    });
+    GradleBuildState.subscribe(project, new GradleBuildListener.Adapter() {
+      @Override
+      public void buildFinished(@NotNull BuildStatus status, @Nullable BuildContext context) {
+        String ideaName = FLUTTER_MODULE_NAME.substring(1, FLUTTER_MODULE_NAME.length() - 1);
+        boolean mayNeedSync = false;
+        for (Module module : ModuleManager.getInstance(project).getModules()) {
+          if (module.getName().equals(ideaName)) {
+            mayNeedSync = true;
+            break;
+          }
+        }
+        if (!mayNeedSync) return;
+        for (Module module : ModuleManager.getInstance(project).getModules()) {
+          if (FlutterModuleUtils.declaresFlutter(module)) {
+            if (isVanillaAddToApp(module.getModuleFile(), module.getName())) {
+              // TODO(messick): Trigger Gradle sync.
+            }
+          }
+        }
+      }
+    });
+  }
+
+  private static boolean isVanillaAddToApp(@Nullable VirtualFile file, String name) {
+    assert file != null;
+    VirtualFile dir = file.getParent();
+    assert dir != null;
+    if (dir.findChild(".ios") == null) {
+      dir = dir.getParent();
+    }
+    assert dir != null;
+    assert dir.findChild(".ios") != null;
+    if (dir.findChild(("build.gradle")) == null) {
+      return true;
+    }
+    dir = dir.getParent();
+    assert dir != null;
+    VirtualFile settings = dir.findChild("settings.gradle");
+    if (settings == null) return true;
+    // TODO(messick): check settings for "include :name"
+    return false;
+  }
+
+  // The project is an Android project that contains a Flutter module.
+  private static void enableCoEditing(@NotNull Project project) {
+    if (!isVanillaAddToApp(project.getProjectFile(), project.getName())) return;
+  }
+
+  // Copied from org.jetbrains.plugins.gradle.execution.GradleRunAnythingProvider.
+  @NotNull
+  @SuppressWarnings("DuplicatedCode")
+  private static Map<ProjectData, MultiMap<String, String>> getTasksMap(Project project) {
+    Map<ProjectData, MultiMap<String, String>> tasks = ContainerUtil.newLinkedHashMap();
+    for (GradleProjectSettings setting : GradleSettings.getInstance(project).getLinkedProjectsSettings()) {
+      final ExternalProjectInfo projectData =
+        ProjectDataManager.getInstance().getExternalProjectData(project, GradleConstants.SYSTEM_ID, setting.getExternalProjectPath());
+      if (projectData == null || projectData.getExternalProjectStructure() == null) continue;
+
+      MultiMap<String, String> projectTasks = MultiMap.createOrderedSet();
+      for (DataNode<ModuleData> moduleDataNode : getChildren(projectData.getExternalProjectStructure(), ProjectKeys.MODULE)) {
+        String gradlePath;
+        String moduleId = moduleDataNode.getData().getId();
+        if (moduleId.charAt(0) != ':') {
+          int colonIndex = moduleId.indexOf(':');
+          gradlePath = colonIndex > 0 ? moduleId.substring(colonIndex) : ":";
+        }
+        else {
+          gradlePath = moduleId;
+        }
+        for (DataNode<TaskData> node : getChildren(moduleDataNode, ProjectKeys.TASK)) {
+          TaskData taskData = node.getData();
+          String taskName = taskData.getName();
+          if (isNotEmpty(taskName)) {
+            String taskPathPrefix = ":".equals(gradlePath) || taskName.startsWith(gradlePath) ? "" : (gradlePath + ':');
+            projectTasks.putValue(taskPathPrefix, taskName);
+          }
+        }
+      }
+      tasks.put(projectData.getExternalProjectStructure().getData(), projectTasks);
+    }
+    return tasks;
   }
 }
