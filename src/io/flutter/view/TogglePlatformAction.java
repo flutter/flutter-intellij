@@ -145,15 +145,17 @@ enum PlatformTarget {
     public String toString() {
       return "Fuchsia";
     }
-  };
+  },
+  unknown;
 
   public static PlatformTarget parseValue(String value) {
     try {
       return valueOf(value);
-    } catch (NullPointerException | IllegalArgumentException e) {
-      // Default to android in the event that {@link value} is null or if there is not a
-      // {@link PlatformTarget} value with the name {@link value}.
-      return android;
+    }
+    catch (NullPointerException | IllegalArgumentException e) {
+      // Default to {@link unknown} in the event that {@link value} is null or if
+      // there is not a {@link PlatformTarget} value with the name {@link value}.
+      return unknown;
     }
   }
 }
