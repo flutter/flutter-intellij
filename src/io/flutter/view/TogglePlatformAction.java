@@ -45,7 +45,7 @@ class TogglePlatformAction extends ToolbarComboBoxAction {
   @Override
   public final void update(AnActionEvent e) {
     app.getVMServiceManager().getServiceExtensionState(extensionDescription.getExtension()).listen((state) -> {
-      selectedPlatform = PlatformTarget.valueOf((String)state.getValue());
+      selectedPlatform = PlatformTarget.parseValue((String)state.getValue());
     }, true);
 
     String selectorText = "Platform:";
@@ -144,6 +144,18 @@ enum PlatformTarget {
   fuchsia {
     public String toString() {
       return "Fuchsia";
+    }
+  },
+  unknown;
+
+  public static PlatformTarget parseValue(String value) {
+    try {
+      return valueOf(value);
+    }
+    catch (NullPointerException | IllegalArgumentException e) {
+      // Default to {@link unknown} in the event that {@link value} is null or if
+      // there is not a {@link PlatformTarget} value with the name {@link value}.
+      return unknown;
     }
   }
 }
