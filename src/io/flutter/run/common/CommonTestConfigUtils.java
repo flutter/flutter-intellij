@@ -156,7 +156,13 @@ public abstract class CommonTestConfigUtils {
    * Traverses the {@param outline} tree and adds to {@param callToTestType } the {@link DartCallExpression}s that are tests or test groups.
    */
   private void visit(@NotNull FlutterOutline outline, @NotNull Map<DartCallExpression, TestType> callToTestType, @NotNull PsiFile file) {
-    @NotNull final PsiElement element = Objects.requireNonNull(file.findElementAt(outline.getOffset()));
+    final PsiElement element = file.findElementAt(outline.getOffset());
+    // If the outline is out-of-sync with the file, the element from that offset may be null.
+    // The outline analysis is eventually consistent with the contents of the file, so if this happens,
+    // this visitor will be invoked again later with a corrected outline.
+    if (element == null) {
+      return;
+    }
     if (outline.getDartElement() != null) {
       switch (outline.getDartElement().getKind()) {
         case UNIT_TEST_GROUP:
