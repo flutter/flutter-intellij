@@ -112,7 +112,7 @@ public class ActiveEditorsOutlineService implements Disposable {
     final Set<String> newPaths = new HashSet<>();
     for (VirtualFile file : files) {
       if (FlutterUtils.isDartFile(file)) {
-        newPaths.add(file.getPath());
+        newPaths.add(file.getCanonicalPath());
       }
     }
 
@@ -134,7 +134,7 @@ public class ActiveEditorsOutlineService implements Disposable {
       // Register new outline listeners.
       for (final String path : newPaths) {
         if (outlineListeners.containsKey(path)) continue;
-        final FlutterOutlineListener listener = new OutlineListener();
+        final FlutterOutlineListener listener = new OutlineListener(path);
 
         outlineListeners.put(path, listener);
         analysisServer.addOutlineListener(FileUtil.toSystemDependentName(path), listener);
@@ -241,11 +241,18 @@ public class ActiveEditorsOutlineService implements Disposable {
    */
   private class OutlineListener/// You can pretty-print the json using the pretty_printer.dart script.
     implements FlutterOutlineListener {
+    OutlineListener(String path) {
+      this.path = path;
+    }
+
+    private final String path;
 
     @Override
-    public void outlineUpdated(@NotNull String path,
+    public void outlineUpdated(@NotNull String systemDependentPath,
                                @NotNull FlutterOutline outline,
                                @Nullable String instrumentedCode) {
+      // Avoid using the path return by the FlutterOutline service as it will
+      // be system dependent causing bugs on windows.
       synchronized (outlineListeners) {
         if (!outlineListeners.containsKey(path)) {
           // The outline listener subscription was already cancelled.
