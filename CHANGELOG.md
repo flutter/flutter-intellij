@@ -1,3 +1,11 @@
+## 38.2
+- Fix bug on Windows that prevented outlines from displaying
+- Restore the ability to run individual tests 
+- Fix a couple other issues
+
+## 38.1
+- Fix first-time installation issue
+
 ## 38.0
 - Add AndroidX option to new project wizards (#3705)
 - Fix break due to Android Studio 3.6 API change (#3712)
