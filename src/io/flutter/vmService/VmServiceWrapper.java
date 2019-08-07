@@ -582,6 +582,6 @@ public class VmServiceWrapper implements Disposable {
   public void callToString(@NotNull final String isolateId,
                            @NotNull final String targetId,
                            @NotNull final InvokeConsumer callback) {
-    addRequest(() -> myVmService.invoke(isolateId, targetId, "toString", Collections.emptyList(), callback));
+    addRequest(() -> myVmService.invoke(isolateId, targetId, "toString", Collections.emptyList(), true, callback));
   }
 }
