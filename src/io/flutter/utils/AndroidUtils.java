@@ -5,10 +5,15 @@
  */
 package io.flutter.utils;
 
+import com.android.tools.idea.gradle.dsl.parser.BuildModelContext;
+import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslElement;
+import com.android.tools.idea.gradle.dsl.parser.elements.GradleDslLiteral;
+import com.android.tools.idea.gradle.dsl.parser.files.GradleSettingsFile;
 import com.android.tools.idea.gradle.project.build.BuildContext;
 import com.android.tools.idea.gradle.project.build.BuildStatus;
 import com.android.tools.idea.gradle.project.build.GradleBuildListener;
 import com.android.tools.idea.gradle.project.build.GradleBuildState;
+import com.android.tools.idea.gradle.project.sync.GradleSyncInvoker;
 import com.android.tools.idea.gradle.project.sync.GradleSyncListener;
 import com.android.tools.idea.gradle.project.sync.GradleSyncState;
 import com.intellij.lang.java.JavaParserDefinition;
@@ -24,12 +29,13 @@ import com.intellij.openapi.externalSystem.service.project.ProjectDataManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.project.ProjectType;
 import com.intellij.openapi.project.ProjectTypeService;
+import com.intellij.openapi.util.io.FileUtil;
 import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.pom.java.LanguageLevel;
 import com.intellij.psi.JavaTokenType;
+import com.intellij.psi.PsiElement;
 import com.intellij.psi.tree.java.IKeywordElementType;
 import com.intellij.util.containers.ContainerUtil;
 import com.intellij.util.containers.MultiMap;
@@ -39,6 +45,9 @@ import org.jetbrains.plugins.gradle.settings.GradleProjectSettings;
 import org.jetbrains.plugins.gradle.settings.GradleSettings;
 import org.jetbrains.plugins.gradle.util.GradleConstants;
 
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import static com.intellij.openapi.externalSystem.util.ExternalSystemApiUtil.getChildren;
@@ -172,7 +181,7 @@ public class AndroidUtils {
             MultiMap<String, String> map = tasks.get(projectData);
             if (map.containsKey(FLUTTER_MODULE_NAME)) {
               if (map.get(FLUTTER_MODULE_NAME).parallelStream().anyMatch((x) -> x.startsWith(FLUTTER_TASK_PREFIX))) {
-                ApplicationManager.getApplication().invokeLater(() -> AndroidUtils.enableCoEditing(project));
+                ApplicationManager.getApplication().invokeLater(() -> enableCoEditing(project));
               }
             }
           }
@@ -193,38 +202,76 @@ public class AndroidUtils {
         if (!mayNeedSync) return;
         for (Module module : ModuleManager.getInstance(project).getModules()) {
           if (FlutterModuleUtils.declaresFlutter(module)) {
-            if (isVanillaAddToApp(module.getModuleFile(), module.getName())) {
-              // TODO(messick): Trigger Gradle sync.
+            // untested
+            if (isVanillaAddToApp(project, module.getModuleFile(), module.getName())) {
+              GradleSyncInvoker.getInstance().requestProjectSync(
+                project,
+                GradleSyncInvoker.Request.userRequest());
+              return;
             }
+          }
+        }
+        for (Module module : ModuleManager.getInstance(project).getModules()) {
+          if (module.getName().equals(ideaName)) {
+
           }
         }
       }
     });
   }
 
-  private static boolean isVanillaAddToApp(@Nullable VirtualFile file, String name) {
-    assert file != null;
+  private static boolean isVanillaAddToApp(@NotNull Project project, @Nullable VirtualFile file, @NotNull String name) {
+    if (file == null) {
+      return false;
+    }
     VirtualFile dir = file.getParent();
-    assert dir != null;
     if (dir.findChild(".ios") == null) {
       dir = dir.getParent();
     }
-    assert dir != null;
-    assert dir.findChild(".ios") != null;
+    if (dir.findChild(".ios") == null && dir.findChild("ios") == null) {
+      return false;
+    }
     if (dir.findChild(("build.gradle")) == null) {
       return true;
     }
     dir = dir.getParent();
-    assert dir != null;
     VirtualFile settings = dir.findChild("settings.gradle");
-    if (settings == null) return true;
-    // TODO(messick): check settings for "include :name"
+    if (settings == null) {
+      return true;
+    }
+    // Check settings for "include :name".
+    GradleSettingsFile parsedSettings =
+      BuildModelContext.create(project).getOrCreateSettingsFile(project);
+    if (parsedSettings == null) {
+      return false;
+    }
+    Map<String, GradleDslElement> elements = parsedSettings.getPropertyElements();
+    GradleDslElement includes = elements.get("include");
+    if (includes == null) {
+      return false;
+    }
+    for (GradleDslElement include : includes.getChildren()) {
+      PsiElement expr = ((GradleDslLiteral)include).getExpression();
+      if (expr == null) {
+        return false;
+      }
+      String text = expr.getText();
+      if (name.equals(text.substring(2, text.length() - 1))) {
+        return true;
+      }
+    }
     return false;
   }
 
   // The project is an Android project that contains a Flutter module.
   private static void enableCoEditing(@NotNull Project project) {
-    if (!isVanillaAddToApp(project.getProjectFile(), project.getName())) return;
+    // find flutter module and use its module file, not the project's
+    if (!isVanillaAddToApp(project, project.getProjectFile(), project.getName())) return;
+    GradleSettingsFile parsedSettings =
+      BuildModelContext.create(project).getOrCreateSettingsFile(project);
+    if (parsedSettings == null) {
+      return;
+    }
   }
 
   // Copied from org.jetbrains.plugins.gradle.execution.GradleRunAnythingProvider.

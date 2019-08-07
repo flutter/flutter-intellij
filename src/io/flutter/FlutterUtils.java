@@ -18,6 +18,7 @@ import com.intellij.openapi.application.ModalityState;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.extensions.PluginId;
 import com.intellij.openapi.module.Module;
+import com.intellij.openapi.module.ModuleManager;
 import com.intellij.openapi.module.ModuleUtilCore;
 import com.intellij.openapi.progress.ProcessCanceledException;
 import com.intellij.openapi.project.Project;
@@ -477,5 +478,29 @@ public class FlutterUtils {
       return android;
     }
     return null;
+  }
+
+  public static boolean hasFlutterGradleModule(@NotNull Project project) {
+    Module[] modules = ModuleManager.getInstance(project).getModules();
+    for (Module module : modules) {
+      if (module.getName().equals("flutter")) {
+        if (module.getModuleFilePath().endsWith(".android/Flutter/flutter.iml")) {
+          VirtualFile file = module.getModuleFile();
+          if (file == null) {
+            continue;
+          }
+          file = file.getParent().getParent().getParent();
+          VirtualFile meta = file.findChild(".metadata");
+          if (meta == null) {
+            return false;
+          }
+          VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
+          if (android != null && android.getName().equals(".android")) {
+            return true; // Only true for Flutter modules.
+          }
+        }
+      }
+    }
+    return false;
   }
 }
