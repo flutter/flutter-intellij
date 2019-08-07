@@ -29,6 +29,16 @@
 
   <change-notes>
     <![CDATA[
+<h2>38.2</h2>
+<ul>
+  <li>Fix bug on Windows that prevented outlines from displaying</li>
+  <li>Restore the ability to run individual tests </li>
+  <li>Fix a couple other issues</li>
+</ul>
+<h2>38.1</h2>
+<ul>
+  <li>Fix first-time installation issue</li>
+</ul>
 <h2>38.0</h2>
 <ul>
   <li>Add AndroidX option to new project wizards (#3705)</li>
