@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.LogicalPosition;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.vfs.VirtualFile;
 import com.intellij.psi.PsiFile;
 import com.intellij.testFramework.fixtures.CodeInsightTestFixture;
 import com.intellij.testFramework.fixtures.EditorTestFixture;
@@ -19,18 +18,15 @@ import io.flutter.testing.CodeInsightProjectFixture;
 import io.flutter.testing.Testing;
 import org.dartlang.analysis.server.protocol.FlutterOutline;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
-import static junit.framework.TestCase.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 public class ActiveEditorsOutlineServiceTest {
@@ -163,7 +159,6 @@ public class ActiveEditorsOutlineServiceTest {
       assertThat(service.getIfUpdated(mainFile), nullValue());
       flutterDas.updateOutline(mainPath, outlineWithCorrectLength);
       assertThat(service.getIfUpdated(mainFile), equalTo(outlineWithCorrectLength));
-
     });
   }
 

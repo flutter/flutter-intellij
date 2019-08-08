@@ -57,7 +57,6 @@ public class BazelTestFields {
   /**
    * Copy constructor
    */
-  @SuppressWarnings("CopyConstructorMissesField")
   BazelTestFields(@NotNull BazelTestFields template) {
     this(template.testName, template.entryFile, template.bazelTarget, template.additionalArgs);
   }

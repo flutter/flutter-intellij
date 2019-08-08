@@ -64,9 +64,8 @@ public class InspectorTreeUI extends BasicTreeUI {
   private boolean myOldRepaintAllRowValue;
   private boolean mySkinny = false;
 
-  boolean leftToRight = true; /// TODO(jacobr): actually support RTL mode.
+  boolean leftToRight = true; // TODO(jacobr): actually support RTL mode.
 
-  @SuppressWarnings("unchecked")
   public InspectorTreeUI() {
     this(false, Conditions.<Integer>alwaysFalse());
   }

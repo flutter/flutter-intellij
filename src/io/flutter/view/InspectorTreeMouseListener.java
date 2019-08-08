@@ -22,7 +22,7 @@ import java.util.concurrent.CompletableFuture;
 
 /**
  * Listener that handles mouse interaction for the Inspector tree.
- *
+ * <p>
  * Handles displaying tooltips, notifying the InspectorPanel of what node is
  * being highlighted, and custom double click selection behavior.
  */
@@ -47,7 +47,7 @@ class InspectorTreeMouseListener extends MouseAdapter {
   @Override
   public void mouseClicked(MouseEvent event) {
     final DefaultMutableTreeNode node = getClosestTreeNode(event);
-    /// TODO(jacobr): support clicking on a property.
+    // TODO(jacobr): support clicking on a property.
     // It would be reasonable for that to trigger selecting the parent of the
     // property.
     final DiagnosticsNode diagnostic = TreeUtils.maybeGetDiagnostic(node);
