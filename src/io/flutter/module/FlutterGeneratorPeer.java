@@ -74,6 +74,7 @@ public class FlutterGeneratorPeer implements InstallSdkAction.Model {
 
   private void init() {
     mySdkPathComboWithBrowse.getComboBox().setEditable(true);
+    // TODO(#3731): Synchronous execution on EDT.
     FlutterSdkUtil.addKnownSDKPathsToCombo(mySdkPathComboWithBrowse.getComboBox());
 
     mySdkPathComboWithBrowse.addBrowseFolderListener(FlutterBundle.message("flutter.sdk.browse.path.label"), null, null,

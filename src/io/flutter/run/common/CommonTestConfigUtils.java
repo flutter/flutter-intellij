@@ -26,7 +26,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_GROUP;
 import static org.dartlang.analysis.server.protocol.ElementKind.UNIT_TEST_TEST;
