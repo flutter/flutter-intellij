@@ -55,6 +55,7 @@ public class InstallSdkAction extends DumbAwareAction {
   }
 
   private static boolean hasGit() {
+    // TODO(#3731): Synchronous execution on EDT.
     return FlutterUtils.runsCleanly(gitCommandBase().withParameters("version"));
   }
 
