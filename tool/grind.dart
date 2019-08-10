@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:grinder/grinder.dart';
-
 import 'package:http/http.dart' as http;
 
 main(List<String> args) => grind(args);
@@ -63,7 +62,7 @@ colors() async {
     fail('${result.stdout}\n${result.stderr}');
   }
   File outFile = new File('resources/flutter/colors.properties');
-  outFile.writeAsStringSync(result.stdout);
+  outFile.writeAsStringSync(result.stdout.toString());
   log('wrote ${outFile.path}');
 }
 
@@ -81,6 +80,8 @@ outlineIcons() async {
 
   for (File file in previewIconsDir
       .listSync()
+      .where((entity) => entity is File)
+      .cast<File>()
       .where((file) => file.path.endsWith('.svg'))) {
     log('processing ${file.path}...');
 

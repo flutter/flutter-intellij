@@ -1,4 +1,6 @@
 analyzer:
+  strong-mode:
+    implicit-casts: false
   exclude:
     - 'out/**'
     - 'tool/icon_generator/**'
