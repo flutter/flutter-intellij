@@ -154,7 +154,7 @@ public class AndroidUtils {
   // This method is a copy of android.content.pm.PackageParser#validateName with the
   // error messages tweaked
   @Nullable
-  private static String validateName(String name, boolean requiresSeparator) {
+  private static String validateName(String name, @SuppressWarnings("SameParameterValue") boolean requiresSeparator) {
     final int N = name.length();
     boolean hasSep = false;
     boolean front = true;
@@ -330,6 +330,22 @@ public class AndroidUtils {
     });
   }
 
+  public static void scheduleGradleSync(@NotNull Project project) {
+    GradleSyncInvoker.getInstance().requestProjectSync(
+      project,
+      new GradleSyncInvoker.Request(TRIGGER_GRADLEDEPENDENCY_ADDED));
+  }
+
+  private static void checkDartSupport(@NotNull Project project) {
+    Stream<Module> modules =
+      Arrays.stream(FlutterModuleUtils.getModules(project)).filter(FlutterModuleUtils::declaresFlutter);
+    modules.forEach((module) -> {
+      if (!DartSdkLibUtil.isDartSdkEnabled(module)) {
+        new EnableDartSupportForModule(module).run();
+      }
+    });
+  }
+
   private static boolean isVanillaAddToApp(@NotNull Project project, @Nullable VirtualFile file, @NotNull String name) {
     if (file == null) {
       return false;
@@ -396,6 +412,7 @@ public class AndroidUtils {
     if (!project.isDisposed()) {
       COEDIT_TRANSFORMED_PROJECTS.add(project);
     }
+    return false;
   }
 
   private static boolean isCoeditTransformedProject(@NotNull Project project) {
