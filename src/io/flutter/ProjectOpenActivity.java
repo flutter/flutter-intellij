@@ -72,7 +72,7 @@ public class ProjectOpenActivity implements StartupActivity, DumbAware {
       if (hasFlutterModule) {
         AndroidUtils.addGradleListeners(project);
       } else {
-        if (FlutterUtils.hasFlutterGradleModule(project)) {
+        if (FlutterUtils.findFlutterGradleModule(project) != null) {
           AndroidUtils.addGradleListeners(project);
         }
       }

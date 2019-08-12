@@ -206,6 +206,14 @@ public class FlutterUtils {
     return psiFile != null ? psiFile.getOriginalFile().getVirtualFile() : null;
   }
 
+  @NotNull
+  public static VirtualFile getProjectRoot(@NotNull Project project) {
+    assert !project.isDefault();
+    @SystemIndependent String path = project.getBasePath();
+    assert path != null;
+    VirtualFile file = LocalFileSystem.getInstance().findFileByPath(path);
+    return Objects.requireNonNull(file);
+  }
   /**
    * Returns the Dart file for the given PsiElement, or null if not a match.
    */
@@ -480,27 +488,38 @@ public class FlutterUtils {
     return null;
   }
 
-  public static boolean hasFlutterGradleModule(@NotNull Project project) {
+  @Nullable
+  public static Module findModuleNamed(@NotNull Project project, @NotNull String name) {
     Module[] modules = ModuleManager.getInstance(project).getModules();
     for (Module module : modules) {
-      if (module.getName().equals("flutter")) {
-        if (module.getModuleFilePath().endsWith(".android/Flutter/flutter.iml")) {
-          VirtualFile file = module.getModuleFile();
-          if (file == null) {
-            continue;
-          }
-          file = file.getParent().getParent().getParent();
-          VirtualFile meta = file.findChild(".metadata");
-          if (meta == null) {
-            return false;
-          }
-          VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
-          if (android != null && android.getName().equals(".android")) {
-            return true; // Only true for Flutter modules.
-          }
-        }
+      if (module.getName().equals(name)) {
+        return module;
       }
     }
-    return false;
+    return null;
+  }
+
+  @Nullable
+  public static Module findFlutterGradleModule(@NotNull Project project) {
+    Module module = findModuleNamed(project, "flutter");
+    if (module == null) {
+      return null;
+    }
+    if (module.getModuleFilePath().endsWith(".android/Flutter/flutter.iml")) {
+      VirtualFile file = module.getModuleFile();
+      if (file == null) {
+        return null;
+      }
+      file = file.getParent().getParent().getParent();
+      VirtualFile meta = file.findChild(".metadata");
+      if (meta == null) {
+        return null;
+      }
+      VirtualFile android = getFlutterManagedAndroidDir(meta.getParent());
+      if (android != null && android.getName().equals(".android")) {
+        return module; // Only true for Flutter modules.
+      }
+    }
+    return null;
   }
 }
