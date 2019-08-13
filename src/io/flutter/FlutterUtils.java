@@ -32,7 +32,6 @@ import com.intellij.util.PlatformUtils;
 import com.jetbrains.lang.dart.DartFileType;
 import com.jetbrains.lang.dart.psi.DartFile;
 import io.flutter.pub.PubRoot;
-import io.flutter.run.FlutterRunConfigurationProducer;
 import io.flutter.utils.FlutterModuleUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -182,16 +181,19 @@ public class FlutterUtils {
 
   public static boolean isInTestDir(@Nullable DartFile file) {
     if (file == null) return false;
+
+    // Check that we're in a pub root.
     final PubRoot root = PubRoot.forFile(file.getVirtualFile());
     if (root == null) return false;
 
-    if (!FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()))) return false;
+    // Check that we're in a project path that starts with 'test/'.
+    final String relativePath = root.getRelativePath(file.getVirtualFile());
+    if (relativePath == null || !relativePath.startsWith("test/")) {
+      return false;
+    }
 
-    final VirtualFile candidate = FlutterRunConfigurationProducer.getFlutterEntryFile(file, false, false);
-    if (candidate == null) return false;
-
-    final String relativePath = root.getRelativePath(candidate);
-    return relativePath != null && (relativePath.startsWith("test/"));
+    // Check that we're in a Flutter module.
+    return FlutterModuleUtils.isFlutterModule(root.getModule(file.getProject()));
   }
 
   public static boolean isIntegrationTestingMode() {
