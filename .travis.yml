@@ -14,10 +14,7 @@ branches:
 services:
   - xvfb
 
-before_install:
-  - sudo apt-get update
-  - sudo apt-get install ant
-  - echo $(ant -version)
+before_install: ./tool/bootstrap.sh
 
 before_script:
   - git clone --depth 1 https://github.com/flutter/flutter.git ../flutter
