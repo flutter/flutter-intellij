@@ -28,6 +28,7 @@ import java.util.Map;
 
 public class FlutterDartAnalysisServer {
   private static final String FLUTTER_NOTIFICATION_OUTLINE = "flutter.outline";
+  private static final String FLUTTER_NOTIFICATION_OUTLINE_KEY = "\"flutter.outline\"";
 
   @NotNull final DartAnalysisServerService analysisService;
 
@@ -63,9 +64,8 @@ public class FlutterDartAnalysisServer {
 
   public void addOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
     final List<FlutterOutlineListener> listeners = fileOutlineListeners.computeIfAbsent(filePath, k -> new ArrayList<>());
-    if (listeners.add(listener)) {
-      addSubscription(FlutterService.OUTLINE, filePath);
-    }
+    listeners.add(listener);
+    addSubscription(FlutterService.OUTLINE, filePath);
   }
 
   public void removeOutlineListener(@NotNull final String filePath, @NotNull final FlutterOutlineListener listener) {
@@ -77,9 +77,8 @@ public class FlutterDartAnalysisServer {
 
   private void addSubscription(@NotNull final String service, @NotNull final String filePath) {
     final List<String> files = subscriptions.computeIfAbsent(service, k -> new ArrayList<>());
-    if (files.add(filePath)) {
-      sendSubscriptions();
-    }
+    files.add(filePath);
+    sendSubscriptions();
   }
 
   private void removeSubscription(@NotNull final String service, @NotNull final String filePath) {
@@ -100,26 +99,27 @@ public class FlutterDartAnalysisServer {
   }
 
   private void processString(String jsonString) {
-    processResponse(new Gson().fromJson(jsonString, JsonObject.class));
+    // Perform a quick check to see if we should parse this into a json object.
+    if (jsonString.contains(FLUTTER_NOTIFICATION_OUTLINE_KEY)) {
+      processResponse(new Gson().fromJson(jsonString, JsonObject.class));
+    }
   }
 
   /**
    * Handle the given {@link JsonObject} response.
    */
   private void processResponse(JsonObject response) {
-    processNotification(response);
+    final JsonElement eventElement = response.get("event");
+    if (eventElement != null && !eventElement.isJsonPrimitive()) {
+      processNotification(response, eventElement);
+    }
   }
 
   /**
    * Attempts to handle the given {@link JsonObject} as a notification.
    */
-  @SuppressWarnings("UnusedReturnValue")
-  private boolean processNotification(JsonObject response) {
-    final JsonElement eventElement = response.get("event");
-    if (eventElement == null || !eventElement.isJsonPrimitive()) {
-      return false;
-    }
-
+  private void processNotification(JsonObject response, @NotNull JsonElement eventElement) {
+    // If we add code to handle more event types below, update the filter in processString().
     final String event = eventElement.getAsString();
     if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
@@ -138,7 +138,6 @@ public class FlutterDartAnalysisServer {
         }
       }
     }
-    return true;
   }
 
   class CompatibleResponseListener implements ResponseListener {
