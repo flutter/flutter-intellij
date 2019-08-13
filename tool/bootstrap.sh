@@ -13,6 +13,8 @@ if [[ $TRAVIS_OS_NAME == "windows" ]]; then
   mkdir ${TOOLS_PATH}
 
   export JAVA_HOME=${JAVA_HOME:-$TOOLS_PATH/jdk}
+  mkdir ${JAVA_HOME}
+
   export JAVA_VERSION=${JAVA_VERSION:-11.0.2}
 
   pushd ${TOOLS_PATH}
