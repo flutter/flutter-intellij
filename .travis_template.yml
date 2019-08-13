@@ -29,6 +29,7 @@ matrix:
   include:
     - os: windows
       env: UNIT_TEST_BOT=true
+      language: shell
 
 env:
   - DART_BOT=true
