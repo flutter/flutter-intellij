@@ -9,7 +9,7 @@ set -e
 
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
 
-  choco install jdk10 -params "source=false"
+  choco install jdk11 -params "source=false"
   java -version
 
   choco install ant
