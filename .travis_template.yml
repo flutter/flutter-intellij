@@ -1,10 +1,5 @@
 language: java
 
-os:
-  - linux
-  - osx
-  - windows
-
 jdk:
   - openjdk8
 
@@ -32,7 +27,12 @@ before_script:
 # execution
 script: ./tool/travis.sh
 
-# Testing product matrix; the values are generated from product-matrix.json.
+# Testing product matrix; env values are appended to from product-matrix.json.
+matrix:
+  include:
+    - os: windows
+      env: UNIT_TEST_BOT=true
+
 env:
   - DART_BOT=true
   - CHECK_BOT=true
