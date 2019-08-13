@@ -331,6 +331,7 @@ public class FlutterUtils {
         // Check the dependencies.
         final Object dependencies = yamlMap.get("dependencies");
         if (dependencies instanceof Map) {
+          // We use `|=` for assigning to 'flutter' below as it might have been assigned to true above.
           info.flutter |= ((Map)dependencies).containsKey("flutter");
           info.flutterWeb = ((Map)dependencies).containsKey("flutter_web");
         }
