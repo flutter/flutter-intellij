@@ -50,8 +50,7 @@ public class MessageCellRenderer extends AbstractEntryCellRender {
     final Object data = entry.getData();
     // TODO(pq): should make this a simple null check.
     if (data instanceof DiagnosticsNode || (data instanceof String && JsonUtils.hasJsonData((String)data))) {
-      // TODO(pq): change to ArrowRight when we're no longer supporting 3.3.
-      setIcon(AllIcons.General.ComboArrowRight);
+      setIcon(AllIcons.General.ArrowRight);
     }
   }
 }

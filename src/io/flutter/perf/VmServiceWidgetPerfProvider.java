@@ -169,7 +169,7 @@ public class VmServiceWidgetPerfProvider implements WidgetPerfProvider {
     // TODO(jacobr): centrailize checks for Flutter.Frame
     // They are now in VMServiceManager, InspectorService, and here.
     if (StringUtil.equals(streamId, VmService.EXTENSION_STREAM_ID)) {
-      String kind = event.getExtensionKind();
+      final String kind = event.getExtensionKind();
       if (kind == null) {
         return;
       }

@@ -9,7 +9,6 @@ import com.google.gson.JsonObject;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.util.Alarm;
-import com.intellij.util.Producer;
 import com.intellij.xdebugger.XSourcePosition;
 import io.flutter.utils.StreamSubscription;
 import io.flutter.vmService.DartVmServiceDebugProcess;
@@ -24,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 /**
  * Invoke methods from a specified Dart library using the observatory protocol.
@@ -63,7 +63,7 @@ public class EvalOnDartLibrary implements Disposable {
    * the user is quickly navigating through the UI generating lots of stale
    * requests to view specific details subtrees.
    */
-  public <T> CompletableFuture<T> addRequest(InspectorService.ObjectGroup isAlive, Producer<CompletableFuture<T>> request) {
+  public <T> CompletableFuture<T> addRequest(InspectorService.ObjectGroup isAlive, Supplier<CompletableFuture<T>> request) {
     if (isAlive != null && isAlive.isDisposed()) {
       return CompletableFuture.completedFuture(null);
     }
@@ -76,7 +76,7 @@ public class EvalOnDartLibrary implements Disposable {
         response.complete(null);
         return;
       }
-      final CompletableFuture<T> future = request.produce();
+      final CompletableFuture<T> future = request.get();
       future.whenCompleteAsync((v, t) -> {
         if (t != null) {
           response.completeExceptionally(t);
@@ -132,33 +132,31 @@ public class EvalOnDartLibrary implements Disposable {
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {
     return addRequest(isAlive, () -> {
       final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
-      libraryRef.thenAcceptAsync((LibraryRef ref) -> {
-        vmService.evaluate(
-          getIsolateId(), ref.getId(), expression,
-          scope, true,
-          new EvaluateConsumer() {
-            @Override
-            public void onError(RPCError error) {
-              future.completeExceptionally(new RuntimeException(error.getMessage()));
-            }
-
-            @Override
-            public void received(ErrorRef response) {
-              future.completeExceptionally(new RuntimeException(response.toString()));
-            }
-
-            @Override
-            public void received(InstanceRef response) {
-              future.complete(response);
-            }
-
-            @Override
-            public void received(Sentinel response) {
-              future.completeExceptionally(new RuntimeException(response.toString()));
-            }
+      libraryRef.thenAcceptAsync((LibraryRef ref) -> vmService.evaluate(
+        getIsolateId(), ref.getId(), expression,
+        scope, true,
+        new EvaluateConsumer() {
+          @Override
+          public void onError(RPCError error) {
+            future.completeExceptionally(new RuntimeException(error.getMessage()));
           }
-        );
-      });
+
+          @Override
+          public void received(ErrorRef response) {
+            future.completeExceptionally(new RuntimeException(response.toString()));
+          }
+
+          @Override
+          public void received(InstanceRef response) {
+            future.complete(response);
+          }
+
+          @Override
+          public void received(Sentinel response) {
+            future.completeExceptionally(new RuntimeException(response.toString()));
+          }
+        }
+      ));
       return future;
     });
   }
