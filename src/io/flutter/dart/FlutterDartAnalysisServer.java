@@ -109,18 +109,18 @@ public class FlutterDartAnalysisServer {
    * Handle the given {@link JsonObject} response.
    */
   private void processResponse(JsonObject response) {
-    final JsonElement eventElement = response.get("event");
-    if (eventElement != null && !eventElement.isJsonPrimitive()) {
-      processNotification(response, eventElement);
+    final JsonElement eventName = response.get("event");
+    if (eventName != null && eventName.isJsonPrimitive()) {
+      processNotification(response, eventName);
     }
   }
 
   /**
    * Attempts to handle the given {@link JsonObject} as a notification.
    */
-  private void processNotification(JsonObject response, @NotNull JsonElement eventElement) {
+  private void processNotification(JsonObject response, @NotNull JsonElement eventName) {
     // If we add code to handle more event types below, update the filter in processString().
-    final String event = eventElement.getAsString();
+    final String event = eventName.getAsString();
     if (event.equals(FLUTTER_NOTIFICATION_OUTLINE)) {
       final JsonObject paramsObject = response.get("params").getAsJsonObject();
       final String file = paramsObject.get("file").getAsString();
