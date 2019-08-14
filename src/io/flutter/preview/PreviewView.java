@@ -286,6 +286,7 @@ public class PreviewView implements PersistentStateComponent<PreviewViewState>, 
 
     scrollPane = ScrollPaneFactory.createScrollPane(tree);
     windowPanel.setContent(scrollPane);
+    content.setPreferredFocusableComponent(tree);
 
     contentManager.addContent(content);
     contentManager.setSelectedContent(content);
