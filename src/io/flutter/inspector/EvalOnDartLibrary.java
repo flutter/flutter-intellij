@@ -132,33 +132,31 @@ public class EvalOnDartLibrary implements Disposable {
   public CompletableFuture<InstanceRef> eval(String expression, Map<String, String> scope, InspectorService.ObjectGroup isAlive) {
     return addRequest(isAlive, () -> {
       final CompletableFuture<InstanceRef> future = new CompletableFuture<>();
-      libraryRef.thenAcceptAsync((LibraryRef ref) -> {
-        vmService.evaluate(
-          getIsolateId(), ref.getId(), expression,
-          scope, true,
-          new EvaluateConsumer() {
-            @Override
-            public void onError(RPCError error) {
-              future.completeExceptionally(new RuntimeException(error.getMessage()));
-            }
-
-            @Override
-            public void received(ErrorRef response) {
-              future.completeExceptionally(new RuntimeException(response.toString()));
-            }
-
-            @Override
-            public void received(InstanceRef response) {
-              future.complete(response);
-            }
-
-            @Override
-            public void received(Sentinel response) {
-              future.completeExceptionally(new RuntimeException(response.toString()));
-            }
+      libraryRef.thenAcceptAsync((LibraryRef ref) -> vmService.evaluate(
+        getIsolateId(), ref.getId(), expression,
+        scope, true,
+        new EvaluateConsumer() {
+          @Override
+          public void onError(RPCError error) {
+            future.completeExceptionally(new RuntimeException(error.getMessage()));
           }
-        );
-      });
+
+          @Override
+          public void received(ErrorRef response) {
+            future.completeExceptionally(new RuntimeException(response.toString()));
+          }
+
+          @Override
+          public void received(InstanceRef response) {
+            future.complete(response);
+          }
+
+          @Override
+          public void received(Sentinel response) {
+            future.completeExceptionally(new RuntimeException(response.toString()));
+          }
+        }
+      ));
       return future;
     });
   }
@@ -211,10 +209,6 @@ public class EvalOnDartLibrary implements Disposable {
 
   public CompletableFuture<Func> getFunc(FuncRef instance, InspectorService.ObjectGroup isAlive) {
     return getObjHelper(instance, isAlive);
-  }
-
-  public CompletableFuture<Instance> getInstance(CompletableFuture<InstanceRef> instanceFuture, InspectorService.ObjectGroup isAlive) {
-    return instanceFuture.thenComposeAsync((instance) -> getInstance(instance, isAlive));
   }
 
   private JsonObject convertMapToJsonObject(Map<String, String> map) {

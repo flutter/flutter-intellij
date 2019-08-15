@@ -6,7 +6,10 @@
 package io.flutter.inspector;
 
 import com.google.common.base.Joiner;
-import com.google.gson.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.util.SystemInfo;
@@ -134,17 +137,6 @@ public class InspectorService implements Disposable {
       });
   }
 
-  /**
-   * Returns whether to use the Daemon API or the VM Service protocol directly.
-   * <p>
-   * The VM Service protocol must be used when paused at a breakpoint as the
-   * Daemon API calls won't execute until after the current frame is done
-   * rendering.
-   */
-  private boolean useDaemonApi() {
-    return !app.isFlutterIsolateSuspended();
-  }
-
   public boolean isDetailsSummaryViewSupported() {
     return hasServiceMethod("getSelectedSummaryWidget");
   }
@@ -240,22 +232,8 @@ public class InspectorService implements Disposable {
    * new frames will be triggered to draw unless something changes in the UI.
    */
   public CompletableFuture<Boolean> isWidgetTreeReady() {
-    if (useDaemonApi()) {
-      return invokeServiceMethodDaemonNoGroup("isWidgetTreeReady", new HashMap<>())
-        .thenApplyAsync((JsonElement element) -> element.getAsBoolean());
-    }
-    else {
-      return invokeServiceMethodObservatoryNoGroup("isWidgetTreeReady")
-        .thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
-    }
-  }
-
-  CompletableFuture<JsonElement> invokeServiceMethodDaemonNoGroup(String methodName, List<String> args) {
-    final Map<String, Object> params = new HashMap<>();
-    for (int i = 0; i < args.size(); ++i) {
-      params.put("arg" + i, args.get(i));
-    }
-    return invokeServiceMethodDaemonNoGroup(methodName, params);
+    return invokeServiceMethodObservatoryNoGroup("isWidgetTreeReady")
+      .thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
   }
 
   /*
@@ -263,20 +241,20 @@ public class InspectorService implements Disposable {
    * of the first non artifical widget in the tree.
    */
   public CompletableFuture<String> inferPubRootDirectoryIfNeeded() {
-    ObjectGroup group = createObjectGroup("temp");
+    final ObjectGroup group = createObjectGroup("temp");
 
-    return group.getRoot(FlutterTreeType.widget).<String>thenComposeAsync((DiagnosticsNode root) -> {
+    return group.getRoot(FlutterTreeType.widget).thenComposeAsync((DiagnosticsNode root) -> {
       if (root == null) {
         // No need to do anything as there isn't a valid tree (yet?).
         group.dispose();
         return CompletableFuture.completedFuture(null);
       }
 
-      return root.getChildren().<String>thenComposeAsync((ArrayList<DiagnosticsNode> children) -> {
+      return root.getChildren().thenComposeAsync((ArrayList<DiagnosticsNode> children) -> {
         if (children != null && !children.isEmpty()) {
           // There are already widgets identified as being from the summary tree so
           // no need to guess the pub root directory.
-          return CompletableFuture.<String>completedFuture(null);
+          return CompletableFuture.completedFuture(null);
         }
 
         return group.getChildren(root.getDartDiagnosticRef(), false, null).thenComposeAsync((ArrayList<DiagnosticsNode> allChildren) -> {
@@ -285,14 +263,14 @@ public class InspectorService implements Disposable {
             return null;
           }
 
-          InspectorSourceLocation location = allChildren.get(0).getCreationLocation();
+          final InspectorSourceLocation location = allChildren.get(0).getCreationLocation();
           if (location == null) {
-            return CompletableFuture.<String>completedFuture(null);
+            return CompletableFuture.completedFuture(null);
           }
-          String path = location.getPath();
+          final String path = location.getPath();
           if (path == null) {
             group.dispose();
-            return CompletableFuture.<String>completedFuture(null);
+            return CompletableFuture.completedFuture(null);
           }
           // TODO(jacobr): it would be nice to use Isolate.rootLib.
           // We are currently blocked by the --track-widget-creation transformer
@@ -303,11 +281,11 @@ public class InspectorService implements Disposable {
           // TODO(jacobr): use the list of loaded scripts to determine the appropriate
           // package root directory given that the root script of this project is in
           // this directory rather than guessing based on url structure.
-          ArrayList<String> parts = new ArrayList<>(Arrays.asList(path.split("/")));
+          final ArrayList<String> parts = new ArrayList<>(Arrays.asList(path.split("/")));
           String pubRootDirectory = null;
 
           for (int i = parts.size() - 1; i >= 0; i--) {
-            String part = parts.get(i);
+            final String part = parts.get(i);
             if (part.equals("lib") || part.equals("web")) {
               pubRootDirectory = String.join("/", parts.subList(0, i));
               break;
@@ -334,37 +312,19 @@ public class InspectorService implements Disposable {
   }
 
   private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
-    if (useDaemonApi()) {
-      return invokeServiceMethodDaemonNoGroup("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
+    // TODO(jacobr): remove this call as soon as `ext.flutter.inspector.*` has been in two revs of
+    // the Flutter Beta channel. The feature landed in the Flutter dev chanel on April 16, 2018.
+    final JsonArray jsonArray = new JsonArray();
+    for (String rootDirectory : rootDirectories) {
+      jsonArray.add(rootDirectory);
     }
-    else {
-      // TODO(jacobr): remove this call as soon as
-      // `ext.flutter.inspector.*` has been in two revs of the Flutter Beta
-      // channel. The feature landed in the Flutter dev chanel on
-      // April 16, 2018.
-      final JsonArray jsonArray = new JsonArray();
-      for (String rootDirectory : rootDirectories) {
-        jsonArray.add(rootDirectory);
-      }
-      return getInspectorLibrary().eval(
-        "WidgetInspectorService.instance.setPubRootDirectories(" + new Gson().toJson(jsonArray) + ")", null, null)
-        .thenApplyAsync((instance) -> null);
-    }
+    return getInspectorLibrary().eval(
+      "WidgetInspectorService.instance.setPubRootDirectories(" + new Gson().toJson(jsonArray) + ")", null, null)
+      .thenApplyAsync((instance) -> null);
   }
 
   CompletableFuture<InstanceRef> invokeServiceMethodObservatoryNoGroup(String methodName) {
     return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "()", null, null);
-  }
-
-  CompletableFuture<JsonElement> invokeServiceMethodDaemonNoGroup(String methodName, Map<String, Object> params) {
-    return getApp().callServiceExtension(ServiceExtensions.inspectorPrefix + methodName, params)
-      .thenApply((JsonObject json) -> {
-        if (json.has("errorMessage")) {
-          String message = json.get("errorMessage").getAsString();
-          throw new RuntimeException(methodName + " -- " + message);
-        }
-        return json.get("result");
-      });
   }
 
   /**
@@ -381,6 +341,7 @@ public class InspectorService implements Disposable {
    * futures that return null values for requests from disposed ObjectGroup
    * objects.
    */
+  @SuppressWarnings("CodeBlock2Expr")
   public class ObjectGroup implements Disposable {
     /**
      * Object group all objects in this arena are allocated with.
@@ -506,44 +467,6 @@ public class InspectorService implements Disposable {
         () -> getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(\"" + arg1 + "\")", null, this));
     }
 
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName) {
-      return invokeServiceMethodDaemon(methodName, groupName);
-    }
-
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String objectGroup) {
-      final Map<String, Object> params = new HashMap<>();
-      params.put("objectGroup", objectGroup);
-      return invokeServiceMethodDaemon(methodName, params);
-    }
-
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String arg, String objectGroup) {
-      final Map<String, Object> params = new HashMap<>();
-      params.put("arg", arg);
-      params.put("objectGroup", objectGroup);
-      return invokeServiceMethodDaemon(methodName, params);
-    }
-
-    // All calls to invokeServiceMethodDaemon bottom out to this call.
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, Map<String, Object> params) {
-      return getInspectorLibrary().addRequest(
-        this,
-        () -> getApp().callServiceExtension(ServiceExtensions.inspectorPrefix + methodName, params)
-          .thenApply((JsonObject json) -> nullValueIfDisposed(() -> {
-            if (json.has("errorMessage")) {
-              String message = json.get("errorMessage").getAsString();
-              throw new RuntimeException(methodName + " -- " + message);
-            }
-            return json.get("result");
-          })));
-    }
-
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, InspectorInstanceRef arg) {
-      if (arg == null || arg.getId() == null) {
-        return invokeServiceMethodDaemon(methodName, null, groupName);
-      }
-      return invokeServiceMethodDaemon(methodName, arg.getId(), groupName);
-    }
-
     CompletableFuture<InstanceRef> invokeServiceMethodObservatory(String methodName, InspectorInstanceRef arg) {
       return nullIfDisposed(() -> {
         if (arg == null || arg.getId() == null) {
@@ -642,10 +565,6 @@ public class InspectorService implements Disposable {
       return nullIfDisposed(() -> instanceRefToJson(instanceRef).thenApplyAsync(this::parseDiagnosticsNodeHelper));
     }
 
-    CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeDaemon(CompletableFuture<JsonElement> json) {
-      return nullIfDisposed(() -> json.thenApplyAsync(this::parseDiagnosticsNodeHelper));
-    }
-
     DiagnosticsNode parseDiagnosticsNodeHelper(JsonElement jsonElement) {
       return nullValueIfDisposed(() -> {
         if (jsonElement == null || jsonElement.isJsonNull()) {
@@ -659,7 +578,6 @@ public class InspectorService implements Disposable {
      * Requires that the InstanceRef is really referring to a String that is valid JSON.
      */
     CompletableFuture<JsonElement> instanceRefToJson(InstanceRef instanceRef) {
-
       return nullIfDisposed(() -> getInspectorLibrary().getInstance(instanceRef, this).thenApplyAsync((Instance instance) -> {
         return nullValueIfDisposed(() -> {
           final String json = instance.getValueAsString();
@@ -716,11 +634,6 @@ public class InspectorService implements Disposable {
         () -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture,
-                                                                              DiagnosticsNode parent) {
-      return nullIfDisposed(() -> jsonFuture.thenApplyAsync((json) -> parseDiagnosticsNodesHelper(json, parent)));
-    }
-
     CompletableFuture<ArrayList<DiagnosticsNode>> getChildren(InspectorInstanceRef instanceRef,
                                                               boolean summaryTree,
                                                               DiagnosticsNode parent) {
@@ -739,56 +652,31 @@ public class InspectorService implements Disposable {
     private CompletableFuture<ArrayList<DiagnosticsNode>> getListHelper(
       InspectorInstanceRef instanceRef, String methodName, DiagnosticsNode parent) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsNodesDaemon(invokeServiceMethodDaemon(methodName, instanceRef), parent);
-        }
-        else {
-          return parseDiagnosticsNodesObservatory(invokeServiceMethodObservatory(methodName, instanceRef), parent);
-        }
+        return parseDiagnosticsNodesObservatory(invokeServiceMethodObservatory(methodName, instanceRef), parent);
       });
     }
 
     public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName));
-        }
-        else {
-          return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName));
-        }
+        return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName));
       });
     }
 
     public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName, InspectorInstanceRef ref) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName, ref));
-        }
-        else {
-          return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName, ref));
-        }
+        return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName, ref));
       });
     }
 
     public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, String arg1) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return invokeServiceMethodDaemon(methodName, arg1).thenApply((ignored) -> null);
-        }
-        else {
-          return invokeServiceMethodObservatory(methodName, arg1).thenApply((ignored) -> null);
-        }
+        return invokeServiceMethodObservatory(methodName, arg1).thenApply((ignored) -> null);
       });
     }
 
     public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, InspectorInstanceRef ref) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return invokeServiceMethodDaemon(methodName, ref).thenApply((ignored) -> null);
-        }
-        else {
-          return invokeServiceMethodObservatory(methodName, ref).thenApply((ignored) -> null);
-        }
+        return invokeServiceMethodObservatory(methodName, ref).thenApply((ignored) -> null);
       });
     }
 
@@ -797,8 +685,7 @@ public class InspectorService implements Disposable {
     }
 
     public CompletableFuture<DiagnosticsNode> getSummaryTreeWithoutIds() {
-      Map<String, Object> params = new HashMap<>();
-      return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon("getRootWidgetSummaryTree", params));
+      return invokeServiceMethodReturningNode("getRootWidgetSummaryTree");
     }
 
     public CompletableFuture<DiagnosticsNode> getRootRenderObject() {
@@ -808,12 +695,7 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<ArrayList<DiagnosticsPathNode>> getParentChain(DiagnosticsNode target) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsPathDaemon(invokeServiceMethodDaemon("getParentChain", target.getValueRef()));
-        }
-        else {
-          return parseDiagnosticsPathObservatory(invokeServiceMethodObservatory("getParentChain", target.getValueRef()));
-        }
+        return parseDiagnosticsPathObservatory(invokeServiceMethodObservatory("getParentChain", target.getValueRef()));
       });
     }
 
@@ -823,10 +705,6 @@ public class InspectorService implements Disposable {
 
     private CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathObservatory(InstanceRef pathRef) {
       return nullIfDisposed(() -> instanceRefToJson(pathRef).thenApplyAsync(this::parseDiagnosticsPathHelper));
-    }
-
-    CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathDaemon(CompletableFuture<JsonElement> jsonFuture) {
-      return nullIfDisposed(() -> jsonFuture.thenApplyAsync(this::parseDiagnosticsPathHelper));
     }
 
     private ArrayList<DiagnosticsPathNode> parseDiagnosticsPathHelper(JsonElement jsonElement) {
@@ -870,12 +748,7 @@ public class InspectorService implements Disposable {
       if (disposed) {
         return;
       }
-      if (useDaemonApi()) {
-        handleSetSelectionDaemon(invokeServiceMethodDaemon("setSelectionById", selection), uiAlreadyUpdated);
-      }
-      else {
-        handleSetSelectionObservatory(invokeServiceMethodObservatory("setSelectionById", selection), uiAlreadyUpdated);
-      }
+      handleSetSelectionObservatory(invokeServiceMethodObservatory("setSelectionById", selection), uiAlreadyUpdated);
     }
 
     /**
@@ -900,14 +773,6 @@ public class InspectorService implements Disposable {
       if (selectionChanged && !uiAlreadyUpdated) {
         notifySelectionChanged();
       }
-    }
-
-    private void handleSetSelectionDaemon(CompletableFuture<JsonElement> setSelectionResult, boolean uiAlreadyUpdated) {
-      skipIfDisposed(() ->
-                       // TODO(jacobr): we need to cancel if another inspect request comes in while we are trying this one.
-                       setSelectionResult.thenAcceptAsync(
-                         (JsonElement json) -> skipIfDisposed(() -> handleSetSelectionHelper(json.getAsBoolean(), uiAlreadyUpdated)))
-      );
     }
 
     public CompletableFuture<Map<String, InstanceRef>> getEnumPropertyValues(InspectorInstanceRef ref) {
@@ -981,9 +846,8 @@ public class InspectorService implements Disposable {
     return SystemInfo.isWindows ? "file:///" : "file://";
   }
 
-  // TODO(jacobr): remove this method as soon as the
-  // track-widget-creation kernel transformer is fixed to return paths instead
-  // of URIs.
+  // TODO(jacobr): remove this method as soon as the track-widget-creation kernel
+  // transformer is fixed to return paths instead of URIs.
   public static String toSourceLocationUri(String path) {
     return getFileUriPrefix() + path;
   }
