@@ -20,6 +20,7 @@ import io.flutter.vmService.ServiceExtensions;
 import io.flutter.vmService.VmServiceConsumers;
 import io.flutter.vmService.frame.DartVmServiceValue;
 import org.dartlang.vm.service.VmService;
+import org.dartlang.vm.service.consumer.ServiceExtensionConsumer;
 import org.dartlang.vm.service.element.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -135,13 +136,15 @@ public class InspectorService implements Disposable {
   }
 
   /**
-   * Returns whether to use the Daemon API or the VM Service protocol directly.
+   * Returns whether to use the VM service extension API or use eval to invoke
+   * the protocol directly.
    * <p>
-   * The VM Service protocol must be used when paused at a breakpoint as the
-   * Daemon API calls won't execute until after the current frame is done
-   * rendering.
+   * Eval must be used when paused at a breakpoint as the VM Service extensions
+   * API calls won't execute until after the current frame is done rendering.
+   * TODO(jacobr): evaluate whether we should really be trying to execute while
+   * a frame is rendering at all as the Element tree may be in a broken state.
    */
-  private boolean useDaemonApi() {
+  private boolean useServiceExtensionApi() {
     return !app.isFlutterIsolateSuspended();
   }
 
@@ -240,22 +243,22 @@ public class InspectorService implements Disposable {
    * new frames will be triggered to draw unless something changes in the UI.
    */
   public CompletableFuture<Boolean> isWidgetTreeReady() {
-    if (useDaemonApi()) {
-      return invokeServiceMethodDaemonNoGroup("isWidgetTreeReady", new HashMap<>())
+    if (useServiceExtensionApi()) {
+      return invokeServiceExtensionNoGroup("isWidgetTreeReady", new JsonObject())
         .thenApplyAsync((JsonElement element) -> element.getAsBoolean());
     }
     else {
-      return invokeServiceMethodObservatoryNoGroup("isWidgetTreeReady")
+      return invokeEvalNoGroup("isWidgetTreeReady")
         .thenApplyAsync((InstanceRef ref) -> "true".equals(ref.getValueAsString()));
     }
   }
 
-  CompletableFuture<JsonElement> invokeServiceMethodDaemonNoGroup(String methodName, List<String> args) {
-    final Map<String, Object> params = new HashMap<>();
+  CompletableFuture<JsonElement> invokeServiceExtensionNoGroup(String methodName, List<String> args) {
+    final JsonObject params = new JsonObject();
     for (int i = 0; i < args.size(); ++i) {
-      params.put("arg" + i, args.get(i));
+      params.addProperty("arg" + i, args.get(i));
     }
-    return invokeServiceMethodDaemonNoGroup(methodName, params);
+    return invokeServiceExtensionNoGroup(methodName, params);
   }
 
   /*
@@ -334,8 +337,8 @@ public class InspectorService implements Disposable {
   }
 
   private CompletableFuture<Void> setPubRootDirectories(List<String> rootDirectories) {
-    if (useDaemonApi()) {
-      return invokeServiceMethodDaemonNoGroup("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
+    if (useServiceExtensionApi()) {
+      return invokeServiceExtensionNoGroup("setPubRootDirectories", rootDirectories).thenApplyAsync((ignored) -> null);
     }
     else {
       // TODO(jacobr): remove this call as soon as
@@ -352,19 +355,48 @@ public class InspectorService implements Disposable {
     }
   }
 
-  CompletableFuture<InstanceRef> invokeServiceMethodObservatoryNoGroup(String methodName) {
+  CompletableFuture<InstanceRef> invokeEvalNoGroup(String methodName) {
     return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "()", null, null);
   }
 
-  CompletableFuture<JsonElement> invokeServiceMethodDaemonNoGroup(String methodName, Map<String, Object> params) {
-    return getApp().callServiceExtension(ServiceExtensions.inspectorPrefix + methodName, params)
-      .thenApply((JsonObject json) -> {
-        if (json.has("errorMessage")) {
-          String message = json.get("errorMessage").getAsString();
-          throw new RuntimeException(methodName + " -- " + message);
+  CompletableFuture<JsonElement> invokeServiceExtensionNoGroup(String methodName, JsonObject params) {
+    return invokeServiceExtensionHelper(methodName, params);
+  }
+
+  private CompletableFuture<JsonElement> invokeServiceExtensionHelper(String methodName, JsonObject params) {
+    // Workaround null values turning into the string "null" when using the VM Service extension protocol.
+    final ArrayList<String> keysToRemove = new ArrayList<>();
+
+    for (String key : params.keySet()) {
+      if (params.get(key).isJsonNull()) {
+        keysToRemove.add(key);
+      }
+    }
+    for (String key : keysToRemove) {
+      params.remove(key);
+    }
+    final CompletableFuture<JsonElement> ret = new CompletableFuture<>();
+    vmService.callServiceExtension(
+      getInspectorLibrary().getIsolateId(), ServiceExtensions.inspectorPrefix + methodName, params,
+      new ServiceExtensionConsumer() {
+
+        @Override
+        public void onError(RPCError error) {
+          ret.completeExceptionally(new RuntimeException(error.getMessage()));
         }
-        return json.get("result");
-      });
+
+        @Override
+        public void received(JsonObject object) {
+          if (object == null) {
+            ret.complete(null);
+          }
+          else {
+            ret.complete(object.get("result"));
+          }
+        }
+      }
+    );
+    return ret;
   }
 
   /**
@@ -497,54 +529,50 @@ public class InspectorService implements Disposable {
      * <p>
      * Intent is we could refactor how the API is invoked by only changing this call.
      */
-    CompletableFuture<InstanceRef> invokeServiceMethodObservatory(String methodName) {
-      return nullIfDisposed(() -> invokeServiceMethodObservatory(methodName, groupName));
+    CompletableFuture<InstanceRef> invokeEval(String methodName) {
+      return nullIfDisposed(() -> invokeEval(methodName, groupName));
     }
 
-    CompletableFuture<InstanceRef> invokeServiceMethodObservatory(String methodName, String arg1) {
+    CompletableFuture<InstanceRef> invokeEval(String methodName, String arg1) {
       return nullIfDisposed(
         () -> getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(\"" + arg1 + "\")", null, this));
     }
 
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName) {
-      return invokeServiceMethodDaemon(methodName, groupName);
+    CompletableFuture<JsonElement> invokeVmServiceExtension(String methodName) {
+      return invokeVmServiceExtension(methodName, groupName);
     }
 
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String objectGroup) {
-      final Map<String, Object> params = new HashMap<>();
-      params.put("objectGroup", objectGroup);
-      return invokeServiceMethodDaemon(methodName, params);
+    CompletableFuture<JsonElement> invokeVmServiceExtension(String methodName, String objectGroup) {
+      final JsonObject params = new JsonObject();
+      params.addProperty("objectGroup", objectGroup);
+      return invokeVmServiceExtension(methodName, params);
     }
 
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, String arg, String objectGroup) {
-      final Map<String, Object> params = new HashMap<>();
-      params.put("arg", arg);
-      params.put("objectGroup", objectGroup);
-      return invokeServiceMethodDaemon(methodName, params);
+    CompletableFuture<JsonElement> invokeVmServiceExtension(String methodName, String arg, String objectGroup) {
+      final JsonObject params = new JsonObject();
+      params.addProperty("arg", arg);
+      params.addProperty("objectGroup", objectGroup);
+      return invokeVmServiceExtension(methodName, params);
     }
 
-    // All calls to invokeServiceMethodDaemon bottom out to this call.
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, Map<String, Object> params) {
+    // All calls to invokeVmServiceExtension bottom out to this call.
+    CompletableFuture<JsonElement> invokeVmServiceExtension(String methodName, JsonObject paramsMap) {
       return getInspectorLibrary().addRequest(
         this,
-        () -> getApp().callServiceExtension(ServiceExtensions.inspectorPrefix + methodName, params)
-          .thenApply((JsonObject json) -> nullValueIfDisposed(() -> {
-            if (json.has("errorMessage")) {
-              String message = json.get("errorMessage").getAsString();
-              throw new RuntimeException(methodName + " -- " + message);
-            }
-            return json.get("result");
-          })));
+        () -> {
+          return invokeServiceExtensionHelper(methodName, paramsMap);
+        }
+      );
     }
 
-    CompletableFuture<JsonElement> invokeServiceMethodDaemon(String methodName, InspectorInstanceRef arg) {
+    CompletableFuture<JsonElement> invokeVmServiceExtension(String methodName, InspectorInstanceRef arg) {
       if (arg == null || arg.getId() == null) {
-        return invokeServiceMethodDaemon(methodName, null, groupName);
+        return invokeVmServiceExtension(methodName, null, groupName);
       }
-      return invokeServiceMethodDaemon(methodName, arg.getId(), groupName);
+      return invokeVmServiceExtension(methodName, arg.getId(), groupName);
     }
 
-    CompletableFuture<InstanceRef> invokeServiceMethodObservatory(String methodName, InspectorInstanceRef arg) {
+    CompletableFuture<InstanceRef> invokeEval(String methodName, InspectorInstanceRef arg) {
       return nullIfDisposed(() -> {
         if (arg == null || arg.getId() == null) {
           return getInspectorLibrary().eval("WidgetInspectorService.instance." + methodName + "(null, \"" + groupName + "\")", null, this);
@@ -555,16 +583,16 @@ public class InspectorService implements Disposable {
     }
 
     /**
-     * Call a service method passing in an observatory instance reference.
+     * Call a service method passing in an VM Service instance reference.
      * <p>
      * This call is useful when receiving an "inspect" event from the
-     * observatory and future use cases such as inspecting a Widget from the
+     * VM Service and future use cases such as inspecting a Widget from the
      * IntelliJ watch window.
      * <p>
-     * This method will always need to use the observatory service as the input
-     * parameter is an Observatory InstanceRef..
+     * This method will always need to use the VM Service as the input
+     * parameter is an VM Service InstanceRef..
      */
-    CompletableFuture<InstanceRef> invokeServiceMethodOnRefObservatory(String methodName, InstanceRef arg) {
+    CompletableFuture<InstanceRef> invokeServiceMethodOnRefEval(String methodName, InstanceRef arg) {
       return nullIfDisposed(() -> {
         final HashMap<String, String> scope = new HashMap<>();
         if (arg == null) {
@@ -575,18 +603,18 @@ public class InspectorService implements Disposable {
       });
     }
 
-    CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeObservatory(CompletableFuture<InstanceRef> instanceRefFuture) {
-      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNodeObservatory));
+    CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeVmService(CompletableFuture<InstanceRef> instanceRefFuture) {
+      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync(this::parseDiagnosticsNodeVmService));
     }
 
     /**
-     * Returns a CompletableFuture with a Map of property names to Observatory
+     * Returns a CompletableFuture with a Map of property names to VM Service
      * InstanceRef objects. This method is shorthand for individually evaluating
      * each of the getters specified by property names.
      * <p>
-     * It would be nice if the Observatory protocol provided a built in method
+     * It would be nice if the VM Service protocol provided a built in method
      * to get InstanceRef objects for a list of properties but this is
-     * sufficient although slightly less efficient. The Observatory protocol
+     * sufficient although slightly less efficient. The VM Service protocol
      * does provide fast access to all fields as part of an Instance object
      * but that is inadequate as for many Flutter data objects that we want
      * to display visually we care about properties that are not necessarily
@@ -597,7 +625,7 @@ public class InspectorService implements Disposable {
     public CompletableFuture<Map<String, InstanceRef>> getDartObjectProperties(
       InspectorInstanceRef inspectorInstanceRef, final String[] propertyNames) {
       return nullIfDisposed(
-        () -> toObservatoryInstanceRef(inspectorInstanceRef).thenComposeAsync((InstanceRef instanceRef) -> nullIfDisposed(() -> {
+        () -> toVmServiceInstanceRef(inspectorInstanceRef).thenComposeAsync((InstanceRef instanceRef) -> nullIfDisposed(() -> {
           final StringBuilder sb = new StringBuilder();
           final List<String> propertyAccessors = new ArrayList<>();
           final String objectName = "that";
@@ -626,8 +654,8 @@ public class InspectorService implements Disposable {
         })));
     }
 
-    public CompletableFuture<InstanceRef> toObservatoryInstanceRef(InspectorInstanceRef inspectorInstanceRef) {
-      return nullIfDisposed(() -> invokeServiceMethodObservatory("toObject", inspectorInstanceRef));
+    public CompletableFuture<InstanceRef> toVmServiceInstanceRef(InspectorInstanceRef inspectorInstanceRef) {
+      return nullIfDisposed(() -> invokeEval("toObject", inspectorInstanceRef));
     }
 
     private CompletableFuture<Instance> getInstance(InstanceRef instanceRef) {
@@ -638,7 +666,7 @@ public class InspectorService implements Disposable {
       return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync(this::getInstance));
     }
 
-    CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeObservatory(InstanceRef instanceRef) {
+    CompletableFuture<DiagnosticsNode> parseDiagnosticsNodeVmService(InstanceRef instanceRef) {
       return nullIfDisposed(() -> instanceRefToJson(instanceRef).thenApplyAsync(this::parseDiagnosticsNodeHelper));
     }
 
@@ -668,7 +696,7 @@ public class InspectorService implements Disposable {
       }));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(InstanceRef instanceRef, DiagnosticsNode parent) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesVmService(InstanceRef instanceRef, DiagnosticsNode parent) {
       return nullIfDisposed(() -> instanceRefToJson(instanceRef).thenApplyAsync((JsonElement jsonElement) -> {
         return nullValueIfDisposed(() -> {
           final JsonArray jsonArray = jsonElement != null ? jsonElement.getAsJsonArray() : null;
@@ -703,17 +731,17 @@ public class InspectorService implements Disposable {
      * handle reference expiration gracefully.
      */
     public CompletableFuture<DartVmServiceValue> toDartVmServiceValueForSourceLocation(InspectorInstanceRef inspectorInstanceRef) {
-      return invokeServiceMethodObservatory("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
+      return invokeEval("toObjectForSourceLocation", inspectorInstanceRef).thenApplyAsync(
         (InstanceRef instanceRef) -> nullValueIfDisposed(() -> {
           //noinspection CodeBlock2Expr
           return new DartVmServiceValue(debugProcess, inspectorLibrary.getIsolateId(), "inspectedObject", instanceRef, null, null, false);
         }));
     }
 
-    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesObservatory(CompletableFuture<InstanceRef> instanceRefFuture,
-                                                                                   DiagnosticsNode parent) {
+    CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesVmService(CompletableFuture<InstanceRef> instanceRefFuture,
+                                                                                 DiagnosticsNode parent) {
       return nullIfDisposed(
-        () -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesObservatory(instanceRef, parent)));
+        () -> instanceRefFuture.thenComposeAsync((instanceRef) -> parseDiagnosticsNodesVmService(instanceRef, parent)));
     }
 
     CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesDaemon(CompletableFuture<JsonElement> jsonFuture,
@@ -739,55 +767,55 @@ public class InspectorService implements Disposable {
     private CompletableFuture<ArrayList<DiagnosticsNode>> getListHelper(
       InspectorInstanceRef instanceRef, String methodName, DiagnosticsNode parent) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsNodesDaemon(invokeServiceMethodDaemon(methodName, instanceRef), parent);
+        if (useServiceExtensionApi()) {
+          return parseDiagnosticsNodesDaemon(invokeVmServiceExtension(methodName, instanceRef), parent);
         }
         else {
-          return parseDiagnosticsNodesObservatory(invokeServiceMethodObservatory(methodName, instanceRef), parent);
+          return parseDiagnosticsNodesVmService(invokeEval(methodName, instanceRef), parent);
         }
       });
     }
 
     public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName));
+        if (useServiceExtensionApi()) {
+          return parseDiagnosticsNodeDaemon(invokeVmServiceExtension(methodName));
         }
         else {
-          return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName));
+          return parseDiagnosticsNodeVmService(invokeEval(methodName));
         }
       });
     }
 
     public CompletableFuture<DiagnosticsNode> invokeServiceMethodReturningNode(String methodName, InspectorInstanceRef ref) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon(methodName, ref));
+        if (useServiceExtensionApi()) {
+          return parseDiagnosticsNodeDaemon(invokeVmServiceExtension(methodName, ref));
         }
         else {
-          return parseDiagnosticsNodeObservatory(invokeServiceMethodObservatory(methodName, ref));
+          return parseDiagnosticsNodeVmService(invokeEval(methodName, ref));
         }
       });
     }
 
     public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, String arg1) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return invokeServiceMethodDaemon(methodName, arg1).thenApply((ignored) -> null);
+        if (useServiceExtensionApi()) {
+          return invokeVmServiceExtension(methodName, arg1).thenApply((ignored) -> null);
         }
         else {
-          return invokeServiceMethodObservatory(methodName, arg1).thenApply((ignored) -> null);
+          return invokeEval(methodName, arg1).thenApply((ignored) -> null);
         }
       });
     }
 
     public CompletableFuture<Void> invokeVoidServiceMethod(String methodName, InspectorInstanceRef ref) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return invokeServiceMethodDaemon(methodName, ref).thenApply((ignored) -> null);
+        if (useServiceExtensionApi()) {
+          return invokeVmServiceExtension(methodName, ref).thenApply((ignored) -> null);
         }
         else {
-          return invokeServiceMethodObservatory(methodName, ref).thenApply((ignored) -> null);
+          return invokeEval(methodName, ref).thenApply((ignored) -> null);
         }
       });
     }
@@ -797,8 +825,7 @@ public class InspectorService implements Disposable {
     }
 
     public CompletableFuture<DiagnosticsNode> getSummaryTreeWithoutIds() {
-      Map<String, Object> params = new HashMap<>();
-      return parseDiagnosticsNodeDaemon(invokeServiceMethodDaemon("getRootWidgetSummaryTree", params));
+      return parseDiagnosticsNodeDaemon(invokeVmServiceExtension("getRootWidgetSummaryTree", new JsonObject()));
     }
 
     public CompletableFuture<DiagnosticsNode> getRootRenderObject() {
@@ -808,20 +835,20 @@ public class InspectorService implements Disposable {
 
     public CompletableFuture<ArrayList<DiagnosticsPathNode>> getParentChain(DiagnosticsNode target) {
       return nullIfDisposed(() -> {
-        if (useDaemonApi()) {
-          return parseDiagnosticsPathDaemon(invokeServiceMethodDaemon("getParentChain", target.getValueRef()));
+        if (useServiceExtensionApi()) {
+          return parseDiagnosticsPathDaemon(invokeVmServiceExtension("getParentChain", target.getValueRef()));
         }
         else {
-          return parseDiagnosticsPathObservatory(invokeServiceMethodObservatory("getParentChain", target.getValueRef()));
+          return parseDiagnosticsPathVmService(invokeEval("getParentChain", target.getValueRef()));
         }
       });
     }
 
-    CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathObservatory(CompletableFuture<InstanceRef> instanceRefFuture) {
-      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync(this::parseDiagnosticsPathObservatory));
+    CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathVmService(CompletableFuture<InstanceRef> instanceRefFuture) {
+      return nullIfDisposed(() -> instanceRefFuture.thenComposeAsync(this::parseDiagnosticsPathVmService));
     }
 
-    private CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathObservatory(InstanceRef pathRef) {
+    private CompletableFuture<ArrayList<DiagnosticsPathNode>> parseDiagnosticsPathVmService(InstanceRef pathRef) {
       return nullIfDisposed(() -> instanceRefToJson(pathRef).thenApplyAsync(this::parseDiagnosticsPathHelper));
     }
 
@@ -870,26 +897,29 @@ public class InspectorService implements Disposable {
       if (disposed) {
         return;
       }
-      if (useDaemonApi()) {
-        handleSetSelectionDaemon(invokeServiceMethodDaemon("setSelectionById", selection), uiAlreadyUpdated);
+      if (selection == null || selection.getId() == null) {
+        return;
+      }
+      if (useServiceExtensionApi()) {
+        handleSetSelectionDaemon(invokeVmServiceExtension("setSelectionById", selection), uiAlreadyUpdated);
       }
       else {
-        handleSetSelectionObservatory(invokeServiceMethodObservatory("setSelectionById", selection), uiAlreadyUpdated);
+        handleSetSelectionVmService(invokeEval("setSelectionById", selection), uiAlreadyUpdated);
       }
     }
 
     /**
-     * Helper when we need to set selection given an observatory InstanceRef
+     * Helper when we need to set selection given an VM Service InstanceRef
      * instead of an InspectorInstanceRef.
      */
     public void setSelection(InstanceRef selection, boolean uiAlreadyUpdated) {
       // There is no excuse for calling setSelection using a disposed ObjectGroup.
       assert (!disposed);
-      // This call requires the observatory protocol as an observatory InstanceRef is specified.
-      handleSetSelectionObservatory(invokeServiceMethodOnRefObservatory("setSelection", selection), uiAlreadyUpdated);
+      // This call requires the VM Service protocol as an VM Service InstanceRef is specified.
+      handleSetSelectionVmService(invokeServiceMethodOnRefEval("setSelection", selection), uiAlreadyUpdated);
     }
 
-    private void handleSetSelectionObservatory(CompletableFuture<InstanceRef> setSelectionResult, boolean uiAlreadyUpdated) {
+    private void handleSetSelectionVmService(CompletableFuture<InstanceRef> setSelectionResult, boolean uiAlreadyUpdated) {
       // TODO(jacobr): we need to cancel if another inspect request comes in while we are trying this one.
       skipIfDisposed(() -> setSelectionResult.thenAcceptAsync((InstanceRef instanceRef) -> skipIfDisposed(() -> {
         handleSetSelectionHelper("true".equals(instanceRef.getValueAsString()), uiAlreadyUpdated);
@@ -915,7 +945,7 @@ public class InspectorService implements Disposable {
         if (ref == null || ref.getId() == null) {
           return CompletableFuture.completedFuture(null);
         }
-        return getInstance(toObservatoryInstanceRef(ref))
+        return getInstance(toVmServiceInstanceRef(ref))
           .thenComposeAsync(
             (Instance instance) -> nullIfDisposed(() -> getInspectorLibrary().getClass(instance.getClassRef(), this).thenApplyAsync(
               (ClassObj clazz) -> nullValueIfDisposed(() -> {
