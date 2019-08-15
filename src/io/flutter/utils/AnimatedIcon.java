@@ -32,11 +32,7 @@ public class AnimatedIcon implements Icon {
             AllIcons.Process.Step_5,
             AllIcons.Process.Step_6,
             AllIcons.Process.Step_7,
-            AllIcons.Process.Step_8,
-            AllIcons.Process.Step_9,
-            AllIcons.Process.Step_10,
-            AllIcons.Process.Step_11,
-            AllIcons.Process.Step_12);
+            AllIcons.Process.Step_8);
     }
   }
 
@@ -50,11 +46,7 @@ public class AnimatedIcon implements Icon {
             AllIcons.Process.Big.Step_5,
             AllIcons.Process.Big.Step_6,
             AllIcons.Process.Big.Step_7,
-            AllIcons.Process.Big.Step_8,
-            AllIcons.Process.Big.Step_9,
-            AllIcons.Process.Big.Step_10,
-            AllIcons.Process.Big.Step_11,
-            AllIcons.Process.Big.Step_12);
+            AllIcons.Process.Big.Step_8);
     }
   }
 
@@ -115,11 +107,11 @@ public class AnimatedIcon implements Icon {
   }
 
   private static Frame[] getFrames(int delay, @NotNull Icon... icons) {
-    int length = icons.length;
+    final int length = icons.length;
     assert length > 0 : "empty array";
-    Frame[] frames = new Frame[length];
+    final Frame[] frames = new Frame[length];
     for (int i = 0; i < length; i++) {
-      Icon icon = icons[i];
+      final Icon icon = icons[i];
       assert icon != null : "null icon";
       frames[i] = new Frame() {
         @NotNull
@@ -144,19 +136,19 @@ public class AnimatedIcon implements Icon {
   }
 
   private Icon getUpdatedIcon() {
-    long current = java.lang.System.currentTimeMillis();
+    final long current = java.lang.System.currentTimeMillis();
     if (frame.getDelay() <= (current - time)) updateFrameAt(current);
     return frame.getIcon();
   }
 
   @Override
   public final void paintIcon(Component c, Graphics g, int x, int y) {
-    Icon icon = getUpdatedIcon();
+    final Icon icon = getUpdatedIcon();
     if (!requested && canRefresh(c)) {
-      int delay = frame.getDelay();
+      final int delay = frame.getDelay();
       if (delay > 0) {
         requested = true;
-        Timer timer = new Timer(delay, event -> {
+        final Timer timer = new Timer(delay, event -> {
           requested = false;
           if (canRefresh(c)) {
             doRefresh(c);
