@@ -15,6 +15,8 @@ package org.dartlang.vm.service.element;
 
 // This is a generated file.
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 /**
@@ -32,7 +34,8 @@ public class BoundVariable extends Response {
    * The token position where this variable was declared.
    */
   public int getDeclarationTokenPos() {
-    return json.get("declarationTokenPos") == null ? -1 : json.get("declarationTokenPos").getAsInt();
+    final JsonElement element = json.get("declarationTokenPos");
+    return (element == null || element == JsonNull.INSTANCE) ? -1 : element.getAsInt();
   }
 
   public String getName() {
