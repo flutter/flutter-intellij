@@ -687,13 +687,20 @@ public class InspectorService implements Disposable {
      * Requires that the InstanceRef is really referring to a String that is valid JSON.
      */
     CompletableFuture<JsonElement> instanceRefToJson(InstanceRef instanceRef) {
-
-      return nullIfDisposed(() -> getInspectorLibrary().getInstance(instanceRef, this).thenApplyAsync((Instance instance) -> {
-        return nullValueIfDisposed(() -> {
-          final String json = instance.getValueAsString();
-          return new JsonParser().parse(json);
-        });
-      }));
+      if (instanceRef.getValueAsString() != null && !instanceRef.getValueAsStringIsTruncated()) {
+        // In some situations, the string may already be fully populated.
+        final JsonElement json = new JsonParser().parse(instanceRef.getValueAsString());
+        return CompletableFuture.completedFuture(json);
+      }
+      else {
+        // Otherwise, retrieve the full value of the string.
+        return nullIfDisposed(() -> getInspectorLibrary().getInstance(instanceRef, this).thenApplyAsync((Instance instance) -> {
+          return nullValueIfDisposed(() -> {
+            final String json = instance.getValueAsString();
+            return new JsonParser().parse(json);
+          });
+        }));
+      }
     }
 
     CompletableFuture<ArrayList<DiagnosticsNode>> parseDiagnosticsNodesVmService(InstanceRef instanceRef, DiagnosticsNode parent) {
