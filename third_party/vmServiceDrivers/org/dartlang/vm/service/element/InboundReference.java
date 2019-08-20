@@ -49,7 +49,7 @@ public class InboundReference extends Element {
    * Can return <code>null</code>.
    */
   public int getParentListIndex() {
-    return json.get("parentListIndex") == null ? -1 : json.get("parentListIndex").getAsInt();
+    return getAsInt("parentListIndex");
   }
 
   /**

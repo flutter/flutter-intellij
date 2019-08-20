@@ -73,7 +73,7 @@ public class InstanceRef extends ObjRef {
    * Can return <code>null</code>.
    */
   public int getLength() {
-    return json.get("length") == null ? -1 : json.get("length").getAsInt();
+    return getAsInt("length");
   }
 
   /**
@@ -85,7 +85,7 @@ public class InstanceRef extends ObjRef {
    * Can return <code>null</code>.
    */
   public String getName() {
-    return json.get("name") == null ? null : json.get("name").getAsString();
+    return getAsString("name");
   }
 
   /**
@@ -159,7 +159,7 @@ public class InstanceRef extends ObjRef {
    * Can return <code>null</code>.
    */
   public String getValueAsString() {
-    return json.get("valueAsString") == null ? null : json.get("valueAsString").getAsString();
+    return getAsString("valueAsString");
   }
 
   /**

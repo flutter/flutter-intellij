@@ -39,7 +39,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getAlias() {
-    return json.get("alias") == null ? null : json.get("alias").getAsString();
+    return getAsString("alias");
   }
 
   /**
@@ -52,7 +52,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public boolean getAtAsyncSuspension() {
-    return json.get("atAsyncSuspension") == null ? false : json.get("atAsyncSuspension").getAsBoolean();
+    return getAsBoolean("atAsyncSuspension");
   }
 
   /**
@@ -85,7 +85,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getBytes() {
-    return json.get("bytes") == null ? null : json.get("bytes").getAsString();
+    return getAsString("bytes");
   }
 
   /**
@@ -125,7 +125,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getExtensionKind() {
-    return json.get("extensionKind") == null ? null : json.get("extensionKind").getAsString();
+    return getAsString("extensionKind");
   }
 
   /**
@@ -136,7 +136,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getExtensionRPC() {
-    return json.get("extensionRPC") == null ? null : json.get("extensionRPC").getAsString();
+    return getAsString("extensionRPC");
   }
 
   /**
@@ -148,7 +148,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getFlag() {
-    return json.get("flag") == null ? null : json.get("flag").getAsString();
+    return getAsString("flag");
   }
 
   /**
@@ -223,7 +223,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getMethod() {
-    return json.get("method") == null ? null : json.get("method").getAsString();
+    return getAsString("method");
   }
 
   /**
@@ -235,7 +235,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getNewValue() {
-    return json.get("newValue") == null ? null : json.get("newValue").getAsString();
+    return getAsString("newValue");
   }
 
   /**
@@ -273,7 +273,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getService() {
-    return json.get("service") == null ? null : json.get("service").getAsString();
+    return getAsString("service");
   }
 
   /**
@@ -284,7 +284,7 @@ public class Event extends Response {
    * Can return <code>null</code>.
    */
   public String getStatus() {
-    return json.get("status") == null ? null : json.get("status").getAsString();
+    return getAsString("status");
   }
 
   /**

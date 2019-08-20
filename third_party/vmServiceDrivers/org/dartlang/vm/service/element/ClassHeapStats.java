@@ -28,14 +28,14 @@ public class ClassHeapStats extends Response {
    * The number of bytes allocated for instances of class since the accumulator was last reset.
    */
   public int getAccumulatedSize() {
-    return json.get("accumulatedSize") == null ? -1 : json.get("accumulatedSize").getAsInt();
+    return getAsInt("accumulatedSize");
   }
 
   /**
    * The number of bytes currently allocated for instances of class.
    */
   public int getBytesCurrent() {
-    return json.get("bytesCurrent") == null ? -1 : json.get("bytesCurrent").getAsInt();
+    return getAsInt("bytesCurrent");
   }
 
   /**
@@ -50,13 +50,13 @@ public class ClassHeapStats extends Response {
    * reset.
    */
   public int getInstancesAccumulated() {
-    return json.get("instancesAccumulated") == null ? -1 : json.get("instancesAccumulated").getAsInt();
+    return getAsInt("instancesAccumulated");
   }
 
   /**
    * The number of instances of class which are currently alive.
    */
   public int getInstancesCurrent() {
-    return json.get("instancesCurrent") == null ? -1 : json.get("instancesCurrent").getAsInt();
+    return getAsInt("instancesCurrent");
   }
 }
