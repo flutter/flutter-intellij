@@ -46,13 +46,13 @@ public class RetainingPath extends Response {
    * persistent handle  * unknown
    */
   public String getGcRootType() {
-    return json.get("gcRootType").getAsString();
+    return getAsString("gcRootType");
   }
 
   /**
    * The length of the retaining path.
    */
   public int getLength() {
-    return json.get("length") == null ? -1 : json.get("length").getAsInt();
+    return getAsInt("length");
   }
 }

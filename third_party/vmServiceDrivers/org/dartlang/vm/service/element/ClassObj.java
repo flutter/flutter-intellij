@@ -122,7 +122,7 @@ public class ClassObj extends Obj {
    * The name of this class.
    */
   public String getName() {
-    return json.get("name").getAsString();
+    return getAsString("name");
   }
 
   /**
@@ -170,13 +170,13 @@ public class ClassObj extends Obj {
    * Is this an abstract class?
    */
   public boolean isAbstract() {
-    return json.get("abstract").getAsBoolean();
+    return getAsBoolean("abstract");
   }
 
   /**
    * Is this a const class?
    */
   public boolean isConst() {
-    return json.get("const").getAsBoolean();
+    return getAsBoolean("const");
   }
 }

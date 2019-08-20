@@ -33,7 +33,7 @@ public class RetainingObject extends Element {
    * Can return <code>null</code>.
    */
   public String getParentField() {
-    return json.get("parentField") == null ? null : json.get("parentField").getAsString();
+    return getAsString("parentField");
   }
 
   /**
@@ -42,7 +42,7 @@ public class RetainingObject extends Element {
    * Can return <code>null</code>.
    */
   public int getParentListIndex() {
-    return json.get("parentListIndex") == null ? -1 : json.get("parentListIndex").getAsInt();
+    return getAsInt("parentListIndex");
   }
 
   /**

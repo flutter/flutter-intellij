@@ -57,6 +57,8 @@ public class VmService extends VmServiceBase {
 
   public static final String GC_STREAM_ID = "GC";
 
+  public static final String HEAPSNAPSHOT_STREAM_ID = "HeapSnapshot";
+
   public static final String ISOLATE_STREAM_ID = "Isolate";
 
   public static final String LOGGING_STREAM_ID = "Logging";
@@ -79,7 +81,7 @@ public class VmService extends VmServiceBase {
   /**
    * The minor version number of the protocol supported by this client.
    */
-  public static final int versionMinor = 25;
+  public static final int versionMinor = 26;
 
   /**
    * The [addBreakpoint] RPC is used to add a breakpoint at a specific line of some script.
@@ -518,6 +520,15 @@ public class VmService extends VmServiceBase {
     params.addProperty("isolateId", isolateId);
     params.addProperty("breakpointId", breakpointId);
     request("removeBreakpoint", params, consumer);
+  }
+
+  /**
+   * Requests a dump of the Dart heap of the given isolate.
+   */
+  public void requestHeapSnapshot(String isolateId, SuccessConsumer consumer) {
+    final JsonObject params = new JsonObject();
+    params.addProperty("isolateId", isolateId);
+    request("requestHeapSnapshot", params, consumer);
   }
 
   /**
