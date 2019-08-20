@@ -204,7 +204,7 @@ public class AndroidModuleLibraryManager extends AbstractLibraryManager<AndroidM
     if (dir == null) dir = flutterProject.getBaseDir().findChild(".android"); // For modules.
     assert (dir != null);
     EmbeddedAndroidProject androidProject = new EmbeddedAndroidProject(FileUtilRt.toSystemIndependentName(dir.getPath()), null);
-    androidProject.init();
+    androidProject.init(null);
 
     GradleSyncListener listener = new GradleSyncListener() {
       @SuppressWarnings("override")
