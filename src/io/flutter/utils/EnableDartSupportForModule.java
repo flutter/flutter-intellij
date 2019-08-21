@@ -13,6 +13,7 @@ import com.jetbrains.lang.dart.analyzer.DartAnalysisServerService;
 import com.jetbrains.lang.dart.sdk.DartSdk;
 import com.jetbrains.lang.dart.sdk.DartSdkLibUtil;
 import com.jetbrains.lang.dart.sdk.DartSdkUtil;
+import io.flutter.sdk.FlutterSdk;
 import org.jetbrains.annotations.NotNull;
 
 // Adapted from private class com.jetbrains.lang.dart.ide.actions.DartEditorNotificationsProvider.EnableDartSupportForModule.
